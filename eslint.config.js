@@ -111,7 +111,8 @@ export default [
           './packages/spark-data/tsconfig.json',
           './packages/spark-component/tsconfig.json',
           './packages/spark-page-config/tsconfig.json',
-          './packages/spark-app/tsconfig.json'
+          './packages/spark-app/tsconfig.json',
+          './packages/vite-plugin-spark-catalog/tsconfig.json'
         ],
         tsconfigRootDir: import.meta.dirname,
         ecmaVersion: 2020,

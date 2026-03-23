@@ -21,7 +21,7 @@ export type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils
  * 组件定义 - Registry 中的条目
  */
 export interface ComponentDefinition {
-  /** 组件类型（kebab-case，如 'spark-ej2-grid'） */
+  /** 组件类型（kebab-case，如 'r-table'） */
   type: string
   /** Vue 组件实现 */
   component: unknown
@@ -74,44 +74,32 @@ export interface ComponentContext extends ICapabilityContext {
 /**
  * SparkNode - 组件配置的最小输入类型
  *
- * 用于 useSparkComponent 的泛型约束。
- * 与 ComponentContext 的区别：
- * - SparkNode 是纯数据（JSON 可序列化），不含运行时字段（id, state, providers, consumers）
- * - children 允许任意嵌套配置数组，不要求是完整的 ComponentContext
+ * 严格对齐 Vue `h(type, props, children)` 三段式：
+ *   type     → 渲染什么组件
+ *   props    → 组件接收的全部属性（id / visible / disabled / on / dataKey / field … 均在此）
+ *   children → 嵌套子节点
+ *
+ * rule.json 允许将 id / visible / disabled / on / dataKey / field 等写在根级（便于阅读），
+ * 绑定阶段（bindSparkRuleEvents / bindDataToRules）会统一收入 props，
+ * 渲染层一律通过 Vue Props 消费——组件代码只需关心 props，零认知负担。
  */
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
-  /** 实例 ID（可选，运行时自动生成） */
-  id?: string
-  /** 数据绑定键（如 Users@rows），供容器组件在运行时解析 DataView */
-  dataKey?: string
-  /** 字段绑定名（与父组件 dataKey 叠加，子组件通过 field 定位数据字段） */
-  field?: string
-  /** 显示标签（UI 展示文字，如 "用户名"） */
-  label?: string
-  /** 选项数据源 DataKey（如 'Categories@rows'），供 select/radio/checkbox 解析选项列表 */
-  optionKey?: string
-  /** 组件属性 */
+  /** 组件属性（所有组件可见的数据均通过 props 传递） */
   props?: Record<string, unknown>
   /** 子组件配置（递归） */
   children?: SparkNode[]
-  /** 可见性控制 */
-  visible?: boolean
-  /** 禁用状态控制 */
-  disabled?: boolean
+}
 
-  // ── Meta 域（容器级配置，兼容 useContainerToolbar / useContainerActions / useTableFilters） ──
-  /** 工具栏配置 */
-  toolbar?: SparkNodeToolbar
-  /** 行操作列配置 */
-  actions?: SparkNodeActions
-  /** 筛选器配置 */
-  filter?: SparkNodeFilter
+/** 从 props 中读取节点 id（h() 模型：id 在 props 内） */
+export function nodeId(node: { props?: Record<string, unknown> }): string | undefined {
+  const id = node.props?.['id']
+  return typeof id === 'string' ? id : undefined
 }
 
 // ============================================================================
-// SparkNode Meta 域类型
+// SparkNode 容器级配置类型
 // ============================================================================
 
 /** 工具栏配置（兼容 useContainerToolbar） */
@@ -216,6 +204,14 @@ export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('spark
 
 /** 父级上下文注入键（替代字符串 'sparkParentContext'） */
 export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('sparkParentContext') as InjectionKey<ComponentContext>
+
+/**
+ * SparkNode 配置注入键 — SparkComponentRenderer 向子组件注入当前节点配置。
+ *
+ * @deprecated 组件应通过 Vue Props（defineProps）接收属性，不再 inject 此键。
+ * 仅 useSparkComponent 内部作为 fallback 消费（向后兼容）。
+ */
+export const SPARK_NODE_CONFIG_KEY: InjectionKey<SparkNode> = Symbol('sparkNodeConfig') as InjectionKey<SparkNode>
 
 // 日志类型 — 直接从 @spark-view/spark-utils 导入
 export type { LoggerApi } from '@spark-view/spark-utils'

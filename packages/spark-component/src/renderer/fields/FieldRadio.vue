@@ -18,20 +18,27 @@
 
 <script setup lang="ts">
 import { useOptionField } from './useFieldOptions'
-import type { SparkNode } from '../_pkg'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
-  sparkChildren?: SparkNode[]
+  /** 双向绑定值 */
   modelValue?: string | number
+  /** 选项列表 */
   options?: unknown[]
+  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
+  optionKey?: string
+  /** 选项标签字段 */
   optionLabelField?: string
+  /** 选项值字段 */
   optionValueField?: string
+  /** 按钮风格 */
   buttonStyle?: boolean
 }
 
@@ -50,7 +57,7 @@ const optionResult = useOptionField<string | number>({
 })
 
 const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext(props, optionResult)
+const fieldCtx = useFieldContext({ width: props.width }, optionResult)
 
 function handleChange(value: string | number): void {
   emit('update:modelValue', value)

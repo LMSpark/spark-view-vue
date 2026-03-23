@@ -78,13 +78,10 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
         headerActions: [{ type: 'dialog-header-action' }],
         footerActions: [{ type: 'dialog-footer-action' }],
         gridGap: 12,
-        config: {
-          type: 'r-dialog',
-          children: [
-            { type: 'child-a', props: { colSpan: 8 } },
-            { type: 'child-b', props: { colSpan: 16 } },
-          ],
-        },
+        children: [
+          { type: 'child-a', props: { colSpan: 8 } },
+          { type: 'child-b', props: { colSpan: 16 } },
+        ],
       },
       slots: {
         footer: ({ title }: Record<string, unknown>) => h('button', {
@@ -139,25 +136,22 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
       props: {
         toolbar: [{ type: 'steps-toolbar-action' }],
         onStepChange,
-        config: {
-          type: 'r-steps',
-          children: [
-            {
-              type: 'r-step',
-              props: { title: '步骤一', name: 'step1', gridGap: 16 },
-              children: [
-                { type: 'child-a', props: { colSpan: 12 } },
-              ],
-            },
-            {
-              type: 'r-step',
-              props: { title: '步骤二', name: 'step2' },
-              children: [
-                { type: 'child-b', props: { colSpan: 24 } },
-              ],
-            },
-          ],
-        },
+        children: [
+          {
+            type: 'r-step',
+            props: { title: '步骤一', name: 'step1', gridGap: 16 },
+            children: [
+              { type: 'child-a', props: { colSpan: 12 } },
+            ],
+          },
+          {
+            type: 'r-step',
+            props: { title: '步骤二', name: 'step2' },
+            children: [
+              { type: 'child-b', props: { colSpan: 24 } },
+            ],
+          },
+        ],
       },
       slots: {
         toolbar: ({ steps }: Record<string, unknown>) => h('button', {

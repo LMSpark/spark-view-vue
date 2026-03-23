@@ -10,7 +10,7 @@ import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, pro
 import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { ComponentContext, SparkNode, ComponentRegistry } from './types.js'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } from './types.js'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 
@@ -53,8 +53,8 @@ export interface UseSparkComponentReturn {
    *
    * @example
    * // 按字符串名称消费，类型来自 CapabilityTypeMap declaration merging
-   * const sel = consume('spark:capability:selection')
-   * // sel: ISelectionCapability | null
+   * const svc = consume('spark:capability:app-services')
+   * // svc: IAppServicesCapability | null
    */
   consume: {
     <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
@@ -75,6 +75,8 @@ export interface UseSparkComponentReturn {
   getComponent: (type: string) => unknown
   /** 检查组件是否已注册 */
   isComponentRegistered: (type: string) => boolean
+  /** 向 PageComponentRegistry 注册组件 API（cleanup 由 destroy 自动处理） */
+  registerApi: (api: unknown) => void
 }
 
 /* -------------------------------------------------------------------------- */
@@ -88,8 +90,8 @@ export interface UseSparkComponentReturn {
 /** 全局单调递增 ID 计数器，替代 Date.now()+random（更快、确定、SSR 友好） */
 let _idCounter = 0
 
-export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
-  config: TConfig,
+export function useSparkComponent(
+  fallbackConfig?: SparkNode,
   options?: {
     registry?: ComponentRegistry
     parentContext?: ComponentContext
@@ -101,6 +103,11 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
   const parentContext = options?.parentContext ?? inject(SPARK_PARENT_CONTEXT_KEY, undefined)
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
 
+  // 优先使用 SparkComponentRenderer 注入的完整 SparkNode 配置；
+  // fallbackConfig 仅用于测试场景或脱离 Renderer 直接使用的情况。
+  const injectedConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
+  const config: SparkNode = injectedConfig ?? fallbackConfig ?? { type: 'unknown' }
+
   // ── 上下文创建 ──
   //
   // 优化：
@@ -110,7 +117,7 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
   // 3. id 用全局单调计数器，比 Date.now()+random 更快且确定（SSR 友好）
 
   const context: ComponentContext = shallowReactive({
-    id: config.id ?? `spark-${++_idCounter}`,
+    id: (typeof config.props?.['id'] === 'string' ? config.props['id'] : undefined) ?? `spark-${++_idCounter}`,
     type: config.type,
     children: markRaw([] as ComponentContext[]),
     props: config.props ?? {},
@@ -147,9 +154,9 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
 
   const fallbackLogger: LoggerApi = {
     debug: () => undefined,
-    info: (...args: unknown[]) => console.info(...args),
-    warn: (...args: unknown[]) => console.warn(...args),
-    error: (...args: unknown[]) => console.error(...args)
+    info: import.meta.env.DEV ? (...args: unknown[]) => console.info(...args) : () => undefined,
+    warn: import.meta.env.DEV ? (...args: unknown[]) => console.warn(...args) : () => undefined,
+    error: import.meta.env.DEV ? (...args: unknown[]) => console.error(...args) : () => undefined,
   }
 
   let _loggerCache: LoggerApi | null = null
@@ -183,8 +190,8 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
 
   // ── 计算属性 ──
 
-  const isVisible = computed(() => config.visible !== false)
-  const isDisabled = computed(() => config.disabled === true)
+  const isVisible = computed(() => config.props?.['visible'] !== false)
+  const isDisabled = computed(() => config.props?.['disabled'] === true)
 
   // ── 能力提供 ──
 
@@ -284,6 +291,13 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
   onMounted(() => initialize())
   onUnmounted(() => destroy())
 
+  // ── API 注册 ──
+
+  function registerApi(api: unknown): void {
+    if (!pageComponentRegistry) return
+    pageComponentRegistry.registerApi({ id: context.id, type: context.type, api })
+  }
+
   // ── 返回值 ──
 
   return {
@@ -299,6 +313,35 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
     destroy,
     logger,
     getComponent,
-    isComponentRegistered
+    isComponentRegistered,
+    registerApi
   }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * 轻量消费器——仅需读取祖先能力、不需要创建 ComponentContext 的场景。
+ *
+ * 与 `useSparkComponent` 的差异：
+ * - 不创建 shallowReactive context、不注册 parent-children、不挂 onMounted/onUnmounted
+ * - 不提供 provide / registerApi / logger / getComponent
+ * - 开销 ≈ 1 次 inject + N 次 lookup，适合高频字段组件（表格 50 列 × N 行）
+ */
+export function useSparkConsume(): {
+  consume: {
+    <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
+    <T>(name: CapabilityKey<T>): T | null
+    (name: string | symbol): unknown
+  }
+} {
+  const parentContext = inject(SPARK_PARENT_CONTEXT_KEY, undefined)
+
+  function consume(name: string | symbol): unknown {
+    if (!parentContext) return null
+    const impl = lookup(parentContext, name)
+    return impl !== undefined ? impl : null
+  }
+
+  return { consume: consume as never }
 }

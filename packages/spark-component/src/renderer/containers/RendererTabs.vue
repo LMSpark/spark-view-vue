@@ -11,7 +11,7 @@
     <div v-if="showToolbar" :class="['renderer-tabs-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-tabs-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-tabs-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
@@ -39,7 +39,7 @@
               <template v-if="getPaneChildren(pane).length">
                 <div
                   v-for="(child, childIndex) in getPaneChildren(pane)"
-                  :key="child.id ?? `r-tab-pane-child-${childIndex}`"
+                  :key="nodeId(child) ?? `r-tab-pane-child-${childIndex}`"
                   class="renderer-tabs-pane-grid-item"
                   :style="getPaneChildGridStyle(child)"
                 >
@@ -63,10 +63,11 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import type { RendererTabsApi } from '../_pkg'
 
 interface TabsClickEvent {
   paneName?: string | number
@@ -74,13 +75,19 @@ interface TabsClickEvent {
 }
 
 interface Props {
-  config?: SparkNode
-  sparkChildren?: SparkNode[]
+  /** 子节点（标签面板配置） */
+  children?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 当前激活标签页 */
   modelValue?: string | number
+  /** 标签页切换回调 */
   onTabChange?: (name: string | number) => void
+  /** 标签页点击回调 */
   onTabClick?: (pane: TabsClickEvent, event: Event) => void
 }
 
@@ -94,11 +101,10 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-
-useSparkComponent(props.config ?? { type: 'r-tabs' })
+const { registerApi } = useSparkComponent({ type: 'r-tabs' })
 
 const paneConfigs = computed(() =>
-  (props.config?.children ?? props.sparkChildren ?? []).filter(child => child.type === 'r-tab-pane')
+  (props.children ?? []).filter(child => child.type === 'r-tab-pane')
 )
 
 const currentActiveName = ref<string | number | undefined>(props.modelValue)
@@ -120,7 +126,6 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => props.config),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),
@@ -128,17 +133,40 @@ const {
   slots,
 })
 
+// ── r-tabs 包装 API ──────────────────────────────────────────────────────
+
+
+const tabsApi: RendererTabsApi = {
+  getActiveTab() {
+    return currentActiveName.value
+  },
+  setActiveTab(name) {
+    currentActiveName.value = name
+    emit('update:modelValue', name)
+  },
+  getPaneNames() {
+    return paneConfigs.value.map((pane, index) => getPaneName(pane, index))
+  },
+  getPaneCount() {
+    return paneConfigs.value.length
+  },
+}
+
+registerApi(tabsApi)
+
+defineExpose(tabsApi)
+
 function getPaneChildren(pane: SparkNode): SparkNode[] {
   return pane.children ?? []
 }
 
 function getPaneName(pane: SparkNode, index: number): string | number {
-  const value = pane.props?.['name'] ?? pane.props?.['value'] ?? pane.id
+  const value = pane.props?.['name'] ?? pane.props?.['value'] ?? nodeId(pane)
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${index}`
 }
 
 function getPaneKey(pane: SparkNode, index: number): string | number {
-  return pane.id ?? getPaneName(pane, index)
+  return nodeId(pane) ?? getPaneName(pane, index)
 }
 
 function getPaneLabel(pane: SparkNode, index: number): string {

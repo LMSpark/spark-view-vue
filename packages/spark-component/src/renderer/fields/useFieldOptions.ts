@@ -1,6 +1,8 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { SparkNode } from '../_pkg'
+import { getViewFromRawKey } from '@spark-view/spark-data'
+import { PAGE_DATASET } from '../../capability-keys.js'
+import { useSparkConsume } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import type { FieldPermissionProps } from './useFieldPermission'
 
@@ -20,11 +22,12 @@ export interface FieldTransferOption {
 }
 
 export interface FieldOptionProps {
-  config?: SparkNode | undefined
   options?: unknown[] | undefined
   optionLabelField?: string | undefined
   optionValueField?: string | undefined
   optionChildrenField?: string | undefined
+  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
+  optionKey?: string | undefined
 }
 
 export interface UseFieldOptionsReturn {
@@ -106,8 +109,27 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
   const optionValueField = computed(() => props.optionValueField ?? 'value')
   const optionChildrenField = computed(() => props.optionChildrenField ?? 'children')
 
+  // ── optionKey → DataView 动态选项解析 ──
+  const resolvedOptionKey = computed(() => props.optionKey)
+  const parentCtx = useSparkConsume()
+  const pageDataSet = parentCtx.consume(PAGE_DATASET)
+
+  const optionKeyView = computed(() => {
+    const key = resolvedOptionKey.value
+    if (!key || !pageDataSet) return null
+    return getViewFromRawKey(key, pageDataSet) ?? null
+  })
+
   const options = computed<FieldOption[]>(() => {
-    const source = props.options ?? (props.config?.props?.['options'] as unknown[] | undefined) ?? []
+    // 优先级 1: optionKey → DataView.rows（动态选项）
+    const view = optionKeyView.value
+    if (view) {
+      return view.rows
+        .map(row => normalizeOption(row, optionLabelField.value, optionValueField.value, optionChildrenField.value))
+        .filter((item): item is FieldOption => item !== null)
+    }
+    // 优先级 2: 静态 options（props）
+    const source = props.options ?? []
     if (!Array.isArray(source)) return []
     return source
       .map(item => normalizeOption(item, optionLabelField.value, optionValueField.value, optionChildrenField.value))

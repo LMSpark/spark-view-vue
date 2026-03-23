@@ -32,13 +32,12 @@ import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-com
 import type { SparkNode } from '@spark-view/spark-component'
 {{#if isConsumer}}
 // 从对应包导入需要消费的能力键，例如：
-// import { APP_SERVICES, SELECTION } from '@spark-view/spark-utils'
+// import { APP_SERVICES } from '@spark-view/spark-utils'
 // import { DATA_SOURCE } from '@spark-view/spark-component'
 // 或使用字符串键（需在 capability-keys.ts 中通过 declare module 扩展 CapabilityTypeMap）
 {{/if}}
 {{#if isProvider}}
 // 向子组件提供的能力键：
-// import { SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
 // import { DATA_SOURCE } from '@spark-view/spark-component'
 {{/if}}
 {{#if isDataSelfResolve}}
@@ -74,12 +73,11 @@ const {
 //   deselect:   (id) => { selectedIds.value.delete(id) },
 //   getSelected:() => [...selectedIds.value],
 // })
-// const events = provideEvents(GRID_EVENTS)
+// const events = provideEvents(MY_EVENTS)
 {{/if}}
 {{#if isConsumer}}
 
 // ── Consumer：consume 返回 null 是正常 late-binding，做好防空 ─────────────
-// const sel = consume(SELECTION)        // ISelectionCapability | null
 // const src = consume(DATA_SOURCE)      // IDataSource | null
 // 字符串键示例（需先用 declare module 扩展 CapabilityTypeMap）：
 // const ctx = consume('app:field-context')  // FieldContext | null

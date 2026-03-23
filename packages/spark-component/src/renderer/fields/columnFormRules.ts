@@ -94,12 +94,13 @@ function convertRule(rule: ColumnValidationRule): FormItemRule {
         trigger: 'blur',
       }
 
-    case 'pattern':
-      return {
-        pattern: new RegExp(rule.value as string),
-        message: rule.message,
-        trigger: 'blur',
-      }
+    case 'pattern': {
+      let regex: RegExp | undefined
+      try { regex = new RegExp(rule.value as string) } catch { /* invalid pattern */ }
+      return regex
+        ? { pattern: regex, message: rule.message, trigger: 'blur' }
+        : { validator: (_r: unknown, _v: unknown, cb: (e?: Error) => void) => { cb(new Error(`无效正则: ${String(rule.value)}`)) }, trigger: 'blur' }
+    }
 
     case 'type':
       return { message: rule.message, trigger: 'blur' }

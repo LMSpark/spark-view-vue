@@ -1,4 +1,5 @@
-import { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
+import { COMPONENT_PROPS_CATALOG, COMPONENT_CATALOG } from './component-props-catalog'
+import type { ComponentEntry, PropEntry } from './catalog-types'
 import { extractBlocks as _extractBlocks, stripBlocksWithUnclosed } from './protocol'
 import type { ProtocolBlock } from './protocol'
 
@@ -222,6 +223,143 @@ export const AUTO_QUERY_PREFIX = '🔧 [组件 Props 查询结果]'
 /** 自动技能查询消息的固定前缀（用于 UI 识别和防重入） */
 export const AUTO_SKILL_PREFIX = '🗂 [技能查询结果]'
 
+const COMPONENT_QUERY_ALIASES: Record<string, string[]> = {
+  'r-table-series': ['context-aware-fields-api', 'r-table', 'r-form', 'r-detail', 'builtin-action', 'r-text', 'r-number', 'r-select'],
+  'context-aware-fields': ['context-aware-fields-api', 'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree', 'r-text', 'r-number', 'r-select'],
+  'r-crud': ['r-table', 'r-form', 'r-detail', 'builtin-action', 'r-text', 'r-number', 'r-select', 'r-date'],
+  'r-form-series': ['r-form', 'r-detail', 'r-text', 'r-number', 'r-select', 'r-date', 'r-checkbox', 'r-switch', 'r-cascader', 'r-tree-select'],
+  'r-column-group-series': ['r-table', 'r-column-group', 'r-text', 'r-number', 'r-select'],
+  'computed-aggregate': ['r-table', 'r-text', 'r-number'],
+  'dialog-form-crud': ['r-dialog', 'r-drawer', 'r-form', 'r-table', 'builtin-action', 'r-text', 'r-number', 'r-select', 'r-date'],
+  'upload-series': ['r-upload', 'r-file-path', 'r-file-browser', 'r-image'],
+}
+
+const COMPONENT_QUERY_BLOCK_NAMES = new Set(['component-props', 'component-api'])
+
+/* ── 结构化目录辅助 ──────────────────────────────────────────────────────── */
+
+/** 格式化单个 PropEntry 为 AI 可读单行 */
+function formatPropLine(p: PropEntry): string {
+  const opt = p.required ? '' : '?'
+  const desc = p.description !== undefined ? ` — ${p.description}` : ''
+  const def = p.default !== undefined ? ` (默认 ${p.default})` : ''
+  return `${p.name}${opt}: ${p.type}${desc}${def}`
+}
+
+/** 从结构化 ComponentEntry 生成完整 API 文本（富格式） */
+function formatComponentEntry(entry: ComponentEntry): string {
+  const lines: string[] = [`**${entry.type}** — ${entry.description}`]
+
+  if (entry.props.length > 0) {
+    lines.push('')
+    for (const p of entry.props) lines.push(formatPropLine(p))
+  }
+
+  if (entry.notes !== undefined) {
+    lines.push('')
+    lines.push(entry.notes)
+  }
+
+  return lines.join('\n')
+}
+
+/** 按结构化 Props 做 #fragment 匹配 */
+function matchStructuredFragment(entry: ComponentEntry, keyword: string): string[] {
+  const kw = keyword.toLowerCase()
+  const matched: string[] = []
+  for (const p of entry.props) {
+    if (
+      p.name.toLowerCase().includes(kw) ||
+      (p.description?.toLowerCase().includes(kw) ?? false) ||
+      p.type.toLowerCase().includes(kw)
+    ) {
+      matched.push(formatPropLine(p))
+    }
+  }
+  // 也在 notes 中搜索
+  if (entry.notes !== undefined) {
+    const noteLines = entry.notes.split('\n')
+    for (const line of noteLines) {
+      if (line.toLowerCase().includes(kw)) matched.push(line)
+    }
+  }
+  return matched
+}
+
+/* ── Token 解析 ──────────────────────────────────────────────────────────── */
+
+function resolveComponentToken(token: string): string {
+  // @list — 按分类分组展示
+  if (token === '@list') {
+    const reg = COMPONENT_CATALOG.registry
+    const sections: string[] = ['**组件 API 目录索引**']
+    if (reg.containers.length > 0) {
+      sections.push(`\n### 容器组件 (${reg.containers.length})`)
+      sections.push(reg.containers.map((n) => `- ${n}`).join('\n'))
+    }
+    if (reg.fields.length > 0) {
+      sections.push(`\n### 字段组件 (${reg.fields.length})`)
+      sections.push(reg.fields.map((n) => `- ${n}`).join('\n'))
+    }
+    if (reg.groups.length > 0) {
+      sections.push(`\n### 分组组件 (${reg.groups.length})`)
+      sections.push(reg.groups.map((n) => `- ${n}`).join('\n'))
+    }
+    if (reg.meta.length > 0) {
+      sections.push(`\n### 概念/元规则 (${reg.meta.length})`)
+      sections.push(reg.meta.map((n) => `- ${n}`).join('\n'))
+    }
+    return sections.join('\n')
+  }
+
+  const hashIndex = token.indexOf('#')
+  const componentName = hashIndex >= 0 ? token.slice(0, hashIndex).trim() : token
+  const apiSegment = hashIndex >= 0 ? token.slice(hashIndex + 1).trim() : null
+
+  if (componentName === '') {
+    return `**${token}** — 查询格式无效（请使用 组件名 或 组件名#API片段）`
+  }
+
+  // 优先查结构化目录
+  const structuredEntry = COMPONENT_CATALOG.components[componentName]
+
+  // 无 fragment 时：结构化有 Props → 用结构化格式；否则回退扁平文本
+  if (apiSegment === null || apiSegment === '') {
+    if (structuredEntry !== undefined && structuredEntry.props.length > 0) {
+      return formatComponentEntry(structuredEntry)
+    }
+    // 回退扁平文本（手工 override 条目仍有完整描述）
+    const info = COMPONENT_PROPS_CATALOG[componentName]
+    if (info !== undefined) return info
+    return `**${componentName}** — 未收录（可使用 Element Plus 文档中的标准 Props）`
+  }
+
+  // 有 fragment：优先结构化匹配
+  if (structuredEntry !== undefined) {
+    const matched = matchStructuredFragment(structuredEntry, apiSegment)
+    const title = `**${structuredEntry.type}** — ${structuredEntry.description}`
+    if (matched.length > 0) {
+      return `${title}\n\n【精确片段: ${apiSegment}】\n${matched.join('\n')}`
+    }
+  }
+
+  // 回退扁平文本行搜索
+  const info = COMPONENT_PROPS_CATALOG[componentName]
+  if (info === undefined) {
+    return `**${componentName}** — 未收录（可使用 Element Plus 文档中的标准 Props）`
+  }
+  const lines = info.split('\n')
+  const title = lines[0] ?? `**${componentName}**`
+  const keyword = apiSegment.toLowerCase()
+  const matched = lines.filter((line, index) => index > 0 && line.toLowerCase().includes(keyword))
+
+  if (matched.length === 0) {
+    return `${title}\n\n未匹配到 API 片段「${apiSegment}」，请改用 @@query:component-api\n${componentName}`
+  }
+
+  return `${title}\n\n【精确片段: ${apiSegment}】\n${matched.join('\n')}`
+}
+
 /**
  * 从 AI 回复中提取组件 Props 查询请求（@@ 协议）
  */
@@ -230,7 +368,7 @@ export function extractComponentQueries(content: string): string[] {
 
   const blocks = extractBlocks(content)
   for (const b of blocks) {
-    if (b.type === 'query' && b.name === 'component-props') {
+    if (b.type === 'query' && COMPONENT_QUERY_BLOCK_NAMES.has(b.name)) {
       const items = b.payload.split(/[,，\s]+/).map((s) => s.trim()).filter(Boolean)
       components.push(...items)
     }
@@ -244,14 +382,24 @@ export function extractComponentQueries(content: string): string[] {
  */
 export function resolveComponentQuery(components: string[]): string | null {
   if (components.length === 0) return null
-  const sections: string[] = []
-  for (const comp of components) {
-    const info = COMPONENT_PROPS_CATALOG[comp]
-    if (info) {
-      sections.push(info)
-    } else {
-      sections.push(`**${comp}** — 未收录（可使用 Element Plus 文档中的标准 Props）`)
+  const expanded: string[] = []
+  for (const component of components) {
+    if (component.includes('#') || component === '@list') {
+      expanded.push(component)
+      continue
     }
+    const aliasItems = COMPONENT_QUERY_ALIASES[component]
+    if (aliasItems !== undefined) {
+      expanded.push(...aliasItems)
+      continue
+    }
+    expanded.push(component)
+  }
+  const normalized = [...new Set(expanded)]
+
+  const sections: string[] = []
+  for (const comp of normalized) {
+    sections.push(resolveComponentToken(comp))
   }
   return sections.join('\n\n')
 }

@@ -34,18 +34,9 @@ interface RuleNodeSnapshot {
   path: string
 }
 
-const DATAKEY_RE = /^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\.[\w.]+)?$/
+type RenderContext = 'table' | 'form' | 'detail' | 'list' | 'tree'
 
-const HTML_TYPES = new Set([
-  'a', 'article', 'aside', 'b', 'blockquote', 'br', 'button', 'code', 'del',
-  'details', 'div', 'em', 'figcaption', 'figure', 'footer', 'h1', 'h2', 'h3',
-  'h4', 'h5', 'h6', 'header', 'hr', 'i', 'img', 'input', 'label', 'li', 'main',
-  'nav', 'ol', 'option', 'p', 'pre', 'section', 'select', 'small', 'span',
-  'strong', 'summary', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th',
-  'thead', 'tr', 'u', 'ul',
-])
-
-const TYPE_PREFIXES = ['r-', 'el-', 'Render', 'spark-']
+import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'
 
 const EMPTY_SUMMARY: ConfigValidationSummary = {
   total: 0,
@@ -113,7 +104,7 @@ function collectRuleNodes(value: unknown, path: string, out: RuleNodeSnapshot[])
 
 function isLikelyComponentType(typeName: string): boolean {
   if (HTML_TYPES.has(typeName)) return true
-  if (TYPE_PREFIXES.some(prefix => typeName.startsWith(prefix))) return true
+  if (VALID_TYPE_PREFIXES.some(prefix => typeName.startsWith(prefix))) return true
   return /^[a-z][a-z0-9-]*$/u.test(typeName) && typeName.includes('-')
 }
 
@@ -156,6 +147,84 @@ function extractTableNames(pageData: unknown): Set<string> {
   return names
 }
 
+const CONTAINER_CONTEXT_MAP: Record<string, RenderContext> = {
+  'r-table': 'table',
+  'r-form': 'form',
+  'r-detail': 'detail',
+  'r-list': 'list',
+  'r-tree': 'tree',
+}
+
+const NON_FIELD_R_TYPES = new Set([
+  'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree',
+  'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section', 'r-block',
+  'r-column-group',
+])
+
+function extractFieldName(node: Record<string, unknown>): string | null {
+  if (typeof node['field'] === 'string' && node['field'].trim() !== '') {
+    return node['field']
+  }
+  const meta = asRecord(node['meta'])
+  const data = asRecord(meta?.['data'])
+  if (typeof data?.['field'] === 'string' && data['field'].trim() !== '') {
+    return data['field']
+  }
+  return null
+}
+
+function isSparkFieldType(typeName: string): boolean {
+  return typeName.startsWith('r-') && !NON_FIELD_R_TYPES.has(typeName)
+}
+
+function validateContextAwareStructure(
+  value: unknown,
+  path: string,
+  issues: ConfigValidationIssue[],
+  inheritedContext: RenderContext | null,
+): void {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => validateContextAwareStructure(item, `${path}[${index}]`, issues, inheritedContext))
+    return
+  }
+
+  const node = asRecord(value)
+  if (node === null) return
+
+  const typeName = typeof node['type'] === 'string' ? node['type'] : ''
+  const currentContext = typeName === ''
+    ? inheritedContext
+    : (CONTAINER_CONTEXT_MAP[typeName] ?? inheritedContext)
+
+  if (typeName === 'el-table-column' && inheritedContext === 'table') {
+    pushIssue(
+      issues,
+      'component',
+      'warning',
+      'r-table 子节点不建议使用 el-table-column，建议使用 r-* 字段组件按父语境渲染',
+      `${path}.type`,
+      '请改为 r-text / r-number / r-select 等 r-* 字段组件，并通过 field 绑定列。',
+    )
+  }
+
+  const fieldName = extractFieldName(node)
+  if (typeName !== '' && fieldName !== null && isSparkFieldType(typeName) && inheritedContext === null) {
+    pushIssue(
+      issues,
+      'component',
+      'warning',
+      `字段组件「${typeName}(${fieldName})」缺少父容器语境（table/form/detail/list/tree）`,
+      path,
+      '请将字段组件放入 r-table / r-form / r-detail / r-list / r-tree 容器，以便自动感知父语境渲染。',
+    )
+  }
+
+  const children = node['children']
+  if (Array.isArray(children)) {
+    children.forEach((item, index) => validateContextAwareStructure(item, `${path}.children[${index}]`, issues, currentContext))
+  }
+}
+
 function pushIssue(
   issues: ConfigValidationIssue[],
   category: ConfigValidationCategory,
@@ -194,6 +263,61 @@ function buildSummary(issues: ConfigValidationIssue[]): ConfigValidationSummary 
   }
 }
 
+const VALID_AGGREGATE_TYPES = new Set(['sum', 'count', 'avg', 'min', 'max', 'join'])
+
+function validateAggregatesConfig(
+  pageDataJson: unknown,
+  issues: ConfigValidationIssue[],
+): void {
+  const root = asRecord(pageDataJson)
+  if (root === null) return
+
+  const tables = asRecord(root['tables'])
+  if (tables === null) return
+
+  for (const [tableName, tableValue] of Object.entries(tables)) {
+    const table = asRecord(tableValue)
+    if (table === null) continue
+
+    // aggregates 可在表顶层、或 views.{viewId} 内
+    const aggSources: Array<{ agg: Record<string, unknown>; loc: string }> = []
+
+    const topAgg = asRecord(table['aggregates'])
+    if (topAgg !== null) {
+      aggSources.push({ agg: topAgg, loc: `tables.${tableName}.aggregates` })
+    }
+
+    const views = asRecord(table['views'])
+    if (views !== null) {
+      for (const [viewId, viewValue] of Object.entries(views)) {
+        const viewAgg = asRecord(asRecord(viewValue)?.['aggregates'])
+        if (viewAgg !== null) {
+          aggSources.push({ agg: viewAgg, loc: `tables.${tableName}.views.${viewId}.aggregates` })
+        }
+      }
+    }
+
+    for (const { agg, loc } of aggSources) {
+      for (const [field, aggValue] of Object.entries(agg)) {
+        const aggDef = asRecord(aggValue)
+        if (aggDef === null) {
+          pushIssue(issues, 'dataKey', 'warning',
+            `聚合配置「${loc}.${field}」应为对象 { type: "sum"|"avg"|... }`, loc,
+            '聚合定义格式：{ type: "sum" } 或 { type: "join", field: "name" }')
+          continue
+        }
+        const aggType = aggDef['type']
+        if (typeof aggType !== 'string' || !VALID_AGGREGATE_TYPES.has(aggType)) {
+          pushIssue(issues, 'dataKey', 'warning',
+            `聚合「${loc}.${field}.type」值「${String(aggType)}」不合法`,
+            `${loc}.${field}.type`,
+            `合法的聚合类型：${[...VALID_AGGREGATE_TYPES].join(', ')}`)
+        }
+      }
+    }
+  }
+}
+
 export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValidationReport {
   const issues: ConfigValidationIssue[] = []
 
@@ -227,7 +351,13 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
   const nodes: RuleNodeSnapshot[] = []
   if (ruleJson !== null) {
     collectRuleNodes(ruleJson, 'rules', nodes)
+    validateContextAwareStructure(ruleJson, 'rules', issues, null)
   }
+
+  // 收集所有 dataKey 用于 highlightCurrentRow 交叉检查
+  const tableDataKeys = new Map<string, string>() // tableName → path（最后一个 r-table 的路径）
+  const tablesWithHighlight = new Set<string>()    // 有 highlightCurrentRow 的表名
+  const tablesUsingCurrentRow = new Set<string>()  // 使用 @currentRow 的表名
 
   for (const { node, path } of nodes) {
     const typeName = node['type']
@@ -252,6 +382,33 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
           `${path}.type`,
           `请在 script.js 中添加 function ${typeName}() { ... }。`,
         )
+      }
+
+      // 检测 name 属性（应使用 field）
+      if (typeName.startsWith('r-') && typeof node['name'] === 'string' && node['field'] === undefined) {
+        pushIssue(
+          issues,
+          'component',
+          'warning',
+          `「${typeName}」使用了 name 属性「${node['name']}」，请改用 field`,
+          `${path}.name`,
+          '字段绑定请使用 field 声明。',
+        )
+      }
+
+      // 收集 r-table 的 highlightCurrentRow 信息
+      if (typeName === 'r-table' || typeName === 'el-table') {
+        const dk = node['dataKey']
+        if (typeof dk === 'string') {
+          const tbl = parseDataKeyTable(dk)
+          if (tbl.tableName !== null) {
+            tableDataKeys.set(tbl.tableName, path)
+            const props = asRecord(node['props'])
+            if (props?.['highlightCurrentRow'] === true) {
+              tablesWithHighlight.add(tbl.tableName)
+            }
+          }
+        }
       }
     }
 
@@ -278,6 +435,10 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
             '请校对 dataKey 表名与 pagedata.json tables 定义。',
           )
         }
+        // 记录使用 @currentRow 的表名
+        if (parsed.tableName !== null && dataKey.includes('@currentRow')) {
+          tablesUsingCurrentRow.add(parsed.tableName)
+        }
       }
     }
 
@@ -300,6 +461,53 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
       }
     }
   }
+
+  // 交叉检查：使用 @currentRow 的表是否有对应的 highlightCurrentRow
+  for (const tableName of tablesUsingCurrentRow) {
+    if (tableDataKeys.has(tableName) && !tablesWithHighlight.has(tableName)) {
+      pushIssue(
+        issues,
+        'component',
+        'warning',
+        `表「${tableName}」被 @currentRow 引用，但对应 r-table 未声明 highlightCurrentRow`,
+        tableDataKeys.get(tableName) ?? 'rules',
+        '请在该 r-table 的 props 中添加 "highlightCurrentRow": true，否则当前行无高亮效果。',
+      )
+    }
+  }
+
+  // 交叉检查：style / class 放在节点顶层而非 props 内
+  for (const { node, path } of nodes) {
+    if (node['style'] !== undefined && typeof node['type'] === 'string') {
+      const props = asRecord(node['props'])
+      if (props?.['style'] === undefined) {
+        pushIssue(
+          issues,
+          'component',
+          'warning',
+          `节点「${node['type']}」的 style 写在顶层，应移入 props 内`,
+          `${path}.style`,
+          '请将 style 移入 props: { style: {...} }。',
+        )
+      }
+    }
+    if (node['class'] !== undefined && typeof node['type'] === 'string') {
+      const props = asRecord(node['props'])
+      if (props?.['class'] === undefined) {
+        pushIssue(
+          issues,
+          'component',
+          'warning',
+          `节点「${node['type']}」的 class 写在顶层，应移入 props 内`,
+          `${path}.class`,
+          '请将 class 移入 props: { class: "..." }。',
+        )
+      }
+    }
+  }
+
+  // 交叉检查：aggregates 配置的合法性
+  validateAggregatesConfig(pageDataJson, issues)
 
   const summary = buildSummary(issues)
   return {

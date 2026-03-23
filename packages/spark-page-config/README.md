@@ -39,11 +39,9 @@ public/pages-config/
   "id": "root",
   "children": [
     {
-      "type": "spark-ej2-grid",
+      "type": "r-table",
       "id": "userGrid",
-      "props": {
-        "dataSource": "@{dataSet.Users}"
-      }
+      "dataKey": "Users@rows"
     }
   ]
 }

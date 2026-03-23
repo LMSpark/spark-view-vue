@@ -11,7 +11,7 @@
     <div v-if="showToolbar" :class="['renderer-collapse-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-collapse-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-collapse-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
@@ -36,7 +36,7 @@
               <template v-if="getItemChildren(item).length">
                 <div
                   v-for="(child, childIndex) in getItemChildren(item)"
-                  :key="child.id ?? `r-collapse-item-child-${childIndex}`"
+                  :key="nodeId(child) ?? `r-collapse-item-child-${childIndex}`"
                   class="renderer-collapse-grid-item"
                   :style="getItemChildGridStyle(child)"
                 >
@@ -60,20 +60,26 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import type { RendererCollapseApi } from '../_pkg'
 
 type CollapseValue = string | number | Array<string | number>
 
 interface Props {
-  config?: SparkNode
-  sparkChildren?: SparkNode[]
+  /** 子节点（折叠项配置） */
+  children?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 当前展开的面板 */
   modelValue?: CollapseValue
+  /** 展开/折叠切换回调 */
   onChange?: (value: CollapseValue) => void
 }
 
@@ -87,11 +93,10 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-
-useSparkComponent(props.config ?? { type: 'r-collapse' })
+const { registerApi } = useSparkComponent({ type: 'r-collapse' })
 
 const itemConfigs = computed(() =>
-  (props.config?.children ?? props.sparkChildren ?? []).filter(child => child.type === 'r-collapse-item')
+  (props.children ?? []).filter(child => child.type === 'r-collapse-item')
 )
 
 const currentModelValue = ref<CollapseValue | undefined>(props.modelValue)
@@ -106,7 +111,6 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => props.config),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),
@@ -114,17 +118,56 @@ const {
   slots,
 })
 
+// ── r-collapse 包装 API ──────────────────────────────────────────────────
+
+
+const collapseApi: RendererCollapseApi = {
+  getExpandedItems() {
+    return currentModelValue.value
+  },
+  setExpandedItems(value) {
+    currentModelValue.value = value
+    emit('update:modelValue', value)
+  },
+  expandAll() {
+    const allNames = itemConfigs.value.map((item, index) => getItemName(item, index))
+    currentModelValue.value = allNames
+    emit('update:modelValue', allNames)
+  },
+  collapseAll() {
+    currentModelValue.value = []
+    emit('update:modelValue', [])
+  },
+  toggleItem(name) {
+    const current = Array.isArray(currentModelValue.value) ? currentModelValue.value : []
+    const next = current.includes(name)
+      ? current.filter(n => n !== name)
+      : [...current, name]
+    currentModelValue.value = next
+    emit('update:modelValue', next)
+  },
+  isItemExpanded(name) {
+    const current = currentModelValue.value
+    if (Array.isArray(current)) return current.includes(name)
+    return current === name
+  },
+}
+
+registerApi(collapseApi)
+
+defineExpose(collapseApi)
+
 function getItemChildren(item: SparkNode): SparkNode[] {
   return item.children ?? []
 }
 
 function getItemName(item: SparkNode, index: number): string | number {
-  const value = item.props?.['name'] ?? item.id
+  const value = item.props?.['name'] ?? nodeId(item)
   return typeof value === 'string' || typeof value === 'number' ? value : `collapse-${index}`
 }
 
 function getItemKey(item: SparkNode, index: number): string | number {
-  return item.id ?? getItemName(item, index)
+  return nodeId(item) ?? getItemName(item, index)
 }
 
 function getItemTitle(item: SparkNode, index: number): string {

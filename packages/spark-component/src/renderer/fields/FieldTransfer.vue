@@ -17,25 +17,35 @@
 
 <script setup lang="ts">
 import { useOptionField } from './useFieldOptions'
-import type { SparkNode } from '../_pkg'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 type TransferValue = Array<string | number>
 
 interface Props {
-  config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
-  sparkChildren?: SparkNode[]
+  /** 双向绑定值（已选值数组） */
   modelValue?: TransferValue
+  /** 数据源（左侧候选列表） */
   options?: unknown[]
+  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
+  optionKey?: string
+  /** 选项标签字段 */
   optionLabelField?: string
+  /** 选项值字段 */
   optionValueField?: string
+  /** 左右面板标题 */
   titles?: [string, string]
+  /** 可搜索 */
   filterable?: boolean
+  /** 搜索框占位符 */
   filterPlaceholder?: string
+  /** 右侧排序方式 */
   targetOrder?: 'original' | 'push' | 'unshift'
 }
 
@@ -57,7 +67,7 @@ const optionResult = useOptionField<TransferValue>({
 })
 
 const { transferData, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext(props, optionResult)
+const fieldCtx = useFieldContext({ width: props.width }, optionResult)
 
 function handleChange(value: TransferValue): void {
   emit('update:modelValue', value)

@@ -18,7 +18,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useOptionField } from './useFieldOptions'
-import type { SparkNode } from '../_pkg'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
@@ -27,21 +26,35 @@ type CascaderPath = FieldPrimitive[]
 type CascaderValue = CascaderPath | CascaderPath[]
 
 interface Props {
-  config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
-  sparkChildren?: SparkNode[]
+  /** 双向绑定值 */
   modelValue?: CascaderValue
+  /** 树形选项（嵌套结构） */
   options?: unknown[]
+  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
+  optionKey?: string
+  /** 选项标签字段 */
   optionLabelField?: string
+  /** 选项值字段 */
   optionValueField?: string
+  /** 子节点字段 */
   optionChildrenField?: string
+  /** 占位提示 */
   placeholder?: string
+  /** 可清除 */
   clearable?: boolean
+  /** 可搜索 */
   filterable?: boolean
+  /** 多选模式 */
   multiple?: boolean
+  /** 父子不关联勾选 */
   checkStrictly?: boolean
+  /** 值是否为完整路径数组 */
   emitPath?: boolean
 }
 
@@ -66,7 +79,7 @@ const optionResult = useOptionField<CascaderValue>({
 })
 
 const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext(props, optionResult)
+const fieldCtx = useFieldContext({ width: props.width }, optionResult)
 
 const cascaderProps = computed(() => ({
   multiple: props.multiple,

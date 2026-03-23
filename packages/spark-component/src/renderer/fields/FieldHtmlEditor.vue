@@ -49,19 +49,21 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import type { SparkNode } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
-  sparkChildren?: SparkNode[]
+  /** 双向绑定值（HTML 字符串） */
   modelValue?: string
+  /** 编辑器高度行数 */
   rows?: number
 }
 
@@ -91,7 +93,7 @@ const {
   getRowRawValue,
 } = permission
 
-const fieldCtx = useFieldContext(props, permission)
+const fieldCtx = useFieldContext({ width: props.width }, permission)
 
 const editorRef = ref<HTMLElement | null>(null)
 const sourceMode = ref(false)

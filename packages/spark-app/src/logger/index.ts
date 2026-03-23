@@ -391,6 +391,7 @@ class AppLogger {
    * Success 日志（扩展）
    */
   success(message: string, meta?: Record<string, unknown>): void {
+    if (!this.shouldLog('info')) return
     const formattedMessage = this.formatMessage(message, EMOJI_ICONS['success'])
     const args = meta ? [formattedMessage, meta] : [formattedMessage]
     console.info(...args)

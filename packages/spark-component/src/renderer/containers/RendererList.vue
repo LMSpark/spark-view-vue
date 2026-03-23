@@ -13,7 +13,7 @@
     <div v-if="showToolbar" :class="['renderer-list-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-list-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-list-toolbar-${index}`"
         :config="action"
       />
       <slot
@@ -35,7 +35,7 @@
               <div v-if="showItemActionsLeftValue" :class="['renderer-list-item-actions', itemActionsClassValue]">
                 <SparkComponentRenderer
                   v-for="(action, actionIndex) in getScopedItemActions({ row, index })"
-                  :key="action.id ?? `r-list-item-action-left-${actionIndex}`"
+                  :key="nodeId(action) ?? `r-list-item-action-left-${actionIndex}`"
                   :config="action"
                 />
                 <slot
@@ -47,7 +47,6 @@
               <RendererListItemScope
                 :row="row"
                 :children="mergedChildren"
-                :data-source="resolvedView"
                 :item-class="itemClass"
                 :item-style="itemStyle"
                 :use-card="useCard"
@@ -65,7 +64,7 @@
               <div v-if="showItemActionsRightValue" :class="['renderer-list-item-actions', itemActionsClassValue]">
                 <SparkComponentRenderer
                   v-for="(action, actionIndex) in getScopedItemActions({ row, index })"
-                  :key="action.id ?? `r-list-item-action-right-${actionIndex}`"
+                  :key="nodeId(action) ?? `r-list-item-action-right-${actionIndex}`"
                   :config="action"
                 />
                 <slot
@@ -84,12 +83,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
+import type { RendererListApi } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -101,29 +101,49 @@ import type { ToolbarPosition } from './useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
 
 interface Props {
-  config?: SparkNode
+  /** 数据绑定键 */
   dataKey?: string
-  sparkChildren?: SparkNode[]
-  dataView?: DataView | undefined
+  /** 子节点（列表项内容配置） */
+  children?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 列表项操作按钮配置 */
   itemActions?: SparkNode[]
+  /** 列表项操作位置 */
   itemActionsPosition?: LateralActionPosition
+  /** 操作区 CSS 类名 */
   itemActionsClass?: string
+  /** 列数 */
   columns?: number
+  /** 列表项间距 */
   gap?: number | string
+  /** 最小项宽度 */
   minItemWidth?: string
+  /** 行唯一键字段 */
   rowKey?: string
+  /** 空数据提示文案 */
   emptyText?: string
+  /** 列表项 CSS 类名 */
   itemClass?: string
+  /** 列表项行内样式 */
   itemStyle?: CSSProperties
+  /** 使用卡片包裹 */
   useCard?: boolean
+  /** 卡片阴影模式 */
   cardShadow?: 'always' | 'hover' | 'never'
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
+  /** 项跨列数 */
   itemColSpan?: number
+  /** 项跨行数 */
   itemRowSpan?: number
 }
 
@@ -146,24 +166,24 @@ const props = withDefaults(defineProps<Props>(), {
   gridAutoRows: 'minmax(32px, auto)',
   itemRowSpan: 1,
 })
+const attrs = useAttrs()
 const slots = useSlots()
 
 const { effectiveDataKey, configChildren: mergedChildren } = useContainerInput({
-  config: computed(() => props.config),
   dataKey: computed(() => props.dataKey),
-  sparkChildren: computed(() => props.sparkChildren),
+  children: computed(() => props.children),
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
-const { consume, provide: sparkProvide, logger } = useSparkComponent(
-  props.config ?? { type: 'r-list' }
+const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
+  { type: 'r-list' }
 )
 const pageDataSet = consume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  fallbackSource: computed(() => props.dataView ?? null),
+  fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
   mapView: view => view,
   provideDataSource: view => sparkProvide(DATA_SOURCE, view),
   logger,
@@ -182,7 +202,6 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => props.config),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),
@@ -197,13 +216,9 @@ const {
   showActionsRight: showItemActionsRight,
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  config: computed(() => props.config),
   actionConfigs: computed(() => props.itemActions),
   actionPosition: computed(() => props.itemActionsPosition),
   actionClass: computed(() => props.itemActionsClass),
-  actionPropKey: 'itemActions',
-  actionPositionPropKey: 'itemActionsPosition',
-  actionClassPropKey: 'itemActionsClass',
   modelPermission,
   resolveScope: ({ row, index }) => ({
     row,
@@ -222,6 +237,29 @@ const {
   showActionsLeft: showItemActionsLeft,
   showActionsRight: showItemActionsRight,
 })
+
+// ── r-list 包装 API ──────────────────────────────────────────────────────
+
+const listApi: RendererListApi = {
+  getDataSource() {
+    return resolvedView.value ?? null
+  },
+  getRows() {
+    return listRows.value
+  },
+  getItemCount() {
+    return listRows.value.length
+  },
+  async refresh() {
+    const view = resolvedView.value
+    if (!view?.dataTable?.api?.list) return
+    await view.refresh()
+  },
+}
+
+registerApi(listApi)
+
+defineExpose(listApi)
 
 const normalizedGridGap = computed(() => {
   const value = props.gridGap ?? props.gap

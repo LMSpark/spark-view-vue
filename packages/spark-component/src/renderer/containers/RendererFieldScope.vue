@@ -9,7 +9,7 @@
     <div v-if="!inline" class="renderer-field-scope-grid" :style="gridStyle">
       <div
         v-for="(child, index) in gridChildren"
-        :key="child.id ?? `renderer-field-scope-${index}`"
+        :key="nodeId(child) ?? `renderer-field-scope-${index}`"
         class="renderer-field-scope-item"
         :style="getChildGridStyle(child)"
       >
@@ -19,7 +19,7 @@
     <template v-else>
       <SparkComponentRenderer
         v-for="(child, index) in gridChildren"
-        :key="child.id ?? `renderer-field-scope-inline-${index}`"
+        :key="nodeId(child) ?? `renderer-field-scope-inline-${index}`"
         :config="child"
       />
     </template>
@@ -27,33 +27,43 @@
 </template>
 
 <script setup lang="ts">
-import { toRef, watch } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
-import type { DataView, IDataSource } from '@spark-view/spark-data'
-import { DATA_SOURCE, CONTEXT_DATA, FIELD_CONTEXT } from '../_pkg'
+import { computed, toRef } from 'vue'
+import { SparkComponentRenderer } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { FieldContext } from '../_pkg'
+import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'
+import { useDataScope } from './useDataScope'
 
 interface Props {
-  model: Record<string, unknown>
+  /** 表单数据模型 */
+  model: IDataRow
+  /** 字段组件配置列表 */
   configs: SparkNode[]
+  /** 字段语境（table/form/detail） */
   context?: FieldContext
-  dataSource?: IDataSource | DataView | null
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
+  /** 自适应最小宽度 */
   autoFitMinWidth?: string
+  /** 默认跨列数 */
   defaultColSpan?: number
+  /** 标签位置 */
   labelPosition?: 'top' | 'left' | 'right'
+  /** 标签宽度 */
   labelWidth?: string
+  /** 内联模式 */
   inline?: boolean
+  /** 紧凑模式 */
   compact?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   context: 'form',
-  dataSource: null,
   gridColumns: 24,
   gridGap: 12,
   gridAutoRows: 'minmax(32px, auto)',
@@ -65,8 +75,13 @@ const props = withDefaults(defineProps<Props>(), {
   compact: false,
 })
 
-const { provide: sparkProvide } = useSparkComponent({ type: 'r-field-scope' })
 const configsRef = toRef(props, 'configs')
+
+useDataScope({
+  type: 'r-field-scope',
+  fieldContext: computed(() => props.context),
+  data: computed(() => props.model),
+})
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: configsRef,
@@ -76,15 +91,6 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoFitMinWidth: toRef(props, 'autoFitMinWidth'),
   defaultColSpan: toRef(props, 'defaultColSpan'),
 })
-
-sparkProvide(FIELD_CONTEXT, props.context)
-sparkProvide(CONTEXT_DATA, props.model)
-
-watch(() => props.dataSource, (dataSource) => {
-  if (dataSource) {
-    sparkProvide(DATA_SOURCE, dataSource as IDataSource)
-  }
-}, { immediate: true })
 </script>
 
 <style scoped>

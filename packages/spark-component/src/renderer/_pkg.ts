@@ -6,7 +6,7 @@
  */
 
 // ── Composable ──
-export { useSparkComponent } from '../useSparkComponent.js'
+export { useSparkComponent, useSparkConsume } from '../useSparkComponent.js'
 export type { UseSparkComponentReturn } from '../useSparkComponent.js'
 
 // ── 递归渲染器 ──
@@ -18,6 +18,10 @@ export type {
   ComponentContext,
   LoggerApi,
 } from '../types.js'
+export { nodeId } from '../types.js'
+
+// ── DI 键 ──
+export { SPARK_NODE_CONFIG_KEY } from '../types.js'
 
 // ── 能力键 ──
 export {
@@ -25,13 +29,22 @@ export {
   DATA_SOURCE,
   FIELD_CONTEXT,
   CONTEXT_DATA,
-  TABLE_API,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
 } from '../capability-keys.js'
 export type {
   FieldContext,
   RendererTableApi,
+  RendererFormApi,
+  RendererDetailApi,
+  RendererTreeApi,
+  RendererListApi,
+  RendererDialogApi,
+  RendererDrawerApi,
+  RendererTabsApi,
+  RendererCollapseApi,
+  RendererStepsApi,
+  RendererSectionApi,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,

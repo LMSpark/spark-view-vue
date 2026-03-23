@@ -191,6 +191,45 @@ export class DataView implements IDataSource {
   get label(): string | null { return this.selectionDelegate.label }
 
   // ─────────────────────────────────────────────
+  // 选中状态操作（委托给 SelectionDelegate）
+  // ─────────────────────────────────────────────
+
+  /** 设置当前行（自动提取主键存储，null 清除） */
+  setCurrentRow(row: IDataRow | null, originatorId?: string): void {
+    this.selectionDelegate.setCurrentRow(row, originatorId)
+  }
+
+  /** 通过主键设置当前行（行不存在时返回 false） */
+  setCurrentRowById(id: string | number | null, originatorId?: string): boolean {
+    return this.selectionDelegate.setCurrentRowById(id, originatorId)
+  }
+
+  /** 设置多选行（覆盖式） */
+  setSelectedRows(rows: IDataRow[], originatorId?: string): void {
+    this.selectionDelegate.setSelectedRows(rows, originatorId)
+  }
+
+  /** 追加多选行（返回实际新增数量） */
+  addSelectedRows(rows: IDataRow[]): number {
+    return this.selectionDelegate.addSelectedRows(rows)
+  }
+
+  /** 移除多选行（返回实际移除数量） */
+  removeSelectedRows(rows: IDataRow[]): number {
+    return this.selectionDelegate.removeSelectedRows(rows)
+  }
+
+  /** 通过主键批量移除多选行（返回实际移除数量） */
+  removeSelectedRowsById(ids: Array<string | number>): number {
+    return this.selectionDelegate.removeSelectedRowsById(ids)
+  }
+
+  /** 清空多选行 */
+  clearSelectedRows(): void {
+    this.selectionDelegate.clearSelectedRows()
+  }
+
+  // ─────────────────────────────────────────────
   // 分页 & 加载状态
   // ─────────────────────────────────────────────
 
@@ -332,9 +371,9 @@ export class DataView implements IDataSource {
     const meta = this._primaryKeyDelegate.getPkColumnMeta()
     const idx = table.columns.findIndex(c => c.name === '_pk')
     if (idx >= 0) {
-      table.columns[idx] = meta
+      table.columns = table.columns.map((c, i) => i === idx ? meta : c)
     } else {
-      table.columns.push(meta)
+      table.columns = [...table.columns, meta]
     }
     this._columnMap?.set('_pk', meta)
   }
@@ -842,9 +881,9 @@ export class DataView implements IDataSource {
    * 不发事件、不通知订阅者——该工作由调用方负责。
    */
   resetState(): void {
-    this.rows.splice(0, this.rows.length)
+    this.rows = []
     this._currentRowId = null
-    this._selectedRowIds.splice(0, this._selectedRowIds.length)
+    this._selectedRowIds = []
     this.rowIndexMap = undefined   // 行集合已清空，索引缓存失效
     this.requestState = RequestState.Idle
     this.loadingError = null
@@ -1007,11 +1046,11 @@ export class DataView implements IDataSource {
     // 9. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
     this.treeManager = undefined
     
-    // 8. 保留 DataTable 引用（现代 JS GC 能正确处理循环引用）。
+    // 10. 保留 DataTable 引用（现代 JS GC 能正确处理循环引用）。
     // Phase 4 M6: 不再 undefined dataTable，避免销毁后访问 getter（dataSet/crudService 等）
     // 抛出不明确的 "Cannot read property of undefined" 而非清晰的 "已销毁" 错误。
     
-    // 9. 标记为已销毁
+    // 11. 标记为已销毁
     this._isDestroyed = true
   }
 

@@ -42,7 +42,7 @@ function mountWithFieldContext(
       if (pageService) {
         provide(PAGE_SERVICE, pageService)
       }
-      return () => h(component as never, { config: { type: 'test-field', field: 'content' }, ...componentProps })
+      return () => h(component as never, { field: 'content', ...componentProps })
     },
   })
 

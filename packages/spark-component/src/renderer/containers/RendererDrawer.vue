@@ -22,7 +22,7 @@
         <div v-if="hasHeaderActions" :class="['renderer-drawer-header-actions', headerActionsClass]">
           <SparkComponentRenderer
             v-for="(action, index) in headerActionConfigs"
-            :key="action.id ?? `r-drawer-header-${index}`"
+            :key="nodeId(action) ?? `r-drawer-header-${index}`"
             :config="action"
           />
           <slot name="header-actions" v-bind="getHeaderSlotScope()" />
@@ -34,7 +34,7 @@
       <template v-if="gridChildren.length">
         <div
           v-for="(child, index) in gridChildren"
-          :key="child.id ?? `r-drawer-child-${index}`"
+          :key="nodeId(child) ?? `r-drawer-child-${index}`"
           class="renderer-drawer-grid-item"
           :style="getChildGridStyle(child)"
         >
@@ -48,7 +48,7 @@
       <div :class="['renderer-drawer-footer', footerClass]">
         <SparkComponentRenderer
           v-for="(action, index) in footerActionConfigs"
-          :key="action.id ?? `r-drawer-footer-${index}`"
+          :key="nodeId(action) ?? `r-drawer-footer-${index}`"
           :config="action"
         />
         <slot name="footer" v-bind="getFooterSlotScope()" />
@@ -60,26 +60,42 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
+import type { RendererDrawerApi } from '../_pkg'
 
 interface Props {
-  config?: SparkNode
-  sparkChildren?: SparkNode[]
+  /** 子节点 */
+  children?: SparkNode[]
+  /** 抽屉标题 */
   title?: string
+  /** 控制显隐（v-model） */
   modelValue?: boolean
+  /** 头部操作按钮配置 */
   headerActions?: SparkNode[]
+  /** 底部操作按钮配置 */
   footerActions?: SparkNode[]
+  /** 头部 CSS 类名 */
   headerClass?: string
+  /** 头部操作区 CSS 类名 */
   headerActionsClass?: string
+  /** 内容区 CSS 类名 */
   bodyClass?: string
+  /** 底部 CSS 类名 */
   footerClass?: string
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
+  /** 打开回调 */
   onOpen?: () => void
+  /** 关闭回调 */
   onClose?: () => void
+  /** 打开动画结束回调 */
   onOpened?: () => void
+  /** 关闭动画结束回调 */
   onClosed?: () => void
 }
 
@@ -102,28 +118,19 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
+const { registerApi } = useSparkComponent({ type: 'r-drawer' })
 
-useSparkComponent(props.config ?? { type: 'r-drawer' })
-
-const resolvedTitle = computed(() =>
-  props.title || (props.config?.props?.['title'] as string | undefined) || ''
-)
-const headerActionConfigs = computed(() =>
-  props.headerActions ?? (props.config?.props?.['headerActions'] as SparkNode[] | undefined) ?? []
-)
-const footerActionConfigs = computed(() =>
-  props.footerActions ?? (props.config?.props?.['footerActions'] as SparkNode[] | undefined) ?? []
-)
+const resolvedTitle = computed(() => props.title || '')
+const headerActionConfigs = computed(() => props.headerActions ?? [])
+const footerActionConfigs = computed(() => props.footerActions ?? [])
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: computed(() => props.config?.children ?? props.sparkChildren ?? []),
+  children: computed(() => props.children ?? []),
   columns: computed(() => props.gridColumns),
   gap: computed(() => props.gridGap),
   autoRows: computed(() => props.gridAutoRows),
 })
 
-const visibleValue = computed(() =>
-  props.modelValue ?? ((props.config?.props?.['modelValue'] as boolean | undefined) ?? false)
-)
+const visibleValue = computed(() => props.modelValue ?? false)
 const hasHeaderActions = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined)
 const hasHeader = computed(() => resolvedTitle.value.length > 0 || hasHeaderActions.value)
 const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots['footer'] !== undefined)
@@ -131,6 +138,28 @@ const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots[
 function closeDrawer(): void {
   emit('update:modelValue', false)
 }
+
+// ── r-drawer 包装 API ────────────────────────────────────────────────────
+
+
+const drawerApi: RendererDrawerApi = {
+  open() {
+    emit('update:modelValue', true)
+  },
+  close() {
+    emit('update:modelValue', false)
+  },
+  isVisible() {
+    return visibleValue.value
+  },
+  toggle() {
+    emit('update:modelValue', !visibleValue.value)
+  },
+}
+
+registerApi(drawerApi)
+
+defineExpose(drawerApi)
 
 function handleModelUpdate(value: boolean): void {
   emit('update:modelValue', value)

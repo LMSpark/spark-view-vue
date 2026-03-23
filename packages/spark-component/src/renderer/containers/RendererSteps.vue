@@ -11,7 +11,7 @@
     <div v-if="showToolbar" :class="['renderer-steps-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-steps-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-steps-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
@@ -33,7 +33,7 @@
         <template v-if="getStepChildren(activeStep).length">
           <div
             v-for="(child, index) in getStepChildren(activeStep)"
-            :key="child.id ?? `r-step-child-${index}`"
+            :key="nodeId(child) ?? `r-step-child-${index}`"
             class="renderer-steps-grid-item"
             :style="getStepChildGridStyle(child)"
           >
@@ -50,18 +50,24 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import type { RendererStepsApi } from '../_pkg'
 
 interface Props {
-  config?: SparkNode
-  sparkChildren?: SparkNode[]
+  /** 子节点（步骤配置） */
+  children?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 当前步骤 */
   modelValue?: string | number
+  /** 步骤切换回调 */
   onStepChange?: (value: string | number, step: SparkNode, index: number) => void
 }
 
@@ -75,11 +81,10 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-
-useSparkComponent(props.config ?? { type: 'r-steps' })
+const { registerApi } = useSparkComponent({ type: 'r-steps' })
 
 const stepConfigs = computed(() =>
-  (props.config?.children ?? props.sparkChildren ?? []).filter(child => child.type === 'r-step')
+  (props.children ?? []).filter(child => child.type === 'r-step')
 )
 
 const activeStepName = ref<string | number | undefined>(props.modelValue)
@@ -101,7 +106,6 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => props.config),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),
@@ -121,12 +125,12 @@ function getStepChildren(step: SparkNode): SparkNode[] {
 }
 
 function getStepName(step: SparkNode, index: number): string | number {
-  const value = step.props?.['name'] ?? step.props?.['value'] ?? step.id
+  const value = step.props?.['name'] ?? step.props?.['value'] ?? nodeId(step)
   return typeof value === 'string' || typeof value === 'number' ? value : `step-${index}`
 }
 
 function getStepKey(step: SparkNode, index: number): string | number {
-  return step.id ?? getStepName(step, index)
+  return nodeId(step) ?? getStepName(step, index)
 }
 
 function getStepTitle(step: SparkNode, index: number): string {
@@ -178,6 +182,45 @@ function activateStep(index: number): void {
   emit('update:modelValue', nextValue)
   props.onStepChange?.(nextValue, step, index)
 }
+
+// ── r-steps 包装 API ─────────────────────────────────────────────────────
+
+
+const stepsApi: RendererStepsApi = {
+  getActiveStep() {
+    return activeStepName.value
+  },
+  getActiveStepIndex() {
+    return activeStepIndex.value
+  },
+  setActiveStep(index) {
+    activateStep(index)
+  },
+  nextStep() {
+    const next = activeStepIndex.value + 1
+    if (next < stepConfigs.value.length) activateStep(next)
+  },
+  prevStep() {
+    const prev = activeStepIndex.value - 1
+    if (prev >= 0) activateStep(prev)
+  },
+  getStepCount() {
+    return stepConfigs.value.length
+  },
+  getStepNames() {
+    return stepConfigs.value.map((step, index) => getStepName(step, index))
+  },
+  isFirstStep() {
+    return activeStepIndex.value === 0
+  },
+  isLastStep() {
+    return activeStepIndex.value >= stepConfigs.value.length - 1
+  },
+}
+
+registerApi(stepsApi)
+
+defineExpose(stepsApi)
 
 function getToolbarSlotScope() {
   return createToolbarSlotScope({

@@ -117,27 +117,8 @@ for (const file of srcFiles) {
 }
 
 // ============================================================================
-// 规则 3: 测试文件可以使用 features
+// 规则 3: (EJ2 已移除，此检查跳过)
 // ============================================================================
-
-console.log('📋 规则 3: 验证测试文件正确使用 features\n')
-
-const testFiles = Array.from(scanFiles(join(rootDir, 'tests')))
-
-let hasFeatureImport = false
-for (const file of testFiles) {
-  const content = readFileSync(file, 'utf-8')
-  if (content.includes('features/spark-ej2')) {
-    hasFeatureImport = true
-    break
-  }
-}
-
-if (hasFeatureImport) {
-  console.log('✅ 测试文件正确使用 features/spark-ej2\n')
-} else {
-  console.warn('⚠️  测试文件未使用 features（可能已废弃）\n')
-}
 
 // ============================================================================
 // 规则 4: 验证包之间的合理依赖

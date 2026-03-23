@@ -19,7 +19,7 @@
  *     sparkComponentsPlugin({
  *       patterns: ['./features/**\/*.vue', './src/components/**\/*.vue'],
  *       syncComponents: ['PageRenderer', 'SparkComponentRenderer'],
- *       asyncComponents: ['*Demo', '*EJ2*'],
+   *       asyncComponents: ['*Demo'],
  *       sizeThreshold: 50 // KB
  *     })
  *   ]
@@ -31,12 +31,10 @@
  * // virtual:spark-components
  * import { Spark } from '@spark-view/spark-component'
  * import PageRenderer from './components/PageRenderer.vue'
- * const SparkEJ2Grid = () => import('./features/spark-ej2/SparkEJ2Grid.vue')
  * 
  * export function registerComponents() {
  *   const registry = Spark.getRegistry()
  *   registry.register('page-renderer', PageRenderer)
- *   registry.register('spark-ej2-grid', SparkEJ2Grid)
  * }
  * ```
  * 
@@ -49,6 +47,11 @@ import type { Plugin, ResolvedConfig } from 'vite'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs'
 import { resolve, relative, dirname, basename } from 'node:path'
 import { globSync } from 'glob'
+import {
+  toKebabCase,
+  inferSkillType,
+  buildImplicitSkillDescription,
+} from '../packages/vite-plugin-spark-catalog/src/index'
 
 /* -----------------------------------------------------------------------------
  * 简单日志工具
@@ -147,7 +150,7 @@ export interface SparkComponentsPluginOptions {
   
   /**
    * 异步加载的组件列表（支持通配符）
-   * @default ['*Demo', '*EJ2*', 'Capability*']
+   * @default ['*Demo', 'Capability*']
    */
   asyncComponents?: string[]
   
@@ -198,7 +201,6 @@ const DEFAULT_OPTIONS: Required<SparkComponentsPluginOptions> = {
   ],
   asyncComponents: [
     '*Demo',
-    '*EJ2*',
     'Capability*',
     'Tree*'
   ],
@@ -219,15 +221,7 @@ const DEFAULT_OPTIONS: Required<SparkComponentsPluginOptions> = {
  * 工具函数
  * -------------------------------------------------------------------------- */
 
-/**
- * 转换为 kebab-case
- */
-function toKebabCase(str: string): string {
-  return str
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase()
-}
+
 
 /**
  * 通配符匹配
@@ -266,51 +260,7 @@ function generateImportStatement(
   }
 }
 
-function normalizePath(filePath: string): string {
-  return filePath.replace(/\\/g, '/')
-}
 
-function inferSkillType(absolutePath: string, fallbackType: string): string | null {
-  const normalizedPath = normalizePath(absolutePath)
-  const fileName = basename(absolutePath, '.vue')
-
-  if (normalizedPath.includes('/renderer/fields/')) {
-    return `r-${toKebabCase(fileName.replace(/^Field/, ''))}`
-  }
-
-  if (normalizedPath.includes('/renderer/containers/')) {
-    if (/Scope$/.test(fileName)) return null
-    return `r-${toKebabCase(fileName.replace(/^Renderer/, ''))}`
-  }
-
-  return fallbackType
-}
-
-function buildImplicitSkillDescription(absolutePath: string, skillType: string): string {
-  const normalizedPath = normalizePath(absolutePath)
-
-  if (normalizedPath.includes('/renderer/fields/')) {
-    return `SPARK 字段组件，可在 rule.json 中通过 type="${skillType}" 使用。`
-  }
-
-  if (normalizedPath.includes('/renderer/containers/')) {
-    return `SPARK 容器组件，可在 rule.json 中通过 type="${skillType}" 组织子组件。`
-  }
-
-  if (normalizedPath.includes('/features/')) {
-    return `SPARK 业务组件，可在 rule.json 中通过 type="${skillType}" 使用。`
-  }
-
-  if (normalizedPath.includes('/packages/') && normalizedPath.includes('/src/components/')) {
-    return `SPARK 包组件，可在 rule.json 中通过 type="${skillType}" 使用。`
-  }
-
-  if (normalizedPath.includes('/src/views/')) {
-    return `SPARK 视图组件，可在注册表中通过 type="${skillType}" 引用。`
-  }
-
-  return `SPARK 组件，可在注册表中通过 type="${skillType}" 使用。`
-}
 
 /**
  * 从 .vue 文件顶部的 JSDoc 注释中提取 Skill 元数据
@@ -616,10 +566,28 @@ export default registerComponents
   /**
    * 生成组件元数据 JSON（用于构建时输出到 dist/ 并上传到服务端）
    *
-   * 包含：组件注册表 + Skill 目录 + 预构建 prompt
+   * 数据来源：
+   * - 组件 API：直接嵌入 sparkCatalogPlugin 已生成的 component-catalog.json（SSoT）
+   * - Skill 目录 + prompt：从 .vue JSDoc 提取的 SkillMeta
+   * - 注册信息：scan() 的组件列表（path/size/strategy）
+   *
+   * 不再重复做 VCM 提取——component-catalog.json 已包含完整的 props/emits/capabilities。
    */
   generateMetadataJson(): string {
     this.scan()
+
+    const root = this.viteConfig!.root
+
+    // 读取 sparkCatalogPlugin 已生成的 component-catalog.json（SSoT）
+    const catalogPath = resolve(root, 'packages/spark-ai/src/component-catalog.json')
+    let catalog: Record<string, unknown> | null = null
+    try {
+      const raw = readFileSync(catalogPath, 'utf-8')
+      catalog = JSON.parse(raw) as Record<string, unknown>
+      logger.info(`📦 已加载 component-catalog.json (${(catalog['componentCount'] as number | undefined) ?? '?'} 条目)`)
+    } catch (e) {
+      logger.warn('⚠️ 无法读取 component-catalog.json，元数据将缺少结构化目录:', e)
+    }
 
     const skills = this.components
       .filter(c => c.skillMeta !== null)
@@ -639,7 +607,7 @@ export default registerComponents
     const fullPrompt = this.buildPromptMarkdown(skills, 'full')
 
     const metadata = {
-      version: '1.0.0',
+      version: '2.0.0',
       buildTime: new Date().toISOString(),
       componentCount: this.components.length,
       skillCount: skills.length,
@@ -650,6 +618,8 @@ export default registerComponents
         compact: compactPrompt,
         full: fullPrompt,
       },
+      // 嵌入完整结构化目录（含 props/emits/capabilities/rootFields/constraints）
+      ...(catalog ? { catalog } : {}),
     }
 
     return JSON.stringify(metadata, null, 2)
@@ -851,11 +821,8 @@ export function getComponentMetadata(): Array<{
 export default registerComponents
 `
   }
-}
 
-/* -----------------------------------------------------------------------------
- * Vite Plugin
- * -------------------------------------------------------------------------- */
+}
 
 /**
  * SPARK 组件自动注册 Vite 插件
@@ -947,7 +914,7 @@ export function sparkComponentsPlugin(
       if (file.endsWith('.vue')) {
         logger.debug('🔄 检测到组件变更或删除，重新扫描...')
         analyzer.scan()
-        
+
         // 同时失效两个虚拟模块
         const modules = [
           server.moduleGraph.getModuleById(resolvedVirtualModuleId),

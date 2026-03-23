@@ -131,13 +131,10 @@ describe('RendererList and RendererSection container integration', () => {
       props: {
         title: '布局区块',
         gridGap: 16,
-        config: {
-          type: 'r-section',
-          children: [
-            { type: 'child-a', props: { colSpan: 12, rowSpan: 2 } },
-            { type: 'child-b', props: { colSpan: 12 } },
-          ],
-        },
+        children: [
+          { type: 'child-a', props: { colSpan: 12, rowSpan: 2 } },
+          { type: 'child-b', props: { colSpan: 12 } },
+        ],
       },
       global: {
         stubs: {

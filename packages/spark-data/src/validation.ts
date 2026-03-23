@@ -147,9 +147,13 @@ export class DataValidator {
 
       // 5. 正则校验
       if (col.pattern && typeof value === 'string') {
-        const regex = new RegExp(col.pattern)
-        if (!regex.test(value)) {
-          errors.push({ field: col.name, message: col.patternMessage ?? `${label} 格式不正确`, code: 'PATTERN', value })
+        try {
+          const regex = new RegExp(col.pattern)
+          if (!regex.test(value)) {
+            errors.push({ field: col.name, message: col.patternMessage ?? `${label} 格式不正确`, code: 'PATTERN', value })
+          }
+        } catch {
+          errors.push({ field: col.name, message: `${label} 正则表达式无效: ${col.pattern}`, code: 'PATTERN', value })
         }
       }
     }

@@ -58,7 +58,7 @@ Skill = 名称（可被发现）
 ```
 组件                     Skill 需要什么       差距
 ─────────────────────────────────────────────────────────────
-type="spark-ej2-grid"  ← 名称               ✅ 有名称
+type="r-table"           ← 名称               ✅ 有名称
 props: { config }       ← 输入              ⚠️ 类型在 TS 里，运行时不可查
 provide(DATA_SOURCE)    ← 输出能力           ❌ 隐式，AI 不可见
 emit('row-click', row)  ← 事件输出           ❌ 无结构化描述
@@ -169,12 +169,11 @@ SPARK 的 `ComponentRegistry`（`packages/spark-component/src/registry/Component
 import { Spark } from '@spark-view/spark-component'
 
 // 注册 Skill（发布到目录）
-Spark.register('spark-ej2-grid', SparkEJ2Grid)
 Spark.register('r-table', RendererTable)
 Spark.register('r-form',  RendererForm)
 
 // 带元数据注册（Skill 的描述信息）
-Spark.register('spark-ej2-grid', SparkEJ2Grid, {
+Spark.register('r-table', RendererTable, {
   dataKey: 'self-resolve',       // 声明 dataKey 解析行为
   description: '高性能数据表格，支持排序/过滤/分页',
   capabilities: {
@@ -200,12 +199,12 @@ reg.registerAll({
 const { isComponentRegistered, getComponent } = useSparkComponent(props.config)
 
 // AI 在执行任务前，先检测所需技能是否可用
-if (isComponentRegistered('spark-ej2-grid')) {
+if (isComponentRegistered('r-table')) {
   // 组件已注册，可以安全使用
-  const GridComponent = getComponent('spark-ej2-grid')
+  const GridComponent = getComponent('r-table')
 } else {
   // 技能不存在，走降级路径
-  logger.warn('spark-ej2-grid 未注册，使用原生 el-table 替代')
+  logger.warn('r-table 未注册，使用原生 el-table 替代')
 }
 ```
 
@@ -257,7 +256,7 @@ export interface SparkNode {
 ```
 SparkNode                   OpenAI Tool Call
 ────────────────────────────────────────────────────
-type: "spark-ej2-grid"         ←→  function: "spark_ej2_grid"
+type: "r-table"                ↔️  function: "r_table"
 props: { border: true }        ←→  arguments: { border: true }
 dataKey: "Orders@rows"         ←→  arguments: { dataKey: "Orders@rows" }
 children: [{ type: "col" }]    ←→  (嵌套 tool call，MCP 支持)
@@ -267,37 +266,32 @@ children: [{ type: "col" }]    ←→  (嵌套 tool call，MCP 支持)
 
 ```typescript
 // 定义一个表格 Skill 的调用契约
-interface SparkEJ2GridConfig extends SparkNode {
-  type: 'spark-ej2-grid'
+interface RTableConfig extends SparkNode {
+  type: 'r-table'
   // Skill 专属参数
   dataKey: string               // 必须：数据绑定键
-  allowPaging?: boolean         // 可选：是否分页
-  pageSize?: number             // 可选：每页行数
-  allowSorting?: boolean        // 可选：是否排序
-  allowFiltering?: boolean      // 可选：是否过滤
   // 子 Skill（列定义）
-  children?: SparkEJ2ColumnConfig[]
+  children?: RColumnConfig[]
 }
 
-interface SparkEJ2ColumnConfig extends SparkNode {
-  type: 'spark-ej2-column'
-  name: string                  // 绑定的数据字段
+interface RColumnConfig extends SparkNode {
+  type: 'el-table-column'
+  field: string                 // 绑定的数据字段
   props: {
-    headerText: string          // 列标题
+    label: string               // 列标题
     width?: string              // 列宽
-    textAlign?: 'Left' | 'Center' | 'Right'
   }
 }
 
 // AI 生成的 rule.json 就是对这套契约的"调用"
 const ruleJson = [
   {
-    "type": "spark-ej2-grid",
+    "type": "r-table",
     "dataKey": "Orders@rows",
-    "props": { "allowPaging": true, "pageSize": 20 },
+    "props": { "border": true, "stripe": true },
     "children": [
-      { "type": "spark-ej2-column", "name": "orderId",
-        "props": { "headerText": "订单号", "width": "160" } }
+      { "type": "el-table-column", "field": "orderId",
+        "props": { "label": "订单号", "width": "160" } }
     ]
   }
 ]

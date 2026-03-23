@@ -12,12 +12,12 @@ SparkPlugin
 PageRenderer (SparkPageRenderer + useRendererSetup)
   ↓  provide(APP_SERVICES, ...)    SPARK 能力系统
   ↓  provide(PAGE_DATASET, ...)
-Table容器 (e.g. spark-ej2-grid)
+Table容器 (e.g. r-table)
   ↓  consume(PAGE_DATASET) → DataSet
   ↓  resolveDataKeyBinding(config.dataKey, dataSet) → DataView
   ↓  provide(DATA_SOURCE, dataView)
   ↓  provide(SELECTION, ...)
-Row组件 (e.g. spark-ej2-row)
+Row组件 (e.g. r-row)
   ↓  consume(DATA_SOURCE) → DataView
   ↓  consume(SELECTION) → 选择状态
 ```
@@ -61,8 +61,8 @@ Spark.register('my-grid', () => import('./MyGrid.vue'))
 // 批量注册（推荐大型项目）
 const reg = Spark.createRegister(import.meta.glob('./components/*.vue'))
 reg.registerAll({
-  'spark-ej2-grid': './SparkEJ2Grid.vue',
-  'spark-ej2-column': './SparkEJ2Column.vue',
+  'r-table': './RendererTable.vue',
+  'r-form': './RendererForm.vue',
 })
 ```
 
@@ -169,10 +169,10 @@ parentView.events.on('stateChanged', (event) => {
 
 ## 5. 表容器（Table Container）
 
-表容器组件（如 `SparkEJ2Grid`）建立数据层与 UI 层的桥接：
+表容器组件（如 `RendererTable`）建立数据层与 UI 层的桥接：
 
 ```typescript
-// SparkEJ2Grid.vue setup（简化）
+// RendererTable.vue setup（简化）
 const { consume, provide } = useSparkComponent(props.config)
 
 // 消费页面级 DataSet
@@ -206,7 +206,7 @@ PageRenderer context
     PAGE_DATASET → DataSet
   }
     ↓
-r-table 或 spark-ej2-grid context
+r-table context
   capabilities = Map {
     DATA_SOURCE  → DataView
     SELECTION    → { getSelected, setSelected }
@@ -227,11 +227,6 @@ r-row 或 r-cell context
 | `APP_SERVICES` | `spark-utils` | `IAppServicesCapability` | PageRenderer | 任意业务组件 |
 | `LOGGER` | `spark-utils` | `LoggerApi` | 自定义父组件 | `useSparkComponent`（自动）|
 | `PAGE_SERVICE` | `spark-utils` | `IPageServiceCapability` | — | — |
-| `SELECTION` | `spark-utils` | `ISelectionCapability` | 表容器 | 行/操作栏 |
-| `CURRENT_ROW` | `spark-utils` | `ICurrentRowCapability` | 表容器 | 行组件 |
-| `ROW_DATA` | `spark-utils` | `IRowDataCapability` | 行组件 | 单元格 |
-| `GRID_EVENTS` | `spark-utils` | `IEventEmitter` | 表容器 | 操作按钮 |
-| `ROW_EVENTS` | `spark-utils` | `IEventEmitter` | 行组件 | 单元格 |
 | `PAGE_DATASET` | `spark-component` | `IDataSet` | PageRenderer | 表容器 |
 | `DATA_SOURCE` | `spark-component` | `IDataSource` | 表容器 | 行/单元格 |
 

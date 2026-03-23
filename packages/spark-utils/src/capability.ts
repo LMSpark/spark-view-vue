@@ -129,7 +129,7 @@ export function createEventEmitter<TEventMap extends Record<string, any[]> = Rec
       const handlers = listeners.get(event)
       if (handlers) {
         for (const h of handlers) {
-          try { h(...args) } catch (e) { console.error(`[EventEmitter] Error in handler for '${event}':`, e) }
+          try { h(...args) } catch (e) { if (import.meta.env.DEV) console.error(`[EventEmitter] Error in handler for '${event}':`, e) }
         }
       }
     },
@@ -277,64 +277,6 @@ export interface IPageServiceCapability {
 
 export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capability:page-service')
 
-// ==================== UI 交互 ====================
-
-/** 当前行能力 */
-export interface ICurrentRowCapability {
-  getRow(): unknown
-  getIndex(): number | null
-  setRow(row: unknown): void
-}
-
-/**
- * @reserved 为 r-row 组件预留，待 r-table→r-row 组件树实现后展开。
- * @internal 尚无 provider / consumer，外部代码请勿依赖。
- */
-export const CURRENT_ROW = defineCapability<ICurrentRowCapability>('spark:capability:current-row')
-
-/** 选择能力 */
-export interface ISelectionCapability {
-  select(id: number | string): void
-  deselect(id: number | string): void
-  isSelected(id: number | string): boolean
-  selectAll?(): void
-  clearSelection(): void
-  getSelected(): Array<number | string>
-}
-
-/**
- * @reserved 为 r-row 选择状态管理预留，待 r-table→r-row 组件树实现后展开。
- * @internal 尚无 provider / consumer，外部代码请勿依赖。
- */
-export const SELECTION = defineCapability<ISelectionCapability>('spark:capability:selection')
-
-/** 行数据能力 */
-export interface IRowDataCapability {
-  getData(): unknown
-  getField(field: string): unknown
-  isSelected?(): boolean
-}
-
-/**
- * @reserved 为 r-cell 组件预留，待 r-row→r-cell 组件树实现后展开。
- * @internal 尚无 provider / consumer，外部代码请勿依赖。
- */
-export const ROW_DATA = defineCapability<IRowDataCapability>('spark:capability:row-data')
-
-// ==================== 事件 ====================
-
-/**
- * @reserved 为 r-table 内部事件总线预留，待 r-table 实现内部子组件通信时展开。
- * @internal 尚无 provider / consumer，外部代码请勿依赖。
- */
-export const GRID_EVENTS = defineCapability<IEventEmitter>('spark:capability:grid-events')
-
-/**
- * @reserved 为 r-row 外向事件上报预留，待 r-row 实现内部子组件通信时展开。
- * @internal 尚无 provider / consumer，外部代码请勿依赖。
- */
-export const ROW_EVENTS = defineCapability<IEventEmitter>('spark:capability:row-events')
-
 // ==================== 主题 ====================
 
 /** 主题模式 */
@@ -411,10 +353,5 @@ export interface CapabilityTypeMap {
   'spark:capability:app-services': IAppServicesCapability
   'spark:capability:logger':       LoggerApi
   'spark:capability:page-service': IPageServiceCapability
-  'spark:capability:current-row':  ICurrentRowCapability
-  'spark:capability:selection':    ISelectionCapability
-  'spark:capability:row-data':     IRowDataCapability
-  'spark:capability:grid-events':  IEventEmitter
-  'spark:capability:row-events':   IEventEmitter
   'spark:capability:theme':        IThemeCapability
 }

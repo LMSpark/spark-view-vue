@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { isReactive, reactive } from 'vue'
+import { isReactive, shallowReactive } from 'vue'
 import { bindDataToRules } from '@spark-view/spark-component'
 import { SparkData, DataView } from '@spark-view/spark-data'
 
 describe('bindRules - DataKey rows -> IDataSource binding', () => {
   // 配置 Vue reactive 包装（与 SparkPlugin 一致）
   beforeAll(() => {
-    DataView.wrapInstance = (dv) => reactive(dv) as DataView
+    DataView.wrapInstance = (dv) => shallowReactive(dv) as DataView
   })
 
   it('el-table 应仅绑定 props.dataSource（DataView / IDataSource）', () => {

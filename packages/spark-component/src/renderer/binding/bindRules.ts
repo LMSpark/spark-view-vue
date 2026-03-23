@@ -75,18 +75,17 @@ function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolea
  * 递归替换 rule 中的数据占位符和事件处理器（公共 API）
  */
 export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
-  const callFunc = createFunctionCaller(options.pageFunctions)
-  return bindRulesRecursive(options, EMPTY_CONTEXT, callFunc)
-}
+  const { dataSet, registry, pageFunctions } = options
+  const callFunc = createFunctionCaller(pageFunctions)
 
-// ── 分区 E：递归编排（主流程） ─────────────────────────────────────────────
+  // 闭包捕获不变字段，递归中仅传变化的 rules + parentContext，
+  // 消除每层递归的 `{ ...options, rules }` 对象分配。
+  return recurse(options.rules, EMPTY_CONTEXT)
 
-function bindRulesRecursive(
-  options: RuleBindingOptions,
-  parentContext: BindingContext,
-  callFunc: (name: string, ...args: unknown[]) => unknown
-): BindRule[] {
-  const { rules, dataSet, registry } = options
+  function recurse(
+    rules: BindRule[],
+    parentContext: BindingContext,
+  ): BindRule[] {
 
   return rules.map(rule => {
     const newRule = { ...rule }
@@ -95,13 +94,13 @@ function bindRulesRecursive(
     if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
       const renderType = newRule.type
       const camelType = renderType.charAt(0).toLowerCase() + renderType.slice(1)
-      const renderFn = options.pageFunctions[renderType] ?? options.pageFunctions[camelType]
+      const renderFn = pageFunctions[renderType] ?? pageFunctions[camelType]
       if (typeof renderFn === 'function') {
         return newRule as BindRule
       }
       pageLogger.error('Render 函数未定义，已降级为占位节点', {
         renderType,
-        availableRenderFns: Object.keys(options.pageFunctions).filter(name => name.startsWith('Render')),
+        availableRenderFns: Object.keys(pageFunctions).filter(name => name.startsWith('Render')),
       })
       return {
         ...newRule,
@@ -145,18 +144,44 @@ function bindRulesRecursive(
     if (ruleType.startsWith('r-') && newRule.field === undefined && typeof newRule['name'] === 'string') {
       newRule.field = newRule['name']
     }
-    // field 透传：rule.field 需显式复制到 props 以传给自定义组件
-    // 所有 r-* 字段/容器组件都需要通过 props.field 接收字段名
-    if (ruleType.startsWith('r-') && newRule.field !== undefined) {
-      setRuleProp(newRule, 'field', newRule.field)
-    }
-    // label 透传：rule.label → props.label（v3 根级 label）
-    if (ruleType.startsWith('r-') && newRule.label !== undefined) {
-      setRuleProp(newRule, 'label', newRule.label)
-    }
-    // optionKey 透传：rule.optionKey → props.optionKey（v3 选项数据源 DataKey）
-    if (ruleType.startsWith('r-') && newRule.optionKey !== undefined) {
-      setRuleProp(newRule, 'optionKey', newRule.optionKey)
+    // field / label / optionKey 透传已由 bindSparkRuleEvents 统一规范化到 props，
+    // bindDataToRules 无需重复处理（仅保留 dataKey 的 self-resolving 透传）。
+
+    // ── 容器结构化字段：root → props 扁平化 ──
+    // rule.json 中 toolbar/actions/filter 为根级结构化对象，
+    // 扁平化到 props 使组件通过 Vue Props 直接接收，无需 inject。
+    if (ruleType.startsWith('r-')) {
+      const rawToolbar = newRule['toolbar']
+      if (rawToolbar !== null && rawToolbar !== undefined && typeof rawToolbar === 'object' && !Array.isArray(rawToolbar)) {
+        const t = rawToolbar as { items?: unknown[]; position?: string; class?: string }
+        if (Array.isArray(t.items)) setRuleProp(newRule, 'toolbar', t.items)
+        if (t.position !== undefined) setRuleProp(newRule, 'toolbarPosition', t.position)
+        if (t.class !== undefined) setRuleProp(newRule, 'toolbarClass', t.class)
+      }
+      const rawFilter = newRule['filter']
+      if (rawFilter !== null && rawFilter !== undefined && typeof rawFilter === 'object') {
+        const f = rawFilter as Record<string, unknown>
+        if (Array.isArray(f['columns'])) setRuleProp(newRule, 'filterColumns', f['columns'])
+        if (f['class'] !== undefined) setRuleProp(newRule, 'filterClass', f['class'])
+        if (f['collapsible'] !== undefined) setRuleProp(newRule, 'filterCollapsible', f['collapsible'])
+        if (f['defaultCollapsed'] !== undefined) setRuleProp(newRule, 'filterDefaultCollapsed', f['defaultCollapsed'])
+        if (f['autoFitMinWidth'] !== undefined) setRuleProp(newRule, 'filterAutoFitMinWidth', f['autoFitMinWidth'])
+        if (f['itemSpan'] !== undefined) setRuleProp(newRule, 'filterItemSpan', f['itemSpan'])
+        if (f['gridColumns'] !== undefined) setRuleProp(newRule, 'filterGridColumns', f['gridColumns'])
+        if (f['gridGap'] !== undefined) setRuleProp(newRule, 'filterGridGap', f['gridGap'])
+        if (f['gridAutoRows'] !== undefined) setRuleProp(newRule, 'filterGridAutoRows', f['gridAutoRows'])
+      }
+      const rawActions = newRule['actions']
+      if (rawActions !== null && rawActions !== undefined && typeof rawActions === 'object' && !Array.isArray(rawActions)) {
+        const a = rawActions as Record<string, unknown>
+        if (Array.isArray(a['items'])) setRuleProp(newRule, 'rowActions', a['items'])
+        if (a['position'] !== undefined) setRuleProp(newRule, 'rowActionsPosition', a['position'])
+        if (a['class'] !== undefined) setRuleProp(newRule, 'rowActionsClass', a['class'])
+        if (a['label'] !== undefined) setRuleProp(newRule, 'rowActionsLabel', a['label'])
+        if (a['width'] !== undefined) setRuleProp(newRule, 'rowActionsWidth', a['width'])
+        if (a['align'] !== undefined) setRuleProp(newRule, 'rowActionsAlign', a['align'])
+        if (a['fixed'] !== undefined) setRuleProp(newRule, 'rowActionsFixed', a['fixed'])
+      }
     }
 
     // ── el-table / el-pagination / 表单组件 / 通用组件：dataKey 互斥委托 ──
@@ -201,10 +226,9 @@ function bindRulesRecursive(
           (item: unknown): item is BindRule => typeof item === 'object' && item !== null && 'type' in item
         )
         if (nestedRules.length === 0) continue
-        newRule.props[key] = bindRulesRecursive(
-          { ...options, rules: nestedRules },
+        newRule.props[key] = recurse(
+          nestedRules,
           childContext,
-          callFunc
         )
       }
     }
@@ -215,28 +239,10 @@ function bindRulesRecursive(
         (child: unknown): child is BindRule => typeof child !== 'string'
       )
       if (childRules.length > 0) {
-        newRule.children = bindRulesRecursive(
-          { ...options, rules: childRules },
+        newRule.children = recurse(
+          childRules,
           childContext,
-          callFunc
         )
-      }
-    }
-
-    // ── r-* 组件：children → sparkChildren prop（统一子树递归入口） ──
-    // 将已递归处理的 children 移入 sparkChildren prop，
-    // 由组件自行通过 SparkComponentRenderer 渲染。
-    //
-    // 容器组件（r-table / r-form 等）：自行递归渲染 sparkChildren
-    // 字段组件（r-text / r-number 等）：在 table 上下文中，
-    //   有 sparkChildren 时渲染为分组列（多行表头），否则渲染为数据列
-    if (ruleType.startsWith('r-')) {
-      // bindRulesRecursive 返回 BindRule[]（全为对象），无需二次类型过滤
-      const sparkKids = Array.isArray(newRule.children) ? newRule.children as BindRule[] : []
-      if (sparkKids.length > 0) {
-        if (import.meta.env.DEV) pageLogger.info('sparkChildren 注入', { type: ruleType, count: sparkKids.length })
-        setRuleProp(newRule, 'sparkChildren', sparkKids)
-        newRule.children = []
       }
     }
 
@@ -253,7 +259,8 @@ function bindRulesRecursive(
 
     return newRule
   })
-}
+  } // end recurse
+} // end bindDataToRules
 
 // ── 分区 F：通用 dataKey 绑定（回退逻辑） ──────────────────────────────────
 

@@ -34,10 +34,14 @@ interface FieldPermissionForContext {
  * 将 useFieldPermission 返回值 + 组件 props 聚合为一个响应式对象。
  */
 export function useFieldContext(
-  fieldProps: { width: number | undefined; config: SparkNode | undefined; sparkChildren: SparkNode[] | undefined },
+  fieldProps: { width: number | undefined; children?: SparkNode[] },
   permission: FieldPermissionForContext,
 ): ComputedRef<FieldContextProps> {
-  const mergedChildren = computed(() => fieldProps.config?.children ?? fieldProps.sparkChildren ?? [])
+  const mergedChildren = computed(() => {
+    const children = fieldProps.children
+    if (Array.isArray(children) && children.length > 0) return children
+    return []
+  })
 
   return computed(() => ({
     context: permission.context,

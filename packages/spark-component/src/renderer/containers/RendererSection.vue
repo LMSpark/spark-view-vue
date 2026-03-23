@@ -17,7 +17,7 @@
         <div v-if="hasHeaderRight" :class="['renderer-section-actions', headerActionsClass]" @click.stop>
           <SparkComponentRenderer
             v-for="(action, index) in headerActionConfigs"
-            :key="action.id ?? `r-section-action-${index}`"
+            :key="nodeId(action) ?? `r-section-action-${index}`"
             :config="action"
           />
           <slot name="header-actions" v-bind="getHeaderSlotScope()" />
@@ -38,7 +38,7 @@
     <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
       <div
         v-for="(child, i) in gridChildren"
-        :key="child.id ?? `r-section-child-${i}`"
+        :key="nodeId(child) ?? `r-section-child-${i}`"
         class="renderer-section-grid-item"
         :style="getChildGridStyle(child)"
       >
@@ -57,7 +57,7 @@
       <div v-if="hasHeaderRight" :class="['renderer-section-actions', headerActionsClass]" @click.stop>
         <SparkComponentRenderer
           v-for="(action, index) in headerActionConfigs"
-          :key="action.id ?? `r-section-action-${index}`"
+          :key="nodeId(action) ?? `r-section-action-${index}`"
           :config="action"
         />
         <slot name="header-actions" v-bind="getHeaderSlotScope()" />
@@ -77,7 +77,7 @@
     <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
       <div
         v-for="(child, i) in gridChildren"
-        :key="child.id ?? `r-section-child-${i}`"
+        :key="nodeId(child) ?? `r-section-child-${i}`"
         class="renderer-section-grid-item"
         :style="getChildGridStyle(child)"
       >
@@ -91,30 +91,50 @@
 <script setup lang="ts">
 import { computed, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
+import type { RendererSectionApi } from '../_pkg'
 
 interface Props {
-  config?: SparkNode
-  sparkChildren?: SparkNode[]
+  /** 子节点 */
+  children?: SparkNode[]
+  /** 头部操作按钮配置 */
   headerActions?: SparkNode[]
+  /** 分区标题 */
   title?: string
+  /** 分区描述 */
   description?: string
+  /** 是否可折叠 */
   collapsible?: boolean
+  /** 默认折叠 */
   defaultCollapsed?: boolean
+  /** 显示边框 */
   bordered?: boolean
+  /** 使用卡片样式 */
   useCard?: boolean
+  /** 卡片阴影模式 */
   cardShadow?: 'always' | 'hover' | 'never'
+  /** 头部 CSS 类名 */
   headerClass?: string
+  /** 头部操作区 CSS 类名 */
   headerActionsClass?: string
+  /** 内容区 CSS 类名 */
   bodyClass?: string
+  /** 展开文案 */
   expandText?: string
+  /** 收起文案 */
   collapseText?: string
+  /** 显示切换图标 */
   showToggleIcon?: boolean
+  /** 展开图标文案 */
   expandIconText?: string
+  /** 收起图标文案 */
   collapseIconText?: string
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
 }
 
@@ -139,11 +159,10 @@ const props = withDefaults(defineProps<Props>(), {
   gridAutoRows: 'minmax(32px, auto)',
 })
 const slots = useSlots()
+const { registerApi } = useSparkComponent({ type: 'r-section' })
 
-useSparkComponent(props.config ?? { type: 'r-section' })
-
-const configChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
-const headerActionConfigs = computed(() => props.headerActions ?? (props.config?.props?.['headerActions'] as SparkNode[] | undefined) ?? [])
+const configChildren = computed(() => props.children ?? [])
+const headerActionConfigs = computed(() => props.headerActions ?? [])
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: configChildren,
   columns: computed(() => props.gridColumns),
@@ -168,6 +187,25 @@ function toggleCollapsed(): void {
   if (!props.collapsible) return
   collapsed.value = !collapsed.value
 }
+
+// ── r-section 包装 API ───────────────────────────────────────────────────
+
+
+const sectionApi: RendererSectionApi = {
+  isCollapsed() {
+    return collapsed.value
+  },
+  setCollapsed(value) {
+    collapsed.value = value
+  },
+  toggle() {
+    collapsed.value = !collapsed.value
+  },
+}
+
+registerApi(sectionApi)
+
+defineExpose(sectionApi)
 
 function getHeaderSlotScope() {
   return {

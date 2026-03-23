@@ -187,9 +187,11 @@ export async function start(options: StartOptions): Promise<void> {
       logStartDebug('主题服务已初始化', { mode: themeService.mode })
     }
 
-    // 其他警告正常输出到控制台
-    app.config.warnHandler = (msg) => {
-      console.warn(`[Vue warn]: ${msg}`)
+    // 其他警告正常输出到控制台（仅开发环境）
+    if (import.meta.env.DEV) {
+      app.config.warnHandler = (msg) => {
+        console.warn(`[Vue warn]: ${msg}`)
+      }
     }
     // 2. 安装 UI 插件
     if (plugins && plugins.length > 0) {

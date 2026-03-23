@@ -3,7 +3,6 @@
  * @skill r-table
  * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页
  * @provides DATA_SOURCE
- * @provides TABLE_API
  * @consumes PAGE_DATASET
  * @input { dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
  * @example { "type": "r-table", "dataKey": "Orders@rows", "props": { "border": true, "highlightCurrentRow": true } }
@@ -13,7 +12,7 @@
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
     <div v-if="showToolbar" :class="['renderer-table-toolbar', toolbarClassValue]">
-      <template v-for="(action, index) in visibleToolbarConfigs" :key="action.id ?? `r-table-toolbar-${index}`">
+      <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-table-toolbar-${index}`">
         <el-button
           v-if="isBuiltinAction(action)"
           :type="getBuiltinButtonType(action)"
@@ -64,7 +63,6 @@
         <RendererFieldScope
           :model="filterModel"
           :configs="filterConfigs"
-          :data-source="resolvedView"
           :grid-columns="filterGridColumnsValue"
           :grid-gap="filterGridGapValue"
           :grid-auto-rows="filterGridAutoRowsValue"
@@ -108,7 +106,7 @@
           >
             <template #default="{ row, $index }">
               <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="action.id ?? `r-table-row-action-left-${index}`">
+                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="nodeId(action) ?? `r-table-row-action-left-${index}`">
                   <el-button
                     v-if="isBuiltinAction(action)"
                     :type="getBuiltinButtonType(action)"
@@ -137,7 +135,7 @@
           <template v-if="sparkChildren.length">
             <SparkComponentRenderer
               v-for="(child, i) in sparkChildren"
-              :key="child.id ?? `r-table-child-${i}`"
+              :key="nodeId(child) ?? `r-table-child-${i}`"
               :config="child"
             />
           </template>
@@ -155,7 +153,7 @@
           >
             <template #default="{ row, $index }">
               <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="action.id ?? `r-table-row-action-right-${index}`">
+                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="nodeId(action) ?? `r-table-row-action-right-${index}`">
                   <el-button
                     v-if="isBuiltinAction(action)"
                     :type="getBuiltinButtonType(action)"
@@ -193,13 +191,13 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, defineComponent, onUnmounted, ref, useSlots, watch } from 'vue'
+import { computed, defineComponent, onUnmounted, ref, useAttrs, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode, RendererTableApi, PageComponentRegistry } from '../_pkg'
+import { nodeId, type SparkNode, type RendererTableApi } from '../_pkg'
 import type { ModuleContextCapability } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { PAGE_DATASET, DATA_SOURCE, TABLE_API, PAGE_COMPONENT_REGISTRY } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, MODULE_CONTEXT } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -227,32 +225,47 @@ import {
 type RowActionsPosition = LateralActionPosition
 
 interface Props {
-  /** SPARK 配置驱动（主入口）— dataKey / children 均从此取 */
-  config?: SparkNode
-  /** DataKey 格式：tableName@field（与 config 同层冗余时以 config.props.dataKey 为准） */
+  /** DataKey 格式：tableName@field */
   dataKey?: string
-  /** bindRules 从 rule.children 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
-  /** 直接传入的 DataView（备用） */
-  dataView?: DataView | undefined
+  /** 子节点列表 */
+  children?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 筛选项字段列表 */
   filterColumns?: string[]
+  /** 筛选区 CSS 类名 */
   filterClass?: string
+  /** 筛选区可折叠 */
   filterCollapsible?: boolean
+  /** 筛选区默认折叠 */
   filterDefaultCollapsed?: boolean
+  /** 筛选区最小宽度 */
   filterAutoFitMinWidth?: string
+  /** 每项跨列数 */
   filterItemSpan?: number
+  /** 筛选栅格总列数 */
   filterGridColumns?: number
+  /** 筛选栅格间距 */
   filterGridGap?: number | string
+  /** 筛选栅格行高 */
   filterGridAutoRows?: string
+  /** 行操作按钮配置 */
   rowActions?: SparkNode[]
+  /** 行操作列位置 */
   rowActionsPosition?: RowActionsPosition
+  /** 行操作列标题 */
   rowActionsLabel?: string
+  /** 行操作列宽度 */
   rowActionsWidth?: string | number
+  /** 行操作列对齐方式 */
   rowActionsAlign?: 'left' | 'center' | 'right'
+  /** 行操作列固定方向 */
   rowActionsFixed?: boolean | 'left' | 'right'
+  /** 行操作列 CSS 类名 */
   rowActionsClass?: string
 }
 
@@ -274,6 +287,7 @@ const props = withDefaults(defineProps<Props>(), {
   rowActionsAlign: 'left',
   rowActionsClass: '',
 })
+const attrs = useAttrs()
 const slots = useSlots()
 
 const ElTableColumns = defineComponent({
@@ -285,29 +299,27 @@ const ElTableColumns = defineComponent({
 
 // ── 输入解析 ──────────────────────────────────────────────────────────────
 
-const { effectiveDataKey, mergedChildren } = useContainerInput({
-  config: computed(() => props.config),
+const { effectiveDataKey, configChildren } = useContainerInput({
   dataKey: computed(() => props.dataKey),
-  sparkChildren: computed(() => props.sparkChildren),
+  children: computed(() => props.children),
 })
 
 const legacyRowActionConfigs = computed(() =>
-  mergedChildren.value.filter(child => /^Render[A-Z]/.test(child.type))
+  configChildren.value.filter(child => /^Render[A-Z]/.test(child.type))
 )
 
 const sparkChildren = computed(() => {
-  return mergedChildren.value.filter(child => isCollectedTableColumn(child))
+  return configChildren.value.filter(child => isCollectedTableColumn(child))
 })
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { context, consume, provide: sparkProvide, logger } = useSparkComponent(
-  props.config ?? { type: 'r-table' }
+const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
+  { type: 'r-table' }
 )
 
 const pageDataSet = consume(PAGE_DATASET)
 const pageService = consume(PAGE_SERVICE)
-const pageComponentRegistry = consume(PAGE_COMPONENT_REGISTRY) as PageComponentRegistry | null
 const moduleContextCapability = consume(MODULE_CONTEXT) as ModuleContextCapability | null
 const moduleContext = ref<ReturnType<ModuleContextCapability['getCurrent']>>(moduleContextCapability?.getCurrent() ?? null)
 const unsubscribeModuleContext = moduleContextCapability?.subscribe((next) => {
@@ -317,7 +329,7 @@ const unsubscribeModuleContext = moduleContextCapability?.subscribe((next) => {
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  fallbackSource: computed(() => props.dataView ?? null),
+  fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
   mapView: view => view,
   provideDataSource: view => sparkProvide(DATA_SOURCE, view),
   logger,
@@ -339,10 +351,9 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => props.config),
-  toolbar: computed(() => props.config?.toolbar?.items ?? props.toolbar),
-  toolbarPosition: computed(() => props.config?.toolbar?.position ?? props.toolbarPosition),
-  toolbarClass: computed(() => props.config?.toolbar?.class ?? props.toolbarClass),
+  toolbar: computed(() => props.toolbar),
+  toolbarPosition: computed(() => props.toolbarPosition),
+  toolbarClass: computed(() => props.toolbarClass),
   modelPermission,
   slots,
 })
@@ -361,44 +372,23 @@ const {
   activeFilterCount,
   resetFilters,
 } = useTableFilters({
-  config: computed(() => props.config),
   children: sparkChildren,
   dataView: resolvedView,
-  filterColumns: computed(() => {
-    const meta = props.config?.filter
-    if (meta?.columns) return meta.columns as string[]
-    return props.filterColumns
-  }),
-  filterClass: computed(() => props.config?.filter?.class ?? props.filterClass),
-  filterGridColumns: computed(() => props.config?.filter?.gridColumns ?? props.filterGridColumns),
-  filterGridGap: computed(() => props.config?.filter?.gridGap ?? props.filterGridGap),
-  filterGridAutoRows: computed(() => props.config?.filter?.gridAutoRows ?? props.filterGridAutoRows),
+  filterColumns: computed(() => props.filterColumns),
+  filterClass: computed(() => props.filterClass),
+  filterGridColumns: computed(() => props.filterGridColumns),
+  filterGridGap: computed(() => props.filterGridGap),
+  filterGridAutoRows: computed(() => props.filterGridAutoRows),
   logger,
 })
 
-const filterCollapsibleValue = computed(() =>
-  props.config?.filter?.collapsible
-  ?? (props.config?.props?.['filterCollapsible'] as boolean | undefined)
-  ?? props.filterCollapsible
-)
+const filterCollapsibleValue = computed(() => props.filterCollapsible)
 
-const filterDefaultCollapsedValue = computed(() =>
-  props.config?.filter?.defaultCollapsed
-  ?? (props.config?.props?.['filterDefaultCollapsed'] as boolean | undefined)
-  ?? props.filterDefaultCollapsed
-)
+const filterDefaultCollapsedValue = computed(() => props.filterDefaultCollapsed)
 
-const filterAutoFitMinWidthValue = computed(() =>
-  props.config?.filter?.autoFitMinWidth
-  ?? (props.config?.props?.['filterAutoFitMinWidth'] as string | undefined)
-  ?? props.filterAutoFitMinWidth
-)
+const filterAutoFitMinWidthValue = computed(() => props.filterAutoFitMinWidth)
 
-const filterItemSpanValue = computed(() =>
-  props.config?.filter?.itemSpan
-  ?? (props.config?.props?.['filterItemSpan'] as number | undefined)
-  ?? props.filterItemSpan
-)
+const filterItemSpanValue = computed(() => props.filterItemSpan)
 
 const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
 
@@ -483,18 +473,26 @@ const tableApi: RendererTableApi = {
   getNativeTable() {
     return nativeTableRef.value
   },
+  getFilterModel() {
+    return { ...filterModel }
+  },
+  resetFilters() {
+    resetFilters()
+  },
+  hasActiveFilters() {
+    return hasFilters.value
+  },
+  getActiveFilterCount() {
+    return activeFilterCount.value
+  },
 }
 
-sparkProvide(TABLE_API, tableApi)
-pageComponentRegistry?.registerApi({
-  id: context.id,
-  type: context.type,
-  api: tableApi,
-})
+registerApi(tableApi)
+
+defineExpose(tableApi)
 
 onUnmounted(() => {
   unsubscribeModuleContext?.()
-  pageComponentRegistry?.unregisterApi(context.id)
 })
 
 // ── 行操作区 ──────────────────────────────────────────────────────────────
@@ -506,20 +504,12 @@ const {
   showActionsRight: showRowActionsRight,
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  config: computed(() => props.config),
   actionConfigs: computed(() => {
-    // v3 meta 域优先
-    if (props.config?.actions?.items) {
-      return [...legacyRowActionConfigs.value, ...props.config.actions.items]
-    }
-    const explicit = (props.config?.props?.['rowActions'] as SparkNode[] | undefined) ?? props.rowActions ?? []
+    const explicit = props.rowActions ?? []
     return [...legacyRowActionConfigs.value, ...explicit]
   }),
-  actionPosition: computed(() => props.config?.actions?.position ?? props.rowActionsPosition),
-  actionClass: computed(() => props.config?.actions?.class ?? props.rowActionsClass),
-  actionPropKey: 'rowActions',
-  actionPositionPropKey: 'rowActionsPosition',
-  actionClassPropKey: 'rowActionsClass',
+  actionPosition: computed(() => props.rowActionsPosition),
+  actionClass: computed(() => props.rowActionsClass),
   modelPermission,
   resolveScope: ({ row, index }) => ({
     row,
@@ -539,29 +529,14 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
-const rowActionsLabelValue = computed(() =>
-  props.config?.actions?.label
-  ?? (props.config?.props?.['rowActionsLabel'] as string | undefined)
-  ?? props.rowActionsLabel
-)
+const rowActionsLabelValue = computed(() => props.rowActionsLabel)
 
-const rowActionsWidthValue = computed(() =>
-  props.config?.actions?.width
-  ?? (props.config?.props?.['rowActionsWidth'] as string | number | undefined)
-  ?? props.rowActionsWidth
-)
+const rowActionsWidthValue = computed(() => props.rowActionsWidth)
 
-const rowActionsAlignValue = computed(() =>
-  props.config?.actions?.align
-  ?? (props.config?.props?.['rowActionsAlign'] as 'left' | 'center' | 'right' | undefined)
-  ?? props.rowActionsAlign
-)
+const rowActionsAlignValue = computed(() => props.rowActionsAlign)
 
 const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
-  const metaFixed = props.config?.actions?.fixed
-  if (metaFixed !== undefined) return metaFixed
-  const explicit = (props.config?.props?.['rowActionsFixed'] as boolean | 'left' | 'right' | undefined) ?? props.rowActionsFixed
-  if (explicit !== undefined) return explicit
+  if (props.rowActionsFixed !== undefined) return props.rowActionsFixed
   return rowActionsPositionValue.value
 })
 
@@ -620,13 +595,14 @@ function isCollectedTableColumn(config: SparkNode): boolean {
   if (/^Render[A-Z]/.test(config.type)) return false
   if (config.type === 'el-table-column') return true
   if (!config.type.startsWith('r-')) return false
-  // 数据列：有 field 绑定（v3 field 或 v2 name 经 bindRules 兼容映射）
-  if (typeof config.field === 'string' && config.field.length > 0) {
+  // 数据列：有 field 绑定（bindSparkRuleEvents 已规范化到 props）
+  const field = config.props?.['field']
+  if (typeof field === 'string' && field.length > 0) {
     return true
   }
   // 分组列：无 field 但有子列（如 r-column-group）
-  const sparkKids = config.props?.['sparkChildren'] as SparkNode[] | undefined
-  if (Array.isArray(sparkKids) && sparkKids.length > 0) return true
+  const kids = Array.isArray(config.children) ? config.children : []
+  if (kids.length > 0) return true
   return false
 }
 

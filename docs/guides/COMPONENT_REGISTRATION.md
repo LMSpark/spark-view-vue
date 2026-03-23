@@ -33,7 +33,7 @@ export default defineConfig({
     sparkComponentsPlugin({
       patterns: ['./features/**/*.vue', './src/components/**/*.vue'],
       syncComponents: ['PageRenderer', 'SparkComponentRenderer', 'ErrorFallback'],
-      asyncComponents: ['*Demo', '*EJ2*', 'Capability*'],
+      asyncComponents: ['*Demo', 'Capability*'],
       sizeThreshold: 50,   // KB，超过此大小自动异步
       exclude: ['App.vue', '**/*.test.vue'],
       verbose: true
@@ -70,13 +70,11 @@ declare module 'virtual:spark-components' {
 ```typescript
 // virtual:spark-components (自动生成)
 import pageRenderer from './packages/spark-component/src/renderer/SparkComponentRenderer.vue'
-const sparkEj2Grid = () => import('./features/spark-ej2/components/SparkEJ2Grid.vue')
 
 export function registerComponents() {
   const registry = Spark.getRegistry()
   registry.register('spark-component-renderer', pageRenderer)  // 同步
-  registry.register('spark-ej2-grid', sparkEj2Grid)            // 异步
-  return { total: 2, sync: 1, async: 1 }
+  return { total: 1, sync: 1, async: 0 }
 }
 ```
 
@@ -96,10 +94,10 @@ const app = createApp(App)
 app.use(Spark.createPlugin())
 
 // 批量注册（懒加载）
-const reg = Spark.createRegister(import.meta.glob('./features/**/*.vue'))
+const reg = Spark.createRegister(import.meta.glob('./src/components/**/*.vue'))
 reg.registerAll({
-  'spark-ej2-grid':   './features/spark-ej2/components/SparkEJ2Grid.vue',
-  'spark-ej2-column': './features/spark-ej2/components/SparkEJ2Column.vue'
+  'r-table':   './src/components/renderer-containers/RendererTable.vue',
+  'r-form':    './src/components/renderer-containers/RendererForm.vue'
 })
 
 app.mount('#app')
@@ -113,7 +111,7 @@ import PageRenderer from './components/PageRenderer.vue'
 Spark.register('page-renderer', PageRenderer)
 
 // 懒加载（大组件，推荐）
-Spark.register('spark-ej2-grid', () => import('./features/spark-ej2/components/SparkEJ2Grid.vue'))
+Spark.register('r-table', () => import('./components/renderer-containers/RendererTable.vue'))
 ```
 
 ---
@@ -147,7 +145,6 @@ syncComponents: [
   'UserGrid',           // 首屏业务组件
 ],
 asyncComponents: [
-  '*EJ2*',              // Syncfusion 组件（体积大）
   '*Demo',              // 演示组件（低频）
   'Settings*',          // 设置页面（低频）
 ]

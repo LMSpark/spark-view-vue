@@ -17,7 +17,7 @@
       <slot name="content" :rules="resolvedRules">
         <SparkComponentRenderer
           v-for="(rule, i) in resolvedRules"
-          :key="(rule as SparkNode).id ?? `spark-rule-${i}`"
+          :key="nodeId(rule as SparkNode) ?? `spark-rule-${i}`"
           :config="(rule as SparkNode)"
         />
       </slot>
@@ -58,7 +58,7 @@ import type { HttpClient } from '@spark-view/spark-utils'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
-import type { SparkNode } from '../types'
+import { nodeId, type SparkNode } from '../types'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE } from '../capability-keys'
 import type { ModuleContextCapability, PageCssScopeCapability } from '../capability-keys'
 import { useRendererSetup } from './useRendererSetup'
@@ -211,6 +211,11 @@ function bindSparkRuleEvents(
     return undefined
   }
 
+  // ── 严格对齐 h(type, props, children) ──
+  // 仅保留 h() 三参数对应的 3 个结构键；
+  // 其余所有根级字段（id / visible / disabled / on / dataKey / field …）一律收入 props。
+  const _STRUCTURAL_KEYS = new Set(['type', 'props', 'children'])
+
   const bindNode = (node: unknown): unknown => {
     if (Array.isArray(node)) return node.map(bindNode)
     if (node === null || typeof node !== 'object') return node
@@ -218,6 +223,7 @@ function bindSparkRuleEvents(
     const current = node as Record<string, unknown>
     const cloned: Record<string, unknown> = { ...current }
 
+    // ── 事件绑定：on.* 字符串 → callFunc 闭包 ──
     if (current['on'] !== null && typeof current['on'] === 'object' && !Array.isArray(current['on'])) {
       const newOn: Record<string, unknown> = {}
       for (const [eventName, handler] of Object.entries(current['on'] as Record<string, unknown>)) {
@@ -236,6 +242,7 @@ function bindSparkRuleEvents(
       cloned['on'] = newOn
     }
 
+    // ── props 内事件绑定 + 子结构递归 ──
     if (current['props'] !== null && typeof current['props'] === 'object' && !Array.isArray(current['props'])) {
       const propsObj = { ...(current['props'] as Record<string, unknown>) }
       for (const [propName, propValue] of Object.entries(propsObj)) {
@@ -254,8 +261,26 @@ function bindSparkRuleEvents(
       cloned['props'] = propsObj
     }
 
+    // ── children 递归 ──
     if (Array.isArray(current['children'])) {
       cloned['children'] = (current['children'] as unknown[]).map(bindNode)
+    }
+
+    // ── 根级字段 → props 规范化 ──
+    // 收集非结构键，一次性合并到 props（根级覆盖 props 同名字段）
+    let extras: Record<string, unknown> | undefined
+    for (const key of Object.keys(cloned)) {
+      if (_STRUCTURAL_KEYS.has(key)) continue
+      if (cloned[key] === undefined) continue
+      extras ??= {}
+      extras[key] = cloned[key]
+    }
+    if (extras !== undefined) {
+      const cp = cloned['props']
+      const existing = (typeof cp === 'object' && cp !== null && !Array.isArray(cp))
+        ? cp as Record<string, unknown>
+        : {}
+      cloned['props'] = { ...existing, ...extras }
     }
 
     return cloned
@@ -364,13 +389,17 @@ onUnmounted(() => {
   moduleContextListeners.clear()
 })
 
+// 用 signature 字符串作为 watch source，Vue 仅追踪 getter 中访问的属性。
+// 相比 deep:true（独立递归遍历 + callback 内 JSON.stringify），开销减半。
+let _prevModuleContext = props.moduleContext
 watch(
-  () => props.moduleContext,
-  (next, prev) => {
-    if (moduleContextSignature(next) === moduleContextSignature(prev)) return
+  () => moduleContextSignature(props.moduleContext),
+  () => {
+    const next = props.moduleContext
+    const prev = _prevModuleContext
+    _prevModuleContext = next
     emitModuleContextChange(next, prev)
   },
-  { deep: true },
 )
 
 watch(

@@ -67,24 +67,21 @@ describe('RendererTabs and RendererCollapse integration', () => {
       props: {
         toolbar: [{ type: 'tabs-toolbar-action' }],
         onTabChange,
-        config: {
-          type: 'r-tabs',
-          children: [
-            {
-              type: 'r-tab-pane',
-              props: { label: '基本信息', name: 'base', gridGap: 16 },
-              children: [
-                { type: 'child-a', props: { colSpan: 12 } },
-                { type: 'child-b', props: { colSpan: 12, rowSpan: 2 } },
-              ],
-            },
-            {
-              type: 'r-tab-pane',
-              props: { label: '更多信息', name: 'more' },
-              children: [],
-            },
-          ],
-        },
+        children: [
+          {
+            type: 'r-tab-pane',
+            props: { label: '基本信息', name: 'base', gridGap: 16 },
+            children: [
+              { type: 'child-a', props: { colSpan: 12 } },
+              { type: 'child-b', props: { colSpan: 12, rowSpan: 2 } },
+            ],
+          },
+          {
+            type: 'r-tab-pane',
+            props: { label: '更多信息', name: 'more' },
+            children: [],
+          },
+        ],
       },
       slots: {
         toolbar: ({ panes }: Record<string, unknown>) => h('button', {
@@ -117,12 +114,9 @@ describe('RendererTabs and RendererCollapse integration', () => {
   it('should emit tabs model updates', () => {
     const wrapper = mount(RendererTabs as any, {
       props: {
-        config: {
-          type: 'r-tabs',
-          children: [
-            { type: 'r-tab-pane', props: { label: 'A', name: 'a' }, children: [] },
-          ],
-        },
+        children: [
+          { type: 'r-tab-pane', props: { label: 'A', name: 'a' }, children: [] },
+        ],
       },
       global: {
         stubs: {
@@ -143,24 +137,21 @@ describe('RendererTabs and RendererCollapse integration', () => {
       props: {
         toolbar: [{ type: 'collapse-toolbar-action' }],
         onChange,
-        config: {
-          type: 'r-collapse',
-          children: [
-            {
-              type: 'r-collapse-item',
-              props: { title: '分组一', name: 'one', gridGap: 12 },
-              children: [
-                { type: 'child-a', props: { colSpan: 8 } },
-                { type: 'child-b', props: { colSpan: 16 } },
-              ],
-            },
-            {
-              type: 'r-collapse-item',
-              props: { title: '分组二', name: 'two' },
-              children: [],
-            },
-          ],
-        },
+        children: [
+          {
+            type: 'r-collapse-item',
+            props: { title: '分组一', name: 'one', gridGap: 12 },
+            children: [
+              { type: 'child-a', props: { colSpan: 8 } },
+              { type: 'child-b', props: { colSpan: 16 } },
+            ],
+          },
+          {
+            type: 'r-collapse-item',
+            props: { title: '分组二', name: 'two' },
+            children: [],
+          },
+        ],
       },
       slots: {
         toolbar: ({ items }: Record<string, unknown>) => h('button', {

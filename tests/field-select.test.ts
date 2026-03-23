@@ -57,7 +57,7 @@ function mountFieldSelect(
       provide(FIELD_CONTEXT, 'form')
       provide(CONTEXT_DATA, model)
       return () => h(FieldSelect as never, {
-        config: { type: 'r-select', field: fieldName },
+        field: fieldName,
         ...componentProps,
       })
     },
@@ -263,18 +263,14 @@ describe('FieldSelect 下拉组件', () => {
 
     it('从 config.props.options 获取选项', () => {
       const model = reactive({ department: undefined })
-      // 通过 config.props 传递 options
       const Provider = defineComponent({
         setup() {
           const { provide } = useSparkComponent({ type: 'test-provider' })
           provide(FIELD_CONTEXT, 'form')
           provide(CONTEXT_DATA, model)
           return () => h(FieldSelect as never, {
-            config: {
-              type: 'r-select',
-              field: 'department',
-              props: { options: departmentOptions },
-            },
+            field: 'department',
+            options: departmentOptions,
           })
         },
       })

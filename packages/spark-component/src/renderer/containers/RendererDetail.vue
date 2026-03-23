@@ -15,7 +15,7 @@
     <div v-if="showToolbar" :class="['renderer-detail-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-detail-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-detail-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
@@ -26,7 +26,7 @@
         <div v-if="gridChildren.length" class="renderer-detail-grid" :style="gridStyle">
           <div
             v-for="(child, i) in gridChildren"
-            :key="child.id ?? `r-detail-child-${i}`"
+            :key="nodeId(child) ?? `r-detail-child-${i}`"
             class="renderer-detail-grid-item"
             :style="getChildGridStyle(child)"
           >
@@ -44,21 +44,29 @@
  * RendererDetail - 详情展示容器组件
  */
 import { SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { computed, useAttrs } from 'vue'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
+import type { RendererDetailApi } from '../_pkg'
 
 interface Props {
-  config?: SparkNode
+  /** 数据绑定键 */
   dataKey?: string
-  sparkChildren?: SparkNode[]
-  dataView?: DataView | undefined
+  /** 子节点列表 */
+  children?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
 }
 
@@ -69,8 +77,11 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
+const attrs = useAttrs()
 
 const {
+  registerApi,
+  resolvedView,
   gridChildren,
   gridStyle,
   getChildGridStyle,
@@ -80,7 +91,32 @@ const {
   showToolbar,
   getToolbarSlotScope,
   getDefaultSlotScope,
-} = useFormDetailContainer(props, 'detail')
+  contextData: detailData,
+} = useFormDetailContainer({
+  ...props,
+  fallbackDataView: computed(() => attrs['dataView'] as DataView | undefined),
+}, 'detail')
+
+// ── r-detail 包装 API ────────────────────────────────────────────────────
+
+const detailApi: RendererDetailApi = {
+  getDataSource() {
+    return resolvedView.value ?? null
+  },
+  getDetailData() {
+    return detailData
+  },
+  getCurrentRow() {
+    return resolvedView.value?.currentRow ?? null
+  },
+  getFieldValue(field) {
+    return detailData[field]
+  },
+}
+
+registerApi(detailApi)
+
+defineExpose(detailApi)
 </script>
 
 <style scoped>

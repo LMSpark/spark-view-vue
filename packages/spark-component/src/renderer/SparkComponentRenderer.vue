@@ -1,11 +1,9 @@
 <template>
-  <!-- 已注册：动态渲染组件，子组件通过 Vue DI 自动获取父上下文 -->
-  <!-- config 整体传递 + config.props 展开为独立 props（字段组件可直接接收） -->
+  <!-- 已注册：SparkNode 根级字段 + config.props + 事件处理器 → 统一作为 Vue Props 传递 -->
   <component
     v-if="resolvedComponent"
     :is="resolvedComponent"
-    :config="config"
-    v-bind="forwardedProps"
+    v-bind="componentProps"
   />
 
   <!-- 未注册但可识别为原生标签：按原生元素渲染，并继续递归子节点 -->
@@ -16,7 +14,7 @@
   >
     <template
       v-for="(child, index) in renderableChildren"
-      :key="isSparkNode(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
+      :key="nodeKey(child, index)"
     >
       <SparkComponentRenderer
         v-if="isSparkNode(child)"
@@ -39,7 +37,7 @@
     <!-- 未注册时仍递归渲染子组件，父上下文由 Vue DI 自动传递 -->
     <template
       v-for="(child, index) in renderableChildren"
-      :key="isSparkNode(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
+      :key="nodeKey(child, index)"
     >
       <SparkComponentRenderer
         v-if="isSparkNode(child)"
@@ -81,10 +79,12 @@
  * ```
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } from '../types.js'
 import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
+// h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
+const _FILTERABLE_KEYS = new Set([...LAYOUT_ONLY_PROP_KEYS, 'on'])
 const NATIVE_RENDERABLE_TAGS = new Set([
   'div', 'span', 'p', 'a', 'img',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -100,9 +100,13 @@ const NATIVE_RENDERABLE_TAGS = new Set([
   'canvas',
   'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
 ])
-type ComponentEventMap = Record<string, unknown>
-type RenderableSparkNode = SparkNode & { on?: ComponentEventMap }
 type RenderableChild = SparkNode | string | number
+
+function nodeKey(child: RenderableChild, index: number): string {
+  if (!isSparkNode(child)) return `text-${index}`
+  const id = child.props?.['id']
+  return typeof id === 'string' ? id : `child-${index}`
+}
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -124,6 +128,9 @@ const props = defineProps<Props>()
 if (props.parentContext !== undefined) {
   vueProvide(SPARK_PARENT_CONTEXT_KEY, props.parentContext)
 }
+
+// @deprecated 仅 useSparkComponent fallback 消费，组件应通过 Vue Props 接收属性
+vueProvide(SPARK_NODE_CONFIG_KEY, props.config)
 
 // ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────
 const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
@@ -147,8 +154,7 @@ function isSparkNode(value: unknown): value is SparkNode {
 const shouldRenderAsNativeElement = computed(() => isNativeRenderableType(props.config.type))
 
 const renderableChildren = computed<RenderableChild[]>(() => {
-  const children = (props.config as { children?: unknown }).children
-  if (!Array.isArray(children)) return []
+  const children: unknown[] = props.config.children ?? []
 
   return children.filter((child): child is RenderableChild => (
     isSparkNode(child) || typeof child === 'string' || typeof child === 'number'
@@ -175,23 +181,58 @@ const resolvedComponent = computed(() => {
   return null
 })
 
+function _hasFilterableKeys(obj: Record<string, unknown>): boolean {
+  for (const key of Object.keys(obj)) {
+    if (_FILTERABLE_KEYS.has(key)) return true
+  }
+  return false
+}
+
+const _listenerNameCache = new Map<string, string>()
 function toListenerPropName(eventName: string): string {
+  let cached = _listenerNameCache.get(eventName)
+  if (cached !== undefined) return cached
   const normalized = eventName.replace(/[:\-]([a-zA-Z])/g, (_, char: string) => char.toUpperCase())
-  return `on${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`
+  cached = `on${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`
+  _listenerNameCache.set(eventName, cached)
+  return cached
 }
 
 const forwardedProps = computed(() => {
-  const config = props.config as RenderableSparkNode
+  const config = props.config
   const rawProps = config.props ?? {}
-  const eventProps = Object.fromEntries(
-    Object.entries(config.on ?? {}).map(([eventName, handler]) => [toListenerPropName(eventName), handler])
+  // h() 模型：on 从 props 中读取（bindSparkRuleEvents 已将根级 on 收入 props）
+  const onMap = rawProps['on']
+
+  // fast-path: 叶子组件大多无事件绑定且无 layout/framework key，直接返回原引用
+  const hasEvents = onMap !== null && onMap !== undefined && typeof onMap === 'object' && Object.keys(onMap as Record<string, unknown>).length > 0
+  if (!hasEvents && !_hasFilterableKeys(rawProps)) return rawProps
+
+  // slow-path: 过滤 layout/framework keys + 合并事件 props
+  const eventProps = hasEvents
+    ? Object.fromEntries(
+        Object.entries(onMap as Record<string, unknown>).map(([eventName, handler]) => [toListenerPropName(eventName), handler])
+      )
+    : undefined
+
+  const filteredProps = Object.fromEntries(
+    Object.entries(rawProps).filter(([key]) => !_FILTERABLE_KEYS.has(key))
   )
 
-  return {
-    ...Object.fromEntries(
-      Object.entries(rawProps).filter(([key]) => !LAYOUT_ONLY_PROP_KEYS.has(key))
-    ),
-    ...eventProps,
-  }
+  return eventProps ? { ...filteredProps, ...eventProps } : filteredProps
+})
+
+/**
+ * 已注册组件的完整 Props = forwardedProps + children。
+ *
+ * 对齐 h(type, props, children) 模型：
+ *   - props  → forwardedProps（含绑定阶段规范化后的 dataKey/field/label 等）
+ *   - children → SparkNode.children（类型化，直接转发）
+ * 仅用于已注册组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
+ */
+const componentProps = computed(() => {
+  const base = forwardedProps.value
+  const children = props.config.children
+  return children !== undefined ? { ...base, children } : base
 })
 </script>

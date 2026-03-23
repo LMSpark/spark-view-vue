@@ -13,7 +13,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import { APP_SERVICES, PAGE_SERVICE, CURRENT_ROW, SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS, defineCapability, provide as capProvide, lookup } from '@spark-view/spark-utils'
+import { APP_SERVICES, PAGE_SERVICE, defineCapability, provide as capProvide, lookup } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 
 describe('Capability system integration', () => {
@@ -128,7 +128,8 @@ describe('Capability system integration', () => {
       const gridCtx = createContext({ type: 'grid', id: 'grid-1' }, rootContext)
       const rowCtx = createContext({ type: 'row', id: 'row-1' }, gridCtx)
 
-      // Provider 注册事件能力
+      // Provider 注册事件能力（使用自定义能力键）
+      const TEST_EVENTS = defineCapability<IEventEmitter>('test:grid-events')
       const handler = vi.fn()
       const eventBus: Record<string, Array<(...args: unknown[]) => void>> = {}
 
@@ -152,10 +153,10 @@ describe('Capability system integration', () => {
         }
       }
 
-      capProvide(gridCtx, GRID_EVENTS, eventImpl)
+      capProvide(gridCtx, TEST_EVENTS, eventImpl)
 
       // Consumer 通过 parent chain 找到事件能力
-      const found = lookup<IEventEmitter>(rowCtx, GRID_EVENTS)
+      const found = lookup<IEventEmitter>(rowCtx, TEST_EVENTS)
       expect(found).toBeTruthy()
 
       found!.on('rowClick', handler)
@@ -170,11 +171,6 @@ describe('Capability system integration', () => {
       const symbols = [
         APP_SERVICES,
         PAGE_SERVICE,
-        CURRENT_ROW,
-        SELECTION,
-        GRID_EVENTS,
-        ROW_DATA,
-        ROW_EVENTS
       ]
 
       // 全部是 symbol

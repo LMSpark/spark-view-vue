@@ -46,7 +46,6 @@ export { default as RendererSteps } from './containers/RendererSteps.vue'
 export { default as RendererSection } from './containers/RendererSection.vue'
 export { default as RendererFieldScope } from './containers/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/RendererListItemScope.vue'
-export { default as RendererTreeNodeScope } from './containers/RendererTreeNodeScope.vue'
 
 // ── 字段组件 ──────────────────────────────────────────────────────────────────
 export { default as FieldText } from './fields/FieldText.vue'

@@ -109,7 +109,9 @@ export class ConfigLoader {
       // 应用环境变量覆盖
       return this.applyEnvironmentOverrides(config)
     } catch (error) {
-      console.error('❌ Failed to load default config:', error)
+      if (import.meta.env.DEV) {
+        console.error('❌ Failed to load default config:', error)
+      }
       // 返回最小可用配置
       return this.getMinimalConfig()
     }

@@ -13,19 +13,22 @@
 </template>
 
 <script setup lang="ts">
-import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
-  sparkChildren?: SparkNode[]
+  /** 双向绑定值 */
   modelValue?: boolean
+  /** 激活时文案 */
   activeText?: string
+  /** 未激活时文案 */
   inactiveText?: string
 }
 
@@ -50,7 +53,7 @@ const permission = useFieldPermission<boolean>({
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext(props, permission)
+const fieldCtx = useFieldContext({ width: props.width }, permission)
 
 function handleChange(value: boolean): void {
   emit('update:modelValue', value)

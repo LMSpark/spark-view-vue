@@ -27,7 +27,7 @@
   >
     <SparkComponentRenderer
       v-for="(child, i) in mergedChildren"
-      :key="child.id ?? `col-group-${i}`"
+      :key="nodeId(child) ?? `col-group-${i}`"
       :config="child"
     />
   </el-table-column>
@@ -36,25 +36,35 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 
 interface Props {
-  config?: SparkNode
+  /** 分组标题（必填） */
   label?: string
+  /** 子节点列表 */
+  children?: SparkNode[]
+  /** 列宽 */
   width?: string | number
+  /** 最小宽度 */
   minWidth?: string | number
+  /** 固定方向 */
   fixed?: boolean | 'left' | 'right'
+  /** 对齐方式 */
   align?: 'left' | 'center' | 'right'
+  /** 表头对齐 */
   headerAlign?: 'left' | 'center' | 'right'
+  /** 列自定义样式类 */
   className?: string
+  /** 表头自定义样式类 */
   labelClassName?: string
-  sparkChildren?: SparkNode[]
 }
 
 const props = defineProps<Props>()
 
-const label = computed(() => props.label ?? props.config?.props?.['label'] as string ?? '')
-const mergedChildren = computed<SparkNode[]>(() =>
-  props.config?.children ?? props.sparkChildren ?? []
-)
+const label = computed(() => props.label ?? '')
+const mergedChildren = computed<SparkNode[]>(() => {
+  const children = props.children
+  if (Array.isArray(children) && children.length > 0) return children
+  return []
+})
 </script>

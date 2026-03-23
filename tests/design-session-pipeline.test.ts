@@ -4,6 +4,11 @@ import {
   extractProposals,
   extractComponentQueries,
   stripProposalTags,
+  resolveComponentQuery,
+  COMPONENT_PROPS_CATALOG,
+  SKILL_CATALOG,
+  SKILL_CATEGORY_INDEX,
+  resolveSkillQuery,
 } from '@spark-view/spark-ai'
 import {
   ResponsePipeline,
@@ -168,6 +173,24 @@ r-table r-table r-form
 @@end`
     const queries = extractComponentQueries(text)
     expect(queries).toEqual(['r-table', 'r-form'])
+  })
+
+  it('extracts from @@query:component-api block', () => {
+    const text = `
+@@query:component-api
+r-table#filter, builtin-action
+@@end`
+    const queries = extractComponentQueries(text)
+    expect(queries).toEqual(['r-table#filter', 'builtin-action'])
+  })
+
+  it('supports @list for component API index query', () => {
+    const text = `
+@@query:component-api
+@list
+@@end`
+    const queries = extractComponentQueries(text)
+    expect(queries).toEqual(['@list'])
   })
 })
 
@@ -350,6 +373,29 @@ nonexistent-component
     expect(ctx.autoMessages).toEqual([])
   })
 
+  it('supports component query alias bundles for richer API exposure', () => {
+    const resolved = resolveComponentQuery(['r-table-series'])
+    expect(resolved).not.toBeNull()
+    expect(resolved ?? '').toContain('context-aware-fields-api')
+    expect(resolved ?? '').toContain('builtin-action')
+    expect(resolved ?? '').toContain('r-table')
+    expect(resolved ?? '').toContain('r-form')
+  })
+
+  it('supports specific component API fragment query', () => {
+    const resolved = resolveComponentQuery(['r-table#filter'])
+    expect(resolved).not.toBeNull()
+    expect(resolved ?? '').toContain('精确片段: filter')
+    expect(resolved ?? '').toContain('filter.columns')
+  })
+
+  it('supports component API catalog index query', () => {
+    const resolved = resolveComponentQuery(['@list'])
+    expect(resolved).not.toBeNull()
+    expect(resolved ?? '').toContain('组件 API 目录索引')
+    expect(resolved ?? '').toContain('r-table')
+  })
+
   it('stops pipeline when processor returns false', async () => {
     const order: string[] = []
     const pipeline = new ResponsePipeline()
@@ -372,5 +418,127 @@ nonexistent-component
     const ctx = await pipeline.execute('test', 'msg-stop')
     expect(order).toEqual(['first'])
     expect(ctx.metadata['visited']).toBe(true)
+  })
+
+  it('resolves r-form-series alias to form-related components', () => {
+    const resolved = resolveComponentQuery(['r-form-series'])
+    expect(resolved).not.toBeNull()
+    expect(resolved ?? '').toContain('r-form')
+    expect(resolved ?? '').toContain('r-detail')
+    expect(resolved ?? '').toContain('r-checkbox')
+    expect(resolved ?? '').toContain('r-cascader')
+  })
+
+  it('resolves r-column-group-series alias', () => {
+    const resolved = resolveComponentQuery(['r-column-group-series'])
+    expect(resolved).not.toBeNull()
+    expect(resolved ?? '').toContain('r-column-group')
+    expect(resolved ?? '').toContain('r-table')
+  })
+
+  it('resolves dialog-form-crud alias to dialog/drawer + form components', () => {
+    const resolved = resolveComponentQuery(['dialog-form-crud'])
+    expect(resolved).not.toBeNull()
+    expect(resolved ?? '').toContain('r-dialog')
+    expect(resolved ?? '').toContain('r-drawer')
+    expect(resolved ?? '').toContain('r-form')
+    expect(resolved ?? '').toContain('builtin-action')
+  })
+
+  it('resolves upload-series alias to upload-related components', () => {
+    const resolved = resolveComponentQuery(['upload-series'])
+    expect(resolved).not.toBeNull()
+    expect(resolved ?? '').toContain('r-upload')
+    expect(resolved ?? '').toContain('r-file-path')
+    expect(resolved ?? '').toContain('r-file-browser')
+    expect(resolved ?? '').toContain('r-image')
+  })
+})
+
+// ── COMPONENT_PROPS_CATALOG ──────────────────────────────────────────────────
+
+describe('COMPONENT_PROPS_CATALOG', () => {
+  it('contains r-column-group entry', () => {
+    expect(COMPONENT_PROPS_CATALOG['r-column-group']).toBeDefined()
+    expect(COMPONENT_PROPS_CATALOG['r-column-group']).toContain('多级表头')
+  })
+
+  it('r-checkbox uses checkedText/uncheckedText and deprecates trueLabel/falseLabel', () => {
+    const entry = COMPONENT_PROPS_CATALOG['r-checkbox']
+    expect(entry).toBeDefined()
+    expect(entry).toContain('checkedText')
+    expect(entry).toContain('uncheckedText')
+    // contains migration note mentioning the old names
+    expect(entry).toContain('trueLabel / falseLabel')
+  })
+
+  it('r-cascader includes optionChildrenField', () => {
+    const entry = COMPONENT_PROPS_CATALOG['r-cascader']
+    expect(entry).toBeDefined()
+    expect(entry).toContain('optionChildrenField')
+    expect(entry).toContain('emitPath')
+  })
+
+  it('r-tree-select includes optionLabelField and defaultExpandAll', () => {
+    const entry = COMPONENT_PROPS_CATALOG['r-tree-select']
+    expect(entry).toBeDefined()
+    expect(entry).toContain('optionLabelField')
+    expect(entry).toContain('defaultExpandAll')
+  })
+
+  it('r-transfer uses options not data', () => {
+    const entry = COMPONENT_PROPS_CATALOG['r-transfer']
+    expect(entry).toBeDefined()
+    expect(entry).toContain('options')
+    expect(entry).toContain('optionLabelField')
+  })
+
+  it('r-upload includes readonlyButtonText', () => {
+    const entry = COMPONENT_PROPS_CATALOG['r-upload']
+    expect(entry).toBeDefined()
+    expect(entry).toContain('readonlyButtonText')
+  })
+})
+
+// ── SKILL_CATALOG ────────────────────────────────────────────────────────────
+
+describe('SKILL_CATALOG', () => {
+  it('contains all 4 new patterns', () => {
+    expect(SKILL_CATALOG['computed-aggregate']).toBeDefined()
+    expect(SKILL_CATALOG['dialog-form-crud']).toBeDefined()
+    expect(SKILL_CATALOG['tabs-multi-view']).toBeDefined()
+    expect(SKILL_CATALOG['import-export']).toBeDefined()
+  })
+
+  it('computed-aggregate exists in data-pattern category', () => {
+    expect(SKILL_CATALOG['computed-aggregate']).toBeDefined()
+    expect(SKILL_CATEGORY_INDEX['data-pattern']).toContain('computed-aggregate')
+  })
+
+  it('dialog-form-crud exists in interaction-pattern category', () => {
+    expect(SKILL_CATALOG['dialog-form-crud']).toBeDefined()
+    expect(SKILL_CATEGORY_INDEX['interaction-pattern']).toContain('dialog-form-crud')
+  })
+
+  it('tabs-multi-view exists in layout-pattern category', () => {
+    expect(SKILL_CATALOG['tabs-multi-view']).toBeDefined()
+    expect(SKILL_CATEGORY_INDEX['layout-pattern']).toContain('tabs-multi-view')
+  })
+
+  it('import-export exists in interaction-pattern category', () => {
+    expect(SKILL_CATALOG['import-export']).toBeDefined()
+    expect(SKILL_CATEGORY_INDEX['interaction-pattern']).toContain('import-export')
+  })
+
+  it('SKILL_CATEGORY_INDEX includes new patterns', () => {
+    expect(SKILL_CATEGORY_INDEX['data-pattern']).toContain('computed-aggregate')
+    expect(SKILL_CATEGORY_INDEX['interaction-pattern']).toContain('dialog-form-crud')
+    expect(SKILL_CATEGORY_INDEX['interaction-pattern']).toContain('import-export')
+    expect(SKILL_CATEGORY_INDEX['layout-pattern']).toContain('tabs-multi-view')
+  })
+
+  it('resolveSkillQuery returns content for new patterns', () => {
+    const result = resolveSkillQuery('pattern', ['computed-aggregate'])
+    expect(result).toContain('computeExpression')
   })
 })

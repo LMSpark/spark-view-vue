@@ -14,7 +14,7 @@ export type {
 } from './spark.js'
 
 // ── 2. 组件开发 Composable ──
-export { useSparkComponent } from './useSparkComponent.js'
+export { useSparkComponent, useSparkConsume } from './useSparkComponent.js'
 export type { UseSparkComponentReturn } from './useSparkComponent.js'
 
 // ── 3. Vue 插件 ──
@@ -39,7 +39,7 @@ export type {
 } from './types.js'
 
 // ── 6. DI Keys ──
-export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
+export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } from './types.js'
 
 // ── 6b. 数据 + Renderer 能力键 ──
 export {
@@ -47,13 +47,22 @@ export {
   DATA_SOURCE,
   FIELD_CONTEXT,
   CONTEXT_DATA,
-  TABLE_API,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
 } from './capability-keys.js'
 export type {
   FieldContext,
   RendererTableApi,
+  RendererFormApi,
+  RendererDetailApi,
+  RendererTreeApi,
+  RendererListApi,
+  RendererDialogApi,
+  RendererDrawerApi,
+  RendererTabsApi,
+  RendererCollapseApi,
+  RendererStepsApi,
+  RendererSectionApi,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
@@ -97,7 +106,6 @@ export {
   RendererSection,
   RendererFieldScope,
   RendererListItemScope,
-  RendererTreeNodeScope,
   // 字段
   FieldText,
   FieldTextarea,

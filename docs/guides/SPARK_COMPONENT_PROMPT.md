@@ -16,7 +16,7 @@
 - **包管理**：pnpm monorepo
 - **核心包**：
   - `@spark-view/spark-component`：组件系统入口
-  - `@spark-view/spark-utils`：能力键（`APP_SERVICES`、`SELECTION`、`GRID_EVENTS` 等）
+  - `@spark-view/spark-utils`：能力键（`APP_SERVICES` 等）
   - `@spark-view/spark-data`：数据空间（`PAGE_DATASET`、`DATA_SOURCE`、`parseDataKey`）
 - **禁止**：跨包相对路径导入（`../../packages/spark-utils/...`），必须使用包名导入
 
@@ -72,7 +72,6 @@ provide(DATA_SOURCE, { get rows() { return allRows.value } })
 // 父级（容器）—— 无条件 provide，不关心谁会消费
 provide(FIELD_CONTEXT, 'table')
 provide(DATA_SOURCE, dataView)
-provide(SELECTION, selectionOps)
 
 // 子级（字段 / 行）—— consume 返回 null 是正常情况，做好防空
 const sel = consume(SELECTION)   // T | null，late-binding
@@ -135,7 +134,6 @@ import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-com
 import type { SparkNode } from '@spark-view/spark-component'
 // 仅从包名导入，禁止跨包相对路径
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-data'
-import { SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
 
 interface Props {
   /** SPARK 配置（主入口）—— type + props + children */
@@ -154,13 +152,7 @@ const {
 const pageDataSet = consume(PAGE_DATASET)
 
 // 3. 主动 provide 能力（父级无条件提供，不关心谁消费）
-provide(SELECTION, {
-  isSelected: (id) => selectedIds.value.has(id),
-  select:     (id) => { selectedIds.value.add(id) },
-  deselect:   (id) => { selectedIds.value.delete(id) },
-  getSelected:() => [...selectedIds.value]
-})
-const gridEvents = provideEvents(GRID_EVENTS)
+provide(DATA_SOURCE, dataView)
 </script>
 ```
 
@@ -176,7 +168,6 @@ import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { DATA_SOURCE } from '@spark-view/spark-data'
-import { SELECTION, ROW_DATA } from '@spark-view/spark-utils'
 
 interface Props { config: SparkNode }
 const props = defineProps<Props>()
@@ -184,8 +175,6 @@ const props = defineProps<Props>()
 const { isVisible, consume, logger } = useSparkComponent(props.config)
 
 // consume 返回 null 是正常 late-binding，做好防空
-const rowData    = consume(ROW_DATA)      // null | IRowDataCapability
-const selection  = consume(SELECTION)     // null | ISelectionCapability
 const dataSource = consume(DATA_SOURCE)   // null | IDataSource
 
 // 按 rowId 从 dataSource 自取本行数据
@@ -195,7 +184,7 @@ const row   = computed(() =>
 )
 
 const field        = computed(() => props.config.props?.['field'] as string)
-const displayValue = computed(() => row.value?.[field.value] ?? rowData?.getField(field.value))
+const displayValue = computed(() => row.value?.[field.value])
 </script>
 ```
 
@@ -208,11 +197,6 @@ const displayValue = computed(() => row.value?.[field.value] ?? rowData?.getFiel
 | `APP_SERVICES` | spark-utils | `IAppServicesCapability` | PageRenderer |
 | `LOGGER` | spark-utils | `LoggerApi` | 自定义覆盖 |
 | `PAGE_SERVICE` | spark-utils | `IPageServiceCapability` | 应用层 |
-| `SELECTION` | spark-utils | `ISelectionCapability` | 表格容器 |
-| `CURRENT_ROW` | spark-utils | `ICurrentRowCapability` | 表格容器 |
-| `ROW_DATA` | spark-utils | `IRowDataCapability` | 行组件 |
-| `GRID_EVENTS` | spark-utils | `IEventEmitter` | 表格容器 |
-| `ROW_EVENTS` | spark-utils | `IEventEmitter` | 行组件 |
 | `PAGE_DATASET` | spark-data | `IDataSet` | PageRenderer |
 | `DATA_SOURCE` | spark-data | `IDataSource` | 容器组件 |
 

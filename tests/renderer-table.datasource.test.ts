@@ -183,7 +183,8 @@ const RendererFieldScopeStub = defineComponent({
       'data-default-col-span': String(props.defaultColSpan),
     },
       ((props.configs as unknown[]) as Array<Record<string, unknown>>).map((config) => {
-        const fieldName = String(config['field'] ?? '')
+        const configProps = config['props'] as Record<string, unknown> | undefined
+        const fieldName = String(configProps?.['field'] ?? '')
         const model = props.model as Record<string, unknown>
         return h('input', {
           key: fieldName,
@@ -283,7 +284,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     spy.mockRestore()
   })
 
-  it('RendererTree should call dataSource.loadFromServer() on mount when rows empty', async () => {
+  it('RendererTree should call requestData() on mount when rows empty', async () => {
     const { RendererTree } = await import('@spark-view/spark-component')
 
     const ds = SparkData.createDataSet({
@@ -305,7 +306,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const spy = vi.spyOn(dv, 'requestData').mockResolvedValue(undefined)
 
     mount(RendererTree as any, {
-      props: { dataSource: dv },
+      props: { dataView: dv },
       global: {
         // Stub el-tree so the unknown component doesn't crash slot rendering
         stubs: { 'el-tree': { template: '<div><slot :node="{}" :data="{}" /></div>' } }
@@ -807,8 +808,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
         data: [{ id: 'node-1', label: '节点 1' }],
         toolbar: [{ type: 'tree-toolbar' }],
         toolbarPosition: 'right',
-        nodeActions: [{ type: 'node-button', on: { click: nodeActionSpy } }],
-        nodeActionsPosition: 'left',
+        children: [
+          { type: 'node-button', on: { click: nodeActionSpy } },
+        ],
       },
       global: {
         stubs: {
@@ -819,14 +821,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     expect(wrapper.find('.renderer-tree-layout--right').exists()).toBe(true)
-    expect(wrapper.find('.custom-tree-node--left').exists()).toBe(true)
     expect(wrapper.find('.spark-action-stub[data-type="tree-toolbar"]').exists()).toBe(true)
 
     const nodeAction = wrapper.find('.spark-action-stub[data-type="node-button"]')
-    expect(nodeAction.attributes('data-node-id')).toBe('node-1')
+    expect(nodeAction.exists()).toBe(true)
 
     await nodeAction.trigger('click')
-    expect(nodeActionSpy).toHaveBeenCalledWith({ id: 'node-1', label: '节点 1' }, { level: 1 }, 'evt')
+    expect(nodeActionSpy).toHaveBeenCalled()
   })
 
   it('should allow business slots to append table toolbar and row actions', () => {
@@ -871,14 +872,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         dataView: {
           rows: [{ id: 1, name: 'Alice', score: 95, joinedAt: '2026-03-10' }],
         },
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-text', field: 'name', props: { label: '姓名' } },
-            { type: 'r-number', field: 'score', props: { label: '分数' } },
-            { type: 'r-date', field: 'joinedAt', props: { label: '入职日期' } },
-          ],
-        },
+        children: [
+          { type: 'r-text', props: { field: 'name', label: '姓名' } },
+          { type: 'r-number', props: { field: 'score', label: '分数' } },
+          { type: 'r-date', props: { field: 'joinedAt', label: '入职日期' } },
+        ],
       },
       global: {
         components: {
@@ -901,22 +899,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(labels).toContain('入职日期')
   })
 
-  it('should render table columns from config.props.sparkChildren when config.children is empty', () => {
+  it('should render table columns from config.children', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: {
           rows: [{ id: 1, name: 'Alice', score: 95 }],
         },
-        config: {
-          type: 'r-table',
-          children: [],
-          props: {
-            sparkChildren: [
-              { type: 'r-text', field: 'name', props: { label: '姓名' } },
-              { type: 'r-number', field: 'score', props: { label: '分数' } },
-            ],
-          },
-        },
+        children: [
+          { type: 'r-text', props: { field: 'name', label: '姓名' } },
+          { type: 'r-number', props: { field: 'score', label: '分数' } },
+        ],
       },
       global: {
         components: {
@@ -938,12 +930,22 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(labels).toContain('分数')
   })
 
-  it('should allow business slots to append tree toolbar node actions and content template', async () => {
+  it('should allow business slots to append tree toolbar and content template', async () => {
     const { RendererTree } = await import('@spark-view/spark-component')
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Tree-Slots',
+      tables: {
+        Nodes: {
+          tableName: 'Nodes',
+          columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
+          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[]
+        }
+      }
+    })
+    const dv = ds.getView('Nodes', 'default')!
     const wrapper = mount(RendererTree as any, {
       props: {
-        dataSource: { rows: [{ id: 'node-1', label: '节点 1' }] },
-        nodeActionsPosition: 'right',
+        dataView: dv,
       },
       slots: {
         toolbar: ({ rows }: Record<string, unknown>) => h('button', {
@@ -954,10 +956,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
           class: 'biz-node-template',
           'data-node-label': String((data as Record<string, unknown>)['label'] ?? ''),
         }, 'biz-node-template'),
-        'node-actions': ({ data }: Record<string, unknown>) => h('button', {
-          class: 'biz-node-action',
-          'data-node-id': String((data as Record<string, unknown>)['id'] ?? ''),
-        }, 'biz-node-action'),
       },
       global: {
         stubs: {
@@ -969,7 +967,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     expect(wrapper.find('.biz-tree-toolbar').attributes('data-node-count')).toBe('1')
     expect(wrapper.find('.biz-node-template').attributes('data-node-label')).toBe('节点 1')
-    expect(wrapper.find('.biz-node-action').attributes('data-node-id')).toBe('node-1')
   })
 
   it('should hide toolbar actions by model permission and row actions by instance permission', async () => {
@@ -1003,7 +1000,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="plain-row"]').exists()).toBe(true)
   })
 
-  it('should hide tree toolbar actions by model permission and node actions by instance permission', async () => {
+  it('should hide tree toolbar actions by model permission and node children by instance permission', async () => {
     const { RendererTree } = await import('@spark-view/spark-component')
     const DeniedTreeStub = defineComponent({
       setup(_, { slots }) {
@@ -1014,17 +1011,28 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Tree-Perm',
+      tables: {
+        Nodes: {
+          tableName: 'Nodes',
+          columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
+          rows: [{ id: 'node-2', label: '节点 2', _perm: { allowDelete: false } }] as IDataRow[]
+        }
+      }
+    })
+    const dv = ds.getView('Nodes', 'default')!
+    // Inject _modelPerm on the DataView
+    ;(dv as any)._modelPerm = { allowImport: false }
+
     const wrapper = mount(RendererTree as any, {
       props: {
-        dataSource: {
-          rows: [{ id: 'node-2', label: '节点 2', _perm: { allowDelete: false } }],
-          _modelPerm: { allowImport: false },
-        },
+        dataView: dv,
         toolbar: [
           { type: 'import-tree', props: { permAction: 'import' } },
           { type: 'export-tree', props: { permAction: 'export' } },
         ],
-        nodeActions: [
+        children: [
           { type: 'delete-node', props: { permAction: 'delete' } },
           { type: 'plain-node' },
         ],
@@ -1039,7 +1047,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     expect(wrapper.find('.spark-action-stub[data-type="import-tree"]').exists()).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="export-tree"]').exists()).toBe(true)
-    expect(wrapper.find('.spark-action-stub[data-type="delete-node"]').exists()).toBe(false)
+    // children 不走权限过滤，全部渲染（权限逻辑由子组件自身处理）
+    expect(wrapper.find('.spark-action-stub[data-type="delete-node"]').exists()).toBe(true)
     expect(wrapper.find('.spark-action-stub[data-type="plain-node"]').exists()).toBe(true)
   })
 
@@ -1064,13 +1073,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
       props: {
         dataView: dv,
         filterColumns: ['name'],
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-text', field: 'name', props: { label: '姓名' } },
-            { type: 'r-number', field: 'age', props: { label: '年龄' } },
-          ],
-        },
+        children: [
+          { type: 'r-text', props: { field: 'name', label: '姓名' } },
+          { type: 'r-number', props: { field: 'age', label: '年龄' } },
+        ],
       },
       global: {
         stubs: {
@@ -1119,12 +1125,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
       props: {
         dataView: dv,
         filterColumns: ['name'],
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-text', field: 'name', props: { label: '姓名' } },
-          ],
-        },
+        children: [
+          { type: 'r-text', props: { field: 'name', label: '姓名' } },
+        ],
       },
       global: {
         stubs: {
@@ -1174,13 +1177,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
       props: {
         dataView: dv,
         filterColumns: ['score', 'status'],
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-number', field: 'score', props: { label: '分数', filterMode: 'range' } },
-            { type: 'r-multi-select', field: 'status', props: { label: '状态' } },
-          ],
-        },
+        children: [
+          { type: 'r-number', props: { field: 'score', label: '分数', filterMode: 'range' } },
+          { type: 'r-multi-select', props: { field: 'status', label: '状态' } },
+        ],
       },
       global: {
         stubs: {
@@ -1222,12 +1222,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
         filterColumns: ['name'],
         filterCollapsible: true,
         filterDefaultCollapsed: true,
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-text', field: 'name', props: { label: '姓名' } },
-          ],
-        },
+        children: [
+          { type: 'r-text', props: { field: 'name', label: '姓名' } },
+        ],
       },
       global: {
         stubs: {

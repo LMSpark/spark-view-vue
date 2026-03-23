@@ -207,6 +207,7 @@ export class PageConfigLoader implements ConfigLoader {
 
   clearCache(key?: string): void {
     this.fileLoader.clearCache(key)
+    if (!key) this.recentMissingFiles.clear()
   }
 
   getCacheStats(): { size: number; keys: string[] } {

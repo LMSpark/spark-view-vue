@@ -1,4 +1,4 @@
-import { computed, useSlots } from 'vue'
+import { computed, useSlots, type ComputedRef } from 'vue'
 import { useSparkComponent } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
@@ -15,10 +15,9 @@ import { createCurrentRowSlotScope } from './useContainerSlotScopes'
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
 
 interface FormDetailContainerProps {
-  config: SparkNode | undefined
   dataKey: string | undefined
-  sparkChildren: SparkNode[] | undefined
-  dataView: DataView | undefined
+  children: SparkNode[] | undefined
+  fallbackDataView?: ComputedRef<DataView | undefined>
   toolbar: SparkNode[] | undefined
   toolbarPosition: ToolbarPosition | undefined
   toolbarClass: string | undefined
@@ -41,12 +40,11 @@ export function useFormDetailContainer(
 ) {
   const slots = useSlots()
 
-  // ── 输入解析 ──────────────────────────────────────────────────────────────
+  // ── 输入解析 ──────────────────────────────────────────────────────────
 
   const { effectiveDataKey, configChildren } = useContainerInput({
-    config: computed(() => props.config),
     dataKey: computed(() => props.dataKey),
-    sparkChildren: computed(() => props.sparkChildren),
+    children: computed(() => props.children),
   })
 
   const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
@@ -61,15 +59,15 @@ export function useFormDetailContainer(
   const containerType = fieldContext === 'form' ? 'r-form' : 'r-detail'
   const logPrefix = fieldContext === 'form' ? 'RendererForm' : 'RendererDetail'
 
-  const { consume, provide: sparkProvide, logger } = useSparkComponent(
-    props.config ?? { type: containerType }
+  const { consume, provide: sparkProvide, logger, registerApi } = useSparkComponent(
+    { type: containerType }
   )
   const pageDataSet = consume(PAGE_DATASET)
 
   const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
     dataKey: effectiveDataKey,
     pageDataSet,
-    fallbackSource: computed(() => props.dataView ?? null),
+    fallbackSource: computed(() => props.fallbackDataView?.value ?? null),
     mapView: view => view,
     provideDataSource: view => sparkProvide(DATA_SOURCE, view),
     logger,
@@ -87,7 +85,6 @@ export function useFormDetailContainer(
     visibleToolbarConfigs,
     showToolbar,
   } = useContainerToolbar({
-    config: computed(() => props.config),
     toolbar: computed(() => props.toolbar),
     toolbarPosition: computed(() => props.toolbarPosition),
     toolbarClass: computed(() => props.toolbarClass),
@@ -121,6 +118,8 @@ export function useFormDetailContainer(
   }
 
   return {
+    registerApi,
+    resolvedView,
     contextData,
     gridChildren,
     gridStyle,

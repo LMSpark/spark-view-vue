@@ -16,6 +16,7 @@ import type {
   SkillQueryRequest,
 } from './design-session'
 import { resolveSkillQuery } from './skill-catalog'
+import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'
 import type { PersistedDesignSession } from './session-state'
 import {
   getRegisteredTableNames,
@@ -50,6 +51,8 @@ export interface PipelineContext {
   compareBlocks: CompareBlock[]
   /** 技能/模式查询请求（@@query:skill-list / @@query:pattern）*/
   skillQueryRequests: SkillQueryRequest[]
+  /** interaction 提案中发现的函数声明名 */
+  discoveredFunctions: string[]
   validationErrors: ValidationFeedback[]
   autoMessages: AutoMessage[]
   metadata: Record<string, unknown>
@@ -84,6 +87,7 @@ export class ResponsePipeline {
       clarifyBlocks: [],
       compareBlocks: [],
       skillQueryRequests: [],
+      discoveredFunctions: [],
       validationErrors: [],
       autoMessages: [],
       metadata: {},
@@ -163,22 +167,24 @@ export class ProposalValidatorProcessor implements ResponseProcessor {
   }
 }
 
-/** DataKey 格式校验正则 — 2段或3段 @-分隔 */
-const DATAKEY_RE = /^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\.[\w.]+)?$/
-
-/** 组件类型白名单前缀 */
-const VALID_TYPE_PREFIXES = ['r-', 'el-', 'Render']
-const HTML_TYPES = new Set([
-  'div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'strong', 'br', 'pre', 'a', 'label', 'table', 'thead', 'tbody',
-  'tr', 'th', 'td', 'ul', 'li', 'img',
-])
-
 /**
  * 处理器 3: DataKey 格式 / 组件类型 语义校验
  */
 export class SchemaCheckerProcessor implements ResponseProcessor {
   name = 'SchemaChecker'
+
+  private static readonly CONTAINER_CONTEXT_MAP: Record<string, 'table' | 'form' | 'detail' | 'list' | 'tree'> = {
+    'r-table': 'table',
+    'r-form': 'form',
+    'r-detail': 'detail',
+    'r-list': 'list',
+    'r-tree': 'tree',
+  }
+
+  private static readonly NON_FIELD_R_TYPES = new Set([
+    'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree',
+    'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section', 'r-block',
+  ])
 
   process(ctx: PipelineContext): boolean {
     for (const proposal of ctx.proposals) {
@@ -193,24 +199,44 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
     try {
       const parsed: unknown = JSON.parse(proposal.content)
       const nodes = Array.isArray(parsed) ? parsed : [parsed]
-      this.walkNodes(nodes, proposal, ctx)
+      this.walkNodes(nodes, proposal, ctx, null)
     } catch {
       // JSON 解析失败由 ProposalValidator 处理
     }
+  }
+
+  private resolveNodeContext(typeName: string, inheritedContext: 'table' | 'form' | 'detail' | 'list' | 'tree' | null): 'table' | 'form' | 'detail' | 'list' | 'tree' | null {
+    return SchemaCheckerProcessor.CONTAINER_CONTEXT_MAP[typeName] ?? inheritedContext
+  }
+
+  private extractFieldName(node: Record<string, unknown>): string | null {
+    if (typeof node['field'] === 'string' && node['field'].trim() !== '') {
+      return node['field']
+    }
+    return null
+  }
+
+  private isSparkFieldComponent(typeName: string): boolean {
+    return typeName.startsWith('r-') && !SchemaCheckerProcessor.NON_FIELD_R_TYPES.has(typeName)
   }
 
   private walkNodes(
     nodes: unknown[],
     proposal: DesignProposal,
     ctx: PipelineContext,
+    inheritedContext: 'table' | 'form' | 'detail' | 'list' | 'tree' | null,
   ): void {
     for (const node of nodes) {
       if (typeof node !== 'object' || node === null) continue
       const n = node as Record<string, unknown>
+      const typeName = typeof n['type'] === 'string' ? n['type'] : ''
+      const currentContext = typeName === ''
+        ? inheritedContext
+        : this.resolveNodeContext(typeName, inheritedContext)
 
       // 校验组件 type
-      if (typeof n['type'] === 'string') {
-        const t = n['type']
+      if (typeName !== '') {
+        const t = typeName
         const isValid = HTML_TYPES.has(t)
           || VALID_TYPE_PREFIXES.some((prefix) => t.startsWith(prefix))
         if (!isValid) {
@@ -220,6 +246,27 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
             checkType: 'component-type',
             message: `组件类型「${t}」不在注册表内`,
             suggestion: '请使用 r-* / el-* / HTML 原生标签 / Render* 函数。',
+          })
+        }
+
+        if (inheritedContext === 'table' && t === 'el-table-column') {
+          ctx.validationErrors.push({
+            severity: 'warning',
+            proposalName: proposal.title,
+            checkType: 'component-type',
+            message: 'r-table 子节点不建议使用 el-table-column（当前架构使用 r-* 字段组件按父语境自适应渲染）',
+            suggestion: '请改为 r-text / r-number / r-select 等 r-* 字段组件，并通过 field 绑定列。',
+          })
+        }
+
+        const fieldName = this.extractFieldName(n)
+        if (fieldName !== null && this.isSparkFieldComponent(t) && inheritedContext === null) {
+          ctx.validationErrors.push({
+            severity: 'warning',
+            proposalName: proposal.title,
+            checkType: 'schema',
+            message: `字段组件「${t}(${fieldName})」缺少父容器语境（table/form/detail/list/tree）`,
+            suggestion: '请将字段组件放入 r-table / r-form / r-detail / r-list / r-tree 容器，使其按父语境自动渲染。',
           })
         }
       }
@@ -240,7 +287,7 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
 
       // 递归 children
       if (Array.isArray(n['children'])) {
-        this.walkNodes(n['children'] as unknown[], proposal, ctx)
+        this.walkNodes(n['children'] as unknown[], proposal, ctx, currentContext)
       }
     }
   }
@@ -428,16 +475,18 @@ export class RegistryValidatorProcessor implements ResponseProcessor {
         if (tbl) currentTable = tbl
       }
 
-      // 检查 name 字段是否在表的列定义中（使用当前表名或继承表名）
-      const name = typeof n['name'] === 'string' ? n['name'] : null
-      if (name && currentTable && tableNames.has(currentTable)) {
+      // 检查 field 或 name 字段是否在表的列定义中
+      const fieldName = typeof n['field'] === 'string' ? n['field']
+        : typeof n['name'] === 'string' ? n['name']
+        : null
+      if (fieldName && currentTable && tableNames.has(currentTable)) {
         const cols = getRegisteredColumnNames(session, currentTable)
-        if (cols.length > 0 && !cols.includes(name)) {
+        if (cols.length > 0 && !cols.includes(fieldName)) {
           ctx.validationErrors.push({
             severity: 'warning',
             proposalName: proposal.title,
             checkType: 'table-reference',
-            message: `字段「${name}」不在表「${currentTable}」的列定义中`,
+            message: `字段「${fieldName}」不在表「${currentTable}」的列定义中`,
             suggestion: `表「${currentTable}」已有列：${cols.join(', ')}`,
           })
         }
@@ -452,12 +501,9 @@ export class RegistryValidatorProcessor implements ResponseProcessor {
     }
   }
 
-  /** 从节点中提取 dataKey（兼容 meta.data.dataKey 和顶层 dataKey） */
+  /** 从节点中提取 dataKey */
   private extractDataKey(n: Record<string, unknown>): string | null {
     if (typeof n['dataKey'] === 'string') return n['dataKey']
-    const meta = n['meta'] as Record<string, unknown> | undefined
-    const data = meta?.['data'] as Record<string, unknown> | undefined
-    if (typeof data?.['dataKey'] === 'string') return data['dataKey']
     return null
   }
 
@@ -549,11 +595,7 @@ export class RegistryValidatorProcessor implements ResponseProcessor {
 
     // 将发现的函数名暂存到 context 以供后续处理器使用
     if (declaredFunctions.length > 0) {
-      const existing = (ctx as unknown as Record<string, unknown>)['_discoveredFunctions'] as string[] | undefined
-      ;(ctx as unknown as Record<string, unknown>)['_discoveredFunctions'] = [
-        ...(existing ?? []),
-        ...declaredFunctions,
-      ]
+      ctx.discoveredFunctions.push(...declaredFunctions)
     }
   }
 
@@ -639,4 +681,28 @@ export class AutoResponderProcessor implements ResponseProcessor {
 
     return true
   }
+}
+
+// ── Factory ──────────────────────────────────────────────────────────────────
+
+/**
+ * 创建预配置的标准 ResponsePipeline（全部 7 个处理器）
+ *
+ * 使用方式：
+ * ```ts
+ * const pipeline = createStandardPipeline()
+ * const ctx = await pipeline.execute(rawContent, messageId, session)
+ * // ctx.autoMessages — 需要发送的自动回复
+ * // ctx.proposals    — 提取的结构化提案
+ * ```
+ */
+export function createStandardPipeline(): ResponsePipeline {
+  return new ResponsePipeline()
+    .use(new BlockExtractorProcessor())
+    .use(new ProposalValidatorProcessor())
+    .use(new SchemaCheckerProcessor())
+    .use(new QueryResolverProcessor())
+    .use(new SkillQueryProcessor())
+    .use(new RegistryValidatorProcessor())
+    .use(new AutoResponderProcessor())
 }

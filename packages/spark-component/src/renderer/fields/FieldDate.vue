@@ -16,18 +16,25 @@
 </template>
 
 <script setup lang="ts">
-import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
-  sparkChildren?: SparkNode[]
+  /** 双向绑定值，日期范围时为数组 */
   modelValue?: string | Date | Array<string | Date>
+  /** 筛选模式 */
+  filterMode?: string
+  /** 筛选变体 */
+  filterVariant?: string
+  /** 范围筛选标记 */
+  filterRange?: boolean
 }
 
 const props = defineProps<Props>()
@@ -45,9 +52,9 @@ function formatDateValue(value: unknown): string {
 }
 
 const isRangeFilter =
-  props.config?.props?.['filterMode'] === 'range'
-  || props.config?.props?.['filterVariant'] === 'range'
-  || props.config?.props?.['filterRange'] === true
+  props.filterMode === 'range'
+  || props.filterVariant === 'range'
+  || props.filterRange === true
 
 const permission = useFieldPermission<string | Date | Array<string | Date>>({
   props,
@@ -57,7 +64,7 @@ const permission = useFieldPermission<string | Date | Array<string | Date>>({
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext(props, permission)
+const fieldCtx = useFieldContext({ width: props.width }, permission)
 
 const handleChange = (val: string | Date | Array<string | Date>) => {
   emit('update:modelValue', val)

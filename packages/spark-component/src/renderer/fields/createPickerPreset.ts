@@ -9,7 +9,6 @@
  */
 import { computed, defineComponent, h } from 'vue'
 import type { PropType } from 'vue'
-import type { SparkNode } from '../_pkg'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import FieldEntityPicker from './FieldEntityPicker.vue'
 
@@ -27,11 +26,9 @@ export interface PickerPresetDefaults {
  * 与 FieldEntityPicker 的 Props 接口一一对应，确保 v-bind 透传正确。
  */
 const SHARED_PROPS = {
-  config: { type: Object as PropType<SparkNode>, default: undefined },
   name: { type: String, default: undefined },
   label: { type: String, default: undefined },
   width: { type: Number, default: undefined },
-  sparkChildren: { type: Array as PropType<SparkNode[]>, default: undefined },
   modelValue: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
   options: { type: Array as PropType<unknown[]>, default: undefined },
   optionLabelField: { type: String, default: undefined },
@@ -61,7 +58,7 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
 
         // 定义值 prop 列表（仅在 !== undefined 时透传，避免覆盖 EntityPicker 默认值）
         const conditionalKeys = [
-          'config', 'name', 'label', 'width', 'sparkChildren',
+          'name', 'label', 'width',
           'modelValue', 'options', 'optionLabelField', 'optionValueField',
         ] as const
 

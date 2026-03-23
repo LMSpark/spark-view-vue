@@ -15,18 +15,18 @@
     <div v-if="showToolbar" :class="['renderer-form-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-form-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-form-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
     </div>
 
     <div class="renderer-form-main">
-      <el-form :model="formModel" :label-width="labelWidth" v-bind="$attrs">
+      <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="$attrs">
         <div v-if="gridChildren.length" class="renderer-form-grid" :style="gridStyle">
           <div
             v-for="(child, i) in gridChildren"
-            :key="child.id ?? `r-form-child-${i}`"
+            :key="nodeId(child) ?? `r-form-child-${i}`"
             class="renderer-form-grid-item"
             :style="getChildGridStyle(child)"
           >
@@ -43,23 +43,32 @@
 /**
  * RendererForm - 表单容器组件
  */
+import { computed, ref, useAttrs } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
+import type { RendererFormApi } from '../_pkg'
 
 interface Props {
-  config?: SparkNode
+  /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
-  sparkChildren?: SparkNode[]
-  dataView?: DataView | undefined
+  /** 子节点列表 */
+  children?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 表单标签宽度 */
   labelWidth?: string
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
 }
 
@@ -71,8 +80,11 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
+const attrs = useAttrs()
 
 const {
+  registerApi,
+  resolvedView,
   contextData: formModel,
   gridChildren,
   gridStyle,
@@ -83,7 +95,57 @@ const {
   showToolbar,
   getToolbarSlotScope,
   getDefaultSlotScope,
-} = useFormDetailContainer(props, 'form')
+} = useFormDetailContainer({
+  ...props,
+  fallbackDataView: computed(() => attrs['dataView'] as DataView | undefined),
+}, 'form')
+
+// ── r-form 包装 API ──────────────────────────────────────────────────────
+
+const nativeFormRef = ref<unknown>(null)
+
+interface NativeFormLike {
+  validate?: () => Promise<boolean>
+  resetFields?: () => void
+  clearValidate?: () => void
+}
+
+const formApi: RendererFormApi = {
+  getDataSource() {
+    return resolvedView.value ?? null
+  },
+  getFormData() {
+    return formModel
+  },
+  getNativeForm() {
+    return nativeFormRef.value
+  },
+  async validate() {
+    const form = nativeFormRef.value as NativeFormLike
+    if (!form?.validate) return true
+    try {
+      return await form.validate()
+    } catch {
+      return false
+    }
+  },
+  resetFields() {
+    (nativeFormRef.value as NativeFormLike)?.resetFields?.()
+  },
+  clearValidate() {
+    (nativeFormRef.value as NativeFormLike)?.clearValidate?.()
+  },
+  getFieldValue(field) {
+    return formModel[field]
+  },
+  setFieldValue(field, value) {
+    formModel[field] = value
+  },
+}
+
+registerApi(formApi)
+
+defineExpose(formApi)
 </script>
 
 <style scoped>

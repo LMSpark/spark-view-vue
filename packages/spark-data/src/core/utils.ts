@@ -167,7 +167,7 @@ export function pruneInvalidSelections(
   if (state._selectedRowIds.length > 0) {
     const validIds = state._selectedRowIds.filter(id => validPkSet.has(id))
     if (validIds.length !== state._selectedRowIds.length) {
-      state._selectedRowIds.splice(0, state._selectedRowIds.length, ...validIds)
+      state._selectedRowIds = validIds
       selectedRowsPruned = true
     }
   }

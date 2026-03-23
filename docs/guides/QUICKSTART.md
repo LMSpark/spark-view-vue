@@ -560,7 +560,7 @@ const pageConfig = {
   layout: {
     type: 'container',
     children: [
-      { type: 'spark-ej2-grid', id: 'userGrid' }
+      { type: 'r-table', id: 'userGrid', dataKey: 'Users@rows' }
     ]
   },
   dataSet: {
