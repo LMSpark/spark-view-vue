@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-23T06:10:53.213Z
+ * 生成时间：2026-03-23T06:23:57.902Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,7 +20,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-23T06:10:53.209Z",
+  "buildTime": "2026-03-23T06:23:57.897Z",
   "componentCount": 77,
   "registry": {
     "containers": [
@@ -1738,7 +1738,56 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "type": "r-tree",
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。",
-      "props": [],
+      "props": [
+        {
+          "name": "dataKey",
+          "type": "string",
+          "required": false,
+          "description": "数据绑定键，如 \"TreeData@rows\""
+        },
+        {
+          "name": "dataView",
+          "type": "DataView | undefined",
+          "required": false,
+          "description": "直接传入的 DataView（与 Table/List/Form/Detail 一致）",
+          "schema": {
+            "kind": "enum",
+            "type": "DataView | undefined",
+            "variants": [
+              "undefined",
+              "DataView"
+            ]
+          }
+        },
+        {
+          "name": "allowAppend",
+          "type": "boolean",
+          "required": false,
+          "description": "允许追加子节点（自动生成追加按钮）",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "allowDelete",
+          "type": "boolean",
+          "required": false,
+          "description": "允许删除节点（自动生成删除按钮）",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        }
+      ],
       "emits": [],
       "capabilities": {
         "consumes": [
@@ -1752,6 +1801,95 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         ]
       },
       "exposed": [
+        {
+          "name": "dataKey",
+          "type": "string",
+          "description": "数据绑定键，如 \"TreeData@rows\""
+        },
+        {
+          "name": "dataView",
+          "type": "DataView | undefined",
+          "description": "直接传入的 DataView（与 Table/List/Form/Detail 一致）",
+          "schema": {
+            "kind": "enum",
+            "type": "DataView | undefined",
+            "variants": [
+              "undefined",
+              "DataView"
+            ]
+          }
+        },
+        {
+          "name": "sparkChildren",
+          "type": "SparkNode[]",
+          "description": "父级传入的节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）"
+        },
+        {
+          "name": "toolbar",
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
+        },
+        {
+          "name": "toolbarPosition",
+          "type": "ToolbarPosition",
+          "description": "工具栏位置",
+          "schema": {
+            "kind": "enum",
+            "type": "ToolbarPosition",
+            "variants": [
+              "\"top\"",
+              "\"bottom\"",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "toolbarClass",
+          "type": "string",
+          "description": "工具栏 CSS 类名"
+        },
+        {
+          "name": "allowAppend",
+          "type": "boolean",
+          "description": "允许追加子节点（自动生成追加按钮）",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "allowDelete",
+          "type": "boolean",
+          "description": "允许删除节点（自动生成删除按钮）",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "onNodeClick",
+          "type": "(data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void",
+          "description": "节点点击回调"
+        },
+        {
+          "name": "onNodeExpand",
+          "type": "(data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void",
+          "description": "节点展开回调"
+        },
+        {
+          "name": "onNodeCollapse",
+          "type": "(data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void",
+          "description": "节点折叠回调"
+        },
         {
           "name": "getDataSource",
           "type": "() => IDataSource | null",
@@ -10872,6 +11010,12 @@ targetOrder?: "push" | "unshift" | "original" — 右侧排序方式 (默认 "or
 【事件】
 update:modelValue: [value: TransferValue]`,
   "r-tree": `**r-tree** — SPARK 容器组件，可在 rule.json 中通过 type="r-tree" 组织子组件。
+
+【Props】
+dataKey?: string — 数据绑定键，如 "TreeData@rows"
+dataView?: DataView | undefined — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
+allowAppend?: boolean — 允许追加子节点（自动生成追加按钮）
+allowDelete?: boolean — 允许删除节点（自动生成删除按钮）
 
 【根级字段】
 dataKey: string — 数据绑定键，如 "TreeData@rows"
