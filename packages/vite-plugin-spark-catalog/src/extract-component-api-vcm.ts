@@ -7,7 +7,7 @@
  * - Exposed（defineExpose 公开方法/属性）
  * - Slots（命名插槽及其 scope 类型）
  *
- * 替代手写 AST 提取器，提供完整类型推导能力。
+ * 提供完整类型推导能力。
  *
  * @module extract-component-api-vcm
  * @since 2.0.0

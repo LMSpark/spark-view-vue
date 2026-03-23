@@ -1,15 +1,15 @@
 /**
- * 组件 Props 补充数据（构建时与 AST 提取合并）
+ * 组件 Props 补充数据（构建时与 VCM 提取合并）
  *
  * 分三类：
  * - SHARED_TYPE_DEFINITIONS: 框架级共享类型（SparkNode 等），catalog 顶层 sharedTypes 单例定义
- * - CATALOG_OVERRIDES: 完整条目，替换 AST 生成内容（容器组件 rule.json 格式、元概念、规划组件）
- * - CATALOG_ADDENDUMS: 追加条目，附加在 AST 生成内容之后（透传 Props、使用说明）
+ * - CATALOG_OVERRIDES: 完整条目，替换 VCM 生成内容（容器组件 rule.json 格式、元概念、规划组件）
+ * - CATALOG_ADDENDUMS: 追加条目，附加在 VCM 生成内容之后（透传 Props、使用说明）
  *
- * 为什么容器用 override 而非 AST？
+ * 为什么容器用 override 而非 VCM？
  * 容器组件的 rule.json 根级字段（filter.columns, toolbar.items, actions.items, on.*）
  * 与 Vue Props 名称不同（filterColumns, toolbar, rowActions），由 bindRules 转换。
- * AI 生成 rule.json 需要看到 rule.json 格式，AST 提取的是内部 Props 名，会误导 AI。
+ * AI 生成 rule.json 需要看到 rule.json 格式，VCM 提取的是内部 Props 名，会误导 AI。
  *
  * @module component-props-supplement
  */

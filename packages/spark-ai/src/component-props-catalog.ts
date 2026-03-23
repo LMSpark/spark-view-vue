@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-23T06:37:39.954Z
+ * 生成时间：2026-03-23T08:26:03.259Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,7 +20,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-23T06:37:39.937Z",
+  "buildTime": "2026-03-23T08:26:03.251Z",
   "componentCount": 77,
   "registry": {
     "containers": [
@@ -8484,8 +8484,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                       "required": true,
                       "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                     },
-                    "__@toPrimitive@91196": {
-                      "name": "__@toPrimitive@91196",
+                    "__@toPrimitive@13767": {
+                      "name": "__@toPrimitive@13767",
                       "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                       "required": true,
                       "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -8845,8 +8845,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@91196": {
-                        "name": "__@toPrimitive@91196",
+                      "__@toPrimitive@13767": {
+                        "name": "__@toPrimitive@13767",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."

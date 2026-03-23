@@ -13,14 +13,13 @@
  */
 
 /* ==========================================================================
- * 输入接口（兼容旧 AST、VCM、ComponentEntry）
+ * 输入接口
  * ========================================================================== */
 
 /**
  * 自动提取的组件 API 最小契约。
  *
- * `ComponentApiDescriptor`（旧 AST）、`VcmApiDescriptor`、`ComponentEntry`
- * 均满足此接口，无需适配即可直接传入。
+ * `VcmApiDescriptor` 和 `ComponentEntry` 均满足此接口，无需适配即可直接传入。
  */
 export interface ExtractedComponentApi {
   type: string
@@ -73,7 +72,7 @@ export interface DiffReportSummary {
 /**
  * 生成差距分析报告
  *
- * @param extractedApis - 自动提取的组件 API 列表（支持旧 AST / VCM / ComponentEntry）
+ * @param extractedApis - 自动提取的组件 API 列表（VcmApiDescriptor / ComponentEntry）
  * @param catalog       - 手写文档目录 Record<componentType, catalogText>
  */
 export function generateDiffReport(

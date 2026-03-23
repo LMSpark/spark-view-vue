@@ -60,7 +60,7 @@ function makeComponentEntry(overrides?: Partial<ComponentEntry>): ComponentEntry
       { name: 'placeholder', type: 'string', required: false },
     ],
     emits: [],
-    source: 'ast',
+    source: 'vcm',
     ...overrides,
   }
 }

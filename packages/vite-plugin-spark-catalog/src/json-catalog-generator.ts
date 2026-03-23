@@ -396,7 +396,7 @@ function buildComponentEntry(
   else if (prefix !== '') source = 'vcm'
   else if (hasOverride) source = 'override'
   else if (hasAddendum) source = 'addendum'
-  else source = 'ast' // fallback for pure-text entries
+  else source = 'override' // fallback for pure-text entries
 
   return {
     type: skillType,

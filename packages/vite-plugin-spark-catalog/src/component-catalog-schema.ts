@@ -2,7 +2,7 @@
  * SPARK 组件目录 JSON Schema 类型定义
  *
  * 整个 AI 生成管线的**单一数据源**（SSoT）：
- * - 构建时：从 Vue SFC AST 提取 + 补充数据合并 → 生成 component-catalog.json
+ * - 构建时：vue-component-meta 类型提取 + 补充数据合并 → 生成 component-catalog.json
  * - 运行时：读取 JSON → 生成提示词 / 校验 AI 输出 / 提供组件 API 查询
  *
  * 完全脱离前端框架（零 Vue 依赖），可云部署。
@@ -85,7 +85,7 @@ export interface ComponentEntry {
   notes?: string
 
   /** 来源标记 */
-  source: 'ast' | 'override' | 'addendum' | 'ast+addendum' | 'ast+override' | 'vcm' | 'vcm+override' | 'vcm+addendum'
+  source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
 }
 
 export interface PropEntry {

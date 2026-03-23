@@ -49,7 +49,7 @@ export interface ComponentEntry {
   slots?: SlotEntry[]
   rootFields?: RootFieldEntry[]
   notes?: string
-  source: 'ast' | 'override' | 'addendum' | 'ast+addendum' | 'ast+override' | 'vcm' | 'vcm+override' | 'vcm+addendum'
+  source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
 }
 
 export interface PropEntry {
