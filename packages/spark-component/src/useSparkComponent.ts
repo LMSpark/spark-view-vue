@@ -107,6 +107,12 @@ export function useSparkComponent(
   // SparkComponentRenderer 通过 v-bind="componentProps" 将 SparkNode.props 作为 Vue Props 传递。
   const config: SparkNode = fallbackConfig ?? { type: 'unknown' }
 
+  // id 解析优先级：fallbackConfig.props.id → Vue 实例 props.id → 自增计数器
+  const vuePropsId = getCurrentInstance()?.props['id']
+  const resolvedId = (typeof config.props?.['id'] === 'string' ? config.props['id'] : undefined)
+    ?? (typeof vuePropsId === 'string' ? vuePropsId : undefined)
+    ?? `spark-${++_idCounter}`
+
   // ── 上下文创建 ──
   //
   // 优化：
@@ -116,7 +122,7 @@ export function useSparkComponent(
   // 3. id 用全局单调计数器，比 Date.now()+random 更快且确定（SSR 友好）
 
   const context: ComponentContext = shallowReactive({
-    id: (typeof config.props?.['id'] === 'string' ? config.props['id'] : undefined) ?? `spark-${++_idCounter}`,
+    id: resolvedId,
     type: config.type,
     children: markRaw([] as ComponentContext[]),
     props: config.props ?? {},
