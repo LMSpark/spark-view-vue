@@ -6,7 +6,7 @@
  * @module composables/useSparkComponent
  */
 
-import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
+import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide, getCurrentInstance } from 'vue'
 import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { ComponentContext, SparkNode, ComponentRegistry } from './types.js'
@@ -267,13 +267,20 @@ export function useSparkComponent(
 
   // ── 生命周期 ──
 
+  let _initialized = false
+  const instanceUid = getCurrentInstance()?.uid
+
   const initialize = () => {
+    if (_initialized) return
+    _initialized = true
     if (import.meta.env.DEV) {
-      logger.debug(`[spark] init: ${context.type} (${context.id})`)
+      const uidSuffix = instanceUid === undefined ? '' : `#uid:${instanceUid}`
+      logger.debug(`[spark] init: ${context.type} (${context.id})${uidSuffix}`)
     }
   }
 
   const destroy = () => {
+    _initialized = false
     // 清理所有通过 consumeEvents 注册的事件监听（防止内存泄漏）
     for (const sub of _eventSubscriptions) {
       sub.emitter.off(sub.event, sub.handler)

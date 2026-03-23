@@ -718,11 +718,6 @@ r-row / r-cell
 
 ### 核心模型：SparkNode ≈ h(type, props, children)
 
-SparkNode 设计参照 Vue `h(type, props, children)` 三段式：
-- **type** → 渲染什么组件
-- **props** → 组件接收的全部属性（dataKey / field / label … 均在此）
-- **children** → 嵌套子节点
-
 SparkNode 严格对齐 Vue `h(type, props, children)` 三段式，**仅保留 3 个根级字段**：
 - **type** → 渲染什么组件
 - **props** → 组件接收的全部属性（id / dataKey / field / label / on / visible / disabled … 统统在此）
@@ -803,7 +798,7 @@ const { configChildren } = useContainerInput({
 
 ### ❗ 属性规范化（根级 → props）
 
-`bindSparkRuleEvents` 以结构键黑名单（`type/id/props/children/on/visible/disabled`）实现规范化：所有非结构根级字段一律收入 `props`。因此：
+`bindSparkRuleEvents` 以结构键黑名单（`type/props/children`）实现规范化：所有非结构根级字段（包括 `id/on/visible/disabled/dataKey/field` 等）一律收入 `props`。因此：
 
 - rule.json 中 `dataKey` / `field` / `label` / `optionKey` 写在根级或 props 内均可，最终都在 props 内
 - **组件代码一律通过 `defineProps` 接收属性，不读 SparkNode 根级**
@@ -821,10 +816,10 @@ const { configChildren } = useContainerInput({
 
 ```vue
 <!-- SparkComponentRenderer.vue -->
-<component :is="resolvedComponent" :config="config" v-bind="componentProps" />
+<component :is="resolvedComponent" v-bind="componentProps" />
 ```
 
-`componentProps` = `config.props`（含事件合并）+ `config.children`。
+`componentProps` = `config.props`（含事件合并）+ `config.children`（仅传给已注册组件）。
 绑定阶段已将 dataKey/field/label 等收入 props，组件通过 `defineProps` 直接接收：
 
 ```typescript

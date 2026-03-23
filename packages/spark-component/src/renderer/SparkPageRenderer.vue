@@ -100,6 +100,7 @@ provideCapability(PAGE_SERVICE, pageService)
 const currentPageId = ref('')
 const resolvedRules = ref<unknown[]>([])
 const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
+let _inFlightPageId: string | null = null
 const pageContainer = ref<HTMLElement | null>(null)
 type ModuleContextChangeHandler = (next: IModuleContext | null, prev: IModuleContext | null) => void
 const moduleContextListeners = new Set<ModuleContextChangeHandler>()
@@ -345,17 +346,22 @@ async function loadConfig(): Promise<void> {
   // system-page 路由不走 PageRenderer，防止 transition out-in 期间误触发
   if (route.meta['type'] === 'system-page') return
 
+  const targetPageId = resolvePageId(route, props.pageId, props.pageConfig?.pageId)
+  if (loading.value && _inFlightPageId === targetPageId) return
+  _inFlightPageId = targetPageId
+
   await runLoad(async (isStale) => {
-    const pageId = resolvePageId(route, props.pageId, props.pageConfig?.pageId)
-    currentPageId.value = pageId
-    if (props.beforeLoad) await props.beforeLoad(pageId)
+    currentPageId.value = targetPageId
+    if (props.beforeLoad) await props.beforeLoad(targetPageId)
     if (isStale()) return
-    const config = await fetchConfig(pageId)
+    const config = await fetchConfig(targetPageId)
     if (isStale()) return
-    applyConfig(pageId, config)
+    applyConfig(targetPageId, config)
     if (isStale()) return
     if (props.afterLoad) await props.afterLoad(config)
   }, props.onError)
+
+  _inFlightPageId = null
 
   // loading=false 后等待 DOM 渲染完成，再执行 __init__ + initAutoSelection
   // 此时组件已挂载、DataSet 已就绪

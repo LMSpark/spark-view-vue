@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-23T16:40:44.681Z
+ * 生成时间：2026-03-23T17:06:41.214Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,7 +20,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-23T16:40:44.672Z",
+  "buildTime": "2026-03-23T17:06:41.209Z",
   "componentCount": 77,
   "registry": {
     "containers": [
@@ -361,21 +361,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "dataKey",
           "type": "string",
           "required": false,
-          "description": "DataKey 格式：tableName@field（与 config 同层冗余时以 config.props.dataKey 为准）"
-        },
-        {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "required": false,
-          "description": "直接传入的 DataView（备用）",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
+          "description": "DataKey 格式：tableName@field"
         }
       ],
       "emits": [],
@@ -601,20 +587,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "dataKey",
           "type": "string",
-          "description": "DataKey 格式：tableName@field（与 config 同层冗余时以 config.props.dataKey 为准）"
+          "description": "DataKey 格式：tableName@field"
         },
         {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "description": "直接传入的 DataView（备用）",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点列表"
         },
         {
           "name": "toolbar",
@@ -1046,20 +1024,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键，如 \"Users@currentRow\""
         },
         {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "required": false,
-          "description": "直接传入的 DataView",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
-        },
-        {
           "name": "labelWidth",
           "type": "string",
           "required": false,
@@ -1186,17 +1150,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键，如 \"Users@currentRow\""
         },
         {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "description": "直接传入的 DataView",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点列表"
         },
         {
           "name": "toolbar",
@@ -1397,20 +1353,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键"
         },
         {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "required": false,
-          "description": "直接传入的 DataView",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
-        },
-        {
           "name": "gridColumns",
           "type": "number",
           "required": false,
@@ -1517,17 +1459,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键"
         },
         {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "description": "直接传入的 DataView",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点列表"
         },
         {
           "name": "toolbar",
@@ -1703,20 +1637,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键，如 \"TreeData@rows\""
         },
         {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "required": false,
-          "description": "直接传入的 DataView（与 Table/List/Form/Detail 一致）",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
-        },
-        {
           "name": "allowAppend",
           "type": "boolean",
           "required": false,
@@ -1753,17 +1673,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键，如 \"TreeData@rows\""
         },
         {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "description": "直接传入的 DataView（与 Table/List/Form/Detail 一致）",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（树节点内容配置）"
         },
         {
           "name": "toolbar",
@@ -2045,20 +1957,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "数据绑定键"
-        },
-        {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "required": false,
-          "description": "直接传入的 DataView",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
         },
         {
           "name": "columns",
@@ -2421,17 +2319,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键"
         },
         {
-          "name": "dataView",
-          "type": "DataView | undefined",
-          "description": "直接传入的 DataView",
-          "schema": {
-            "kind": "enum",
-            "type": "DataView | undefined",
-            "variants": [
-              "undefined",
-              "DataView"
-            ]
-          }
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（列表项内容配置）"
         },
         {
           "name": "toolbar",
@@ -2873,6 +2763,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（标签面板配置）"
+        },
+        {
           "name": "toolbar",
           "type": "SparkNode[]",
           "description": "工具栏按钮配置"
@@ -3085,6 +2980,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（折叠项配置）"
+        },
+        {
           "name": "toolbar",
           "type": "SparkNode[]",
           "description": "工具栏按钮配置"
@@ -3295,6 +3195,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "string"
             ]
           }
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（步骤配置）"
         },
         {
           "name": "toolbar",
@@ -3678,6 +3583,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "string"
             ]
           }
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点"
         },
         {
           "name": "onUpdate:modelValue",
@@ -4142,6 +4052,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "string"
             ]
           }
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点"
         },
         {
           "name": "onUpdate:modelValue",
@@ -4788,6 +4703,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "string"
             ]
           }
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点"
         },
         {
           "name": "headerActions",
@@ -6553,6 +6473,26 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "筛选模式（'range' 启用范围输入）"
+        },
+        {
+          "name": "filterVariant",
+          "type": "string",
+          "required": false,
+          "description": "筛选变体"
+        },
+        {
+          "name": "filterRange",
+          "type": "boolean",
+          "required": false,
+          "description": "范围筛选标记",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
         }
       ],
       "emits": [
@@ -7434,6 +7374,32 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "string",
               "Date",
               "(string | Date)[]"
+            ]
+          }
+        },
+        {
+          "name": "filterMode",
+          "type": "string",
+          "required": false,
+          "description": "筛选模式"
+        },
+        {
+          "name": "filterVariant",
+          "type": "string",
+          "required": false,
+          "description": "筛选变体"
+        },
+        {
+          "name": "filterRange",
+          "type": "boolean",
+          "required": false,
+          "description": "范围筛选标记",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
             ]
           }
         }
@@ -8474,8 +8440,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                       "required": true,
                       "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                     },
-                    "__@toPrimitive@78286": {
-                      "name": "__@toPrimitive@78286",
+                    "__@toPrimitive@860": {
+                      "name": "__@toPrimitive@860",
                       "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                       "required": true,
                       "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -8835,8 +8801,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@78286": {
-                        "name": "__@toPrimitive@78286",
+                      "__@toPrimitive@860": {
+                        "name": "__@toPrimitive@860",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -9876,6 +9842,9 @@ field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: string | Date | (string | Date)[] — 双向绑定值，日期范围时为数组
+filterMode?: string — 筛选模式
+filterVariant?: string — 筛选变体
+filterRange?: boolean — 范围筛选标记
 
 【事件】
 update:modelValue: [value: string | Date | (string | Date)[]]
@@ -9918,7 +9887,6 @@ showPath: boolean — 展示完整路径`,
 
 【Props】
 dataKey?: string — 数据绑定键
-dataView?: DataView | undefined — 直接传入的 DataView
 gridColumns?: number — CSS Grid 列数 (默认 24)
 gridGap?: string | number — 栅格间距 (默认 0)
 gridAutoRows?: string — 栅格行高 (默认 "minmax(32px, auto)")
@@ -10098,7 +10066,6 @@ update:modelValue: [value: string]`,
 
 【Props】
 dataKey?: string — 数据绑定键，如 "Users@currentRow"
-dataView?: DataView | undefined — 直接传入的 DataView
 labelWidth?: string — 表单标签宽度 (默认 "100px")
 gridColumns?: number — CSS Grid 列数 (默认 24)
 gridGap?: string | number — 栅格间距 (默认 0)
@@ -10180,7 +10147,6 @@ update:modelValue: [value: string]`,
 
 【Props】
 dataKey?: string — 数据绑定键
-dataView?: DataView | undefined — 直接传入的 DataView
 columns?: number — 列数 (默认 1)
 gap?: string | number — 列表项间距 (默认 0)
 minItemWidth?: string — 最小项宽度 (默认 "")
@@ -10276,6 +10242,8 @@ min?: number — 最小值
 max?: number — 最大值
 precision?: number — 小数精度
 filterMode?: string — 筛选模式（'range' 启用范围输入）
+filterVariant?: string — 筛选变体
+filterRange?: boolean — 范围筛选标记
 
 【事件】
 update:modelValue: [value: number | [number | undefined, number | undefined]]
@@ -10461,8 +10429,7 @@ update:modelValue: [value: boolean]`,
   "r-table": `**r-table** — SPARK 容器组件，可在 rule.json 中通过 type="r-table" 组织子组件。
 
 【Props】
-dataKey?: string — DataKey 格式：tableName@field（与 config 同层冗余时以 config.props.dataKey 为准）
-dataView?: DataView | undefined — 直接传入的 DataView（备用）
+dataKey?: string — DataKey 格式：tableName@field
 
 【根级字段】
 dataKey: string — 数据绑定键，如 "Users@rows"（根级）
@@ -10609,7 +10576,6 @@ update:modelValue: [value: TransferValue]`,
 
 【Props】
 dataKey?: string — 数据绑定键，如 "TreeData@rows"
-dataView?: DataView | undefined — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
 allowAppend?: boolean — 允许追加子节点（自动生成追加按钮）
 allowDelete?: boolean — 允许删除节点（自动生成删除按钮）
 

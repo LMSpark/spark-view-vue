@@ -163,8 +163,10 @@ const renderableChildren = computed<RenderableChild[]>(() => {
 
 // ── 组件解析 ──────────────────────────────────────────────────────────────────
 
+const registryDefinition = computed(() => registry?.get(props.config.type) ?? null)
+
 const resolvedComponent = computed(() => {
-  const def = registry?.get(props.config.type)
+  const def = registryDefinition.value
   if (def) {
     return def.component ? markRaw(def.component as object) : null
   }
@@ -233,6 +235,9 @@ const forwardedProps = computed(() => {
 const componentProps = computed(() => {
   const base = forwardedProps.value
   const children = props.config.children
+  // 仅对 registry 组件透传 children prop；
+  // 全局组件（如 Element Plus）不接收该 prop，透传会污染到底层 DOM。
+  if (registryDefinition.value === null) return base
   return children !== undefined ? { ...base, children } : base
 })
 </script>

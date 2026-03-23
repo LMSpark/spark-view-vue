@@ -6,6 +6,7 @@ import type {
 
 export function createPageComponentRegistry(): PageComponentRegistry {
   const instanceMap = new Map<string, PageComponentInstanceEntry>()
+  const instanceRefCount = new Map<string, number>()
   const apiMap = new Map<string, PageComponentApiEntry>()
 
   function listInstances(type?: string): PageComponentInstanceEntry[] {
@@ -28,10 +29,18 @@ export function createPageComponentRegistry(): PageComponentRegistry {
         ? { id: entry.id, type: entry.type }
         : { id: entry.id, type: entry.type, props: entry.props }
       instanceMap.set(entry.id, normalized)
+      const count = instanceRefCount.get(entry.id) ?? 0
+      instanceRefCount.set(entry.id, count + 1)
     },
     unregisterInstance(id) {
-      instanceMap.delete(id)
-      apiMap.delete(id)
+      const count = instanceRefCount.get(id) ?? 0
+      if (count <= 1) {
+        instanceRefCount.delete(id)
+        instanceMap.delete(id)
+        apiMap.delete(id)
+        return
+      }
+      instanceRefCount.set(id, count - 1)
     },
     listInstances,
     getInstance(id) {
