@@ -67,7 +67,6 @@ import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
-import { TABS_API } from '../_pkg'
 import type { RendererTabsApi } from '../_pkg'
 
 interface TabsClickEvent {
@@ -102,7 +101,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-tabs' })
+const { registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-tabs' })
 
 const paneConfigs = computed(() =>
   (nodeConfig?.children ?? []).filter(child => child.type === 'r-tab-pane')
@@ -154,7 +153,6 @@ const tabsApi: RendererTabsApi = {
   },
 }
 
-sparkProvide(TABS_API, tabsApi)
 registerApi(tabsApi)
 
 defineExpose(tabsApi)

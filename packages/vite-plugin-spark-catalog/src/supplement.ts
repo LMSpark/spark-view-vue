@@ -218,7 +218,7 @@ actions.class: string — 操作列 CSS 类名
 
 【能力链】
 consumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT
-provides: DATA_SOURCE, TABLE_API, FIELD_CONTEXT
+provides: DATA_SOURCE, FIELD_CONTEXT
 
 children 内仅用 r-* 字段组件做列，禁止 el-table-column`,
 
@@ -269,7 +269,7 @@ onNodeCollapse: string — 节点折叠回调
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API`,
+provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA`,
 
   'r-list': `**r-list** — 列表容器
 dataKey: string — 数据绑定键

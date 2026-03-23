@@ -364,13 +364,17 @@ onUnmounted(() => {
   moduleContextListeners.clear()
 })
 
+// 用 signature 字符串作为 watch source，Vue 仅追踪 getter 中访问的属性。
+// 相比 deep:true（独立递归遍历 + callback 内 JSON.stringify），开销减半。
+let _prevModuleContext = props.moduleContext
 watch(
-  () => props.moduleContext,
-  (next, prev) => {
-    if (moduleContextSignature(next) === moduleContextSignature(prev)) return
+  () => moduleContextSignature(props.moduleContext),
+  () => {
+    const next = props.moduleContext
+    const prev = _prevModuleContext
+    _prevModuleContext = next
     emitModuleContextChange(next, prev)
   },
-  { deep: true },
 )
 
 watch(

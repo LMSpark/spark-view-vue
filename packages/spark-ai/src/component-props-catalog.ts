@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-23T08:26:03.259Z
+ * 生成时间：2026-03-23T10:02:14.693Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,7 +20,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-23T08:26:03.251Z",
+  "buildTime": "2026-03-23T10:02:14.685Z",
   "componentCount": 77,
   "registry": {
     "containers": [
@@ -1031,7 +1031,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "操作列 CSS 类名"
         }
       ],
-      "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【根级字段 — toolbar 工具栏】\ntoolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）\ntoolbar.position: 'top' | 'bottom' — 默认 'top'\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE, TABLE_API, FIELD_CONTEXT\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
+      "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【根级字段 — toolbar 工具栏】\ntoolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）\ntoolbar.position: 'top' | 'bottom' — 默认 'top'\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE, FIELD_CONTEXT\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
       "source": "vcm+override"
     },
     "r-form": {
@@ -2042,7 +2042,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "节点折叠回调"
         }
       ],
-      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\nsparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）\ntoolbar: SparkNode[] — 工具栏按钮配置\ntoolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）\ntoolbarClass: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API",
+      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\nsparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）\ntoolbar: SparkNode[] — 工具栏按钮配置\ntoolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）\ntoolbarClass: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
       "source": "vcm+override"
     },
     "r-list": {
@@ -8484,8 +8484,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                       "required": true,
                       "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                     },
-                    "__@toPrimitive@13767": {
-                      "name": "__@toPrimitive@13767",
+                    "__@toPrimitive@52475": {
+                      "name": "__@toPrimitive@52475",
                       "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                       "required": true,
                       "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -8845,8 +8845,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@13767": {
-                        "name": "__@toPrimitive@13767",
+                      "__@toPrimitive@52475": {
+                        "name": "__@toPrimitive@52475",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -10542,7 +10542,7 @@ actions.class: string — 操作列 CSS 类名
 
 【能力链】
 consumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT
-provides: DATA_SOURCE, TABLE_API, FIELD_CONTEXT
+provides: DATA_SOURCE, FIELD_CONTEXT
 
 children 内仅用 r-* 字段组件做列，禁止 el-table-column`,
   "r-tabs": `**r-tabs** — SPARK 容器组件，可在 rule.json 中通过 type="r-tabs" 组织子组件。
@@ -10652,7 +10652,7 @@ onNodeCollapse: string — 节点折叠回调
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API`,
+provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA`,
   "r-tree-select": `**r-tree-select** — SPARK 字段组件，可在 rule.json 中通过 type="r-tree-select" 使用。
 
 【Props】

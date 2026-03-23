@@ -49,7 +49,6 @@ import type { SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
-import { FORM_API } from '../_pkg'
 import type { RendererFormApi } from '../_pkg'
 
 interface Props {
@@ -83,7 +82,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const {
-  sparkProvide,
   registerApi,
   resolvedView,
   contextData: formModel,
@@ -141,7 +139,6 @@ const formApi: RendererFormApi = {
   },
 }
 
-sparkProvide(FORM_API, formApi)
 registerApi(formApi)
 
 defineExpose(formApi)

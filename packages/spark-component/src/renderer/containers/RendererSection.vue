@@ -93,7 +93,6 @@ import { computed, inject, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
-import { SECTION_API } from '../_pkg'
 import type { RendererSectionApi } from '../_pkg'
 
 interface Props {
@@ -160,7 +159,7 @@ const props = withDefaults(defineProps<Props>(), {
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-section' })
+const { registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-section' })
 
 const configChildren = computed(() => nodeConfig?.children ?? [])
 const headerActionConfigs = computed(() => props.headerActions ?? (nodeConfig?.props?.['headerActions'] as SparkNode[] | undefined) ?? [])
@@ -204,7 +203,6 @@ const sectionApi: RendererSectionApi = {
   },
 }
 
-sparkProvide(SECTION_API, sectionApi)
 registerApi(sectionApi)
 
 defineExpose(sectionApi)

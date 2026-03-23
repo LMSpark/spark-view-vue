@@ -66,7 +66,7 @@ import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
-import { FIELD_CONTEXT, CONTEXT_DATA, TREE_API } from '../_pkg'
+import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import type { RendererTreeApi } from '../_pkg'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerToolbar } from './useContainerToolbar'
@@ -310,7 +310,6 @@ const treeApi: RendererTreeApi = {
   },
 }
 
-sparkProvide(TREE_API, treeApi)
 registerApi(treeApi)
 
 defineExpose(treeApi)

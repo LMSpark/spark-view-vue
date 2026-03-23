@@ -76,7 +76,7 @@ export interface IRowStore {
 export interface ISelectionState {
   /** @internal 当前行主键值——委托可写 */
   _currentRowId: string | number | null
-  /** @internal 多选行主键值列表——委托通过 splice 维护（保持数组引用稳定） */
+  /** @internal 多选行主键值列表——委托通过整体赋值维护（shallowReactive 友好） */
   _selectedRowIds: Array<string | number>
   /** 只读 getter，按 _currentRowId 从 rows 解析行对象 */
   readonly currentRow: IDataRow | null
@@ -120,6 +120,9 @@ export interface ISelectionHost extends IViewIdentity, IRowStore, ISelectionStat
  * @see ISelectionState 可变契约说明
  */
 export interface ILocalMutationHost extends IViewIdentity, IRowStore, ISelectionState {
+  // ── 行数据（覆盖 IRowStore.readonly 为可写，shallowReactive 整体赋值触发响应式） ──
+  rows: IDataRow[]
+
   // ── 分页（委托直接写入） ──────────────────
   total: number
   page: number

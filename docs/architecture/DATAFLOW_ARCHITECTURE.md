@@ -227,11 +227,6 @@ r-row 或 r-cell context
 | `APP_SERVICES` | `spark-utils` | `IAppServicesCapability` | PageRenderer | 任意业务组件 |
 | `LOGGER` | `spark-utils` | `LoggerApi` | 自定义父组件 | `useSparkComponent`（自动）|
 | `PAGE_SERVICE` | `spark-utils` | `IPageServiceCapability` | — | — |
-| `SELECTION` | `spark-utils` | `ISelectionCapability` | 表容器 | 行/操作栏 |
-| `CURRENT_ROW` | `spark-utils` | `ICurrentRowCapability` | 表容器 | 行组件 |
-| `ROW_DATA` | `spark-utils` | `IRowDataCapability` | 行组件 | 单元格 |
-| `GRID_EVENTS` | `spark-utils` | `IEventEmitter` | 表容器 | 操作按钮 |
-| `ROW_EVENTS` | `spark-utils` | `IEventEmitter` | 行组件 | 单元格 |
 | `PAGE_DATASET` | `spark-component` | `IDataSet` | PageRenderer | 表容器 |
 | `DATA_SOURCE` | `spark-component` | `IDataSource` | 表容器 | 行/单元格 |
 

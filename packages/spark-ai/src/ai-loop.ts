@@ -707,7 +707,7 @@ export class AIPageLoop {
     this.options = {
       aiEndpoint: options.aiEndpoint,
       onFilesUpdated: options.onFilesUpdated ?? (() => {}),
-      onError: options.onError ?? ((e) => { console.error('[AIPageLoop]', e) }),
+      onError: options.onError ?? ((e) => { if (import.meta.env.DEV) console.error('[AIPageLoop]', e) }),
       logCollectDelay: options.logCollectDelay ?? 3000,
       skillCatalog: options.skillCatalog ?? undefined,
       includeGlobalDiagnostics: options.includeGlobalDiagnostics ?? true,

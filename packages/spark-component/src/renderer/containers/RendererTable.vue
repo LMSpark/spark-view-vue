@@ -3,7 +3,6 @@
  * @skill r-table
  * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页
  * @provides DATA_SOURCE
- * @provides TABLE_API
  * @consumes PAGE_DATASET
  * @input { dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
  * @example { "type": "r-table", "dataKey": "Orders@rows", "props": { "border": true, "highlightCurrentRow": true } }
@@ -198,7 +197,7 @@ import type { SparkNode, RendererTableApi } from '../_pkg'
 import type { ModuleContextCapability } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { PAGE_DATASET, DATA_SOURCE, TABLE_API, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { FIELD_CONTEXT, MODULE_CONTEXT } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -510,7 +509,6 @@ const tableApi: RendererTableApi = {
   },
 }
 
-sparkProvide(TABLE_API, tableApi)
 registerApi(tableApi)
 
 defineExpose(tableApi)

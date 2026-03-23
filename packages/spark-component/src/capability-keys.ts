@@ -307,28 +307,6 @@ declare module '@spark-view/spark-utils' {
     'app:field-context': FieldContext
     /** 容器向字段组件提供可写的响应式数据对象 */
     'app:context-data': Record<string, unknown>
-    /** r-table 包装 API（稳定契约 + 底层实例 escape hatch） */
-    'app:r-table-api': RendererTableApi
-    /** r-form 包装 API */
-    'app:r-form-api': RendererFormApi
-    /** r-detail 包装 API */
-    'app:r-detail-api': RendererDetailApi
-    /** r-tree 包装 API */
-    'app:r-tree-api': RendererTreeApi
-    /** r-list 包装 API */
-    'app:r-list-api': RendererListApi
-    /** r-dialog 包装 API */
-    'app:r-dialog-api': RendererDialogApi
-    /** r-drawer 包装 API */
-    'app:r-drawer-api': RendererDrawerApi
-    /** r-tabs 包装 API */
-    'app:r-tabs-api': RendererTabsApi
-    /** r-collapse 包装 API */
-    'app:r-collapse-api': RendererCollapseApi
-    /** r-steps 包装 API */
-    'app:r-steps-api': RendererStepsApi
-    /** r-section 包装 API */
-    'app:r-section-api': RendererSectionApi
     /** 页面级组件注册中心（整页实例与组件 API） */
     'app:page-component-registry': PageComponentRegistry
     /** 模块上下文能力（页面级） */
@@ -351,7 +329,6 @@ export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-da
  *
  * 由容器组件在解析完 DataView 后 provide，
  * 子组件通过 consume 获取行数据、选中状态等。
- * 与已有的 CURRENT_ROW / SELECTION 能力配合使用。
  */
 export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
 
@@ -366,43 +343,6 @@ export const FIELD_CONTEXT = defineCapability<FieldContext>('app:field-context')
  * 容器组件 provide 响应式数据对象，字段组件 consume 后读写字段值
  */
 export const CONTEXT_DATA = defineCapability<Record<string, unknown>>('app:context-data')
-
-/**
- * r-table 包装 API 能力键
- *
- * 由 RendererTable provide，子组件可通过 consume 获取稳定 API。
- */
-export const TABLE_API = defineCapability<RendererTableApi>('app:r-table-api')
-
-/** r-form 包装 API 能力键 */
-export const FORM_API = defineCapability<RendererFormApi>('app:r-form-api')
-
-/** r-detail 包装 API 能力键 */
-export const DETAIL_API = defineCapability<RendererDetailApi>('app:r-detail-api')
-
-/** r-tree 包装 API 能力键 */
-export const TREE_API = defineCapability<RendererTreeApi>('app:r-tree-api')
-
-/** r-list 包装 API 能力键 */
-export const LIST_API = defineCapability<RendererListApi>('app:r-list-api')
-
-/** r-dialog 包装 API 能力键 */
-export const DIALOG_API = defineCapability<RendererDialogApi>('app:r-dialog-api')
-
-/** r-drawer 包装 API 能力键 */
-export const DRAWER_API = defineCapability<RendererDrawerApi>('app:r-drawer-api')
-
-/** r-tabs 包装 API 能力键 */
-export const TABS_API = defineCapability<RendererTabsApi>('app:r-tabs-api')
-
-/** r-collapse 包装 API 能力键 */
-export const COLLAPSE_API = defineCapability<RendererCollapseApi>('app:r-collapse-api')
-
-/** r-steps 包装 API 能力键 */
-export const STEPS_API = defineCapability<RendererStepsApi>('app:r-steps-api')
-
-/** r-section 包装 API 能力键 */
-export const SECTION_API = defineCapability<RendererSectionApi>('app:r-section-api')
 
 /**
  * 页面级组件注册中心能力键

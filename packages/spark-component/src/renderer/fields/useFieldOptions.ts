@@ -1,10 +1,9 @@
 import { computed, inject } from 'vue'
 import type { ComputedRef } from 'vue'
-import { lookup } from '@spark-view/spark-utils'
 import { getViewFromRawKey } from '@spark-view/spark-data'
-import type { IDataSet } from '@spark-view/spark-data'
-import { SPARK_NODE_CONFIG_KEY, SPARK_PARENT_CONTEXT_KEY } from '../../types.js'
+import { SPARK_NODE_CONFIG_KEY } from '../../types.js'
 import { PAGE_DATASET } from '../../capability-keys.js'
+import { useSparkConsume } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import type { FieldPermissionProps } from './useFieldPermission'
 
@@ -118,8 +117,8 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
     ?? nodeConfig?.optionKey
     ?? (nodeConfig?.props?.['optionKey'] as string | undefined),
   )
-  const parentCtx = inject(SPARK_PARENT_CONTEXT_KEY, undefined)
-  const pageDataSet = parentCtx ? lookup<IDataSet>(parentCtx, PAGE_DATASET) : undefined
+  const parentCtx = useSparkConsume()
+  const pageDataSet = parentCtx.consume(PAGE_DATASET)
 
   const optionKeyView = computed(() => {
     const key = resolvedOptionKey.value

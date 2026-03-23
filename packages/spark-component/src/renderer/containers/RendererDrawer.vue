@@ -62,7 +62,6 @@ import { computed, inject, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
-import { DRAWER_API } from '../_pkg'
 import type { RendererDrawerApi } from '../_pkg'
 
 interface Props {
@@ -119,7 +118,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-drawer' })
+const { registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-drawer' })
 
 const resolvedTitle = computed(() =>
   props.title || (nodeConfig?.props?.['title'] as string | undefined) || ''
@@ -166,7 +165,6 @@ const drawerApi: RendererDrawerApi = {
   },
 }
 
-sparkProvide(DRAWER_API, drawerApi)
 registerApi(drawerApi)
 
 defineExpose(drawerApi)

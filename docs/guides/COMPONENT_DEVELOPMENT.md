@@ -166,11 +166,6 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 | `APP_SERVICES` | `spark-utils` | `IAppServicesCapability` — router、logger、租户 | 应用层 |
 | `LOGGER` | `spark-utils` | `LoggerApi` — 自定义日志覆盖 | 任意祖先 |
 | `PAGE_SERVICE` | `spark-utils` | `IPageServiceCapability` — 弹框、导航、消息 | PageRenderer |
-| `SELECTION` | `spark-utils` | `ISelectionCapability` — 选择状态管理 | 容器组件 |
-| `CURRENT_ROW` | `spark-utils` | `ICurrentRowCapability` — 当前行管理 | 容器组件 |
-| `ROW_DATA` | `spark-utils` | `IRowDataCapability` — 行数据访问 | 行组件 |
-| `GRID_EVENTS` | `spark-utils` | `IEventEmitter` — 表格事件总线 | 表格组件 |
-| `ROW_EVENTS` | `spark-utils` | `IEventEmitter` — 行事件总线 | 行组件 |
 | `PAGE_DATASET` | `spark-component` | `IDataSet` — 页面级 DataSet | PageRenderer |
 | `DATA_SOURCE` | `spark-component` | `IDataSource` — 组件级数据视图 | 容器组件 |
 
@@ -178,7 +173,7 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 
 ```typescript
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES, PAGE_SERVICE, SELECTION } from '@spark-view/spark-utils'
+import { APP_SERVICES, PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET } from '@spark-view/spark-component'
 
 const { consume } = useSparkComponent(props.config)
@@ -188,9 +183,6 @@ consume(APP_SERVICES)?.router?.push('/detail/1')
 
 // 弹出确认框
 consume(PAGE_SERVICE)?.confirm('确认删除？').then(ok => { if (ok) doDelete() })
-
-// 读取当前选择
-const selectedIds = consume(SELECTION)?.getSelectedIds() ?? []
 
 // 获取页面 DataSet
 const dataSet = consume(PAGE_DATASET)
@@ -238,10 +230,9 @@ function handleSearch() {
 ```
 APP (provide APP_SERVICES)
  └─ PageRenderer (provide PAGE_DATASET, PAGE_SERVICE)
-      └─ 容器组件   (provide DATA_SOURCE, SELECTION)
-           └─ 行组件 (provide ROW_DATA)
-                └─ 子组件 → consume(DATA_SOURCE) ✅ 向上找到容器组件
-                          → consume(APP_SERVICES) ✅ 向上找到 APP
+      └─ 容器组件   (provide DATA_SOURCE)
+           └─ 子组件 → consume(DATA_SOURCE) ✅ 向上找到容器组件
+                      → consume(APP_SERVICES) ✅ 向上找到 APP
 ```
 
 ---
@@ -425,26 +416,28 @@ await ds?.batchDeleteRecords([1, 2, 3])
 ### 7.1 提供事件总线
 
 ```typescript
-import { GRID_EVENTS } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-view/spark-utils'
+import type { IEventEmitter } from '@spark-view/spark-utils'
+
+// 定义自定义事件能力键
+const MY_EVENTS = defineCapability<IEventEmitter>('app:my-events')
 
 const { provideEvents } = useSparkComponent(props.config)
 
-const gridEvents = provideEvents(GRID_EVENTS)
+const myEvents = provideEvents(MY_EVENTS)
 
 // 触发事件（内部使用）
-gridEvents.emit('rowClick', { row, index })
-gridEvents.emit('pageChange', { page: 2 })
+myEvents.emit('rowClick', { row, index })
+myEvents.emit('pageChange', { page: 2 })
 ```
 
 ### 7.2 消费事件总线
 
 ```typescript
-import { GRID_EVENTS } from '@spark-view/spark-utils'
-
 const { consumeEvents } = useSparkComponent(props.config)
 
 // 自动处理挂载/卸载
-consumeEvents(GRID_EVENTS, {
+consumeEvents(MY_EVENTS, {
   rowClick: ({ row }) => console.log('row clicked:', row),
   pageChange: ({ page }) => console.log('page:', page),
 })
@@ -453,7 +446,7 @@ consumeEvents(GRID_EVENTS, {
 ### 7.3 手动管理生命周期
 
 ```typescript
-const gridEvents = consume(GRID_EVENTS)
+const gridEvents = consume(MY_EVENTS)
 const onRowClick = (payload: RowClickPayload) => { /* ... */ }
 
 onMounted(() => gridEvents?.on('rowClick', onRowClick))
@@ -656,7 +649,7 @@ dataView.rows.splice(0, 1)                          // 禁止
 
 ```typescript
 // ✅ 通过能力系统通信
-consume(SELECTION)?.selectAll()
+consume(DATA_SOURCE)?.selectedRows
 
 // ❌ 通过 ref 直接耦合另一组件实例
 gridRef.value?.selectAll()

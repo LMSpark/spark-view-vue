@@ -120,7 +120,6 @@ export function useFormDetailContainer(
   }
 
   return {
-    sparkProvide,
     registerApi,
     resolvedView,
     contextData,

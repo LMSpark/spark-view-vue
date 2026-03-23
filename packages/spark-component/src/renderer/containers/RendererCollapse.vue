@@ -64,7 +64,6 @@ import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
-import { COLLAPSE_API } from '../_pkg'
 import type { RendererCollapseApi } from '../_pkg'
 
 type CollapseValue = string | number | Array<string | number>
@@ -94,7 +93,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-collapse' })
+const { registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-collapse' })
 
 const itemConfigs = computed(() =>
   (nodeConfig?.children ?? []).filter(child => child.type === 'r-collapse-item')
@@ -155,7 +154,6 @@ const collapseApi: RendererCollapseApi = {
   },
 }
 
-sparkProvide(COLLAPSE_API, collapseApi)
 registerApi(collapseApi)
 
 defineExpose(collapseApi)

@@ -75,18 +75,17 @@ function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolea
  * 递归替换 rule 中的数据占位符和事件处理器（公共 API）
  */
 export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
-  const callFunc = createFunctionCaller(options.pageFunctions)
-  return bindRulesRecursive(options, EMPTY_CONTEXT, callFunc)
-}
+  const { dataSet, registry, pageFunctions } = options
+  const callFunc = createFunctionCaller(pageFunctions)
 
-// ── 分区 E：递归编排（主流程） ─────────────────────────────────────────────
+  // 闭包捕获不变字段，递归中仅传变化的 rules + parentContext，
+  // 消除每层递归的 `{ ...options, rules }` 对象分配。
+  return recurse(options.rules, EMPTY_CONTEXT)
 
-function bindRulesRecursive(
-  options: RuleBindingOptions,
-  parentContext: BindingContext,
-  callFunc: (name: string, ...args: unknown[]) => unknown
-): BindRule[] {
-  const { rules, dataSet, registry } = options
+  function recurse(
+    rules: BindRule[],
+    parentContext: BindingContext,
+  ): BindRule[] {
 
   return rules.map(rule => {
     const newRule = { ...rule }
@@ -95,13 +94,13 @@ function bindRulesRecursive(
     if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
       const renderType = newRule.type
       const camelType = renderType.charAt(0).toLowerCase() + renderType.slice(1)
-      const renderFn = options.pageFunctions[renderType] ?? options.pageFunctions[camelType]
+      const renderFn = pageFunctions[renderType] ?? pageFunctions[camelType]
       if (typeof renderFn === 'function') {
         return newRule as BindRule
       }
       pageLogger.error('Render 函数未定义，已降级为占位节点', {
         renderType,
-        availableRenderFns: Object.keys(options.pageFunctions).filter(name => name.startsWith('Render')),
+        availableRenderFns: Object.keys(pageFunctions).filter(name => name.startsWith('Render')),
       })
       return {
         ...newRule,
@@ -201,10 +200,9 @@ function bindRulesRecursive(
           (item: unknown): item is BindRule => typeof item === 'object' && item !== null && 'type' in item
         )
         if (nestedRules.length === 0) continue
-        newRule.props[key] = bindRulesRecursive(
-          { ...options, rules: nestedRules },
+        newRule.props[key] = recurse(
+          nestedRules,
           childContext,
-          callFunc
         )
       }
     }
@@ -215,10 +213,9 @@ function bindRulesRecursive(
         (child: unknown): child is BindRule => typeof child !== 'string'
       )
       if (childRules.length > 0) {
-        newRule.children = bindRulesRecursive(
-          { ...options, rules: childRules },
+        newRule.children = recurse(
+          childRules,
           childContext,
-          callFunc
         )
       }
     }
@@ -253,7 +250,8 @@ function bindRulesRecursive(
 
     return newRule
   })
-}
+  } // end recurse
+} // end bindDataToRules
 
 // ── 分区 F：通用 dataKey 绑定（回退逻辑） ──────────────────────────────────
 

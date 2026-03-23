@@ -41,16 +41,15 @@ export class LocalMutationDelegate {
 
   /**
    * 将服务端响应同步到本地字段（rows / total / page / pageSize）
-   * splice 保持数组引用稳定
    */
   updateFromServer(
     data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[],
   ): void {
     const h = this.host
     if (Array.isArray(data)) {
-      h.rows.splice(0, h.rows.length, ...data)
+      h.rows = [...data]
     } else {
-      if (data.rows) h.rows.splice(0, h.rows.length, ...data.rows)
+      if (data.rows) h.rows = [...data.rows]
       if (data.total !== undefined) h.total = data.total
       if (data.page !== undefined) h.page = data.page
       if (data.pageSize !== undefined) h.pageSize = data.pageSize
@@ -62,7 +61,7 @@ export class LocalMutationDelegate {
 
   /** 本地追加一行，发射 stateChanged('rows') */
   appendRow(row: IDataRow): void {
-    this.host.rows.push(row)
+    this.host.rows = [...this.host.rows, row]
     this.host.rowIndexMap = undefined   // 新行未加入缓存，直接失效
     this.postMutation?.([row])
     this.emitRowsChanged()
@@ -98,7 +97,9 @@ export class LocalMutationDelegate {
     }
 
     const newRow = { ...oldRow, ...data }
-    h.rows[idx] = newRow
+    const rowsCopy = [...h.rows]
+    rowsCopy[idx] = newRow
+    h.rows = rowsCopy
     // 行对象已替换：在 Map 中原地更新 O(1)，避免 updateRowById 时全量重建
     if (h.rowIndexMap) {
       h.rowIndexMap.delete(oldRow)
@@ -121,7 +122,7 @@ export class LocalMutationDelegate {
     const idx = h.rows.findIndex(r => h.getPkKey(r) === id)
     if (idx < 0) return false
 
-    h.rows.splice(idx, 1)
+    h.rows = h.rows.filter((_, i) => i !== idx)
     h.rowIndexMap = undefined  // 行集合已变，缓存失效
 
     // Phase 4 M5: 先更新内部状态，再统一发射 rows 事件（防抖 16ms）。
@@ -134,7 +135,7 @@ export class LocalMutationDelegate {
     if (h._selectedRowIds.length > 0) {
       const newIds = h._selectedRowIds.filter(sid => sid !== id)
       if (newIds.length !== h._selectedRowIds.length) {
-        h._selectedRowIds.splice(0, h._selectedRowIds.length, ...newIds)
+        h._selectedRowIds = newIds
       }
     }
 
@@ -146,7 +147,7 @@ export class LocalMutationDelegate {
   /** 本地整批替换所有行，清理无效选中引用，发射 stateChanged('rows') */
   replaceRows(rows: IDataRow[]): void {
     const h = this.host
-    h.rows.splice(0, h.rows.length, ...rows)
+    h.rows = [...rows]
     h.rowIndexMap = undefined  // 行集合已替换，缓存失效
 
     // Phase 5 M4: 委托 pruneInvalidSelections 清理已失效的选中状态（纯状态修改，不发事件）

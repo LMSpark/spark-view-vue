@@ -88,7 +88,7 @@ import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY, LIST_API } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { RendererListApi } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
@@ -262,7 +262,6 @@ const listApi: RendererListApi = {
   },
 }
 
-sparkProvide(LIST_API, listApi)
 registerApi(listApi)
 
 defineExpose(listApi)

@@ -671,11 +671,6 @@ function RenderUserSwitch() {
 | `APP_SERVICES` | spark-utils | `IAppServicesCapability` | 路由、logger、租户等应用服务 |
 | `LOGGER` | spark-utils | `LoggerApi` | 组件级自定义 logger 覆盖 |
 | `PAGE_SERVICE` | spark-utils | `IPageServiceCapability` | UI 消息、确认框、导航 |
-| `SELECTION` | spark-utils | `ISelectionCapability` | 选择状态管理 ⚠️ `@reserved` 尚无 provider |
-| `CURRENT_ROW` | spark-utils | `ICurrentRowCapability` | 当前行管理 ⚠️ `@reserved` 尚无 provider |
-| `ROW_DATA` | spark-utils | `IRowDataCapability` | 行数据访问 ⚠️ `@reserved` 尚无 provider |
-| `GRID_EVENTS` | spark-utils | `IEventEmitter` | 表格事件总线 ⚠️ `@reserved` 尚无 provider |
-| `ROW_EVENTS` | spark-utils | `IEventEmitter` | 行事件总线 ⚠️ `@reserved` 尚无 provider |
 | `PAGE_DATASET` | spark-component | `IDataSet` | 页面级 DataSet（PageRenderer provide） |
 | `DATA_SOURCE` | spark-component | `IDataSource` | 组件级数据视图（容器组件 provide，DataView 实现此接口） |
 
@@ -1738,7 +1733,7 @@ Step 5: taskkill /PID /T /F                → 关闭 Java
 - Vite `SparkComponentsPlugin`（`tools/vite-plugin-spark-components.ts`）构建时提取组件元数据到 `dist/spark-component-metadata.json`
 
 ## Performance notes ⚡
-- **`spark-data` 无框架依赖**——DataView 通过 `DataView.wrapInstance` 静态钩子让框架层注入包装（SparkPlugin 中设为 `reactive()`）
+- **`spark-data` 无框架依赖**——DataView 通过 `DataView.wrapInstance` 静态钩子让框架层注入包装（SparkPlugin 中设为 `shallowReactive()`，仅追踪顶层属性）
 - `useSparkComponent` 使用 `shallowReactive`（顶层响应式）+ `markRaw(capabilities)`、`markRaw(children)`，大幅减少 Vue 响应系统开销
 - logger 解析带缓存（`_loggerCache`），`provide(LOGGER/APP_SERVICES, ...)` 时自动失效
 - 组件 ID 使用全局单调计数器（`spark-${++_idCounter}`），比 `Date.now()+random` 更快且 SSR 友好

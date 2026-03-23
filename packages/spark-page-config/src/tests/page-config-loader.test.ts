@@ -381,10 +381,6 @@ describe('parsePageData', () => {
     const result = parsePageData(raw)
     expect(result).toBeInstanceOf(DataSet)
 
-    // inspect what tables were actually generated – debugging help during failure
-    // eslint-disable-next-line no-console
-    console.log('tables keys', Object.keys(result.tables))
-
     // currentUser becomes a single-row table with value 'user1'
     const cuView = result.getView('currentUser')
     expect(cuView).toBeDefined()

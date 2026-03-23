@@ -80,7 +80,7 @@ export class SelectionDelegate {
     const prevHadCurrent = host._currentRowId !== null
     const prevHadSelected = host._selectedRowIds.length > 0
     host._currentRowId = null
-    host._selectedRowIds.splice(0, host._selectedRowIds.length)
+    host._selectedRowIds = []
 
     const firstRow = host.rows[0] ?? null
     const firstPk = firstRow !== null ? (host.getPkKey(firstRow) ?? null) : null
@@ -139,7 +139,7 @@ export class SelectionDelegate {
       if (ids.every(id => oldSet.has(id))) return
     }
 
-    host._selectedRowIds.splice(0, host._selectedRowIds.length, ...ids)
+    host._selectedRowIds = [...ids]
     this.emitSelectedRowsChanged(originatorId)
   }
 
@@ -316,7 +316,7 @@ export class SelectionDelegate {
     }
     if (toAddIds.length === 0) return 0
 
-    host._selectedRowIds.push(...toAddIds)
+    host._selectedRowIds = [...host._selectedRowIds, ...toAddIds]
     this.emitSelectedRowsChanged()
     return toAddIds.length
   }
@@ -346,7 +346,7 @@ export class SelectionDelegate {
     const newIds = host._selectedRowIds.filter(id => !toRemoveSet.has(id))
     const removedCount = host._selectedRowIds.length - newIds.length
     if (removedCount > 0) {
-      host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
+      host._selectedRowIds = newIds
       this.emitSelectedRowsChanged()
     }
     return removedCount
@@ -395,7 +395,7 @@ export class SelectionDelegate {
     }
     if (toAddIds.length === 0) return 0
 
-    host._selectedRowIds.push(...toAddIds)
+    host._selectedRowIds = [...host._selectedRowIds, ...toAddIds]
     this.emitSelectedRowsChanged()
     return toAddIds.length
   }
@@ -419,7 +419,7 @@ export class SelectionDelegate {
     const newIds = host._selectedRowIds.filter(id => !toRemoveSet.has(id))
     const removedCount = host._selectedRowIds.length - newIds.length
     if (removedCount > 0) {
-      host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
+      host._selectedRowIds = newIds
       this.emitSelectedRowsChanged()
     }
     return removedCount

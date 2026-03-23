@@ -1,4 +1,4 @@
-import { computed, onMounted, watch } from 'vue'
+import { computed, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import { parseDataKey } from '@spark-view/spark-data'
 import type { DataView, IDataSet } from '@spark-view/spark-data'
@@ -46,15 +46,13 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
     })
   }
 
-  // 当解析出的数据源变化时，同步更新 SPARK 能力暴露。
+  // 当解析出的数据源变化时，同步更新 SPARK 能力暴露 + 触发自动加载。
+  // immediate: true 确保 setup 期间首次求值即触发。
   watch(resolvedDataSource, (source) => {
     if (source === null) return
     options.provideDataSource?.(source)
     tryAutoLoad(source)
   }, { immediate: true })
-
-  // mounted 后再补一次自动加载，覆盖 setup 期间尚未就绪的场景。
-  onMounted(() => tryAutoLoad(resolvedDataSource.value))
 
   return {
     resolvedDataSource,

@@ -176,23 +176,45 @@ const resolvedComponent = computed(() => {
   return null
 })
 
+const _FILTERABLE_KEYS = new Set([...LAYOUT_ONLY_PROP_KEYS, ...FRAMEWORK_INTERNAL_PROP_KEYS])
+
+function _hasFilterableKeys(obj: Record<string, unknown>): boolean {
+  for (const key of Object.keys(obj)) {
+    if (_FILTERABLE_KEYS.has(key)) return true
+  }
+  return false
+}
+
+const _listenerNameCache = new Map<string, string>()
 function toListenerPropName(eventName: string): string {
+  let cached = _listenerNameCache.get(eventName)
+  if (cached !== undefined) return cached
   const normalized = eventName.replace(/[:\-]([a-zA-Z])/g, (_, char: string) => char.toUpperCase())
-  return `on${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`
+  cached = `on${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`
+  _listenerNameCache.set(eventName, cached)
+  return cached
 }
 
 const forwardedProps = computed(() => {
   const config = props.config
   const rawProps = config.props ?? {}
-  const eventProps = Object.fromEntries(
-    Object.entries(config.on ?? {}).map(([eventName, handler]) => [toListenerPropName(eventName), handler])
+  const onMap = config.on
+
+  // fast-path: 叶子组件大多无事件绑定且无 layout/framework key，直接返回原引用
+  const hasEvents = onMap !== null && onMap !== undefined && typeof onMap === 'object' && Object.keys(onMap).length > 0
+  if (!hasEvents && !_hasFilterableKeys(rawProps)) return rawProps
+
+  // slow-path: 过滤 layout/framework keys + 合并事件 props
+  const eventProps = hasEvents
+    ? Object.fromEntries(
+        Object.entries(onMap as Record<string, unknown>).map(([eventName, handler]) => [toListenerPropName(eventName), handler])
+      )
+    : undefined
+
+  const filteredProps = Object.fromEntries(
+    Object.entries(rawProps).filter(([key]) => !_FILTERABLE_KEYS.has(key))
   )
 
-  return {
-    ...Object.fromEntries(
-      Object.entries(rawProps).filter(([key]) => !LAYOUT_ONLY_PROP_KEYS.has(key) && !FRAMEWORK_INTERNAL_PROP_KEYS.has(key))
-    ),
-    ...eventProps,
-  }
+  return eventProps ? { ...filteredProps, ...eventProps } : filteredProps
 })
 </script>

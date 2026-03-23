@@ -147,15 +147,10 @@ const {
 向当前组件的 `context.capabilities` 写入能力。**这是 SPARK 能力系统，不是 Vue 的 `provide/inject`。**
 
 ```typescript
-import { SELECTION } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-view/spark-utils'
 
-provide(SELECTION, {
-  select: (id) => { ... },
-  deselect: (id) => { ... },
-  isSelected: (id) => selectedIds.has(id),
-  clearSelection: () => selectedIds.clear(),
-  getSelected: () => [...selectedIds],
-})
+const MY_CAP = defineCapability<{ doWork(): void }>('app:my-cap')
+provide(MY_CAP, { doWork() { console.log('working') } })
 ```
 
 支持类型安全的 `CapabilityKey<T>`（自动推断实现类型）和裸字符串/Symbol。
@@ -165,7 +160,11 @@ provide(SELECTION, {
 创建事件总线并注册为能力，`name` 默认 `'events'`。
 
 ```typescript
-const events = provideEvents(GRID_EVENTS)
+import { defineCapability } from '@spark-view/spark-utils'
+import type { IEventEmitter } from '@spark-view/spark-utils'
+
+const MY_EVENTS = defineCapability<IEventEmitter>('app:my-events')
+const events = provideEvents(MY_EVENTS)
 events.emit('rowClick', row)
 ```
 
@@ -190,7 +189,7 @@ services?.logger?.info('navigated')
 查找事件总线并批量绑定处理器：
 
 ```typescript
-consumeEvents(GRID_EVENTS, {
+consumeEvents(MY_EVENTS, {
   rowClick: (row) => handleRowClick(row),
   refresh: () => reload(),
 })
@@ -326,11 +325,6 @@ cap?.doWork()
 | `APP_SERVICES` | `IAppServicesCapability` | `{ router?, logger?, tenant?, configLoader?, authService? }` |
 | `LOGGER` | `LoggerApi` | 覆盖当前子树的 logger |
 | `PAGE_SERVICE` | `IPageServiceCapability` | `showMessage / showConfirm / showLoading / navigate` |
-| `SELECTION` | `ISelectionCapability` | `select / deselect / isSelected / clearSelection / getSelected` |
-| `CURRENT_ROW` | `ICurrentRowCapability` | `getRow / getIndex / setRow` |
-| `ROW_DATA` | `IRowDataCapability` | `getData / getField / isSelected?` |
-| `GRID_EVENTS` | `IEventEmitter` | 表格级事件总线 |
-| `ROW_EVENTS` | `IEventEmitter` | 行级事件总线 |
 
 来自 `@spark-view/spark-data`：
 

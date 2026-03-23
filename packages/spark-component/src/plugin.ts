@@ -8,7 +8,7 @@
  */
 
 import type { App, Plugin } from 'vue'
-import { markRaw, reactive } from 'vue'
+import { markRaw, shallowReactive } from 'vue'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
 import type { ComponentContext, ComponentRegistry } from './types.js'
 import type { CapabilityName } from '@spark-view/spark-utils'
@@ -26,8 +26,8 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
       // 默认使用全局 registry，确保 Spark.register() 注册的组件可被找到
       const registry = options?.registry ?? getGlobalRegistry()
 
-      // 配置 DataView 使用 Vue reactive 包装（spark-data 本身无框架依赖）
-      DataView.wrapInstance = (dv) => reactive(dv) as DataView
+      // 配置 DataView 使用 Vue shallowReactive 包装（仅追踪顶层属性，避免 rows 数据行的深度 Proxy 开销）
+      DataView.wrapInstance = (dv) => shallowReactive(dv) as DataView
 
       // 创建应用级根上下文（capabilities / children markRaw：不需要响应式）
       const rootContext: ComponentContext = {

@@ -53,8 +53,8 @@ export interface UseSparkComponentReturn {
    *
    * @example
    * // 按字符串名称消费，类型来自 CapabilityTypeMap declaration merging
-   * const sel = consume('spark:capability:selection')
-   * // sel: ISelectionCapability | null
+   * const svc = consume('spark:capability:app-services')
+   * // svc: IAppServicesCapability | null
    */
   consume: {
     <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
@@ -149,9 +149,9 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
 
   const fallbackLogger: LoggerApi = {
     debug: () => undefined,
-    info: (...args: unknown[]) => console.info(...args),
-    warn: (...args: unknown[]) => console.warn(...args),
-    error: (...args: unknown[]) => console.error(...args)
+    info: import.meta.env.DEV ? (...args: unknown[]) => console.info(...args) : () => undefined,
+    warn: import.meta.env.DEV ? (...args: unknown[]) => console.warn(...args) : () => undefined,
+    error: import.meta.env.DEV ? (...args: unknown[]) => console.error(...args) : () => undefined,
   }
 
   let _loggerCache: LoggerApi | null = null
@@ -311,4 +311,32 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
     isComponentRegistered,
     registerApi
   }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * 轻量消费器——仅需读取祖先能力、不需要创建 ComponentContext 的场景。
+ *
+ * 与 `useSparkComponent` 的差异：
+ * - 不创建 shallowReactive context、不注册 parent-children、不挂 onMounted/onUnmounted
+ * - 不提供 provide / registerApi / logger / getComponent
+ * - 开销 ≈ 1 次 inject + N 次 lookup，适合高频字段组件（表格 50 列 × N 行）
+ */
+export function useSparkConsume(): {
+  consume: {
+    <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
+    <T>(name: CapabilityKey<T>): T | null
+    (name: string | symbol): unknown
+  }
+} {
+  const parentContext = inject(SPARK_PARENT_CONTEXT_KEY, undefined)
+
+  function consume(name: string | symbol): unknown {
+    if (!parentContext) return null
+    const impl = lookup(parentContext, name)
+    return impl !== undefined ? impl : null
+  }
+
+  return { consume: consume as never }
 }

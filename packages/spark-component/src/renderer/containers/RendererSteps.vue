@@ -54,7 +54,6 @@ import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
-import { STEPS_API } from '../_pkg'
 import type { RendererStepsApi } from '../_pkg'
 
 interface Props {
@@ -82,7 +81,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-steps' })
+const { registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-steps' })
 
 const stepConfigs = computed(() =>
   (nodeConfig?.children ?? []).filter(child => child.type === 'r-step')
@@ -220,7 +219,6 @@ const stepsApi: RendererStepsApi = {
   },
 }
 
-sparkProvide(STEPS_API, stepsApi)
 registerApi(stepsApi)
 
 defineExpose(stepsApi)
