@@ -62,6 +62,8 @@ import { computed, inject, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
+import { DIALOG_API } from '../_pkg'
+import type { RendererDialogApi } from '../_pkg'
 
 interface Props {
   /** 对话框标题 */
@@ -117,7 +119,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-useSparkComponent(nodeConfig ?? { type: 'r-dialog' })
+const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-dialog' })
 
 const resolvedTitle = computed(() =>
   props.title || (nodeConfig?.props?.['title'] as string | undefined) || ''
@@ -145,6 +147,29 @@ const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots[
 function closeDialog(): void {
   emit('update:modelValue', false)
 }
+
+// ── r-dialog 包装 API ────────────────────────────────────────────────────
+
+
+const dialogApi: RendererDialogApi = {
+  open() {
+    emit('update:modelValue', true)
+  },
+  close() {
+    emit('update:modelValue', false)
+  },
+  isVisible() {
+    return visibleValue.value
+  },
+  toggle() {
+    emit('update:modelValue', !visibleValue.value)
+  },
+}
+
+sparkProvide(DIALOG_API, dialogApi)
+registerApi(dialogApi)
+
+defineExpose(dialogApi)
 
 function handleModelUpdate(value: boolean): void {
   emit('update:modelValue', value)

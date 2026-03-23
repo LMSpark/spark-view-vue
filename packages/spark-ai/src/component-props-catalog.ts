@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-22T19:42:03.179Z
+ * 生成时间：2026-03-23T06:10:53.213Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,8 +20,8 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-22T19:59:26.989Z",
-  "componentCount": 81,
+  "buildTime": "2026-03-23T06:10:53.209Z",
+  "componentCount": 77,
   "registry": {
     "containers": [
       "r-block",
@@ -29,23 +29,19 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-detail",
       "r-dialog",
       "r-drawer",
-      "r-field-scope",
       "r-form",
       "r-list",
-      "r-list-item-scope",
       "r-section",
       "r-steps",
       "r-table",
       "r-tabs",
-      "r-tree",
-      "r-tree-node-scope"
+      "r-tree"
     ],
     "fields": [
       "r-cascader",
       "r-checkbox",
       "r-checkbox-group",
       "r-color",
-      "r-context-renderer",
       "r-date",
       "r-dept-picker",
       "r-entity-picker",
@@ -388,23 +384,32 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "DataView"
             ]
           }
-        },
-        {
-          "name": "toolbar",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "工具栏按钮配置"
-        },
+        }
+      ],
+      "emits": [],
+      "capabilities": {
+        "consumes": [
+          "PAGE_DATASET",
+          "PAGE_SERVICE",
+          "MODULE_CONTEXT",
+          "PAGE_COMPONENT_REGISTRY"
+        ],
+        "provides": [
+          "DATA_SOURCE",
+          "TABLE_API",
+          "FIELD_CONTEXT"
+        ]
+      },
+      "exposed": [
         {
           "name": "toolbarPosition",
-          "type": "ToolbarPosition",
-          "required": false,
-          "default": "\"top\"",
+          "type": "ToolbarPosition | undefined",
           "description": "工具栏位置",
           "schema": {
             "kind": "enum",
-            "type": "ToolbarPosition",
+            "type": "ToolbarPosition | undefined",
             "variants": [
+              "undefined",
               "\"top\"",
               "\"bottom\"",
               "\"left\"",
@@ -414,35 +419,52 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "toolbarClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "工具栏 CSS 类名"
+          "type": "string | undefined",
+          "description": "工具栏 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
         },
         {
           "name": "filterColumns",
-          "type": "string[]",
-          "required": false,
-          "default": "[]",
-          "description": "筛选项字段列表"
+          "type": "string[] | undefined",
+          "description": "筛选项字段列表",
+          "schema": {
+            "kind": "enum",
+            "type": "string[] | undefined",
+            "variants": [
+              "undefined",
+              "string[]"
+            ]
+          }
         },
         {
           "name": "filterClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "筛选区 CSS 类名"
+          "type": "string | undefined",
+          "description": "筛选区 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
         },
         {
           "name": "filterCollapsible",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
+          "type": "boolean | undefined",
           "description": "筛选区可折叠",
           "schema": {
             "kind": "enum",
-            "type": "boolean",
+            "type": "boolean | undefined",
             "variants": [
+              "undefined",
               "false",
               "true"
             ]
@@ -450,14 +472,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "filterDefaultCollapsed",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
+          "type": "boolean | undefined",
           "description": "筛选区默认折叠",
           "schema": {
             "kind": "enum",
-            "type": "boolean",
+            "type": "boolean | undefined",
             "variants": [
+              "undefined",
               "false",
               "true"
             ]
@@ -465,35 +486,52 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "filterAutoFitMinWidth",
-          "type": "string",
-          "required": false,
-          "default": "\"220px\"",
-          "description": "筛选区最小宽度"
+          "type": "string | undefined",
+          "description": "筛选区最小宽度",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
         },
         {
           "name": "filterItemSpan",
-          "type": "number",
-          "required": false,
-          "default": "1",
-          "description": "每项跨列数"
+          "type": "number | undefined",
+          "description": "每项跨列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
         },
         {
           "name": "filterGridColumns",
-          "type": "number",
-          "required": false,
-          "default": "24",
-          "description": "筛选栅格总列数"
+          "type": "number | undefined",
+          "description": "筛选栅格总列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
         },
         {
           "name": "filterGridGap",
-          "type": "string | number",
-          "required": false,
-          "default": "12",
+          "type": "string | number | undefined",
           "description": "筛选栅格间距",
           "schema": {
             "kind": "enum",
-            "type": "string | number",
+            "type": "string | number | undefined",
             "variants": [
+              "undefined",
               "string",
               "number"
             ]
@@ -501,27 +539,26 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "filterGridAutoRows",
-          "type": "string",
-          "required": false,
-          "default": "\"minmax(32px, auto)\"",
-          "description": "筛选栅格行高"
-        },
-        {
-          "name": "rowActions",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "行操作按钮配置"
+          "type": "string | undefined",
+          "description": "筛选栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
         },
         {
           "name": "rowActionsPosition",
-          "type": "LateralActionPosition",
-          "required": false,
-          "default": "\"right\"",
+          "type": "LateralActionPosition | undefined",
           "description": "行操作列位置",
           "schema": {
             "kind": "enum",
-            "type": "LateralActionPosition",
+            "type": "LateralActionPosition | undefined",
             "variants": [
+              "undefined",
               "\"left\"",
               "\"right\""
             ]
@@ -529,21 +566,26 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "rowActionsLabel",
-          "type": "string",
-          "required": false,
-          "default": "\"\\u64CD\\u4F5C\"",
-          "description": "行操作列标题"
+          "type": "string | undefined",
+          "description": "行操作列标题",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
         },
         {
           "name": "rowActionsWidth",
-          "type": "string | number",
-          "required": false,
-          "default": "160",
+          "type": "string | number | undefined",
           "description": "行操作列宽度",
           "schema": {
             "kind": "enum",
-            "type": "string | number",
+            "type": "string | number | undefined",
             "variants": [
+              "undefined",
               "string",
               "number"
             ]
@@ -551,14 +593,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "rowActionsAlign",
-          "type": "\"left\" | \"right\" | \"center\"",
-          "required": false,
-          "default": "\"left\"",
+          "type": "\"left\" | \"right\" | \"center\" | undefined",
           "description": "行操作列对齐方式",
           "schema": {
             "kind": "enum",
-            "type": "\"left\" | \"right\" | \"center\"",
+            "type": "\"left\" | \"right\" | \"center\" | undefined",
             "variants": [
+              "undefined",
               "\"left\"",
               "\"right\"",
               "\"center\""
@@ -566,9 +607,49 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
+          "name": "rowActionsClass",
+          "type": "string | undefined",
+          "description": "行操作列 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "dataKey",
+          "type": "string",
+          "description": "DataKey 格式：tableName@field（与 config 同层冗余时以 config.props.dataKey 为准）"
+        },
+        {
+          "name": "dataView",
+          "type": "DataView | undefined",
+          "description": "直接传入的 DataView（备用）",
+          "schema": {
+            "kind": "enum",
+            "type": "DataView | undefined",
+            "variants": [
+              "undefined",
+              "DataView"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
+        },
+        {
+          "name": "rowActions",
+          "type": "SparkNode[]",
+          "description": "行操作按钮配置"
+        },
+        {
           "name": "rowActionsFixed",
           "type": "boolean | \"left\" | \"right\"",
-          "required": false,
           "description": "行操作列固定方向",
           "schema": {
             "kind": "enum",
@@ -582,27 +663,156 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
-          "name": "rowActionsClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "行操作列 CSS 类名"
+          "name": "getDataSource",
+          "type": "() => IDataSource | null"
+        },
+        {
+          "name": "getRows",
+          "type": "() => IDataRow[]"
+        },
+        {
+          "name": "getCurrentRow",
+          "type": "() => IDataRow | null"
+        },
+        {
+          "name": "getSelectedRows",
+          "type": "() => IDataRow[]"
+        },
+        {
+          "name": "refresh",
+          "type": "() => Promise<void>"
+        },
+        {
+          "name": "appendRow",
+          "type": "(row: IDataRow) => void"
+        },
+        {
+          "name": "updateRowById",
+          "type": "(id: string | number, patch: Partial<IDataRow>) => boolean"
+        },
+        {
+          "name": "deleteRowById",
+          "type": "(id: string | number) => boolean"
+        },
+        {
+          "name": "setCurrentRow",
+          "type": "(row: IDataRow | null) => void"
+        },
+        {
+          "name": "setCurrentRowById",
+          "type": "(id: string | number | null) => boolean"
+        },
+        {
+          "name": "setSelectedRows",
+          "type": "(rows: IDataRow[]) => void",
+          "schema": {
+            "kind": "event",
+            "type": "(rows: IDataRow[]): void",
+            "params": [
+              {
+                "kind": "object",
+                "type": "IDataRow",
+                "properties": {
+                  "_perm": {
+                    "name": "_perm",
+                    "type": "IInstancePermission",
+                    "required": false,
+                    "schema": {
+                      "kind": "object",
+                      "type": "IInstancePermission",
+                      "properties": {
+                        "allowDelete": {
+                          "name": "allowDelete",
+                          "type": "boolean",
+                          "required": false
+                        },
+                        "editableFields": {
+                          "name": "editableFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "hiddenFields": {
+                          "name": "hiddenFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "maskedFields": {
+                          "name": "maskedFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "permissionToken": {
+                          "name": "permissionToken",
+                          "type": "string",
+                          "required": false
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "setSelectedRowsById",
+          "type": "(ids: (string | number)[]) => number",
+          "schema": {
+            "kind": "event",
+            "type": "(ids: (string | number)[]): number",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "clearSelectedRows",
+          "type": "() => void"
+        },
+        {
+          "name": "clearUiSelection",
+          "type": "() => void"
+        },
+        {
+          "name": "toggleUiRowSelection",
+          "type": "(row: IDataRow, selected?: boolean | undefined) => void"
+        },
+        {
+          "name": "doLayout",
+          "type": "() => void"
+        },
+        {
+          "name": "getNativeTable",
+          "type": "() => unknown"
+        },
+        {
+          "name": "getFilterModel",
+          "type": "() => Record<string, unknown>",
+          "description": "获取当前过滤条件"
+        },
+        {
+          "name": "resetFilters",
+          "type": "() => void",
+          "description": "重置所有过滤条件"
+        },
+        {
+          "name": "hasActiveFilters",
+          "type": "() => boolean",
+          "description": "是否存在活跃过滤"
+        },
+        {
+          "name": "getActiveFilterCount",
+          "type": "() => number",
+          "description": "活跃过滤条件数量"
         }
       ],
-      "emits": [],
-      "capabilities": {
-        "consumes": [
-          "PAGE_DATASET",
-          "PAGE_SERVICE",
-          "PAGE_COMPONENT_REGISTRY",
-          "MODULE_CONTEXT"
-        ],
-        "provides": [
-          "DATA_SOURCE",
-          "TABLE_API",
-          "FIELD_CONTEXT"
-        ]
-      },
       "slots": [
         {
           "name": "toolbar",
@@ -843,7 +1053,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【根级字段 — toolbar 工具栏】\ntoolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）\ntoolbar.position: 'top' | 'bottom' — 默认 'top'\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE, TABLE_API, FIELD_CONTEXT\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-form": {
       "type": "r-form",
@@ -869,36 +1079,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "DataView"
             ]
           }
-        },
-        {
-          "name": "toolbar",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "工具栏按钮配置"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "ToolbarPosition",
-          "required": false,
-          "default": "\"top\"",
-          "description": "工具栏位置",
-          "schema": {
-            "kind": "enum",
-            "type": "ToolbarPosition",
-            "variants": [
-              "\"top\"",
-              "\"bottom\"",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "toolbarClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "工具栏 CSS 类名"
         },
         {
           "name": "labelWidth",
@@ -943,11 +1123,159 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "PAGE_DATASET"
         ],
         "provides": [
+          "FORM_API",
           "DATA_SOURCE",
           "FIELD_CONTEXT",
           "CONTEXT_DATA"
         ]
       },
+      "exposed": [
+        {
+          "name": "toolbarPosition",
+          "type": "ToolbarPosition | undefined",
+          "description": "工具栏位置",
+          "schema": {
+            "kind": "enum",
+            "type": "ToolbarPosition | undefined",
+            "variants": [
+              "undefined",
+              "\"top\"",
+              "\"bottom\"",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "toolbarClass",
+          "type": "string | undefined",
+          "description": "工具栏 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "labelWidth",
+          "type": "string | undefined",
+          "description": "表单标签宽度",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "dataKey",
+          "type": "string",
+          "description": "数据绑定键，如 \"Users@currentRow\""
+        },
+        {
+          "name": "dataView",
+          "type": "DataView | undefined",
+          "description": "直接传入的 DataView",
+          "schema": {
+            "kind": "enum",
+            "type": "DataView | undefined",
+            "variants": [
+              "undefined",
+              "DataView"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
+        },
+        {
+          "name": "getDataSource",
+          "type": "() => IDataSource | null",
+          "description": "获取底层 DataView（IDataSource）"
+        },
+        {
+          "name": "getFormData",
+          "type": "() => Record<string, unknown>",
+          "description": "获取当前表单数据（reactive mirror of currentRow）"
+        },
+        {
+          "name": "getNativeForm",
+          "type": "() => unknown",
+          "description": "获取底层 el-form 实例（escape hatch）"
+        },
+        {
+          "name": "validate",
+          "type": "() => Promise<boolean>",
+          "description": "触发表单校验，返回是否通过"
+        },
+        {
+          "name": "resetFields",
+          "type": "() => void",
+          "description": "重置表单到初始值"
+        },
+        {
+          "name": "clearValidate",
+          "type": "() => void",
+          "description": "清除校验状态"
+        },
+        {
+          "name": "getFieldValue",
+          "type": "(field: string) => unknown",
+          "description": "读取指定字段值"
+        },
+        {
+          "name": "setFieldValue",
+          "type": "(field: string, value: unknown) => void",
+          "description": "写入指定字段值"
+        }
+      ],
       "slots": [
         {
           "name": "toolbar",
@@ -1087,7 +1415,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-detail": {
       "type": "r-detail",
@@ -1113,36 +1441,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "DataView"
             ]
           }
-        },
-        {
-          "name": "toolbar",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "工具栏按钮配置"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "ToolbarPosition",
-          "required": false,
-          "default": "\"top\"",
-          "description": "工具栏位置",
-          "schema": {
-            "kind": "enum",
-            "type": "ToolbarPosition",
-            "variants": [
-              "\"top\"",
-              "\"bottom\"",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "toolbarClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "工具栏 CSS 类名"
         },
         {
           "name": "gridColumns",
@@ -1180,11 +1478,126 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "PAGE_DATASET"
         ],
         "provides": [
+          "DETAIL_API",
           "DATA_SOURCE",
           "FIELD_CONTEXT",
           "CONTEXT_DATA"
         ]
       },
+      "exposed": [
+        {
+          "name": "toolbarPosition",
+          "type": "ToolbarPosition | undefined",
+          "description": "工具栏位置",
+          "schema": {
+            "kind": "enum",
+            "type": "ToolbarPosition | undefined",
+            "variants": [
+              "undefined",
+              "\"top\"",
+              "\"bottom\"",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "toolbarClass",
+          "type": "string | undefined",
+          "description": "工具栏 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "dataKey",
+          "type": "string",
+          "description": "数据绑定键"
+        },
+        {
+          "name": "dataView",
+          "type": "DataView | undefined",
+          "description": "直接传入的 DataView",
+          "schema": {
+            "kind": "enum",
+            "type": "DataView | undefined",
+            "variants": [
+              "undefined",
+              "DataView"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
+        },
+        {
+          "name": "getDataSource",
+          "type": "() => IDataSource | null",
+          "description": "获取底层 DataView（IDataSource）"
+        },
+        {
+          "name": "getDetailData",
+          "type": "() => Record<string, unknown>",
+          "description": "获取当前详情数据"
+        },
+        {
+          "name": "getCurrentRow",
+          "type": "() => IDataRow | null",
+          "description": "获取当前行数据（便捷访问）"
+        },
+        {
+          "name": "getFieldValue",
+          "type": "(field: string) => unknown",
+          "description": "读取指定字段值"
+        }
+      ],
       "slots": [
         {
           "name": "toolbar",
@@ -1319,7 +1732,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-tree": {
       "type": "r-tree",
@@ -1334,65 +1747,120 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         "provides": [
           "DATA_SOURCE",
           "FIELD_CONTEXT",
-          "CONTEXT_DATA"
+          "CONTEXT_DATA",
+          "TREE_API"
         ]
       },
-      "slots": [
+      "exposed": [
         {
-          "name": "toolbar",
-          "type": "{ [x: string]: unknown; dataSource: IDataSource | null | undefined; modelPermission: IModelPermission | undefined; }",
+          "name": "getDataSource",
+          "type": "() => IDataSource | null",
+          "description": "获取底层 DataView（IDataSource）"
+        },
+        {
+          "name": "getTreeData",
+          "type": "() => IDataRow[]",
+          "description": "获取当前树数据"
+        },
+        {
+          "name": "getNativeTree",
+          "type": "() => unknown",
+          "description": "获取底层 el-tree 实例（escape hatch）"
+        },
+        {
+          "name": "getCurrentNode",
+          "type": "() => IDataRow | null",
+          "description": "获取当前选中节点数据"
+        },
+        {
+          "name": "setCurrentKey",
+          "type": "(key: string | number) => void",
+          "description": "按 key 设置当前选中节点"
+        },
+        {
+          "name": "filter",
+          "type": "(keyword: string) => void",
+          "description": "按关键词过滤节点"
+        },
+        {
+          "name": "getCheckedKeys",
+          "type": "() => (string | number)[]",
+          "description": "获取已勾选节点的 key 列表（show-checkbox 模式）"
+        },
+        {
+          "name": "setCheckedKeys",
+          "type": "(keys: (string | number)[]) => void",
+          "description": "设置勾选节点 key 列表",
           "schema": {
-            "kind": "object",
-            "type": "{ [x: string]: unknown; dataSource: IDataSource | null | undefined; modelPermission: IModelPermission | undefined; }",
-            "properties": {
-              "dataSource": {
-                "name": "dataSource",
-                "type": "IDataSource | null | undefined",
-                "required": true,
-                "schema": {
-                  "kind": "enum",
-                  "type": "IDataSource | null | undefined",
-                  "variants": [
-                    "undefined",
-                    "null",
-                    "IDataSource"
-                  ]
-                }
-              },
-              "modelPermission": {
-                "name": "modelPermission",
-                "type": "IModelPermission | undefined",
-                "required": true,
-                "schema": {
-                  "kind": "enum",
-                  "type": "IModelPermission | undefined",
-                  "variants": [
-                    "undefined",
-                    "IModelPermission"
-                  ]
-                }
+            "kind": "event",
+            "type": "(keys: (string | number)[]): void",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
               }
-            }
+            ]
           }
         },
         {
-          "name": "node-actions",
-          "type": "{ dataSource: IDataSource | null | undefined; modelPermission: IModelPermission | undefined; data: unknown; node: unknown; }",
+          "name": "appendNode",
+          "type": "(parentKey: string | number | null, nodeData: IDataRow) => void",
+          "description": "在指定父节点下追加子节点（parentKey 为 null 时追加到根级）"
+        },
+        {
+          "name": "insertBefore",
+          "type": "(refKey: string | number, nodeData: IDataRow) => void",
+          "description": "在参考节点之前插入"
+        },
+        {
+          "name": "insertAfter",
+          "type": "(refKey: string | number, nodeData: IDataRow) => void",
+          "description": "在参考节点之后插入"
+        },
+        {
+          "name": "updateNode",
+          "type": "(key: string | number, patch: Partial<IDataRow>) => boolean",
+          "description": "更新节点数据（按 nodeKey 匹配）"
+        },
+        {
+          "name": "removeNode",
+          "type": "(key: string | number) => boolean",
+          "description": "删除节点（按 nodeKey）"
+        },
+        {
+          "name": "getAllowAppend",
+          "type": "() => boolean",
+          "description": "是否允许追加子节点（控制自动生成的追加按钮）"
+        },
+        {
+          "name": "getAllowDelete",
+          "type": "() => boolean",
+          "description": "是否允许删除节点（控制自动生成的删除按钮）"
+        }
+      ],
+      "slots": [
+        {
+          "name": "toolbar",
+          "type": "{ [x: string]: unknown; dataSource: DataView | null | undefined; modelPermission: IModelPermission | undefined; }",
           "schema": {
             "kind": "object",
-            "type": "{ dataSource: IDataSource | null | undefined; modelPermission: IModelPermission | undefined; data: unknown; node: unknown; }",
+            "type": "{ [x: string]: unknown; dataSource: DataView | null | undefined; modelPermission: IModelPermission | undefined; }",
             "properties": {
               "dataSource": {
                 "name": "dataSource",
-                "type": "IDataSource | null | undefined",
+                "type": "DataView | null | undefined",
                 "required": true,
                 "schema": {
                   "kind": "enum",
-                  "type": "IDataSource | null | undefined",
+                  "type": "DataView | null | undefined",
                   "variants": [
                     "undefined",
                     "null",
-                    "IDataSource"
+                    "DataView"
                   ]
                 }
               },
@@ -1408,16 +1876,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                     "IModelPermission"
                   ]
                 }
-              },
-              "data": {
-                "name": "data",
-                "type": "unknown",
-                "required": true
-              },
-              "node": {
-                "name": "node",
-                "type": "unknown",
-                "required": true
               }
             }
           }
@@ -1501,7 +1959,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndata: TreeNode[] — 静态数据（优先用 dataKey）\ndataSource: IDataSource | DataView — 动态数据源\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 工具栏位置\nnodeActions: Rule[] — 节点操作区\nnodeActionsPosition: string — 节点操作位置\nnodeActionsClass: string — 节点操作区 CSS 类名\nonNodeClick: string — script.js 函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-list": {
       "type": "r-list",
@@ -1527,64 +1985,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "DataView"
             ]
           }
-        },
-        {
-          "name": "toolbar",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "工具栏按钮配置"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "ToolbarPosition",
-          "required": false,
-          "default": "\"top\"",
-          "description": "工具栏位置",
-          "schema": {
-            "kind": "enum",
-            "type": "ToolbarPosition",
-            "variants": [
-              "\"top\"",
-              "\"bottom\"",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "toolbarClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "工具栏 CSS 类名"
-        },
-        {
-          "name": "itemActions",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "列表项操作按钮配置"
-        },
-        {
-          "name": "itemActionsPosition",
-          "type": "LateralActionPosition",
-          "required": false,
-          "default": "\"right\"",
-          "description": "列表项操作位置",
-          "schema": {
-            "kind": "enum",
-            "type": "LateralActionPosition",
-            "variants": [
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "itemActionsClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "操作区 CSS 类名"
         },
         {
           "name": "columns",
@@ -1723,9 +2123,287 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "PAGE_DATASET"
         ],
         "provides": [
-          "DATA_SOURCE"
+          "DATA_SOURCE",
+          "LIST_API"
         ]
       },
+      "exposed": [
+        {
+          "name": "toolbarPosition",
+          "type": "ToolbarPosition | undefined",
+          "description": "工具栏位置",
+          "schema": {
+            "kind": "enum",
+            "type": "ToolbarPosition | undefined",
+            "variants": [
+              "undefined",
+              "\"top\"",
+              "\"bottom\"",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "toolbarClass",
+          "type": "string | undefined",
+          "description": "工具栏 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "useCard",
+          "type": "boolean | undefined",
+          "description": "使用卡片包裹",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "cardShadow",
+          "type": "\"never\" | \"always\" | \"hover\" | undefined",
+          "description": "卡片阴影模式",
+          "schema": {
+            "kind": "enum",
+            "type": "\"never\" | \"always\" | \"hover\" | undefined",
+            "variants": [
+              "undefined",
+              "\"never\"",
+              "\"always\"",
+              "\"hover\""
+            ]
+          }
+        },
+        {
+          "name": "gap",
+          "type": "string | number | undefined",
+          "description": "列表项间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "itemActionsPosition",
+          "type": "LateralActionPosition | undefined",
+          "description": "列表项操作位置",
+          "schema": {
+            "kind": "enum",
+            "type": "LateralActionPosition | undefined",
+            "variants": [
+              "undefined",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "itemActionsClass",
+          "type": "string | undefined",
+          "description": "操作区 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "columns",
+          "type": "number | undefined",
+          "description": "列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "minItemWidth",
+          "type": "string | undefined",
+          "description": "最小项宽度",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "rowKey",
+          "type": "string | undefined",
+          "description": "行唯一键字段",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "emptyText",
+          "type": "string | undefined",
+          "description": "空数据提示文案",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "itemClass",
+          "type": "string | undefined",
+          "description": "列表项 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "itemStyle",
+          "type": "CSSProperties | undefined",
+          "description": "列表项行内样式"
+        },
+        {
+          "name": "itemRowSpan",
+          "type": "number | undefined",
+          "description": "项跨行数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "dataKey",
+          "type": "string",
+          "description": "数据绑定键"
+        },
+        {
+          "name": "dataView",
+          "type": "DataView | undefined",
+          "description": "直接传入的 DataView",
+          "schema": {
+            "kind": "enum",
+            "type": "DataView | undefined",
+            "variants": [
+              "undefined",
+              "DataView"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
+        },
+        {
+          "name": "itemActions",
+          "type": "SparkNode[]",
+          "description": "列表项操作按钮配置"
+        },
+        {
+          "name": "itemColSpan",
+          "type": "number",
+          "description": "项跨列数"
+        },
+        {
+          "name": "getDataSource",
+          "type": "() => IDataSource | null",
+          "description": "获取底层 DataView（IDataSource）"
+        },
+        {
+          "name": "getRows",
+          "type": "() => IDataRow[]",
+          "description": "获取当前列表行数据"
+        },
+        {
+          "name": "getItemCount",
+          "type": "() => number",
+          "description": "获取列表项数量"
+        },
+        {
+          "name": "refresh",
+          "type": "() => Promise<void>",
+          "description": "刷新列表数据（API 数据源）"
+        }
+      ],
       "slots": [
         {
           "name": "toolbar",
@@ -2061,43 +2739,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-list** — 列表容器\ndataKey: string — 数据绑定键\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nitemActions: Rule[] — 列表项操作区\nitemActionsPosition: 'left' | 'right' — 默认 'right'\nitemActionsClass: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-tabs": {
       "type": "r-tabs",
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。",
       "props": [
-        {
-          "name": "toolbar",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "工具栏按钮配置"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
-          "required": false,
-          "default": "\"top\"",
-          "description": "工具栏位置",
-          "schema": {
-            "kind": "enum",
-            "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
-            "variants": [
-              "\"top\"",
-              "\"bottom\"",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "toolbarClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "工具栏 CSS 类名"
-        },
         {
           "name": "modelValue",
           "type": "string | number",
@@ -2116,13 +2764,122 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string | number]"
+          "type": "[value: string | number]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "string | number",
+              "variants": [
+                "string",
+                "number"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
         "consumes": [],
-        "provides": []
+        "provides": [
+          "TABS_API"
+        ]
       },
+      "exposed": [
+        {
+          "name": "toolbarPosition",
+          "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
+          "description": "工具栏位置",
+          "schema": {
+            "kind": "enum",
+            "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
+            "variants": [
+              "undefined",
+              "\"top\"",
+              "\"bottom\"",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "toolbarClass",
+          "type": "string | undefined",
+          "description": "工具栏 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
+        },
+        {
+          "name": "modelValue",
+          "type": "string | number",
+          "description": "当前激活标签页",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "onTabChange",
+          "type": "(name: string | number) => void",
+          "description": "标签页切换回调"
+        },
+        {
+          "name": "onTabClick",
+          "type": "(pane: TabsClickEvent, event: Event) => void",
+          "description": "标签页点击回调"
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: string | number) => any",
+          "schema": {
+            "kind": "event",
+            "type": "(value: string | number): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "getActiveTab",
+          "type": "() => string | number | undefined",
+          "description": "获取当前激活标签页名称"
+        },
+        {
+          "name": "setActiveTab",
+          "type": "(name: string | number) => void",
+          "description": "设置激活标签页"
+        },
+        {
+          "name": "getPaneNames",
+          "type": "() => (string | number)[]",
+          "description": "获取所有标签页名称"
+        },
+        {
+          "name": "getPaneCount",
+          "type": "() => number",
+          "description": "获取标签页数量"
+        }
+      ],
       "slots": [
         {
           "name": "toolbar",
@@ -2198,43 +2955,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-tabs** — 标签页容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\nchildren 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-collapse": {
       "type": "r-collapse",
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。",
       "props": [
-        {
-          "name": "toolbar",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "工具栏按钮配置"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
-          "required": false,
-          "default": "\"top\"",
-          "description": "工具栏位置",
-          "schema": {
-            "kind": "enum",
-            "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
-            "variants": [
-              "\"top\"",
-              "\"bottom\"",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "toolbarClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "工具栏 CSS 类名"
-        },
         {
           "name": "modelValue",
           "type": "CollapseValue",
@@ -2254,13 +2981,130 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: CollapseValue]"
+          "type": "[value: CollapseValue]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "CollapseValue",
+              "variants": [
+                "string",
+                "number",
+                "(string | number)[]"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
         "consumes": [],
-        "provides": []
+        "provides": [
+          "COLLAPSE_API"
+        ]
       },
+      "exposed": [
+        {
+          "name": "toolbarPosition",
+          "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
+          "description": "工具栏位置",
+          "schema": {
+            "kind": "enum",
+            "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
+            "variants": [
+              "undefined",
+              "\"top\"",
+              "\"bottom\"",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "toolbarClass",
+          "type": "string | undefined",
+          "description": "工具栏 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
+        },
+        {
+          "name": "modelValue",
+          "type": "CollapseValue",
+          "description": "当前展开的面板",
+          "schema": {
+            "kind": "enum",
+            "type": "CollapseValue",
+            "variants": [
+              "string",
+              "number",
+              "(string | number)[]"
+            ]
+          }
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: CollapseValue) => any",
+          "schema": {
+            "kind": "event",
+            "type": "(value: CollapseValue): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "CollapseValue",
+                "variants": [
+                  "string",
+                  "number",
+                  "(string | number)[]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "onChange",
+          "type": "(value: CollapseValue) => void",
+          "description": "展开/折叠切换回调"
+        },
+        {
+          "name": "getExpandedItems",
+          "type": "() => string | number | (string | number)[] | undefined",
+          "description": "获取当前展开项"
+        },
+        {
+          "name": "setExpandedItems",
+          "type": "(value: string | number | (string | number)[]) => void",
+          "description": "设置展开项"
+        },
+        {
+          "name": "expandAll",
+          "type": "() => void",
+          "description": "展开全部"
+        },
+        {
+          "name": "collapseAll",
+          "type": "() => void",
+          "description": "收起全部"
+        },
+        {
+          "name": "toggleItem",
+          "type": "(name: string | number) => void",
+          "description": "切换指定项的展开状态"
+        },
+        {
+          "name": "isItemExpanded",
+          "type": "(name: string | number) => boolean",
+          "description": "查询指定项是否展开"
+        }
+      ],
       "slots": [
         {
           "name": "toolbar",
@@ -2331,43 +3175,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-collapse** — 折叠面板容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\nchildren 内放 r-collapse-item",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-steps": {
       "type": "r-steps",
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。",
       "props": [
-        {
-          "name": "toolbar",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "工具栏按钮配置"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
-          "required": false,
-          "default": "\"top\"",
-          "description": "工具栏位置",
-          "schema": {
-            "kind": "enum",
-            "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
-            "variants": [
-              "\"top\"",
-              "\"bottom\"",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "toolbarClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "工具栏 CSS 类名"
-        },
         {
           "name": "modelValue",
           "type": "string | number",
@@ -2386,13 +3200,142 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string | number]"
+          "type": "[value: string | number]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "string | number",
+              "variants": [
+                "string",
+                "number"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
         "consumes": [],
-        "provides": []
+        "provides": [
+          "STEPS_API"
+        ]
       },
+      "exposed": [
+        {
+          "name": "toolbarPosition",
+          "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
+          "description": "工具栏位置",
+          "schema": {
+            "kind": "enum",
+            "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
+            "variants": [
+              "undefined",
+              "\"top\"",
+              "\"bottom\"",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "toolbarClass",
+          "type": "string | undefined",
+          "description": "工具栏 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
+        },
+        {
+          "name": "modelValue",
+          "type": "string | number",
+          "description": "当前步骤",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: string | number) => any",
+          "schema": {
+            "kind": "event",
+            "type": "(value: string | number): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "onStepChange",
+          "type": "(value: string | number, step: SparkNode, index: number) => void",
+          "description": "步骤切换回调"
+        },
+        {
+          "name": "getActiveStep",
+          "type": "() => string | number | undefined",
+          "description": "获取当前活跃步骤名称"
+        },
+        {
+          "name": "getActiveStepIndex",
+          "type": "() => number",
+          "description": "获取当前活跃步骤索引"
+        },
+        {
+          "name": "setActiveStep",
+          "type": "(index: number) => void",
+          "description": "设置活跃步骤（按索引）"
+        },
+        {
+          "name": "nextStep",
+          "type": "() => void",
+          "description": "下一步"
+        },
+        {
+          "name": "prevStep",
+          "type": "() => void",
+          "description": "上一步"
+        },
+        {
+          "name": "getStepCount",
+          "type": "() => number",
+          "description": "获取步骤总数"
+        },
+        {
+          "name": "getStepNames",
+          "type": "() => (string | number)[]",
+          "description": "获取所有步骤名称"
+        },
+        {
+          "name": "isFirstStep",
+          "type": "() => boolean",
+          "description": "是否为第一步"
+        },
+        {
+          "name": "isLastStep",
+          "type": "() => boolean",
+          "description": "是否为最后一步"
+        }
+      ],
       "slots": [
         {
           "name": "toolbar",
@@ -2463,7 +3406,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-steps** — 步骤条容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\nchildren 内放 r-step",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-dialog": {
       "type": "r-dialog",
@@ -2493,32 +3436,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
-          "name": "headerActions",
-          "type": "SparkNode[]",
-          "required": false,
-          "default": "[]",
-          "description": "头部操作按钮配置"
-        },
-        {
-          "name": "footerActions",
-          "type": "SparkNode[]",
-          "required": false,
-          "default": "[]",
-          "description": "底部操作按钮配置"
-        },
-        {
           "name": "headerClass",
           "type": "string",
           "required": false,
           "default": "\"\"",
           "description": "头部 CSS 类名"
-        },
-        {
-          "name": "headerActionsClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "头部操作区 CSS 类名"
         },
         {
           "name": "bodyClass",
@@ -2567,13 +3489,214 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: boolean]"
+          "type": "[value: boolean]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "boolean",
+              "variants": [
+                "false",
+                "true"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
         "consumes": [],
-        "provides": []
+        "provides": [
+          "DIALOG_API"
+        ]
       },
+      "exposed": [
+        {
+          "name": "modelValue",
+          "type": "boolean | undefined",
+          "description": "控制显隐（v-model）",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "headerActions",
+          "type": "SparkNode[] | undefined",
+          "description": "头部操作按钮配置"
+        },
+        {
+          "name": "title",
+          "type": "string | undefined",
+          "description": "对话框标题",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "headerClass",
+          "type": "string | undefined",
+          "description": "头部 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "headerActionsClass",
+          "type": "string | undefined",
+          "description": "头部操作区 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "bodyClass",
+          "type": "string | undefined",
+          "description": "内容区 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "footerActions",
+          "type": "SparkNode[] | undefined",
+          "description": "底部操作按钮配置"
+        },
+        {
+          "name": "footerClass",
+          "type": "string | undefined",
+          "description": "底部 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: boolean) => any",
+          "schema": {
+            "kind": "event",
+            "type": "(value: boolean): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "boolean",
+                "variants": [
+                  "false",
+                  "true"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "onOpen",
+          "type": "() => void",
+          "description": "打开回调"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "description": "关闭回调"
+        },
+        {
+          "name": "onOpened",
+          "type": "() => void",
+          "description": "打开动画结束回调"
+        },
+        {
+          "name": "onClosed",
+          "type": "() => void",
+          "description": "关闭动画结束回调"
+        },
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "打开对话框"
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "关闭对话框"
+        },
+        {
+          "name": "isVisible",
+          "type": "() => boolean",
+          "description": "当前是否可见"
+        },
+        {
+          "name": "toggle",
+          "type": "() => void",
+          "description": "切换显隐"
+        }
+      ],
       "slots": [
         {
           "name": "header-actions",
@@ -2753,7 +3876,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-dialog** — 对话框容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nheaderActions: Rule[] — 头部操作区\nfooterActions: Rule[] — 底部操作区\nheaderClass: string — 头部 CSS 类名\nheaderActionsClass: string — 头部操作区 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nfooterClass: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-drawer": {
       "type": "r-drawer",
@@ -2783,32 +3906,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
-          "name": "headerActions",
-          "type": "SparkNode[]",
-          "required": false,
-          "default": "[]",
-          "description": "头部操作按钮配置"
-        },
-        {
-          "name": "footerActions",
-          "type": "SparkNode[]",
-          "required": false,
-          "default": "[]",
-          "description": "底部操作按钮配置"
-        },
-        {
           "name": "headerClass",
           "type": "string",
           "required": false,
           "default": "\"\"",
           "description": "头部 CSS 类名"
-        },
-        {
-          "name": "headerActionsClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "头部操作区 CSS 类名"
         },
         {
           "name": "bodyClass",
@@ -2857,13 +3959,214 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: boolean]"
+          "type": "[value: boolean]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "boolean",
+              "variants": [
+                "false",
+                "true"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
         "consumes": [],
-        "provides": []
+        "provides": [
+          "DRAWER_API"
+        ]
       },
+      "exposed": [
+        {
+          "name": "modelValue",
+          "type": "boolean | undefined",
+          "description": "控制显隐（v-model）",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "headerActions",
+          "type": "SparkNode[] | undefined",
+          "description": "头部操作按钮配置"
+        },
+        {
+          "name": "title",
+          "type": "string | undefined",
+          "description": "抽屉标题",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "headerClass",
+          "type": "string | undefined",
+          "description": "头部 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "headerActionsClass",
+          "type": "string | undefined",
+          "description": "头部操作区 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "bodyClass",
+          "type": "string | undefined",
+          "description": "内容区 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "footerActions",
+          "type": "SparkNode[] | undefined",
+          "description": "底部操作按钮配置"
+        },
+        {
+          "name": "footerClass",
+          "type": "string | undefined",
+          "description": "底部 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: boolean) => any",
+          "schema": {
+            "kind": "event",
+            "type": "(value: boolean): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "boolean",
+                "variants": [
+                  "false",
+                  "true"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "onOpen",
+          "type": "() => void",
+          "description": "打开回调"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "description": "关闭回调"
+        },
+        {
+          "name": "onOpened",
+          "type": "() => void",
+          "description": "打开动画结束回调"
+        },
+        {
+          "name": "onClosed",
+          "type": "() => void",
+          "description": "关闭动画结束回调"
+        },
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "打开抽屉"
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "关闭抽屉"
+        },
+        {
+          "name": "isVisible",
+          "type": "() => boolean",
+          "description": "当前是否可见"
+        },
+        {
+          "name": "toggle",
+          "type": "() => void",
+          "description": "切换显隐"
+        }
+      ],
       "slots": [
         {
           "name": "header-actions",
@@ -3023,19 +4326,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-drawer** — 抽屉容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nheaderActions: Rule[] — 头部操作区\nfooterActions: Rule[] — 底部操作区\nheaderClass: string — 头部 CSS 类名\nheaderActionsClass: string — 头部操作区 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nfooterClass: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen / onClose / onOpened / onClosed: string — 生命周期回调",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-section": {
       "type": "r-section",
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。",
       "props": [
-        {
-          "name": "headerActions",
-          "type": "SparkNode[]",
-          "required": false,
-          "description": "头部操作按钮配置"
-        },
         {
           "name": "title",
           "type": "string",
@@ -3134,13 +4431,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "头部 CSS 类名"
         },
         {
-          "name": "headerActionsClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "头部操作区 CSS 类名"
-        },
-        {
           "name": "bodyClass",
           "type": "string",
           "required": false,
@@ -3223,8 +4513,274 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [],
       "capabilities": {
         "consumes": [],
-        "provides": []
+        "provides": [
+          "SECTION_API"
+        ]
       },
+      "exposed": [
+        {
+          "name": "description",
+          "type": "string | undefined",
+          "description": "分区描述",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "title",
+          "type": "string | undefined",
+          "description": "分区标题",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "collapsible",
+          "type": "boolean | undefined",
+          "description": "是否可折叠",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "defaultCollapsed",
+          "type": "boolean | undefined",
+          "description": "默认折叠",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "bordered",
+          "type": "boolean | undefined",
+          "description": "显示边框",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "useCard",
+          "type": "boolean | undefined",
+          "description": "使用卡片样式",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "cardShadow",
+          "type": "\"never\" | \"always\" | \"hover\" | undefined",
+          "description": "卡片阴影模式",
+          "schema": {
+            "kind": "enum",
+            "type": "\"never\" | \"always\" | \"hover\" | undefined",
+            "variants": [
+              "undefined",
+              "\"never\"",
+              "\"always\"",
+              "\"hover\""
+            ]
+          }
+        },
+        {
+          "name": "headerClass",
+          "type": "string | undefined",
+          "description": "头部 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "headerActionsClass",
+          "type": "string | undefined",
+          "description": "头部操作区 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "bodyClass",
+          "type": "string | undefined",
+          "description": "内容区 CSS 类名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "expandText",
+          "type": "string | undefined",
+          "description": "展开文案",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "collapseText",
+          "type": "string | undefined",
+          "description": "收起文案",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "showToggleIcon",
+          "type": "boolean | undefined",
+          "description": "显示切换图标",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "expandIconText",
+          "type": "string | undefined",
+          "description": "展开图标文案",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "collapseIconText",
+          "type": "string | undefined",
+          "description": "收起图标文案",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "headerActions",
+          "type": "SparkNode[]",
+          "description": "头部操作按钮配置"
+        },
+        {
+          "name": "isCollapsed",
+          "type": "() => boolean",
+          "description": "当前是否折叠"
+        },
+        {
+          "name": "setCollapsed",
+          "type": "(value: boolean) => void",
+          "description": "设置折叠状态"
+        },
+        {
+          "name": "toggle",
+          "type": "() => void",
+          "description": "切换折叠状态"
+        }
+      ],
       "slots": [
         {
           "name": "header-actions",
@@ -3376,7 +4932,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-section** — 分区容器\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\nheaderActions: Rule[] — 头部操作区\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-block": {
       "type": "r-block",
@@ -3465,24 +5021,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
-          "name": "separator",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
           "name": "width",
           "type": "number",
           "required": false
@@ -3531,6 +5069,19 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
           "name": "searchable",
           "type": "boolean",
           "required": false,
@@ -3542,6 +5093,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "true"
             ]
           }
+        },
+        {
+          "name": "separator",
+          "type": "string",
+          "required": false
         },
         {
           "name": "valueMode",
@@ -3566,7 +5122,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "any[]"
+          "type": "any[]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -3591,7 +5148,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-user-picker** — 用户选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-dept-picker": {
       "type": "r-dept-picker",
@@ -3625,24 +5182,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
-          "name": "separator",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
           "name": "width",
           "type": "number",
           "required": false
@@ -3691,6 +5230,19 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
           "name": "searchable",
           "type": "boolean",
           "required": false,
@@ -3702,6 +5254,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "true"
             ]
           }
+        },
+        {
+          "name": "separator",
+          "type": "string",
+          "required": false
         },
         {
           "name": "valueMode",
@@ -3726,7 +5283,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "any[]"
+          "type": "any[]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -3751,7 +5309,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-dept-picker** — 部门选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-product-picker": {
       "type": "r-product-picker",
@@ -3785,24 +5343,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
-          "name": "separator",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
           "name": "width",
           "type": "number",
           "required": false
@@ -3851,6 +5391,19 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
           "name": "searchable",
           "type": "boolean",
           "required": false,
@@ -3862,6 +5415,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
               "true"
             ]
           }
+        },
+        {
+          "name": "separator",
+          "type": "string",
+          "required": false
         },
         {
           "name": "valueMode",
@@ -3886,7 +5444,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "any[]"
+          "type": "any[]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -3911,7 +5470,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-product-picker** — 产品选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存",
-      "source": "vcm+addendum"
+      "source": "vcm+override"
     },
     "r-upload": {
       "type": "r-upload",
@@ -4002,16 +5561,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "listType",
-          "type": "\"text\" | \"picture\" | \"picture-card\"",
+          "type": "\"picture\" | \"text\" | \"picture-card\"",
           "required": false,
           "default": "\"text\"",
           "description": "列表展示类型",
           "schema": {
             "kind": "enum",
-            "type": "\"text\" | \"picture\" | \"picture-card\"",
+            "type": "\"picture\" | \"text\" | \"picture-card\"",
             "variants": [
-              "\"text\"",
               "\"picture\"",
+              "\"text\"",
               "\"picture-card\""
             ]
           }
@@ -4041,7 +5600,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -4096,6 +5656,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "unknown[]",
           "required": false,
           "description": "树形选项（嵌套结构）"
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
         },
         {
           "name": "optionLabelField",
@@ -4216,7 +5782,20 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: TreeSelectValue]"
+          "type": "[value: TreeSelectValue]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "TreeSelectValue",
+              "variants": [
+                "string",
+                "number",
+                "false",
+                "true",
+                "FieldPrimitive[]"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -4252,13 +5831,33 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "modelValue",
           "type": "TransferValue",
           "required": false,
-          "description": "双向绑定值（已选值数组）"
+          "description": "双向绑定值（已选值数组）",
+          "schema": {
+            "kind": "array",
+            "type": "TransferValue",
+            "items": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "options",
           "type": "unknown[]",
           "required": false,
           "description": "数据源（左侧候选列表）"
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
         },
         {
           "name": "optionLabelField",
@@ -4321,7 +5920,23 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: TransferValue]"
+          "type": "[value: TransferValue]",
+          "schema": [
+            {
+              "kind": "array",
+              "type": "TransferValue",
+              "items": [
+                {
+                  "kind": "enum",
+                  "type": "string | number",
+                  "variants": [
+                    "string",
+                    "number"
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -4414,7 +6029,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -4456,7 +6072,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -4520,7 +6137,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: boolean]"
+          "type": "[value: boolean]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "boolean",
+              "variants": [
+                "false",
+                "true"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -4598,7 +6225,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: number]"
+          "type": "[value: number]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -4649,6 +6277,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "unknown[]",
           "required": false,
           "description": "选项列表"
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
         },
         {
           "name": "optionLabelField",
@@ -4703,7 +6337,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string | number]"
+          "type": "[value: string | number]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "string | number",
+              "variants": [
+                "string",
+                "number"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -4767,7 +6411,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: number]"
+          "type": "[value: number]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -4820,6 +6465,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "选项列表"
         },
         {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
+        },
+        {
           "name": "optionLabelField",
           "type": "string",
           "required": false,
@@ -4850,7 +6501,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string | number]"
+          "type": "[value: string | number]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "string | number",
+              "variants": [
+                "string",
+                "number"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -4924,7 +6585,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: number | [number | undefined, number | undefined]]"
+          "type": "[value: number | [number | undefined, number | undefined]]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "number | [number | undefined, number | undefined]",
+              "variants": [
+                "number",
+                "[number | undefined, number | undefined]"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -4961,13 +6632,35 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "modelValue",
           "type": "MultiValue",
           "required": false,
-          "description": "双向绑定值（数组）"
+          "description": "双向绑定值（数组）",
+          "schema": {
+            "kind": "array",
+            "type": "MultiValue",
+            "items": [
+              {
+                "kind": "enum",
+                "type": "string | number | boolean",
+                "variants": [
+                  "string",
+                  "number",
+                  "false",
+                  "true"
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "options",
           "type": "unknown[]",
           "required": false,
           "description": "选项列表"
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
         },
         {
           "name": "optionLabelField",
@@ -5059,7 +6752,25 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: MultiValue]"
+          "type": "[value: MultiValue]",
+          "schema": [
+            {
+              "kind": "array",
+              "type": "MultiValue",
+              "items": [
+                {
+                  "kind": "enum",
+                  "type": "string | number | boolean",
+                  "variants": [
+                    "string",
+                    "number",
+                    "false",
+                    "true"
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -5173,7 +6884,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -5216,6 +6928,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "unknown[]",
           "required": false,
           "description": "图标选项列表"
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
         },
         {
           "name": "optionLabelField",
@@ -5277,7 +6995,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -5326,7 +7045,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -5440,7 +7160,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -5540,7 +7261,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -5595,6 +7317,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "unknown[]",
           "required": false,
           "description": "选项列表"
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
         },
         {
           "name": "optionLabelField",
@@ -5708,7 +7436,20 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: EntityPickerValue]"
+          "type": "[value: EntityPickerValue]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "EntityPickerValue",
+              "variants": [
+                "string",
+                "number",
+                "false",
+                "true",
+                "PageSelectableValue[]"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -5759,7 +7500,18 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string | Date | (string | Date)[]]"
+          "type": "[value: string | Date | (string | Date)[]]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "string | Date | (string | Date)[]",
+              "variants": [
+                "string",
+                "Date",
+                "(string | Date)[]"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -5908,7 +7660,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: string]"
+          "type": "[value: string]",
+          "schema": []
         }
       ],
       "capabilities": {
@@ -5945,13 +7698,35 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "modelValue",
           "type": "MultiValue",
           "required": false,
-          "description": "双向绑定值（数组）"
+          "description": "双向绑定值（数组）",
+          "schema": {
+            "kind": "array",
+            "type": "MultiValue",
+            "items": [
+              {
+                "kind": "enum",
+                "type": "string | number | boolean",
+                "variants": [
+                  "string",
+                  "number",
+                  "false",
+                  "true"
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "options",
           "type": "unknown[]",
           "required": false,
           "description": "选项列表"
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
         },
         {
           "name": "optionLabelField",
@@ -5984,7 +7759,25 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: MultiValue]"
+          "type": "[value: MultiValue]",
+          "schema": [
+            {
+              "kind": "array",
+              "type": "MultiValue",
+              "items": [
+                {
+                  "kind": "enum",
+                  "type": "string | number | boolean",
+                  "variants": [
+                    "string",
+                    "number",
+                    "false",
+                    "true"
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -6055,7 +7848,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: boolean]"
+          "type": "[value: boolean]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "boolean",
+              "variants": [
+                "false",
+                "true"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -6107,6 +7910,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "unknown[]",
           "required": false,
           "description": "树形选项（嵌套结构）"
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
+          "required": false,
+          "description": "选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项"
         },
         {
           "name": "optionLabelField",
@@ -6212,7 +8021,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: CascaderValue]"
+          "type": "[value: CascaderValue]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "CascaderValue",
+              "variants": [
+                "CascaderPath",
+                "CascaderPath[]"
+              ]
+            }
+          ]
         }
       ],
       "capabilities": {
@@ -6760,8 +8579,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                       "required": true,
                       "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                     },
-                    "__@toPrimitive@78389": {
-                      "name": "__@toPrimitive@78389",
+                    "__@toPrimitive@860": {
+                      "name": "__@toPrimitive@860",
                       "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                       "required": true,
                       "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -7121,8 +8940,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@78389": {
-                        "name": "__@toPrimitive@78389",
+                      "__@toPrimitive@860": {
+                        "name": "__@toPrimitive@860",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -7867,439 +9686,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         "provides": []
       },
       "source": "vcm"
-    },
-    "r-tree-node-scope": {
-      "type": "r-tree-node-scope",
-      "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree-node-scope\" 使用。",
-      "props": [
-        {
-          "name": "config",
-          "type": "SparkNode",
-          "required": false,
-          "description": "SPARK 配置驱动"
-        },
-        {
-          "name": "data",
-          "type": "Record<string, unknown>",
-          "required": true,
-          "description": "树节点数据"
-        },
-        {
-          "name": "node",
-          "type": "unknown",
-          "required": false,
-          "description": "el-tree 节点对象"
-        },
-        {
-          "name": "dataSource",
-          "type": "IDataSource | null",
-          "required": false,
-          "description": "父级数据源",
-          "schema": {
-            "kind": "enum",
-            "type": "IDataSource | null",
-            "variants": [
-              "null",
-              "IDataSource"
-            ]
-          }
-        }
-      ],
-      "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
-      "source": "vcm",
-      "slots": [
-        {
-          "name": "default",
-          "type": "{}"
-        }
-      ]
-    },
-    "r-list-item-scope": {
-      "type": "r-list-item-scope",
-      "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-list-item-scope\" 使用。",
-      "props": [
-        {
-          "name": "row",
-          "type": "IDataRow",
-          "required": true,
-          "description": "当前行数据"
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[]",
-          "required": true,
-          "description": "子组件配置"
-        },
-        {
-          "name": "dataSource",
-          "type": "IDataSource | null",
-          "required": false,
-          "default": "null",
-          "description": "父级数据源",
-          "schema": {
-            "kind": "enum",
-            "type": "IDataSource | null",
-            "variants": [
-              "null",
-              "IDataSource"
-            ]
-          }
-        },
-        {
-          "name": "itemClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "列表项 CSS 类名"
-        },
-        {
-          "name": "itemStyle",
-          "type": "CSSProperties",
-          "required": false,
-          "default": "{}",
-          "description": "列表项行内样式"
-        },
-        {
-          "name": "useCard",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "使用卡片包裹",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "cardShadow",
-          "type": "\"never\" | \"always\" | \"hover\"",
-          "required": false,
-          "default": "\"hover\"",
-          "description": "卡片阴影模式",
-          "schema": {
-            "kind": "enum",
-            "type": "\"never\" | \"always\" | \"hover\"",
-            "variants": [
-              "\"never\"",
-              "\"always\"",
-              "\"hover\""
-            ]
-          }
-        },
-        {
-          "name": "gridColumns",
-          "type": "number",
-          "required": false,
-          "default": "24",
-          "description": "CSS Grid 列数"
-        },
-        {
-          "name": "gridGap",
-          "type": "string | number",
-          "required": false,
-          "default": "0",
-          "description": "栅格间距",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "gridAutoRows",
-          "type": "string",
-          "required": false,
-          "default": "\"minmax(32px, auto)\"",
-          "description": "栅格行高"
-        }
-      ],
-      "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
-      "source": "vcm",
-      "slots": [
-        {
-          "name": "default",
-          "type": "{}"
-        }
-      ]
-    },
-    "r-field-scope": {
-      "type": "r-field-scope",
-      "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-field-scope\" 使用。",
-      "props": [
-        {
-          "name": "model",
-          "type": "Record<string, unknown>",
-          "required": true,
-          "description": "表单数据模型"
-        },
-        {
-          "name": "configs",
-          "type": "SparkNode[]",
-          "required": true,
-          "description": "字段组件配置列表"
-        },
-        {
-          "name": "context",
-          "type": "FieldContext",
-          "required": false,
-          "default": "\"form\"",
-          "description": "字段语境（table/form/detail）",
-          "schema": {
-            "kind": "enum",
-            "type": "FieldContext",
-            "variants": [
-              "\"table\"",
-              "\"form\"",
-              "\"detail\"",
-              "\"tree\"",
-              "\"list\""
-            ]
-          }
-        },
-        {
-          "name": "dataSource",
-          "type": "IDataSource | DataView | null",
-          "required": false,
-          "default": "null",
-          "description": "父级数据源",
-          "schema": {
-            "kind": "enum",
-            "type": "IDataSource | DataView | null",
-            "variants": [
-              "null",
-              "IDataSource",
-              "DataView"
-            ]
-          }
-        },
-        {
-          "name": "gridColumns",
-          "type": "number",
-          "required": false,
-          "default": "24",
-          "description": "CSS Grid 列数"
-        },
-        {
-          "name": "gridGap",
-          "type": "string | number",
-          "required": false,
-          "default": "12",
-          "description": "栅格间距",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "gridAutoRows",
-          "type": "string",
-          "required": false,
-          "default": "\"minmax(32px, auto)\"",
-          "description": "栅格行高"
-        },
-        {
-          "name": "autoFitMinWidth",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "自适应最小宽度"
-        },
-        {
-          "name": "defaultColSpan",
-          "type": "number",
-          "required": false,
-          "default": "24",
-          "description": "默认跨列数"
-        },
-        {
-          "name": "labelPosition",
-          "type": "\"top\" | \"left\" | \"right\"",
-          "required": false,
-          "default": "\"top\"",
-          "description": "标签位置",
-          "schema": {
-            "kind": "enum",
-            "type": "\"top\" | \"left\" | \"right\"",
-            "variants": [
-              "\"top\"",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "labelWidth",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "标签宽度"
-        },
-        {
-          "name": "inline",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "内联模式",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "compact",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "紧凑模式",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        }
-      ],
-      "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
-      "source": "vcm"
-    },
-    "r-context-renderer": {
-      "type": "r-context-renderer",
-      "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。",
-      "props": [
-        {
-          "name": "context",
-          "type": "string",
-          "required": true,
-          "description": "渲染上下文（table / form / detail / tree）"
-        },
-        {
-          "name": "displayLabel",
-          "type": "string",
-          "required": true,
-          "description": "显示标签"
-        },
-        {
-          "name": "fieldName",
-          "type": "string",
-          "required": true,
-          "description": "字段绑定名"
-        },
-        {
-          "name": "width",
-          "type": "number | undefined",
-          "required": true,
-          "description": "列宽",
-          "schema": {
-            "kind": "enum",
-            "type": "number | undefined",
-            "variants": [
-              "undefined",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "mergedChildren",
-          "type": "SparkNode[]",
-          "required": true,
-          "description": "合并后的子组件配置"
-        },
-        {
-          "name": "isCurrentFieldHidden",
-          "type": "boolean",
-          "required": true,
-          "description": "当前字段是否隐藏",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "currentDisplayValue",
-          "type": "string",
-          "required": true,
-          "description": "当前显示值"
-        },
-        {
-          "name": "isTableCellHidden",
-          "type": "(row: IDataRow) => boolean",
-          "required": true,
-          "description": "表格行级隐藏判断"
-        },
-        {
-          "name": "getTableCellDisplayValue",
-          "type": "(row: IDataRow) => string",
-          "required": true,
-          "description": "表格行级显示值获取"
-        },
-        {
-          "name": "validationRules",
-          "type": "FormItemRule[]",
-          "required": true,
-          "description": "表单验证规则"
-        }
-      ],
-      "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
-      "source": "vcm",
-      "slots": [
-        {
-          "name": "table-cell",
-          "type": "{ row: IDataRow; value: string; }"
-        },
-        {
-          "name": "form",
-          "type": "any"
-        },
-        {
-          "name": "tree",
-          "type": "any"
-        },
-        {
-          "name": "detail",
-          "type": "any"
-        }
-      ]
     }
   },
   "constraints": {
@@ -8618,6 +10004,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: CascaderValue — 双向绑定值
 options?: unknown[] — 树形选项（嵌套结构）
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 optionChildrenField?: string — 子节点字段
@@ -8653,6 +10040,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: MultiValue — 双向绑定值（数组）
 options?: unknown[] — 选项列表
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 buttonStyle?: boolean — 按钮风格 (默认 false)
@@ -8673,6 +10061,9 @@ onChange: string — 切换回调
 
 【事件】
 update:modelValue: [value: CollapseValue]
+
+【能力链】
+provides: COLLAPSE_API
 
 **r-collapse** — 折叠面板容器
 toolbar: Rule[] — 工具栏
@@ -8778,7 +10169,7 @@ gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
+provides: DETAIL_API, DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
 
 **r-detail** — 只读详情容器（展示 currentRow）
 dataKey: string — 数据绑定键
@@ -8826,6 +10217,9 @@ onClosed: string — 关闭动画结束回调
 【事件】
 update:modelValue: [value: boolean]
 
+【能力链】
+provides: DIALOG_API
+
 **r-dialog** — 对话框容器
 title: string — 标题
 modelValue: boolean — 控制显隐
@@ -8870,6 +10264,9 @@ gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 【事件】
 update:modelValue: [value: boolean]
 
+【能力链】
+provides: DRAWER_API
+
 **r-drawer** — 抽屉容器
 title: string — 标题
 modelValue: boolean — 控制显隐
@@ -8891,6 +10288,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: EntityPickerValue — 双向绑定值
 options?: unknown[] — 选项列表
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 placeholder?: string — 占位提示 (默认 "\\u8BF7\\u9009\\u62E9")
@@ -8963,7 +10361,7 @@ gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
+provides: FORM_API, DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
 
 **r-form** — 数据表单容器（读写 currentRow）
 dataKey: string — 数据绑定键，如 "Users@currentRow"
@@ -8999,6 +10397,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: string — 双向绑定值（图标名）
 options?: unknown[] — 图标选项列表
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 placeholder?: string — 占位提示 (默认 "\\u8BF7\\u9009\\u62E9\\u56FE\\u6807")
@@ -9071,7 +10470,7 @@ itemRowSpan: number — 项跨行数，默认 1
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE
+provides: DATA_SOURCE, LIST_API
 
 **r-list** — 列表容器
 dataKey: string — 数据绑定键
@@ -9107,6 +10506,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: MultiValue — 双向绑定值（数组）
 options?: unknown[] — 选项列表
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 placeholder?: string — 占位提示 (默认 "\\u8BF7\\u9009\\u62E9")
@@ -9175,6 +10575,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: string | number — 双向绑定值
 options?: unknown[] — 选项列表
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 buttonStyle?: boolean — 按钮风格 (默认 false)
@@ -9230,6 +10631,9 @@ gridColumns: number — 默认 24
 gridGap: number — 默认 0
 gridAutoRows: string — 行高
 
+【能力链】
+provides: SECTION_API
+
 **r-section** — 分区容器
 title: string — 标题
 description: string — 描述
@@ -9253,6 +10657,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: string | number — 双向绑定值
 options?: unknown[] — 选项列表
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 placeholder?: string — 占位提示 (默认 "\\u8BF7\\u9009\\u62E9")
@@ -9289,6 +10694,9 @@ onStepChange: string — 步骤切换回调
 
 【事件】
 update:modelValue: [value: string | number]
+
+【能力链】
+provides: STEPS_API
 
 **r-steps** — 步骤条容器
 toolbar: Rule[] — 工具栏
@@ -9338,7 +10746,7 @@ actions.fixed: boolean | 'left' | 'right' — 固定方向
 actions.class: string — 操作列 CSS 类名
 
 【能力链】
-consumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT
+consumes: PAGE_DATASET, PAGE_SERVICE, MODULE_CONTEXT, PAGE_COMPONENT_REGISTRY
 provides: DATA_SOURCE, TABLE_API, FIELD_CONTEXT
 
 **r-table** — 数据表格容器
@@ -9406,6 +10814,9 @@ onTabClick: string — 点击回调
 【事件】
 update:modelValue: [value: string | number]
 
+【能力链】
+provides: TABS_API
+
 **r-tabs** — 标签页容器
 toolbar: Rule[] — 工具栏
 toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
@@ -9447,6 +10858,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: TransferValue — 双向绑定值（已选值数组）
 options?: unknown[] — 数据源（左侧候选列表）
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 titles?: [string, string] — 左右面板标题 (默认 ["\\u5F85\\u9009", "\\u5DF2\\u9009"] as [
@@ -9476,7 +10888,7 @@ onNodeCollapse: string — 节点折叠回调
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
+provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API
 
 **r-tree** — 树形组件容器
 dataKey: string — 数据绑定键，如 "TreeData@rows"
@@ -9503,6 +10915,7 @@ label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: TreeSelectValue — 双向绑定值
 options?: unknown[] — 树形选项（嵌套结构）
+optionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 optionChildrenField?: string — 子节点字段

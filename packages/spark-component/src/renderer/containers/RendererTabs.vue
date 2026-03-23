@@ -67,6 +67,8 @@ import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import { TABS_API } from '../_pkg'
+import type { RendererTabsApi } from '../_pkg'
 
 interface TabsClickEvent {
   paneName?: string | number
@@ -100,7 +102,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-useSparkComponent(nodeConfig ?? { type: 'r-tabs' })
+const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-tabs' })
 
 const paneConfigs = computed(() =>
   (nodeConfig?.children ?? []).filter(child => child.type === 'r-tab-pane')
@@ -132,6 +134,30 @@ const {
   modelPermission: computed(() => undefined),
   slots,
 })
+
+// ── r-tabs 包装 API ──────────────────────────────────────────────────────
+
+
+const tabsApi: RendererTabsApi = {
+  getActiveTab() {
+    return currentActiveName.value
+  },
+  setActiveTab(name) {
+    currentActiveName.value = name
+    emit('update:modelValue', name)
+  },
+  getPaneNames() {
+    return paneConfigs.value.map((pane, index) => getPaneName(pane, index))
+  },
+  getPaneCount() {
+    return paneConfigs.value.length
+  },
+}
+
+sparkProvide(TABS_API, tabsApi)
+registerApi(tabsApi)
+
+defineExpose(tabsApi)
 
 function getPaneChildren(pane: SparkNode): SparkNode[] {
   return pane.children ?? []

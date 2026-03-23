@@ -27,23 +27,21 @@
 </template>
 
 <script setup lang="ts">
-import { toRef, watch } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
+import { computed, toRef } from 'vue'
+import { SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
-import type { DataView, IDataSource } from '@spark-view/spark-data'
-import { DATA_SOURCE, CONTEXT_DATA, FIELD_CONTEXT } from '../_pkg'
 import type { FieldContext } from '../_pkg'
+import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'
+import { useDataScope } from './useDataScope'
 
 interface Props {
   /** 表单数据模型 */
-  model: Record<string, unknown>
+  model: IDataRow
   /** 字段组件配置列表 */
   configs: SparkNode[]
   /** 字段语境（table/form/detail） */
   context?: FieldContext
-  /** 父级数据源 */
-  dataSource?: IDataSource | DataView | null
   /** CSS Grid 列数 */
   gridColumns?: number
   /** 栅格间距 */
@@ -66,7 +64,6 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   context: 'form',
-  dataSource: null,
   gridColumns: 24,
   gridGap: 12,
   gridAutoRows: 'minmax(32px, auto)',
@@ -78,8 +75,13 @@ const props = withDefaults(defineProps<Props>(), {
   compact: false,
 })
 
-const { provide: sparkProvide } = useSparkComponent({ type: 'r-field-scope' })
 const configsRef = toRef(props, 'configs')
+
+useDataScope({
+  type: 'r-field-scope',
+  fieldContext: computed(() => props.context),
+  data: computed(() => props.model),
+})
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: configsRef,
@@ -89,15 +91,6 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoFitMinWidth: toRef(props, 'autoFitMinWidth'),
   defaultColSpan: toRef(props, 'defaultColSpan'),
 })
-
-sparkProvide(FIELD_CONTEXT, props.context)
-sparkProvide(CONTEXT_DATA, props.model)
-
-watch(() => props.dataSource, (dataSource) => {
-  if (dataSource) {
-    sparkProvide(DATA_SOURCE, dataSource as IDataSource)
-  }
-}, { immediate: true })
 </script>
 
 <style scoped>

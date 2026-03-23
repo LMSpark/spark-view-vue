@@ -60,7 +60,7 @@ export function useFormDetailContainer(
   const containerType = fieldContext === 'form' ? 'r-form' : 'r-detail'
   const logPrefix = fieldContext === 'form' ? 'RendererForm' : 'RendererDetail'
 
-  const { consume, provide: sparkProvide, logger } = useSparkComponent(
+  const { consume, provide: sparkProvide, logger, registerApi } = useSparkComponent(
     nodeConfig ?? { type: containerType }
   )
   const pageDataSet = consume(PAGE_DATASET)
@@ -120,6 +120,9 @@ export function useFormDetailContainer(
   }
 
   return {
+    sparkProvide,
+    registerApi,
+    resolvedView,
     contextData,
     gridChildren,
     gridStyle,

@@ -47,7 +47,6 @@
               <RendererListItemScope
                 :row="row"
                 :children="mergedChildren"
-                :data-source="resolvedView"
                 :item-class="itemClass"
                 :item-style="itemStyle"
                 :use-card="useCard"
@@ -89,7 +88,8 @@ import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY, LIST_API } from '../_pkg'
+import type { RendererListApi } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -175,7 +175,7 @@ const { effectiveDataKey, configChildren: mergedChildren } = useContainerInput({
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
-const { consume, provide: sparkProvide, logger } = useSparkComponent(
+const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
   nodeConfig ?? { type: 'r-list' }
 )
 const pageDataSet = consume(PAGE_DATASET)
@@ -242,6 +242,30 @@ const {
   showActionsLeft: showItemActionsLeft,
   showActionsRight: showItemActionsRight,
 })
+
+// ── r-list 包装 API ──────────────────────────────────────────────────────
+
+const listApi: RendererListApi = {
+  getDataSource() {
+    return resolvedView.value ?? null
+  },
+  getRows() {
+    return listRows.value
+  },
+  getItemCount() {
+    return listRows.value.length
+  },
+  async refresh() {
+    const view = resolvedView.value
+    if (!view?.dataTable?.api?.list) return
+    await view.refresh()
+  },
+}
+
+sparkProvide(LIST_API, listApi)
+registerApi(listApi)
+
+defineExpose(listApi)
 
 const normalizedGridGap = computed(() => {
   const value = props.gridGap ?? props.gap

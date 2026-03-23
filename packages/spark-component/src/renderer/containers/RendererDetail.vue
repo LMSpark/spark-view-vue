@@ -48,6 +48,8 @@ import type { SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
+import { DETAIL_API } from '../_pkg'
+import type { RendererDetailApi } from '../_pkg'
 
 interface Props {
   /** 数据绑定键 */
@@ -77,6 +79,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const {
+  sparkProvide,
+  registerApi,
+  resolvedView,
   gridChildren,
   gridStyle,
   getChildGridStyle,
@@ -86,7 +91,30 @@ const {
   showToolbar,
   getToolbarSlotScope,
   getDefaultSlotScope,
+  contextData: detailData,
 } = useFormDetailContainer(props, 'detail')
+
+// ── r-detail 包装 API ────────────────────────────────────────────────────
+
+const detailApi: RendererDetailApi = {
+  getDataSource() {
+    return resolvedView.value ?? null
+  },
+  getDetailData() {
+    return detailData
+  },
+  getCurrentRow() {
+    return resolvedView.value?.currentRow ?? null
+  },
+  getFieldValue(field) {
+    return detailData[field]
+  },
+}
+
+sparkProvide(DETAIL_API, detailApi)
+registerApi(detailApi)
+
+defineExpose(detailApi)
 </script>
 
 <style scoped>

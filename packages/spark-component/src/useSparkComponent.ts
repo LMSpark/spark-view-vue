@@ -75,6 +75,8 @@ export interface UseSparkComponentReturn {
   getComponent: (type: string) => unknown
   /** 检查组件是否已注册 */
   isComponentRegistered: (type: string) => boolean
+  /** 向 PageComponentRegistry 注册组件 API（cleanup 由 destroy 自动处理） */
+  registerApi: (api: unknown) => void
 }
 
 /* -------------------------------------------------------------------------- */
@@ -284,6 +286,13 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
   onMounted(() => initialize())
   onUnmounted(() => destroy())
 
+  // ── API 注册 ──
+
+  function registerApi(api: unknown): void {
+    if (!pageComponentRegistry) return
+    pageComponentRegistry.registerApi({ id: context.id, type: context.type, api })
+  }
+
   // ── 返回值 ──
 
   return {
@@ -299,6 +308,7 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
     destroy,
     logger,
     getComponent,
-    isComponentRegistered
+    isComponentRegistered,
+    registerApi
   }
 }

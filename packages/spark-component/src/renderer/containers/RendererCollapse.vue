@@ -64,6 +64,8 @@ import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import { COLLAPSE_API } from '../_pkg'
+import type { RendererCollapseApi } from '../_pkg'
 
 type CollapseValue = string | number | Array<string | number>
 
@@ -92,7 +94,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-useSparkComponent(nodeConfig ?? { type: 'r-collapse' })
+const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-collapse' })
 
 const itemConfigs = computed(() =>
   (nodeConfig?.children ?? []).filter(child => child.type === 'r-collapse-item')
@@ -117,6 +119,46 @@ const {
   modelPermission: computed(() => undefined),
   slots,
 })
+
+// ── r-collapse 包装 API ──────────────────────────────────────────────────
+
+
+const collapseApi: RendererCollapseApi = {
+  getExpandedItems() {
+    return currentModelValue.value
+  },
+  setExpandedItems(value) {
+    currentModelValue.value = value
+    emit('update:modelValue', value)
+  },
+  expandAll() {
+    const allNames = itemConfigs.value.map((item, index) => getItemName(item, index))
+    currentModelValue.value = allNames
+    emit('update:modelValue', allNames)
+  },
+  collapseAll() {
+    currentModelValue.value = []
+    emit('update:modelValue', [])
+  },
+  toggleItem(name) {
+    const current = Array.isArray(currentModelValue.value) ? currentModelValue.value : []
+    const next = current.includes(name)
+      ? current.filter(n => n !== name)
+      : [...current, name]
+    currentModelValue.value = next
+    emit('update:modelValue', next)
+  },
+  isItemExpanded(name) {
+    const current = currentModelValue.value
+    if (Array.isArray(current)) return current.includes(name)
+    return current === name
+  },
+}
+
+sparkProvide(COLLAPSE_API, collapseApi)
+registerApi(collapseApi)
+
+defineExpose(collapseApi)
 
 function getItemChildren(item: SparkNode): SparkNode[] {
   return item.children ?? []

@@ -54,6 +54,8 @@ import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import { STEPS_API } from '../_pkg'
+import type { RendererStepsApi } from '../_pkg'
 
 interface Props {
   /** 工具栏按钮配置 */
@@ -80,7 +82,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-useSparkComponent(nodeConfig ?? { type: 'r-steps' })
+const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-steps' })
 
 const stepConfigs = computed(() =>
   (nodeConfig?.children ?? []).filter(child => child.type === 'r-step')
@@ -182,6 +184,46 @@ function activateStep(index: number): void {
   emit('update:modelValue', nextValue)
   props.onStepChange?.(nextValue, step, index)
 }
+
+// ── r-steps 包装 API ─────────────────────────────────────────────────────
+
+
+const stepsApi: RendererStepsApi = {
+  getActiveStep() {
+    return activeStepName.value
+  },
+  getActiveStepIndex() {
+    return activeStepIndex.value
+  },
+  setActiveStep(index) {
+    activateStep(index)
+  },
+  nextStep() {
+    const next = activeStepIndex.value + 1
+    if (next < stepConfigs.value.length) activateStep(next)
+  },
+  prevStep() {
+    const prev = activeStepIndex.value - 1
+    if (prev >= 0) activateStep(prev)
+  },
+  getStepCount() {
+    return stepConfigs.value.length
+  },
+  getStepNames() {
+    return stepConfigs.value.map((step, index) => getStepName(step, index))
+  },
+  isFirstStep() {
+    return activeStepIndex.value === 0
+  },
+  isLastStep() {
+    return activeStepIndex.value >= stepConfigs.value.length - 1
+  },
+}
+
+sparkProvide(STEPS_API, stepsApi)
+registerApi(stepsApi)
+
+defineExpose(stepsApi)
 
 function getToolbarSlotScope() {
   return createToolbarSlotScope({

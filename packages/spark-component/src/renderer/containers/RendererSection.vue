@@ -93,6 +93,8 @@ import { computed, inject, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
+import { SECTION_API } from '../_pkg'
+import type { RendererSectionApi } from '../_pkg'
 
 interface Props {
   /** 头部操作按钮配置 */
@@ -158,7 +160,7 @@ const props = withDefaults(defineProps<Props>(), {
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-useSparkComponent(nodeConfig ?? { type: 'r-section' })
+const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-section' })
 
 const configChildren = computed(() => nodeConfig?.children ?? [])
 const headerActionConfigs = computed(() => props.headerActions ?? (nodeConfig?.props?.['headerActions'] as SparkNode[] | undefined) ?? [])
@@ -186,6 +188,26 @@ function toggleCollapsed(): void {
   if (!props.collapsible) return
   collapsed.value = !collapsed.value
 }
+
+// ── r-section 包装 API ───────────────────────────────────────────────────
+
+
+const sectionApi: RendererSectionApi = {
+  isCollapsed() {
+    return collapsed.value
+  },
+  setCollapsed(value) {
+    collapsed.value = value
+  },
+  toggle() {
+    collapsed.value = !collapsed.value
+  },
+}
+
+sparkProvide(SECTION_API, sectionApi)
+registerApi(sectionApi)
+
+defineExpose(sectionApi)
 
 function getHeaderSlotScope() {
   return {

@@ -191,6 +191,45 @@ export class DataView implements IDataSource {
   get label(): string | null { return this.selectionDelegate.label }
 
   // ─────────────────────────────────────────────
+  // 选中状态操作（委托给 SelectionDelegate）
+  // ─────────────────────────────────────────────
+
+  /** 设置当前行（自动提取主键存储，null 清除） */
+  setCurrentRow(row: IDataRow | null, originatorId?: string): void {
+    this.selectionDelegate.setCurrentRow(row, originatorId)
+  }
+
+  /** 通过主键设置当前行（行不存在时返回 false） */
+  setCurrentRowById(id: string | number | null, originatorId?: string): boolean {
+    return this.selectionDelegate.setCurrentRowById(id, originatorId)
+  }
+
+  /** 设置多选行（覆盖式） */
+  setSelectedRows(rows: IDataRow[], originatorId?: string): void {
+    this.selectionDelegate.setSelectedRows(rows, originatorId)
+  }
+
+  /** 追加多选行（返回实际新增数量） */
+  addSelectedRows(rows: IDataRow[]): number {
+    return this.selectionDelegate.addSelectedRows(rows)
+  }
+
+  /** 移除多选行（返回实际移除数量） */
+  removeSelectedRows(rows: IDataRow[]): number {
+    return this.selectionDelegate.removeSelectedRows(rows)
+  }
+
+  /** 通过主键批量移除多选行（返回实际移除数量） */
+  removeSelectedRowsById(ids: Array<string | number>): number {
+    return this.selectionDelegate.removeSelectedRowsById(ids)
+  }
+
+  /** 清空多选行 */
+  clearSelectedRows(): void {
+    this.selectionDelegate.clearSelectedRows()
+  }
+
+  // ─────────────────────────────────────────────
   // 分页 & 加载状态
   // ─────────────────────────────────────────────
 

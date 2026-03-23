@@ -64,7 +64,6 @@
         <RendererFieldScope
           :model="filterModel"
           :configs="filterConfigs"
-          :data-source="resolvedView"
           :grid-columns="filterGridColumnsValue"
           :grid-gap="filterGridGapValue"
           :grid-auto-rows="filterGridAutoRowsValue"
@@ -195,11 +194,11 @@
  */
 import { computed, defineComponent, inject, onUnmounted, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode, RendererTableApi, PageComponentRegistry } from '../_pkg'
+import type { SparkNode, RendererTableApi } from '../_pkg'
 import type { ModuleContextCapability } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { PAGE_DATASET, DATA_SOURCE, TABLE_API, PAGE_COMPONENT_REGISTRY, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, TABLE_API, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { FIELD_CONTEXT, MODULE_CONTEXT } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -316,13 +315,12 @@ const sparkChildren = computed(() => {
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { context, consume, provide: sparkProvide, logger } = useSparkComponent(
+const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
   nodeConfig ?? { type: 'r-table' }
 )
 
 const pageDataSet = consume(PAGE_DATASET)
 const pageService = consume(PAGE_SERVICE)
-const pageComponentRegistry = consume(PAGE_COMPONENT_REGISTRY) as PageComponentRegistry | null
 const moduleContextCapability = consume(MODULE_CONTEXT) as ModuleContextCapability | null
 const moduleContext = ref<ReturnType<ModuleContextCapability['getCurrent']>>(moduleContextCapability?.getCurrent() ?? null)
 const unsubscribeModuleContext = moduleContextCapability?.subscribe((next) => {
@@ -498,18 +496,27 @@ const tableApi: RendererTableApi = {
   getNativeTable() {
     return nativeTableRef.value
   },
+  getFilterModel() {
+    return { ...filterModel }
+  },
+  resetFilters() {
+    resetFilters()
+  },
+  hasActiveFilters() {
+    return hasFilters.value
+  },
+  getActiveFilterCount() {
+    return activeFilterCount.value
+  },
 }
 
 sparkProvide(TABLE_API, tableApi)
-pageComponentRegistry?.registerApi({
-  id: context.id,
-  type: context.type,
-  api: tableApi,
-})
+registerApi(tableApi)
+
+defineExpose(tableApi)
 
 onUnmounted(() => {
   unsubscribeModuleContext?.()
-  pageComponentRegistry?.unregisterApi(context.id)
 })
 
 // ── 行操作区 ──────────────────────────────────────────────────────────────

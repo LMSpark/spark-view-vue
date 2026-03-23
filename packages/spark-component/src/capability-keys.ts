@@ -57,6 +57,206 @@ export interface RendererTableApi {
   toggleUiRowSelection(row: IDataRow, selected?: boolean): void
   doLayout(): void
   getNativeTable(): unknown
+  /** 获取当前过滤条件 */
+  getFilterModel(): Record<string, unknown>
+  /** 重置所有过滤条件 */
+  resetFilters(): void
+  /** 是否存在活跃过滤 */
+  hasActiveFilters(): boolean
+  /** 活跃过滤条件数量 */
+  getActiveFilterCount(): number
+}
+
+/**
+ * r-form 对外暴露的稳定 API
+ *
+ * 基于 DataView.currentRow 双向编辑，子字段通过 CONTEXT_DATA 读写。
+ */
+export interface RendererFormApi {
+  /** 获取底层 DataView（IDataSource） */
+  getDataSource(): IDataSource | null
+  /** 获取当前表单数据（reactive mirror of currentRow） */
+  getFormData(): Record<string, unknown>
+  /** 获取底层 el-form 实例（escape hatch） */
+  getNativeForm(): unknown
+  /** 触发表单校验，返回是否通过 */
+  validate(): Promise<boolean>
+  /** 重置表单到初始值 */
+  resetFields(): void
+  /** 清除校验状态 */
+  clearValidate(): void
+  /** 读取指定字段值 */
+  getFieldValue(field: string): unknown
+  /** 写入指定字段值 */
+  setFieldValue(field: string, value: unknown): void
+}
+
+/**
+ * r-detail 对外暴露的稳定 API
+ *
+ * 只读详情视图，与 Form 共享 useFormDetailContainer。
+ */
+export interface RendererDetailApi {
+  /** 获取底层 DataView（IDataSource） */
+  getDataSource(): IDataSource | null
+  /** 获取当前详情数据 */
+  getDetailData(): Record<string, unknown>
+  /** 获取当前行数据（便捷访问） */
+  getCurrentRow(): IDataRow | null
+  /** 读取指定字段值 */
+  getFieldValue(field: string): unknown
+}
+
+/**
+ * r-tree 对外暴露的稳定 API
+ */
+export interface RendererTreeApi {
+  /** 获取底层 DataView（IDataSource） */
+  getDataSource(): IDataSource | null
+  /** 获取当前树数据 */
+  getTreeData(): IDataRow[]
+  /** 获取底层 el-tree 实例（escape hatch） */
+  getNativeTree(): unknown
+  /** 获取当前选中节点数据 */
+  getCurrentNode(): IDataRow | null
+  /** 按 key 设置当前选中节点 */
+  setCurrentKey(key: string | number): void
+  /** 按关键词过滤节点 */
+  filter(keyword: string): void
+  /** 获取已勾选节点的 key 列表（show-checkbox 模式） */
+  getCheckedKeys(): Array<string | number>
+  /** 设置勾选节点 key 列表 */
+  setCheckedKeys(keys: Array<string | number>): void
+
+  // ── 编辑操作 ──────────────────────────────────────────────────────────────
+
+  /** 在指定父节点下追加子节点（parentKey 为 null 时追加到根级） */
+  appendNode(parentKey: string | number | null, nodeData: IDataRow): void
+  /** 在参考节点之前插入 */
+  insertBefore(refKey: string | number, nodeData: IDataRow): void
+  /** 在参考节点之后插入 */
+  insertAfter(refKey: string | number, nodeData: IDataRow): void
+  /** 更新节点数据（按 nodeKey 匹配） */
+  updateNode(key: string | number, patch: Partial<IDataRow>): boolean
+  /** 删除节点（按 nodeKey） */
+  removeNode(key: string | number): boolean
+
+  // ── 声明式属性 ──────────────────────────────────────────────────────────
+
+  /** 是否允许追加子节点（控制自动生成的追加按钮） */
+  getAllowAppend(): boolean
+  /** 是否允许删除节点（控制自动生成的删除按钮） */
+  getAllowDelete(): boolean
+}
+
+/**
+ * r-list 对外暴露的稳定 API
+ */
+export interface RendererListApi {
+  /** 获取底层 DataView（IDataSource） */
+  getDataSource(): IDataSource | null
+  /** 获取当前列表行数据 */
+  getRows(): IDataRow[]
+  /** 获取列表项数量 */
+  getItemCount(): number
+  /** 刷新列表数据（API 数据源） */
+  refresh(): Promise<void>
+}
+
+/**
+ * r-dialog 对外暴露的稳定 API
+ */
+export interface RendererDialogApi {
+  /** 打开对话框 */
+  open(): void
+  /** 关闭对话框 */
+  close(): void
+  /** 当前是否可见 */
+  isVisible(): boolean
+  /** 切换显隐 */
+  toggle(): void
+}
+
+/**
+ * r-drawer 对外暴露的稳定 API
+ */
+export interface RendererDrawerApi {
+  /** 打开抽屉 */
+  open(): void
+  /** 关闭抽屉 */
+  close(): void
+  /** 当前是否可见 */
+  isVisible(): boolean
+  /** 切换显隐 */
+  toggle(): void
+}
+
+/**
+ * r-tabs 对外暴露的稳定 API
+ */
+export interface RendererTabsApi {
+  /** 获取当前激活标签页名称 */
+  getActiveTab(): string | number | undefined
+  /** 设置激活标签页 */
+  setActiveTab(name: string | number): void
+  /** 获取所有标签页名称 */
+  getPaneNames(): Array<string | number>
+  /** 获取标签页数量 */
+  getPaneCount(): number
+}
+
+/**
+ * r-collapse 对外暴露的稳定 API
+ */
+export interface RendererCollapseApi {
+  /** 获取当前展开项 */
+  getExpandedItems(): string | number | Array<string | number> | undefined
+  /** 设置展开项 */
+  setExpandedItems(value: string | number | Array<string | number>): void
+  /** 展开全部 */
+  expandAll(): void
+  /** 收起全部 */
+  collapseAll(): void
+  /** 切换指定项的展开状态 */
+  toggleItem(name: string | number): void
+  /** 查询指定项是否展开 */
+  isItemExpanded(name: string | number): boolean
+}
+
+/**
+ * r-steps 对外暴露的稳定 API
+ */
+export interface RendererStepsApi {
+  /** 获取当前活跃步骤名称 */
+  getActiveStep(): string | number | undefined
+  /** 获取当前活跃步骤索引 */
+  getActiveStepIndex(): number
+  /** 设置活跃步骤（按索引） */
+  setActiveStep(index: number): void
+  /** 下一步 */
+  nextStep(): void
+  /** 上一步 */
+  prevStep(): void
+  /** 获取步骤总数 */
+  getStepCount(): number
+  /** 获取所有步骤名称 */
+  getStepNames(): Array<string | number>
+  /** 是否为第一步 */
+  isFirstStep(): boolean
+  /** 是否为最后一步 */
+  isLastStep(): boolean
+}
+
+/**
+ * r-section / r-block 对外暴露的稳定 API
+ */
+export interface RendererSectionApi {
+  /** 当前是否折叠 */
+  isCollapsed(): boolean
+  /** 设置折叠状态 */
+  setCollapsed(value: boolean): void
+  /** 切换折叠状态 */
+  toggle(): void
 }
 
 /** 页面内组件实例快照 */
@@ -109,6 +309,26 @@ declare module '@spark-view/spark-utils' {
     'app:context-data': Record<string, unknown>
     /** r-table 包装 API（稳定契约 + 底层实例 escape hatch） */
     'app:r-table-api': RendererTableApi
+    /** r-form 包装 API */
+    'app:r-form-api': RendererFormApi
+    /** r-detail 包装 API */
+    'app:r-detail-api': RendererDetailApi
+    /** r-tree 包装 API */
+    'app:r-tree-api': RendererTreeApi
+    /** r-list 包装 API */
+    'app:r-list-api': RendererListApi
+    /** r-dialog 包装 API */
+    'app:r-dialog-api': RendererDialogApi
+    /** r-drawer 包装 API */
+    'app:r-drawer-api': RendererDrawerApi
+    /** r-tabs 包装 API */
+    'app:r-tabs-api': RendererTabsApi
+    /** r-collapse 包装 API */
+    'app:r-collapse-api': RendererCollapseApi
+    /** r-steps 包装 API */
+    'app:r-steps-api': RendererStepsApi
+    /** r-section 包装 API */
+    'app:r-section-api': RendererSectionApi
     /** 页面级组件注册中心（整页实例与组件 API） */
     'app:page-component-registry': PageComponentRegistry
     /** 模块上下文能力（页面级） */
@@ -153,6 +373,36 @@ export const CONTEXT_DATA = defineCapability<Record<string, unknown>>('app:conte
  * 由 RendererTable provide，子组件可通过 consume 获取稳定 API。
  */
 export const TABLE_API = defineCapability<RendererTableApi>('app:r-table-api')
+
+/** r-form 包装 API 能力键 */
+export const FORM_API = defineCapability<RendererFormApi>('app:r-form-api')
+
+/** r-detail 包装 API 能力键 */
+export const DETAIL_API = defineCapability<RendererDetailApi>('app:r-detail-api')
+
+/** r-tree 包装 API 能力键 */
+export const TREE_API = defineCapability<RendererTreeApi>('app:r-tree-api')
+
+/** r-list 包装 API 能力键 */
+export const LIST_API = defineCapability<RendererListApi>('app:r-list-api')
+
+/** r-dialog 包装 API 能力键 */
+export const DIALOG_API = defineCapability<RendererDialogApi>('app:r-dialog-api')
+
+/** r-drawer 包装 API 能力键 */
+export const DRAWER_API = defineCapability<RendererDrawerApi>('app:r-drawer-api')
+
+/** r-tabs 包装 API 能力键 */
+export const TABS_API = defineCapability<RendererTabsApi>('app:r-tabs-api')
+
+/** r-collapse 包装 API 能力键 */
+export const COLLAPSE_API = defineCapability<RendererCollapseApi>('app:r-collapse-api')
+
+/** r-steps 包装 API 能力键 */
+export const STEPS_API = defineCapability<RendererStepsApi>('app:r-steps-api')
+
+/** r-section 包装 API 能力键 */
+export const SECTION_API = defineCapability<RendererSectionApi>('app:r-section-api')
 
 /**
  * 页面级组件注册中心能力键

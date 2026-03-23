@@ -24,61 +24,28 @@
 
     <div class="renderer-tree-main">
       <el-tree
+        ref="nativeTreeRef"
         :data="treeData"
+        :props="elTreeFieldProps"
         v-bind="$attrs"
         @node-click="handleNodeClick"
         @node-expand="handleNodeExpand"
         @node-collapse="handleNodeCollapse"
       >
         <template #default="slotProps">
-          <span :class="['custom-tree-node', `custom-tree-node--${nodeActionsPositionValue}`]">
-            <span v-if="showNodeActionsLeftValue" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
-              <SparkComponentRenderer
-                v-for="(action, i) in getScopedNodeActions({ data: slotProps?.data, node: slotProps?.node })"
-                :key="action.id ?? `r-tree-node-action-left-${i}`"
-                :config="action"
-              />
-              <slot
-                name="node-actions"
-                v-bind="getNodeActionSlotScope(slotProps?.data, slotProps?.node)"
-              />
-            </span>
-
-            <span class="renderer-tree-node-content">
-              <!-- Config 驱动 —— 节点内容由 config.children 递归渲染 -->
-              <template v-if="nodeContentChildren.length">
-                <RendererTreeNodeScope
-                  v-for="(child, i) in nodeContentChildren"
-                  :key="child.id ?? `r-tree-node-${i}`"
-                  :config="child"
-                  :data="getNodeDataRecord(slotProps?.data)"
-                  :node="slotProps?.node"
-                  :data-source="resolvedDataSource"
-                />
-              </template>
-              <!-- Template 驱动 —— 向后兼容 -->
-              <RendererTreeNodeScope
-                v-else
-                :data="getNodeDataRecord(slotProps?.data)"
-                :node="slotProps?.node"
-                :data-source="resolvedDataSource"
-              >
-                <slot :node="slotProps?.node" :data="slotProps?.data">
-                  <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
-                </slot>
-              </RendererTreeNodeScope>
-            </span>
-
-            <span v-if="showNodeActionsRightValue" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
-              <SparkComponentRenderer
-                v-for="(action, i) in getScopedNodeActions({ data: slotProps?.data, node: slotProps?.node })"
-                :key="action.id ?? `r-tree-node-action-right-${i}`"
-                :config="action"
-              />
-              <slot
-                name="node-actions"
-                v-bind="getNodeActionSlotScope(slotProps?.data, slotProps?.node)"
-              />
+          <span class="custom-tree-node">
+            <RendererDataScope
+              v-if="nodeContentChildren.length > 0"
+              :children="nodeContentChildren"
+              :data="(slotProps?.data as IDataRow) ?? {}"
+              field-context="tree"
+            />
+            <slot v-else :node="slotProps?.node" :data="slotProps?.data">
+              <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
+            </slot>
+            <span v-if="hasNodeActions" class="tree-node-actions">
+              <el-button v-if="effectiveAllowAppend" type="primary" size="small" link @click.stop="handleAppendNode(slotProps?.data)">添加</el-button>
+              <el-button v-if="effectiveAllowDelete" type="danger" size="small" link @click.stop="handleDeleteNode(slotProps?.data)">删除</el-button>
             </span>
           </span>
         </template>
@@ -94,30 +61,26 @@
  * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
-import { computed, inject, useSlots } from 'vue'
+import { computed, inject, ref, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
-import { useContainerActions } from './useContainerActions'
-import type { LateralActionPosition } from './useContainerActions'
-import { useContainerInput } from './useContainerInput'
+import { FIELD_CONTEXT, CONTEXT_DATA, TREE_API } from '../_pkg'
+import type { RendererTreeApi } from '../_pkg'
 import { useContainerDataSource } from './useContainerDataSource'
-import { useContainerSlots } from './useContainerSlots'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
-import { createNodeActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
-import RendererTreeNodeScope from './RendererTreeNodeScope.vue'
-
-type NodeActionsPosition = LateralActionPosition
+import { createToolbarSlotScope } from './useContainerSlotScopes'
+import RendererDataScope from './RendererDataScope.vue'
 
 interface TreeNode {
   id?: string | number
-  label: string
+  label?: string
+  name?: string
   children?: TreeNode[]
   disabled?: boolean
-  [key: string]: string | number | boolean | TreeNode[] | undefined
+  [key: string]: unknown
 }
 
 interface ElTreeNode {
@@ -133,89 +96,107 @@ interface ElTreeComponent {
 interface Props {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
-  /** 静态树节点数据（优先用 dataKey） */
-  data?: TreeNode[]
-  /** 动态数据源 */
-  dataSource?: IDataSource | DataView | undefined
+  /** 直接传入的 DataView（与 Table/List/Form/Detail 一致） */
+  dataView?: DataView | undefined
+  /** 父级传入的节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入） */
+  sparkChildren?: SparkNode[]
   /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
   /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
   /** 工具栏 CSS 类名 */
   toolbarClass?: string
-  /** 节点操作按钮配置 */
-  nodeActions?: SparkNode[]
-  /** 节点操作位置 */
-  nodeActionsPosition?: NodeActionsPosition
-  /** 节点操作区 CSS 类名 */
-  nodeActionsClass?: string
+  /** 允许追加子节点（自动生成追加按钮） */
+  allowAppend?: boolean
+  /** 允许删除节点（自动生成删除按钮） */
+  allowDelete?: boolean
   /** 节点点击回调 */
   onNodeClick?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
   /** 节点展开回调 */
   onNodeExpand?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
   /** 节点折叠回调 */
   onNodeCollapse?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
-  /** 透传到 el-tree 的额外属性 */
-  [key: string]: unknown
 }
 
 const props = defineProps<Props>()
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-const { effectiveDataKey, mergedChildren } = useContainerInput({
-  config: computed(() => nodeConfig),
-  dataKey: computed(() => props.dataKey),
+/** dataKey 优先级: config.dataKey → config.props.dataKey → props.dataKey */
+const effectiveDataKey = computed(() =>
+  nodeConfig?.dataKey
+  ?? (nodeConfig?.props?.['dataKey'] as string | undefined)
+  ?? props.dataKey
+)
+
+/** allowAppend / allowDelete — 优先 props，兜底 config.props */
+const effectiveAllowAppend = computed(() =>
+  props.allowAppend ?? (nodeConfig?.props?.['allowAppend'] as boolean | undefined) ?? false
+)
+const effectiveAllowDelete = computed(() =>
+  props.allowDelete ?? (nodeConfig?.props?.['allowDelete'] as boolean | undefined) ?? false
+)
+const hasNodeActions = computed(() => effectiveAllowAppend.value || effectiveAllowDelete.value)
+
+/** 节点内容 children — 完全由父级（rule.json / 父组件）提供 */
+const nodeContentChildren = computed<SparkNode[]>(() => {
+  // 优先 sparkChildren prop（bindRules 注入 / 父组件直传）
+  if (Array.isArray(props.sparkChildren) && props.sparkChildren.length > 0) return props.sparkChildren
+  // 兜底: config.children（未经 bindRules sparkChildren 提取的场景）
+  const cfgChildren = nodeConfig?.children
+  if (Array.isArray(cfgChildren) && cfgChildren.length > 0) return cfgChildren as SparkNode[]
+  return []
 })
 
-const nodeContentChildren = computed<SparkNode[]>(() => mergedChildren.value)
-
-/** 提取树节点显示文本，避免模板中使用 as any */
-function getNodeLabel(data: unknown): string {
-  const node = data as TreeNode | undefined
-  return node?.label ?? (node?.['name'] as string | undefined) ?? (node?.['title'] as string | undefined) ?? '节点'
-}
-
-function getNodeDataRecord(data: unknown): Record<string, unknown> {
-  if (data !== null && typeof data === 'object') return data as Record<string, unknown>
-  return {}
-}
-
 // 接入 SPARK 能力链
-const { consume, provide: sparkProvide, logger } = useSparkComponent(
+const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
   nodeConfig ?? { type: 'r-tree' }
 )
 const pageDataSet = consume(PAGE_DATASET)
 
-const { resolvedDataSource } = useContainerDataSource<IDataSource>({
+const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  fallbackSource: computed(() => props.dataSource ?? null),
-  mapView: view => view as IDataSource,
-  provideDataSource: source => sparkProvide(DATA_SOURCE, source),
+  fallbackSource: computed(() => props.dataView ?? null),
+  mapView: view => view,
+  provideDataSource: view => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererTree',
 })
 
-const treeData = computed(() => {
-  // 兼容三种来源：
-  // 1. 直接传入数组（bindRules 从 pageData 注入的裸数组）
-  // 2. IDataSource / DataView（.rows 属性）
-  // 3. props.data 直传
-  const ds = resolvedDataSource.value as unknown
-  if (Array.isArray(ds)) return ds as TreeNode[]
-  const dsTyped = ds as IDataSource | undefined
-  if (dsTyped && Array.isArray(dsTyped.rows)) return dsTyped.rows as TreeNode[]
-  return props.data ?? []
-})
+const treeData = computed(() => resolvedView.value?.rows as TreeNode[] ?? [])
 
-const modelPermission = computed<IModelPermission | undefined>(() => resolvedDataSource.value?._modelPerm)
+/** 从 DataView.treeConfig.textField 推导 el-tree 的字段映射 */
+const labelField = computed(() =>
+  resolvedView.value?.treeConfig?.textField ?? 'label'
+)
+
+/** 传给 el-tree 的 props，对齐 TreeManager.textField → el-tree label 映射 */
+const elTreeFieldProps = computed(() => ({
+  children: 'children',
+  label: labelField.value,
+}))
+
+/** 提取树节点显示文本，使用 treeConfig.textField 对齐 TreeManager */
+function getNodeLabel(data: unknown): string {
+  const node = data as Record<string, unknown> | undefined
+  if (!node) return '节点'
+  const field = labelField.value
+  const val = node[field]
+  if (typeof val === 'string') return val
+  // fallback: 尝试 label / name / title
+  return (node['label'] as string | undefined)
+    ?? (node['name'] as string | undefined)
+    ?? (node['title'] as string | undefined)
+    ?? '节点'
+}
+
+const modelPermission = computed<IModelPermission | undefined>(() =>
+  (resolvedView.value as IDataSource | null | undefined)?._modelPerm
+)
 
 const {
-  toolbarPositionValue,
-  toolbarClassValue,
-  visibleToolbarConfigs,
-  showToolbar,
+  toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,
 } = useContainerToolbar({
   config: computed(() => nodeConfig),
   toolbar: computed(() => props.toolbar),
@@ -225,53 +206,12 @@ const {
   slots,
 })
 
-const {
-  actionPositionValue: nodeActionsPositionValue,
-  actionClassValue: nodeActionsClassValue,
-  showActionsLeft: showNodeActionsLeft,
-  showActionsRight: showNodeActionsRight,
-  getScopedActionConfigs: getScopedNodeActions,
-} = useContainerActions<{ data: unknown, node: unknown }>({
-  config: computed(() => nodeConfig),
-  actionConfigs: computed(() => props.nodeActions),
-  actionPosition: computed(() => props.nodeActionsPosition),
-  actionClass: computed(() => props.nodeActionsClass),
-  actionPropKey: 'nodeActions',
-  actionPositionPropKey: 'nodeActionsPosition',
-  actionClassPropKey: 'nodeActionsClass',
-  modelPermission,
-  resolveScope: ({ data, node }) => ({
-    row: data as IDataRow | undefined,
-    listenerArgs: [data, node],
-    scopedProps: { data, node },
-  }),
-})
-const {
-  showActionsLeftValue: showNodeActionsLeftValue,
-  showActionsRightValue: showNodeActionsRightValue,
-} = useContainerSlots({
-  slots,
-  actionSlotName: 'node-actions',
-  actionPosition: nodeActionsPositionValue,
-  showActionsLeft: showNodeActionsLeft,
-  showActionsRight: showNodeActionsRight,
-})
-
 function getToolbarSlotScope() {
   return createToolbarSlotScope({
-    dataSource: resolvedDataSource.value,
+    dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
   }, {
     rows: treeData.value,
-  })
-}
-
-function getNodeActionSlotScope(data: unknown, node: unknown) {
-  return createNodeActionSlotScope({
-    dataSource: resolvedDataSource.value,
-    modelPermission: modelPermission.value,
-    data,
-    node,
   })
 }
 
@@ -279,8 +219,106 @@ function getNodeActionSlotScope(data: unknown, node: unknown) {
 sparkProvide(FIELD_CONTEXT, 'tree')
 sparkProvide(CONTEXT_DATA, {} as Record<string, unknown>)
 
+// ── r-tree 包装 API ──────────────────────────────────────────────────────
+
+const nativeTreeRef = ref<unknown>(null)
+
+interface NativeTreeLike {
+  getCurrentNode?: () => unknown
+  setCurrentKey?: (key: string | number | null) => void
+  filter?: (value: string) => void
+  getCheckedKeys?: (leafOnly?: boolean) => Array<string | number>
+  setCheckedKeys?: (keys: Array<string | number>, leafOnly?: boolean) => void
+  append?: (data: unknown, parentNode: unknown) => void
+  insertBefore?: (data: unknown, refNode: unknown) => void
+  insertAfter?: (data: unknown, refNode: unknown) => void
+  remove?: (nodeOrData: unknown) => void
+  getNode?: (key: string | number) => unknown
+}
+
+const treeApi: RendererTreeApi = {
+  getDataSource() {
+    return resolvedView.value ?? null
+  },
+  getTreeData() {
+    return treeData.value as IDataRow[]
+  },
+  getNativeTree() {
+    return nativeTreeRef.value
+  },
+  getCurrentNode() {
+    return ((nativeTreeRef.value as NativeTreeLike)?.getCurrentNode?.() as IDataRow | null) ?? null
+  },
+  setCurrentKey(key) {
+    (nativeTreeRef.value as NativeTreeLike)?.setCurrentKey?.(key)
+  },
+  filter(keyword) {
+    (nativeTreeRef.value as NativeTreeLike)?.filter?.(keyword)
+  },
+  getCheckedKeys() {
+    return (nativeTreeRef.value as NativeTreeLike)?.getCheckedKeys?.() ?? []
+  },
+  setCheckedKeys(keys) {
+    (nativeTreeRef.value as NativeTreeLike)?.setCheckedKeys?.(keys)
+  },
+
+  // ── 编辑操作 ──────────────────────────────────────────────────────────────
+
+  appendNode(parentKey, nodeData) {
+    const tree = nativeTreeRef.value as NativeTreeLike | null
+    if (!tree) return
+    // parentKey 为 null → 追加到根级（el-tree.append 第二个参数传 null/undefined）
+    const parentNode = parentKey != null ? tree.getNode?.(parentKey) : null
+    tree.append?.(nodeData, parentNode ?? undefined)
+  },
+  insertBefore(refKey, nodeData) {
+    const tree = nativeTreeRef.value as NativeTreeLike | null
+    if (!tree) return
+    const refNode = tree.getNode?.(refKey)
+    if (refNode) tree.insertBefore?.(nodeData, refNode)
+  },
+  insertAfter(refKey, nodeData) {
+    const tree = nativeTreeRef.value as NativeTreeLike | null
+    if (!tree) return
+    const refNode = tree.getNode?.(refKey)
+    if (refNode) tree.insertAfter?.(nodeData, refNode)
+  },
+  updateNode(key, patch) {
+    const tree = nativeTreeRef.value as NativeTreeLike | null
+    if (!tree) return false
+    const elNode = tree.getNode?.(key) as { data?: Record<string, unknown> } | undefined
+    if (!elNode?.data) return false
+    Object.assign(elNode.data, patch)
+    return true
+  },
+  removeNode(key) {
+    const tree = nativeTreeRef.value as NativeTreeLike | null
+    if (!tree) return false
+    const elNode = tree.getNode?.(key)
+    if (!elNode) return false
+    tree.remove?.(elNode)
+    return true
+  },
+
+  // ── 声明式属性 ──────────────────────────────────────────────────────────
+
+  getAllowAppend() {
+    return effectiveAllowAppend.value
+  },
+  getAllowDelete() {
+    return effectiveAllowDelete.value
+  },
+}
+
+sparkProvide(TREE_API, treeApi)
+registerApi(treeApi)
+
+defineExpose(treeApi)
+
 // 事件处理器
 const handleNodeClick = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
+  // 同步 currentRow 到 DataView，使 script.js 可通过 view.currentRow 访问当前节点
+  resolvedView.value?.setCurrentRow(data as IDataRow)
   if (props.onNodeClick) props.onNodeClick(data, node, component)
 }
 const handleNodeExpand = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
@@ -288,6 +326,21 @@ const handleNodeExpand = (data: TreeNode, node: ElTreeNode, component: ElTreeCom
 }
 const handleNodeCollapse = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
   if (props.onNodeCollapse) props.onNodeCollapse(data, node, component)
+}
+
+// ── 节点操作 ────────────────────────────────────────────────────────────
+
+function handleAppendNode(data: unknown) {
+  const node = data as Record<string, unknown> | undefined
+  const nodeKey = node?.['id'] as string | number | null ?? null
+  treeApi.appendNode(nodeKey, {})
+}
+
+function handleDeleteNode(data: unknown) {
+  const node = data as Record<string, unknown> | undefined
+  const nodeKey = node?.['id'] as string | number | undefined
+  if (nodeKey == null) return
+  treeApi.removeNode(nodeKey)
 }
 </script>
 
@@ -337,24 +390,10 @@ const handleNodeCollapse = (data: TreeNode, node: ElTreeNode, component: ElTreeC
   padding-right: 8px;
 }
 
-.custom-tree-node--left {
-  flex-direction: row;
-}
-
-.custom-tree-node--right {
-  flex-direction: row;
-}
-
-.renderer-tree-node-content {
-  min-width: 0;
-  flex: 1;
-}
-
-.renderer-tree-node-actions {
+.tree-node-actions {
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 4px;
+  margin-left: auto;
 }
 
 .node-label {

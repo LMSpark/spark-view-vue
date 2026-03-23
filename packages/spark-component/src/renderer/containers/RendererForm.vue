@@ -22,7 +22,7 @@
     </div>
 
     <div class="renderer-form-main">
-      <el-form :model="formModel" :label-width="labelWidth" v-bind="$attrs">
+      <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="$attrs">
         <div v-if="gridChildren.length" class="renderer-form-grid" :style="gridStyle">
           <div
             v-for="(child, i) in gridChildren"
@@ -43,11 +43,14 @@
 /**
  * RendererForm - 表单容器组件
  */
+import { ref } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
+import { FORM_API } from '../_pkg'
+import type { RendererFormApi } from '../_pkg'
 
 interface Props {
   /** 数据绑定键，如 "Users@currentRow" */
@@ -80,6 +83,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const {
+  sparkProvide,
+  registerApi,
+  resolvedView,
   contextData: formModel,
   gridChildren,
   gridStyle,
@@ -91,6 +97,54 @@ const {
   getToolbarSlotScope,
   getDefaultSlotScope,
 } = useFormDetailContainer(props, 'form')
+
+// ── r-form 包装 API ──────────────────────────────────────────────────────
+
+const nativeFormRef = ref<unknown>(null)
+
+interface NativeFormLike {
+  validate?: () => Promise<boolean>
+  resetFields?: () => void
+  clearValidate?: () => void
+}
+
+const formApi: RendererFormApi = {
+  getDataSource() {
+    return resolvedView.value ?? null
+  },
+  getFormData() {
+    return formModel
+  },
+  getNativeForm() {
+    return nativeFormRef.value
+  },
+  async validate() {
+    const form = nativeFormRef.value as NativeFormLike
+    if (!form?.validate) return true
+    try {
+      return await form.validate()
+    } catch {
+      return false
+    }
+  },
+  resetFields() {
+    (nativeFormRef.value as NativeFormLike)?.resetFields?.()
+  },
+  clearValidate() {
+    (nativeFormRef.value as NativeFormLike)?.clearValidate?.()
+  },
+  getFieldValue(field) {
+    return formModel[field]
+  },
+  setFieldValue(field, value) {
+    formModel[field] = value
+  },
+}
+
+sparkProvide(FORM_API, formApi)
+registerApi(formApi)
+
+defineExpose(formApi)
 </script>
 
 <style scoped>

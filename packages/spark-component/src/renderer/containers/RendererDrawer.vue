@@ -62,6 +62,8 @@ import { computed, inject, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
+import { DRAWER_API } from '../_pkg'
+import type { RendererDrawerApi } from '../_pkg'
 
 interface Props {
   /** 抽屉标题 */
@@ -117,7 +119,7 @@ const emit = defineEmits<{
 const slots = useSlots()
 const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-useSparkComponent(nodeConfig ?? { type: 'r-drawer' })
+const { provide: sparkProvide, registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-drawer' })
 
 const resolvedTitle = computed(() =>
   props.title || (nodeConfig?.props?.['title'] as string | undefined) || ''
@@ -145,6 +147,29 @@ const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots[
 function closeDrawer(): void {
   emit('update:modelValue', false)
 }
+
+// ── r-drawer 包装 API ────────────────────────────────────────────────────
+
+
+const drawerApi: RendererDrawerApi = {
+  open() {
+    emit('update:modelValue', true)
+  },
+  close() {
+    emit('update:modelValue', false)
+  },
+  isVisible() {
+    return visibleValue.value
+  },
+  toggle() {
+    emit('update:modelValue', !visibleValue.value)
+  },
+}
+
+sparkProvide(DRAWER_API, drawerApi)
+registerApi(drawerApi)
+
+defineExpose(drawerApi)
 
 function handleModelUpdate(value: boolean): void {
   emit('update:modelValue', value)

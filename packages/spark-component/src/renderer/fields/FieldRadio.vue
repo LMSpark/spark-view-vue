@@ -32,6 +32,8 @@ interface Props {
   modelValue?: string | number
   /** 选项列表 */
   options?: unknown[]
+  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
+  optionKey?: string
   /** 选项标签字段 */
   optionLabelField?: string
   /** 选项值字段 */

@@ -33,22 +33,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRef, watch } from 'vue'
+import { computed, toRef } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
+import { SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
-import type { IDataRow, IDataSource } from '@spark-view/spark-data'
-import { DATA_SOURCE } from '../_pkg'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
+import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'
+import { useDataScope } from './useDataScope'
 
 interface Props {
   /** 当前行数据 */
   row: IDataRow
   /** 子组件配置 */
   children: SparkNode[]
-  /** 父级数据源 */
-  dataSource?: IDataSource | null
   /** 列表项 CSS 类名 */
   itemClass?: string
   /** 列表项行内样式 */
@@ -66,7 +63,6 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  dataSource: null,
   itemClass: '',
   itemStyle: () => ({}),
   useCard: false,
@@ -79,7 +75,12 @@ const props = withDefaults(defineProps<Props>(), {
 const rowRef = toRef(props, 'row')
 const childrenRef = toRef(props, 'children')
 
-const { provide: sparkProvide } = useSparkComponent({ type: 'r-list-item' })
+useDataScope({
+  type: 'r-list-item',
+  fieldContext: 'list',
+  data: computed(() => rowRef.value as Record<string, unknown>),
+})
+
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: childrenRef,
   columns: toRef(props, 'gridColumns'),
@@ -90,18 +91,6 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
 const itemBodyStyle = computed(() =>
   gridChildren.value.length > 0 ? gridStyle.value : undefined
 )
-
-sparkProvide(FIELD_CONTEXT, 'list')
-
-watch(rowRef, (row) => {
-  sparkProvide(CONTEXT_DATA, row as Record<string, unknown>)
-}, { immediate: true })
-
-watch(() => props.dataSource, (dataSource) => {
-  if (dataSource) {
-    sparkProvide(DATA_SOURCE, dataSource)
-  }
-}, { immediate: true })
 </script>
 
 <style scoped>

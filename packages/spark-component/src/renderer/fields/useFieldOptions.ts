@@ -1,6 +1,10 @@
 import { computed, inject } from 'vue'
 import type { ComputedRef } from 'vue'
-import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { lookup } from '@spark-view/spark-utils'
+import { getViewFromRawKey } from '@spark-view/spark-data'
+import type { IDataSet } from '@spark-view/spark-data'
+import { SPARK_NODE_CONFIG_KEY, SPARK_PARENT_CONTEXT_KEY } from '../../types.js'
+import { PAGE_DATASET } from '../../capability-keys.js'
 import { useFieldPermission } from './useFieldPermission'
 import type { FieldPermissionProps } from './useFieldPermission'
 
@@ -24,6 +28,8 @@ export interface FieldOptionProps {
   optionLabelField?: string | undefined
   optionValueField?: string | undefined
   optionChildrenField?: string | undefined
+  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
+  optionKey?: string | undefined
 }
 
 export interface UseFieldOptionsReturn {
@@ -106,7 +112,30 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
   const optionValueField = computed(() => props.optionValueField ?? 'value')
   const optionChildrenField = computed(() => props.optionChildrenField ?? 'children')
 
+  // ── optionKey → DataView 动态选项解析 ──
+  const resolvedOptionKey = computed(() =>
+    props.optionKey
+    ?? nodeConfig?.optionKey
+    ?? (nodeConfig?.props?.['optionKey'] as string | undefined),
+  )
+  const parentCtx = inject(SPARK_PARENT_CONTEXT_KEY, undefined)
+  const pageDataSet = parentCtx ? lookup<IDataSet>(parentCtx, PAGE_DATASET) : undefined
+
+  const optionKeyView = computed(() => {
+    const key = resolvedOptionKey.value
+    if (!key || !pageDataSet) return null
+    return getViewFromRawKey(key, pageDataSet) ?? null
+  })
+
   const options = computed<FieldOption[]>(() => {
+    // 优先级 1: optionKey → DataView.rows（动态选项）
+    const view = optionKeyView.value
+    if (view) {
+      return view.rows
+        .map(row => normalizeOption(row, optionLabelField.value, optionValueField.value, optionChildrenField.value))
+        .filter((item): item is FieldOption => item !== null)
+    }
+    // 优先级 2: 静态 options（props 或 rule.json 配置）
     const source = props.options ?? (nodeConfig?.props?.['options'] as unknown[] | undefined) ?? []
     if (!Array.isArray(source)) return []
     return source
