@@ -104,24 +104,11 @@ export function useSparkComponent(
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
 
   // 组件配置来自 fallbackConfig 参数（调用方在 setup 中传入，如 { type: 'r-table' }）。
-  // SparkComponentRenderer 通过 v-bind="componentProps" 将 SparkNode.props 作为 Vue Props 传递，
-  // 这些 props 分散在 Vue 实例的 $props（defineProps 声明的）和 $attrs（未声明的）中。
-  // 这里自动合并 Vue 实例的 props+attrs，重建完整的 SparkNode config。
-  const instance = getCurrentInstance()
-  const vueAllProps: Record<string, unknown> = instance
-    ? { ...instance.props, ...instance.attrs }
-    : {}
-  // 合并策略：fallbackConfig.props 优先 > Vue 实例 props+attrs
-  const mergedProps: Record<string, unknown> = {
-    ...vueAllProps,
-    ...fallbackConfig?.props,
-  }
-  const config: SparkNode = {
-    type: fallbackConfig?.type ?? 'unknown',
-    props: mergedProps,
-  }
+  // SparkComponentRenderer 通过 v-bind="componentProps" 传递 SparkNode.props（含 id），
+  // ID 已在绑定阶段（bindSparkRuleEvents）按组件类型自动分配并去重。
+  const config: SparkNode = fallbackConfig ?? { type: 'unknown' }
 
-  const resolvedId = (typeof mergedProps['id'] === 'string' ? mergedProps['id'] : undefined)
+  const resolvedId = (typeof config.props?.['id'] === 'string' ? config.props['id'] : undefined)
     ?? `spark-${++_idCounter}`
 
   // ── 上下文创建 ──

@@ -212,6 +212,24 @@ function bindSparkRuleEvents(
     return undefined
   }
 
+  // ── ID 去重 ──
+  // 局部 Set：每次绑定天然全新，SPA 页面切换无需额外清理。
+  const usedIds = new Set<string>()
+
+  /** 确保节点拥有全局唯一 ID */
+  function ensureUniqueId(type: string, existingId: string | undefined): string {
+    const base = existingId ?? type
+    if (!usedIds.has(base)) {
+      usedIds.add(base)
+      return base
+    }
+    let n = 2
+    while (usedIds.has(`${base}_${n}`)) n++
+    const unique = `${base}_${n}`
+    usedIds.add(unique)
+    return unique
+  }
+
   // ── 严格对齐 h(type, props, children) ──
   // 仅保留 h() 三参数对应的 3 个结构键；
   // 其余所有根级字段（id / visible / disabled / on / dataKey / field …）一律收入 props。
@@ -282,6 +300,15 @@ function bindSparkRuleEvents(
         ? cp as Record<string, unknown>
         : {}
       cloned['props'] = { ...existing, ...extras }
+    }
+
+    // ── ID 去重（仅对已有 ID 的节点，避免给 fragment 组件注入多余属性） ──
+    const propsRef = (cloned['props'] as Record<string, unknown> | undefined) ?? {}
+    const currentId = typeof propsRef['id'] === 'string' ? propsRef['id'] : undefined
+    if (currentId !== undefined) {
+      const nodeType = typeof cloned['type'] === 'string' ? cloned['type'] : 'unknown'
+      const finalId = ensureUniqueId(nodeType, currentId)
+      ;(cloned['props'] as Record<string, unknown>)['id'] = finalId
     }
 
     return cloned
