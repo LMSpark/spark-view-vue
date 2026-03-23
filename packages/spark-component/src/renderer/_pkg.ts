@@ -18,6 +18,7 @@ export type {
   ComponentContext,
   LoggerApi,
 } from '../types.js'
+export { nodeId } from '../types.js'
 
 // ── DI 键 ──
 export { SPARK_NODE_CONFIG_KEY } from '../types.js'

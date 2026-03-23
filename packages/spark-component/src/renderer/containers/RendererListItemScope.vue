@@ -5,7 +5,7 @@
         <template v-if="gridChildren.length">
           <div
             v-for="(child, i) in gridChildren"
-            :key="child.id ?? `r-list-item-child-${i}`"
+            :key="nodeId(child) ?? `r-list-item-child-${i}`"
             class="renderer-list-grid-item"
             :style="getChildGridStyle(child)"
           >
@@ -20,7 +20,7 @@
       <template v-if="gridChildren.length">
         <div
           v-for="(child, i) in gridChildren"
-          :key="child.id ?? `r-list-item-child-${i}`"
+          :key="nodeId(child) ?? `r-list-item-child-${i}`"
           class="renderer-list-grid-item"
           :style="getChildGridStyle(child)"
         >
@@ -36,7 +36,7 @@
 import { computed, toRef } from 'vue'
 import type { CSSProperties } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'
 import { useDataScope } from './useDataScope'

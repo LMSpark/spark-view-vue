@@ -11,7 +11,7 @@
     <div v-if="showToolbar" :class="['renderer-steps-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-steps-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-steps-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
@@ -33,7 +33,7 @@
         <template v-if="getStepChildren(activeStep).length">
           <div
             v-for="(child, index) in getStepChildren(activeStep)"
-            :key="child.id ?? `r-step-child-${index}`"
+            :key="nodeId(child) ?? `r-step-child-${index}`"
             class="renderer-steps-grid-item"
             :style="getStepChildGridStyle(child)"
           >
@@ -50,7 +50,7 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
@@ -125,12 +125,12 @@ function getStepChildren(step: SparkNode): SparkNode[] {
 }
 
 function getStepName(step: SparkNode, index: number): string | number {
-  const value = step.props?.['name'] ?? step.props?.['value'] ?? step.id
+  const value = step.props?.['name'] ?? step.props?.['value'] ?? nodeId(step)
   return typeof value === 'string' || typeof value === 'number' ? value : `step-${index}`
 }
 
 function getStepKey(step: SparkNode, index: number): string | number {
-  return step.id ?? getStepName(step, index)
+  return nodeId(step) ?? getStepName(step, index)
 }
 
 function getStepTitle(step: SparkNode, index: number): string {

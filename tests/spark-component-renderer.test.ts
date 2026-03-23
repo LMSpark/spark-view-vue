@@ -19,7 +19,7 @@ test('SparkComponentRenderer forwards config.on listeners to rendered components
   const clickSpy = vi.fn()
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
-      config: { type: 'test-click-emitter', on: { click: clickSpy } } as unknown as Record<string, unknown>,
+      config: { type: 'test-click-emitter', props: { on: { click: clickSpy } } } as unknown as Record<string, unknown>,
       parentContext: rootContext
     },
     global: {

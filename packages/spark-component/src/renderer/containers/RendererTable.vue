@@ -12,7 +12,7 @@
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
     <div v-if="showToolbar" :class="['renderer-table-toolbar', toolbarClassValue]">
-      <template v-for="(action, index) in visibleToolbarConfigs" :key="action.id ?? `r-table-toolbar-${index}`">
+      <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-table-toolbar-${index}`">
         <el-button
           v-if="isBuiltinAction(action)"
           :type="getBuiltinButtonType(action)"
@@ -106,7 +106,7 @@
           >
             <template #default="{ row, $index }">
               <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="action.id ?? `r-table-row-action-left-${index}`">
+                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="nodeId(action) ?? `r-table-row-action-left-${index}`">
                   <el-button
                     v-if="isBuiltinAction(action)"
                     :type="getBuiltinButtonType(action)"
@@ -135,7 +135,7 @@
           <template v-if="sparkChildren.length">
             <SparkComponentRenderer
               v-for="(child, i) in sparkChildren"
-              :key="child.id ?? `r-table-child-${i}`"
+              :key="nodeId(child) ?? `r-table-child-${i}`"
               :config="child"
             />
           </template>
@@ -153,7 +153,7 @@
           >
             <template #default="{ row, $index }">
               <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="action.id ?? `r-table-row-action-right-${index}`">
+                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="nodeId(action) ?? `r-table-row-action-right-${index}`">
                   <el-button
                     v-if="isBuiltinAction(action)"
                     :type="getBuiltinButtonType(action)"
@@ -193,7 +193,7 @@
  */
 import { computed, defineComponent, onUnmounted, ref, useAttrs, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode, RendererTableApi } from '../_pkg'
+import { nodeId, type SparkNode, type RendererTableApi } from '../_pkg'
 import type { ModuleContextCapability } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'

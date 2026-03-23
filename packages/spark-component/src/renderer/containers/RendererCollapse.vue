@@ -11,7 +11,7 @@
     <div v-if="showToolbar" :class="['renderer-collapse-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-collapse-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-collapse-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
@@ -36,7 +36,7 @@
               <template v-if="getItemChildren(item).length">
                 <div
                   v-for="(child, childIndex) in getItemChildren(item)"
-                  :key="child.id ?? `r-collapse-item-child-${childIndex}`"
+                  :key="nodeId(child) ?? `r-collapse-item-child-${childIndex}`"
                   class="renderer-collapse-grid-item"
                   :style="getItemChildGridStyle(child)"
                 >
@@ -60,7 +60,7 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
@@ -162,12 +162,12 @@ function getItemChildren(item: SparkNode): SparkNode[] {
 }
 
 function getItemName(item: SparkNode, index: number): string | number {
-  const value = item.props?.['name'] ?? item.id
+  const value = item.props?.['name'] ?? nodeId(item)
   return typeof value === 'string' || typeof value === 'number' ? value : `collapse-${index}`
 }
 
 function getItemKey(item: SparkNode, index: number): string | number {
-  return item.id ?? getItemName(item, index)
+  return nodeId(item) ?? getItemName(item, index)
 }
 
 function getItemTitle(item: SparkNode, index: number): string {

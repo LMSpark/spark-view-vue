@@ -4,7 +4,7 @@
     <el-table-column v-if="mergedChildren.length > 0" :label="displayLabel" :width="width">
       <SparkComponentRenderer
         v-for="(child, i) in mergedChildren"
-        :key="child.id ?? `field-child-${i}`"
+        :key="nodeId(child) ?? `field-child-${i}`"
         :config="child"
       />
     </el-table-column>
@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useOptionField } from './useFieldOptions'
 import { useSelectorFieldActions } from './useSelectorFieldActions'
 

@@ -17,7 +17,7 @@
         <div v-if="hasHeaderRight" :class="['renderer-section-actions', headerActionsClass]" @click.stop>
           <SparkComponentRenderer
             v-for="(action, index) in headerActionConfigs"
-            :key="action.id ?? `r-section-action-${index}`"
+            :key="nodeId(action) ?? `r-section-action-${index}`"
             :config="action"
           />
           <slot name="header-actions" v-bind="getHeaderSlotScope()" />
@@ -38,7 +38,7 @@
     <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
       <div
         v-for="(child, i) in gridChildren"
-        :key="child.id ?? `r-section-child-${i}`"
+        :key="nodeId(child) ?? `r-section-child-${i}`"
         class="renderer-section-grid-item"
         :style="getChildGridStyle(child)"
       >
@@ -57,7 +57,7 @@
       <div v-if="hasHeaderRight" :class="['renderer-section-actions', headerActionsClass]" @click.stop>
         <SparkComponentRenderer
           v-for="(action, index) in headerActionConfigs"
-          :key="action.id ?? `r-section-action-${index}`"
+          :key="nodeId(action) ?? `r-section-action-${index}`"
           :config="action"
         />
         <slot name="header-actions" v-bind="getHeaderSlotScope()" />
@@ -77,7 +77,7 @@
     <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
       <div
         v-for="(child, i) in gridChildren"
-        :key="child.id ?? `r-section-child-${i}`"
+        :key="nodeId(child) ?? `r-section-child-${i}`"
         class="renderer-section-grid-item"
         :style="getChildGridStyle(child)"
       >
@@ -91,7 +91,7 @@
 <script setup lang="ts">
 import { computed, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 import type { RendererSectionApi } from '../_pkg'
 

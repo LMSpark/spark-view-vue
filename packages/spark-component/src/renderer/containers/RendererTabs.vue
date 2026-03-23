@@ -11,7 +11,7 @@
     <div v-if="showToolbar" :class="['renderer-tabs-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-tabs-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-tabs-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
@@ -39,7 +39,7 @@
               <template v-if="getPaneChildren(pane).length">
                 <div
                   v-for="(child, childIndex) in getPaneChildren(pane)"
-                  :key="child.id ?? `r-tab-pane-child-${childIndex}`"
+                  :key="nodeId(child) ?? `r-tab-pane-child-${childIndex}`"
                   class="renderer-tabs-pane-grid-item"
                   :style="getPaneChildGridStyle(child)"
                 >
@@ -63,7 +63,7 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
@@ -161,12 +161,12 @@ function getPaneChildren(pane: SparkNode): SparkNode[] {
 }
 
 function getPaneName(pane: SparkNode, index: number): string | number {
-  const value = pane.props?.['name'] ?? pane.props?.['value'] ?? pane.id
+  const value = pane.props?.['name'] ?? pane.props?.['value'] ?? nodeId(pane)
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${index}`
 }
 
 function getPaneKey(pane: SparkNode, index: number): string | number {
-  return pane.id ?? getPaneName(pane, index)
+  return nodeId(pane) ?? getPaneName(pane, index)
 }
 
 function getPaneLabel(pane: SparkNode, index: number): string {

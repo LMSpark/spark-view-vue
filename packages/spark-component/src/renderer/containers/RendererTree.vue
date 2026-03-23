@@ -13,7 +13,7 @@
     <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-tree-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-tree-toolbar-${index}`"
         :config="action"
       />
       <slot
@@ -63,7 +63,7 @@
  */
 import { computed, ref, useAttrs, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'

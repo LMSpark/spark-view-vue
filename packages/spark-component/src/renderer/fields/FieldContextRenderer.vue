@@ -5,7 +5,7 @@
     <el-table-column v-if="mergedChildren.length > 0" :label="displayLabel" :width="width">
       <SparkComponentRenderer
         v-for="(child, i) in mergedChildren"
-        :key="child.id ?? `fcr-child-${i}`"
+        :key="nodeId(child) ?? `fcr-child-${i}`"
         :config="child"
       />
     </el-table-column>
@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from './columnFormRules'
 

@@ -13,7 +13,7 @@
     <div v-if="showToolbar" :class="['renderer-list-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-list-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-list-toolbar-${index}`"
         :config="action"
       />
       <slot
@@ -35,7 +35,7 @@
               <div v-if="showItemActionsLeftValue" :class="['renderer-list-item-actions', itemActionsClassValue]">
                 <SparkComponentRenderer
                   v-for="(action, actionIndex) in getScopedItemActions({ row, index })"
-                  :key="action.id ?? `r-list-item-action-left-${actionIndex}`"
+                  :key="nodeId(action) ?? `r-list-item-action-left-${actionIndex}`"
                   :config="action"
                 />
                 <slot
@@ -64,7 +64,7 @@
               <div v-if="showItemActionsRightValue" :class="['renderer-list-item-actions', itemActionsClassValue]">
                 <SparkComponentRenderer
                   v-for="(action, actionIndex) in getScopedItemActions({ row, index })"
-                  :key="action.id ?? `r-list-item-action-right-${actionIndex}`"
+                  :key="nodeId(action) ?? `r-list-item-action-right-${actionIndex}`"
                   :config="action"
                 />
                 <slot
@@ -86,7 +86,7 @@
 import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import type { RendererListApi } from '../_pkg'

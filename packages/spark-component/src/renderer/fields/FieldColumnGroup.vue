@@ -27,7 +27,7 @@
   >
     <SparkComponentRenderer
       v-for="(child, i) in mergedChildren"
-      :key="child.id ?? `col-group-${i}`"
+      :key="nodeId(child) ?? `col-group-${i}`"
       :config="child"
     />
   </el-table-column>
@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 
 interface Props {
   /** 分组标题（必填） */

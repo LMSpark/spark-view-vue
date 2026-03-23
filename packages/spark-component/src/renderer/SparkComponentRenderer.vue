@@ -14,7 +14,7 @@
   >
     <template
       v-for="(child, index) in renderableChildren"
-      :key="isSparkNode(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
+      :key="nodeKey(child, index)"
     >
       <SparkComponentRenderer
         v-if="isSparkNode(child)"
@@ -37,7 +37,7 @@
     <!-- 未注册时仍递归渲染子组件，父上下文由 Vue DI 自动传递 -->
     <template
       v-for="(child, index) in renderableChildren"
-      :key="isSparkNode(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
+      :key="nodeKey(child, index)"
     >
       <SparkComponentRenderer
         v-if="isSparkNode(child)"
@@ -83,6 +83,8 @@ import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } f
 import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
+// h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
+const _FILTERABLE_KEYS = new Set([...LAYOUT_ONLY_PROP_KEYS, 'on'])
 const NATIVE_RENDERABLE_TAGS = new Set([
   'div', 'span', 'p', 'a', 'img',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -99,6 +101,12 @@ const NATIVE_RENDERABLE_TAGS = new Set([
   'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
 ])
 type RenderableChild = SparkNode | string | number
+
+function nodeKey(child: RenderableChild, index: number): string {
+  if (!isSparkNode(child)) return `text-${index}`
+  const id = child.props?.['id']
+  return typeof id === 'string' ? id : `child-${index}`
+}
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -173,8 +181,6 @@ const resolvedComponent = computed(() => {
   return null
 })
 
-const _FILTERABLE_KEYS = LAYOUT_ONLY_PROP_KEYS
-
 function _hasFilterableKeys(obj: Record<string, unknown>): boolean {
   for (const key of Object.keys(obj)) {
     if (_FILTERABLE_KEYS.has(key)) return true
@@ -195,10 +201,11 @@ function toListenerPropName(eventName: string): string {
 const forwardedProps = computed(() => {
   const config = props.config
   const rawProps = config.props ?? {}
-  const onMap = config.on
+  // h() 模型：on 从 props 中读取（bindSparkRuleEvents 已将根级 on 收入 props）
+  const onMap = rawProps['on']
 
   // fast-path: 叶子组件大多无事件绑定且无 layout/framework key，直接返回原引用
-  const hasEvents = onMap !== null && onMap !== undefined && typeof onMap === 'object' && Object.keys(onMap).length > 0
+  const hasEvents = onMap !== null && onMap !== undefined && typeof onMap === 'object' && Object.keys(onMap as Record<string, unknown>).length > 0
   if (!hasEvents && !_hasFilterableKeys(rawProps)) return rawProps
 
   // slow-path: 过滤 layout/framework keys + 合并事件 props

@@ -81,7 +81,7 @@ export function useRendererSetup(
   const router = useRouter()
   const { provide: provideCapability } = useSparkComponent({
     type: componentType,
-    id: `${componentType}-root`,
+    props: { id: `${componentType}-root` },
   })
   const componentRegistry = createPageComponentRegistry()
   const appServices = buildAppServices(router, logger)

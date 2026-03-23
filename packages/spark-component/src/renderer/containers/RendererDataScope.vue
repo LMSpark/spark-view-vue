@@ -9,7 +9,7 @@
 <template>
   <SparkComponentRenderer
     v-for="(child, i) in (children ?? [])"
-    :key="child.id ?? `r-data-scope-${i}`"
+    :key="nodeId(child) ?? `r-data-scope-${i}`"
     :config="child"
   />
 </template>
@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { FieldContext } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useDataScope } from './useDataScope'

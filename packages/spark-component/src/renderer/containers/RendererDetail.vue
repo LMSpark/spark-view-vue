@@ -15,7 +15,7 @@
     <div v-if="showToolbar" :class="['renderer-detail-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
-        :key="action.id ?? `r-detail-toolbar-${index}`"
+        :key="nodeId(action) ?? `r-detail-toolbar-${index}`"
         :config="action"
       />
       <slot name="toolbar" v-bind="getToolbarSlotScope()" />
@@ -26,7 +26,7 @@
         <div v-if="gridChildren.length" class="renderer-detail-grid" :style="gridStyle">
           <div
             v-for="(child, i) in gridChildren"
-            :key="child.id ?? `r-detail-child-${i}`"
+            :key="nodeId(child) ?? `r-detail-child-${i}`"
             class="renderer-detail-grid-item"
             :style="getChildGridStyle(child)"
           >
@@ -45,7 +45,7 @@
  */
 import { SparkComponentRenderer } from '../_pkg'
 import { computed, useAttrs } from 'vue'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'

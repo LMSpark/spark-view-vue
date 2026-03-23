@@ -9,7 +9,7 @@
     <div v-if="!inline" class="renderer-field-scope-grid" :style="gridStyle">
       <div
         v-for="(child, index) in gridChildren"
-        :key="child.id ?? `renderer-field-scope-${index}`"
+        :key="nodeId(child) ?? `renderer-field-scope-${index}`"
         class="renderer-field-scope-item"
         :style="getChildGridStyle(child)"
       >
@@ -19,7 +19,7 @@
     <template v-else>
       <SparkComponentRenderer
         v-for="(child, index) in gridChildren"
-        :key="child.id ?? `renderer-field-scope-inline-${index}`"
+        :key="nodeId(child) ?? `renderer-field-scope-inline-${index}`"
         :config="child"
       />
     </template>
@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import type { FieldContext } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'

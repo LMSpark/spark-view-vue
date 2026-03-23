@@ -723,21 +723,24 @@ SparkNode 设计参照 Vue `h(type, props, children)` 三段式：
 - **props** → 组件接收的全部属性（dataKey / field / label … 均在此）
 - **children** → 嵌套子节点
 
-额外的 `id` / `on` / `visible` / `disabled` 是框架控制字段，由渲染器自身消费，不传给业务组件。
+SparkNode 严格对齐 Vue `h(type, props, children)` 三段式，**仅保留 3 个根级字段**：
+- **type** → 渲染什么组件
+- **props** → 组件接收的全部属性（id / dataKey / field / label / on / visible / disabled … 统统在此）
+- **children** → 嵌套子节点
 
-rule.json 允许将 dataKey / field 等写在根级（便于阅读），绑定阶段（`bindSparkRuleEvents`）会统一收入 `props`，组件代码只需关心 `props`。
+rule.json 允许将 dataKey / field / id / on / visible / disabled 等写在根级（便于阅读），绑定阶段（`bindSparkRuleEvents`）会**全部收入 `props`**，组件代码只需关心 `props`。
 
 ```typescript
-// SparkNode 结构键（保留在根级）
+// SparkNode — 严格对齐 h(type, props, children)
 interface SparkNode {
   type: string                    // ← h() 第一参数
-  props?: Record<string, unknown> // ← h() 第二参数
+  props?: Record<string, unknown> // ← h() 第二参数（id/on/visible/disabled 均在此）
   children?: SparkNode[]          // ← h() 第三参数
-  id?: string                     // 框架控制
-  on?: Record<string, unknown>    // 框架控制
-  visible?: boolean               // 框架控制
-  disabled?: boolean              // 框架控制
 }
+
+// 工具函数：安全读取 props 中的 id
+import { nodeId } from '@spark-view/spark-component'
+nodeId(node) // → string | undefined
 ```
 
 ### 数据流：DataView-first

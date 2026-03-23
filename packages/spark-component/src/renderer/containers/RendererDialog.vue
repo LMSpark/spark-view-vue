@@ -22,7 +22,7 @@
         <div v-if="hasHeaderActions" :class="['renderer-dialog-header-actions', headerActionsClass]">
           <SparkComponentRenderer
             v-for="(action, index) in headerActionConfigs"
-            :key="action.id ?? `r-dialog-header-${index}`"
+            :key="nodeId(action) ?? `r-dialog-header-${index}`"
             :config="action"
           />
           <slot name="header-actions" v-bind="getHeaderSlotScope()" />
@@ -34,7 +34,7 @@
       <template v-if="gridChildren.length">
         <div
           v-for="(child, index) in gridChildren"
-          :key="child.id ?? `r-dialog-child-${index}`"
+          :key="nodeId(child) ?? `r-dialog-child-${index}`"
           class="renderer-dialog-grid-item"
           :style="getChildGridStyle(child)"
         >
@@ -48,7 +48,7 @@
       <div :class="['renderer-dialog-footer', footerClass]">
         <SparkComponentRenderer
           v-for="(action, index) in footerActionConfigs"
-          :key="action.id ?? `r-dialog-footer-${index}`"
+          :key="nodeId(action) ?? `r-dialog-footer-${index}`"
           :config="action"
         />
         <slot name="footer" v-bind="getFooterSlotScope()" />
@@ -60,7 +60,7 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 import type { RendererDialogApi } from '../_pkg'
 

@@ -117,7 +117,7 @@ export function useSparkComponent(
   // 3. id 用全局单调计数器，比 Date.now()+random 更快且确定（SSR 友好）
 
   const context: ComponentContext = shallowReactive({
-    id: config.id ?? `spark-${++_idCounter}`,
+    id: (typeof config.props?.['id'] === 'string' ? config.props['id'] : undefined) ?? `spark-${++_idCounter}`,
     type: config.type,
     children: markRaw([] as ComponentContext[]),
     props: config.props ?? {},
@@ -190,8 +190,8 @@ export function useSparkComponent(
 
   // ── 计算属性 ──
 
-  const isVisible = computed(() => config.visible !== false)
-  const isDisabled = computed(() => config.disabled === true)
+  const isVisible = computed(() => config.props?.['visible'] !== false)
+  const isDisabled = computed(() => config.props?.['disabled'] === true)
 
   // ── 能力提供 ──
 

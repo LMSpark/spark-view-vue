@@ -17,7 +17,7 @@
       <slot name="content" :rules="resolvedRules">
         <SparkComponentRenderer
           v-for="(rule, i) in resolvedRules"
-          :key="(rule as SparkNode).id ?? `spark-rule-${i}`"
+          :key="nodeId(rule as SparkNode) ?? `spark-rule-${i}`"
           :config="(rule as SparkNode)"
         />
       </slot>
@@ -58,7 +58,7 @@ import type { HttpClient } from '@spark-view/spark-utils'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
-import type { SparkNode } from '../types'
+import { nodeId, type SparkNode } from '../types'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE } from '../capability-keys'
 import type { ModuleContextCapability, PageCssScopeCapability } from '../capability-keys'
 import { useRendererSetup } from './useRendererSetup'
@@ -211,10 +211,10 @@ function bindSparkRuleEvents(
     return undefined
   }
 
-  // ── h(type, props, children) 对齐 ──
-  // SparkNode 结构键 ≈ h() 的 type + children + 框架控制字段
-  // 保留在根级，由渲染器自身消费；其余所有字段一律收入 props
-  const _STRUCTURAL_KEYS = new Set(['type', 'id', 'props', 'children', 'on', 'visible', 'disabled'])
+  // ── 严格对齐 h(type, props, children) ──
+  // 仅保留 h() 三参数对应的 3 个结构键；
+  // 其余所有根级字段（id / visible / disabled / on / dataKey / field …）一律收入 props。
+  const _STRUCTURAL_KEYS = new Set(['type', 'props', 'children'])
 
   const bindNode = (node: unknown): unknown => {
     if (Array.isArray(node)) return node.map(bindNode)
@@ -269,11 +269,11 @@ function bindSparkRuleEvents(
     // ── 根级字段 → props 规范化 ──
     // 收集非结构键，一次性合并到 props（根级覆盖 props 同名字段）
     let extras: Record<string, unknown> | undefined
-    for (const key of Object.keys(current)) {
+    for (const key of Object.keys(cloned)) {
       if (_STRUCTURAL_KEYS.has(key)) continue
-      if (current[key] === undefined) continue
+      if (cloned[key] === undefined) continue
       extras ??= {}
-      extras[key] = current[key]
+      extras[key] = cloned[key]
     }
     if (extras !== undefined) {
       const cp = cloned['props']
