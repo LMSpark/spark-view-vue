@@ -10,7 +10,7 @@ import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, pro
 import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { ComponentContext, SparkNode, ComponentRegistry } from './types.js'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } from './types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 
@@ -103,10 +103,9 @@ export function useSparkComponent(
   const parentContext = options?.parentContext ?? inject(SPARK_PARENT_CONTEXT_KEY, undefined)
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
 
-  // 优先使用 SparkComponentRenderer 注入的完整 SparkNode 配置；
-  // fallbackConfig 仅用于测试场景或脱离 Renderer 直接使用的情况。
-  const injectedConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
-  const config: SparkNode = injectedConfig ?? fallbackConfig ?? { type: 'unknown' }
+  // 组件配置来自 fallbackConfig 参数（调用方在 setup 中传入，如 { type: 'r-table' }）。
+  // SparkComponentRenderer 通过 v-bind="componentProps" 将 SparkNode.props 作为 Vue Props 传递。
+  const config: SparkNode = fallbackConfig ?? { type: 'unknown' }
 
   // ── 上下文创建 ──
   //

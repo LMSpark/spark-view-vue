@@ -39,7 +39,7 @@ export type {
 } from './types.js'
 
 // ── 6. DI Keys ──
-export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } from './types.js'
+export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
 
 // ── 6b. 数据 + Renderer 能力键 ──
 export {

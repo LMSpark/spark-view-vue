@@ -802,7 +802,6 @@ const { configChildren } = useContainerInput({
 
 - rule.json 中 `dataKey` / `field` / `label` / `optionKey` 写在根级或 props 内均可，最终都在 props 内
 - **组件代码一律通过 `defineProps` 接收属性，不读 SparkNode 根级**
-- `SPARK_NODE_CONFIG_KEY` inject 已废弃，仅 `useSparkComponent` 作为内部 fallback
 
 ```jsonc
 // rule.json —— 两种写法等价，绑定后统一在 props 内

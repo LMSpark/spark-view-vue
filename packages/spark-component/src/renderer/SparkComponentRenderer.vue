@@ -79,7 +79,7 @@
  * ```
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } from '../types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../types.js'
 import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
@@ -128,9 +128,6 @@ const props = defineProps<Props>()
 if (props.parentContext !== undefined) {
   vueProvide(SPARK_PARENT_CONTEXT_KEY, props.parentContext)
 }
-
-// @deprecated 仅 useSparkComponent fallback 消费，组件应通过 Vue Props 接收属性
-vueProvide(SPARK_NODE_CONFIG_KEY, props.config)
 
 // ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────
 const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
