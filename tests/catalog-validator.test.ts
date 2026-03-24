@@ -23,6 +23,7 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
     components: {},
     constraints: makeConstraints(),
     sharedTypes: {},
+    bindingDescriptors: {},
     ...overrides,
   }
 }

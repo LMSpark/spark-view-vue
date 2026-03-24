@@ -39,6 +39,15 @@ export interface ComponentCatalog {
 
   /** 平台约束（校验器使用） */
   constraints: PlatformConstraints
+
+  /**
+   * 组件绑定行为描述符（全量映射）
+   *
+   * 包含所有在绑定管线中有角色的组件类型（el-* 静态 + r-* 推断），
+   * 运行时 component-binding-registry 可从此初始化。
+   * AI 可查阅此表理解组件的数据绑定行为。
+   */
+  bindingDescriptors: Record<string, CatalogBindingDescriptor>
 }
 
 /* --------------------------------------------------------------------------
@@ -86,6 +95,9 @@ export interface ComponentEntry {
 
   /** 来源标记 */
   source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
+
+  /** 绑定行为描述符（从 VCM props 推断或静态声明） */
+  binding?: CatalogBindingDescriptor
 }
 
 export interface PropEntry {
@@ -204,4 +216,33 @@ export interface NestingRule {
   forbiddenChildren?: string[]
   /** 说明文本 */
   note?: string
+}
+
+/* --------------------------------------------------------------------------
+ * 绑定行为描述符
+ * ----------------------------------------------------------------------- */
+
+/**
+ * 组件绑定行为描述符（与运行时 ComponentBindingDescriptor 结构对齐）
+ *
+ * 声明一个组件类型在绑定管线中的角色和特征。
+ * 构建时由 VCM props 自动推断（r-*）或静态声明（el-*）。
+ */
+export interface CatalogBindingDescriptor {
+  /** 数据绑定委托：'table' | 'pagination' | 'form-element' */
+  bindingDelegate?: 'table' | 'pagination' | 'form-element'
+  /** dataKey 自解析（组件自行 consume PAGE_DATASET） */
+  selfResolving?: boolean
+  /** 数据容器（向子组件传递 DataSource） */
+  dataContainer?: boolean
+  /** 字段提供者（prop 属性表示字段名） */
+  fieldProvider?: boolean
+  /** 选项映射支持 */
+  hasOptions?: boolean
+  /** 值类型：'string' | 'boolean' | 'array' */
+  valueType?: 'string' | 'boolean' | 'array'
+  /** 操作组件（权限控制可见性） */
+  actionComponent?: boolean
+  /** 列容器（权限控制整列隐藏） */
+  columnLike?: boolean
 }

@@ -29,7 +29,7 @@ function isElCancelAction(e: unknown): boolean {
 }
 
 /** 可选的外部 UI 服务注入（测试 / Storybook 用） */
-export interface PageServiceOverrides {
+interface PageServiceOverrides {
   messageService?: {
     success: (msg: string) => void
     warning: (msg: string) => void

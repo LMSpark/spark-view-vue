@@ -24,6 +24,7 @@
  */
 
 import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
+import { isDataContainerType, isFieldProviderType } from './component-binding-registry'
 
 // ── 分区 A：上下文模型 ─────────────────────────────────────────────────────
 
@@ -32,6 +33,15 @@ import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
  *
  * 携带当前递归位置所继承的数据源、字段名和权限信息。
  * 用于子组件推断自身的数据来源和渲染状态。
+ *
+ * **各委托对字段的依赖（ISP 文档）**：
+ * - `applyButtonPermission()` → 仅需 `modelPerm`
+ * - `applyColumnPermission()` → 需 `dataSource`（+ 可选 `fieldName`）
+ * - `applyFormFieldPermission()` → 需 `fieldName` + `dataSource` + `parentType`
+ * - `buildChildContext()` → 全部字段
+ *
+ * 当前采用单一接口传递以保持递归简洁；若委托数量显著增长，
+ * 可考虑按需拆分为 ActionContext / FieldRenderContext 等细粒度接口。
  */
 export interface BindingContext {
   /** 最近父组件类型（undefined 表示顶层） */
@@ -47,21 +57,7 @@ export interface BindingContext {
 /** 空上下文（顶层调用或无上下文时使用） */
 export const EMPTY_CONTEXT: Readonly<BindingContext> = Object.freeze({})
 
-// ── 分区 B：组件分类 ───────────────────────────────────────────────────────
-
-/** 携带字段名的容器组件类型（prop 属性表示子组件对应的数据字段） */
-const FIELD_PROVIDER_TYPES = new Set([
-  'el-table-column',
-  'el-form-item',
-  'el-descriptions-item',
-])
-
-/** 数据容器组件类型（dataKey 解析得到的 DataSource 需要向下传递） */
-export const DATA_CONTAINER_TYPES = new Set([
-  'el-table',
-  'el-form',
-  'el-descriptions',
-])
+// ── 分区 B：组件分类（委托给 component-binding-registry）──────────────────
 
 // ── 分区 C：上下文构建 ─────────────────────────────────────────────────────
 
@@ -91,14 +87,14 @@ export function buildChildContext(
   let fieldName = parentContext.fieldName
 
   // 数据容器组件：更新 dataSource + modelPerm
-  if (currentType && DATA_CONTAINER_TYPES.has(currentType) && resolvedDataSource) {
+  if (currentType && isDataContainerType(currentType) && resolvedDataSource) {
     dataSource = resolvedDataSource
     modelPerm = resolvedDataSource._modelPerm ?? parentContext.modelPerm
     changed = true
   }
 
   // 字段提供者：提取 prop 作为 fieldName
-  if (currentType && FIELD_PROVIDER_TYPES.has(currentType)) {
+  if (currentType && isFieldProviderType(currentType)) {
     const prop = currentProps?.['prop'] as string | undefined
     if (prop) {
       fieldName = prop

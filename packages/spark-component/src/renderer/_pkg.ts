@@ -18,7 +18,7 @@ export type {
   ComponentContext,
   LoggerApi,
 } from '../types.js'
-export { nodeId } from '../types.js'
+export { nodeId, SPARK_NODE_STRUCT_KEYS, DEFAULT_DOCK, nodeDock, nodeOrder, getDockedChildren } from '../types.js'
 
 // ── DI 键 ──
 

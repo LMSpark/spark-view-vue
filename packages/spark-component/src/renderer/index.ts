@@ -26,11 +26,8 @@ export type {
   PageContext,
   PageConfig,
   PageRendererProps,
-  RuleBindingOptions,
 } from './types'
 
-// 渲染工具（供测试及高级用例）
-export { bindDataToRules } from './binding/bindRules'
 
 // ── 容器组件 ──────────────────────────────────────────────────────────────────
 export { default as RendererTable } from './containers/RendererTable.vue'
@@ -77,37 +74,8 @@ export { default as FieldTransfer } from './fields/FieldTransfer.vue'
 export { default as FieldColumnGroup } from './fields/FieldColumnGroup.vue'
 export { default as FieldContextRenderer } from './fields/FieldContextRenderer.vue'
 
-// ── 容器 Composable（供高级使用或扩展） ────────────────────────────────────────
-export { useFormDetailContainer } from './containers/useFormDetailContainer'
-export { useContainerDataSource } from './containers/useContainerDataSource'
-export { useContainerContextData } from './containers/useContainerContextData'
-export { useContainerGrid } from './containers/useContainerGrid'
-export { useContainerInput } from './containers/useContainerInput'
-export { useContainerSlots } from './containers/useContainerSlots'
-export {
-  createToolbarSlotScope,
-  createRowActionSlotScope,
-  createNodeActionSlotScope,
-  createCurrentRowSlotScope,
-} from './containers/useContainerSlotScopes'
-export { useContainerToolbar } from './containers/useContainerToolbar'
-export { useContainerActions } from './containers/useContainerActions'
-export { useTableFilters } from './containers/useTableFilters'
-export {
-  isActionDisplayed,
-  isModelActionAllowed,
-  isRowActionAllowed,
-} from './containers/action-permission'
-
-// ── 字段 Composable ──
+// ── 容器 Composable（仅保留有外部消费的） ──────────────────────────────────
 export { useFieldPermission } from './fields/useFieldPermission'
-export { useFieldContext } from './fields/useFieldContext'
-export { useFieldOptions } from './fields/useFieldOptions'
-export { useFieldActionMode } from './fields/useFieldActionMode'
-export { useFileFieldActions } from './fields/useFileFieldActions'
-export { useSelectorFieldActions } from './fields/useSelectorFieldActions'
-export { columnToFormRules, toElFormRules } from './fields/columnFormRules'
-export { createPickerPreset } from './fields/createPickerPreset'
 
 // ── 注册函数 ──
 export { registerAllRenderers } from './register-renderers'

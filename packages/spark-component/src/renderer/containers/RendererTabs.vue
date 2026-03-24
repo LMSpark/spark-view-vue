@@ -65,7 +65,7 @@ import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import { nodeId, type SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
-import { createToolbarSlotScope } from './useContainerSlotScopes'
+import { createToolbarSlotScope } from './slotScopeFactories'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 import type { RendererTabsApi } from '../_pkg'
 

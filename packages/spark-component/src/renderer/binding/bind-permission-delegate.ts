@@ -27,10 +27,10 @@
 import type { BindRule } from '../types'
 import type { IModelPermission } from '@spark-view/spark-data'
 import { setRuleProp, pageLogger } from './bind-helpers'
-import { FORM_ELEMENT_TYPES } from './bind-form-delegate'
+import { isFormElementType, isActionComponentType, isColumnLikeType } from './component-binding-registry'
 import type { BindingContext } from './bind-context'
 
-// ── 操作按钮权限映射 ─────────────────────────────────────────────────────
+// ── 操作按钮权限映射（类型分类委托给 component-binding-registry）──────────────────
 
 /**
  * permAction → _modelPerm 字段映射
@@ -45,12 +45,6 @@ const PERM_ACTION_MAP: Record<string, keyof IModelPermission> = {
   import: 'allowImport',
   export: 'allowExport',
 }
-
-/** 操作组件类型（支持按钮和链接） */
-const ACTION_TYPES = new Set(['el-button', 'el-link'])
-
-/** 列级容器类型（检查字段权限） */
-const COLUMN_LIKE_TYPES = new Set(['el-table-column', 'el-descriptions-item'])
 
 // ── 公共入口 ──────────────────────────────────────────────────────────────
 
@@ -68,11 +62,11 @@ export function applyPermissions(rule: BindRule, context: BindingContext): void 
   if (!type) return
 
   // 组件类型互斥：一个组件只属于一种权限类别
-  if (ACTION_TYPES.has(type)) {
+  if (isActionComponentType(type)) {
     applyButtonPermission(rule, context)
-  } else if (COLUMN_LIKE_TYPES.has(type)) {
+  } else if (isColumnLikeType(type)) {
     applyColumnPermission(rule, context)
-  } else if (FORM_ELEMENT_TYPES.has(type)) {
+  } else if (isFormElementType(type)) {
     applyFormFieldPermission(rule, context)
   }
 }

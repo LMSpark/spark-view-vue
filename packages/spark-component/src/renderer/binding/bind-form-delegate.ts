@@ -32,35 +32,7 @@ import type { DataView } from '@spark-view/spark-data'
 import { isDataKey, getViewFromRawKey } from '@spark-view/spark-data'
 import { setRuleProp, resolveRuleDataKey, pageLogger, definePropertyGetter } from './bind-helpers'
 import { wrapEvent } from './wrapEvent'
-
-// ── 组件分类 ──────────────────────────────────────────────────────────────
-
-/**
- * 全部值型表单组件（持有 modelValue 的组件）
- *
- * 新增表单组件时在此添加。
- */
-export const FORM_ELEMENT_TYPES = new Set([
-  // Element Plus 官方类型
-  'el-input', 'el-textarea', 'el-input-number', 'el-autocomplete',
-  'el-select', 'el-cascader', 'el-tree-select',
-  'el-radio-group', 'el-checkbox-group',
-  'el-switch', 'el-slider', 'el-rate',
-  'el-date-picker', 'el-time-picker', 'el-time-select',
-  'el-color-picker', 'el-transfer',
-])
-
-/** 选项类组件（需要从 DataView.rows 映射 options） */
-const OPTIONS_TYPES = new Set([
-  'el-select', 'el-radio-group', 'el-checkbox-group',
-  'el-cascader', 'el-tree-select',
-])
-
-/** 多值组件（modelValue 为数组） */
-const MULTI_VALUE_TYPES = new Set(['el-checkbox-group', 'el-transfer'])
-
-/** 布尔值组件 */
-const BOOLEAN_TYPES = new Set(['el-switch'])
+import { isFormElementType, isOptionsType, isMultiValueType, isBooleanValueType } from './component-binding-registry'
 
 // ── 公共入口 ──────────────────────────────────────────────────────────────
 
@@ -75,7 +47,7 @@ export function bindFormElementRule(
   dataSet: IDataSet | null,
 ): void {
   const type = rule.type
-  if (!FORM_ELEMENT_TYPES.has(type)) return
+  if (!isFormElementType(type)) return
 
   const rawKey = rule['dataKey'] as string | undefined
   if (!rawKey || !isDataKey(rawKey) || !dataSet) return
@@ -83,7 +55,7 @@ export function bindFormElementRule(
   const view = getViewFromRawKey(rawKey, dataSet)
 
   // ── 1. 选项映射（el-select / el-radio-group / el-checkbox-group / el-cascader） ──
-  if (OPTIONS_TYPES.has(type)) {
+  if (isOptionsType(type)) {
     let mapped = false
     if (view) {
       const options = mapOptionsFromView(view, rule)
@@ -162,9 +134,9 @@ function injectValueBinding(rule: BindRule, view: DataView, type: string): void 
   rule.props ??= {}
 
   // ── getter：DataView.value → modelValue（响应式 getter，渲染器每次渲染时读取） ──
-  if (BOOLEAN_TYPES.has(type)) {
+  if (isBooleanValueType(type)) {
     definePropertyGetter(rule.props, 'modelValue', () => view.value === 'true' || view.value === '1')
-  } else if (MULTI_VALUE_TYPES.has(type)) {
+  } else if (isMultiValueType(type)) {
     const delimiter = view.selectionDelimiter || ','
     definePropertyGetter(rule.props, 'modelValue', () => (view.value ? view.value.split(delimiter) : []))
   } else {
@@ -173,9 +145,9 @@ function injectValueBinding(rule: BindRule, view: DataView, type: string): void 
 
   // ── setter：change 事件 → DataView.value ──
   wrapEvent(rule, 'change', (val: unknown) => {
-    if (MULTI_VALUE_TYPES.has(type) && Array.isArray(val)) {
+    if (isMultiValueType(type) && Array.isArray(val)) {
       view.value = val.join(view.selectionDelimiter || ',')
-    } else if (BOOLEAN_TYPES.has(type)) {
+    } else if (isBooleanValueType(type)) {
       view.value = (val === true || val === 1) ? '1' : '0'
     } else {
       view.value = String(val ?? '')

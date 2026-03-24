@@ -35,7 +35,7 @@ import { createPageComponentRegistry } from './page/page-component-registry'
 
 // ─── 公共接口 ────────────────────────────────────────────────────────────────
 
-export interface RendererSetupReturn {
+interface RendererSetupReturn {
   /** Vue Router 实例（消费方如 buildPageService / resolvePageId 可能需要） */
   router: Router
   /** SPARK 能力 provide 函数（含 CapabilityTypeMap 类型重载） */

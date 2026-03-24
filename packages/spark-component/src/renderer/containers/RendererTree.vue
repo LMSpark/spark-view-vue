@@ -64,14 +64,14 @@
 import { computed, ref, useAttrs, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import { nodeId, type SparkNode } from '../_pkg'
-import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
+import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import type { RendererTreeApi } from '../_pkg'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
-import { createToolbarSlotScope } from './useContainerSlotScopes'
+import { createToolbarSlotScope } from './slotScopeFactories'
 import RendererDataScope from './RendererDataScope.vue'
 
 interface TreeNode {
@@ -145,7 +145,7 @@ const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponen
 )
 const pageDataSet = consume(PAGE_DATASET)
 
-const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
   fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
@@ -181,10 +181,6 @@ function getNodeLabel(data: unknown): string {
     ?? (node['title'] as string | undefined)
     ?? '节点'
 }
-
-const modelPermission = computed<IModelPermission | undefined>(() =>
-  (resolvedView.value as IDataSource | null | undefined)?._modelPerm
-)
 
 const {
   toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,

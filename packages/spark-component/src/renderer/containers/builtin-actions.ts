@@ -29,8 +29,10 @@ interface BuiltinActionMeta {
   buttonClass?: string
 }
 
-export const BUILTIN_ACTION_META = {
+const BUILTIN_ACTION_META = {
   'append-row': { label: '新增', buttonType: 'primary' },
+  'prompt-append': { label: '新增', buttonType: 'primary' },
+  'prompt-edit': { label: '编辑', buttonType: 'success' },
   'refresh': { label: '刷新' },
   'delete-row': { label: '删除', buttonType: 'danger', buttonPlain: true },
   'delete-current': { label: '删除当前', buttonType: 'danger', buttonPlain: true },
@@ -42,17 +44,17 @@ export const BUILTIN_ACTION_META = {
   'message-current': { label: '查看当前', buttonType: 'info', buttonPlain: true },
 } as const satisfies Record<string, BuiltinActionMeta>
 
-export type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
+type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
 
 const BUILTIN_ACTION_META_RECORD: Record<BuiltinActionName, BuiltinActionMeta> = BUILTIN_ACTION_META
 
-export interface BuiltinActionScope {
+interface BuiltinActionScope {
   row?: IDataRow
   index?: number
 }
 
 /** 执行上下文：由容器组件在运行时提供 */
-export interface BuiltinActionContext {
+interface BuiltinActionContext {
   getView: () => DataView | null | undefined
   getPageService: () => IPageServiceCapability | null | undefined
   getLogger: () => LoggerApi
@@ -130,7 +132,7 @@ function isBuiltinActionName(value: string): value is BuiltinActionName {
   return value in BUILTIN_ACTION_META
 }
 
-export function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
+function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
   const actionName = readString(getActionProps(action)['builtinAction'])
   if (!actionName) return null
   return isBuiltinActionName(actionName) ? actionName : null
@@ -210,7 +212,8 @@ export function getBuiltinButtonClass(action: SparkNode): string {
 
 // ── 行辅助 ────────────────────────────────────────────────────────────────
 
-function getSelectedRows(view: DataView): IDataRow[] {
+/** 安全读取 DataView 的 selectedRows（null-guard），供容器 & 内置动作共用 */
+export function getSelectedRows(view: DataView): IDataRow[] {
   return Array.isArray(view.selectedRows) ? view.selectedRows : []
 }
 
@@ -310,6 +313,7 @@ export function isBuiltinActionDisabled(
 
   switch (actionName) {
     case 'append-row':
+    case 'prompt-append':
     case 'refresh':
       return false
     case 'delete-row':
@@ -319,6 +323,7 @@ export function isBuiltinActionDisabled(
     case 'delete-current':
     case 'patch-current':
     case 'message-current':
+    case 'prompt-edit':
       return view.currentRow === null
     case 'delete-selected':
     case 'patch-selected':
@@ -402,6 +407,66 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           }
           view.appendRow(payload as IDataRow)
           notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
+          return
+        }
+        case 'prompt-append': {
+          const pageService = ctx.getPageService()
+          if (!pageService) return
+          const field = readString(propsMap['field'])
+          if (!field) {
+            notifyAction(propsMap, 'warning', '缺少 field 配置')
+            return
+          }
+          const promptMsg = readString(propsMap['promptMessage']) ?? `请输入${readString(propsMap['label']) ?? field}`
+          const promptTitle = readString(propsMap['promptTitle']) ?? '新增'
+          const promptOpts: { defaultValue?: string; placeholder?: string } = {}
+          const dv = readString(propsMap['defaultValue'])
+          if (dv !== undefined) promptOpts.defaultValue = dv
+          const ph = readString(propsMap['placeholder'])
+          if (ph !== undefined) promptOpts.placeholder = ph
+          const result = await pageService.showPrompt(promptMsg, promptTitle, promptOpts)
+          if (result === null) return
+          const appendPayload = { ...(asRecord(propsMap['appendPayload']) ?? {}) }
+          appendPayload[field] = result
+          if (!(idField in appendPayload) || appendPayload[idField] === undefined || appendPayload[idField] === null) {
+            appendPayload[idField] = inferNextRowId(view, idField)
+          }
+          view.appendRow(appendPayload as IDataRow)
+          notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
+          return
+        }
+        case 'prompt-edit': {
+          const pageService = ctx.getPageService()
+          if (!pageService) return
+          const row = view.currentRow
+          if (!row) {
+            notifyAction(propsMap, 'warning', '请先选择当前行')
+            return
+          }
+          const field = readString(propsMap['field'])
+          if (!field) {
+            notifyAction(propsMap, 'warning', '缺少 field 配置')
+            return
+          }
+          const id = resolveRowId(row, idField)
+          if (id === null) {
+            notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
+            return
+          }
+          const currentVal = row[field]
+          const defaultVal = typeof currentVal === 'string' ? currentVal : (typeof currentVal === 'number' ? String(currentVal) : '')
+          const editMsg = readString(propsMap['promptMessage']) ?? `请输入${readString(propsMap['label']) ?? field}`
+          const editTitle = readString(propsMap['promptTitle']) ?? '编辑'
+          const editOpts: { defaultValue?: string; placeholder?: string } = { defaultValue: defaultVal }
+          const editPh = readString(propsMap['placeholder'])
+          if (editPh !== undefined) editOpts.placeholder = editPh
+          const result = await pageService.showPrompt(editMsg, editTitle, editOpts)
+          if (result === null) return
+          if (view.updateRowById(id, { [field]: result })) {
+            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '更新成功'))
+            return
+          }
+          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', '更新失败'))
           return
         }
         case 'refresh': {

@@ -1,6 +1,6 @@
-import { computed, shallowReactive, watch } from 'vue'
+import { shallowReactive, watch } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
+import type { IDataSource } from '@spark-view/spark-data'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
 
@@ -48,11 +48,7 @@ export function useContainerContextData(options: UseContainerContextDataOptions)
     { immediate: true },
   )
 
-  // 模型级权限单独暴露，供容器动作区和插槽作用域复用。
-  const modelPermission = computed<IModelPermission | undefined>(() => options.source.value?._modelPerm)
-
   return {
     contextData,
-    modelPermission,
   }
 }

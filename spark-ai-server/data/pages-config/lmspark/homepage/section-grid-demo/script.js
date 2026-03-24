@@ -1,117 +1,137 @@
-let _pageState = {};
+let _pageState = { uptime: 0 };
 
 function __init__() {
-  // 页面初始化，可以在这里订阅数据变化
-  const view = $dataSet?.getView('Users', 'default');
+  var view = $dataSet?.getView('Users', 'default');
   if (!view) return;
-  
-  // 监听当前行变化
-  view.events.on('currentRowChanged', (currentRow) => {
-    // currentRow 就是当前行对象（或 null）
-    // 这里可以执行一些当前行变化后的逻辑
-    console.log('当前行变化:', currentRow);
+
+  // 监听当前行变化 — 数据脉冲
+  view.events.on('currentRowChanged', function(currentRow) {
+    if (currentRow) {
+      console.log('[CYBER_GRID] 实体焦点 →', currentRow.name, '(ID:', currentRow.id, ')');
+    }
   });
-  
+
   // 监听选中行变化
-  view.events.on('selectedRowsChanged', (selectedRows) => {
-    // selectedRows 就是选中行数组
-    console.log('选中行变化:', selectedRows.length);
+  view.events.on('selectedRowsChanged', function(selectedRows) {
+    console.log('[CYBER_GRID] 选中实体:', selectedRows.length, '条');
   });
 }
 
-// 行操作渲染函数
+// 行操作渲染函数 — 赛博风格按钮
 function RenderRowActions(props) {
-  // 安全获取行数据
-  const row = props?.row || props?.scope?.row || props?.data?.row || null;
+  var row = props?.row || props?.scope?.row || props?.data?.row || null;
   if (!row) return h('span', '');
-  
-  const handleView = () => {
+
+  function neonBtn(color, glowColor, label, handler) {
+    return h('button', {
+      onClick: handler,
+      style: {
+        padding: '4px 12px',
+        fontSize: '12px',
+        fontFamily: 'Courier New, monospace',
+        fontWeight: '700',
+        letterSpacing: '1px',
+        color: color,
+        backgroundColor: 'rgba(' + glowColor + ',0.2)',
+        border: '1px solid rgba(' + glowColor + ',0.7)',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        textShadow: '0 0 8px rgba(' + glowColor + ',0.6)',
+        boxShadow: '0 0 8px rgba(' + glowColor + ',0.25), inset 0 0 6px rgba(' + glowColor + ',0.1)',
+        transition: 'all 0.3s ease',
+        marginRight: '4px',
+      }
+    }, label);
+  }
+
+  var handleView = function() {
     $page.showMessage({
       type: 'info',
-      message: `查看用户: ${row.name} (ID: ${row.id})`
+      message: '◉ SCAN :: ' + row.name + ' [ID:' + row.id + ']'
     });
   };
-  
-  const handleEdit = () => {
+
+  var handleEdit = function() {
     $page.showMessage({
       type: 'warning',
-      message: `编辑用户: ${row.name}`
+      message: '✎ EDIT :: ' + row.name
     });
   };
-  
-  const handleDelete = () => {
+
+  var handleDelete = function() {
     $page.showConfirm({
-      title: '确认删除',
-      message: `确定要删除用户 ${row.name} 吗？`,
-      onConfirm: () => {
-        const view = $dataSet?.getView('Users', 'default');
+      title: '⚠ CONFIRM_DELETE',
+      message: '确认从矩阵中移除实体 ' + row.name + ' ？此操作不可逆。',
+      onConfirm: function() {
+        var view = $dataSet?.getView('Users', 'default');
         if (view) {
           view.deleteRowById(row.id);
-          $page.showMessage({
-            type: 'success',
-            message: '删除成功'
-          });
+          $page.showMessage({ type: 'success', message: '✓ PURGED :: ' + row.name });
         }
       }
     });
   };
-  
-  return h('div', {
-    style: {
-      display: 'flex',
-      gap: '8px'
-    }
-  }, [
-    h('button', {
-      onClick: handleView,
-      style: {
-        padding: '4px 8px',
-        fontSize: '12px',
-        color: '#409eff',
-        backgroundColor: 'transparent',
-        border: '1px solid #409eff',
-        borderRadius: '4px',
-        cursor: 'pointer'
-      }
-    }, '查看'),
-    h('button', {
-      onClick: handleEdit,
-      style: {
-        padding: '4px 8px',
-        fontSize: '12px',
-        color: '#e6a23c',
-        backgroundColor: 'transparent',
-        border: '1px solid #e6a23c',
-        borderRadius: '4px',
-        cursor: 'pointer'
-      }
-    }, '编辑'),
-    h('button', {
-      onClick: handleDelete,
-      style: {
-        padding: '4px 8px',
-        fontSize: '12px',
-        color: '#f56c6c',
-        backgroundColor: 'transparent',
-        border: '1px solid #f56c6c',
-        borderRadius: '4px',
-        cursor: 'pointer'
-      }
-    }, '删除')
+
+  return h('div', { style: { display: 'flex', gap: '4px' } }, [
+    neonBtn('#00d4ff', '0,212,255', '◉ SCAN', handleView),
+    neonBtn('#fbbf24', '251,191,36', '✎ EDIT', handleEdit),
+    neonBtn('#ff6b9d', '255,107,157', '✕ DEL', handleDelete),
   ]);
+}
+
+function RenderStatusAction(props) {
+  var row = props?.row || props?.scope?.row || props?.data?.row || null;
+  if (!row) return h('span', '');
+
+  var isActive = Boolean(row.active);
+  var nextActive = !isActive;
+  var label = isActive ? '⏻ OFFLINE' : '⏼ ONLINE';
+
+  var handleToggleStatus = function() {
+    var view = $dataSet?.getView('Users', 'default');
+    if (!view) return;
+
+    var updated = view.updateRowById(row.id, { active: nextActive });
+    if (!updated) {
+      $page.showMessage({ type: 'error', message: '⚠ SYSTEM_ERROR: 状态更新失败' });
+      return;
+    }
+
+    $page.showMessage({
+      type: 'success',
+      message: '✓ ' + row.name + ' → ' + (nextActive ? 'ONLINE' : 'OFFLINE')
+    });
+  };
+
+  return h('button', {
+    onClick: handleToggleStatus,
+    style: {
+      padding: '3px 10px',
+      fontSize: '11px',
+      fontFamily: 'Courier New, monospace',
+      letterSpacing: '1px',
+      color: nextActive ? '#00ffaa' : '#ff6b9d',
+      backgroundColor: nextActive ? 'rgba(0,255,170,0.08)' : 'rgba(255,107,157,0.08)',
+      border: '1px solid ' + (nextActive ? 'rgba(0,255,170,0.4)' : 'rgba(255,107,157,0.4)'),
+      borderRadius: '4px',
+      cursor: 'pointer',
+      textShadow: '0 0 8px ' + (nextActive ? 'rgba(0,255,170,0.5)' : 'rgba(255,107,157,0.5)'),
+      transition: 'all 0.3s ease',
+    }
+  }, label);
 }
 
 // 表格行点击事件处理
 function handleRowClick(row, column, event) {
-  console.log('行点击:', row, column);
+  console.log('[CYBER_GRID] ROW_CLICK ::', row?.name);
 }
 
 // 当前行变化事件处理
 function handleRowChange(currentRow, oldRow) {
-  console.log('当前行变化:', currentRow, oldRow);
+  console.log('[CYBER_GRID] FOCUS_SHIFT ::', oldRow?.name, '→', currentRow?.name);
 }
 
 // 选中行变化事件处理
 function handleSelection(selection) {
-  console.log('选中行变化:', selection);
+  console.log('[CYBER_GRID] SELECTION ::', selection?.length, 'entities');
 }

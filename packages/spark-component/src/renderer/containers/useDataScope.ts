@@ -9,7 +9,7 @@ import type { IDataRow } from '@spark-view/spark-data'
 
 // ── 选项接口 ─────────────────────────────────────────────────────────────────
 
-export interface UseDataScopeOptions {
+interface UseDataScopeOptions {
   /** 组件类型（用于创建 SPARK 上下文节点） */
   type: string
   /** 字段上下文类型 */
@@ -20,7 +20,7 @@ export interface UseDataScopeOptions {
   nodeConfig?: SparkNode
 }
 
-export interface UseDataScopeReturn {
+interface UseDataScopeReturn {
   sparkProvide: UseSparkComponentReturn['provide']
   consume: UseSparkComponentReturn['consume']
   logger: UseSparkComponentReturn['logger']

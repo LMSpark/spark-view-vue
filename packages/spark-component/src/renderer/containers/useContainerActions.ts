@@ -9,7 +9,7 @@ import { isActionDisplayed, isModelActionAllowed, isRowActionAllowed } from './a
 export type LateralActionPosition = 'left' | 'right'
 type ListenerMap = Record<string, unknown>
 type ListenerHandler = (...args: unknown[]) => unknown
-export type ScopedSparkNode = SparkNode & { on?: ListenerMap }
+type ScopedSparkNode = SparkNode & { on?: ListenerMap }
 
 interface UseContainerActionsOptions<TScope> {
   actionConfigs: ComputedRef<SparkNode[] | undefined>

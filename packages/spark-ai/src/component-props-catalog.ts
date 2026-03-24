@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-23T18:08:47.443Z
+ * 生成时间：2026-03-24T11:10:26.306Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,7 +20,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-23T18:08:47.437Z",
+  "buildTime": "2026-03-24T11:10:26.303Z",
   "componentCount": 77,
   "registry": {
     "containers": [
@@ -1010,7 +1010,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【根级字段 — toolbar 工具栏】\ntoolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）\ntoolbar.position: 'top' | 'bottom' — 默认 'top'\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE, FIELD_CONTEXT\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "selfResolving": true
+      }
     },
     "r-form": {
       "type": "r-form",
@@ -1339,7 +1342,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "selfResolving": true
+      }
     },
     "r-detail": {
       "type": "r-detail",
@@ -1380,6 +1386,38 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "titleAlign",
+          "type": "\"left\" | \"right\" | \"center\"",
+          "required": false,
+          "default": "\"left\"",
+          "description": "标题对齐",
+          "schema": {
+            "kind": "enum",
+            "type": "\"left\" | \"right\" | \"center\"",
+            "variants": [
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
+            ]
+          }
+        },
+        {
+          "name": "valueAlign",
+          "type": "\"left\" | \"right\" | \"center\"",
+          "required": false,
+          "default": "\"left\"",
+          "description": "值对齐",
+          "schema": {
+            "kind": "enum",
+            "type": "\"left\" | \"right\" | \"center\"",
+            "variants": [
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
+            ]
+          }
         }
       ],
       "emits": [],
@@ -1450,6 +1488,36 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
             "variants": [
               "undefined",
               "string"
+            ]
+          }
+        },
+        {
+          "name": "titleAlign",
+          "type": "\"left\" | \"right\" | \"center\" | undefined",
+          "description": "标题对齐",
+          "schema": {
+            "kind": "enum",
+            "type": "\"left\" | \"right\" | \"center\" | undefined",
+            "variants": [
+              "undefined",
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
+            ]
+          }
+        },
+        {
+          "name": "valueAlign",
+          "type": "\"left\" | \"right\" | \"center\" | undefined",
+          "description": "值对齐",
+          "schema": {
+            "kind": "enum",
+            "type": "\"left\" | \"right\" | \"center\" | undefined",
+            "variants": [
+              "undefined",
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
@@ -1623,7 +1691,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "selfResolving": true
+      }
     },
     "r-tree": {
       "type": "r-tree",
@@ -1945,7 +2016,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ntoolbar: SparkNode[] — 工具栏按钮配置\ntoolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）\ntoolbarClass: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "selfResolving": true
+      }
     },
     "r-list": {
       "type": "r-list",
@@ -2694,7 +2768,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-list** — 列表容器\ndataKey: string — 数据绑定键\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nitemActions: Rule[] — 列表项操作区\nitemActionsPosition: 'left' | 'right' — 默认 'right'\nitemActionsClass: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "selfResolving": true
+      }
     },
     "r-tabs": {
       "type": "r-tabs",
@@ -2909,7 +2986,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-tabs** — 标签页容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\nchildren 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-collapse": {
       "type": "r-collapse",
@@ -3128,7 +3209,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-collapse** — 折叠面板容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\nchildren 内放 r-collapse-item",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-steps": {
       "type": "r-steps",
@@ -3358,7 +3443,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-steps** — 步骤条容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\nchildren 内放 r-step",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-dialog": {
       "type": "r-dialog",
@@ -3827,7 +3916,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-dialog** — 对话框容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nheaderActions: Rule[] — 头部操作区\nfooterActions: Rule[] — 底部操作区\nheaderClass: string — 头部 CSS 类名\nheaderActionsClass: string — 头部操作区 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nfooterClass: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "boolean"
+      }
     },
     "r-drawer": {
       "type": "r-drawer",
@@ -4276,7 +4369,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-drawer** — 抽屉容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nheaderActions: Rule[] — 头部操作区\nfooterActions: Rule[] — 底部操作区\nheaderClass: string — 头部 CSS 类名\nheaderActionsClass: string — 头部操作区 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nfooterClass: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen / onClose / onOpened / onClosed: string — 生命周期回调",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "boolean"
+      }
     },
     "r-section": {
       "type": "r-section",
@@ -5089,7 +5186,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-user-picker** — 用户选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-dept-picker": {
       "type": "r-dept-picker",
@@ -5246,7 +5348,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-dept-picker** — 部门选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-product-picker": {
       "type": "r-product-picker",
@@ -5403,7 +5510,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "**r-product-picker** — 产品选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存",
-      "source": "vcm+override"
+      "source": "vcm+override",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-upload": {
       "type": "r-upload",
@@ -5538,7 +5650,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "透传到 el-upload: autoUpload(默认 true), showFileList(默认 true), limit(默认 1), listType('text'|'picture'|'picture-card')",
-      "source": "vcm+addendum"
+      "source": "vcm+addendum",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-tree-select": {
       "type": "r-tree-select",
@@ -5727,7 +5843,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-transfer": {
       "type": "r-transfer",
@@ -5864,7 +5985,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-textarea": {
       "type": "r-textarea",
@@ -5954,7 +6080,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-text": {
       "type": "r-text",
@@ -5993,7 +6123,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-switch": {
       "type": "r-switch",
@@ -6063,7 +6197,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "boolean"
+      }
     },
     "r-slider": {
       "type": "r-slider",
@@ -6138,7 +6276,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-select": {
       "type": "r-select",
@@ -6255,7 +6397,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-rate": {
       "type": "r-rate",
@@ -6316,7 +6463,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-radio": {
       "type": "r-radio",
@@ -6411,7 +6562,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-number": {
       "type": "r-number",
@@ -6512,7 +6668,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "filterMode: 'range' — 启用范围过滤模式",
-      "source": "vcm+addendum"
+      "source": "vcm+addendum",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-multi-select": {
       "type": "r-multi-select",
@@ -6682,7 +6842,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-image": {
       "type": "r-image",
@@ -6793,7 +6958,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-icon": {
       "type": "r-icon",
@@ -6900,7 +7069,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-html-editor": {
       "type": "r-html-editor",
@@ -6946,7 +7120,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-file-path": {
       "type": "r-file-path",
@@ -7057,7 +7235,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-file-browser": {
       "type": "r-file-browser",
@@ -7155,7 +7337,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "⚠️ 与 r-file-path 基本一致，差异在于内置的浏览器 UI 体验",
-      "source": "vcm+addendum"
+      "source": "vcm+addendum",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-entity-picker": {
       "type": "r-entity-picker",
@@ -7337,7 +7523,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-date": {
       "type": "r-date",
@@ -7422,7 +7613,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "透传到 el-date-picker: type('date'/'datetime'/'daterange'), format, valueFormat 等",
-      "source": "vcm+addendum"
+      "source": "vcm+addendum",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "array"
+      }
     },
     "r-column-group": {
       "type": "r-column-group",
@@ -7564,7 +7759,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "透传到 el-color-picker: showAlpha, colorFormat('hex'|'rgb'|'hsl'|'hsv'), predefine(string[])",
-      "source": "vcm+addendum"
+      "source": "vcm+addendum",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "r-checkbox-group": {
       "type": "r-checkbox-group",
@@ -7675,7 +7874,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "r-checkbox": {
       "type": "r-checkbox",
@@ -7753,7 +7957,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "notes": "⚠️ 用 checkedText / uncheckedText 代替 trueLabel / falseLabel",
-      "source": "vcm+addendum"
+      "source": "vcm+addendum",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "boolean"
+      }
     },
     "r-cascader": {
       "type": "r-cascader",
@@ -7921,7 +8129,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string",
+        "hasOptions": true
+      }
     },
     "sap-chat-panel": {
       "type": "sap-chat-panel",
@@ -8055,7 +8268,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
     },
     "error-fallback": {
       "type": "error-fallback",
@@ -8440,8 +8657,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                       "required": true,
                       "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                     },
-                    "__@toPrimitive@860": {
-                      "name": "__@toPrimitive@860",
+                    "__@toPrimitive@52322": {
+                      "name": "__@toPrimitive@52322",
                       "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                       "required": true,
                       "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -8801,8 +9018,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@860": {
-                        "name": "__@toPrimitive@860",
+                      "__@toPrimitive@52322": {
+                        "name": "__@toPrimitive@52322",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -8863,7 +9080,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "source": "vcm"
+      "source": "vcm",
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "boolean"
+      }
     },
     "ai-chat-widget": {
       "type": "ai-chat-widget",
@@ -9555,6 +9776,270 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         "note": "r-tabs 内放 r-tab-pane"
       }
     }
+  },
+  "bindingDescriptors": {
+    "el-table": {
+      "bindingDelegate": "table",
+      "dataContainer": true
+    },
+    "el-pagination": {
+      "bindingDelegate": "pagination"
+    },
+    "el-form": {
+      "dataContainer": true
+    },
+    "el-descriptions": {
+      "dataContainer": true
+    },
+    "el-table-column": {
+      "fieldProvider": true,
+      "columnLike": true
+    },
+    "el-form-item": {
+      "fieldProvider": true
+    },
+    "el-descriptions-item": {
+      "fieldProvider": true,
+      "columnLike": true
+    },
+    "el-button": {
+      "actionComponent": true
+    },
+    "el-link": {
+      "actionComponent": true
+    },
+    "el-input": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-textarea": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-input-number": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-autocomplete": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-select": {
+      "bindingDelegate": "form-element",
+      "hasOptions": true,
+      "valueType": "string"
+    },
+    "el-cascader": {
+      "bindingDelegate": "form-element",
+      "hasOptions": true,
+      "valueType": "string"
+    },
+    "el-tree-select": {
+      "bindingDelegate": "form-element",
+      "hasOptions": true,
+      "valueType": "string"
+    },
+    "el-radio-group": {
+      "bindingDelegate": "form-element",
+      "hasOptions": true,
+      "valueType": "string"
+    },
+    "el-checkbox-group": {
+      "bindingDelegate": "form-element",
+      "hasOptions": true,
+      "valueType": "array"
+    },
+    "el-transfer": {
+      "bindingDelegate": "form-element",
+      "valueType": "array"
+    },
+    "el-switch": {
+      "bindingDelegate": "form-element",
+      "valueType": "boolean"
+    },
+    "el-slider": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-rate": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-date-picker": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-time-picker": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-time-select": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "el-color-picker": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-table": {
+      "selfResolving": true
+    },
+    "r-form": {
+      "selfResolving": true
+    },
+    "r-detail": {
+      "selfResolving": true
+    },
+    "r-tree": {
+      "selfResolving": true
+    },
+    "r-list": {
+      "selfResolving": true
+    },
+    "r-tabs": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-collapse": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-steps": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-dialog": {
+      "bindingDelegate": "form-element",
+      "valueType": "boolean"
+    },
+    "r-drawer": {
+      "bindingDelegate": "form-element",
+      "valueType": "boolean"
+    },
+    "r-user-picker": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-dept-picker": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-product-picker": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-upload": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-tree-select": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-transfer": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-textarea": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-text": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-switch": {
+      "bindingDelegate": "form-element",
+      "valueType": "boolean"
+    },
+    "r-slider": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-select": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-rate": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-radio": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-number": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-multi-select": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-image": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-icon": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-html-editor": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-file-path": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-file-browser": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-entity-picker": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-date": {
+      "bindingDelegate": "form-element",
+      "valueType": "array"
+    },
+    "r-color": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "r-checkbox-group": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "r-checkbox": {
+      "bindingDelegate": "form-element",
+      "valueType": "boolean"
+    },
+    "r-cascader": {
+      "bindingDelegate": "form-element",
+      "valueType": "string",
+      "hasOptions": true
+    },
+    "icon-picker": {
+      "bindingDelegate": "form-element",
+      "valueType": "string"
+    },
+    "ai-design-studio": {
+      "bindingDelegate": "form-element",
+      "valueType": "boolean"
+    }
   }
 }
 
@@ -9890,6 +10375,8 @@ dataKey?: string — 数据绑定键
 gridColumns?: number — CSS Grid 列数 (默认 24)
 gridGap?: string | number — 栅格间距 (默认 0)
 gridAutoRows?: string — 栅格行高 (默认 "minmax(32px, auto)")
+titleAlign?: "left" | "right" | "center" — 标题对齐 (默认 "left")
+valueAlign?: "left" | "right" | "center" — 值对齐 (默认 "left")
 
 【根级字段】
 dataKey: string — 数据绑定键

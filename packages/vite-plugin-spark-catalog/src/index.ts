@@ -45,7 +45,11 @@ export type {
   RootFieldEntry,
   PlatformConstraints,
   NestingRule,
+  CatalogBindingDescriptor,
 } from './component-catalog-schema'
+
+// ── 绑定行为推断 ──
+export { EL_BINDING_DESCRIPTORS, inferBindingFromVcm, buildAllBindingDescriptors } from './infer-binding'
 
 // ── 提示词生成器（JSON → prompt text） ──
 export {

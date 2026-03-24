@@ -9,20 +9,20 @@
       {
         "type": "h1",
         "children": [
-          "r-table 完整示例"
+          "⚡ CYBER GRID ⚡"
         ]
       },
       {
         "type": "p",
         "children": [
-          "这是一个完整的 r-table 示例，展示了表格的基本功能：数据展示、当前行高亮、多选、分页、行操作等。"
+          "[ SYSTEM.ONLINE ] — 赛博数据矩阵 · 列级对齐演示 · 霓虹辉光引擎 · 配置驱动零代码"
         ]
       },
       {
         "type": "r-section",
         "props": {
-          "title": "用户数据表格",
-          "description": "使用 r-table 展示用户列表，支持选择、查看详情、编辑和删除操作"
+          "title": "⬡ 用户数据矩阵",
+          "description": "DATA_MATRIX :: SELECT * FROM users — 实时数据流 · 霓虹对齐 · 全息详情"
         },
         "children": [
           {
@@ -32,19 +32,53 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "rowActions": [
-                {
-                  "type": "RenderRowActions"
-                }
-              ]
+              "rowActionsWidth": 360,
+              "rowActionsFixed": "right",
+              "rowActionsAlign": "center",
+              "rowActionsLabel": "⚙ 操作"
             },
             "children": [
+              {
+                "type": "el-button",
+                "dock": "toolbar",
+                "order": 1,
+                "props": {
+                  "builtinAction": "append-row",
+                  "type": "primary",
+                  "size": "small"
+                }
+              },
+              {
+                "type": "el-button",
+                "dock": "toolbar",
+                "order": 2,
+                "props": {
+                  "builtinAction": "delete-selected",
+                  "type": "danger",
+                  "size": "small",
+                  "plain": true
+                }
+              },
+              {
+                "type": "el-button",
+                "dock": "toolbar",
+                "order": 3,
+                "props": {
+                  "builtinAction": "refresh",
+                  "size": "small"
+                }
+              },
               {
                 "type": "r-text",
                 "field": "id",
                 "props": {
                   "label": "ID",
-                  "width": 80
+                  "width": 80,
+                  "titleAlign": "center",
+                  "valueAlign": "center",
+                  "headerCellClassName": "demo-col-header-center",
+                  "cellClassName": "demo-col-cell-center",
+                  "valueClassName": "demo-value-center"
                 }
               },
               {
@@ -52,7 +86,12 @@
                 "field": "name",
                 "props": {
                   "label": "姓名",
-                  "width": 120
+                  "width": 120,
+                  "titleAlign": "right",
+                  "valueAlign": "right",
+                  "headerCellClassName": "demo-col-header-right",
+                  "cellClassName": "demo-col-cell-right",
+                  "valueClassName": "demo-value-right"
                 }
               },
               {
@@ -124,6 +163,44 @@
                   "activeText": "启用",
                   "inactiveText": "禁用"
                 }
+              },
+              {
+                "type": "el-button",
+                "dock": "actions",
+                "order": 1,
+                "props": {
+                  "builtinAction": "message-row",
+                  "type": "primary",
+                  "size": "small",
+                  "link": true
+                }
+              },
+              {
+                "type": "el-button",
+                "dock": "actions",
+                "order": 2,
+                "props": {
+                  "builtinAction": "prompt-edit",
+                  "type": "warning",
+                  "size": "small",
+                  "link": true
+                }
+              },
+              {
+                "type": "RenderStatusAction",
+                "dock": "actions",
+                "order": 3
+              },
+              {
+                "type": "el-button",
+                "dock": "actions",
+                "order": 4,
+                "props": {
+                  "builtinAction": "delete-row",
+                  "type": "danger",
+                  "size": "small",
+                  "link": true
+                }
               }
             ]
           }
@@ -132,13 +209,14 @@
       {
         "type": "r-section",
         "props": {
-          "title": "当前选中用户详情",
-          "description": "点击表格行查看用户详细信息"
+          "title": "⬡ 选中实体详情",
+          "description": "ENTITY_DETAIL :: 点击表格行查看实体全息数据投影"
         },
         "children": [
           {
             "type": "r-detail",
             "dataKey": "Users@currentRow",
+            "props": {},
             "children": [
               {
                 "type": "r-text",

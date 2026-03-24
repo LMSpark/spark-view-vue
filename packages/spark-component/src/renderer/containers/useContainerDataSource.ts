@@ -1,7 +1,7 @@
 import { computed, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import { parseDataKey } from '@spark-view/spark-data'
-import type { DataView, IDataSet } from '@spark-view/spark-data'
+import type { DataView, IDataSet, IDataSource, IModelPermission } from '@spark-view/spark-data'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
 
@@ -54,7 +54,13 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
     tryAutoLoad(source)
   }, { immediate: true })
 
+  /** 从 resolvedDataSource 提取模型级权限快照（IDataSource._modelPerm） */
+  const modelPermission = computed<IModelPermission | undefined>(() =>
+    (resolvedDataSource.value as IDataSource | null | undefined)?._modelPerm
+  )
+
   return {
     resolvedDataSource,
+    modelPermission,
   }
 }

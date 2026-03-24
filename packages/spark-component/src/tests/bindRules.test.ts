@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { isReactive, shallowReactive } from 'vue'
-import { bindDataToRules } from '@spark-view/spark-component'
+import { bindDataToRules } from '../renderer/binding/bindRules'
 import { SparkData, DataView } from '@spark-view/spark-data'
 
 describe('bindRules - DataKey rows -> IDataSource binding', () => {

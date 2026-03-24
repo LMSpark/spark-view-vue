@@ -6,7 +6,7 @@ import { useSparkConsume } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import type { FieldPermissionProps } from './useFieldPermission'
 
-export type FieldOptionValue = string | number | boolean
+type FieldOptionValue = string | number | boolean
 
 export interface FieldOption {
   label: string
@@ -15,13 +15,13 @@ export interface FieldOption {
   children?: FieldOption[]
 }
 
-export interface FieldTransferOption {
+interface FieldTransferOption {
   key: string | number
   label: string
   disabled?: boolean
 }
 
-export interface FieldOptionProps {
+interface FieldOptionProps {
   options?: unknown[] | undefined
   optionLabelField?: string | undefined
   optionValueField?: string | undefined
@@ -30,7 +30,7 @@ export interface FieldOptionProps {
   optionKey?: string | undefined
 }
 
-export interface UseFieldOptionsReturn {
+interface UseFieldOptionsReturn {
   options: ComputedRef<FieldOption[]>
   flatOptions: ComputedRef<FieldOption[]>
   findOptionLabel: (value: unknown) => string
@@ -39,7 +39,7 @@ export interface UseFieldOptionsReturn {
   transferData: ComputedRef<FieldTransferOption[]>
 }
 
-export interface UseOptionFieldOptions<TValue> {
+interface UseOptionFieldOptions<TValue> {
   props: FieldOptionProps & FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue

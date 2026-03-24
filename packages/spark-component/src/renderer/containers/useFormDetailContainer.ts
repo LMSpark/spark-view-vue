@@ -4,13 +4,12 @@ import type { SparkNode } from '../_pkg'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
-import { useContainerInput } from './useContainerInput'
 import { useContainerGrid } from './useContainerGrid'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerContextData } from './useContainerContextData'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
-import { createCurrentRowSlotScope } from './useContainerSlotScopes'
+import { createCurrentRowSlotScope } from './slotScopeFactories'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
 
@@ -42,9 +41,10 @@ export function useFormDetailContainer(
 
   // ── 输入解析 ──────────────────────────────────────────────────────────
 
-  const { effectiveDataKey, configChildren } = useContainerInput({
-    dataKey: computed(() => props.dataKey),
-    children: computed(() => props.children),
+  const effectiveDataKey = computed(() => props.dataKey)
+  const configChildren = computed<SparkNode[]>(() => {
+    const c = props.children
+    return Array.isArray(c) && c.length > 0 ? c : []
   })
 
   const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
@@ -64,7 +64,7 @@ export function useFormDetailContainer(
   )
   const pageDataSet = consume(PAGE_DATASET)
 
-  const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
+  const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
     dataKey: effectiveDataKey,
     pageDataSet,
     fallbackSource: computed(() => props.fallbackDataView?.value ?? null),
@@ -75,7 +75,7 @@ export function useFormDetailContainer(
   })
 
   const resolvedSource = computed<IDataSource | null>(() => resolvedView.value as IDataSource | null)
-  const { contextData, modelPermission } = useContainerContextData({ source: resolvedSource })
+  const { contextData } = useContainerContextData({ source: resolvedSource })
 
   // ── 工具栏 ──────────────────────────────────────────────────────────────
 

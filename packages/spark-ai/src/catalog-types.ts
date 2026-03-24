@@ -16,6 +16,18 @@ export interface ComponentCatalog {
   sharedTypes: Record<string, SharedTypeDefinition>
   components: Record<string, ComponentEntry>
   constraints: PlatformConstraints
+  bindingDescriptors?: Record<string, BindingDescriptor>
+}
+
+export interface BindingDescriptor {
+  selfResolving?: boolean
+  bindingDelegate?: string
+  dataContainer?: boolean
+  fieldProvider?: boolean
+  columnLike?: boolean
+  actionComponent?: boolean
+  hasOptions?: boolean
+  valueType?: string
 }
 
 export interface SharedTypeDefinition {
@@ -50,6 +62,12 @@ export interface ComponentEntry {
   rootFields?: RootFieldEntry[]
   notes?: string
   source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
+  binding?: {
+    selfResolving?: boolean
+    bindingDelegate?: string
+    hasOptions?: boolean
+    valueType?: string
+  }
 }
 
 export interface PropEntry {

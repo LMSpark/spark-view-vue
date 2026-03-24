@@ -28,6 +28,14 @@ export { createComponentRegistry, getGlobalRegistry } from './registry.js'
 export type {
   CapabilityName,
   SparkNode,
+  // Dock 描述符（新模型）
+  DockDescriptor,
+  DockToolbar,
+  DockActions,
+  DockFilterItem,
+  DockFilter,
+  ContainerDocks,
+  // @deprecated 向后兼容别名
   SparkNodeFilterItem,
   SparkNodeToolbar,
   SparkNodeActions,
@@ -38,8 +46,17 @@ export type {
   LoggerApi
 } from './types.js'
 
-// ── 6. DI Keys ──
-export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
+// ── 6. DI Keys + SparkNode 结构常量 ──
+export {
+  SPARK_REGISTRY_KEY,
+  SPARK_PARENT_CONTEXT_KEY,
+  SPARK_NODE_STRUCT_KEYS,
+  DEFAULT_DOCK,
+  nodeId,
+  nodeDock,
+  nodeOrder,
+  getDockedChildren,
+} from './types.js'
 
 // ── 6b. 数据 + Renderer 能力键 ──
 export {
@@ -71,10 +88,8 @@ export type {
 
 // ── 7. 页面渲染引擎 ──
 export {
-  usePageDataSet,
   SparkPageRenderer,
   SparkComponentRenderer,
-  bindDataToRules,
 } from './renderer/index.js'
 
 export type {
@@ -87,7 +102,6 @@ export type {
   PageContext,
   PageConfig,
   PageRendererProps,
-  RuleBindingOptions,
 } from './renderer/index.js'
 
 // ── 8. 内置 Renderer 容器 + 字段组件 ──
@@ -138,9 +152,5 @@ export {
   // 注册
   registerAllRenderers,
   // Composable
-  useFormDetailContainer,
-  useContainerDataSource,
   useFieldPermission,
-  useFieldContext,
-  useFieldOptions,
 } from './renderer/index.js'

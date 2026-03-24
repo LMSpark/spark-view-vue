@@ -22,7 +22,7 @@
     </div>
 
     <div class="renderer-detail-main">
-      <div class="renderer-detail" v-bind="$attrs">
+      <div class="renderer-detail" v-bind="$attrs" :style="detailAlignStyle">
         <div v-if="gridChildren.length" class="renderer-detail-grid" :style="gridStyle">
           <div
             v-for="(child, i) in gridChildren"
@@ -44,7 +44,7 @@
  * RendererDetail - 详情展示容器组件
  */
 import { SparkComponentRenderer } from '../_pkg'
-import { computed, useAttrs } from 'vue'
+import { computed, useAttrs, type StyleValue } from 'vue'
 import { nodeId, type SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
@@ -68,6 +68,10 @@ interface Props {
   gridGap?: number | string
   /** 栅格行高 */
   gridAutoRows?: string
+  /** 标题对齐 */
+  titleAlign?: 'left' | 'center' | 'right'
+  /** 值对齐 */
+  valueAlign?: 'left' | 'center' | 'right'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -76,8 +80,15 @@ const props = withDefaults(defineProps<Props>(), {
   gridColumns: 24,
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
+  titleAlign: 'left',
+  valueAlign: 'left',
 })
 const attrs = useAttrs()
+
+const detailAlignStyle = computed<StyleValue>(() => ({
+  '--spark-detail-title-align': props.titleAlign,
+  '--spark-detail-value-align': props.valueAlign,
+}))
 
 const {
   registerApi,

@@ -79,12 +79,13 @@
  * ```
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, nodeId, nodeDock, DEFAULT_DOCK } from '../types.js'
 import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
 // h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
-const _FILTERABLE_KEYS = new Set([...LAYOUT_ONLY_PROP_KEYS, 'on'])
+// dock/order 是 SparkNode 结构键，仅供容器布局使用，不透传到组件 props / DOM
+const _FILTERABLE_KEYS = new Set([...LAYOUT_ONLY_PROP_KEYS, 'on', 'dock', 'order'])
 const NATIVE_RENDERABLE_TAGS = new Set([
   'div', 'span', 'p', 'a', 'img',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -104,8 +105,7 @@ type RenderableChild = SparkNode | string | number
 
 function nodeKey(child: RenderableChild, index: number): string {
   if (!isSparkNode(child)) return `text-${index}`
-  const id = child.props?.['id']
-  return typeof id === 'string' ? id : `child-${index}`
+  return nodeId(child) ?? `child-${index}`
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -153,9 +153,13 @@ const shouldRenderAsNativeElement = computed(() => isNativeRenderableType(props.
 const renderableChildren = computed<RenderableChild[]>(() => {
   const children: unknown[] = props.config.children ?? []
 
-  return children.filter((child): child is RenderableChild => (
-    isSparkNode(child) || typeof child === 'string' || typeof child === 'number'
-  ))
+  // 原生标签 / 未注册降级渲染：仅渲染 dock='default' 的 SparkNode 子节点
+  // 非 SparkNode（string / number 文本）无条件保留
+  return children.filter((child): child is RenderableChild => {
+    if (typeof child === 'string' || typeof child === 'number') return true
+    if (isSparkNode(child)) return nodeDock(child) === DEFAULT_DOCK
+    return false
+  })
 })
 
 // ── 组件解析 ──────────────────────────────────────────────────────────────────
@@ -231,10 +235,16 @@ const forwardedProps = computed(() => {
  */
 const componentProps = computed(() => {
   const base = forwardedProps.value
-  const children = props.config.children
+  const config = props.config
+  const children = config.children
   // 仅对 registry 组件透传 children prop；
   // 全局组件（如 Element Plus）不接收该 prop，透传会污染到底层 DOM。
   if (registryDefinition.value === null) return base
-  return children !== undefined ? { ...base, children } : base
+  // 顶层 id 透传到 props.id 供组件消费（向后兼容已从 props.id 读取的代码）
+  const topId = config.id
+  const extra: Record<string, unknown> = {}
+  if (children !== undefined) extra['children'] = children
+  if (typeof topId === 'string' && topId.length > 0) extra['id'] = topId
+  return Object.keys(extra).length > 0 ? { ...base, ...extra } : base
 })
 </script>

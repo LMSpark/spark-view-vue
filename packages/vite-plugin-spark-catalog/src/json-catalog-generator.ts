@@ -35,6 +35,7 @@ import type {
   ExposedEntry,
   SlotEntry,
 } from './component-catalog-schema'
+import { inferBindingFromVcm, buildAllBindingDescriptors } from './infer-binding'
 
 const logger = createLogger('spark-catalog-json')
 
@@ -409,6 +410,7 @@ function buildComponentEntry(
     ...(rootFields !== undefined ? { rootFields } : {}),
     ...(notes !== undefined ? { notes } : {}),
     source,
+    ...(() => { const b = inferBindingFromVcm(skillType, props, category); return b !== undefined ? { binding: b } : {} })(),
   }
 }
 
@@ -509,6 +511,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     sharedTypes: SHARED_TYPE_DEFINITIONS,
     components,
     constraints: buildPlatformConstraints(),
+    bindingDescriptors: buildAllBindingDescriptors(components),
   }
 
   // 6. 写入文件

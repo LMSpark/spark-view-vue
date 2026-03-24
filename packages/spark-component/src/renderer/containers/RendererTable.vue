@@ -191,22 +191,21 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, defineComponent, onUnmounted, ref, useAttrs, useSlots, watch } from 'vue'
+import { computed, defineComponent, ref, useAttrs, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { nodeId, type SparkNode, type RendererTableApi } from '../_pkg'
-import type { ModuleContextCapability } from '../_pkg'
-import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
+import { nodeId, getDockedChildren, nodeDock, DEFAULT_DOCK, type SparkNode, type RendererTableApi } from '../_pkg'
+import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, MODULE_CONTEXT } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
-import { useContainerInput } from './useContainerInput'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerSlots } from './useContainerSlots'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
-import { createRowActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
+import { createRowActionSlotScope, createToolbarSlotScope } from './slotScopeFactories'
+import { useModuleContext } from './useModuleContext'
 import RendererFieldScope from './RendererFieldScope.vue'
 import { useTableFilters } from './useTableFilters'
 import {
@@ -220,6 +219,7 @@ import {
   getBuiltinButtonLink,
   getBuiltinButtonClass,
   createBuiltinActionHandler,
+  getSelectedRows,
 } from './builtin-actions'
 
 type RowActionsPosition = LateralActionPosition
@@ -299,17 +299,26 @@ const ElTableColumns = defineComponent({
 
 // ── 输入解析 ──────────────────────────────────────────────────────────────
 
-const { effectiveDataKey, configChildren } = useContainerInput({
-  dataKey: computed(() => props.dataKey),
-  children: computed(() => props.children),
+const effectiveDataKey = computed(() => props.dataKey)
+const configChildren = computed<SparkNode[]>(() => {
+  const c = props.children
+  return Array.isArray(c) && c.length > 0 ? c : []
 })
 
 const legacyRowActionConfigs = computed(() =>
-  configChildren.value.filter(child => /^Render[A-Z]/.test(child.type))
+  configChildren.value.filter(child => nodeDock(child) === DEFAULT_DOCK && /^Render[A-Z]/.test(child.type))
+)
+
+const dockedToolbar = computed(() =>
+  getDockedChildren(configChildren.value, 'toolbar')
+)
+
+const dockedRowActions = computed(() =>
+  getDockedChildren(configChildren.value, 'actions')
 )
 
 const sparkChildren = computed(() => {
-  return configChildren.value.filter(child => isCollectedTableColumn(child))
+  return configChildren.value.filter(child => nodeDock(child) === DEFAULT_DOCK && isCollectedTableColumn(child))
 })
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
@@ -320,13 +329,9 @@ const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponen
 
 const pageDataSet = consume(PAGE_DATASET)
 const pageService = consume(PAGE_SERVICE)
-const moduleContextCapability = consume(MODULE_CONTEXT) as ModuleContextCapability | null
-const moduleContext = ref<ReturnType<ModuleContextCapability['getCurrent']>>(moduleContextCapability?.getCurrent() ?? null)
-const unsubscribeModuleContext = moduleContextCapability?.subscribe((next) => {
-  moduleContext.value = next
-}) ?? null
+const moduleContext = useModuleContext(consume(MODULE_CONTEXT))
 
-const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
   fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
@@ -339,9 +344,6 @@ const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
 // ── 视图状态 ──────────────────────────────────────────────────────────────
 
 const tableRows = computed(() => resolvedView.value?.rows ?? [])
-const modelPermission = computed<IModelPermission | undefined>(() =>
-  (resolvedView.value as IDataSource | null | undefined)?._modelPerm
-)
 
 // ── 工具栏 ────────────────────────────────────────────────────────────────
 
@@ -351,7 +353,7 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => props.toolbar),
+  toolbar: computed(() => [...(props.toolbar ?? []), ...dockedToolbar.value]),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),
   modelPermission,
@@ -491,10 +493,6 @@ registerApi(tableApi)
 
 defineExpose(tableApi)
 
-onUnmounted(() => {
-  unsubscribeModuleContext?.()
-})
-
 // ── 行操作区 ──────────────────────────────────────────────────────────────
 
 const {
@@ -506,7 +504,7 @@ const {
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => {
     const explicit = props.rowActions ?? []
-    return [...legacyRowActionConfigs.value, ...explicit]
+    return [...legacyRowActionConfigs.value, ...explicit, ...dockedRowActions.value]
   }),
   actionPosition: computed(() => props.rowActionsPosition),
   actionClass: computed(() => props.rowActionsClass),
@@ -565,10 +563,6 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
 }
 
 // ── 声明式内置动作（零脚本能力） ────────────────────────────────────────────
-
-function getSelectedRows(view: DataView): IDataRow[] {
-  return Array.isArray(view.selectedRows) ? view.selectedRows : []
-}
 
 function isBuiltinActionDisabled(action: SparkNode, scope?: { row?: IDataRow; index?: number }): boolean {
   return _isBuiltinActionDisabled(action, resolvedView.value, scope)

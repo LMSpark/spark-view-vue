@@ -7,7 +7,7 @@ import type {
 } from '@spark-view/spark-utils'
 import { useFieldActionMode } from './useFieldActionMode'
 
-export interface UseSelectorFieldActionsOptions {
+interface UseSelectorFieldActionsOptions {
   pageService: IPageServiceCapability | null
   isEditable: ComputedRef<boolean>
 }

@@ -21,58 +21,126 @@
  * 数据流：rule.json → bindDataToRules() → BindRule[]（框架无关运行时规则）
  */
 
-import { toErrorMessage } from '@spark-view/spark-utils'
 import type { BindRule, RuleBindingOptions } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { isDataKey, resolveDataKeyBinding, getViewFromRawKey } from '@spark-view/spark-data'
+import { toErrorMessage } from '@spark-view/spark-utils'
 import type { ComponentRegistry } from '../../types.js'
 
 // ── 分区 A：委托依赖 ───────────────────────────────────────────────────────
 
 import { resolveRuleDataKey, setRuleProp, pageLogger } from './bind-helpers'
+import { normalizeRuleEvents, normalizeOnProps, unpackContainerStructures, migrateNameToField, migrateRootLevelStyleClass } from './bind-normalize'
 import { bindTableRule } from './bind-table-delegate'
 import { bindPaginationRule } from './bind-pagination-delegate'
-import { bindFormElementRule, FORM_ELEMENT_TYPES } from './bind-form-delegate'
+import { bindFormElementRule } from './bind-form-delegate'
 import { applyPermissions } from './bind-permission-delegate'
-import { type BindingContext, EMPTY_CONTEXT, buildChildContext, DATA_CONTAINER_TYPES } from './bind-context'
+import { type BindingContext, EMPTY_CONTEXT, buildChildContext } from './bind-context'
+import { getBindingDelegate, isSelfResolvingType, isDataContainerType } from './component-binding-registry'
 
-// ── 分区 B：组件分类常量 ───────────────────────────────────────────────────
+// ── 分区 B：递归辅助常量 ───────────────────────────────────────────────────
 
-/**
- * dataKey 自解析组件类型回退默认列表
- *
- * **技术债（临时桥梁）**：当组件没有在注册表中声明 `meta.dataKey` 时，回退到此硬编码列表。
- * 待内置 SPARK r-* 组件实现后，将在注册时声明 `meta.dataKey: 'self-resolve'`，届时可移除此列表。
- *
- * ⚠️ 同步约束：此 Set 必须与实际内置组件列表同步。新增 r-* 组件时：
- * 1. 优先在组件注册时声明 `meta: { dataKey: 'self-resolve' }`
- * 2. 若组件尚未实现注册逻辑，在此 Set 中添加条目作为过渡
- *
- * @see isSelfResolvingType — 查询逻辑（注册表优先，此 Set 为后备）
- */
-const _SELF_RESOLVING_FALLBACK = new Set(['r-table', 'r-form', 'r-detail', 'r-tree', 'r-list', 'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section', 'r-block'])
 const _COMPONENT_ARRAY_PROP_KEYS = new Set(['headerActions', 'footerActions', 'toolbar', 'rowActions', 'nodeActions', 'itemActions'])
 
-/** 分页组件类型集合 */
-const PAGINATION_TYPES = new Set(['el-pagination'])
-
-// ── 分区 C：类型判断 ───────────────────────────────────────────────────────
+// ── 分区 D：私有辅助函数 ────────────────────────────────────────
 
 /**
- * 检查组件是否为自解析类型（优先查询注册表 meta，回退到核心列表）
+ * 解析 Render* 函数组件：查找匹配的沙箱函数，失败时降级为占位节点
+ *
+ * @returns 处理后的规则节点（已处理时），或 null（非 Render* 类型时）
  */
-function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolean {
-  if (registry) {
-    const behavior = registry.get(type)?.meta?.['dataKey'] as string | undefined
-    if (behavior !== undefined) return behavior === 'self-resolve'
-  }
-  return _SELF_RESOLVING_FALLBACK.has(type)
+function resolveRenderType(
+  rule: BindRule,
+  pageFunctions: Record<string, (...args: unknown[]) => unknown>,
+): BindRule | null {
+  if (typeof rule.type !== 'string' || !rule.type.startsWith('Render')) return null
+
+  const renderType = rule.type
+  const camelType = renderType.charAt(0).toLowerCase() + renderType.slice(1)
+  const renderFn = pageFunctions[renderType] ?? pageFunctions[camelType]
+  if (typeof renderFn === 'function') return rule
+
+  pageLogger.error('Render 函数未定义，已降级为占位节点', {
+    renderType,
+    availableRenderFns: Object.keys(pageFunctions).filter(name => name.startsWith('Render')),
+  })
+  return {
+    ...rule,
+    type: 'div',
+    children: [`⚠️ 未定义渲染函数: ${renderType}`],
+  } as BindRule
 }
 
-// ── 分区 D：公共入口（预处理 + 编排启动） ─────────────────────────────────
+/**
+ * 根据组件类型将 dataKey 绑定委托给对应的处理器（注册表驱动）
+ *
+ * 分发策略：
+ * 1. 查询绑定注册表获取 bindingDelegate → 调用对应委托
+ * 2. 无委托且非自解析 → bindGenericDataKey（通用回退）
+ * 3. 自解析组件 → 跳过（组件自行 consume PAGE_DATASET）
+ *
+ * 扩展：调用 registerBindingDescriptor('vxe-table', { bindingDelegate: 'table' })
+ * 即可让新组件类型复用 el-table 的绑定逻辑，无需修改本函数。
+ */
+function dispatchDataKeyBinding(
+  rule: BindRule,
+  ruleType: string,
+  dataSet: IDataSet | null,
+  registry: ComponentRegistry | undefined,
+): void {
+  const delegate = getBindingDelegate(ruleType)
+  if (delegate === 'table') {
+    bindTableRule(rule, dataSet)
+  } else if (delegate === 'pagination') {
+    bindPaginationRule(rule, dataSet)
+  } else if (delegate === 'form-element') {
+    bindFormElementRule(rule, dataSet)
+  } else if (!isSelfResolvingType(ruleType, registry)) {
+    bindGenericDataKey(rule, dataSet)
+  }
+}
+
+// ── 分区 D-2：函数调用器工厂 ────────────────────────────────────────────────
 
 /**
- * 递归替换 rule 中的数据占位符和事件处理器（公共 API）
+ * 创建统一的函数调用器
+ *
+ * 运行时检查 + 统一错误处理，仅供 bindDataToRules 使用。
+ */
+function createFunctionCaller(
+  pageFunctions: Record<string, (...args: unknown[]) => unknown>
+): (functionName: string, ...args: unknown[]) => unknown {
+  return function callFunc(functionName: string, ...args: unknown[]): unknown {
+    try {
+      const func = pageFunctions[functionName]
+      if (typeof func !== 'function') {
+        pageLogger.warn('函数未定义或不可调用', {
+          functionName,
+          type: typeof func,
+          available: Object.keys(pageFunctions)
+        })
+        return undefined
+      }
+      return (func as (...args: unknown[]) => unknown)(...args)
+    } catch (error: unknown) {
+      pageLogger.error('函数执行错误', {
+        functionName,
+        args,
+        error: toErrorMessage(error)
+      })
+      throw error
+    }
+  }
+}
+
+// ── 分区 E：公共入口（预处理 + 编排启动） ─────────────────────
+
+/**
+ * 递归替换 rule 中的数据占位符和事件处理器
+ *
+ * @deprecated v3.1 — 仅用于测试管线。生产代码使用 SparkPageRenderer.vue 中的 bindSparkRuleEvents()。
+ * 计划在 v4.0 中移除或替换为统一绑定 API。
+ * @see SparkPageRenderer.vue#bindSparkRuleEvents
  */
 export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
   const { dataSet, registry, pageFunctions } = options
@@ -91,44 +159,17 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
     const newRule = { ...rule }
 
     // ── Render* 组件：已由 registerRenderFunctions 注册为响应式 Vue 组件，保持原样 ──
-    if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
-      const renderType = newRule.type
-      const camelType = renderType.charAt(0).toLowerCase() + renderType.slice(1)
-      const renderFn = pageFunctions[renderType] ?? pageFunctions[camelType]
-      if (typeof renderFn === 'function') {
-        return newRule as BindRule
-      }
-      pageLogger.error('Render 函数未定义，已降级为占位节点', {
-        renderType,
-        availableRenderFns: Object.keys(pageFunctions).filter(name => name.startsWith('Render')),
-      })
-      return {
-        ...newRule,
-        type: 'div',
-        children: [`⚠️ 未定义渲染函数: ${renderType}`],
-      } as BindRule
-    }
+    const renderResult = resolveRenderType(newRule, pageFunctions)
+    if (renderResult !== null) return renderResult
 
     // ── 事件处理器：字符串函数名 → callFunc 包装 ──
     if (newRule.on && typeof newRule.on === 'object') {
-      const newOn: Record<string, unknown> = {}
-      for (const [eventName, handler] of Object.entries(newRule.on)) {
-        if (typeof handler === 'string') {
-          newOn[eventName] = (...args: unknown[]) => callFunc(handler, ...args)
-        } else {
-          newOn[eventName] = handler
-        }
-      }
-      newRule.on = newOn as Record<string, Function | Function[]>
+      newRule.on = normalizeRuleEvents(newRule.on, callFunc)
     }
 
     // ── props 中的 on* 函数名 → callFunc 包装（自定义组件，如 r-tree） ──
     if (newRule.props && typeof newRule.props === 'object') {
-      for (const [propName, propValue] of Object.entries(newRule.props)) {
-        if (propName.startsWith('on') && typeof propValue === 'string') {
-          newRule.props[propName] = (...args: unknown[]) => callFunc(propValue, ...args)
-        }
-      }
+      normalizeOnProps(newRule.props, callFunc)
     }
 
     // ── r-* 自定义组件：透传 dataKey / field → props ──
@@ -141,60 +182,18 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
       }
     }
     // 向后兼容：v2 配置使用 name 作为字段绑定名，v3 统一为 field
-    if (ruleType.startsWith('r-') && newRule.field === undefined && typeof newRule['name'] === 'string') {
-      newRule.field = newRule['name']
-    }
-    // field / label / optionKey 透传已由 bindSparkRuleEvents 统一规范化到 props，
-    // bindDataToRules 无需重复处理（仅保留 dataKey 的 self-resolving 透传）。
-
-    // ── 容器结构化字段：root → props 扁平化 ──
-    // rule.json 中 toolbar/actions/filter 为根级结构化对象，
-    // 扁平化到 props 使组件通过 Vue Props 直接接收，无需 inject。
     if (ruleType.startsWith('r-')) {
-      const rawToolbar = newRule['toolbar']
-      if (rawToolbar !== null && rawToolbar !== undefined && typeof rawToolbar === 'object' && !Array.isArray(rawToolbar)) {
-        const t = rawToolbar as { items?: unknown[]; position?: string; class?: string }
-        if (Array.isArray(t.items)) setRuleProp(newRule, 'toolbar', t.items)
-        if (t.position !== undefined) setRuleProp(newRule, 'toolbarPosition', t.position)
-        if (t.class !== undefined) setRuleProp(newRule, 'toolbarClass', t.class)
-      }
-      const rawFilter = newRule['filter']
-      if (rawFilter !== null && rawFilter !== undefined && typeof rawFilter === 'object') {
-        const f = rawFilter as Record<string, unknown>
-        if (Array.isArray(f['columns'])) setRuleProp(newRule, 'filterColumns', f['columns'])
-        if (f['class'] !== undefined) setRuleProp(newRule, 'filterClass', f['class'])
-        if (f['collapsible'] !== undefined) setRuleProp(newRule, 'filterCollapsible', f['collapsible'])
-        if (f['defaultCollapsed'] !== undefined) setRuleProp(newRule, 'filterDefaultCollapsed', f['defaultCollapsed'])
-        if (f['autoFitMinWidth'] !== undefined) setRuleProp(newRule, 'filterAutoFitMinWidth', f['autoFitMinWidth'])
-        if (f['itemSpan'] !== undefined) setRuleProp(newRule, 'filterItemSpan', f['itemSpan'])
-        if (f['gridColumns'] !== undefined) setRuleProp(newRule, 'filterGridColumns', f['gridColumns'])
-        if (f['gridGap'] !== undefined) setRuleProp(newRule, 'filterGridGap', f['gridGap'])
-        if (f['gridAutoRows'] !== undefined) setRuleProp(newRule, 'filterGridAutoRows', f['gridAutoRows'])
-      }
-      const rawActions = newRule['actions']
-      if (rawActions !== null && rawActions !== undefined && typeof rawActions === 'object' && !Array.isArray(rawActions)) {
-        const a = rawActions as Record<string, unknown>
-        if (Array.isArray(a['items'])) setRuleProp(newRule, 'rowActions', a['items'])
-        if (a['position'] !== undefined) setRuleProp(newRule, 'rowActionsPosition', a['position'])
-        if (a['class'] !== undefined) setRuleProp(newRule, 'rowActionsClass', a['class'])
-        if (a['label'] !== undefined) setRuleProp(newRule, 'rowActionsLabel', a['label'])
-        if (a['width'] !== undefined) setRuleProp(newRule, 'rowActionsWidth', a['width'])
-        if (a['align'] !== undefined) setRuleProp(newRule, 'rowActionsAlign', a['align'])
-        if (a['fixed'] !== undefined) setRuleProp(newRule, 'rowActionsFixed', a['fixed'])
-      }
+      migrateNameToField(newRule)
+    }
+
+    // ── 容器结构化字段：root → props 扁平化（配置驱动，OCP） ──
+    if (ruleType.startsWith('r-')) {
+      unpackContainerStructures(newRule)
     }
 
     // ── el-table / el-pagination / 表单组件 / 通用组件：dataKey 互斥委托 ──
     if (newRule['dataKey'] !== undefined) {
-      if (ruleType === 'el-table') {
-        bindTableRule(newRule, dataSet)
-      } else if (PAGINATION_TYPES.has(ruleType)) {
-        bindPaginationRule(newRule, dataSet)
-      } else if (FORM_ELEMENT_TYPES.has(ruleType)) {
-        bindFormElementRule(newRule, dataSet)
-      } else if (!isSelfResolvingType(ruleType, registry)) {
-        bindGenericDataKey(newRule, dataSet)
-      }
+      dispatchDataKeyBinding(newRule, ruleType, dataSet, registry)
     }
 
     // ── 权限渲染（跨组件统一：按钮可见性 / 列隐藏 / 表单字段 disabled） ──
@@ -202,7 +201,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
 
     // ── 构建子级上下文（数据容器组件更新 dataSource，字段提供者更新 fieldName） ──
     let resolvedDataSource = null
-    if (DATA_CONTAINER_TYPES.has(ruleType)) {
+    if (isDataContainerType(ruleType)) {
       const rawKey = newRule['dataKey'] as string | undefined
       if (rawKey && dataSet) {
         const binding = resolveDataKeyBinding(rawKey, dataSet)
@@ -247,15 +246,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
     }
 
     // ── 向下兼容：旧 rule.json 顶层 style / class → props ──────────────────
-    // 旧格式 rule.json 中 style / class 可写在规则顶层（与 type 同级）。
-    // SparkNode v2 应将 style / class 放在 props 内，此处仅做旧格式兼容提升。
-    // SparkComponentRenderer 的 v-bind="forwardedProps" 统一转发到元素/组件。
-    if (newRule['style'] !== undefined && newRule.props?.['style'] === undefined) {
-      setRuleProp(newRule, 'style', newRule['style'])
-    }
-    if (newRule['class'] !== undefined && newRule.props?.['class'] === undefined) {
-      setRuleProp(newRule, 'class', newRule['class'])
-    }
+    migrateRootLevelStyleClass(newRule)
 
     return newRule
   })
@@ -288,35 +279,3 @@ function bindGenericDataKey(rule: BindRule, dataSet: IDataSet | null): void {
   rule.children = [String(resolved)]
 }
 
-// ── 分区 G：函数调用器（统一执行面） ───────────────────────────────────────
-
-/**
- * 创建统一的函数调用器
- *
- * 优势：运行时检查 + 统一错误处理 + 可扩展（bind / 拦截 / 性能监控）
- */
-function createFunctionCaller(
-  pageFunctions: Record<string, (...args: unknown[]) => unknown>
-): (functionName: string, ...args: unknown[]) => unknown {
-  return function callFunc(functionName: string, ...args: unknown[]): unknown {
-    try {
-      const func = pageFunctions[functionName]
-      if (typeof func !== 'function') {
-        pageLogger.warn('函数未定义或不可调用', {
-          functionName,
-          type: typeof func,
-          available: Object.keys(pageFunctions)
-        })
-        return undefined
-      }
-      return (func as (...args: unknown[]) => unknown)(...args)
-    } catch (error: unknown) {
-      pageLogger.error('函数执行错误', {
-        functionName,
-        args,
-        error: toErrorMessage(error)
-      })
-      throw error
-    }
-  }
-}

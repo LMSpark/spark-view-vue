@@ -87,18 +87,17 @@ import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import { nodeId, type SparkNode } from '../_pkg'
-import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
+import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import type { RendererListApi } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
-import { useContainerInput } from './useContainerInput'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerSlots } from './useContainerSlots'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
-import { createRowActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
+import { createRowActionSlotScope, createToolbarSlotScope } from './slotScopeFactories'
 
 interface Props {
   /** 数据绑定键 */
@@ -169,9 +168,10 @@ const props = withDefaults(defineProps<Props>(), {
 const attrs = useAttrs()
 const slots = useSlots()
 
-const { effectiveDataKey, configChildren: mergedChildren } = useContainerInput({
-  dataKey: computed(() => props.dataKey),
-  children: computed(() => props.children),
+const effectiveDataKey = computed(() => props.dataKey)
+const mergedChildren = computed<SparkNode[]>(() => {
+  const c = props.children
+  return Array.isArray(c) && c.length > 0 ? c : []
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
@@ -180,7 +180,7 @@ const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponen
 )
 const pageDataSet = consume(PAGE_DATASET)
 
-const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
+const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
   fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
@@ -191,9 +191,6 @@ const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
 })
 
 const listRows = computed<IDataRow[]>(() => resolvedView.value?.rows ?? [])
-const modelPermission = computed<IModelPermission | undefined>(() =>
-  (resolvedView.value as IDataSource | null | undefined)?._modelPerm
-)
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))
 
 const {

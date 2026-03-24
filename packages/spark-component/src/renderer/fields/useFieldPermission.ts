@@ -13,7 +13,7 @@ export interface FieldPermissionProps<TValue> {
   modelValue?: TValue | undefined
 }
 
-export interface UseFieldPermissionOptions<TValue> {
+interface UseFieldPermissionOptions<TValue> {
   props: FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue

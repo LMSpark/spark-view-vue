@@ -38,7 +38,7 @@ function getSpanValue(child: SparkNode, keys: string[], fallback: number): numbe
   return fallback
 }
 
-export interface UseContainerGridOptions {
+interface UseContainerGridOptions {
   children: Ref<SparkNode[]>
   columns?: Ref<number>
   gap?: Ref<number | string>

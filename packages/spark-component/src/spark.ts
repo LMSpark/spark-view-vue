@@ -15,7 +15,8 @@ import { defineAsyncComponent, markRaw } from 'vue'
 import type { CapabilityName } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry.js'
 import { createSparkPlugin } from './plugin.js'
-import type { ComponentContext, ComponentRegistry } from './types.js'
+import type { ComponentContext, ComponentRegistry, SparkNode } from './types.js'
+import { nodeId, nodeDock, nodeOrder, getDockedChildren, DEFAULT_DOCK, SPARK_NODE_STRUCT_KEYS } from './types.js'
 
 /* -------------------------------------------------------------------------- */
 
@@ -176,6 +177,53 @@ export const Spark = {
         return ctx
       }
     }
+  },
+
+  // ── SparkNode 工具方法 ────────────────────────────────────────────────────
+
+  /** SparkNode 结构键集合（type/props/children/id/dock/order） */
+  STRUCT_KEYS: SPARK_NODE_STRUCT_KEYS,
+
+  /** 默认停靠区域名 */
+  DEFAULT_DOCK,
+
+  /**
+   * 读取节点 id（顶层 `node.id` 优先，兼容 `node.props.id`）
+   *
+   * @example Spark.nodeId(child) ?? `fallback-${i}`
+   */
+  nodeId(node: SparkNode): string | undefined {
+    return nodeId(node)
+  },
+
+  /**
+   * 读取节点 dock（缺省 → 'default'）
+   *
+   * @example Spark.nodeDock(child) === 'toolbar'
+   */
+  nodeDock(node: SparkNode): string {
+    return nodeDock(node)
+  },
+
+  /**
+   * 读取节点 order（缺省 → 0）
+   */
+  nodeOrder(node: SparkNode): number {
+    return nodeOrder(node)
+  },
+
+  /**
+   * 按 dock 过滤 + order 排序子节点
+   *
+   * 容器组件渲染时调用：
+   * ```ts
+   * const columns = Spark.getDockedChildren(props.children)           // dock='default'
+   * const toolbar = Spark.getDockedChildren(props.children, 'toolbar')
+   * const actions = Spark.getDockedChildren(props.children, 'actions')
+   * ```
+   */
+  getDockedChildren(children: SparkNode[] | undefined, dock?: string): SparkNode[] {
+    return getDockedChildren(children, dock)
   }
 }
 

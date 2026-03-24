@@ -14,7 +14,7 @@ import FieldEntityPicker from './FieldEntityPicker.vue'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
-export interface PickerPresetDefaults {
+interface PickerPresetDefaults {
   placeholder: string
   buttonText: string
   readonlyButtonText: string
