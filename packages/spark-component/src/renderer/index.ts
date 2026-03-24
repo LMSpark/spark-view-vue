@@ -41,6 +41,7 @@ export { default as RendererDialog } from './containers/RendererDialog.vue'
 export { default as RendererDrawer } from './containers/RendererDrawer.vue'
 export { default as RendererSteps } from './containers/RendererSteps.vue'
 export { default as RendererSection } from './containers/RendererSection.vue'
+export { default as RendererToolbar } from './containers/RendererToolbar.vue'
 export { default as RendererFieldScope } from './containers/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/RendererListItemScope.vue'
 

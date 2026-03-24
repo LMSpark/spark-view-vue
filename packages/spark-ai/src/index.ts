@@ -125,8 +125,8 @@ export type {
   ResponseProcessor,
 } from './response-pipeline'
 
-// ── Component Props Catalog ──────────────────────────────────────────────────
-export { COMPONENT_PROPS_CATALOG, COMPONENT_CATALOG } from './component-props-catalog'
+// ── AI Component Catalog ─────────────────────────────────────────────────────
+export { COMPONENT_CATALOG } from './component-props-catalog'
 export type {
   ComponentCatalog,
   ComponentEntry,

@@ -5,7 +5,7 @@ import {
   extractComponentQueries,
   stripProposalTags,
   resolveComponentQuery,
-  COMPONENT_PROPS_CATALOG,
+  COMPONENT_CATALOG,
   SKILL_CATALOG,
   SKILL_CATEGORY_INDEX,
   resolveSkillQuery,
@@ -457,46 +457,54 @@ nonexistent-component
 
 // ── COMPONENT_PROPS_CATALOG ──────────────────────────────────────────────────
 
-describe('COMPONENT_PROPS_CATALOG', () => {
+function getComponentEntry(type: string) {
+  return COMPONENT_CATALOG.components[type]
+}
+
+function getPropNames(type: string): string[] {
+  return getComponentEntry(type)?.props.map(prop => prop.name) ?? []
+}
+
+describe('COMPONENT_CATALOG', () => {
   it('contains r-column-group entry', () => {
-    expect(COMPONENT_PROPS_CATALOG['r-column-group']).toBeDefined()
-    expect(COMPONENT_PROPS_CATALOG['r-column-group']).toContain('多级表头')
+    const entry = getComponentEntry('r-column-group')
+    expect(entry).toBeDefined()
+    expect(entry?.notes ?? '').toContain('多级表头')
   })
 
   it('r-checkbox uses checkedText/uncheckedText and deprecates trueLabel/falseLabel', () => {
-    const entry = COMPONENT_PROPS_CATALOG['r-checkbox']
+    const entry = getComponentEntry('r-checkbox')
     expect(entry).toBeDefined()
-    expect(entry).toContain('checkedText')
-    expect(entry).toContain('uncheckedText')
-    // contains migration note mentioning the old names
-    expect(entry).toContain('trueLabel / falseLabel')
+    expect(getPropNames('r-checkbox')).toContain('checkedText')
+    expect(getPropNames('r-checkbox')).toContain('uncheckedText')
+    expect(entry?.notes ?? '').toContain('trueLabel / falseLabel')
   })
 
   it('r-cascader includes optionChildrenField', () => {
-    const entry = COMPONENT_PROPS_CATALOG['r-cascader']
+    const entry = getComponentEntry('r-cascader')
     expect(entry).toBeDefined()
-    expect(entry).toContain('optionChildrenField')
-    expect(entry).toContain('emitPath')
+    expect(getPropNames('r-cascader')).toContain('optionChildrenField')
+    expect(getPropNames('r-cascader')).toContain('emitPath')
   })
 
   it('r-tree-select includes optionLabelField and defaultExpandAll', () => {
-    const entry = COMPONENT_PROPS_CATALOG['r-tree-select']
+    const entry = getComponentEntry('r-tree-select')
     expect(entry).toBeDefined()
-    expect(entry).toContain('optionLabelField')
-    expect(entry).toContain('defaultExpandAll')
+    expect(getPropNames('r-tree-select')).toContain('optionLabelField')
+    expect(getPropNames('r-tree-select')).toContain('defaultExpandAll')
   })
 
   it('r-transfer uses options not data', () => {
-    const entry = COMPONENT_PROPS_CATALOG['r-transfer']
+    const entry = getComponentEntry('r-transfer')
     expect(entry).toBeDefined()
-    expect(entry).toContain('options')
-    expect(entry).toContain('optionLabelField')
+    expect(getPropNames('r-transfer')).toContain('options')
+    expect(getPropNames('r-transfer')).toContain('optionLabelField')
   })
 
   it('r-upload includes readonlyButtonText', () => {
-    const entry = COMPONENT_PROPS_CATALOG['r-upload']
+    const entry = getComponentEntry('r-upload')
     expect(entry).toBeDefined()
-    expect(entry).toContain('readonlyButtonText')
+    expect(getPropNames('r-upload')).toContain('readonlyButtonText')
   })
 })
 

@@ -1,0 +1,120 @@
+{
+    "dataset": {
+        "dataSetName": "ToolbarLayoutDemo",
+        "tables": {
+            "Tasks": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "label": "ID",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "title",
+                        "type": "string",
+                        "label": "任务标题"
+                    },
+                    {
+                        "name": "owner",
+                        "type": "string",
+                        "label": "负责人"
+                    },
+                    {
+                        "name": "status",
+                        "type": "string",
+                        "label": "状态"
+                    },
+                    {
+                        "name": "priority",
+                        "type": "string",
+                        "label": "优先级"
+                    },
+                    {
+                        "name": "progress",
+                        "type": "number",
+                        "label": "进度"
+                    },
+                    {
+                        "name": "dueDate",
+                        "type": "date",
+                        "label": "截止日期"
+                    },
+                    {
+                        "name": "summary",
+                        "type": "string",
+                        "label": "任务摘要"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 101,
+                                "title": "统一 dock 区域定义",
+                                "owner": "陈晨",
+                                "status": "todo",
+                                "priority": "high",
+                                "progress": 10,
+                                "dueDate": "2026-03-28",
+                                "summary": "把 toolbar、actions、filter 的结构表达统一收敛到 children + dock 方案。"
+                            },
+                            {
+                                "id": 102,
+                                "title": "抽象横向容器内核",
+                                "owner": "林语",
+                                "status": "doing",
+                                "priority": "high",
+                                "progress": 55,
+                                "dueDate": "2026-03-29",
+                                "summary": "落地 r-toolbar / r-menu，共享同一个横向条带实现。"
+                            },
+                            {
+                                "id": 103,
+                                "title": "补齐容器导出链路",
+                                "owner": "周明",
+                                "status": "done",
+                                "priority": "medium",
+                                "progress": 100,
+                                "dueDate": "2026-03-24",
+                                "summary": "将新容器接入 register-renderers、renderer index、包级导出和桥接导出。"
+                            },
+                            {
+                                "id": 104,
+                                "title": "完善中文注释",
+                                "owner": "许宁",
+                                "status": "doing",
+                                "priority": "medium",
+                                "progress": 80,
+                                "dueDate": "2026-03-26",
+                                "summary": "把 children + dock 双区模型写进容器注释，降低后续理解成本。"
+                            },
+                            {
+                                "id": 105,
+                                "title": "设计纵向容器",
+                                "owner": "顾言",
+                                "status": "todo",
+                                "priority": "low",
+                                "progress": 0,
+                                "dueDate": "2026-04-02",
+                                "summary": "在横向容器稳定后，抽第二类通用容器：纵向布局条带。"
+                            },
+                            {
+                                "id": 106,
+                                "title": "评估旧 toolbar DSL 迁移",
+                                "owner": "韩露",
+                                "status": "todo",
+                                "priority": "medium",
+                                "progress": 5,
+                                "dueDate": "2026-04-05",
+                                "summary": "决定 toolbar/items 这类结构字段是否退化为 sugar，并在 normalize 阶段编译成 dock children。"
+                            }
+                        ],
+                        "autoCurrentFirst": true
+                    }
+                }
+            }
+        },
+        "relations": []
+    }
+}

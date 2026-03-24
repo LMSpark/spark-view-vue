@@ -24,6 +24,7 @@ export {
   RendererDrawer,
   RendererSteps,
   RendererSection,
+  RendererToolbar,
 } from '@spark-view/spark-component'
 
 // ── 字段组件 re-export ──

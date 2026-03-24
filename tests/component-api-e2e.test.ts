@@ -13,13 +13,23 @@ import {
   generateDiffReport,
   formatDiffReport,
 } from '../packages/vite-plugin-spark-catalog/src/index'
-import { COMPONENT_PROPS_CATALOG } from '../packages/spark-ai/src/component-props-catalog'
+import { COMPONENT_CATALOG } from '../packages/spark-ai/src/component-props-catalog'
 
 const ROOT = resolve('.')
 const FIELDS_DIR = 'packages/spark-component/src/renderer/fields'
 const CONTAINERS_DIR = 'packages/spark-component/src/renderer/containers'
 
 const checker = getOrCreateChecker(resolve(ROOT, 'tsconfig.catalog.json'))
+const diffCatalog = Object.fromEntries(
+  Object.entries(COMPONENT_CATALOG.components).map(([type, entry]) => {
+    const propLines = entry.props.map(prop => `${prop.name}: ${prop.description ?? ''}`)
+    const emitLines = (entry.emits ?? []).map(emit => `emit ${emit.name}`)
+    const text = [entry.description ?? '', entry.notes ?? '', ...propLines, ...emitLines]
+      .filter(Boolean)
+      .join('\n')
+    return [type, text]
+  }),
+)
 
 describe('End-to-end: real component extraction (VCM)', () => {
   // VCM checker 首次调用需初始化 TypeScript 语言服务，CPU 密集，全量测试时可能超过默认 5s
@@ -96,7 +106,7 @@ describe('End-to-end: diff report with real catalog', () => {
     ]
 
     const apis = extractAllComponentApisVcm(checker, components)
-    const report = generateDiffReport(apis, COMPONENT_PROPS_CATALOG)
+    const report = generateDiffReport(apis, diffCatalog)
     const output = formatDiffReport(report)
 
     // 应该有报告输出

@@ -13,9 +13,9 @@ export interface ComponentCatalog {
   buildTime: string
   componentCount: number
   registry: ComponentRegistry
-  sharedTypes: Record<string, SharedTypeDefinition>
   components: Record<string, ComponentEntry>
   constraints: PlatformConstraints
+  sharedTypes?: Record<string, SharedTypeDefinition>
   bindingDescriptors?: Record<string, BindingDescriptor>
 }
 
@@ -56,12 +56,9 @@ export interface ComponentEntry {
   category: 'container' | 'field' | 'group' | 'meta' | 'feature'
   description: string
   props: PropEntry[]
-  emits: EmitEntry[]
-  exposed?: ExposedEntry[]
-  slots?: SlotEntry[]
+  emits?: EmitEntry[]
   rootFields?: RootFieldEntry[]
   notes?: string
-  source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
   binding?: {
     selfResolving?: boolean
     bindingDelegate?: string
@@ -76,7 +73,6 @@ export interface PropEntry {
   required: boolean
   default?: string
   description?: string
-  schema?: PropSchema
 }
 
 export type PropSchema =

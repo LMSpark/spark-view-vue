@@ -1,0 +1,317 @@
+[data-page="toolbar-layout-demo"] .toolbar-layout-demo {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(17, 94, 89, 0.22), transparent 35%),
+    radial-gradient(circle at top right, rgba(30, 64, 175, 0.18), transparent 30%),
+    linear-gradient(180deg, #f3f6fb 0%, #eef4ff 100%);
+  color: #0f172a;
+}
+
+[data-page="toolbar-layout-demo"] .toolbar-layout-demo::before {
+  content: '';
+  position: absolute;
+  inset: 18px;
+  border-radius: 32px;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.1)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(148, 163, 184, 0.08) 0,
+      rgba(148, 163, 184, 0.08) 1px,
+      transparent 1px,
+      transparent 96px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      rgba(148, 163, 184, 0.06) 0,
+      rgba(148, 163, 184, 0.06) 1px,
+      transparent 1px,
+      transparent 96px
+    );
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  pointer-events: none;
+}
+
+[data-page="toolbar-layout-demo"] .toolbar-layout-demo > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-page="toolbar-layout-demo"] .toolbar-layout-demo h1 {
+  margin: 0 0 10px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #0f172a;
+}
+
+[data-page="toolbar-layout-demo"] .toolbar-layout-demo > p {
+  margin: 0 0 22px;
+  max-width: 920px;
+  color: #475569;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+[data-page="toolbar-layout-demo"] .renderer-toolbar,
+[data-page="toolbar-layout-demo"] .renderer-menu {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+[data-page="toolbar-layout-demo"] .renderer-menu {
+  margin-top: 14px;
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-panel {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.4fr);
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-copy h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-copy p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-card {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-card strong {
+  font-size: 13px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-card span {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #334155;
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-card--default {
+  background: linear-gradient(135deg, rgba(14, 116, 144, 0.16), rgba(125, 211, 252, 0.14));
+  border-color: rgba(14, 116, 144, 0.28);
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-card--tail {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.16), rgba(96, 165, 250, 0.14));
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-card--toolbar {
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.16), rgba(45, 212, 191, 0.14));
+  border-color: rgba(13, 148, 136, 0.28);
+}
+
+[data-page="toolbar-layout-demo"] .dock-legend-card--actions {
+  background: linear-gradient(135deg, rgba(202, 138, 4, 0.18), rgba(250, 204, 21, 0.16));
+  border-color: rgba(202, 138, 4, 0.3);
+}
+
+[data-page="toolbar-layout-demo"] .brand-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+[data-page="toolbar-layout-demo"] .brand-copy {
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+[data-page="toolbar-layout-demo"] .page-toolbar-main,
+[data-page="toolbar-layout-demo"] .page-toolbar-tail,
+[data-page="toolbar-layout-demo"] .page-menu-main,
+[data-page="toolbar-layout-demo"] .page-menu-tail {
+  position: relative;
+  min-height: 52px;
+  padding: 12px 14px 10px;
+  border-radius: 16px;
+  border: 1px dashed rgba(148, 163, 184, 0.55);
+}
+
+[data-page="toolbar-layout-demo"] .page-toolbar-main,
+[data-page="toolbar-layout-demo"] .page-menu-main {
+  background: rgba(14, 116, 144, 0.08);
+}
+
+[data-page="toolbar-layout-demo"] .page-toolbar-tail,
+[data-page="toolbar-layout-demo"] .page-menu-tail {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+[data-page="toolbar-layout-demo"] .page-toolbar-main::before,
+[data-page="toolbar-layout-demo"] .page-menu-main::before,
+[data-page="toolbar-layout-demo"] .page-toolbar-tail::before,
+[data-page="toolbar-layout-demo"] .page-menu-tail::before {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+[data-page="toolbar-layout-demo"] .page-toolbar-main::before,
+[data-page="toolbar-layout-demo"] .page-menu-main::before {
+  content: 'default dock';
+}
+
+[data-page="toolbar-layout-demo"] .page-toolbar-tail::before,
+[data-page="toolbar-layout-demo"] .page-menu-tail::before {
+  content: 'tail dock';
+}
+
+[data-page="toolbar-layout-demo"] .toolbar-action,
+[data-page="toolbar-layout-demo"] .menu-button {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+[data-page="toolbar-layout-demo"] .toolbar-action {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+[data-page="toolbar-layout-demo"] .toolbar-action--primary {
+  background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 14px 26px rgba(37, 99, 235, 0.22);
+}
+
+[data-page="toolbar-layout-demo"] .toolbar-action:hover,
+[data-page="toolbar-layout-demo"] .menu-button:hover {
+  transform: translateY(-1px);
+}
+
+[data-page="toolbar-layout-demo"] .menu-button {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+[data-page="toolbar-layout-demo"] .menu-button.is-active {
+  background: #0f172a;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+}
+
+[data-page="toolbar-layout-demo"] .menu-summary {
+  font-size: 13px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+[data-page="toolbar-layout-demo"] .dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+  gap: 22px;
+  margin-top: 22px;
+}
+
+[data-page="toolbar-layout-demo"] .renderer-section--card,
+[data-page="toolbar-layout-demo"] .el-card {
+  border-radius: 20px;
+}
+
+[data-page="toolbar-layout-demo"] .renderer-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+[data-page="toolbar-layout-demo"] .renderer-section-description {
+  color: #64748b;
+}
+
+[data-page="toolbar-layout-demo"] .el-table {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+[data-page="toolbar-layout-demo"] .el-table th {
+  background: #eff6ff !important;
+  color: #334155;
+}
+
+[data-page="toolbar-layout-demo"] .el-table .current-row > td {
+  background: rgba(37, 99, 235, 0.08) !important;
+}
+
+@media (max-width: 960px) {
+  [data-page="toolbar-layout-demo"] .dock-legend-panel {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page="toolbar-layout-demo"] .dock-legend-grid {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page="toolbar-layout-demo"] .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page="toolbar-layout-demo"] .toolbar-layout-demo {
+    padding: 18px;
+  }
+
+  [data-page="toolbar-layout-demo"] .renderer-toolbar,
+  [data-page="toolbar-layout-demo"] .renderer-menu {
+    padding: 14px;
+  }
+}

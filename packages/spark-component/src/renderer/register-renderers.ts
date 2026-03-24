@@ -48,6 +48,8 @@ export function registerAllRenderers(): void {
   Spark.register('r-steps', () => import('./containers/RendererSteps.vue'))
   Spark.register('r-section', () => import('./containers/RendererSection.vue'))
   Spark.register('r-block', () => import('./containers/RendererSection.vue'))
+  Spark.register('r-toolbar', () => import('./containers/RendererToolbar.vue'))
+  Spark.register('r-menu', () => import('./containers/RendererToolbar.vue'))
 
   // ── 字段组件：同步注册（el-table 要求列组件同步就绪） ──
   Spark.register('r-text', FieldText)

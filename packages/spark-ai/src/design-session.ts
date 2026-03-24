@@ -1,4 +1,4 @@
-import { COMPONENT_PROPS_CATALOG, COMPONENT_CATALOG } from './component-props-catalog'
+import { COMPONENT_CATALOG } from './component-props-catalog'
 import type { ComponentEntry, PropEntry } from './catalog-types'
 import { extractBlocks as _extractBlocks, stripBlocksWithUnclosed } from './protocol'
 import type { ProtocolBlock } from './protocol'
@@ -325,12 +325,9 @@ function resolveComponentToken(token: string): string {
 
   // 无 fragment 时：结构化有 Props → 用结构化格式；否则回退扁平文本
   if (apiSegment === null || apiSegment === '') {
-    if (structuredEntry !== undefined && structuredEntry.props.length > 0) {
+    if (structuredEntry !== undefined) {
       return formatComponentEntry(structuredEntry)
     }
-    // 回退扁平文本（手工 override 条目仍有完整描述）
-    const info = COMPONENT_PROPS_CATALOG[componentName]
-    if (info !== undefined) return info
     return `**${componentName}** — 未收录（可使用 Element Plus 文档中的标准 Props）`
   }
 
@@ -342,22 +339,7 @@ function resolveComponentToken(token: string): string {
       return `${title}\n\n【精确片段: ${apiSegment}】\n${matched.join('\n')}`
     }
   }
-
-  // 回退扁平文本行搜索
-  const info = COMPONENT_PROPS_CATALOG[componentName]
-  if (info === undefined) {
-    return `**${componentName}** — 未收录（可使用 Element Plus 文档中的标准 Props）`
-  }
-  const lines = info.split('\n')
-  const title = lines[0] ?? `**${componentName}**`
-  const keyword = apiSegment.toLowerCase()
-  const matched = lines.filter((line, index) => index > 0 && line.toLowerCase().includes(keyword))
-
-  if (matched.length === 0) {
-    return `${title}\n\n未匹配到 API 片段「${apiSegment}」，请改用 @@query:component-api\n${componentName}`
-  }
-
-  return `${title}\n\n【精确片段: ${apiSegment}】\n${matched.join('\n')}`
+  return `**${componentName}**\n\n未匹配到 API 片段「${apiSegment}」，请改用 @@query:component-api\n${componentName}`
 }
 
 /**

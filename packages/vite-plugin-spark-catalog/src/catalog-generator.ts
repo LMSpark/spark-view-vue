@@ -1,22 +1,20 @@
 /**
- * Props 目录 TS 文件生成器
+ * AI 配置目录 TS 文件生成器
  *
  * 从 json-catalog-generator 生成的 ComponentCatalog（VCM 驱动）
  * 派生出 component-props-catalog.ts，供 spark-ai 包消费。
  *
- * 所有组件 API 数据来自 vue-component-meta 提取的结构化目录，
- * 扁平文本 COMPONENT_PROPS_CATALOG 通过 prompt-generator 的
- * generateLegacyCatalogRecord() 从结构化数据降格生成。
+ * 这里不再复制完整 JSON SSoT，也不再生成扁平文本 COMPONENT_PROPS_CATALOG。
+ * 只保留 AI 生成配置真正需要的子集：registry / components(props, rootFields,
+ * emits, binding, notes) / constraints。
  *
  * @module catalog-generator
  */
 
 import { writeFileSync } from 'node:fs'
 import { resolve, relative } from 'node:path'
-import { COMPONENT_CATEGORIES } from './supplement'
 import { createLogger } from './utils'
-import type { ComponentCatalog } from './component-catalog-schema'
-import { generateLegacyCatalogRecord } from './prompt-generator'
+import type { ComponentCatalog as FullComponentCatalog, ComponentEntry as FullComponentEntry, PropEntry as FullPropEntry } from './component-catalog-schema'
 
 const logger = createLogger('spark-catalog')
 
@@ -29,6 +27,64 @@ export interface CatalogGeneratorOptions {
   outputPath?: string
   /** 启用详细日志 */
   verbose?: boolean
+}
+
+type AiPropEntry = Pick<FullPropEntry, 'name' | 'type' | 'required'> & {
+  default?: string
+  description?: string
+}
+
+type AiComponentEntry = Pick<FullComponentEntry, 'type' | 'category' | 'description'> & {
+  props: AiPropEntry[]
+  emits?: FullComponentEntry['emits']
+  rootFields?: FullComponentEntry['rootFields']
+  notes?: string
+  binding?: FullComponentEntry['binding']
+}
+
+type AiComponentCatalog = {
+  version: FullComponentCatalog['version']
+  buildTime: FullComponentCatalog['buildTime']
+  componentCount: FullComponentCatalog['componentCount']
+  registry: FullComponentCatalog['registry']
+  components: Record<string, AiComponentEntry>
+  constraints: FullComponentCatalog['constraints']
+}
+
+function toAiPropEntry(prop: FullPropEntry): AiPropEntry {
+  return {
+    name: prop.name,
+    type: prop.type,
+    required: prop.required,
+    ...(prop.default !== undefined ? { default: prop.default } : {}),
+    ...(prop.description !== undefined ? { description: prop.description } : {}),
+  }
+}
+
+function toAiComponentEntry(entry: FullComponentEntry): AiComponentEntry {
+  return {
+    type: entry.type,
+    category: entry.category,
+    description: entry.description,
+    props: entry.props.map(toAiPropEntry),
+    ...(entry.emits.length > 0 ? { emits: entry.emits } : {}),
+    ...(entry.rootFields !== undefined && entry.rootFields.length > 0 ? { rootFields: entry.rootFields } : {}),
+    ...(entry.notes !== undefined ? { notes: entry.notes } : {}),
+    ...(entry.binding !== undefined ? { binding: entry.binding } : {}),
+  }
+}
+
+function toAiComponentCatalog(jsonCatalog: FullComponentCatalog): AiComponentCatalog {
+  return {
+    version: jsonCatalog.version,
+    buildTime: jsonCatalog.buildTime,
+    componentCount: jsonCatalog.componentCount,
+    registry: jsonCatalog.registry,
+    components: Object.fromEntries(
+      Object.entries(jsonCatalog.components).map(([key, entry]) => [key, toAiComponentEntry(entry)]),
+    ),
+    constraints: jsonCatalog.constraints,
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -45,44 +101,21 @@ export interface CatalogGeneratorOptions {
 export function generatePropsCatalog(
   root: string,
   options: CatalogGeneratorOptions = {},
-  jsonCatalog: ComponentCatalog,
+  jsonCatalog: FullComponentCatalog,
 ): void {
   const {
     outputPath = 'packages/spark-ai/src/component-props-catalog.ts',
     verbose = false,
   } = options
 
-  // 从结构化目录生成扁平文本（与 prompt-generator 共享同一逻辑）
-  const legacyRecord = generateLegacyCatalogRecord(jsonCatalog)
-
-  const sortedKeys = Object.keys(legacyRecord).sort()
+  const aiCatalog = toAiComponentCatalog(jsonCatalog)
+  const sortedKeys = Object.keys(aiCatalog.components).sort()
   if (verbose) {
-    logger.info(`📋 结构化目录包含 ${sortedKeys.length} 个组件条目`)
-  }
-
-  const catalogLines = sortedKeys.map(key => {
-    const value = (legacyRecord[key] ?? '')
-      .replace(/\\/g, '\\\\')
-      .replace(/`/g, '\\`')
-      .replace(/\$/g, '\\$')
-    return `  ${JSON.stringify(key)}: \`${value}\``
-  })
-
-  // 生成组件注册表（按分类归组）
-  const containers: string[] = []
-  const fields: string[] = []
-  const groups: string[] = []
-
-  for (const key of sortedKeys) {
-    const cat = COMPONENT_CATEGORIES[key]
-    if (cat === 'meta') continue
-    if (cat === 'container') containers.push(key)
-    else if (cat === 'group') groups.push(key)
-    else if (key.startsWith('r-')) fields.push(key)
+    logger.info(`📋 AI 配置目录包含 ${sortedKeys.length} 个组件条目`)
   }
 
   const output = `/**
- * SPARK 组件 Props 目录
+ * SPARK AI 配置组件目录
  *
  * ⚠️ 自动生成 — 请勿手动编辑
  *
@@ -96,32 +129,22 @@ export function generatePropsCatalog(
 import type { ComponentCatalog } from './catalog-types'
 
 /**
- * 结构化组件目录（SSoT）
+ * AI 配置目录（精简版）
  *
- * 由 json-catalog-generator 构建，包含完整的 Props 类型、Emits、能力链、平台约束等。
- * design-session / design-prompt 优先从此对象查询，扁平 COMPONENT_PROPS_CATALOG 保留向后兼容。
+ * 仅保留 AI 生成配置相关字段：registry / components(props, rootFields, emits,
+ * binding, notes) / constraints。
+ *
+ * 完整 SSoT 位于 component-catalog.json；此文件专供 spark-ai 运行时查询，避免把
+ * sharedTypes、schema、slots、exposed、source 等非配置信息带进模型上下文。
  */
-export const COMPONENT_CATALOG: ComponentCatalog = ${JSON.stringify(jsonCatalog, null, 2)}
-
-export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
-${catalogLines.join(',\n')},
-}
-
-/**
- * 组件注册表（按分类），供 design-prompt.ts 生成组件注册表 section。
- */
-export const COMPONENT_REGISTRY = {
-  containers: ${JSON.stringify(containers)} as const,
-  fields: ${JSON.stringify(fields)} as const,
-  groups: ${JSON.stringify(groups)} as const,
-} as const
+export const COMPONENT_CATALOG: ComponentCatalog = ${JSON.stringify(aiCatalog, null, 2)}
 `
 
   const absoluteOutputPath = resolve(root, outputPath)
   try {
     writeFileSync(absoluteOutputPath, output, 'utf-8')
-    logger.info(`📋 Props 目录已生成: ${relative(root, absoluteOutputPath)} (${sortedKeys.length} 条目)`)
+    logger.info(`📋 AI 配置目录已生成: ${relative(root, absoluteOutputPath)} (${sortedKeys.length} 条目)`)
   } catch (e) {
-    logger.warn('⚠️ Props 目录生成失败（非致命）:', e)
+    logger.warn('⚠️ AI 配置目录生成失败（非致命）:', e)
   }
 }

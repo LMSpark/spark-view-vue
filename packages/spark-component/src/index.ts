@@ -118,6 +118,7 @@ export {
   RendererDrawer,
   RendererSteps,
   RendererSection,
+  RendererToolbar,
   RendererFieldScope,
   RendererListItemScope,
   // 字段
