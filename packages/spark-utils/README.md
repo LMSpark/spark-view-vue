@@ -24,7 +24,7 @@ pnpm add @spark-view/spark-utils
 ### 1. 能力系统
 
 ```typescript
-import { defineCapability, provide, lookup } from '@spark-view/spark-utils'
+import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import { useSparkComponent } from '@spark-view/spark-component'
 
 // 定义类型安全的能力键

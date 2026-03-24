@@ -8,7 +8,7 @@
  */
 
 import type { InjectionKey } from 'vue'
-import type { LoggerApi, ICapabilityContext } from '@spark-view/spark-utils'
+import type { ICapabilityContext } from '@spark-view/spark-utils'
 
 // 能力名称类型（从 spark-utils 重新导出）
 export type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
@@ -39,33 +39,22 @@ export interface ComponentDefinition {
 export type ComponentDataKeyBehavior = 'self-resolve' | 'injected' | 'none'
 
 // ============================================================================
-// 组件上下文（核心）
+// 能力上下文（核心）
 // ============================================================================
 
 /**
- * ComponentContext - 组件实例的运行时表示
+ * SparkCapabilityContext - 纯能力上下文
  *
- * 继承 ICapabilityContext（id, type, parent, capabilities），
- * 扩展 Vue 组件专属字段（props, children, state, logger）。
- *
- * 双重职责：
- * 1. 配置描述（JSON → type + props + children）
- * 2. 运行时管理（id + parent/children + capabilities）
+ * 只保留能力系统运行所需的最小结构：id / type / parent / capabilities。
+ * 不再承载 Vue 组件 props、children、state、logger 等运行时字段。
  */
-export interface ComponentContext extends ICapabilityContext {
-  /** 组件属性（JSON 配置传入） */
-  props?: Record<string, unknown>
-  /** 子组件上下文（递归结构） */
-  children?: ComponentContext[]
-  /** 父上下文（能力查找用，覆盖基类为更具体的类型） */
-  parent?: ICapabilityContext
+export type SparkCapabilityContext = ICapabilityContext
 
-  /** 运行时状态 */
-  state: Record<string, unknown>
-
-  /** 日志器 */
-  logger?: LoggerApi
-}
+/**
+ * @deprecated 使用 SparkCapabilityContext。
+ * ComponentContext 名称仅为兼容存量导出保留，语义上已不再表示 Vue 组件上下文。
+ */
+export type ComponentContext = SparkCapabilityContext
 
 // ============================================================================
 // 组件配置（输入类型）
@@ -432,9 +421,6 @@ export interface ComponentRegistry {
 
 /** 组件注册表注入键 */
 export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('sparkRegistry') as InjectionKey<ComponentRegistry>
-
-/** 父级上下文注入键（替代字符串 'sparkParentContext'） */
-export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('sparkParentContext') as InjectionKey<ComponentContext>
 
 // 日志类型 — 直接从 @spark-view/spark-utils 导入
 export type { LoggerApi } from '@spark-view/spark-utils'

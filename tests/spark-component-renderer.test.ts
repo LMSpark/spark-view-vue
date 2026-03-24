@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
+import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 import { defineComponent, h } from 'vue'
 import type { DefineComponent } from 'vue'
 import SparkComponentRendererSource from '../packages/spark-component/src/renderer/SparkComponentRenderer.vue'
@@ -25,7 +25,6 @@ test('SparkComponentRenderer forwards config.on listeners to rendered components
     global: {
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
-        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
       }
     }
   })
@@ -53,7 +52,6 @@ test('SparkComponentRenderer falls back to Vue global Render* components', () =>
       },
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
-        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
       }
     }
   })
@@ -81,7 +79,6 @@ test('SparkComponentRenderer resolves kebab-case el-* type from globally registe
       },
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
-        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
       }
     }
   })
@@ -111,7 +108,6 @@ test('SparkComponentRenderer passes config props into Vue global Render* compone
       },
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
-        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
       }
     }
   })
@@ -132,7 +128,6 @@ test('SparkComponentRenderer renders unregistered native tags with recursive chi
     global: {
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
-        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
       }
     }
   })
@@ -151,7 +146,6 @@ test('SparkComponentRenderer keeps warning fallback for unknown non-native compo
     global: {
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
-        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
       }
     }
   })

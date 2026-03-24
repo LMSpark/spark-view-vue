@@ -6,11 +6,12 @@
  * @module composables/useSparkComponent
  */
 
-import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide, getCurrentInstance } from 'vue'
-import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
+import { computed, onMounted, onUnmounted, inject, provide as vueProvide, getCurrentInstance, markRaw } from 'vue'
+import { sparkProvide, sparkConsume, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
-import type { ComponentContext, SparkNode, ComponentRegistry } from './types.js'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
+import type { SparkCapabilityContext, SparkNode, ComponentRegistry } from './types.js'
+import { SPARK_REGISTRY_KEY } from './types.js'
+import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from './internal-context.js'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 
@@ -18,8 +19,8 @@ import type { PageComponentRegistry } from './capability-keys.js'
 
 /** useSparkComponent 返回值接口 */
 export interface UseSparkComponentReturn {
-  /** 响应式组件上下文 */
-  context: ComponentContext
+  /** 纯能力上下文 */
+  context: SparkCapabilityContext
   /** 可见性（基于 config.visible，默认 true） */
   isVisible: { readonly value: boolean }
   /** 禁用状态（基于 config.disabled，默认 false） */
@@ -94,13 +95,14 @@ export function useSparkComponent(
   fallbackConfig?: SparkNode,
   options?: {
     registry?: ComponentRegistry
-    parentContext?: ComponentContext
+    parentContext?: SparkCapabilityContext
   }
 ): UseSparkComponentReturn {
 
   // ── 依赖注入 ──
 
-  const parentContext = options?.parentContext ?? inject(SPARK_PARENT_CONTEXT_KEY, undefined)
+  const injectedParentContext = inject(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY)
+  const parentContext = options?.parentContext ?? injectedParentContext
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
 
   // 组件配置来自 fallbackConfig 参数（调用方在 setup 中传入，如 { type: 'r-table' }）。
@@ -112,44 +114,32 @@ export function useSparkComponent(
     ?? `spark-${++_idCounter}`
 
   // ── 上下文创建 ──
-  //
-  // 优化：
-  // 1. shallowReactive 替代 reactive：顶层字段响应式，子对象不做深层代理
-  // 2. capabilities / children 用 markRaw，完全脱离 Vue 响应系统：
-  //    capabilities 只做命令式 Map.get/set，children 只在 destroy 时 indexOf
-  // 3. id 用全局单调计数器，比 Date.now()+random 更快且确定（SSR 友好）
+  // 纯能力上下文不再进入 Vue 响应系统，仅保留能力链遍历所需字段。
 
-  const context: ComponentContext = shallowReactive({
+  const context: SparkCapabilityContext = {
     id: resolvedId,
     type: config.type,
-    children: markRaw([] as ComponentContext[]),
-    props: config.props ?? {},
-    state: {},
-    capabilities: markRaw(new Map<CapabilityName, unknown>()),
-    parent: parentContext,
-    logger: undefined
-  } as unknown as ComponentContext)
-
-  // 建立父子关系（父 children 是 markRaw 数组，无响应式开销）
-  if (parentContext?.children) {
-    parentContext.children.push(context)
+    capabilities: new Map<CapabilityName, unknown>(),
+  }
+  if (parentContext !== undefined) {
+    context.parent = parentContext
   }
 
   // 向子组件提供当前 context
-  vueProvide(SPARK_PARENT_CONTEXT_KEY, context)
+  vueProvide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, context)
 
   // ── 页面级实例登记（可选） ──
-  const pageComponentRegistry = lookup<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
+  const pageComponentRegistry = sparkConsume<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
   if (pageComponentRegistry) {
-    const instanceEntry = context.props === undefined
+    const instanceEntry = config.props === undefined
       ? { id: context.id, type: context.type }
-      : { id: context.id, type: context.type, props: context.props }
+      : { id: context.id, type: context.type, props: config.props }
     pageComponentRegistry.registerInstance(instanceEntry)
   }
 
   // ── Logger（从能力链查找，带一次性缓存） ──
   //
-  // 缓存策略：首次成功 lookup 后缓存结果，避免每次日志调用都遍历 parent 链。
+  // 缓存策略：首次成功 sparkConsume 后缓存结果，避免每次日志调用都遍历 parent 链。
   // 失效时机：调用 provide(LOGGER, ...) 或 provide(APP_SERVICES, ...) 时主动置 null。
   // Late-binding 边界：父组件在 onMounted 中 provide(LOGGER) 时，
   // 若本组件的 provide() 未被触发则缓存不失效（已被这个父 provide 填充的子组件不受影响）。
@@ -167,13 +157,13 @@ export function useSparkComponent(
   const resolveLogger = (): LoggerApi => {
     if (_loggerCache !== null) return _loggerCache
     // 1. 优先查找 LOGGER 能力键（最近祖先覆盖，实现组件子树级日志替换）
-    const loggerImpl = lookup<LoggerApi>(context, LOGGER)
+    const loggerImpl = sparkConsume<LoggerApi>(context, LOGGER)
     if (loggerImpl && typeof loggerImpl === 'object' && 'info' in loggerImpl) {
       _loggerCache = loggerImpl
       return loggerImpl
     }
     // 2. 次选 APP_SERVICES.logger（应用层统一提供）
-    const appServices = lookup<IAppServicesCapability>(context, APP_SERVICES)
+    const appServices = sparkConsume<IAppServicesCapability>(context, APP_SERVICES)
     if (appServices?.logger) {
       _loggerCache = appServices.logger
       return appServices.logger
@@ -189,8 +179,6 @@ export function useSparkComponent(
     error: (...args: unknown[]) => resolveLogger().error(...args)
   }
 
-  context.logger = logger
-
   // ── 计算属性 ──
 
   const isVisible = computed(() => config.props?.['visible'] !== false)
@@ -199,7 +187,7 @@ export function useSparkComponent(
   // ── 能力提供 ──
 
   function provide(name: string | symbol, implementation?: unknown): void {
-    setCapability(context, name, implementation)
+    sparkProvide(context, name, implementation)
     // 当 LOGGER 或 APP_SERVICES 被更新时，使 logger 缓存失效
     const key = normalizeKey(name)
     if (key === LOGGER || key === APP_SERVICES) {
@@ -212,7 +200,7 @@ export function useSparkComponent(
 
   function provideEvents(name: string | symbol = 'events'): IEventEmitter {
     const emitter = createEventEmitter()
-    setCapability(context, name, emitter)
+    sparkProvide(context, name, emitter)
     return emitter
   }
 
@@ -223,7 +211,7 @@ export function useSparkComponent(
   // ── 能力消费 ──
 
   function consume(name: string | symbol): unknown {
-    const impl = lookup(context, name)
+    const impl = sparkConsume(context, name)
     if (impl !== undefined) return impl
     if (import.meta.env.DEV) {
       logger.debug(`[spark] capability not found (late-binding ok): ${String(name)}`)
@@ -235,7 +223,7 @@ export function useSparkComponent(
     name: string | symbol,
     handlers: Record<string, (...args: unknown[]) => void>
   ): IEventEmitter | null {
-    const emitter = lookup<IEventEmitter>(context, name)
+    const emitter = sparkConsume<IEventEmitter>(context, name)
     if (emitter) {
       for (const [event, handler] of Object.entries(handlers)) {
         emitter.on(event, handler)
@@ -290,10 +278,6 @@ export function useSparkComponent(
     }
     _eventSubscriptions.length = 0
 
-    if (parentContext?.children) {
-      const idx = parentContext.children.indexOf(context)
-      if (idx !== -1) parentContext.children.splice(idx, 1)
-    }
     pageComponentRegistry?.unregisterInstance(context.id)
     context.capabilities.clear()
   }
@@ -331,12 +315,12 @@ export function useSparkComponent(
 /* -------------------------------------------------------------------------- */
 
 /**
- * 轻量消费器——仅需读取祖先能力、不需要创建 ComponentContext 的场景。
+ * 轻量消费器——仅需读取祖先能力、不需要创建能力上下文的场景。
  *
  * 与 `useSparkComponent` 的差异：
- * - 不创建 shallowReactive context、不注册 parent-children、不挂 onMounted/onUnmounted
+ * - 不创建上下文实例、不挂 onMounted/onUnmounted
  * - 不提供 provide / registerApi / logger / getComponent
- * - 开销 ≈ 1 次 inject + N 次 lookup，适合高频字段组件（表格 50 列 × N 行）
+ * - 开销 ≈ 1 次 inject + N 次 sparkConsume，适合高频字段组件（表格 50 列 × N 行）
  */
 export function useSparkConsume(): {
   consume: {
@@ -345,11 +329,11 @@ export function useSparkConsume(): {
     (name: string | symbol): unknown
   }
 } {
-  const parentContext = inject(SPARK_PARENT_CONTEXT_KEY, undefined)
+  const parentContext = inject(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY)
 
   function consume(name: string | symbol): unknown {
     if (!parentContext) return null
-    const impl = lookup(parentContext, name)
+    const impl = sparkConsume(parentContext, name)
     return impl !== undefined ? impl : null
   }
 

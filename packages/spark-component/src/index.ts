@@ -27,6 +27,7 @@ export { createComponentRegistry, getGlobalRegistry } from './registry.js'
 // ── 5. 核心类型 ──
 export type {
   CapabilityName,
+  SparkCapabilityContext,
   SparkNode,
   // Dock 描述符（新模型）
   DockDescriptor,
@@ -49,7 +50,6 @@ export type {
 // ── 6. DI Keys + SparkNode 结构常量 ──
 export {
   SPARK_REGISTRY_KEY,
-  SPARK_PARENT_CONTEXT_KEY,
   SPARK_NODE_STRUCT_KEYS,
   DEFAULT_DOCK,
   nodeId,

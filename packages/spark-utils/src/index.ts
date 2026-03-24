@@ -17,6 +17,7 @@ export * from './http/index.js'
 // ==================== 能力系统 ====================
 
 export * from './capability.js'
+export { sparkProvide, sparkConsume } from './capability.js'
 
 // ==================== 共享错误码 ====================
 

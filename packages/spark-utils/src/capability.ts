@@ -5,13 +5,13 @@
  * - 核心类型（CapabilityName, ICapabilityContext, IEventEmitter）
  * - 类型安全能力键（CapabilityKey<T>, defineCapability）
  * - 内置能力常量 + 配套接口
- * - 纯函数操作（provide, lookup, createEventEmitter）
+ * - 纯函数操作（sparkProvide, sparkConsume, createEventEmitter）
  *
  * @example
  * ```ts
- * import { APP_SERVICES, provide, lookup } from '@spark-view/spark-utils'
- * provide(ctx, APP_SERVICES, { router, logger })
- * const svc = lookup(ctx, APP_SERVICES)
+ * import { APP_SERVICES, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
+ * sparkProvide(ctx, APP_SERVICES, { router, logger })
+ * const svc = sparkConsume(ctx, APP_SERVICES)
  * ```
  */
 
@@ -93,12 +93,12 @@ export function normalizeKey(name: CapabilityName): symbol | string {
 }
 
 /** 在上下文中注册能力 */
-export function provide<T>(ctx: ICapabilityContext, name: CapabilityName, impl: T): void {
+export function sparkProvide<T>(ctx: ICapabilityContext, name: CapabilityName, impl: T): void {
   ctx.capabilities.set(normalizeKey(name), impl)
 }
 
 /** 沿 parent 链查找能力（就近原则） */
-export function lookup<T = unknown>(ctx: ICapabilityContext, name: CapabilityName): T | undefined {
+export function sparkConsume<T = unknown>(ctx: ICapabilityContext, name: CapabilityName): T | undefined {
   const key = normalizeKey(name)
   let current: ICapabilityContext | undefined = ctx
   while (current) {

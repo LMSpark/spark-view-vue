@@ -1,6 +1,6 @@
 ﻿ 
 import { describe, it, expect } from 'vitest'
-import { createComponentRegistry, createSparkPlugin, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
+import { createComponentRegistry, createSparkPlugin, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 
 // Minimal fake Vue app object
 function createFakeApp() {
@@ -19,9 +19,8 @@ describe('Vue plugin integration', () => {
     const plugin = createSparkPlugin()
     plugin.install!(app)
     
-    // Should provide registry and root context
+    // Should provide registry
     expect((app._provided)[SPARK_REGISTRY_KEY]).toBeDefined()
-    expect((app._provided as any)[SPARK_PARENT_CONTEXT_KEY as symbol]).toBeDefined()
   })
 
   it('createSparkPlugin with custom registry uses provided registry', () => {
@@ -32,6 +31,5 @@ describe('Vue plugin integration', () => {
     
     // Should provide the custom registry
     expect((app._provided)[SPARK_REGISTRY_KEY]).toBe(registry)
-    expect((app._provided as any)[SPARK_PARENT_CONTEXT_KEY as symbol]).toBeDefined()
   })
 })

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, reactive } from 'vue'
 import { PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
 import {
-  Spark, SPARK_PARENT_CONTEXT_KEY, SPARK_REGISTRY_KEY, useSparkComponent,
+  Spark, SPARK_REGISTRY_KEY, useSparkComponent,
   CONTEXT_DATA, FIELD_CONTEXT,
   FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,
   FieldFilePath, FieldImage, FieldEntityPicker, FieldUserPicker,
@@ -36,7 +36,7 @@ function mountWithFieldContext(
 ) {
   const Provider = defineComponent({
     setup() {
-      const { provide } = useSparkComponent({ type: 'test-provider' })
+      const { provide } = useSparkComponent({ type: 'test-provider' }, { parentContext: rootContext })
       provide(FIELD_CONTEXT, 'form')
       provide(CONTEXT_DATA, model)
       if (pageService) {
@@ -50,7 +50,6 @@ function mountWithFieldContext(
     global: {
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
-        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext,
       },
       stubs: {
         'el-table-column': defineComponent({

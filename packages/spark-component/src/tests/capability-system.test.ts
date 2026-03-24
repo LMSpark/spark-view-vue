@@ -13,7 +13,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import { APP_SERVICES, PAGE_SERVICE, defineCapability, provide as capProvide, lookup } from '@spark-view/spark-utils'
+import { APP_SERVICES, PAGE_SERVICE, defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 
 describe('Capability system integration', () => {
@@ -91,14 +91,14 @@ describe('Capability system integration', () => {
       const parentCtx = createContext({ type: 'provider', id: 'p-1' }, rootContext)
       const childCtx = createContext({ type: 'consumer', id: 'c-1' }, parentCtx)
 
-      // 使用纯函数 provide 注册能力
-      capProvide(parentCtx, APP_SERVICES, {
+      // 使用纯函数 sparkProvide 注册能力
+      sparkProvide(parentCtx, APP_SERVICES, {
         router: { push: async () => {}, replace: async () => {}, back: () => {}, currentRoute: {} },
         logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} }
       })
 
       // consumer 通过 parent chain 找到 capability
-      const found = lookup(childCtx, APP_SERVICES)
+      const found = sparkConsume(childCtx, APP_SERVICES)
       expect(found).toBeTruthy()
       const impl = found as { router: unknown; logger: unknown }
       expect(impl.router).toBeDefined()
@@ -113,9 +113,9 @@ describe('Capability system integration', () => {
       const parentCtx = createContext({ type: 'provider', id: 'p-2' }, rootContext)
       const childCtx = createContext({ type: 'consumer', id: 'c-2' }, parentCtx)
 
-      capProvide(parentCtx, CUSTOM, { getValue: () => 'hello from custom' })
+      sparkProvide(parentCtx, CUSTOM, { getValue: () => 'hello from custom' })
 
-      const found = lookup<CustomCapability>(childCtx, CUSTOM)
+      const found = sparkConsume<CustomCapability>(childCtx, CUSTOM)
       expect(found).toBeTruthy()
       expect(found!.getValue()).toBe('hello from custom')
     })
@@ -153,10 +153,10 @@ describe('Capability system integration', () => {
         }
       }
 
-      capProvide(gridCtx, TEST_EVENTS, eventImpl)
+      sparkProvide(gridCtx, TEST_EVENTS, eventImpl)
 
       // Consumer 通过 parent chain 找到事件能力
-      const found = lookup<IEventEmitter>(rowCtx, TEST_EVENTS)
+      const found = sparkConsume<IEventEmitter>(rowCtx, TEST_EVENTS)
       expect(found).toBeTruthy()
 
       found!.on('rowClick', handler)

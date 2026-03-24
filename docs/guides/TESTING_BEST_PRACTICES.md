@@ -62,12 +62,12 @@ describe('Component Registration', () => {
 
 ## 3. 能力系统测试
 
-使用 `provide()` / `lookup()` 纯函数（来自 `@spark-view/spark-utils`）测试能力链。
+使用 `sparkProvide()` / `sparkConsume()` 纯函数（来自 `@spark-view/spark-utils`）测试能力链。
 
 ```typescript
 import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-component'
-import { provide, lookup, defineCapability, APP_SERVICES } from '@spark-view/spark-utils'
+import { sparkProvide, sparkConsume, defineCapability, APP_SERVICES } from '@spark-view/spark-utils'
 
 describe('Capability System', () => {
   it('provides and consumes up the parent chain', () => {
@@ -77,13 +77,13 @@ describe('Capability System', () => {
     const childCtx = createContext({ type: 'consumer', id: 'c-1' }, parentCtx)
 
     // 父组件提供能力
-    provide(parentCtx, APP_SERVICES, {
+    sparkProvide(parentCtx, APP_SERVICES, {
       router: { push: async () => {}, replace: async () => {}, back: () => {}, currentRoute: {} },
       logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} }
     })
 
     // 子组件通过 parent 链查找
-    const found = lookup(childCtx, APP_SERVICES)
+    const found = sparkConsume(childCtx, APP_SERVICES)
     expect(found).toBeTruthy()
     expect(found!.router).toBeDefined()
     expect(found!.logger).toBeDefined()
@@ -97,9 +97,9 @@ describe('Capability System', () => {
     const parentCtx = createContext({ type: 'provider' }, rootContext)
     const childCtx = createContext({ type: 'consumer' }, parentCtx)
 
-    provide(parentCtx, THEME, { color: 'blue' })
+    sparkProvide(parentCtx, THEME, { color: 'blue' })
 
-    const found = lookup<ThemeApi>(childCtx, THEME)
+    const found = sparkConsume<ThemeApi>(childCtx, THEME)
     expect(found?.color).toBe('blue')
   })
 
@@ -108,7 +108,7 @@ describe('Capability System', () => {
     const UNKNOWN = defineCapability<{ x: number }>('test:unknown')
     const ctx = createContext({ type: 'orphan' }, rootContext)
 
-    const result = lookup(ctx, UNKNOWN)
+    const result = sparkConsume(ctx, UNKNOWN)
     expect(result).toBeNull()
   })
 })
@@ -169,7 +169,7 @@ const wrapper = mount(MyComponent, {
 ```typescript
 import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-component'
-import { provide, lookup, defineCapability } from '@spark-view/spark-utils'
+import { sparkProvide, sparkConsume, defineCapability } from '@spark-view/spark-utils'
 
 describe('Component Tree', () => {
   it('creates nested contexts with parent references', () => {
@@ -190,9 +190,9 @@ describe('Component Tree', () => {
     const mid = createContext({ type: 'mid' }, root)
     const leaf = createContext({ type: 'leaf' }, mid)
 
-    provide(root, SERVICE, { ping: () => 'pong' })
+    sparkProvide(root, SERVICE, { ping: () => 'pong' })
 
-    const found = lookup(leaf, SERVICE)
+    const found = sparkConsume(leaf, SERVICE)
     expect(found?.ping()).toBe('pong')
   })
 })

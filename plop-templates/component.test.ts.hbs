@@ -7,10 +7,10 @@ import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view
 import type { SparkNode } from '@spark-view/spark-component'
 import {{pascalName}} from '../src/components/{{name}}.vue'
 {{#if isProvider}}
-// import { provide as setCapability, lookup } from '@spark-view/spark-utils'
+// import { sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 {{/if}}
 {{#if isConsumer}}
-// import { provide as setCapability } from '@spark-view/spark-utils'
+// import { sparkProvide } from '@spark-view/spark-utils'
 // import { DATA_SOURCE } from '@spark-view/spark-component'
 {{/if}}
 

@@ -34,7 +34,7 @@
     <div class="unregistered-warning">
       <strong>⚠️ 未注册的组件类型:</strong> {{ config.type }}
     </div>
-    <!-- 未注册时仍递归渲染子组件，父上下文由 Vue DI 自动传递 -->
+    <!-- 未注册时仍递归渲染子组件，父能力上下文由框架内部传递 -->
     <template
       v-for="(child, index) in renderableChildren"
       :key="nodeKey(child, index)"
@@ -62,7 +62,7 @@
  * 设计要点：
  * - **不创建自己的 ComponentContext**：渲染器是透明的路由层，不加入能力链
  * - 直接 inject(SPARK_REGISTRY_KEY) 获取注册表，不经过 useSparkComponent
- * - 父子上下文传递完全依赖 Vue DI（业务组件的 useSparkComponent 自行 vueProvide）
+ * - 父能力上下文通过框架内部私有 DI 传递，不对外暴露公共 key
  * - 根节点 / 测试场景通过 parentContext prop 显式注入初始父上下文
  *
  * 上下文链对比：
@@ -79,8 +79,9 @@
  * ```
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, nodeId, nodeDock, DEFAULT_DOCK } from '../types.js'
+import { SPARK_REGISTRY_KEY, nodeId, nodeDock, DEFAULT_DOCK } from '../types.js'
 import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
+import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal-context.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
 // h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
@@ -123,10 +124,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// ── 根节点 / 测试场景：覆盖 DI 链的父上下文 ─────────────────────────────────
-// 业务组件的 useSparkComponent 会通过 inject(SPARK_PARENT_CONTEXT_KEY) 消费此值
+// ── 根节点 / 测试场景：覆盖框架内部父能力上下文 ─────────────────────────────
 if (props.parentContext !== undefined) {
-  vueProvide(SPARK_PARENT_CONTEXT_KEY, props.parentContext)
+  vueProvide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, props.parentContext)
 }
 
 // ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────

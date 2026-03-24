@@ -8,9 +8,10 @@
  */
 
 import type { App, Plugin } from 'vue'
-import { markRaw, shallowReactive } from 'vue'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
-import type { ComponentContext, ComponentRegistry } from './types.js'
+import { shallowReactive } from 'vue'
+import { SPARK_REGISTRY_KEY } from './types.js'
+import type { SparkCapabilityContext, ComponentRegistry } from './types.js'
+import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from './internal-context.js'
 import type { CapabilityName } from '@spark-view/spark-utils'
 import { getGlobalRegistry } from './registry.js'
 import { DataView } from '@spark-view/spark-data'
@@ -29,18 +30,16 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
       // 配置 DataView 使用 Vue shallowReactive 包装（仅追踪顶层属性，避免 rows 数据行的深度 Proxy 开销）
       DataView.wrapInstance = (dv) => shallowReactive(dv) as DataView
 
-      // 创建应用级根上下文（capabilities / children markRaw：不需要响应式）
-      const rootContext: ComponentContext = {
+      // 创建应用级根能力上下文
+      const rootContext: SparkCapabilityContext = {
         id: 'spark-root',
         type: 'spark-app',
-        children: markRaw([]),
-        state: {},
-        capabilities: markRaw(new Map<CapabilityName, unknown>())
+        capabilities: new Map<CapabilityName, unknown>()
       }
 
       // 注入到 Vue DI（使用类型安全的 InjectionKey）
       app.provide(SPARK_REGISTRY_KEY, registry)
-      app.provide(SPARK_PARENT_CONTEXT_KEY, rootContext)
+      app.provide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, rootContext)
     }
   }
 }

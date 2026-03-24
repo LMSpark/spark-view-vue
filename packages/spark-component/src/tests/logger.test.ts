@@ -14,8 +14,6 @@ describe('logger capability', () => {
     const ctx: ComponentContext = {
       id: 'ctx-logger',
       type: 'test',
-      children: [],
-      state: {},
       capabilities: new Map([['logger', loggerImpl]])
     }
 
@@ -37,8 +35,6 @@ describe('logger capability', () => {
     const ctx: ComponentContext = {
       id: 'ctx-1',
       type: 'test',
-      children: [],
-      state: {},
       capabilities: new Map([['logger', loggerImpl]])
     }
 

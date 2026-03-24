@@ -11,11 +11,11 @@
  * @module spark
  */
 
-import { defineAsyncComponent, markRaw } from 'vue'
+import { defineAsyncComponent } from 'vue'
 import type { CapabilityName } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry.js'
 import { createSparkPlugin } from './plugin.js'
-import type { ComponentContext, ComponentRegistry, SparkNode } from './types.js'
+import type { SparkCapabilityContext, ComponentRegistry, SparkNode } from './types.js'
 import { nodeId, nodeDock, nodeOrder, getDockedChildren, DEFAULT_DOCK, SPARK_NODE_STRUCT_KEYS } from './types.js'
 
 /* -------------------------------------------------------------------------- */
@@ -37,8 +37,8 @@ export interface RegisterContext {
 /** Spark.createSystem() 返回的隔离测试系统 */
 export interface SparkSystem {
   registry: ComponentRegistry
-  rootContext: ComponentContext
-  createContext(config: Partial<ComponentContext> & { type: string }, parent?: ComponentContext): ComponentContext
+  rootContext: SparkCapabilityContext
+  createContext(config: Partial<SparkCapabilityContext> & { type: string }, parent?: SparkCapabilityContext): SparkCapabilityContext
 }
 
 /* -------------------------------------------------------------------------- */
@@ -150,30 +150,23 @@ export const Spark = {
     const registry = createComponentRegistry()
     let _testCounter = 0
 
-    const rootContext: ComponentContext = {
+    const rootContext: SparkCapabilityContext = {
       id: 'test-root',
       type: 'spark-test-root',
-      children: markRaw([]),
-      state: {},
-      capabilities: markRaw(new Map<CapabilityName, unknown>())
+      capabilities: new Map<CapabilityName, unknown>()
     }
 
     return {
       registry,
       rootContext,
-      createContext(config: Partial<ComponentContext> & { type: string }, parent?: ComponentContext): ComponentContext {
+      createContext(config: Partial<SparkCapabilityContext> & { type: string }, parent?: SparkCapabilityContext): SparkCapabilityContext {
         const parentCtx = parent ?? rootContext
-        const ctx: ComponentContext = {
+        const ctx: SparkCapabilityContext = {
           id: config.id ?? `test-${++_testCounter}`,
           type: config.type,
           parent: parentCtx,
-          children: markRaw([] as ComponentContext[]),
-          props: config.props ?? {},
-          state: {},
-          capabilities: markRaw(new Map<CapabilityName, unknown>())
+          capabilities: new Map<CapabilityName, unknown>()
         }
-        parentCtx.children ??= markRaw([])
-        parentCtx.children.push(ctx)
         return ctx
       }
     }

@@ -13,8 +13,6 @@ describe('logger level filtering', () => {
     const ctx: ComponentContext = {
       id: 'ctx-level',
       type: 'test',
-      children: [],
-      state: {},
       capabilities: new Map([['logger', loggerImpl]])
     }
 

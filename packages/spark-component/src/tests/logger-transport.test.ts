@@ -14,8 +14,6 @@ describe('file transport (replaced by custom provider test)', () => {
     const ctx: ComponentContext = {
       id: 'ctx-transport',
       type: 'test',
-      children: [],
-      state: {},
       capabilities: new Map([['logger', loggerImpl]])
     }
 
