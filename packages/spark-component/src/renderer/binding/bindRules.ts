@@ -12,7 +12,7 @@
  *  - el-pagination   → bind-pagination-delegate（分页双向绑定）
  *  - 值型表单组件    → bind-form-delegate（选项映射 + 值绑定）
  *  - 权限渲染        → bind-permission-delegate（跨组件统一：按钮 / 列 / 字段级）
- *  - r-* 自定义组件  → 透传 dataKey 到 props（组件自行 consume 处理）
+ *  - r-* 自定义组件  → 透传 dataKey 到 props（组件自行 sparkConsume 处理）
  *
  * 上下文传递：
  *  每层递归维护 BindingContext（父组件类型 / DataSource / 字段名 / 模型权限），
@@ -77,7 +77,7 @@ function resolveRenderType(
  * 分发策略：
  * 1. 查询绑定注册表获取 bindingDelegate → 调用对应委托
  * 2. 无委托且非自解析 → bindGenericDataKey（通用回退）
- * 3. 自解析组件 → 跳过（组件自行 consume PAGE_DATASET）
+ * 3. 自解析组件 → 跳过（组件自行 sparkConsume PAGE_DATASET）
  *
  * 扩展：调用 registerBindingDescriptor('vxe-table', { bindingDelegate: 'table' })
  * 即可让新组件类型复用 el-table 的绑定逻辑，无需修改本函数。
@@ -173,7 +173,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
     }
 
     // ── r-* 自定义组件：透传 dataKey / field → props ──
-    // 容器组件（self-resolving）：透传 dataKey（组件自行 consume PAGE_DATASET 解析）
+    // 容器组件（self-resolving）：透传 dataKey（组件自行 sparkConsume PAGE_DATASET 解析）
     // 所有 r-* 组件：透传 field（字段名，与父组件 dataKey 叠加定位数据）
     const ruleType = newRule.type
     if (isSelfResolvingType(ruleType, registry)) {

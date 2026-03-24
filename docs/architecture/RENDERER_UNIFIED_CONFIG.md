@@ -592,20 +592,20 @@ SparkPlugin.install()
   └─ rootContext (空能力 Map)
       ↓
 PageRenderer (页面渲染器)
-  ├─ provide(APP_SERVICES, { router, logger })
-  ├─ provide(PAGE_SERVICE, pageUiService)
-  └─ provide(PAGE_DATASET, dataSet)
+  ├─ sparkProvide(APP_SERVICES, { router, logger })
+  ├─ sparkProvide(PAGE_SERVICE, pageUiService)
+  └─ sparkProvide(PAGE_DATASET, dataSet)
       ↓
 r-table / r-form / r-detail / r-tree / r-list
-  ├─ consume(PAGE_DATASET) → 解析 dataKey → DataView
-  ├─ provide(DATA_SOURCE, dataView)      ← 子组件数据源
-  ├─ provide(FIELD_CONTEXT, '容器类型')   ← 子组件渲染上下文
-  └─ provide(CONTEXT_DATA, reactive({})) ← 仅 form/detail
+  ├─ sparkConsume(PAGE_DATASET) → 解析 dataKey → DataView
+  ├─ sparkProvide(DATA_SOURCE, dataView)      ← 子组件数据源
+  ├─ sparkProvide(FIELD_CONTEXT, '容器类型')   ← 子组件渲染上下文
+  └─ sparkProvide(CONTEXT_DATA, reactive({})) ← 仅 form/detail
       ↓
 r-text / r-select / r-number / ...（字段组件）
-  ├─ consume(DATA_SOURCE)    → DataView（读取 rows/currentRow）
-  ├─ consume(FIELD_CONTEXT)  → 'table' | 'form' | 'detail'
-  └─ consume(CONTEXT_DATA)   → reactive formModel（form/detail 上下文）
+  ├─ sparkConsume(DATA_SOURCE)    → DataView（读取 rows/currentRow）
+  ├─ sparkConsume(FIELD_CONTEXT)  → 'table' | 'form' | 'detail'
+  └─ sparkConsume(CONTEXT_DATA)   → reactive formModel（form/detail 上下文）
 ```
 
 ### 6.2 字段组件四模式渲染

@@ -144,19 +144,21 @@ describe('MyComponent', () => {
 })
 ```
 
-### 方式 2：手动提供 DI Keys（逐层控制）
+### 方式 2：手动提供 registry + 显式 parentContext
 
 ```typescript
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
+import { SPARK_REGISTRY_KEY, Spark } from '@spark-view/spark-component'
 
 const { registry, rootContext } = Spark.createSystem()
 
 const wrapper = mount(MyComponent, {
-  props: { config: { type: 'my-component' } },
+  props: {
+    config: { type: 'my-component' },
+    parentContext: rootContext,
+  },
   global: {
     provide: {
       [SPARK_REGISTRY_KEY as symbol]: registry,
-      [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
     }
   }
 })
@@ -179,7 +181,6 @@ describe('Component Tree', () => {
     const childCtx = createContext({ type: 'child' }, parentCtx)
 
     expect(childCtx.parent).toBe(parentCtx)
-    expect(parentCtx.children).toContain(childCtx)
   })
 
   it('propagates capabilities from parent to deep descendants', () => {
@@ -275,8 +276,8 @@ it('useSparkComponent returns correct interface', () => {
     setup() {
       const result = useSparkComponent({ type: 'test' })
       // 验证返回值
-      expect(typeof result.consume).toBe('function')
-      expect(typeof result.provide).toBe('function')
+      expect(typeof result.sparkConsume).toBe('function')
+      expect(typeof result.sparkProvide).toBe('function')
       expect(typeof result.provideEvents).toBe('function')
       expect(typeof result.getProvider).toBe('function')
       expect(typeof result.consumeEvents).toBe('function')
@@ -299,7 +300,7 @@ it('useSparkComponent returns correct interface', () => {
 | 测试间状态泄漏 | 多个测试共用同一 `registry` | 每个 `describe` 块内 `const { registry } = Spark.createSystem()` |
 | 异步测试未 await | 忘记 `async/await` | `it('...', async () => { await ... })` |
 | EJ2 组件报错 | 真实 EJ2 在 jsdom 不可用 | `vi.mock('@syncfusion/ej2-vue-grids', ...)` |
-| `consume()` 返回 null | 正常延迟绑定，非错误 | 用可选链 `?.` 处理 |
+| `sparkConsume()` 返回 null | 正常延迟绑定，非错误 | 用可选链 `?.` 处理 |
 | `Spark.createComponentSystem` | **不存在** | 使用 `Spark.createSystem()` |
 
 ---

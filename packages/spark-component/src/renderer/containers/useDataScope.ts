@@ -21,8 +21,8 @@ interface UseDataScopeOptions {
 }
 
 interface UseDataScopeReturn {
-  sparkProvide: UseSparkComponentReturn['provide']
-  consume: UseSparkComponentReturn['consume']
+  sparkProvide: UseSparkComponentReturn['sparkProvide']
+  sparkConsume: UseSparkComponentReturn['sparkConsume']
   logger: UseSparkComponentReturn['logger']
 }
 
@@ -33,7 +33,7 @@ interface UseDataScopeReturn {
  * RendererFieldScope 共有的 sparkProvide(FIELD_CONTEXT / CONTEXT_DATA) 模式。
  *
  * DATA_SOURCE 由父容器（r-tree / r-table / r-list 等）在能力链上提供，
- * scope 组件不重复提供，子组件通过 consume(DATA_SOURCE) 沿链向上查找即可。
+ * scope 组件不重复提供，子组件通过 sparkConsume(DATA_SOURCE) 沿链向上查找即可。
  *
  * 使用方只需关心自身的 UI 包装（el-card / el-form / 裸 div），
  * 数据作用域注入由本 composable 统一处理。
@@ -41,7 +41,7 @@ interface UseDataScopeReturn {
 export function useDataScope(options: UseDataScopeOptions): UseDataScopeReturn {
   const { type, fieldContext, data, nodeConfig } = options
 
-  const { provide: sparkProvide, consume, logger } = useSparkComponent(
+  const { sparkProvide, sparkConsume, logger } = useSparkComponent(
     nodeConfig ?? { type }
   )
 
@@ -59,5 +59,5 @@ export function useDataScope(options: UseDataScopeOptions): UseDataScopeReturn {
     { immediate: true },
   )
 
-  return { sparkProvide, consume, logger }
+  return { sparkProvide, sparkConsume, logger }
 }

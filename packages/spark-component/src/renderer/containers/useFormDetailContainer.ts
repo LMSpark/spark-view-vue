@@ -59,10 +59,10 @@ export function useFormDetailContainer(
   const containerType = fieldContext === 'form' ? 'r-form' : 'r-detail'
   const logPrefix = fieldContext === 'form' ? 'RendererForm' : 'RendererDetail'
 
-  const { consume, provide: sparkProvide, logger, registerApi } = useSparkComponent(
+  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkComponent(
     { type: containerType }
   )
-  const pageDataSet = consume(PAGE_DATASET)
+  const pageDataSet = sparkConsume(PAGE_DATASET)
 
   const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
     dataKey: effectiveDataKey,

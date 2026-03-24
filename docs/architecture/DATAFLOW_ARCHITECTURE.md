@@ -8,18 +8,18 @@
 App / main.ts
   ↓  app.use(Spark.createPlugin())
 SparkPlugin
-  ↓  Vue DI: SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY
+  ↓  Vue DI: SPARK_REGISTRY_KEY, internal root capability context
 PageRenderer (SparkPageRenderer + useRendererSetup)
-  ↓  provide(APP_SERVICES, ...)    SPARK 能力系统
-  ↓  provide(PAGE_DATASET, ...)
+  ↓  sparkProvide(APP_SERVICES, ...)    SPARK 能力系统
+  ↓  sparkProvide(PAGE_DATASET, ...)
 Table容器 (e.g. r-table)
-  ↓  consume(PAGE_DATASET) → DataSet
+  ↓  sparkConsume(PAGE_DATASET) → DataSet
   ↓  resolveDataKeyBinding(config.dataKey, dataSet) → DataView
-  ↓  provide(DATA_SOURCE, dataView)
-  ↓  provide(SELECTION, ...)
+  ↓  sparkProvide(DATA_SOURCE, dataView)
+  ↓  sparkProvide(SELECTION, ...)
 Row组件 (e.g. r-row)
-  ↓  consume(DATA_SOURCE) → DataView
-  ↓  consume(SELECTION) → 选择状态
+  ↓  sparkConsume(DATA_SOURCE) → DataView
+  ↓  sparkConsume(SELECTION) → 选择状态
 ```
 
 ---
@@ -41,7 +41,7 @@ app.mount('#app')
 | 操作 | 注入键 | 内容 |
 |------|--------|------|
 | `app.provide(SPARK_REGISTRY_KEY, registry)` | Symbol | 组件注册表（全局单例）|
-| `app.provide(SPARK_PARENT_CONTEXT_KEY, rootContext)` | Symbol | 根上下文（capabilities Map 为空）|
+| `app.provide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, rootContext)` | Symbol | 根能力上下文（内部 DI）|
 
 > **注意**：`SparkPlugin` 不提供任何业务能力（如路由、logger）。这些由应用层的 `PageRenderer` 填充。
 
@@ -87,7 +87,7 @@ const dataSet = SparkData.createDataSet(pageConfig.dataset)
 provideCapability(PAGE_DATASET, dataSet)
 ```
 
-所有子组件都可通过 `consume(APP_SERVICES)` 和 `consume(PAGE_DATASET)` 获取这两个关键能力。
+所有子组件都可通过 `sparkConsume(APP_SERVICES)` 和 `sparkConsume(PAGE_DATASET)` 获取这两个关键能力。
 
 ---
 
@@ -173,18 +173,18 @@ parentView.events.on('stateChanged', (event) => {
 
 ```typescript
 // RendererTable.vue setup（简化）
-const { consume, provide } = useSparkComponent(props.config)
+const { sparkConsume, sparkProvide } = useSparkComponent(props.config)
 
 // 消费页面级 DataSet
-const dataSet = consume(PAGE_DATASET)
+const dataSet = sparkConsume(PAGE_DATASET)
 
 // 解析 dataKey → DataView
 const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
 const dataView = binding?.kind === 'view' ? binding.source : null
 
 // 向子组件提供数据源和选择能力
-provide(DATA_SOURCE, dataView)
-provide(SELECTION, {
+sparkProvide(DATA_SOURCE, dataView)
+sparkProvide(SELECTION, {
   getSelected: () => dataView?.selectedRows ?? [],
   setSelected: (rows) => { if (dataView) dataView.selectedRows = rows }
 })
@@ -216,7 +216,7 @@ r-row 或 r-cell context
   capabilities = Map { }      ← 叶节点，向上 lookup
 ```
 
-`consume(KEY)` 沿 `parent` 链向上查找，直到根节点。返回 `null` 是正常情况（延迟绑定），不是错误。
+`sparkConsume(KEY)` 沿 `parent` 链向上查找，直到根节点。返回 `null` 是正常情况（延迟绑定），不是错误。
 
 ---
 
@@ -231,7 +231,7 @@ r-row 或 r-cell context
 | `DATA_SOURCE` | `spark-component` | `IDataSource` | 表容器 | 行/单元格 |
 
 > `LOGGER` 的优先级由 `useSparkComponent` 内部处理：  
-> `lookup(ctx, LOGGER)` → `lookup(ctx, APP_SERVICES).logger` → `fallback console`
+> `sparkConsume(ctx, LOGGER)` → `sparkConsume(ctx, APP_SERVICES).logger` → `fallback console`
 
 ---
 
@@ -241,11 +241,11 @@ r-row 或 r-cell context
 import { LOGGER, APP_SERVICES } from '@spark-view/spark-utils'
 
 // 覆盖子树 logger（如需自定义日志行为）
-const { provide } = useSparkComponent(props.config)
-provide(LOGGER, myCustomLogger)
+const { sparkProvide } = useSparkComponent(props.config)
+sparkProvide(LOGGER, myCustomLogger)
 
 // 应用层统一 logger（PageRenderer 已自动注入）
-provide(APP_SERVICES, { logger: appLogger, router })
+sparkProvide(APP_SERVICES, { logger: appLogger, router })
 ```
 
 每个组件调用 `logger.info()` 时，`useSparkComponent` 内部的代理会自动解析优先级最高的可用 logger，无需手动消费。
@@ -257,9 +257,9 @@ provide(APP_SERVICES, { logger: appLogger, router })
 | 机制 | 实现 | 用途 |
 |------|------|------|
 | **SPARK 能力系统** | `ctx.capabilities` Map + `lookup()` 向上查找 | 所有业务能力 |
-| **Vue DI（仅基础设施）** | `app.provide()` / `inject()` | 仅 `SPARK_REGISTRY_KEY`（注册表）和 `SPARK_PARENT_CONTEXT_KEY`（根上下文） |
+| **Vue DI（仅基础设施）** | `app.provide()` / `inject()` | 仅 `SPARK_REGISTRY_KEY`（注册表）和内部根能力上下文 |
 
-`useSparkComponent` 的 `provide()` / `consume()` 是 SPARK 能力系统，**不是** Vue 的 `provide/inject`。
+`useSparkComponent` 的 `sparkProvide()` / `sparkConsume()` 是 SPARK 能力系统，**不是** Vue 的 `provide/inject`。
 
 ---
 
@@ -275,7 +275,7 @@ sequenceDiagram
   App->>Page: 路由导航
   Page->>Page: loadPageConfig()
   Page->>DS: SparkData.createDataSet(config.dataset)
-  Page->>Page: provide(PAGE_DATASET, dataSet)
+  Page->>Page: sparkProvide(PAGE_DATASET, dataSet)
   Page->>DV: dataView.requestData()
   DV->>DV: requestState = Preparing
   DV->>DV: loadFromServer()

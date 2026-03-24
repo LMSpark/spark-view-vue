@@ -57,17 +57,17 @@ app.use(Spark.createPlugin())
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 
-const { provide, consume } = useSparkComponent({
+const { sparkProvide, sparkConsume } = useSparkComponent({
   type: 'my-grid'
 })
 
 // 提供能力（必须在 setup 同步阶段调用）
-provide('dataSource', {
+sparkProvide('dataSource', {
   getData: () => fetchData()
 })
 
 // 消费能力（必须在 setup 同步阶段调用）
-const logger = consume('logger')
+const logger = sparkConsume('logger')
 </script>
 ```
 
@@ -79,14 +79,14 @@ const logger = consume('logger')
 
 ```typescript
 // Provider 提供能力（setup 同步阶段）
-provide('columnManager', {
+sparkProvide('columnManager', {
   addColumn: (col) => columns.value.push(col),
   removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id)
 })
 
 // Consumer 消费能力（setup 同步阶段）
-const columnManager = consume('columnManager')
-// ⚠️ provide/consume 必须在 setup() 同步阶段调用，不要在 onMounted/watch/async 中使用
+const columnManager = sparkConsume('columnManager')
+// ⚠️ sparkProvide/sparkConsume 必须在 setup() 同步阶段调用，不要在 onMounted/watch/async 中使用
 ```
 
 ### 命名空间 API

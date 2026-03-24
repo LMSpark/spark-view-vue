@@ -23,16 +23,16 @@ interface UseFieldPermissionOptions<TValue> {
 export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TValue>) {
   const { props, fallbackValue, formatDisplay } = options
   const permissionChecker = createPermissionChecker()
-  // 轻量消费器——字段组件只需 consume，无需创建 ComponentContext
-  const { consume } = useSparkConsume()
+  // 轻量消费器——字段组件只需 sparkConsume，无需创建 ComponentContext
+  const { sparkConsume } = useSparkConsume()
 
   const fieldName = computed(() => props.field ?? '')
   const displayLabel = computed(() => props.label ?? fieldName.value)
-  const rawContext = consume(FIELD_CONTEXT)
+  const rawContext = sparkConsume(FIELD_CONTEXT)
   const context = rawContext ?? 'detail'
-  const contextData = consume(CONTEXT_DATA)
-  const pageService = consume(PAGE_SERVICE)
-  const dataSource = consume(DATA_SOURCE)
+  const contextData = sparkConsume(CONTEXT_DATA)
+  const pageService = sparkConsume(PAGE_SERVICE)
+  const dataSource = sparkConsume(DATA_SOURCE)
 
   // 从 DataView.columns 提取当前字段的验证规则
   const validationRules = computed<FormItemRule[]>(() => {

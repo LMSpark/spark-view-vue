@@ -344,7 +344,7 @@ async function fetchConfig(pageId: string): Promise<PageConfig> {
  *
  * 时序：
  * 1. rules / CSS 写入 → 脚本编译 → Render* 注册
- * 2. DataSet 初始化 → provide(PAGE_DATASET)
+ * 2. DataSet 初始化 → sparkProvide(PAGE_DATASET)
  * 3. loading=false → SparkComponentRenderer 挂载
  * 4. nextTick 后执行 __init__ + initAutoSelection
  */

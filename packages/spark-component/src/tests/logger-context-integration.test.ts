@@ -47,10 +47,10 @@ describe('Logger Context Integration', () => {
     
     const TestComponent = defineComponent({
       setup() {
-        const { context, logger, provide } = useSparkComponent({ type: 'test-comp' })
+        const { context, logger, sparkProvide } = useSparkComponent({ type: 'test-comp' })
         
         // 使用 LOGGER Symbol 提供自定义 logger（能力系统使用 Symbol key，非字符串）
-        provide(LOGGER, customLogger)
+        sparkProvide(LOGGER, customLogger)
         
         // 等待下一个 tick 确保 provider 注册完成
         nextTick(() => {
@@ -99,10 +99,10 @@ describe('Logger Context Integration', () => {
     const ParentComponent = defineComponent({
       name: 'ParentComponent',
       setup() {
-        const { context, logger, provide } = useSparkComponent({ type: 'parent-comp' })
+        const { context, logger, sparkProvide } = useSparkComponent({ type: 'parent-comp' })
         
         // 父组件使用 LOGGER Symbol 提供自定义 logger
-        provide(LOGGER, customLogger)
+        sparkProvide(LOGGER, customLogger)
         
         logger.info('parent message')
         
@@ -140,13 +140,13 @@ describe('Logger Context Integration', () => {
     
     const TestComponent = defineComponent({
       setup() {
-        const { context, logger, provide } = useSparkComponent({ type: 'test-comp' })
+        const { context, logger, sparkProvide } = useSparkComponent({ type: 'test-comp' })
         
         // 第一次调用：使用默认 logger
         logger.info('before custom')
         
         // 使用 LOGGER Symbol 提供自定义 logger
-        provide(LOGGER, customLogger)
+        sparkProvide(LOGGER, customLogger)
         
         // 第二次调用：应该使用自定义 logger
         nextTick(() => {
@@ -186,10 +186,10 @@ describe('Logger Context Integration', () => {
     
     const TestComponent = defineComponent({
       setup() {
-        const { logger, provide } = useSparkComponent({ type: 'test-comp' })
+        const { logger, sparkProvide } = useSparkComponent({ type: 'test-comp' })
         
         // 使用 LOGGER Symbol 提供自定义 logger
-        provide(LOGGER, customLogger)
+        sparkProvide(LOGGER, customLogger)
         
         nextTick(() => {
           logger.info('with provider structure')

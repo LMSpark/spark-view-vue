@@ -204,7 +204,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // 示例代码：
     // ```typescript
     // // 在组件中获取服务（推荐方式）
-    // const { consume } = useSparkComponent({ type: 'my-component' })
+    // const { sparkConsume } = useSparkComponent({ type: 'my-component' })
     // const services = consume(APP_SERVICES)  // 获取 router/logger/auth
     // services?.router?.push('/home')
     //

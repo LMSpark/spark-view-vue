@@ -175,10 +175,10 @@ const mergedChildren = computed<SparkNode[]>(() => {
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
-const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
   { type: 'r-list' }
 )
-const pageDataSet = consume(PAGE_DATASET)
+const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,

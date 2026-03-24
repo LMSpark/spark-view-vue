@@ -62,19 +62,19 @@ reg.registerAll({ 'my-comp': './MyComp.vue' })
 children.map(c => ({ ...c, props: { user } }))
 
 // ✅ 正确：父级提供能力，子级消费能力自取数据
-provide(DATA_SOURCE, { get rows() { return allRows.value } })
-// 子级：const row = consume(DATA_SOURCE)?.rows?.find(r => r.id === rowId)
+sparkProvide(DATA_SOURCE, { get rows() { return allRows.value } })
+// 子级：const row = sparkConsume(DATA_SOURCE)?.rows?.find(r => r.id === rowId)
 ```
 
 #### ② 父级主动提供能力，子级被动消费
 
 ```ts
-// 父级（容器）—— 无条件 provide，不关心谁会消费
-provide(FIELD_CONTEXT, 'table')
-provide(DATA_SOURCE, dataView)
+// 父级（容器）—— 无条件 sparkProvide，不关心谁会消费
+sparkProvide(FIELD_CONTEXT, 'table')
+sparkProvide(DATA_SOURCE, dataView)
 
-// 子级（字段 / 行）—— consume 返回 null 是正常情况，做好防空
-const sel = consume(SELECTION)   // T | null，late-binding
+// 子级（字段 / 行）—— sparkConsume 返回 null 是正常情况，做好防空
+const sel = sparkConsume(SELECTION)   // T | null，late-binding
 ```
 
 #### ③ 组件组依赖配置，通过 config.children 驱动子树
@@ -144,15 +144,15 @@ const props = defineProps<Props>()
 // 1. SPARK 上下文（setup 第一行）
 const {
   isVisible, isDisabled,
-  provide, provideEvents, consume,
+  sparkProvide, provideEvents, sparkConsume,
   logger
 } = useSparkComponent(props.config)
 
 // 2. 消费上游能力
-const pageDataSet = consume(PAGE_DATASET)
+const pageDataSet = sparkConsume(PAGE_DATASET)
 
 // 3. 主动 provide 能力（父级无条件提供，不关心谁消费）
-provide(DATA_SOURCE, dataView)
+sparkProvide(DATA_SOURCE, dataView)
 </script>
 ```
 
@@ -172,10 +172,10 @@ import { DATA_SOURCE } from '@spark-view/spark-data'
 interface Props { config: SparkNode }
 const props = defineProps<Props>()
 
-const { isVisible, consume, logger } = useSparkComponent(props.config)
+const { isVisible, sparkConsume, logger } = useSparkComponent(props.config)
 
-// consume 返回 null 是正常 late-binding，做好防空
-const dataSource = consume(DATA_SOURCE)   // null | IDataSource
+// sparkConsume 返回 null 是正常 late-binding，做好防空
+const dataSource = sparkConsume(DATA_SOURCE)   // null | IDataSource
 
 // 按 rowId 从 dataSource 自取本行数据
 const rowId = computed(() => props.config.props?.['rowId'] as string | number | undefined)
@@ -200,14 +200,14 @@ const displayValue = computed(() => row.value?.[field.value])
 | `PAGE_DATASET` | spark-data | `IDataSet` | PageRenderer |
 | `DATA_SOURCE` | spark-data | `IDataSource` | 容器组件 |
 
-内置能力键同时支持 **Symbol 键**（`import { DATA_SOURCE }`）和 **字符串键**（`consume('spark:capability:data-source')`）两种形式，等价互通。
+内置能力键同时支持 **Symbol 键**（`import { DATA_SOURCE }`）和 **字符串键**（`sparkConsume('spark:capability:data-source')`）两种形式，等价互通。
 
 自定义能力（两种方式）：
 ```ts
 // 方式一：Symbol 键（适合跨包共享）
 export const MY_CAP = defineCapability<{ doSomething(): void }>('app:my-capability')
 // 平时就能用，需导入 symbol
-consume(MY_CAP)  // { doSomething(): void } | null
+sparkConsume(MY_CAP)  // { doSomething(): void } | null
 
 // 方式二：字符串键 + CapabilityTypeMap（推荐，可扩展）
 // 在项目自己的 capability-keys.ts 中
@@ -217,7 +217,7 @@ declare module '@spark-view/spark-utils' {
   }
 }
 // 扩展后可直接用字符串，无需导入 symbol
-consume('app:my-capability')  // { doSomething(): void } | null（类型自动推断）
+sparkConsume('app:my-capability')  // { doSomething(): void } | null（类型自动推断）
 ```
 
 ---
@@ -241,7 +241,7 @@ if (effectiveDataKey.value && pageDataSet) {
   const dk = parseDataKey(effectiveDataKey.value)
   if (dk) {
     const view = pageDataSet.getView(dk.tableName, dk.viewId)
-    if (view) provide(DATA_SOURCE, view)
+    if (view) sparkProvide(DATA_SOURCE, view)
   }
 }
 ```
@@ -303,7 +303,7 @@ reg.registerAll({
 
 ```ts
 import { mount, flushPromises } from '@vue/test-utils'
-import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
+import { Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 import MyContainer from '../src/components/MyContainer.vue'
 
 const { registry, rootContext } = Spark.createSystem()
@@ -319,11 +319,10 @@ it('should provide DATA_SOURCE to children', async () => {
   }
 
   const wrapper = mount(MyContainer, {
-    props: { config },
+    props: { config, parentContext: rootContext },
     global: {
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
-        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext,
       }
     }
   })
@@ -345,7 +344,7 @@ it('should provide DATA_SOURCE to children', async () => {
 - [ ] 子级通过 `consume` 取能力，用 `rowId` 自查数据
 - [ ] 模板使用 `SparkComponentRenderer` 递归渲染 `config.children`
 - [ ] 保留 `<slot v-else />` 向后兼容模板驱动用法
-- [ ] `consume()` 返回值做防空（`T | null`）
+- [ ] `sparkConsume()` 返回值做防空（`T | null`）
 - [ ] `isVisible` / `isDisabled` 绑定到根元素
 - [ ] 注册文件使用 `Spark.createRegister(glob).registerAll({...})`
 - [ ] 测试使用 `flushPromises()` 等待异步组件

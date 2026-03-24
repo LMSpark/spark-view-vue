@@ -140,7 +140,17 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
-    pageLogger.debug('加载页面样式', { pageId, source: this.opts.source })
+    return this.loadCssInternal(pageId, true)
+  }
+
+  async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+    return this.loadScriptInternal(pageId, true)
+  }
+
+  private async loadCssInternal(pageId: string, logStart: boolean): Promise<ConfigLoadResult<PageCssConfig>> {
+    if (logStart) {
+      pageLogger.debug('加载页面样式', { pageId, source: this.opts.source })
+    }
 
     if (this.opts.source === 'local') {
       return this.localCssResult(pageId)
@@ -156,8 +166,10 @@ export class PageConfigLoader implements ConfigLoader {
     }
   }
 
-  async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
-    pageLogger.debug('加载页面脚本', { pageId, source: this.opts.source })
+  private async loadScriptInternal(pageId: string, logStart: boolean): Promise<ConfigLoadResult<PageScriptConfig>> {
+    if (logStart) {
+      pageLogger.debug('加载页面脚本', { pageId, source: this.opts.source })
+    }
 
     if (this.opts.source === 'local') {
       return this.localScriptResult(pageId)
@@ -185,9 +197,17 @@ export class PageConfigLoader implements ConfigLoader {
 
     // 可选文件并行加载（script / css 缺失时会返回 success + 空字符串）
     const [scriptResult, cssResult] = await Promise.all([
-      this.loadScript(pageId),
-      this.loadCss(pageId)
+      this.loadScriptInternal(pageId, false),
+      this.loadCssInternal(pageId, false)
     ])
+
+    pageLogger.debug('页面附加资源加载完成', {
+      pageId,
+      hasScript: Boolean(scriptResult.data),
+      scriptSize: scriptResult.data?.length ?? 0,
+      hasCss: Boolean(cssResult.data),
+      cssSize: cssResult.data?.length ?? 0,
+    })
 
     const rules = ruleResult.data ?? []
 
@@ -319,7 +339,6 @@ export class PageConfigLoader implements ConfigLoader {
   private async localScriptResult(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
     const r = await this.scriptLoader.load(`/${pageId}/script.js`)
     if (!r.success) pageLogger.debug('页面无脚本文件，跳过', { pageId })
-    else pageLogger.debug('本地脚本加载成功', { pageId, size: r.data?.length ?? 0 })
     return this.toLocalTextResult(r)
   }
 
@@ -331,7 +350,6 @@ export class PageConfigLoader implements ConfigLoader {
   private async localCssResult(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
     const r = await this.cssLoader.load(`/${pageId}/style.css`)
     if (!r.success) pageLogger.debug('页面无样式文件，跳过', { pageId })
-    else pageLogger.debug('本地样式加载成功', { pageId, size: r.data?.length ?? 0 })
     return this.toLocalTextResult(r)
   }
 
@@ -342,7 +360,6 @@ export class PageConfigLoader implements ConfigLoader {
 
     try {
       const text = await this.request.get<string>(url, undefined, { responseType: 'text' })
-      pageLogger.debug('远程脚本加载成功', { pageId, size: text.length })
       return text
     } catch (err) {
       const msg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
@@ -358,7 +375,6 @@ export class PageConfigLoader implements ConfigLoader {
 
     try {
       const text = await this.request.get<string>(url, undefined, { responseType: 'text' })
-      pageLogger.debug('远程样式加载成功', { pageId, size: text.length })
       return text
     } catch (err) {
       const msg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)

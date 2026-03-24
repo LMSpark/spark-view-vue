@@ -2,7 +2,7 @@
  * 能力系统集成测试
  * 
  * 验证 SPARK 能力系统的核心功能：
- * - Symbol-based CapabilityKey 的 provide/consume 流程
+ * - Symbol-based CapabilityKey 的 sparkProvide/sparkConsume 流程
  * - 能力符号与接口的配对使用
  * - useSparkComponent 返回值完整性（无 use 别名）
  * - AppServicesCapability 结构验证
@@ -11,7 +11,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { Spark, useSparkComponent } from '@spark-view/spark-component'
+import { Spark, useSparkComponent, useSparkConsume } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE, defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
@@ -32,8 +32,8 @@ describe('Capability system integration', () => {
       const TestComp = defineComponent({
         setup() {
           const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
-          // 验证返回值包含 consume 但不包含 use
-          expect(typeof result.consume).toBe('function')
+          // 验证返回值包含 sparkConsume 但不包含 use
+          expect(typeof result.sparkConsume).toBe('function')
           expect('use' in result).toBe(false)
           return () => h('div')
         }
@@ -53,16 +53,18 @@ describe('Capability system integration', () => {
 
           // 核心状态
           expect(result.context).toBeDefined()
+          expect(result.parentContext).toBeDefined()
+          expect(result.parentType).toBe('spark-app')
           expect(result.isVisible).toBeDefined()
           expect(result.isDisabled).toBeDefined()
 
           // 能力提供
-          expect(typeof result.provide).toBe('function')
+          expect(typeof result.sparkProvide).toBe('function')
           expect(typeof result.provideEvents).toBe('function')
           expect(typeof result.getProvider).toBe('function')
 
           // 能力消费
-          expect(typeof result.consume).toBe('function')
+          expect(typeof result.sparkConsume).toBe('function')
           expect(typeof result.consumeEvents).toBe('function')
 
           // 生命周期
@@ -82,9 +84,33 @@ describe('Capability system integration', () => {
         global: { plugins: [plugin] }
       })
     })
+
+    it('exposes parent context and type through useSparkConsume', () => {
+      const { plugin } = createTestPlugin()
+
+      const ChildComp = defineComponent({
+        setup() {
+          const result = useSparkConsume()
+          expect(result.parentContext).toBeDefined()
+          expect(result.parentType).toBe('parent-comp')
+          return () => h('span')
+        }
+      })
+
+      const ParentComp = defineComponent({
+        setup() {
+          useSparkComponent({ type: 'parent-comp' } as SparkNode)
+          return () => h(ChildComp)
+        }
+      })
+
+      mount(ParentComp, {
+        global: { plugins: [plugin] }
+      })
+    })
   })
 
-  describe('Symbol-based provide/consume', () => {
+  describe('Symbol-based sparkProvide/sparkConsume', () => {
     it('provides and consumes with CapabilityKey via createSystem', () => {
       const { createContext, rootContext } = Spark.createSystem()
 

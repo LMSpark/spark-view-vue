@@ -36,11 +36,11 @@ function mountWithFieldContext(
 ) {
   const Provider = defineComponent({
     setup() {
-      const { provide } = useSparkComponent({ type: 'test-provider' }, { parentContext: rootContext })
-      provide(FIELD_CONTEXT, 'form')
-      provide(CONTEXT_DATA, model)
+      const { sparkProvide } = useSparkComponent({ type: 'test-provider' }, { parentContext: rootContext })
+      sparkProvide(FIELD_CONTEXT, 'form')
+      sparkProvide(CONTEXT_DATA, model)
       if (pageService) {
-        provide(PAGE_SERVICE, pageService)
+        sparkProvide(PAGE_SERVICE, pageService)
       }
       return () => h(component as never, { field: 'content', ...componentProps })
     },

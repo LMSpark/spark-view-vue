@@ -101,16 +101,16 @@ import { defineCapability } from '@spark-view/spark-utils'
 export const GRID_SELECTION = defineCapability<SelectionApi>('grid-selection')
 
 // 提供能力
-const { provide } = useSparkComponent(props.config)
-provide(GRID_SELECTION, {
+const { sparkProvide } = useSparkComponent(props.config)
+sparkProvide(GRID_SELECTION, {
   getSelectedRows: () => selectedRows.value,
   selectAll: () => { /* ... */ },
   clearSelection: () => selectedRows.value = []
 })
 
 // 消费能力
-const { consume } = useSparkComponent(props.config)
-const selection = consume(GRID_SELECTION)
+const { sparkConsume } = useSparkComponent(props.config)
+const selection = sparkConsume(GRID_SELECTION)
 ```
 
 ### 4. 数据管理
@@ -506,8 +506,8 @@ const { provide, consume, logger } = useSparkComponent({
 })
 
 // 提供能力（推荐使用 defineCapability 定义类型安全的能力键）
-provide(LOGGER, myCustomLogger)  // LOGGER 加 SPARK 能力键
-// logger 已由 useSparkComponent 自动解析，无需手动 consume
+sparkProvide(LOGGER, myCustomLogger)  // LOGGER 加 SPARK 能力键
+// logger 已由 useSparkComponent 自动解析，无需手动 sparkConsume
 </script>
 ```
 
@@ -640,8 +640,8 @@ logger.error('出错了', error)
 import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES } from '@spark-view/spark-utils'
 
-const { consume } = useSparkComponent({ type: 'my-comp' })
-const services = consume(APP_SERVICES)
+const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
+const services = sparkConsume(APP_SERVICES)
 
 services?.router?.push('/home')
 services?.logger?.info('Action')
@@ -657,11 +657,11 @@ import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES } from '@spark-view/spark-utils'
 import { useRouter } from 'vue-router'
 
-const { provide } = useSparkComponent({ type: 'root' })
+const { sparkProvide } = useSparkComponent({ type: 'root' })
 const appLogger = createLogger('App')
 const router = useRouter()
 
-provide(APP_SERVICES, {
+sparkProvide(APP_SERVICES, {
   router: { push: (to) => router.push(to), replace: (to) => router.replace(to), back: () => router.back() },
   logger: appLogger
 })
@@ -672,7 +672,7 @@ provide(APP_SERVICES, {
 |------|----------|
 | 路由访问 | `useRouter()` from `vue-router` |
 | 日志记录 | `Logger('module')` from `@spark-view/spark-utils` |
-| 组件内服务 | `consume(APP_SERVICES)` |
+| 组件内服务 | `sparkConsume(APP_SERVICES)` |
 | 组件注册表 | `useSparkRegistry()` |
 
 ---

@@ -51,7 +51,7 @@ export interface ComponentBindingDescriptor {
    * dataKey 自解析标记
    *
    * 自解析组件（r-table / r-form 等）：bindRules 透传 dataKey 到 props，
-   * 组件自行 consume(PAGE_DATASET) 解析。
+  * 组件自行 sparkConsume(PAGE_DATASET) 解析。
    *
    * @see ComponentRegistry.meta.dataKey — 注册表 meta 优先级更高
    */

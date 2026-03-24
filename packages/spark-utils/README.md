@@ -31,14 +31,14 @@ import { useSparkComponent } from '@spark-view/spark-component'
 const USER_SERVICE = defineCapability<{ getUser(id: string): { id: string; name: string } }>('app:user-service')
 
 // 提供能力（在父组件 setup 中）
-const { provide: provideCapability } = useSparkComponent({ type: 'provider' })
-provideCapability(USER_SERVICE, {
+const { sparkProvide } = useSparkComponent({ type: 'provider' })
+sparkProvide(USER_SERVICE, {
   getUser: (id) => ({ id, name: 'User' })
 })
 
 // 消费能力（任意深度子组件 setup 中）
-const { consume } = useSparkComponent({ type: 'consumer' })
-const service = consume(USER_SERVICE)  // 类型自动推断，null 表示未找到
+const { sparkConsume } = useSparkComponent({ type: 'consumer' })
+const service = sparkConsume(USER_SERVICE)  // 类型自动推断，null 表示未找到
 service?.getUser('1')
 ```
 
@@ -72,11 +72,11 @@ const appLogger = createLogger('App', {
 
 // 在组件 setup 中通过 SPARK 能力系统提供
 import { LOGGER, APP_SERVICES } from '@spark-view/spark-utils'
-const { provide: provideCapability } = useSparkComponent({ type: 'app-root' })
+const { sparkProvide } = useSparkComponent({ type: 'app-root' })
 // 方式 1：直接覆盖 logger
-provideCapability(LOGGER, appLogger)
+sparkProvide(LOGGER, appLogger)
 // 方式 2：通过 APP_SERVICES 提供（推荐，同时提供 router 等）
-provideCapability(APP_SERVICES, { logger: appLogger, router: /* 路由实例 */ undefined })
+sparkProvide(APP_SERVICES, { logger: appLogger, router: /* 路由实例 */ undefined })
 ```
 
 **特性**:
@@ -88,7 +88,7 @@ provideCapability(APP_SERVICES, { logger: appLogger, router: /* 路由实例 */ 
 
 **推荐架构**：
 1. 应用层（main.ts）创建全局 logger 并配置传输器
-2. 通过 APP_SERVICES 或直接 provide('logger') 提供
+2. 通过 APP_SERVICES 或直接 sparkProvide('logger') 提供
 3. 组件通过 useSparkComponent 获取 logger
 4. 所有日志统一格式、统一管理
 

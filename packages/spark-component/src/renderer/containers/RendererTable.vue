@@ -323,13 +323,13 @@ const sparkChildren = computed(() => {
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
   { type: 'r-table' }
 )
 
-const pageDataSet = consume(PAGE_DATASET)
-const pageService = consume(PAGE_SERVICE)
-const moduleContext = useModuleContext(consume(MODULE_CONTEXT))
+const pageDataSet = sparkConsume(PAGE_DATASET)
+const pageService = sparkConsume(PAGE_SERVICE)
+const moduleContext = useModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,

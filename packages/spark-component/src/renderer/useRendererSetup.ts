@@ -38,8 +38,8 @@ import { createPageComponentRegistry } from './page/page-component-registry'
 interface RendererSetupReturn {
   /** Vue Router 实例（消费方如 buildPageService / resolvePageId 可能需要） */
   router: Router
-  /** SPARK 能力 provide 函数（含 CapabilityTypeMap 类型重载） */
-  provideCapability: UseSparkComponentReturn['provide']
+  /** SPARK 能力提供函数（含 CapabilityTypeMap 类型重载） */
+  provideCapability: UseSparkComponentReturn['sparkProvide']
   /** 是否正在加载 */
   loading: Ref<boolean>
   /** 加载失败的错误消息（空字符串表示无错误） */
@@ -79,7 +79,7 @@ export function useRendererSetup(
   // ── SPARK 能力上下文 ──
 
   const router = useRouter()
-  const { provide: provideCapability } = useSparkComponent({
+  const { sparkProvide: provideCapability } = useSparkComponent({
     type: componentType,
     props: { id: `${componentType}-root` },
   })

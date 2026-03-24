@@ -58,7 +58,7 @@
 /**
  * RendererTree - 树形容器组件
  *
- * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
+ * 内部通过 useSparkComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
 import { computed, ref, useAttrs, useSlots } from 'vue'
@@ -140,10 +140,10 @@ const nodeContentChildren = computed<SparkNode[]>(() => {
 })
 
 // 接入 SPARK 能力链
-const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
   { type: 'r-tree' }
 )
-const pageDataSet = consume(PAGE_DATASET)
+const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,

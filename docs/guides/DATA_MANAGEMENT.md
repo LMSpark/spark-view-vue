@@ -248,8 +248,8 @@ import { PAGE_DATASET } from '@spark-view/spark-component'
 import { useSparkComponent } from '@spark-view/spark-component'
 
 // 在渲染层组件中
-const { consume } = useSparkComponent(props.config)
-const dataSet = consume(PAGE_DATASET)
+const { sparkConsume } = useSparkComponent(props.config)
+const dataSet = sparkConsume(PAGE_DATASET)
 
 // 通过 DataKey 绑定解析（推荐方式）
 const binding = SparkData.resolveDataKeyBinding('UserManagement@Users@rows', dataSet)
@@ -341,7 +341,7 @@ const props = defineProps<{ config: UserGridConfig }>()
 const { consume, logger } = useSparkComponent(props.config)
 
 // 消费 DataSet
-const dataSet = consume(PAGE_DATASET)
+const dataSet = sparkConsume(PAGE_DATASET)
 
 // 通过 DataKey 解析 DataView
 const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)

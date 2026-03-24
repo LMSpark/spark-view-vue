@@ -6,7 +6,7 @@
  * SPARK 项目采用单一 DI 管道（管道 B - SPARK 能力系统）：
  * - ✅ 推荐：使用 APP_SERVICES 能力获取应用服务
  *   ```ts
- *   const { consume } = useSparkComponent({ type: 'my-comp' })
+ *   const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
  *   const services = consume(APP_SERVICES)
  *   services?.router?.push('/home')
  *   services?.logger?.info('Action')

@@ -127,8 +127,8 @@ export default {
     logger.info('组件初始化')
     
     // 方式 2：通过 APP_SERVICES 能力获取（组件内）
-    const { consume } = useSparkComponent({ type: 'my-comp' })
-    const services = consume(APP_SERVICES)
+    const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
+    const services = sparkConsume(APP_SERVICES)
     if (services) {
       services.router?.push('/home')
       services.logger?.info('Action')
@@ -212,7 +212,7 @@ const ErrorBoundary = createErrorBoundary((error) => {
 |------|------|------|
 | `useRouter()` from vue-router | 路由导航 | `const router = useRouter()` |
 | `Logger('module')` 工厂函数 | 日志记录 | `const logger = Logger('MyComponent')` |
-| `consume(APP_SERVICES)` | 应用服务能力 | `const services = consume(APP_SERVICES)` |
+| `sparkConsume(APP_SERVICES)` | 应用服务能力 | `const services = sparkConsume(APP_SERVICES)` |
 | `useSparkRegistry()` | 组件注册表 | `const registry = useSparkRegistry()` |
 
 ### 认证服务
@@ -279,8 +279,8 @@ const logger = Logger('MyComponent')
 // 使用 SPARK 能力系统
 import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES } from '@spark-view/spark-utils'
-const { consume } = useSparkComponent({ type: 'my-comp' })
-const services = consume(APP_SERVICES)
+const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
+const services = sparkConsume(APP_SERVICES)
 
 // 使用命名空间 API
 await SparkApp.start({ ... })

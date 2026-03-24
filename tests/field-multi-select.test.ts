@@ -50,9 +50,9 @@ function mountFieldMultiSelect(
 ) {
   const Provider = defineComponent({
     setup() {
-      const { provide } = useSparkComponent({ type: 'test-provider' }, { parentContext: rootContext })
-      provide(FIELD_CONTEXT, 'form')
-      provide(CONTEXT_DATA, model)
+      const { sparkProvide } = useSparkComponent({ type: 'test-provider' }, { parentContext: rootContext })
+      sparkProvide(FIELD_CONTEXT, 'form')
+      sparkProvide(CONTEXT_DATA, model)
       return () => h(FieldMultiSelect as never, {
         config: { type: 'r-multi-select', field: fieldName },
         ...componentProps,

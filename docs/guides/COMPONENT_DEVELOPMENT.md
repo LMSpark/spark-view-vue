@@ -129,10 +129,10 @@ const {
   isVisible,            // ComputedRef<boolean> — 基于 config.visible
   isDisabled,           // ComputedRef<boolean> — 基于 config.disabled
 
-  provide,              // (capabilityKey, impl) => void — 写入本组件能力
+  sparkProvide,         // (capabilityKey, impl) => void — 写入本组件能力
   provideEvents,        // (name?) => IEventEmitter — 提供事件总线
   getProvider,          // (capabilityKey) => unknown — 仅查本组件能力（不走 parent 链）
-  consume,              // <T>(capabilityKey) => T | null — 沿 parent 链向上查找
+  sparkConsume,         // <T>(capabilityKey) => T | null — 沿 parent 链向上查找
   consumeEvents,        // (name, handlers) => IEventEmitter | null — 消费并绑定事件
 
   initialize,           // () => void — onMounted 自动调用
@@ -148,9 +148,9 @@ const {
 
 | 规则 | 说明 |
 |------|------|
-| `consume()` 返回 `T \| null` | `null` 是正常情况（延迟绑定），不是错误 |
-| `provide()` / `consume()` 是 SPARK 能力系统 | ≠ Vue 的 `provide/inject` |
-| `logger` 自动解析 | 无需 `consume(LOGGER)`，代理自动查找最近祖先 |
+| `sparkConsume()` 返回 `T \| null` | `null` 是正常情况（延迟绑定），不是错误 |
+| `sparkProvide()` / `sparkConsume()` 是 SPARK 能力系统 | ≠ Vue 的 `provide/inject` |
+| `logger` 自动解析 | 无需 `sparkConsume(LOGGER)`，代理自动查找最近祖先 |
 | `initialize` / `destroy` 自动调用 | `onMounted` / `onUnmounted` 内自动触发 |
 
 ---
@@ -176,16 +176,16 @@ import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET } from '@spark-view/spark-component'
 
-const { consume } = useSparkComponent(props.config)
+const { sparkConsume } = useSparkComponent(props.config)
 
 // 路由跳转
-consume(APP_SERVICES)?.router?.push('/detail/1')
+sparkConsume(APP_SERVICES)?.router?.push('/detail/1')
 
 // 弹出确认框
-consume(PAGE_SERVICE)?.confirm('确认删除？').then(ok => { if (ok) doDelete() })
+sparkConsume(PAGE_SERVICE)?.confirm('确认删除？').then(ok => { if (ok) doDelete() })
 
 // 获取页面 DataSet
-const dataSet = consume(PAGE_DATASET)
+const dataSet = sparkConsume(PAGE_DATASET)
 ```
 
 ### 4.3 定义并提供自定义能力
@@ -205,10 +205,10 @@ export const MY_SEARCH = defineCapability<IMySearchCapability>('app:my-search')
 ```typescript
 // SearchBar.vue（Provider）
 import { MY_SEARCH } from './capability'
-const { provide } = useSparkComponent(props.config)
+const { sparkProvide } = useSparkComponent(props.config)
 const keyword = ref('')
 
-provide(MY_SEARCH, {
+sparkProvide(MY_SEARCH, {
   search: (kw) => { keyword.value = kw },
   getKeyword: () => keyword.value,
 })
@@ -217,8 +217,8 @@ provide(MY_SEARCH, {
 ```typescript
 // ResultList.vue（Consumer，任意深度子孙）
 import { MY_SEARCH } from './capability'
-const { consume } = useSparkComponent(props.config)
-const search = consume(MY_SEARCH)   // IMySearchCapability | null，类型自动推断
+const { sparkConsume } = useSparkComponent(props.config)
+const search = sparkConsume(MY_SEARCH)   // IMySearchCapability | null，类型自动推断
 
 function handleSearch() {
   search?.search('keyword')
@@ -228,11 +228,11 @@ function handleSearch() {
 ### 4.4 能力查找链示意
 
 ```
-APP (provide APP_SERVICES)
- └─ PageRenderer (provide PAGE_DATASET, PAGE_SERVICE)
-      └─ 容器组件   (provide DATA_SOURCE)
-           └─ 子组件 → consume(DATA_SOURCE) ✅ 向上找到容器组件
-                      → consume(APP_SERVICES) ✅ 向上找到 APP
+APP (sparkProvide APP_SERVICES)
+ └─ PageRenderer (sparkProvide PAGE_DATASET, PAGE_SERVICE)
+   └─ 容器组件   (sparkProvide DATA_SOURCE)
+     └─ 子组件 → sparkConsume(DATA_SOURCE) ✅ 向上找到容器组件
+          → sparkConsume(APP_SERVICES) ✅ 向上找到 APP
 ```
 
 ---
@@ -260,8 +260,8 @@ SPARK 以统一的 DataKey 字符串描述数据来源：
 import { PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 
-const { consume } = useSparkComponent(props.config)
-const dataSet = consume(PAGE_DATASET)
+const { sparkConsume } = useSparkComponent(props.config)
+const dataSet = sparkConsume(PAGE_DATASET)
 
 // resolveDataKeyBinding 返回判别联合（渲染层首选）
 const binding = props.config.dataKey
@@ -315,20 +315,20 @@ function handleCleared() {
 
 ### 5.4 提供 DATA_SOURCE（容器组件模式）
 
-容器组件（如表格）解析 DataKey 后将 `DataView` 向下提供，子组件通过 `consume(DATA_SOURCE)` 获取：
+容器组件（如表格）解析 DataKey 后将 `DataView` 向下提供，子组件通过 `sparkConsume(DATA_SOURCE)` 获取：
 
 ```typescript
 import { DATA_SOURCE, PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 
-const { provide, consume } = useSparkComponent(props.config)
+const { sparkProvide, sparkConsume } = useSparkComponent(props.config)
 
-const dataSet = consume(PAGE_DATASET)
+const dataSet = sparkConsume(PAGE_DATASET)
 const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
 const dataView = binding?.kind === 'view' ? binding.source : null
 
 if (dataView) {
-  provide(DATA_SOURCE, dataView)   // 子组件通过 consume(DATA_SOURCE) 获取
+  sparkProvide(DATA_SOURCE, dataView)   // 子组件通过 sparkConsume(DATA_SOURCE) 获取
 }
 ```
 
@@ -336,13 +336,13 @@ if (dataView) {
 
 ## 6. DataView 交互
 
-`IDataSource` 是 `DataView` 的公开接口，组件通过 `consume(DATA_SOURCE)` 获得它。
+`IDataSource` 是 `DataView` 的公开接口，组件通过 `sparkConsume(DATA_SOURCE)` 获得它。
 DataView 内部通过委托层（`SelectionDelegate` / `LocalMutationDelegate` / `CrudDelegate`）处理各类操作，组件无需感知委托细节，直接调用 `DataView` 的公开方法即可。
 
 ### 6.1 只读状态
 
 ```typescript
-const ds = consume(DATA_SOURCE)
+const ds = sparkConsume(DATA_SOURCE)
 
 const allRows    = ds?.rows              // IDataRow[]
 const total      = ds?.total            // 服务端总记录数
@@ -358,7 +358,7 @@ const err        = ds?.loadingError     // Error | null
 ### 6.2 选中状态管理
 
 ```typescript
-const ds = consume(DATA_SOURCE)
+const ds = sparkConsume(DATA_SOURCE)
 
 // 当前行
 ds?.setCurrentRow(row)
@@ -384,7 +384,7 @@ ds?.setCurrentRow(row, ctx)
 本地变更不触发网络请求，但会同步 `currentRow` / `selectedRows` 引用，并发射对应 `stateChanged` 事件：
 
 ```typescript
-const ds = consume(DATA_SOURCE)
+const ds = sparkConsume(DATA_SOURCE)
 
 ds?.appendRow({ id: 999, name: 'New Row' })        // 追加行
 ds?.updateRowById(1, { name: 'Updated Name' })     // returns boolean
@@ -446,7 +446,7 @@ consumeEvents(MY_EVENTS, {
 ### 7.3 手动管理生命周期
 
 ```typescript
-const gridEvents = consume(MY_EVENTS)
+const gridEvents = sparkConsume(MY_EVENTS)
 const onRowClick = (payload: RowClickPayload) => { /* ... */ }
 
 onMounted(() => gridEvents?.on('rowClick', onRowClick))
@@ -458,7 +458,7 @@ onUnmounted(() => gridEvents?.off('rowClick', onRowClick))
 ## 8. 日志与调试
 
 `useSparkComponent` 返回的 `logger` 自动按以下优先级解析：
-1. 最近祖先 `provide(LOGGER, impl)` 覆盖
+1. 最近祖先 `sparkProvide(LOGGER, impl)` 覆盖
 2. `APP_SERVICES.logger`（应用层统一提供）
 3. Fallback console
 
@@ -477,10 +477,10 @@ logger.error('请求失败', { error })
 import { LOGGER } from '@spark-view/spark-utils'
 import { createLogger } from '@spark-view/spark-app'
 
-const { provide } = useSparkComponent(props.config)
+const { sparkProvide } = useSparkComponent(props.config)
 
 // 提供后，所有子孙组件的 logger 将使用此实现
-provide(LOGGER, createLogger({ prefix: '[MySection]', level: 'warn' }))
+sparkProvide(LOGGER, createLogger({ prefix: '[MySection]', level: 'warn' }))
 ```
 
 ---
@@ -622,13 +622,13 @@ const pageSize = computed(() => props.config.pageSize ?? 20)
 
 ```typescript
 // ✅ 延迟绑定：在 onMounted 后使用
-onMounted(() => consume(COLUMN_MANAGER)?.addColumn({ id: props.id, field: props.field }))
+onMounted(() => sparkConsume(COLUMN_MANAGER)?.addColumn({ id: props.id, field: props.field }))
 
 // ✅ 空值安全：用 ?. 链式调用
-const rows = computed(() => consume(DATA_SOURCE)?.rows ?? [])
+const rows = computed(() => sparkConsume(DATA_SOURCE)?.rows ?? [])
 
 // ❌ 非空断言——可能为 null
-const mgr = consume(COLUMN_MANAGER)!   // 危险
+const mgr = sparkConsume(COLUMN_MANAGER)!   // 危险
 ```
 
 ### 11.4 行数据变更通过 DataView 方法（不要直接改 rows）
@@ -649,7 +649,7 @@ dataView.rows.splice(0, 1)                          // 禁止
 
 ```typescript
 // ✅ 通过能力系统通信
-consume(DATA_SOURCE)?.selectedRows
+sparkConsume(DATA_SOURCE)?.selectedRows
 
 // ❌ 通过 ref 直接耦合另一组件实例
 gridRef.value?.selectAll()
@@ -743,14 +743,14 @@ interface MasterGridConfig extends SparkNode {
 }
 
 const props = defineProps<{ config: MasterGridConfig }>()
-const { consume, provide, logger } = useSparkComponent(props.config)
+const { sparkConsume, sparkProvide, logger } = useSparkComponent(props.config)
 
-const dataSet = consume(PAGE_DATASET)
+const dataSet = sparkConsume(PAGE_DATASET)
 const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
 const ds = binding?.kind === 'view' ? binding.source : null
 
 // 向子组件提供数据源
-if (ds) provide(DATA_SOURCE, ds)
+if (ds) sparkProvide(DATA_SOURCE, ds)
 
 const rows = computed(() => ds?.rows ?? [])
 
@@ -779,9 +779,9 @@ interface DetailGridConfig extends SparkNode {
 }
 
 const props = defineProps<{ config: DetailGridConfig }>()
-const { consume } = useSparkComponent(props.config)
+const { sparkConsume } = useSparkComponent(props.config)
 
-const dataSet = consume(PAGE_DATASET)
+const dataSet = sparkConsume(PAGE_DATASET)
 const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
 const ds = binding?.kind === 'view' ? binding.source : null
 

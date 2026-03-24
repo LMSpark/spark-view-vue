@@ -1,7 +1,7 @@
 /**
  * useSparkComponent - SPARK 组件核心 Composable
  *
- * 提供组件上下文管理、能力系统（provide/consume）、事件系统和生命周期控制。
+ * 提供组件上下文管理、能力系统（sparkProvide/sparkConsume）、事件系统和生命周期控制。
  *
  * @module composables/useSparkComponent
  */
@@ -21,6 +21,10 @@ import type { PageComponentRegistry } from './capability-keys.js'
 export interface UseSparkComponentReturn {
   /** 纯能力上下文 */
   context: SparkCapabilityContext
+  /** 父能力上下文；子组件应优先通过该字段获取父级，而非直接读取 context.parent */
+  parentContext: SparkCapabilityContext | null
+  /** 父组件类型；无父级时为 null */
+  parentType: string | null
   /** 可见性（基于 config.visible，默认 true） */
   isVisible: { readonly value: boolean }
   /** 禁用状态（基于 config.disabled，默认 false） */
@@ -34,7 +38,7 @@ export interface UseSparkComponentReturn {
    * 2. `CapabilityKey<T>` 符号键 → 类型推断
    * 3. 任意 string | symbol → unknown（fallback）
    */
-  provide: {
+  sparkProvide: {
     <K extends keyof CapabilityTypeMap>(name: K, implementation: CapabilityTypeMap[K]): void
     <T>(name: CapabilityKey<T>, implementation: T): void
     (name: string | symbol, implementation?: unknown): void
@@ -54,10 +58,10 @@ export interface UseSparkComponentReturn {
    *
    * @example
    * // 按字符串名称消费，类型来自 CapabilityTypeMap declaration merging
-   * const svc = consume('spark:capability:app-services')
+  * const svc = sparkConsume('spark:capability:app-services')
    * // svc: IAppServicesCapability | null
    */
-  consume: {
+  sparkConsume: {
     <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
     <T>(name: CapabilityKey<T>): T | null
     (name: string | symbol): unknown
@@ -80,6 +84,23 @@ export interface UseSparkComponentReturn {
   registerApi: (api: unknown) => void
 }
 
+/** 父上下文轻量读取结果 */
+export interface UseSparkParentReturn {
+  /** 最近父级能力上下文 */
+  parentContext: SparkCapabilityContext | null
+  /** 最近父级的组件类型 */
+  parentType: string | null
+}
+
+/** 轻量消费器返回值 */
+export interface UseSparkConsumeReturn extends UseSparkParentReturn {
+  sparkConsume: {
+    <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
+    <T>(name: CapabilityKey<T>): T | null
+    (name: string | symbol): unknown
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -91,6 +112,20 @@ export interface UseSparkComponentReturn {
 /** 全局单调递增 ID 计数器，替代 Date.now()+random（更快、确定、SSR 友好） */
 let _idCounter = 0
 
+/**
+ * 统一读取最近父级能力上下文。
+ *
+ * 子组件若只需要父组件上下文 / 类型，应优先使用该 API，
+ * 而不是直接依赖 `useSparkComponent().context.parent` 的内部结构。
+ */
+export function useSparkParent(): UseSparkParentReturn {
+  const parentContext = inject(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, null)
+  return {
+    parentContext,
+    parentType: parentContext?.type ?? null,
+  }
+}
+
 export function useSparkComponent(
   fallbackConfig?: SparkNode,
   options?: {
@@ -101,8 +136,9 @@ export function useSparkComponent(
 
   // ── 依赖注入 ──
 
-  const injectedParentContext = inject(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY)
+  const { parentContext: injectedParentContext, parentType: injectedParentType } = useSparkParent()
   const parentContext = options?.parentContext ?? injectedParentContext
+  const parentType = options?.parentContext?.type ?? injectedParentType
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
 
   // 组件配置来自 fallbackConfig 参数（调用方在 setup 中传入，如 { type: 'r-table' }）。
@@ -121,7 +157,7 @@ export function useSparkComponent(
     type: config.type,
     capabilities: new Map<CapabilityName, unknown>(),
   }
-  if (parentContext !== undefined) {
+  if (parentContext !== null) {
     context.parent = parentContext
   }
 
@@ -140,9 +176,9 @@ export function useSparkComponent(
   // ── Logger（从能力链查找，带一次性缓存） ──
   //
   // 缓存策略：首次成功 sparkConsume 后缓存结果，避免每次日志调用都遍历 parent 链。
-  // 失效时机：调用 provide(LOGGER, ...) 或 provide(APP_SERVICES, ...) 时主动置 null。
-  // Late-binding 边界：父组件在 onMounted 中 provide(LOGGER) 时，
-  // 若本组件的 provide() 未被触发则缓存不失效（已被这个父 provide 填充的子组件不受影响）。
+  // 失效时机：调用 sparkProvide(LOGGER, ...) 或 sparkProvide(APP_SERVICES, ...) 时主动置 null。
+  // Late-binding 边界：父组件在 onMounted 中 sparkProvide(LOGGER) 时，
+  // 若本组件的 sparkProvide() 未被触发则缓存不失效（已被这个父 sparkProvide 填充的子组件不受影响）。
   // 对于典型使用场景（setup 期间提供能力）此策略覆盖 100%；极端晚绑定下退化为重查一次。
 
   const fallbackLogger: LoggerApi = {
@@ -168,7 +204,7 @@ export function useSparkComponent(
       _loggerCache = appServices.logger
       return appServices.logger
     }
-    // fallback 不缓存：保留重查机会（等待父级 provide）
+    // fallback 不缓存：保留重查机会（等待父级 sparkProvide）
     return fallbackLogger
   }
 
@@ -186,7 +222,7 @@ export function useSparkComponent(
 
   // ── 能力提供 ──
 
-  function provide(name: string | symbol, implementation?: unknown): void {
+  function sparkProvideCapability(name: string | symbol, implementation?: unknown): void {
     sparkProvide(context, name, implementation)
     // 当 LOGGER 或 APP_SERVICES 被更新时，使 logger 缓存失效
     const key = normalizeKey(name)
@@ -210,7 +246,7 @@ export function useSparkComponent(
 
   // ── 能力消费 ──
 
-  function consume(name: string | symbol): unknown {
+  function sparkConsumeCapability(name: string | symbol): unknown {
     const impl = sparkConsume(context, name)
     if (impl !== undefined) return impl
     if (import.meta.env.DEV) {
@@ -296,12 +332,14 @@ export function useSparkComponent(
 
   return {
     context,
+    parentContext: parentContext ?? null,
+    parentType,
     isVisible,
     isDisabled,
-    provide,
+    sparkProvide: sparkProvideCapability,
     provideEvents,
     getProvider,
-    consume,
+    sparkConsume: sparkConsumeCapability,
     consumeEvents,
     initialize,
     destroy,
@@ -319,23 +357,21 @@ export function useSparkComponent(
  *
  * 与 `useSparkComponent` 的差异：
  * - 不创建上下文实例、不挂 onMounted/onUnmounted
- * - 不提供 provide / registerApi / logger / getComponent
+ * - 不提供 sparkProvide / registerApi / logger / getComponent
  * - 开销 ≈ 1 次 inject + N 次 sparkConsume，适合高频字段组件（表格 50 列 × N 行）
  */
-export function useSparkConsume(): {
-  consume: {
-    <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
-    <T>(name: CapabilityKey<T>): T | null
-    (name: string | symbol): unknown
-  }
-} {
-  const parentContext = inject(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY)
+export function useSparkConsume(): UseSparkConsumeReturn {
+  const { parentContext, parentType } = useSparkParent()
 
-  function consume(name: string | symbol): unknown {
+  function sparkConsumeCapability(name: string | symbol): unknown {
     if (!parentContext) return null
     const impl = sparkConsume(parentContext, name)
     return impl !== undefined ? impl : null
   }
 
-  return { consume: consume as never }
+  return {
+    parentContext,
+    parentType,
+    sparkConsume: sparkConsumeCapability as never,
+  }
 }

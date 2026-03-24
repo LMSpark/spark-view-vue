@@ -72,7 +72,7 @@ app.use(Spark.createPlugin({ registry }))
 
 安装后效果：
 - Vue DI 注入 `SPARK_REGISTRY_KEY`（注册表）
-- Vue DI 注入 `SPARK_PARENT_CONTEXT_KEY`（空 `rootContext`）
+- Vue DI 注入内部根能力上下文（内部实现键，不再作为公共 API 导出）
 
 ### `Spark.getRegistry()`
 
@@ -107,10 +107,10 @@ const {
   context,
   isVisible,
   isDisabled,
-  provide,
+  sparkProvide,
   provideEvents,
   getProvider,
-  consume,
+  sparkConsume,
   consumeEvents,
   initialize,
   destroy,
@@ -130,9 +130,13 @@ const {
 
 ### 返回值
 
-#### `context: ComponentContext`
+#### `context: SparkCapabilityContext`
 
-响应式组件上下文，包含 `id`、`type`、`children`、`capabilities`、`parent` 等。
+纯能力上下文，包含 `id`、`type`、`capabilities`、`parent` 等最小字段。
+
+额外返回：
+- `parentContext: SparkCapabilityContext | null`
+- `parentType: string | null`
 
 #### `isVisible: ComputedRef<boolean>`
 
@@ -142,7 +146,7 @@ const {
 
 当 `config.disabled === true` 时为 `true`（默认不禁用）。
 
-#### `provide(name, implementation)`
+#### `sparkProvide(name, implementation)`
 
 向当前组件的 `context.capabilities` 写入能力。**这是 SPARK 能力系统，不是 Vue 的 `provide/inject`。**
 
@@ -150,7 +154,7 @@ const {
 import { defineCapability } from '@spark-view/spark-utils'
 
 const MY_CAP = defineCapability<{ doWork(): void }>('app:my-cap')
-provide(MY_CAP, { doWork() { console.log('working') } })
+sparkProvide(MY_CAP, { doWork() { console.log('working') } })
 ```
 
 支持类型安全的 `CapabilityKey<T>`（自动推断实现类型）和裸字符串/Symbol。
@@ -172,14 +176,14 @@ events.emit('rowClick', row)
 
 仅在**当前组件**的 `capabilities` Map 中查找，不向父级追溯。
 
-#### `consume<T>(name): T | null`
+#### `sparkConsume<T>(name): T | null`
 
 沿 `parent` 链向上查找能力（就近原则）。**找不到返回 `null` 是正常情况（late-binding），不应视为错误。**
 
 ```typescript
 import { APP_SERVICES } from '@spark-view/spark-utils'
 
-const services = consume(APP_SERVICES)
+const services = sparkConsume(APP_SERVICES)
 services?.router?.push('/home')
 services?.logger?.info('navigated')
 ```
@@ -198,13 +202,13 @@ consumeEvents(MY_EVENTS, {
 #### `initialize() / destroy()`
 
 生命周期钩子，`onMounted` / `onUnmounted` 自动调用，无需手动调用。  
-`destroy()` 会清理 `children` 关联和 `capabilities` Map。
+`destroy()` 会清理事件订阅和 `capabilities` Map。
 
 #### `logger: LoggerApi`
 
 带优先级的日志代理。解析顺序（无需手动配置）：
-1. 最近祖先 `provide(LOGGER, impl)` 的实现
-2. 最近祖先 `provide(APP_SERVICES, { logger: ... })` 的 logger
+1. 最近祖先 `sparkProvide(LOGGER, impl)` 的实现
+2. 最近祖先 `sparkProvide(APP_SERVICES, { logger: ... })` 的 logger
 3. fallback console
 
 #### `getComponent(type): unknown`
@@ -246,25 +250,19 @@ interface MyGridConfig extends ComponentConfig {
 defineProps<{ config: MyGridConfig }>()
 ```
 
-### `ComponentContext`
+### `SparkCapabilityContext`
 
-组件的运行时表示，继承 `ICapabilityContext`。
+组件的最小运行时能力上下文。
 
 ```typescript
-interface ComponentContext extends ICapabilityContext {
-  props?: Record<string, unknown>
-  children?: ComponentContext[]
-  parent?: ICapabilityContext
-  state: Record<string, unknown>
-  logger?: LoggerApi
-}
-
 interface ICapabilityContext {
   id: string
   type: string
   parent?: ICapabilityContext
   capabilities: Map<CapabilityName, unknown>
 }
+
+type SparkCapabilityContext = ICapabilityContext
 ```
 
 ### `ComponentDefinition`
@@ -309,12 +307,12 @@ export const MY_CAP = defineCapability<{ doWork(): void }>('app:my-cap')
 
 ```typescript
 // Provider 组件
-const { provide } = useSparkComponent({ type: 'parent' })
-provide(MY_CAP, { doWork() { console.log('working') } })
+const { sparkProvide } = useSparkComponent({ type: 'parent' })
+sparkProvide(MY_CAP, { doWork() { console.log('working') } })
 
 // Consumer 组件（任意深度子孙）
-const { consume } = useSparkComponent({ type: 'child' })
-const cap = consume(MY_CAP)   // 类型推断为 { doWork(): void } | null
+const { sparkConsume } = useSparkComponent({ type: 'child' })
+const cap = sparkConsume(MY_CAP)   // 类型推断为 { doWork(): void } | null
 cap?.doWork()
 ```
 
@@ -347,7 +345,7 @@ app.use(plugin)
 
 安装时向 Vue DI 注入：
 - `SPARK_REGISTRY_KEY` → `ComponentRegistry` 实例
-- `SPARK_PARENT_CONTEXT_KEY` → `rootContext`（空能力 Map）
+- 内部根能力上下文 → `rootContext`（空能力 Map，仅框架内部使用）
 
 ---
 
@@ -372,14 +370,14 @@ export { createComponentRegistry, getGlobalRegistry }
 export type {
   CapabilityName,
   ComponentConfig,
-  ComponentContext,
+  SparkCapabilityContext,
   ComponentDefinition,
   ComponentRegistry,
   LoggerApi,
 }
 
 // DI Keys（Vue DI 用，仅基础设施场景）
-export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY }
+export { SPARK_REGISTRY_KEY }
 
 // 页面渲染引擎
 export {

@@ -53,9 +53,9 @@ function mountFieldSelect(
 ) {
   const Provider = defineComponent({
     setup() {
-      const { provide } = useSparkComponent({ type: 'test-provider' }, { parentContext: rootContext })
-      provide(FIELD_CONTEXT, 'form')
-      provide(CONTEXT_DATA, model)
+      const { sparkProvide } = useSparkComponent({ type: 'test-provider' }, { parentContext: rootContext })
+      sparkProvide(FIELD_CONTEXT, 'form')
+      sparkProvide(CONTEXT_DATA, model)
       return () => h(FieldSelect as never, {
         field: fieldName,
         ...componentProps,
@@ -264,9 +264,9 @@ describe('FieldSelect 下拉组件', () => {
       const model = reactive({ department: undefined })
       const Provider = defineComponent({
         setup() {
-          const { provide } = useSparkComponent({ type: 'test-provider' })
-          provide(FIELD_CONTEXT, 'form')
-          provide(CONTEXT_DATA, model)
+          const { sparkProvide } = useSparkComponent({ type: 'test-provider' })
+          sparkProvide(FIELD_CONTEXT, 'form')
+          sparkProvide(CONTEXT_DATA, model)
           return () => h(FieldSelect as never, {
             field: 'department',
             options: departmentOptions,

@@ -26,8 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
   emptyText: '未选择',
 })
 
-const { consume } = useSparkComponent(props.config ?? { type: 'r-module-context-badge' })
-const moduleContextCapability = consume(MODULE_CONTEXT) as ModuleContextCapability | null
+const { sparkConsume } = useSparkComponent(props.config ?? { type: 'r-module-context-badge' })
+const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
 
 const moduleContext = ref(moduleContextCapability?.getCurrent() ?? null)
 

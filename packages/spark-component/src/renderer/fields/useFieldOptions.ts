@@ -111,8 +111,8 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
 
   // ── optionKey → DataView 动态选项解析 ──
   const resolvedOptionKey = computed(() => props.optionKey)
-  const parentCtx = useSparkConsume()
-  const pageDataSet = parentCtx.consume(PAGE_DATASET)
+  const { sparkConsume } = useSparkConsume()
+  const pageDataSet = sparkConsume(PAGE_DATASET)
 
   const optionKeyView = computed(() => {
     const key = resolvedOptionKey.value
