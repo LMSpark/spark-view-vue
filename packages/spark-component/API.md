@@ -99,6 +99,7 @@ const childCtx  = createContext({ type: 'child' }, parentCtx)
 ## useSparkComponent
 
 每个 SPARK 组件在 `setup()` 中调用一次，获得上下文和能力管理接口。
+现在它也是**唯一的能力组合函数入口**；历史上的独立只读/父上下文 hook 已废除。
 
 ```typescript
 import { useSparkComponent } from '@spark-view/spark-component'
@@ -126,7 +127,22 @@ const {
 |------|------|------|
 | `config` | `ComponentConfig` | 组件配置，通常来自 `props.config` |
 | `options.registry` | `ComponentRegistry?` | 覆盖注入的注册表（测试用） |
-| `options.parentContext` | `ComponentContext?` | 覆盖注入的父上下文（测试用） |
+| `options.parentContext` | `SparkCapabilityContext?` | 覆盖注入的父上下文（测试用） |
+| `options.mode` | `'full' \| 'consume-only'` | `full` 返回完整组件能力对象；`consume-only` 仅返回轻量能力读取接口 |
+
+### 轻量只读模式
+
+当组件只需要读取祖先能力、不需要创建自身上下文时，统一使用同一个入口的 `consume-only` 模式：
+
+```typescript
+const { parentContext, parentType, sparkConsume } = useSparkComponent(undefined, {
+  mode: 'consume-only',
+})
+
+const dataSource = sparkConsume(DATA_SOURCE)
+```
+
+该模式适合字段组件、格式化 helper 等高频只读场景。
 
 ### 返回值
 
@@ -137,6 +153,11 @@ const {
 额外返回：
 - `parentContext: SparkCapabilityContext | null`
 - `parentType: string | null`
+
+在 `consume-only` 模式下，仅返回：
+- `parentContext`
+- `parentType`
+- `sparkConsume()`
 
 #### `isVisible: ComputedRef<boolean>`
 

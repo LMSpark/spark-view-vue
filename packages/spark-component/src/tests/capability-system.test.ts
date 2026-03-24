@@ -11,7 +11,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { Spark, useSparkComponent, useSparkConsume } from '@spark-view/spark-component'
+import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE, defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
@@ -85,12 +85,12 @@ describe('Capability system integration', () => {
       })
     })
 
-    it('exposes parent context and type through useSparkConsume', () => {
+    it('exposes parent context and type through consume-only mode', () => {
       const { plugin } = createTestPlugin()
 
       const ChildComp = defineComponent({
         setup() {
-          const result = useSparkConsume()
+          const result = useSparkComponent(undefined, { mode: 'consume-only' })
           expect(result.parentContext).toBeDefined()
           expect(result.parentType).toBe('parent-comp')
           return () => h('span')

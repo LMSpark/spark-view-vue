@@ -14,8 +14,8 @@ export type {
 } from './spark.js'
 
 // ── 2. 组件开发 Composable ──
-export { useSparkComponent, useSparkParent, useSparkConsume } from './useSparkComponent.js'
-export type { UseSparkComponentReturn, UseSparkParentReturn, UseSparkConsumeReturn } from './useSparkComponent.js'
+export { useSparkComponent } from './useSparkComponent.js'
+export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions } from './useSparkComponent.js'
 
 // ── 3. Vue 插件 ──
 export { createSparkPlugin } from './plugin.js'

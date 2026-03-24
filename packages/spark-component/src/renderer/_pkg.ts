@@ -6,8 +6,8 @@
  */
 
 // ── Composable ──
-export { useSparkComponent, useSparkConsume } from '../useSparkComponent.js'
-export type { UseSparkComponentReturn } from '../useSparkComponent.js'
+export { useSparkComponent } from '../useSparkComponent.js'
+export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions } from '../useSparkComponent.js'
 
 // ── 递归渲染器 ──
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'

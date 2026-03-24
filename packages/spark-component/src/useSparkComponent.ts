@@ -84,21 +84,23 @@ export interface UseSparkComponentReturn {
   registerApi: (api: unknown) => void
 }
 
-/** 父上下文轻量读取结果 */
-export interface UseSparkParentReturn {
+/** 轻量能力消费结果 */
+export interface UseSparkCapabilityReaderReturn {
   /** 最近父级能力上下文 */
   parentContext: SparkCapabilityContext | null
   /** 最近父级的组件类型 */
   parentType: string | null
-}
-
-/** 轻量消费器返回值 */
-export interface UseSparkConsumeReturn extends UseSparkParentReturn {
   sparkConsume: {
     <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
     <T>(name: CapabilityKey<T>): T | null
     (name: string | symbol): unknown
   }
+}
+
+export interface UseSparkComponentOptions {
+  registry?: ComponentRegistry
+  parentContext?: SparkCapabilityContext
+  mode?: 'full' | 'consume-only'
 }
 
 /* -------------------------------------------------------------------------- */
@@ -112,33 +114,53 @@ export interface UseSparkConsumeReturn extends UseSparkParentReturn {
 /** 全局单调递增 ID 计数器，替代 Date.now()+random（更快、确定、SSR 友好） */
 let _idCounter = 0
 
-/**
- * 统一读取最近父级能力上下文。
- *
- * 子组件若只需要父组件上下文 / 类型，应优先使用该 API，
- * 而不是直接依赖 `useSparkComponent().context.parent` 的内部结构。
- */
-export function useSparkParent(): UseSparkParentReturn {
+function resolveParentAccess(overrideParentContext?: SparkCapabilityContext): Omit<UseSparkCapabilityReaderReturn, 'sparkConsume'> {
   const parentContext = inject(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, null)
+  const resolvedParentContext = overrideParentContext ?? parentContext
   return {
-    parentContext,
-    parentType: parentContext?.type ?? null,
+    parentContext: resolvedParentContext,
+    parentType: resolvedParentContext?.type ?? null,
   }
 }
 
+function createSparkConsume(
+  parentContext: SparkCapabilityContext | null,
+  fallbackContext?: SparkCapabilityContext,
+): UseSparkCapabilityReaderReturn['sparkConsume'] {
+  return ((name: string | symbol): unknown => {
+    const lookupContext = fallbackContext ?? parentContext
+    if (!lookupContext) return null
+    const impl = sparkConsume(lookupContext, name)
+    return impl !== undefined ? impl : null
+  }) as UseSparkCapabilityReaderReturn['sparkConsume']
+}
+
+export function useSparkComponent(
+  fallbackConfig: SparkNode | undefined,
+  options: UseSparkComponentOptions & { mode: 'consume-only' }
+): UseSparkCapabilityReaderReturn
 export function useSparkComponent(
   fallbackConfig?: SparkNode,
-  options?: {
-    registry?: ComponentRegistry
-    parentContext?: SparkCapabilityContext
-  }
-): UseSparkComponentReturn {
+  options?: UseSparkComponentOptions
+): UseSparkComponentReturn
+
+export function useSparkComponent(
+  fallbackConfig?: SparkNode,
+  options?: UseSparkComponentOptions
+): UseSparkComponentReturn | UseSparkCapabilityReaderReturn {
 
   // ── 依赖注入 ──
 
-  const { parentContext: injectedParentContext, parentType: injectedParentType } = useSparkParent()
-  const parentContext = options?.parentContext ?? injectedParentContext
-  const parentType = options?.parentContext?.type ?? injectedParentType
+  const { parentContext, parentType } = resolveParentAccess(options?.parentContext)
+
+  if (options?.mode === 'consume-only') {
+    return {
+      parentContext,
+      parentType,
+      sparkConsume: createSparkConsume(parentContext),
+    }
+  }
+
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
 
   // 组件配置来自 fallbackConfig 参数（调用方在 setup 中传入，如 { type: 'r-table' }）。
@@ -247,8 +269,8 @@ export function useSparkComponent(
   // ── 能力消费 ──
 
   function sparkConsumeCapability(name: string | symbol): unknown {
-    const impl = sparkConsume(context, name)
-    if (impl !== undefined) return impl
+    const impl = createSparkConsume(parentContext, context)(name)
+    if (impl !== null) return impl
     if (import.meta.env.DEV) {
       logger.debug(`[spark] capability not found (late-binding ok): ${String(name)}`)
     }
@@ -347,31 +369,5 @@ export function useSparkComponent(
     getComponent,
     isComponentRegistered,
     registerApi
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-
-/**
- * 轻量消费器——仅需读取祖先能力、不需要创建能力上下文的场景。
- *
- * 与 `useSparkComponent` 的差异：
- * - 不创建上下文实例、不挂 onMounted/onUnmounted
- * - 不提供 sparkProvide / registerApi / logger / getComponent
- * - 开销 ≈ 1 次 inject + N 次 sparkConsume，适合高频字段组件（表格 50 列 × N 行）
- */
-export function useSparkConsume(): UseSparkConsumeReturn {
-  const { parentContext, parentType } = useSparkParent()
-
-  function sparkConsumeCapability(name: string | symbol): unknown {
-    if (!parentContext) return null
-    const impl = sparkConsume(parentContext, name)
-    return impl !== undefined ? impl : null
-  }
-
-  return {
-    parentContext,
-    parentType,
-    sparkConsume: sparkConsumeCapability as never,
   }
 }

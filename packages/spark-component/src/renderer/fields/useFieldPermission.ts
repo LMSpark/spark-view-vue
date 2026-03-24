@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { createPermissionChecker, FieldVisibility } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { useSparkConsume, DATA_SOURCE } from '../_pkg'
+import { useSparkComponent, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import { columnToFormRules } from './columnFormRules'
 import type { FormItemRule } from './columnFormRules'
@@ -23,8 +23,7 @@ interface UseFieldPermissionOptions<TValue> {
 export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TValue>) {
   const { props, fallbackValue, formatDisplay } = options
   const permissionChecker = createPermissionChecker()
-  // 轻量消费器——字段组件只需 sparkConsume，无需创建 ComponentContext
-  const { sparkConsume } = useSparkConsume()
+  const { sparkConsume } = useSparkComponent(undefined, { mode: 'consume-only' })
 
   const fieldName = computed(() => props.field ?? '')
   const displayLabel = computed(() => props.label ?? fieldName.value)

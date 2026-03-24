@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { getViewFromRawKey } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../capability-keys.js'
-import { useSparkConsume } from '../_pkg'
+import { useSparkComponent } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import type { FieldPermissionProps } from './useFieldPermission'
 
@@ -111,7 +111,7 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
 
   // ── optionKey → DataView 动态选项解析 ──
   const resolvedOptionKey = computed(() => props.optionKey)
-  const { sparkConsume } = useSparkConsume()
+  const { sparkConsume } = useSparkComponent(undefined, { mode: 'consume-only' })
   const pageDataSet = sparkConsume(PAGE_DATASET)
 
   const optionKeyView = computed(() => {
