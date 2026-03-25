@@ -29,6 +29,11 @@
             "type": "r-table",
             "dataKey": "Users@rows",
             "props": {
+              "docks": {
+                "toolbar": {
+                  "position": "top"
+                }
+              },
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,

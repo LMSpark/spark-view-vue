@@ -299,6 +299,11 @@
                                 "type": "r-table",
                                 "dataKey": "Tasks@rows",
                                 "props": {
+                                    "docks": {
+                                        "toolbar": {
+                                            "position": "top"
+                                        }
+                                    },
                                     "border": true,
                                     "stripe": true,
                                     "highlightCurrentRow": true,
