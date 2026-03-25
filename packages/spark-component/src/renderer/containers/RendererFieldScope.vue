@@ -1,3 +1,9 @@
+<!--
+/**
+ * @skill (internal) field-scope
+ * @description 字段作用域容器，提供 el-form 包裹和 CONTEXT_DATA 能力；字段语义由祖先 context.type 推断
+ */
+-->
 <template>
   <el-form
     :model="model"
@@ -27,21 +33,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRef } from 'vue'
+import { computed } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
 import { nodeId, type SparkNode } from '../_pkg'
-import type { FieldContext } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'
 import { useDataScope } from './useDataScope'
 
-interface Props {
+interface Props extends SparkNode {
   /** 表单数据模型 */
   model: IDataRow
   /** 字段组件配置列表 */
   configs: SparkNode[]
-  /** 字段语境（table/form/detail） */
-  context?: FieldContext
   /** CSS Grid 列数 */
   gridColumns?: number
   /** 栅格间距 */
@@ -63,7 +66,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  context: 'form',
+  type: 'r-field-scope',
   gridColumns: 24,
   gridGap: 12,
   gridAutoRows: 'minmax(32px, auto)',
@@ -74,22 +77,27 @@ const props = withDefaults(defineProps<Props>(), {
   inline: false,
   compact: false,
 })
-
-const configsRef = toRef(props, 'configs')
+const componentType = computed(() => props.type ?? 'r-field-scope')
 
 useDataScope({
-  type: 'r-field-scope',
-  fieldContext: computed(() => props.context),
+  type: componentType.value,
+  nodeConfig: {
+    type: componentType.value,
+    ...(props.id !== undefined ? { id: props.id } : {}),
+    ...(props.dock !== undefined ? { dock: props.dock } : {}),
+    ...(props.order !== undefined ? { order: props.order } : {}),
+    ...(props.children !== undefined ? { children: props.children } : {}),
+  },
   data: computed(() => props.model),
 })
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: configsRef,
-  columns: toRef(props, 'gridColumns'),
-  gap: toRef(props, 'gridGap'),
-  autoRows: toRef(props, 'gridAutoRows'),
-  autoFitMinWidth: toRef(props, 'autoFitMinWidth'),
-  defaultColSpan: toRef(props, 'defaultColSpan'),
+  children: () => props.configs,
+  columns: () => props.gridColumns,
+  gap: () => props.gridGap,
+  autoRows: () => props.gridAutoRows,
+  autoFitMinWidth: () => props.autoFitMinWidth,
+  defaultColSpan: () => props.defaultColSpan,
 })
 </script>
 

@@ -1,13 +1,12 @@
 import { computed, useAttrs } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { SparkNode } from '../_pkg'
+import { getSparkNodeChildren, type SparkNode } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from './columnFormRules'
 
 type TextAlign = 'left' | 'center' | 'right'
 
 interface FieldContextProps {
-  context: string
   displayLabel: string
   fieldName: string
   width: number | undefined
@@ -27,7 +26,6 @@ interface FieldContextProps {
 
 /** useFieldPermission / useOptionField 返回值中 FieldContextRenderer 所需的子集 */
 interface FieldPermissionForContext {
-  context: string
   fieldName: ComputedRef<string>
   displayLabel: ComputedRef<string>
   isCurrentFieldHidden: ComputedRef<boolean>
@@ -42,7 +40,7 @@ interface FieldPermissionForContext {
  * 将 useFieldPermission 返回值 + 组件 props 聚合为一个响应式对象。
  */
 export function useFieldContext(
-  fieldProps: { width: number | undefined; children?: SparkNode[] },
+  fieldProps: { width: number | undefined; children?: SparkNode[] | undefined },
   permission: FieldPermissionForContext,
 ): ComputedRef<FieldContextProps> {
   const attrs = useAttrs()
@@ -66,8 +64,7 @@ export function useFieldContext(
 
   const mergedChildren = computed(() => {
     const children = fieldProps.children
-    if (Array.isArray(children) && children.length > 0) return children
-    return []
+    return getSparkNodeChildren(children)
   })
 
   return computed(() => {
@@ -79,7 +76,6 @@ export function useFieldContext(
     const valueClassName = readText(readAttr('valueClassName', 'value-class-name'))
 
     const result: FieldContextProps = {
-      context: permission.context,
       displayLabel: permission.displayLabel.value,
       fieldName: permission.fieldName.value,
       width: fieldProps.width,

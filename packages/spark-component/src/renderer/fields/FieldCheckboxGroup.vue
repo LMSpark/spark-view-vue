@@ -17,13 +17,14 @@
 </template>
 
 <script setup lang="ts">
+import type { SparkNode } from '../_pkg'
 import { useOptionField } from './useFieldOptions'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 type MultiValue = Array<string | number | boolean>
 
-interface Props {
+interface Props extends SparkNode {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
@@ -45,6 +46,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-checkbox-group',
   buttonStyle: false,
 })
 

@@ -77,15 +77,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import { FIELD_CONTEXT, nodeId, type SparkNode, useSparkComponent } from '../_pkg'
+import { getSparkNodeChildren, nodeId, type SparkNode } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from './columnFormRules'
+import { useResolvedFieldContext } from './useResolvedFieldContext'
 
 type TextAlign = 'left' | 'center' | 'right'
 
 interface Props {
-  /** 渲染上下文（table / form / detail / tree） */
-  context?: string | undefined
   /** 显示标签 */
   displayLabel?: string | undefined
   /** 直接传入的标签（供 r-column-group 直连使用） */
@@ -138,20 +137,12 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { sparkConsume } = useSparkComponent(undefined, { mode: 'consume-only' })
-
-const inheritedContext = computed(() => {
-  const consumed = sparkConsume(FIELD_CONTEXT)
-  return typeof consumed === 'string' ? consumed : null
-})
-
-const resolvedContext = computed(() => props.context ?? inheritedContext.value ?? 'detail')
+const resolvedContext = useResolvedFieldContext()
 const resolvedDisplayLabel = computed(() => props.displayLabel ?? props.label ?? '')
 const resolvedFieldName = computed(() => props.fieldName ?? props.field ?? '')
 const resolvedChildren = computed<SparkNode[]>(() => {
   const children = props.mergedChildren ?? props.children
-  if (Array.isArray(children) && children.length > 0) return children
-  return []
+  return getSparkNodeChildren(children)
 })
 const resolvedCurrentFieldHidden = computed(() => props.isCurrentFieldHidden ?? false)
 const resolvedCurrentDisplayValue = computed(() => props.currentDisplayValue ?? '')

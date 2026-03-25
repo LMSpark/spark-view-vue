@@ -58,7 +58,7 @@ import type { HttpClient } from '@spark-view/spark-utils'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
-import { nodeId, type SparkNode } from '../types'
+import { nodeId, SPARK_NODE_STRUCT_KEYS, type SparkNode } from '../types'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE } from '../capability-keys'
 import type { ModuleContextCapability, PageCssScopeCapability } from '../capability-keys'
 import { useRendererSetup } from './useRendererSetup'
@@ -85,7 +85,7 @@ const props = withDefaults(defineProps<PageRendererProps>(), {
 
 // ==================== 基础设施 ====================
 
-const { router, provideCapability, loading, error, componentRegistry, appServices, runLoad } = useRendererSetup('spark-page-renderer', logger)
+const { router, sparkProvide, loading, error, componentRegistry, appServices, runLoad } = useRendererSetup('spark-page-renderer', logger)
 const route = useRoute()
 const vueApp = getCurrentInstance()?.appContext.app
 
@@ -95,7 +95,7 @@ const pageService = buildPageService(router, {
   confirmService: props.confirmService,
   pageService: props.pageService,
 })
-provideCapability(PAGE_SERVICE, pageService)
+sparkProvide(PAGE_SERVICE, pageService)
 
 // ==================== 响应式状态 ====================
 
@@ -151,7 +151,7 @@ const moduleContextCapability: ModuleContextCapability = {
     }
   },
 }
-provideCapability(MODULE_CONTEXT, moduleContextCapability)
+sparkProvide(MODULE_CONTEXT, moduleContextCapability)
 
 function isHttpClient(client: unknown): client is HttpClient {
   if (client === null || client === undefined || typeof client !== 'object') return false
@@ -166,7 +166,7 @@ const { scopedCss, setScopedCss } = useCssScope({
 const cssScopeCapability: PageCssScopeCapability = {
   inject(css: string) { setScopedCss(currentPageId.value, css) },
 }
-provideCapability(CSS_SCOPE, cssScopeCapability)
+sparkProvide(CSS_SCOPE, cssScopeCapability)
 
 // ── DataSet ──
 const pds = usePageDataSet({ enableDataSet: props.enableDataSet })
@@ -240,36 +240,65 @@ function bindSparkRuleEvents(
     return unique
   }
 
-  // ── 结构键 vs 业务键 ──
-  // SPARK_NODE_STRUCT_KEYS（type/props/children/id/dock/order）归框架所有，不收入 props；
-  // 其余所有根级字段（visible / disabled / on / dataKey / field …）一律收入 props。
+  // ── 结构键 vs 输入键 ──
+  // SPARK_NODE_STRUCT_KEYS（type/props/children/id/dock/order）归框架所有；
+  // 根级业务输入在绑定阶段统一归集到 props，运行时只消费 props。
 
   const bindNode = (node: unknown): unknown => {
     if (Array.isArray(node)) return node.map(bindNode)
     if (node === null || typeof node !== 'object') return node
 
     const current = node as Record<string, unknown>
-    const cloned: Record<string, unknown> = { ...current }
+    const cloned: Record<string, unknown> = {}
 
-    // ── 事件绑定：on.* 字符串/action描述符 → 闭包 ──
-    if (current['on'] !== null && typeof current['on'] === 'object' && !Array.isArray(current['on'])) {
-      cloned['on'] = normalizeRuleEvents(current['on'] as Record<string, unknown>, callFunc, actionCtx)
+    for (const key of SPARK_NODE_STRUCT_KEYS) {
+      if (key in current) cloned[key] = current[key]
     }
 
-    // ── props 内事件绑定 + 子结构递归 ──
-    if (current['props'] !== null && typeof current['props'] === 'object' && !Array.isArray(current['props'])) {
-      const propsObj = { ...(current['props'] as Record<string, unknown>) }
-      normalizeOnProps(propsObj, callFunc, actionCtx)
-      for (const [propName, propValue] of Object.entries(propsObj)) {
-        if (propName.startsWith('on')) continue // 已由 normalizeOnProps 处理
-        if (Array.isArray(propValue)) {
-          propsObj[propName] = propValue.map(bindNode)
-          continue
-        }
-        if (propValue !== null && typeof propValue === 'object') {
-          propsObj[propName] = bindNode(propValue)
-        }
+    const propsObj = current['props'] !== null && typeof current['props'] === 'object' && !Array.isArray(current['props'])
+      ? { ...(current['props'] as Record<string, unknown>) }
+      : {}
+
+    normalizeOnProps(propsObj, callFunc, actionCtx)
+
+    for (const [propName, propValue] of Object.entries(propsObj)) {
+      if (propName.startsWith('on')) continue
+      if (Array.isArray(propValue)) {
+        propsObj[propName] = propValue.map(bindNode)
+        continue
       }
+      if (propValue !== null && typeof propValue === 'object') {
+        propsObj[propName] = bindNode(propValue)
+      }
+    }
+
+    for (const [key, value] of Object.entries(current)) {
+      if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
+
+      if (key === 'on') {
+        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+          const normalizedRootOn = normalizeRuleEvents(value as Record<string, unknown>, callFunc, actionCtx)
+          const existingOn = propsObj['on']
+          propsObj['on'] = existingOn !== null && typeof existingOn === 'object' && !Array.isArray(existingOn)
+            ? { ...normalizedRootOn, ...(existingOn as Record<string, unknown>) }
+            : normalizedRootOn
+        }
+        continue
+      }
+
+      if (key in propsObj) continue
+
+      if (Array.isArray(value)) {
+        propsObj[key] = value.map(bindNode)
+        continue
+      }
+
+      propsObj[key] = value !== null && typeof value === 'object'
+        ? bindNode(value)
+        : value
+    }
+
+    if (Object.keys(propsObj).length > 0) {
       cloned['props'] = propsObj
     }
 
@@ -278,22 +307,12 @@ function bindSparkRuleEvents(
       cloned['children'] = (current['children'] as unknown[]).map(bindNode)
     }
 
-    // ── ID 去重（顶层 id 优先，兼容 props.id） ──
-    const propsObj = (typeof cloned['props'] === 'object' && cloned['props'] !== null && !Array.isArray(cloned['props']))
-      ? cloned['props'] as Record<string, unknown>
-      : undefined
-    const rawId = typeof cloned['id'] === 'string' ? cloned['id']
-      : (typeof propsObj?.['id'] === 'string' ? (propsObj['id'] as string) : undefined)
+    // ── ID 去重（只处理顶层结构 id） ──
+    const rawId = typeof cloned['id'] === 'string' ? cloned['id'] : undefined
     if (rawId !== undefined) {
       const nodeType = typeof cloned['type'] === 'string' ? cloned['type'] : 'unknown'
       const finalId = ensureUniqueId(nodeType, rawId)
       cloned['id'] = finalId
-      // 同时写入 props 供 v-bind 传递到 DOM
-      if (propsObj !== undefined) {
-        propsObj['id'] = finalId
-      } else {
-        cloned['props'] = { id: finalId }
-      }
     }
 
     return cloned
@@ -345,7 +364,7 @@ function applyConfig(pageId: string, config: PageConfig): void {
     if (isHttpClient(loaderClient)) ds.setSharedHttpClient(loaderClient)
     ds.setAppServices(appServices)
     ds.setPageRoute(pageRoute)
-    provideCapability(PAGE_DATASET, ds)
+    sparkProvide(PAGE_DATASET, ds)
   }
 
   resolvedRules.value = bindSparkRuleEvents(config.rule as unknown[], pageFunctions.value)

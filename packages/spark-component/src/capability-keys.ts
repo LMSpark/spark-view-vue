@@ -15,14 +15,14 @@
  *   子组件（行 / 单元格）
  *     sparkConsume(DATA_SOURCE)           ← 取 DataView（IDataSource）
  *
- * ── Renderer 容器 → 字段能力链 ──
+ * ── Renderer 容器 → 字段上下文链 ──
  *   容器组件（r-table / r-form / r-detail）
- *     sparkProvide(FIELD_CONTEXT, 'form')   ← 当前渲染上下文
+ *     通过 useSparkComponent 建立祖先 context.type 链
  *     sparkProvide(CONTEXT_DATA, formModel) ← 可写响应式数据对象
  *       ↓
  *   字段组件（r-text / r-number …）
- *     sparkConsume(FIELD_CONTEXT) ?? 'detail'
- *     sparkConsume(CONTEXT_DATA)  ?? {}
+ *     通过 useSparkComponent(parentContext.type) 解析渲染语义
+ *     sparkConsume(CONTEXT_DATA) ?? {}
  */
 
 import { defineCapability } from '@spark-view/spark-utils'
@@ -303,8 +303,6 @@ declare module '@spark-view/spark-utils' {
     'spark:capability:page-dataset': IDataSet
     /** 组件级 DataView / IDataSource（容器组件 sparkProvide） */
     'spark:capability:data-source':  IDataSource
-    /** 容器告知字段组件当前渲染上下文（table/form/detail/tree/list） */
-    'app:field-context': FieldContext
     /** 容器向字段组件提供可写的响应式数据对象 */
     'app:context-data': Record<string, unknown>
     /** 页面级组件注册中心（整页实例与组件 API） */
@@ -331,12 +329,6 @@ export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-da
  * 子组件通过 sparkConsume 获取行数据、选中状态等。
  */
 export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
-
-/**
- * 字段渲染上下文能力键
- * 容器组件 sparkProvide，字段组件 sparkConsume，决定字段的渲染形态
- */
-export const FIELD_CONTEXT = defineCapability<FieldContext>('app:field-context')
 
 /**
  * 字段数据上下文能力键

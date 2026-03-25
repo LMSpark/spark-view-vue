@@ -1,15 +1,15 @@
 <template>
   <!-- 已注册：SparkNode 运行时输入 + 事件处理器 → 统一作为 Vue Props 传递 -->
   <component
-    v-if="resolvedComponent"
-    :is="resolvedComponent"
+    v-if="registryComponent"
+    :is="registryComponent"
     v-bind="componentProps"
   />
 
-  <!-- 未注册但可识别为原生标签：按原生元素渲染，并继续递归子节点 -->
+  <!-- 非 registry 组件（Vue 全局组件 / 原生标签）：统一走 attrs + slot children -->
   <component
-    v-else-if="shouldRenderAsNativeElement"
-    :is="config.type"
+    v-else-if="externalComponent"
+    :is="externalComponent"
     v-bind="forwardedProps"
   >
     <template
@@ -32,7 +32,7 @@
     class="spark-component-renderer spark-component-unregistered"
   >
     <div class="unregistered-warning">
-      <strong>⚠️ 未注册的组件类型:</strong> {{ config.type }}
+      <strong>⚠️ 未注册的组件类型:</strong> {{ normalizedConfig.type }}
     </div>
     <!-- 未注册时仍递归渲染子组件，父能力上下文由框架内部传递 -->
     <template
@@ -79,14 +79,13 @@
  * ```
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, nodeId, nodeDock, nodeInputProps, DEFAULT_DOCK } from '../types.js'
-import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
+import { SPARK_REGISTRY_KEY, nodeId, nodeDock, DEFAULT_DOCK, isSparkNode, normalizeSparkNode } from '../types.js'
+import type { SparkNode, SparkNodeChildren, ComponentContext, ComponentRegistry } from '../types.js'
 import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal-context.js'
 
-const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
 // h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
-// dock/order 是 SparkNode 结构键，仅供容器布局使用，不透传到组件 props / DOM
-const _FILTERABLE_KEYS = new Set([...LAYOUT_ONLY_PROP_KEYS, 'on', 'dock', 'order'])
+// layout/dock/order 只服务于容器布局，不透传到组件 props / DOM
+const FILTERED_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span', 'on', 'dock', 'order'])
 const NATIVE_RENDERABLE_TAGS = new Set([
   'div', 'span', 'p', 'a', 'img',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -103,6 +102,24 @@ const NATIVE_RENDERABLE_TAGS = new Set([
   'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
 ])
 type RenderableChild = SparkNode | string | number
+
+function normalizeRenderableChildren(children: SparkNodeChildren | undefined): RenderableChild[] {
+  if (!Array.isArray(children) || children.length === 0) return []
+
+  const normalized: RenderableChild[] = []
+  for (const child of children) {
+    if (isSparkNode(child)) {
+      if (nodeDock(child) === DEFAULT_DOCK) {
+        normalized.push(child)
+      }
+      continue
+    }
+    if (typeof child === 'string') {
+      normalized.push(child)
+    }
+  }
+  return normalized
+}
 
 function nodeKey(child: RenderableChild, index: number): string {
   if (!isSparkNode(child)) return `text-${index}`
@@ -123,6 +140,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const normalizedConfig = computed<SparkNode>(() => normalizeSparkNode(props.config, 'unknown'))
 
 // ── 根节点 / 测试场景：覆盖框架内部父能力上下文 ─────────────────────────────
 if (props.parentContext !== undefined) {
@@ -141,52 +159,60 @@ function resolveFromVueContext(type: string): unknown {
   return typeof resolved === 'string' ? null : resolved
 }
 
-function isSparkNode(value: unknown): value is SparkNode {
-  return value !== null
-    && typeof value === 'object'
-    && 'type' in value
-    && typeof (value as { type?: unknown }).type === 'string'
-}
+const configType = computed(() => {
+  const type = normalizedConfig.value.type
+  return typeof type === 'string' && type.length > 0 ? type : null
+})
 
-const shouldRenderAsNativeElement = computed(() => isNativeRenderableType(props.config.type))
+const nativeRenderableTag = computed(() => {
+  const type = configType.value
+  return type !== null && isNativeRenderableType(type) ? type : null
+})
 
 const renderableChildren = computed<RenderableChild[]>(() => {
-  const children: unknown[] = props.config.children ?? []
-
-  // 原生标签 / 未注册降级渲染：仅渲染 dock='default' 的 SparkNode 子节点
-  // 非 SparkNode（string / number 文本）无条件保留
-  return children.filter((child): child is RenderableChild => {
-    if (typeof child === 'string' || typeof child === 'number') return true
-    if (isSparkNode(child)) return nodeDock(child) === DEFAULT_DOCK
-    return false
-  })
+  return normalizeRenderableChildren(normalizedConfig.value.children)
 })
 
 // ── 组件解析 ──────────────────────────────────────────────────────────────────
 
-const registryDefinition = computed(() => registry?.get(props.config.type) ?? null)
+const registryDefinition = computed(() => {
+  const type = configType.value
+  return type !== null ? (registry?.get(type) ?? null) : null
+})
 
-const resolvedComponent = computed(() => {
+const registryComponent = computed(() => {
   const def = registryDefinition.value
   if (def) {
     return def.component ? markRaw(def.component as object) : null
   }
 
-  const appComponent = resolveFromVueContext(props.config.type)
+  return null
+})
+
+const externalComponent = computed(() => {
+  if (registryDefinition.value !== null) return null
+
+  const type = configType.value
+  if (type === null) return null
+
+  const appComponent = resolveFromVueContext(type)
   if (appComponent) {
     return markRaw(appComponent as object)
   }
 
-  if (import.meta.env.DEV && !isNativeRenderableType(props.config.type)) {
-    
-    console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${props.config.type}`)
+  if (nativeRenderableTag.value !== null) {
+    return nativeRenderableTag.value
+  }
+
+  if (import.meta.env.DEV) {
+    console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${type}`)
   }
   return null
 })
 
-function _hasFilterableKeys(obj: Record<string, unknown>): boolean {
+function hasFilteredKeys(obj: Record<string, unknown>): boolean {
   for (const key of Object.keys(obj)) {
-    if (_FILTERABLE_KEYS.has(key)) return true
+    if (FILTERED_PROP_KEYS.has(key)) return true
   }
   return false
 }
@@ -202,14 +228,14 @@ function toListenerPropName(eventName: string): string {
 }
 
 const forwardedProps = computed(() => {
-  const config = props.config
-  const rawProps = nodeInputProps(config)
-  // h() 模型：on 从节点输入读取，允许 props.on 与根级 on 共存，后者由 nodeInputProps 统一并入
+  const config = normalizedConfig.value
+  const rawProps = config.props ?? {}
+  // 属性是唯一真相：渲染器只消费 config.props，不再兼容根级输入合并。
   const onMap = rawProps['on']
 
   // fast-path: 叶子组件大多无事件绑定且无 layout/framework key，直接返回原引用
   const hasEvents = onMap !== null && onMap !== undefined && typeof onMap === 'object' && Object.keys(onMap as Record<string, unknown>).length > 0
-  if (!hasEvents && !_hasFilterableKeys(rawProps)) return rawProps
+  if (!hasEvents && !hasFilteredKeys(rawProps)) return rawProps
 
   // slow-path: 过滤 layout/framework keys + 合并事件 props
   const eventProps = hasEvents
@@ -219,32 +245,32 @@ const forwardedProps = computed(() => {
     : undefined
 
   const filteredProps = Object.fromEntries(
-    Object.entries(rawProps).filter(([key]) => !_FILTERABLE_KEYS.has(key))
+    Object.entries(rawProps).filter(([key]) => !FILTERED_PROP_KEYS.has(key))
   )
 
   return eventProps ? { ...filteredProps, ...eventProps } : filteredProps
 })
 
 /**
- * 已注册组件的完整 Props = forwardedProps + children。
+ * 已注册组件的完整 Props = forwardedProps + SparkNode 结构字段。
  *
- * 对齐 h(type, props, children) 模型：
- *   - props  → forwardedProps（含绑定阶段规范化后的 dataKey/field/label 等）
- *   - children → SparkNode.children（类型化，直接转发）
- * 仅用于已注册组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
+ * 对齐运行时约束：
+ *   - 业务输入 → config.props
+ *   - 结构输入 → type / id / dock / order / children
+ * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
  */
 const componentProps = computed(() => {
   const base = forwardedProps.value
   const config = props.config
-  const children = config.children
   // 仅对 registry 组件透传 children prop；
   // 全局组件（如 Element Plus）不接收该 prop，透传会污染到底层 DOM。
   if (registryDefinition.value === null) return base
-  // 顶层 id 透传到 props.id 供组件消费（向后兼容已从 props.id 读取的代码）
-  const topId = config.id
   const extra: Record<string, unknown> = {}
-  if (children !== undefined) extra['children'] = children
-  if (typeof topId === 'string' && topId.length > 0) extra['id'] = topId
+  extra['type'] = config.type
+  if (config.id !== undefined) extra['id'] = config.id
+  if (config.dock !== undefined) extra['dock'] = config.dock
+  if (config.order !== undefined) extra['order'] = config.order
+  if (config.children !== undefined) extra['children'] = config.children
   return Object.keys(extra).length > 0 ? { ...base, ...extra } : base
 })
 </script>

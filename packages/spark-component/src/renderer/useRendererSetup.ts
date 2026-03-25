@@ -10,7 +10,7 @@
  *
  * @example
  * ```typescript
- * const { router, provideCapability, loading, error, runLoad }
+ * const { router, sparkProvide, loading, error, runLoad }
  *   = useRendererSetup('page-renderer', pageLogger)
  *
  * async function load() {
@@ -39,7 +39,7 @@ interface RendererSetupReturn {
   /** Vue Router 实例（消费方如 buildPageService / resolvePageId 可能需要） */
   router: Router
   /** SPARK 能力提供函数（含 CapabilityTypeMap 类型重载） */
-  provideCapability: UseSparkComponentReturn['sparkProvide']
+  sparkProvide: UseSparkComponentReturn['sparkProvide']
   /** 是否正在加载 */
   loading: Ref<boolean>
   /** 加载失败的错误消息（空字符串表示无错误） */
@@ -79,14 +79,14 @@ export function useRendererSetup(
   // ── SPARK 能力上下文 ──
 
   const router = useRouter()
-  const { sparkProvide: provideCapability } = useSparkComponent({
+  const { sparkProvide } = useSparkComponent({
     type: componentType,
     props: { id: `${componentType}-root` },
   })
   const componentRegistry = createPageComponentRegistry()
   const appServices = buildAppServices(router, logger)
-  provideCapability(APP_SERVICES, appServices)
-  provideCapability(PAGE_COMPONENT_REGISTRY, componentRegistry)
+  sparkProvide(APP_SERVICES, appServices)
+  sparkProvide(PAGE_COMPONENT_REGISTRY, componentRegistry)
 
   // ── 加载状态机 ──
 
@@ -121,5 +121,5 @@ export function useRendererSetup(
     }
   }
 
-  return { router, provideCapability, loading, error, componentRegistry, appServices, runLoad }
+  return { router, sparkProvide, loading, error, componentRegistry, appServices, runLoad }
 }

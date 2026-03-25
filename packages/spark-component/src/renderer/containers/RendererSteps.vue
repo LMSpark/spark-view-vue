@@ -21,18 +21,20 @@
         <RendererStepItem
           v-for="(step, index) in stepConfigs"
           :key="getStepKey(step, index)"
-          :config="step"
           :index="index"
           mode="header"
+          :type="step.type"
+          v-bind="getStepComponentProps(step)"
           @activate="activateStep"
         />
       </el-steps>
 
       <RendererStepItem
         v-if="activeStep"
-        :config="activeStep"
         :index="activeStepIndex"
         mode="content"
+        :type="activeStep.type"
+        v-bind="getStepComponentProps(activeStep)"
       >
         <slot v-if="!hasStepChildren(activeStep)" v-bind="getStepSlotScope(activeStep, activeStepIndex)" />
       </RendererStepItem>
@@ -43,13 +45,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useSparkComponent } from '../_pkg'
-import { getDockedChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
+import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerToolbar } from './useContainerToolbar'
 import RendererStepItem from './RendererStepItem.vue'
 import type { RendererStepsApi } from '../_pkg'
 
-interface Props {
+interface Props extends SparkNode {
   /** 子节点（步骤配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -61,6 +63,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-steps',
   docks: () => ({}),
 })
 
@@ -68,7 +71,13 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const { registerApi } = useSparkComponent({ type: 'r-steps' })
+const { registerApi } = useSparkComponent({
+  type: props.type,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 
 const stepConfigs = computed(() =>
   getDockedChildren(props.children).filter(child => child.type === 'r-step')
@@ -108,7 +117,7 @@ const activeStepIndex = computed(() => {
 const activeStep = computed(() => stepConfigs.value[activeStepIndex.value])
 
 function hasStepChildren(step: SparkNode): boolean {
-  return Array.isArray(step.children) && step.children.length > 0
+  return getSparkNodeChildren(step.children).length > 0
 }
 
 function getStepName(step: SparkNode, index: number): string | number {
@@ -118,6 +127,19 @@ function getStepName(step: SparkNode, index: number): string | number {
 
 function getStepKey(step: SparkNode, index: number): string | number {
   return nodeId(step) ?? getStepName(step, index)
+}
+
+function getStepComponentProps(step: SparkNode): Record<string, unknown> {
+  const stepNodeId = nodeId(step)
+  return {
+    type: step.type,
+    ...(step.id !== undefined ? { id: step.id } : {}),
+    ...(stepNodeId !== undefined ? { nodeId: stepNodeId } : {}),
+    ...(step.dock !== undefined ? { dock: step.dock } : {}),
+    ...(step.order !== undefined ? { order: step.order } : {}),
+    ...(step.children !== undefined ? { children: step.children } : {}),
+    ...(step.props ?? {}),
+  }
 }
 
 function activateStep(index: number): void {
@@ -173,14 +195,8 @@ function getStepSlotScope(step: SparkNode, index: number) {
     step,
     stepIndex: index,
     stepName: getStepName(step, index),
-    stepTitle: getStepLabel(step, index),
     activeStepName: activeStepName.value,
   }
-}
-
-function getStepLabel(step: SparkNode, index: number): string {
-  const value = nodeInputProp(step, 'title') ?? nodeInputProp(step, 'label')
-  return typeof value === 'string' && value.trim().length > 0 ? value : `步骤${index + 1}`
 }
 </script>
 
@@ -222,13 +238,13 @@ function getStepLabel(step: SparkNode, index: number): string {
   align-items: stretch;
 }
 
-.renderer-steps-content {
+.renderer-steps-content-body {
   width: 100%;
   min-width: 0;
   margin-top: 16px;
 }
 
-.renderer-steps-grid-item {
+.renderer-steps-content-grid-item {
   min-width: 0;
 }
 </style>

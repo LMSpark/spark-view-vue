@@ -63,17 +63,11 @@ export type ComponentContext = SparkCapabilityContext
 /**
  * SparkNode - 组件配置的最小输入类型
  *
- * 严格对齐 Vue `h(type, props, children)` 三段式 + 停靠/排序扩展：
- *   type     → 渲染什么组件
- *   props    → 组件接收的全部属性（visible / disabled / on / dataKey / field … 均在此）
- *   children → 嵌套子节点
- *   id       → 节点唯一标识（用于 key / 调试 / 脚本引用）
- *   dock     → 子节点停靠区域（容器按 dock 过滤 children，默认 'default'）
+ *   dock     → 子节点停靠区域（容器按 dock 过滤 children，默认 ''）
  *   order    → 同 dock 内排序权重（升序，默认 0）
  *
- * rule.json 允许将 id / visible / disabled / on / dataKey / field 等写在根级（便于阅读），
- * 渲染器通过 nodeInputProp / nodeInputProps 在运行时统一解释这些输入；
- * 组件层一律通过 Vue Props 消费，避免把结构迁移职责绑定在页面级预处理管线中。
+ * 组件运行时只消费 `props` 中的业务输入；
+ * 页面绑定阶段会将根级兼容输入统一归集到 `props`，组件层本身不直接读取根级业务字段。
  *
  * ❗ id / dock / order 是**结构键**（框架基础设施使用），不会被视为组件业务输入。
  *
@@ -84,7 +78,7 @@ export type ComponentContext = SparkCapabilityContext
  *   "type": "r-table",
  *   "dataKey": "Orders@rows",
  *   "children": [
- *     // dock 默认 'default' → 列区域
+ *     // 省略 dock → 默认主内容区
  *     { "type": "el-table-column", "props": { "field": "name", "label": "姓名" } },
  *     { "type": "el-table-column", "props": { "field": "age",  "label": "年龄" }, "order": 2 },
  *     // dock: 'toolbar' → 顶部工具栏
@@ -95,13 +89,15 @@ export type ComponentContext = SparkCapabilityContext
  * }
  * ```
  */
+export type SparkNodeChildren = SparkNode[] | string[]
+
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
   /** 组件属性（所有组件可见的数据均通过 props 传递） */
   props?: Record<string, unknown>
-  /** 子组件配置（递归） */
-  children?: SparkNode[]
+  /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串文本子节点数组 */
+  children?: SparkNodeChildren
   /**
    * 节点唯一标识
    *
@@ -113,7 +109,7 @@ export interface SparkNode {
    * 停靠区域 — 子节点在父容器中的渲染目标区域
    *
    * 容器组件按 dock 值过滤 children，分区渲染：
-   * - `'default'`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）
+    * - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）
    * - `'toolbar'` — 顶部工具栏
    * - `'actions'` — 行操作列
    * - `'filter'`  — 筛选区
@@ -121,7 +117,9 @@ export interface SparkNode {
    * - `'footer'`  — 底部区域
    * - 自定义字符串 — 容器自行扩展
    *
-   * @default 'default'
+    * 兼容：历史 `'default'` 会在运行时归一化为默认区域。
+    *
+    * @default ''
    */
   dock?: string
   /**
@@ -134,37 +132,55 @@ export interface SparkNode {
   order?: number
 }
 
-// ── SparkNode 结构键（编译时同步） ────────────────────────────────────────
+// ── SparkNode 结构键（运行时） ────────────────────────────────────────────
 
 /**
- * SparkNode 自身结构键列表
+ * SparkNode 结构键集合
  *
  * 这些键归 SPARK 框架所有（type/props/children = h() 三段式，id = 标识，dock/order = 布局元数据），
- * 绑定阶段**不收入 props**。其余所有根级字段一律收入 props。
- *
- * 类型约束：数组元素必须是 `keyof SparkNode`，TypeScript 编译时校验；
- * 如果 SparkNode 新增字段而此处漏加，编译不会报错但绑定时该字段会被误收入 props，
- * 运行时行为偏差会在测试中暴露。
+ * 结构键永远只保留在 SparkNode 自身，不属于组件输入。
  */
-const _SPARK_NODE_KEY_LIST: ReadonlyArray<keyof SparkNode> = ['type', 'props', 'children', 'id', 'dock', 'order']
-
-/**
- * 运行时结构键集合 — 供绑定阶段判定"根级字段是否收入 props"
- *
- * 替代原 `_STRUCTURAL_KEYS` 硬编码 Set，从 SparkNode 接口 keyof 派生，类型安全。
- */
-export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(_SPARK_NODE_KEY_LIST)
+export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['type', 'props', 'children', 'id', 'dock', 'order'])
 
 // ── SparkNode 停靠区域工具函数 ────────────────────────────────────────────
 
-/** 默认停靠区域 */
-export const DEFAULT_DOCK = 'default'
+/** 默认停靠区域（主内容区） */
+export const DEFAULT_DOCK = ''
+
+function normalizeDockValue(dock: string | undefined): string {
+  if (dock === undefined || dock.length === 0 || dock === 'default') return DEFAULT_DOCK
+  return dock
+}
 
 /**
- * 读取节点的 dock 值（缺省 → 'default'）
+ * 归一化 SparkNode 的结构语义。
+ *
+ * 统一处理：
+ * - 空 type → fallbackType
+ * - dock 缺省 / 'default' → DEFAULT_DOCK
+ * - order 缺省 → 0
+ * - children 缺省 → []
+ */
+export function normalizeSparkNode(node: SparkNode, fallbackType: string = node.type): SparkNode {
+  const normalizedType = typeof node.type === 'string' && node.type.length > 0
+    ? node.type
+    : (fallbackType.length > 0 ? fallbackType : 'unknown')
+
+  return {
+    type: normalizedType,
+    ...(node.props !== undefined ? { props: node.props } : {}),
+    children: Array.isArray(node.children) ? node.children : [],
+    ...(node.id !== undefined ? { id: node.id } : {}),
+    dock: normalizeDockValue(node.dock),
+    order: nodeOrder(node),
+  }
+}
+
+/**
+ * 读取节点的 dock 值（缺省 / 'default' → ''）
  */
 export function nodeDock(node: SparkNode): string {
-  return typeof node.dock === 'string' && node.dock.length > 0 ? node.dock : DEFAULT_DOCK
+  return normalizeSparkNode(node).dock ?? DEFAULT_DOCK
 }
 
 /**
@@ -180,78 +196,62 @@ export function nodeOrder(node: SparkNode): number {
  * 容器组件渲染流程：`getDockedChildren(children, 'toolbar')` → 按 order 升序 → 循环渲染。
  * 排序算法稳定：相同 order 保持原始数组顺序。
  *
- * @param children SparkNode 子节点数组
- * @param dock 目标停靠区域（默认 'default'）
+ * @param children SparkNode 子节点数组或字符串文本子节点
+ * @param dock 目标停靠区域（默认 ''）
  * @returns 过滤 + 排序后的子节点数组
  *
  * @example
  * ```ts
  * const toolbarItems = getDockedChildren(props.children, 'toolbar')
- * const columns = getDockedChildren(props.children)  // dock='default'
+ * const columns = getDockedChildren(props.children)  // dock=''
  * const actions = getDockedChildren(props.children, 'actions')
  * ```
  */
-export function getDockedChildren(children: SparkNode[] | undefined, dock: string = DEFAULT_DOCK): SparkNode[] {
-  if (!children || children.length === 0) return []
-  const filtered = children.filter(child => nodeDock(child) === dock)
+export function getDockedChildren(children: SparkNodeChildren | undefined, dock: string = DEFAULT_DOCK): SparkNode[] {
+  if (!Array.isArray(children) || children.length === 0) return []
+  const targetDock = normalizeDockValue(dock)
+  const filtered = children.filter(isSparkNode).filter(child => nodeDock(child) === targetDock)
   if (filtered.length <= 1) return filtered
   // 稳定排序：相同 order 保持原始顺序
   return filtered.sort((a, b) => nodeOrder(a) - nodeOrder(b))
 }
 
+/** 判断值是否为 SparkNode 配置对象 */
+export function isSparkNode(value: unknown): value is SparkNode {
+  return value !== null
+    && typeof value === 'object'
+    && 'type' in value
+    && typeof (value as { type?: unknown }).type === 'string'
+}
+
+/** 从 children 输入中提取结构子节点，忽略文本子节点 */
+export function getSparkNodeChildren(children: SparkNodeChildren | undefined): SparkNode[] {
+  if (!Array.isArray(children) || children.length === 0) return []
+  return children.filter(isSparkNode)
+}
+
 /**
  * 读取节点 id
  *
- * 优先级：顶层 `node.id` → 兼容 `node.props.id`（存量配置）
+ * 结构标识只读取顶层 `node.id`
  */
 export function nodeId(node: { id?: string; props?: Record<string, unknown> }): string | undefined {
   if (typeof node.id === 'string') return node.id
-  const propsId = node.props?.['id']
-  return typeof propsId === 'string' ? propsId : undefined
+  return undefined
 }
 
 /**
  * 读取节点输入属性。
- *
- * 优先级：props[key] → 根级兼容字段 → 兼容 name -> field。
- * 用于组件/渲染层统一解释 SparkNode 输入，减少绑定层预处理职责。
  */
 export function nodeInputProp(node: SparkNode, key: string): unknown {
-  const propsValue = node.props?.[key]
-  if (propsValue !== undefined) return propsValue
-
-  const rawNode = node as SparkNode & Record<string, unknown>
-  if (key === 'field') {
-    const legacyName = rawNode['name']
-    if (typeof legacyName === 'string' && legacyName.length > 0) return legacyName
-  }
-
-  if (SPARK_NODE_STRUCT_KEYS.has(key)) return undefined
-  return rawNode[key]
+  return node.props?.[key]
 }
 
 /**
  * 收集节点可传递输入属性。
- *
- * 根级非结构字段会并入 props；已存在的 props 优先。
  */
 export function nodeInputProps(node: SparkNode): Record<string, unknown> {
-  const merged: Record<string, unknown> = {}
-  const rawNode = node as SparkNode & Record<string, unknown>
-
-  for (const [key, value] of Object.entries(rawNode)) {
-    if (SPARK_NODE_STRUCT_KEYS.has(key) || key === 'name') continue
-    merged[key] = value
-  }
-
-  if (merged['field'] === undefined) {
-    const legacyName = rawNode['name']
-    if (typeof legacyName === 'string' && legacyName.length > 0) {
-      merged['field'] = legacyName
-    }
-  }
-
-  return node.props ? { ...merged, ...node.props } : merged
+  return node.props ?? {}
 }
 
 // ============================================================================

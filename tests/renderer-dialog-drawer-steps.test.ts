@@ -191,15 +191,15 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     })
 
     expect(wrapper.find('.spark-action-stub[data-type="steps-toolbar-action"]').exists()).toBe(true)
-    expect(wrapper.find('.renderer-steps-content').attributes('style')).toContain('display: grid;')
-    expect(wrapper.find('.renderer-steps-content').attributes('style')).toContain('gap: 16px;')
+    expect(wrapper.find('.renderer-steps-content-body').attributes('style')).toContain('display: grid;')
+    expect(wrapper.find('.renderer-steps-content-body').attributes('style')).toContain('gap: 16px;')
 
     await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
     expect(onStepChange).toHaveBeenCalledWith('step2', expect.objectContaining({ type: 'r-step' }), 1)
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['step2'])
   })
 
-  it('should resolve root-level step fields without binding-layer props migration', async () => {
+  it('should resolve step fields from props only', async () => {
     const onStepChange = vi.fn()
     const wrapper = mount(RendererSteps as any, {
       props: {
@@ -207,19 +207,16 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
         children: [
           {
             type: 'r-step',
-            title: '根级步骤一',
-            name: 'root-step-1',
-            gridGap: 14,
+            props: { title: '根级步骤一', name: 'root-step-1', gridGap: 14 },
             children: [
-              { type: 'child-a', colSpan: 11 },
+              { type: 'child-a', props: { colSpan: 11 } },
             ],
           },
           {
             type: 'r-step',
-            title: '根级步骤二',
-            name: 'root-step-2',
+            props: { title: '根级步骤二', name: 'root-step-2' },
             children: [
-              { type: 'child-b', colSpan: 24 },
+              { type: 'child-b', props: { colSpan: 24 } },
             ],
           },
         ],
@@ -233,8 +230,8 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
       },
     })
 
-    expect(wrapper.find('.renderer-steps-content').attributes('style')).toContain('gap: 14px;')
-    expect(wrapper.find('.renderer-steps-grid-item').attributes('style')).toContain('grid-column: span 11 / span 11;')
+    expect(wrapper.find('.renderer-steps-content-body').attributes('style')).toContain('gap: 14px;')
+    expect(wrapper.find('.renderer-steps-content-grid-item').attributes('style')).toContain('grid-column: span 11 / span 11;')
 
     await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
     expect(onStepChange).toHaveBeenCalledWith('root-step-2', expect.objectContaining({ type: 'r-step' }), 1)

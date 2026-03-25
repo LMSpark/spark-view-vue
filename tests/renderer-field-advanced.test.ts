@@ -4,7 +4,7 @@ import { defineComponent, h, reactive } from 'vue'
 import { PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
 import {
   Spark, SPARK_REGISTRY_KEY, useSparkComponent,
-  CONTEXT_DATA, FIELD_CONTEXT,
+  CONTEXT_DATA,
   FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,
   FieldFilePath, FieldImage, FieldEntityPicker, FieldUserPicker,
   FieldDeptPicker, FieldProductPicker,
@@ -36,8 +36,7 @@ function mountWithFieldContext(
 ) {
   const Provider = defineComponent({
     setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'test-provider' }, { parentContext: rootContext })
-      sparkProvide(FIELD_CONTEXT, 'form')
+      const { sparkProvide } = useSparkComponent({ type: 'r-field-scope' }, { parentContext: rootContext })
       sparkProvide(CONTEXT_DATA, model)
       if (pageService) {
         sparkProvide(PAGE_SERVICE, pageService)

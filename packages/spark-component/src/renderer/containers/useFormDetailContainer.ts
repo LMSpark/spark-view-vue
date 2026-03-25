@@ -3,7 +3,7 @@ import { useSparkComponent } from '../_pkg'
 import { getDockedChildren, type SparkNode } from '../_pkg'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
+import { CONTEXT_DATA } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerGrid } from './useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
@@ -13,9 +13,9 @@ import { createCurrentRowSlotScope } from './slotScopeFactories'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
 
-interface FormDetailContainerProps {
+interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
-  children: SparkNode[] | undefined
+  children?: SparkNode[]
   docks?: ContainerDocks
   gridColumns: number | undefined
   gridGap: number | string | undefined
@@ -27,8 +27,8 @@ interface FormDetailContainerProps {
 /**
  * RendererForm 与 RendererDetail 的共享初始化逻辑。
  *
- * 两者仅在模板包装元素（`<el-form>` vs `<div>`）和 FIELD_CONTEXT 值
- * （`'form'` vs `'detail'`）上有差异，数据解析、工具栏、上下文注入完全一致。
+ * 两者仅在模板包装元素（`<el-form>` vs `<div>`）和语义类型
+ * （`'r-form'` vs `'r-detail'`）上有差异，数据解析、工具栏、上下文注入完全一致。
  */
 export function useFormDetailContainer(
   props: FormDetailContainerProps,
@@ -53,12 +53,16 @@ export function useFormDetailContainer(
 
   // ── SPARK 上下文与数据源 ─────────────────────────────────────────────────
 
-  const containerType = fieldContext === 'form' ? 'r-form' : 'r-detail'
   const logPrefix = fieldContext === 'form' ? 'RendererForm' : 'RendererDetail'
+  const componentType = props.type
 
-  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkComponent(
-    { type: containerType }
-  )
+  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkComponent({
+    type: componentType,
+    ...(props.id !== undefined ? { id: props.id } : {}),
+    ...(props.dock !== undefined ? { dock: props.dock } : {}),
+    ...(props.order !== undefined ? { order: props.order } : {}),
+    ...(props.children !== undefined ? { children: props.children } : {}),
+  })
   const pageDataSet = sparkConsume(PAGE_DATASET)
 
   const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
@@ -93,7 +97,6 @@ export function useFormDetailContainer(
 
   // ── 能力提供 ──────────────────────────────────────────────────────────────
 
-  sparkProvide(FIELD_CONTEXT, fieldContext)
   sparkProvide(CONTEXT_DATA, contextData)
 
   // ── 槽位作用域 ────────────────────────────────────────────────────────────

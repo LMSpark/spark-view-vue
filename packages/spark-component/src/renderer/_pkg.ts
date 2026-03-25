@@ -15,10 +15,11 @@ export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 // ── 核心类型 ──
 export type {
   SparkNode,
+  SparkNodeChildren,
   ComponentContext,
   LoggerApi,
 } from '../types.js'
-export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, DEFAULT_DOCK, nodeDock, nodeOrder, getDockedChildren } from '../types.js'
+export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, DEFAULT_DOCK, normalizeSparkNode, nodeDock, nodeOrder, getDockedChildren, isSparkNode, getSparkNodeChildren } from '../types.js'
 
 // ── DI 键 ──
 
@@ -27,7 +28,6 @@ export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, DEFAULT_
 export {
   PAGE_DATASET,
   DATA_SOURCE,
-  FIELD_CONTEXT,
   CONTEXT_DATA,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,

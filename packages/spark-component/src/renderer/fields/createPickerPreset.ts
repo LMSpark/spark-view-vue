@@ -7,9 +7,10 @@
  *
  * 每个变体组件仅覆盖 FieldEntityPicker 的若干默认 prop，其余完全透传。
  */
-import { computed, defineComponent, h } from 'vue'
+import { computed, defineComponent, h, useAttrs } from 'vue'
 import type { PropType } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
+import type { SparkNode } from '../_pkg'
 import FieldEntityPicker from './FieldEntityPicker.vue'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
@@ -26,11 +27,13 @@ interface PickerPresetDefaults {
  * 与 FieldEntityPicker 的 Props 接口一一对应，确保 v-bind 透传正确。
  */
 const SHARED_PROPS = {
+  field: { type: String, default: undefined },
   name: { type: String, default: undefined },
   label: { type: String, default: undefined },
   width: { type: Number, default: undefined },
   modelValue: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
   options: { type: Array as PropType<unknown[]>, default: undefined },
+  optionKey: { type: String, default: undefined },
   optionLabelField: { type: String, default: undefined },
   optionValueField: { type: String, default: undefined },
   placeholder: { type: String, default: undefined },
@@ -42,6 +45,7 @@ const SHARED_PROPS = {
   separator: { type: String, default: ', ' },
   valueMode: { type: String as PropType<'auto' | 'array' | 'comma-string'>, default: 'auto' },
   entityName: { type: String, default: undefined },
+  children: { type: Array as PropType<SparkNode[]>, default: undefined },
 } as const
 
 /**
@@ -53,19 +57,26 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
     props: SHARED_PROPS,
     emits: ['update:modelValue'],
     setup(props) {
+      const attrs = useAttrs()
+
       const forwardedProps = computed<Record<string, unknown>>(() => {
         const result: Record<string, unknown> = {}
 
         // 定义值 prop 列表（仅在 !== undefined 时透传，避免覆盖 EntityPicker 默认值）
         const conditionalKeys = [
-          'name', 'label', 'width',
-          'modelValue', 'options', 'optionLabelField', 'optionValueField',
+          'label', 'width',
+          'modelValue', 'options', 'optionKey', 'optionLabelField', 'optionValueField', 'children',
         ] as const
 
         for (const key of conditionalKeys) {
           if (props[key] !== undefined) {
             result[key] = props[key]
           }
+        }
+
+        const resolvedField = props['field'] ?? props['name']
+        if (resolvedField !== undefined) {
+          result['field'] = resolvedField
         }
 
         // 带预设默认值的 prop —— 用户传值优先，否则使用 preset
@@ -84,7 +95,7 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
         return result
       })
 
-      return () => h(FieldEntityPicker, forwardedProps.value)
+      return () => h(FieldEntityPicker, { type: 'r-entity-picker', ...attrs, ...forwardedProps.value })
     },
   })
 }

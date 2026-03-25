@@ -57,6 +57,7 @@
       <div v-show="!filtersCollapsed" class="renderer-table-filters__content">
       <div class="renderer-table-filters__body">
         <RendererFieldScope
+          type="r-field-scope"
           :model="filterModel"
           :configs="filterConfigs"
           :grid-columns="filterGridColumnsValue"
@@ -86,7 +87,7 @@
       <el-table
         ref="nativeTableRef"
         :data="tableData"
-        v-bind="$attrs"
+        v-bind="tableAttrs"
         @current-change="handleCurrentChange"
         @selection-change="handleSelectionChange"
       >
@@ -189,12 +190,12 @@
  */
 import { computed, defineComponent, ref, useAttrs, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { nodeId, nodeInputProp, getDockedChildren, nodeDock, DEFAULT_DOCK, type SparkNode, type RendererTableApi } from '../_pkg'
+import { nodeId, nodeInputProp, getDockedChildren, getSparkNodeChildren, nodeDock, DEFAULT_DOCK, type SparkNode, type RendererTableApi } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
-import { FIELD_CONTEXT, MODULE_CONTEXT } from '../_pkg'
+import { MODULE_CONTEXT } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
@@ -222,6 +223,16 @@ import {
 type RowActionsPosition = LateralActionPosition
 
 interface Props {
+  /** 组件类型（运行时缺省回落为 r-table） */
+  type?: string
+  /** 组件属性透传占位（兼容 SparkNode 结构） */
+  props?: Record<string, unknown>
+  /** 节点唯一标识 */
+  id?: string
+  /** 停靠区域 */
+  dock?: string
+  /** 排序权重 */
+  order?: number
   /** DataKey 格式：tableName@field */
   dataKey?: string
   /** 子节点列表 */
@@ -263,6 +274,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-table',
   docks: () => ({}),
   filterColumns: () => [],
   filterClass: '',
@@ -279,8 +291,14 @@ const props = withDefaults(defineProps<Props>(), {
   rowActionsAlign: 'left',
   rowActionsClass: '',
 })
+
+const componentType = computed(() => props.type ?? 'r-table')
 const attrs = useAttrs()
 const slots = useSlots()
+const tableAttrs = computed<Record<string, unknown>>(() => {
+  const { toolbar: _legacyToolbar, ...rest } = attrs as Record<string, unknown>
+  return rest
+})
 
 const ElTableColumns = defineComponent({
   name: 'ElTableColumns',
@@ -315,9 +333,13 @@ const sparkChildren = computed(() => {
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
-  { type: 'r-table' }
-)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent({
+  type: componentType.value,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
@@ -570,15 +592,17 @@ function handleBuiltinRowAction(action: SparkNode, row: IDataRow, index: number)
 // ── 子节点分类 ────────────────────────────────────────────────────────────
 
 function isCollectedTableColumn(config: SparkNode): boolean {
-  if (/^Render[A-Z]/.test(config.type)) return false
-  if (config.type === 'el-table-column') return true
-  if (!config.type.startsWith('r-')) return false
+  const type = config.type
+  if (typeof type !== 'string' || type.length === 0) return false
+  if (/^Render[A-Z]/.test(type)) return false
+  if (type === 'el-table-column') return true
+  if (!type.startsWith('r-')) return false
   const field = nodeInputProp(config, 'field')
   if (typeof field === 'string' && field.length > 0) {
     return true
   }
   // 分组列：无 field 但有子列（如 r-column-group）
-  const kids = Array.isArray(config.children) ? config.children : []
+  const kids = getSparkNodeChildren(config.children)
   if (kids.length > 0) return true
   return false
 }
@@ -626,8 +650,6 @@ function toggleFiltersCollapsed() {
 }
 
 // ── 字段上下文与事件桥接 ──────────────────────────────────────────────────
-
-sparkProvide(FIELD_CONTEXT, 'table')
 
 function handleCurrentChange(currentRow: IDataRow | null) {
   resolvedView.value?.selection.setCurrentRow(currentRow ?? null)

@@ -4,7 +4,7 @@
  * @description 只读详情容器，绑定 DataView.currentRow 展示当前行字段，支持 dock 分区工具栏，不支持编辑回写
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
- * @provides FIELD_CONTEXT
+ * @context 通过当前组件 type='r-detail' 提供字段语义
  * @consumes PAGE_DATASET
  * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } } } }
  * @example { "type": "r-detail", "dataKey": "Users@currentRow", "children": [] }
@@ -49,7 +49,7 @@ import type { ContainerDocks } from '../../types'
 import { useFormDetailContainer } from './useFormDetailContainer'
 import type { RendererDetailApi } from '../_pkg'
 
-interface Props {
+interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
   /** 子节点列表 */
@@ -69,6 +69,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-detail',
   docks: () => ({}),
   gridColumns: 24,
   gridGap: 0,
@@ -95,7 +96,16 @@ const {
   getDefaultSlotScope,
   contextData: detailData,
 } = useFormDetailContainer({
-  ...props,
+  type: props.type,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+  dataKey: props.dataKey,
+  docks: props.docks,
+  gridColumns: props.gridColumns,
+  gridGap: props.gridGap,
+  gridAutoRows: props.gridAutoRows,
 }, 'detail')
 
 // ── r-detail 包装 API ────────────────────────────────────────────────────

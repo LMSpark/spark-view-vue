@@ -32,9 +32,9 @@
           <span class="custom-tree-node">
             <RendererDataScope
               v-if="nodeContentChildren.length > 0"
+              type="r-data-scope"
               :children="nodeContentChildren"
               :data="(slotProps?.data as IDataRow) ?? {}"
-              field-context="tree"
             />
             <slot v-else :node="slotProps?.node" :data="slotProps?.data">
               <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
@@ -54,8 +54,7 @@
 /**
  * RendererTree - 树形容器组件
  *
- * 内部通过 useSparkComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey，
- * 不再依赖 bindRules.ts 外部注入。
+ * 内部通过 useSparkComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey。
  */
 import { computed, ref } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
@@ -63,7 +62,7 @@ import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
+import { CONTEXT_DATA } from '../_pkg'
 import type { RendererTreeApi } from '../_pkg'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
 import { useContainerToolbar } from './useContainerToolbar'
@@ -90,6 +89,16 @@ interface ElTreeComponent {
 }
 
 interface Props {
+  /** 组件类型（运行时缺省回落为 r-tree） */
+  type?: string
+  /** 组件属性透传占位（兼容 SparkNode 结构） */
+  props?: Record<string, unknown>
+  /** 节点唯一标识 */
+  id?: string
+  /** 停靠区域 */
+  dock?: string
+  /** 排序权重 */
+  order?: number
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
   /** 子节点（树节点内容配置） */
@@ -108,7 +117,10 @@ interface Props {
   onNodeCollapse?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-tree',
+})
+const componentType = computed(() => props.type ?? 'r-tree')
 /** dataKey 直接来自 Props */
 const effectiveDataKey = computed(() => props.dataKey)
 
@@ -128,9 +140,13 @@ const nodeContentChildren = computed<SparkNode[]>(() => {
 const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 
 // 接入 SPARK 能力链
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
-  { type: 'r-tree' }
-)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent({
+  type: componentType.value,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
@@ -182,8 +198,6 @@ const {
   modelPermission,
 })
 
-// 向字段子组件提供渲染上下文（同步，先于 watcher）
-sparkProvide(FIELD_CONTEXT, 'tree')
 sparkProvide(CONTEXT_DATA, {} as Record<string, unknown>)
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────

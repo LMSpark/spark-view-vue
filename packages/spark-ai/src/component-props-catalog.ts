@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-25T11:11:33.021Z
- * 条目数量：78
+ * 生成时间：2026-03-25T17:03:01.135Z
+ * 条目数量：81
  */
 import type { ComponentCatalog } from './catalog-types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-25T11:11:33.019Z",
-  "componentCount": 78,
+  "buildTime": "2026-03-25T17:03:01.131Z",
+  "componentCount": 81,
   "registry": {
     "containers": [
       "r-block",
@@ -44,6 +44,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-cascader",
       "r-checkbox",
       "r-checkbox-group",
+      "r-collapse-item",
       "r-color",
       "r-date",
       "r-dept-picker",
@@ -60,7 +61,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-rate",
       "r-select",
       "r-slider",
+      "r-step-item",
       "r-switch",
+      "r-tab-pane",
       "r-text",
       "r-textarea",
       "r-toolbar",
@@ -109,6 +112,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。",
       "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-table\"",
+          "description": "组件类型（运行时缺省回落为 r-table）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性透传占位（兼容 SparkNode 结构）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重"
+        },
         {
           "name": "dataKey",
           "type": "string",
@@ -215,7 +249,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "操作列 CSS 类名"
         }
       ],
-      "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【工具栏】\nchildren 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE, FIELD_CONTEXT\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
+      "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【工具栏】\nchildren 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
       "binding": {
         "selfResolving": true
       }
@@ -265,6 +299,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-form\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "rootFields": [
@@ -304,7 +369,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "行高定义，默认 'minmax(32px, auto)'"
         }
       ],
-      "notes": "**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
+      "notes": "**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
       "binding": {
         "selfResolving": true
       }
@@ -361,6 +426,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"left\"",
           "description": "值对齐"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-detail\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "rootFields": [
@@ -395,7 +491,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "行高定义，默认 'minmax(32px, auto)'"
         }
       ],
-      "notes": "**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
+      "notes": "**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
       "binding": {
         "selfResolving": true
       }
@@ -405,6 +501,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。",
       "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tree\"",
+          "description": "组件类型（运行时缺省回落为 r-tree）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性透传占位（兼容 SparkNode 结构）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重"
+        },
         {
           "name": "dataKey",
           "type": "string",
@@ -477,7 +604,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "节点折叠回调"
         }
       ],
-      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
+      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA",
       "binding": {
         "selfResolving": true
       }
@@ -596,6 +723,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "1",
           "description": "项跨行数"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-list\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "rootFields": [
@@ -722,6 +880,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string | number",
           "required": false,
           "description": "当前激活标签页"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tabs\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -790,6 +979,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "CollapseValue",
           "required": false,
           "description": "当前展开的面板"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-collapse\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -854,6 +1074,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string | number",
           "required": false,
           "description": "当前步骤"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-steps\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -906,6 +1157,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。",
       "props": [
         {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "description": "dock 布局配置"
+        },
+        {
           "name": "title",
           "type": "string",
           "required": false,
@@ -923,8 +1180,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "headerClass",
           "type": "string",
           "required": false,
-          "default": "\"\"",
-          "description": "头部 CSS 类名"
+          "default": "\"\""
         },
         {
           "name": "bodyClass",
@@ -937,8 +1193,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "footerClass",
           "type": "string",
           "required": false,
-          "default": "\"\"",
-          "description": "底部 CSS 类名"
+          "default": "\"\""
         },
         {
           "name": "gridColumns",
@@ -960,6 +1215,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-dialog\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -1067,6 +1353,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。",
       "props": [
         {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "description": "dock 布局配置"
+        },
+        {
           "name": "title",
           "type": "string",
           "required": false,
@@ -1084,8 +1376,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "headerClass",
           "type": "string",
           "required": false,
-          "default": "\"\"",
-          "description": "头部 CSS 类名"
+          "default": "\"\""
         },
         {
           "name": "bodyClass",
@@ -1098,8 +1389,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "footerClass",
           "type": "string",
           "required": false,
-          "default": "\"\"",
-          "description": "底部 CSS 类名"
+          "default": "\"\""
         },
         {
           "name": "gridColumns",
@@ -1121,6 +1411,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-drawer\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -1325,6 +1646,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-section\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "rootFields": [
@@ -1471,6 +1823,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
           "name": "width",
           "type": "number",
           "required": false
@@ -1478,6 +1835,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "options",
           "type": "unknown[]",
+          "required": false
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
           "required": false
         },
         {
@@ -1588,6 +1950,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
           "name": "width",
           "type": "number",
           "required": false
@@ -1595,6 +1962,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "options",
           "type": "unknown[]",
+          "required": false
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
           "required": false
         },
         {
@@ -1705,6 +2077,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
           "name": "width",
           "type": "number",
           "required": false
@@ -1712,6 +2089,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "options",
           "type": "unknown[]",
+          "required": false
+        },
+        {
+          "name": "optionKey",
+          "type": "string",
           "required": false
         },
         {
@@ -1847,6 +2229,315 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"tail\"",
           "description": "尾区使用的 dock 名称，默认 tail，保留未来自定义命名空间能力"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-toolbar\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
+        }
+      ]
+    },
+    "r-tab-pane": {
+      "type": "r-tab-pane",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "nodeId",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "lazy",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "closable",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "bodyClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "gridColumns",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    "r-step-item": {
+      "type": "r-step-item",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "nodeId",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "bodyClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "gridColumns",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "mode",
+          "type": "\"header\" | \"content\"",
+          "required": true
+        }
+      ],
+      "emits": [
+        {
+          "name": "activate",
+          "type": "[index: number]",
+          "schema": []
+        }
+      ]
+    },
+    "r-collapse-item": {
+      "type": "r-collapse-item",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "nodeId",
+          "type": "string | undefined",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "bodyClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "gridColumns",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "required": true
         }
       ]
     },
@@ -1948,6 +2639,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"\\u6D4F\\u89C8\"",
           "description": "只读模式按钮文案"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-upload\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2070,6 +2792,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "true",
           "description": "展开后才渲染子节点"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tree-select\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2177,6 +2930,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"original\"",
           "description": "右侧排序方式"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-transfer\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2269,6 +3053,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"\\u8BF7\\u8F93\\u5165\\u5185\\u5BB9\"",
           "description": "占位提示"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-textarea\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2311,6 +3126,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "双向绑定值"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-text\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2367,6 +3213,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"\\u5426\"",
           "description": "未激活时文案"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-switch\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2446,6 +3323,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "false",
           "description": "显示输入框"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-slider\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2533,6 +3441,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "false",
           "description": "可搜索"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-select\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2599,6 +3538,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "false",
           "description": "允许半星"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-rate\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2672,6 +3642,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "false",
           "description": "按钮风格"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-radio\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2760,6 +3761,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "boolean",
           "required": false,
           "description": "范围筛选标记"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-number\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2878,6 +3910,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "1",
           "description": "最大显示标签数"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-multi-select\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2994,6 +4057,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "true",
           "description": "可清除"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-image\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3088,6 +4182,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"\"",
           "description": "图标 CSS 类名前缀"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-icon\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3138,6 +4263,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "10",
           "description": "编辑器高度行数"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-html-editor\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3236,6 +4392,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "true",
           "description": "可清除"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-file-path\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3320,6 +4507,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"\\u6D4F\\u89C8\"",
           "description": "上传按钮文案"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-file-browser\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3450,6 +4668,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"\\u9879\\u76EE\"",
           "description": "实体名称"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-entity-picker\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3523,6 +4772,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "boolean",
           "required": false,
           "description": "范围筛选标记"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-date\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3576,6 +4856,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "双向绑定值（颜色字符串，透传 el-color-picker）"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-color\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3650,6 +4961,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "false",
           "description": "按钮风格"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-checkbox-group\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3731,6 +5073,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"\"",
           "description": "复选框右侧文案"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-checkbox\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3855,6 +5228,37 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "true",
           "description": "值是否为完整路径数组"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-cascader\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4342,8 +5746,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@860": {
-                        "name": "__@toPrimitive@860",
+                      "__@toPrimitive@51435": {
+                        "name": "__@toPrimitive@51435",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."

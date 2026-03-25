@@ -7,10 +7,10 @@
  */
 
 import { computed, onMounted, onUnmounted, inject, provide as vueProvide, getCurrentInstance, markRaw } from 'vue'
-import { sparkProvide, sparkConsume, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
+import { sparkProvide as rawSparkProvide, sparkConsume as rawSparkConsume, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode, ComponentRegistry } from './types.js'
-import { SPARK_REGISTRY_KEY, nodeId, nodeInputProp, nodeInputProps } from './types.js'
+import { SPARK_REGISTRY_KEY, nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from './internal-context.js'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
@@ -155,7 +155,7 @@ function buildEffectiveConfig(instance: ReturnType<typeof getCurrentInstance>, f
     base.id = runtimeId
   }
 
-  return base
+  return normalizeSparkNode(base, 'unknown')
 }
 
 function resolveParentAccess(overrideParentContext?: SparkCapabilityContext): Omit<UseSparkCapabilityReaderReturn, 'sparkConsume'> {
@@ -174,7 +174,7 @@ function createSparkConsume(
   return ((name: string | symbol): unknown => {
     const lookupContext = fallbackContext ?? parentContext
     if (!lookupContext) return null
-    const impl = sparkConsume(lookupContext, name)
+    const impl = rawSparkConsume(lookupContext, name)
     return impl !== undefined ? impl : null
   }) as UseSparkCapabilityReaderReturn['sparkConsume']
 }
@@ -212,6 +212,7 @@ export function useSparkComponent(
   // SparkComponentRenderer 通过 v-bind="componentProps" 传递 SparkNode.props（含 id），
   // ID 已在绑定阶段（bindSparkRuleEvents）按组件类型自动分配并去重。
   const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
+  const resolvedType = config.type
 
   const resolvedId = nodeId(config) ?? `spark-${++_idCounter}`
 
@@ -220,7 +221,7 @@ export function useSparkComponent(
 
   const context: SparkCapabilityContext = {
     id: resolvedId,
-    type: config.type,
+    type: resolvedType,
     capabilities: new Map<CapabilityName, unknown>(),
   }
   if (parentContext !== null) {
@@ -231,12 +232,12 @@ export function useSparkComponent(
   vueProvide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, context)
 
   // ── 页面级实例登记（可选） ──
-  const pageComponentRegistry = sparkConsume<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
+  const pageComponentRegistry = rawSparkConsume<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
   if (pageComponentRegistry) {
-    const normalizedProps = nodeInputProps(config)
-    const instanceEntry = Object.keys(normalizedProps).length === 0
+    const componentProps = config.props ?? {}
+    const instanceEntry = Object.keys(componentProps).length === 0
       ? { id: context.id, type: context.type }
-      : { id: context.id, type: context.type, props: normalizedProps }
+      : { id: context.id, type: context.type, props: componentProps }
     pageComponentRegistry.registerInstance(instanceEntry)
   }
 
@@ -260,13 +261,13 @@ export function useSparkComponent(
   const resolveLogger = (): LoggerApi => {
     if (_loggerCache !== null) return _loggerCache
     // 1. 优先查找 LOGGER 能力键（最近祖先覆盖，实现组件子树级日志替换）
-    const loggerImpl = sparkConsume<LoggerApi>(context, LOGGER)
+    const loggerImpl = rawSparkConsume<LoggerApi>(context, LOGGER)
     if (loggerImpl && typeof loggerImpl === 'object' && 'info' in loggerImpl) {
       _loggerCache = loggerImpl
       return loggerImpl
     }
     // 2. 次选 APP_SERVICES.logger（应用层统一提供）
-    const appServices = sparkConsume<IAppServicesCapability>(context, APP_SERVICES)
+    const appServices = rawSparkConsume<IAppServicesCapability>(context, APP_SERVICES)
     if (appServices?.logger) {
       _loggerCache = appServices.logger
       return appServices.logger
@@ -289,8 +290,8 @@ export function useSparkComponent(
 
   // ── 能力提供 ──
 
-  function sparkProvideCapability(name: string | symbol, implementation?: unknown): void {
-    sparkProvide(context, name, implementation)
+  function sparkProvide(name: string | symbol, implementation?: unknown): void {
+    rawSparkProvide(context, name, implementation)
     // 当 LOGGER 或 APP_SERVICES 被更新时，使 logger 缓存失效
     const key = normalizeKey(name)
     if (key === LOGGER || key === APP_SERVICES) {
@@ -303,7 +304,7 @@ export function useSparkComponent(
 
   function provideEvents(name: string | symbol = 'events'): IEventEmitter {
     const emitter = createEventEmitter()
-    sparkProvide(context, name, emitter)
+    rawSparkProvide(context, name, emitter)
     return emitter
   }
 
@@ -313,7 +314,7 @@ export function useSparkComponent(
 
   // ── 能力消费 ──
 
-  function sparkConsumeCapability(name: string | symbol): unknown {
+  function sparkConsume(name: string | symbol): unknown {
     const impl = createSparkConsume(parentContext, context)(name)
     if (impl !== null) return impl
     if (import.meta.env.DEV) {
@@ -326,7 +327,7 @@ export function useSparkComponent(
     name: string | symbol,
     handlers: Record<string, (...args: unknown[]) => void>
   ): IEventEmitter | null {
-    const emitter = sparkConsume<IEventEmitter>(context, name)
+    const emitter = rawSparkConsume<IEventEmitter>(context, name)
     if (emitter) {
       for (const [event, handler] of Object.entries(handlers)) {
         emitter.on(event, handler)
@@ -403,10 +404,10 @@ export function useSparkComponent(
     parentType,
     isVisible,
     isDisabled,
-    sparkProvide: sparkProvideCapability,
+    sparkProvide,
     provideEvents,
     getProvider,
-    sparkConsume: sparkConsumeCapability,
+    sparkConsume,
     consumeEvents,
     initialize,
     destroy,

@@ -28,8 +28,9 @@
           <RendererTabPane
             v-for="(pane, index) in paneConfigs"
             :key="getPaneKey(pane, index)"
-            :config="pane"
             :index="index"
+            :type="pane.type"
+            v-bind="getPaneComponentProps(pane)"
           >
             <slot v-if="!hasPaneChildren(pane)" v-bind="getPaneSlotScope(pane, index)" />
           </RendererTabPane>
@@ -43,7 +44,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useSparkComponent } from '../_pkg'
-import { getDockedChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
+import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerToolbar } from './useContainerToolbar'
 import RendererTabPane from './RendererTabPane.vue'
@@ -54,7 +55,7 @@ interface TabsClickEvent {
   [key: string]: unknown
 }
 
-interface Props {
+interface Props extends SparkNode {
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -68,6 +69,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-tabs',
   docks: () => ({}),
 })
 
@@ -75,7 +77,13 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const { registerApi } = useSparkComponent({ type: 'r-tabs' })
+const { registerApi } = useSparkComponent({
+  type: props.type,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 
 const paneConfigs = computed(() =>
   getDockedChildren(props.children).filter(child => child.type === 'r-tab-pane')
@@ -131,7 +139,7 @@ registerApi(tabsApi)
 defineExpose(tabsApi)
 
 function hasPaneChildren(pane: SparkNode): boolean {
-  return Array.isArray(pane.children) && pane.children.length > 0
+  return getSparkNodeChildren(pane.children).length > 0
 }
 
 function getPaneName(pane: SparkNode, index: number): string | number {
@@ -143,9 +151,17 @@ function getPaneKey(pane: SparkNode, index: number): string | number {
   return nodeId(pane) ?? getPaneName(pane, index)
 }
 
-function getPaneLabel(pane: SparkNode, index: number): string {
-  const value = nodeInputProp(pane, 'label') ?? nodeInputProp(pane, 'title')
-  return typeof value === 'string' && value.trim().length > 0 ? value : `标签页${index + 1}`
+function getPaneComponentProps(pane: SparkNode): Record<string, unknown> {
+  const paneNodeId = nodeId(pane)
+  return {
+    type: pane.type,
+    ...(pane.id !== undefined ? { id: pane.id } : {}),
+    ...(paneNodeId !== undefined ? { nodeId: paneNodeId } : {}),
+    ...(pane.dock !== undefined ? { dock: pane.dock } : {}),
+    ...(pane.order !== undefined ? { order: pane.order } : {}),
+    ...(pane.children !== undefined ? { children: pane.children } : {}),
+    ...(pane.props ?? {}),
+  }
 }
 
 function handleModelUpdate(value: string | number): void {
@@ -167,7 +183,6 @@ function getPaneSlotScope(pane: SparkNode, index: number) {
     pane,
     paneIndex: index,
     paneName: getPaneName(pane, index),
-    paneLabel: getPaneLabel(pane, index),
     activeName: currentActiveName.value,
   }
 }

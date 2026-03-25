@@ -41,6 +41,7 @@
               </div>
 
               <RendererListItemScope
+                type="r-list-item"
                 :row="row"
                 :children="mergedChildren"
                 :item-class="itemClass"
@@ -96,7 +97,7 @@ import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from './slotScopeFactories'
 
-interface Props {
+interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
   /** 子节点（列表项内容配置） */
@@ -140,6 +141,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-list',
   docks: () => ({}),
   itemActionsPosition: 'right',
   itemActionsClass: '',
@@ -169,9 +171,13 @@ const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'
 const dockedItemActions = computed(() => getDockedChildren(props.children, 'actions'))
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
-  { type: 'r-list' }
-)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent({
+  type: props.type,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({

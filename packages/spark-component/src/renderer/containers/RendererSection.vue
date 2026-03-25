@@ -95,7 +95,7 @@ import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 import type { RendererSectionApi } from '../_pkg'
 
-interface Props {
+interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
   /** @deprecated 请改用 children + dock='header' */
@@ -139,6 +139,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-section',
   title: '',
   description: '',
   collapsible: false,
@@ -159,7 +160,14 @@ const props = withDefaults(defineProps<Props>(), {
   gridAutoRows: 'minmax(32px, auto)',
 })
 const slots = useSlots()
-const { registerApi } = useSparkComponent({ type: 'r-section' })
+const componentType = computed(() => props.type ?? 'r-section')
+const { registerApi } = useSparkComponent({
+  type: componentType.value,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 
 assertNoLegacySectionStructures()
 

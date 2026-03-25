@@ -16,7 +16,7 @@ import type { CapabilityName } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry.js'
 import { createSparkPlugin } from './plugin.js'
 import type { SparkCapabilityContext, ComponentRegistry, SparkNode } from './types.js'
-import { nodeId, nodeDock, nodeOrder, getDockedChildren, DEFAULT_DOCK, SPARK_NODE_STRUCT_KEYS } from './types.js'
+import { nodeId, nodeDock, nodeOrder, getDockedChildren, DEFAULT_DOCK, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode } from './types.js'
 
 /* -------------------------------------------------------------------------- */
 
@@ -180,6 +180,11 @@ export const Spark = {
   /** 默认停靠区域名 */
   DEFAULT_DOCK,
 
+  /** 归一化节点结构语义（type/dock/order/children） */
+  normalizeNode(node: SparkNode, fallbackType?: string): SparkNode {
+    return normalizeSparkNode(node, fallbackType)
+  },
+
   /**
    * 读取节点 id（顶层 `node.id` 优先，兼容 `node.props.id`）
    *
@@ -190,7 +195,7 @@ export const Spark = {
   },
 
   /**
-   * 读取节点 dock（缺省 → 'default'）
+   * 读取节点 dock（缺省 / 'default' → ''）
    *
    * @example Spark.nodeDock(child) === 'toolbar'
    */
@@ -210,7 +215,7 @@ export const Spark = {
    *
    * 容器组件渲染时调用：
    * ```ts
-   * const columns = Spark.getDockedChildren(props.children)           // dock='default'
+    * const columns = Spark.getDockedChildren(props.children)           // dock=''
    * const toolbar = Spark.getDockedChildren(props.children, 'toolbar')
    * const actions = Spark.getDockedChildren(props.children, 'actions')
    * ```

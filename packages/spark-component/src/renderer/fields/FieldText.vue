@@ -11,11 +11,12 @@
 </template>
 
 <script setup lang="ts">
+import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
-interface Props {
+interface Props extends SparkNode {
   /** 字段绑定名，映射到 DataView 行字段 */
   field?: string
   /** 显示标签 */
@@ -26,7 +27,9 @@ interface Props {
   modelValue?: string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-text',
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]

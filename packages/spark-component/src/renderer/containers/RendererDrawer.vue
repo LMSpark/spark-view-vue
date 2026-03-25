@@ -65,7 +65,7 @@ import type { ContainerDocks } from '../../types'
 import { useContainerGrid } from './useContainerGrid'
 import type { RendererDrawerApi } from '../_pkg'
 
-interface Props {
+interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
   /** dock 布局配置 */
@@ -103,6 +103,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-drawer',
   title: '',
   modelValue: false,
   headerActions: () => [],
@@ -121,7 +122,14 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-const { registerApi } = useSparkComponent({ type: 'r-drawer' })
+const componentType = computed(() => props.type ?? 'r-drawer')
+const { registerApi } = useSparkComponent({
+  type: componentType.value,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 
 assertNoLegacyDrawerStructures()
 

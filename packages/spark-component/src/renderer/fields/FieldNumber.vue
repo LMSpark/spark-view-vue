@@ -34,11 +34,12 @@
 </template>
 
 <script setup lang="ts">
+import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
-interface Props {
+interface Props extends SparkNode {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
@@ -61,7 +62,9 @@ interface Props {
   filterRange?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-number',
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: number | [number | undefined, number | undefined]]

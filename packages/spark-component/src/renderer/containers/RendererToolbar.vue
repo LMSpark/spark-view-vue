@@ -56,7 +56,7 @@ type InlineAlign = 'start' | 'center' | 'end' | 'stretch'
  */
 type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 
-interface Props {
+interface Props extends SparkNode {
   /**
    * 子节点列表。
    *
@@ -86,6 +86,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-toolbar',
   children: () => [],
   docks: () => ({}),
   gap: 8,
@@ -94,11 +95,18 @@ const props = withDefaults(defineProps<Props>(), {
   justify: 'start',
   tailDock: 'tail',
 })
+const componentType = computed(() => props.type ?? 'r-toolbar')
 
 // 注册当前业务组件上下文。
 // 这里不额外 provide 新能力，只是保持容器节点进入 SPARK 组件树，
 // 让后续若扩展 API / 调试能力时不需要改调用方式。
-useSparkComponent({ type: 'r-toolbar' })
+useSparkComponent({
+  type: componentType.value,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 
 // 主区：所有未声明 dock 的子节点。
 const startChildren = computed(() => getDockedChildren(props.children))

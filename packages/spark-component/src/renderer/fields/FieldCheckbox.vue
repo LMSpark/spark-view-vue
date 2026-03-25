@@ -13,11 +13,12 @@
 </template>
 
 <script setup lang="ts">
+import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
-interface Props {
+interface Props extends SparkNode {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
@@ -35,6 +36,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-checkbox',
   checkedText: '是',
   uncheckedText: '否',
   checkboxText: '',

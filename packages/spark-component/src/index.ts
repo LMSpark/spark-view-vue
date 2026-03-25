@@ -29,6 +29,7 @@ export type {
   CapabilityName,
   SparkCapabilityContext,
   SparkNode,
+  SparkNodeChildren,
   // Dock 描述符（新模型）
   DockDescriptor,
   DockToolbar,
@@ -52,6 +53,7 @@ export {
   SPARK_REGISTRY_KEY,
   SPARK_NODE_STRUCT_KEYS,
   DEFAULT_DOCK,
+  normalizeSparkNode,
   nodeId,
   nodeDock,
   nodeOrder,
@@ -62,7 +64,6 @@ export {
 export {
   PAGE_DATASET,
   DATA_SOURCE,
-  FIELD_CONTEXT,
   CONTEXT_DATA,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,

@@ -206,14 +206,14 @@ describe('RendererList and RendererSection container integration', () => {
     expect(gridItems[0]?.attributes('style')).toContain('grid-row: span 2 / span 2;')
   })
 
-  it('should honor root-level child spans in section without props migration', () => {
+  it('should honor child span props in section grid layout', () => {
     const wrapper = mount(RendererSection as any, {
       props: {
         title: '根级布局区块',
         gridGap: 10,
         children: [
-          { type: 'child-a', colSpan: 7, rowSpan: 2 },
-          { type: 'child-b', colSpan: 17 },
+          { type: 'child-a', props: { colSpan: 7, rowSpan: 2 } },
+          { type: 'child-b', props: { colSpan: 17 } },
         ],
       },
       global: {

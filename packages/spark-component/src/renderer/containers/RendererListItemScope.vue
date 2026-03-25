@@ -1,3 +1,9 @@
+<!--
+/**
+ * @skill (internal) list-item-scope
+ * @description r-list 列表项作用域组件，为每行数据提供 CONTEXT_DATA 能力；字段语义由祖先 context.type 推断
+ */
+-->
 <template>
   <div :class="itemClass" :style="itemStyle">
     <el-card v-if="useCard" :shadow="cardShadow" class="renderer-list-card">
@@ -33,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRef } from 'vue'
+import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
 import { nodeId, type SparkNode } from '../_pkg'
@@ -41,7 +47,7 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'
 import { useDataScope } from './useDataScope'
 
-interface Props {
+interface Props extends SparkNode {
   /** 当前行数据 */
   row: IDataRow
   /** 子组件配置 */
@@ -63,6 +69,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-list-item',
   itemClass: '',
   itemStyle: () => ({}),
   useCard: false,
@@ -71,21 +78,25 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
-
-const rowRef = toRef(props, 'row')
-const childrenRef = toRef(props, 'children')
+const componentType = computed(() => props.type ?? 'r-list-item')
 
 useDataScope({
-  type: 'r-list-item',
-  fieldContext: 'list',
-  data: computed(() => rowRef.value as Record<string, unknown>),
+  type: componentType.value,
+  nodeConfig: {
+    type: componentType.value,
+    ...(props.id !== undefined ? { id: props.id } : {}),
+    ...(props.dock !== undefined ? { dock: props.dock } : {}),
+    ...(props.order !== undefined ? { order: props.order } : {}),
+    ...(props.children !== undefined ? { children: props.children } : {}),
+  },
+  data: computed(() => props.row as Record<string, unknown>),
 })
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: childrenRef,
-  columns: toRef(props, 'gridColumns'),
-  gap: toRef(props, 'gridGap'),
-  autoRows: toRef(props, 'gridAutoRows'),
+  children: () => props.children,
+  columns: () => props.gridColumns,
+  gap: () => props.gridGap,
+  autoRows: () => props.gridAutoRows,
 })
 
 const itemBodyStyle = computed(() =>

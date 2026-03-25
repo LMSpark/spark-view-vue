@@ -48,7 +48,7 @@ export const SHARED_TYPE_DEFINITIONS: Record<string, SharedTypeDefinition> = {
 rule.json 是一棵 SparkNode 树。渲染引擎（SparkComponentRenderer）递归遍历这棵树，对每个节点：
 1. 通过 type 从 ComponentRegistry 动态查找已注册的 Vue 组件
 2. 将 props + config 传入组件，children 由组件自行渲染（容器组件用 SparkComponentRenderer 递归）
-3. 容器组件通过能力系统 provide(DATA_SOURCE, FIELD_CONTEXT) 向子树暴露数据上下文
+3. 容器组件通过能力系统 provide(DATA_SOURCE, CONTEXT_DATA) 向子树暴露数据上下文，字段语义由祖先 context.type 推断
 4. 字段组件通过 consume() 自动感知父容器语境，同一个 r-text 在不同父容器中呈现不同形态
 
 【子组件智能感知父容器（Context-Aware Rendering）】
@@ -56,14 +56,14 @@ rule.json 是一棵 SparkNode 树。渲染引擎（SparkComponentRenderer）递�
 - 在 r-form 中 → 字段组件渲染为表单输入控件（el-form-item 包装）
 - 在 r-detail 中 → 字段组件渲染为只读展示
 
-语境由 FIELD_CONTEXT 能力键传递，值为 'table' | 'form' | 'detail' | 'list' | 'tree'。
+语境不再通过独立能力键传递，而是由字段组件通过 useSparkComponent 沿祖先 context.type 链推断，值为 'table' | 'form' | 'detail' | 'list' | 'tree'。
 字段组件无需知道自己处于哪种容器，框架自动适配渲染模式。
 
 【动态渲染流程】
 rule.json → SparkNode 树
   → SparkComponentRenderer 递归遍历
   → 每个节点：registry.get(node.type) → 渲染对应 Vue 组件
-  → 容器组件 provide(DATA_SOURCE, FIELD_CONTEXT)
+  → 容器组件 provide(DATA_SOURCE, CONTEXT_DATA)
   → 子组件 consume() 获取数据与语境 → 自适应渲染
 
 【toolbar / actions / filter 的宿主】
@@ -219,7 +219,7 @@ actions.class: string — 操作列 CSS 类名
 
 【能力链】
 consumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT
-provides: DATA_SOURCE, FIELD_CONTEXT
+provides: DATA_SOURCE
 
 children 内仅用 r-* 字段组件做列，禁止 el-table-column`,
 
@@ -235,7 +235,7 @@ gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
+provides: DATA_SOURCE, CONTEXT_DATA
 
 children 内放 r-* 字段组件`,
 
@@ -250,7 +250,7 @@ gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
+provides: DATA_SOURCE, CONTEXT_DATA
 
 children 内放 r-* 字段组件（只读模式）`,
 
@@ -269,7 +269,7 @@ onNodeCollapse: string — 节点折叠回调
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA`,
+provides: DATA_SOURCE, CONTEXT_DATA`,
 
   'r-list': `**r-list** — 列表容器
 dataKey: string — 数据绑定键

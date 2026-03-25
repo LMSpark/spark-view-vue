@@ -1,18 +1,26 @@
+<!--
+/**
+ * @skill r-step
+ * @description 步骤子组件，双模式（header 渲染步骤头，content 渲染内容网格）；自行解析 title/description/status/disabled 等语义 props
+ * @input { props: { title?: string, description?: string, status?: string, disabled?: boolean, name?: string|number, bodyClass?: string, gridColumns?: number } }
+ */
+-->
 <template>
   <el-step
     v-if="mode === 'header'"
     :title="stepTitle"
     :description="stepDescription"
     :status="stepStatus"
+    :disabled="stepDisabled"
     @click="emit('activate', index)"
   />
 
-  <div v-else :class="['renderer-steps-content', stepBodyClass]" :style="stepGridStyle">
+  <div v-else :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
     <template v-if="stepChildren.length">
       <div
         v-for="(child, childIndex) in stepChildren"
         :key="nodeId(child) ?? `r-step-child-${childIndex}`"
-        class="renderer-steps-grid-item"
+        class="renderer-steps-content-grid-item"
         :style="getStepChildGridStyle(child)"
       >
         <SparkComponentRenderer :config="child" />
@@ -25,11 +33,26 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../_pkg'
-import { nodeId, nodeInputProp, type SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useCompositeItemGrid } from './useCompositeItemGrid'
 
 interface Props {
-  config: SparkNode
+  type?: string
+  props?: Record<string, unknown>
+  children?: SparkNode['children']
+  id?: string
+  dock?: string
+  order?: number
+  nodeId?: SparkNode['id'] | undefined
+  title?: string
+  label?: string
+  description?: string
+  status?: string
+  disabled?: boolean
+  bodyClass?: string
+  gridColumns?: number | string
+  gridAutoRows?: string
+  gridGap?: number | string
   index: number
   mode: 'header' | 'content'
 }
@@ -40,28 +63,44 @@ const emit = defineEmits<{
   activate: [index: number]
 }>()
 
-useSparkComponent(props.config)
+const logicNodeId = computed(() => props.nodeId ?? props.id)
+const componentType = computed(() => props.type ?? 'r-step')
 
-const configRef = computed(() => props.config)
+useSparkComponent({
+  type: componentType.value,
+  ...(logicNodeId.value !== undefined ? { id: logicNodeId.value } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
+
 const {
   contentChildren: stepChildren,
   contentBodyClass: stepBodyClass,
   contentGridStyle: stepGridStyle,
   getContentChildGridStyle: getStepChildGridStyle,
-} = useCompositeItemGrid({ config: configRef })
+} = useCompositeItemGrid({
+  children: () => props.children,
+  bodyClass: () => props.bodyClass,
+  gridColumns: () => props.gridColumns,
+  gridAutoRows: () => props.gridAutoRows,
+  gridGap: () => props.gridGap,
+})
 
 const stepTitle = computed(() => {
-  const value = nodeInputProp(props.config, 'title') ?? nodeInputProp(props.config, 'label')
+  const value = props.title ?? props.label
   return typeof value === 'string' && value.trim().length > 0 ? value : `步骤${props.index + 1}`
 })
 
 const stepDescription = computed(() => {
-  const description = nodeInputProp(props.config, 'description')
+  const description = props.description
   return typeof description === 'string' ? description : ''
 })
 
 const stepStatus = computed<string | undefined>(() => {
-  const status = nodeInputProp(props.config, 'status')
+  const status = props.status
   return typeof status === 'string' ? status : undefined
 })
+
+const stepDisabled = computed(() => props.disabled === true)
 </script>

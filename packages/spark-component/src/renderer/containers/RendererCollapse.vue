@@ -27,8 +27,9 @@
           <RendererCollapseItem
             v-for="(item, index) in itemConfigs"
             :key="getItemKey(item, index)"
-            :config="item"
             :index="index"
+            :type="item.type"
+            v-bind="getItemComponentProps(item)"
           >
             <slot v-if="!hasItemChildren(item)" v-bind="getItemSlotScope(item, index)" />
           </RendererCollapseItem>
@@ -42,7 +43,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useSparkComponent } from '../_pkg'
-import { getDockedChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
+import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerToolbar } from './useContainerToolbar'
 import RendererCollapseItem from './RendererCollapseItem.vue'
@@ -50,7 +51,7 @@ import type { RendererCollapseApi } from '../_pkg'
 
 type CollapseValue = string | number | Array<string | number>
 
-interface Props {
+interface Props extends SparkNode {
   /** 子节点（折叠项配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -62,6 +63,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-collapse',
   docks: () => ({}),
 })
 
@@ -69,7 +71,13 @@ const emit = defineEmits<{
   'update:modelValue': [value: CollapseValue]
 }>()
 
-const { registerApi } = useSparkComponent({ type: 'r-collapse' })
+const { registerApi } = useSparkComponent({
+  type: props.type,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
 
 const itemConfigs = computed(() =>
   getDockedChildren(props.children).filter(child => child.type === 'r-collapse-item')
@@ -134,7 +142,7 @@ registerApi(collapseApi)
 defineExpose(collapseApi)
 
 function hasItemChildren(item: SparkNode): boolean {
-  return Array.isArray(item.children) && item.children.length > 0
+  return getSparkNodeChildren(item.children).length > 0
 }
 
 function getItemName(item: SparkNode, index: number): string | number {
@@ -146,9 +154,17 @@ function getItemKey(item: SparkNode, index: number): string | number {
   return nodeId(item) ?? getItemName(item, index)
 }
 
-function getItemTitle(item: SparkNode, index: number): string {
-  const value = nodeInputProp(item, 'title') ?? nodeInputProp(item, 'label')
-  return typeof value === 'string' && value.trim().length > 0 ? value : `分组${index + 1}`
+function getItemComponentProps(item: SparkNode): Record<string, unknown> {
+  const itemNodeId = nodeId(item)
+  return {
+    type: item.type,
+    ...(item.id !== undefined ? { id: item.id } : {}),
+    ...(itemNodeId !== undefined ? { nodeId: itemNodeId } : {}),
+    ...(item.dock !== undefined ? { dock: item.dock } : {}),
+    ...(item.order !== undefined ? { order: item.order } : {}),
+    ...(item.children !== undefined ? { children: item.children } : {}),
+    ...(item.props ?? {}),
+  }
 }
 
 function handleModelUpdate(value: CollapseValue): void {
@@ -166,7 +182,6 @@ function getItemSlotScope(item: SparkNode, index: number) {
     item,
     itemIndex: index,
     itemName: getItemName(item, index),
-    itemTitle: getItemTitle(item, index),
     activeNames: currentModelValue.value,
   }
 }
@@ -216,7 +231,7 @@ function getItemSlotScope(item: SparkNode, index: number) {
   padding-top: 8px;
 }
 
-.renderer-collapse-grid-item {
+.renderer-collapse-item-grid-item {
   min-width: 0;
 }
 </style>

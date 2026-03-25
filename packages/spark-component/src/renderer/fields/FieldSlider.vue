@@ -15,11 +15,12 @@
 </template>
 
 <script setup lang="ts">
+import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
-interface Props {
+interface Props extends SparkNode {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
@@ -39,6 +40,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-slider',
   min: 0,
   max: 100,
   step: 1,

@@ -1,3 +1,10 @@
+<!--
+/**
+ * @skill r-tab-pane
+ * @description 标签页面板子组件，自行解析 label/name/disabled 等语义 props；内容区采用 24 列 CSS Grid
+ * @input { props: { label?: string, name?: string|number, disabled?: boolean, lazy?: boolean, closable?: boolean, bodyClass?: string, gridColumns?: number } }
+ */
+-->
 <template>
   <el-tab-pane
     :label="paneLabel"
@@ -25,37 +32,68 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../_pkg'
-import { nodeId, nodeInputProp, type SparkNode } from '../_pkg'
+import { nodeId, type SparkNode } from '../_pkg'
 import { useCompositeItemGrid } from './useCompositeItemGrid'
 
 interface Props {
-  config: SparkNode
+  type?: string
+  props?: Record<string, unknown>
+  children?: SparkNode['children']
+  id?: string
+  dock?: string
+  order?: number
+  nodeId?: SparkNode['id'] | undefined
+  name?: string | number
+  value?: string | number
+  label?: string
+  title?: string
+  disabled?: boolean
+  lazy?: boolean
+  closable?: boolean
+  bodyClass?: string
+  gridColumns?: number | string
+  gridAutoRows?: string
+  gridGap?: number | string
   index: number
 }
 
 const props = defineProps<Props>()
 
-useSparkComponent(props.config)
+const logicNodeId = computed(() => props.nodeId ?? props.id)
+const componentType = computed(() => props.type ?? 'r-tab-pane')
 
-const configRef = computed(() => props.config)
+useSparkComponent({
+  type: componentType.value,
+  ...(logicNodeId.value !== undefined ? { id: logicNodeId.value } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+})
+
 const {
   contentChildren: paneChildren,
   contentBodyClass: paneBodyClass,
   contentGridStyle: paneGridStyle,
   getContentChildGridStyle: getPaneChildGridStyle,
-} = useCompositeItemGrid({ config: configRef })
+} = useCompositeItemGrid({
+  children: () => props.children,
+  bodyClass: () => props.bodyClass,
+  gridColumns: () => props.gridColumns,
+  gridAutoRows: () => props.gridAutoRows,
+  gridGap: () => props.gridGap,
+})
 
 const paneName = computed<string | number>(() => {
-  const value = nodeInputProp(props.config, 'name') ?? nodeInputProp(props.config, 'value') ?? nodeId(props.config)
+  const value = props.name ?? props.value ?? logicNodeId.value
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${props.index}`
 })
 
 const paneLabel = computed(() => {
-  const value = nodeInputProp(props.config, 'label') ?? nodeInputProp(props.config, 'title')
+  const value = props.label ?? props.title
   return typeof value === 'string' && value.trim().length > 0 ? value : `标签页${props.index + 1}`
 })
 
-const paneDisabled = computed(() => nodeInputProp(props.config, 'disabled') === true)
-const paneLazy = computed(() => nodeInputProp(props.config, 'lazy') === true)
-const paneClosable = computed(() => nodeInputProp(props.config, 'closable') === true)
+const paneDisabled = computed(() => props.disabled === true)
+const paneLazy = computed(() => props.lazy === true)
+const paneClosable = computed(() => props.closable === true)
 </script>

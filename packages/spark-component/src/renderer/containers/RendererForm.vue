@@ -4,7 +4,7 @@
  * @description 表单容器，绑定 DataView.currentRow 实现双向编辑，支持 dock 分区工具栏，子字段组件通过 CONTEXT_DATA 读写表单值
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
- * @provides FIELD_CONTEXT
+ * @context 通过当前组件 type='r-form' 提供字段语义
  * @consumes PAGE_DATASET
  * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } } } }
  * @example { "type": "r-form", "dataKey": "Users@currentRow", "children": [] }
@@ -49,7 +49,7 @@ import type { ContainerDocks } from '../../types'
 import { useFormDetailContainer } from './useFormDetailContainer'
 import type { RendererFormApi } from '../_pkg'
 
-interface Props {
+interface Props extends SparkNode {
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
   /** 子节点列表 */
@@ -67,6 +67,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-form',
   labelWidth: '100px',
   docks: () => ({}),
   gridColumns: 24,
@@ -87,7 +88,16 @@ const {
   showToolbar,
   getDefaultSlotScope,
 } = useFormDetailContainer({
-  ...props,
+  type: props.type,
+  ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.dock !== undefined ? { dock: props.dock } : {}),
+  ...(props.order !== undefined ? { order: props.order } : {}),
+  ...(props.children !== undefined ? { children: props.children } : {}),
+  dataKey: props.dataKey,
+  docks: props.docks,
+  gridColumns: props.gridColumns,
+  gridGap: props.gridGap,
+  gridAutoRows: props.gridAutoRows,
 }, 'form')
 
 // ── r-form 包装 API ──────────────────────────────────────────────────────

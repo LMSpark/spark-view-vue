@@ -1,53 +1,31 @@
 <template>
-  <template v-if="context === 'table'">
-    <!-- 分组列（多行表头） -->
-    <el-table-column v-if="mergedChildren.length > 0" :label="displayLabel" :width="width">
-      <SparkComponentRenderer
-        v-for="(child, i) in mergedChildren"
-        :key="nodeId(child) ?? `field-child-${i}`"
-        :config="child"
-      />
-    </el-table-column>
-    <!-- 数据列 -->
-    <el-table-column v-else :label="displayLabel" :prop="fieldName" :width="width">
-      <template #default="{ row }">
-        <span v-if="!isTableCellHidden(row)">{{ getTableCellDisplayValue(row) }}</span>
-      </template>
-    </el-table-column>
-  </template>
-
-  <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
-    <div class="entity-picker-field">
-      <el-input
-        :model-value="currentDisplayValue"
-        readonly
-        :placeholder="placeholder"
-      />
-      <el-button class="primary-action-button" :disabled="!hasSelectorCapability" @click="openSelector">{{ primaryActionText }}</el-button>
-      <el-button v-if="showClearButton" class="clear-action-button" @click="clearValue">清空</el-button>
-    </div>
-  </el-form-item>
-
-  <template v-else-if="context === 'tree'">
-    <span v-if="!isCurrentFieldHidden" class="tree-node-text">{{ currentDisplayValue }}</span>
-  </template>
-
-  <div v-else-if="!isCurrentFieldHidden" class="field-display">
-    <span class="field-label">{{ displayLabel }}：</span>
-    <span class="field-value">{{ currentDisplayValue }}</span>
-  </div>
+  <FieldContextRenderer v-bind="fieldCtx">
+    <template #form>
+      <div class="entity-picker-field">
+        <el-input
+          :model-value="currentDisplayValue"
+          readonly
+          :placeholder="placeholder"
+        />
+        <el-button class="primary-action-button" :disabled="!hasSelectorCapability" @click="openSelector">{{ primaryActionText }}</el-button>
+        <el-button v-if="showClearButton" class="clear-action-button" @click="clearValue">清空</el-button>
+      </div>
+    </template>
+  </FieldContextRenderer>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
-import { nodeId, type SparkNode } from '../_pkg'
+import type { SparkNode } from '../_pkg'
+import FieldContextRenderer from './FieldContextRenderer.vue'
+import { useFieldContext } from './useFieldContext'
 import { useOptionField } from './useFieldOptions'
 import { useSelectorFieldActions } from './useSelectorFieldActions'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
-interface Props {
+interface Props extends SparkNode {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
@@ -87,6 +65,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  type: 'r-entity-picker',
   placeholder: '请选择',
   buttonText: '选择',
   readonlyButtonText: '查看',
@@ -98,35 +77,30 @@ const props = withDefaults(defineProps<Props>(), {
   entityName: '项目',
 })
 
-const mergedChildren = computed(() => {
-  const children = props.children
-  if (Array.isArray(children) && children.length > 0) return children
-  return []
-})
-
 const emit = defineEmits<{
   'update:modelValue': [value: EntityPickerValue]
 }>()
 
-const {
-  flatOptions,
-  fieldName,
-  displayLabel,
-  context,
-  pageService,
-  currentRawValue,
-  currentRawStringValue,
-  isCurrentFieldHidden,
-  isCurrentFieldEditable,
-  currentDisplayValue,
-  isTableCellHidden,
-  getTableCellDisplayValue,
-  syncValue,
-} = useOptionField<EntityPickerValue>({
+const optionResult = useOptionField<EntityPickerValue>({
   props,
   type: 'r-entity-picker',
   fallbackValue: '',
 })
+
+const {
+  flatOptions,
+  pageService,
+  currentRawValue,
+  currentRawStringValue,
+  isCurrentFieldEditable,
+  currentDisplayValue,
+  syncValue,
+} = optionResult
+
+const fieldCtx = useFieldContext({
+  width: props.width,
+  ...(props.children !== undefined ? { children: props.children } : {}),
+}, optionResult)
 
 const { hasSelectorCapability, primaryAction, selectEntities } = useSelectorFieldActions({
   pageService,
@@ -179,21 +153,6 @@ function clearValue(): void {
 </script>
 
 <style scoped>
-.field-display {
-  margin-bottom: 12px;
-  line-height: 32px;
-}
-
-.field-label {
-  color: #606266;
-  font-weight: 500;
-  margin-right: 8px;
-}
-
-.field-value {
-  color: #303133;
-}
-
 .entity-picker-field {
   display: flex;
   align-items: center;

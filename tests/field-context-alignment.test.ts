@@ -11,7 +11,9 @@ import { computed, defineComponent, h } from 'vue'
 import FieldContextRenderer from '../packages/spark-component/src/renderer/fields/FieldContextRenderer.vue'
 import { useFieldContext } from '../packages/spark-component/src/renderer/fields/useFieldContext'
 import type { IDataRow } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-component'
+import { SPARK_REGISTRY_KEY, Spark, useSparkComponent } from '@spark-view/spark-component'
+
+const { registry, rootContext } = Spark.createSystem()
 
 // el-table-column stub：将所有 props/attrs 输出到 data-* 属性，便于断言
 const ElTableColumnStub = defineComponent({
@@ -39,25 +41,41 @@ const ElTableColumnStub = defineComponent({
   },
 })
 
+const ElFormItemStub = defineComponent({
+  props: ['label', 'prop', 'rules'],
+  setup(_, { slots }) {
+    return () => h('div', { class: 'el-form-item-stub' }, slots['default']?.())
+  },
+})
+
 const noop = () => false
 
 function mountFCR(overrides: Record<string, unknown> = {}) {
-  return mount(FieldContextRenderer, {
-    props: {
-      context: 'table',
-      displayLabel: 'ID',
-      fieldName: 'id',
-      width: 80,
-      mergedChildren: [],
-      isCurrentFieldHidden: false,
-      currentDisplayValue: '1',
-      isTableCellHidden: noop as (row: IDataRow) => boolean,
-      getTableCellDisplayValue: ((row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? '')) as (row: IDataRow) => string,
-      validationRules: [],
-      ...overrides,
+  const Provider = defineComponent({
+    setup() {
+      useSparkComponent({ type: 'r-table' }, { parentContext: rootContext })
+      return () => h(FieldContextRenderer, {
+        displayLabel: 'ID',
+        fieldName: 'id',
+        width: 80,
+        mergedChildren: [],
+        isCurrentFieldHidden: false,
+        currentDisplayValue: '1',
+        isTableCellHidden: noop as (row: IDataRow) => boolean,
+        getTableCellDisplayValue: ((row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? '')) as (row: IDataRow) => string,
+        validationRules: [],
+        ...overrides,
+      })
     },
+  })
+
+  return mount(Provider, {
     global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      },
       stubs: {
+        'el-form-item': ElFormItemStub,
         'el-table-column': ElTableColumnStub,
         'SparkComponentRenderer': true,
       },
@@ -135,7 +153,6 @@ describe('useFieldContext attrs 集成传递', () => {
     inheritAttrs: false,
     setup(props) {
       const permission = {
-        context: 'table',
         fieldName: computed(() => props.field ?? 'id'),
         displayLabel: computed(() => props.label ?? 'ID'),
         isCurrentFieldHidden: computed(() => false),
@@ -144,17 +161,31 @@ describe('useFieldContext attrs 集成传递', () => {
         getTableCellDisplayValue: (row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? ''),
         validationRules: computed(() => [] as never[]),
       }
-      const fieldCtx = useFieldContext({ width: props.width, children: undefined as unknown as SparkNode[] }, permission)
+      const fieldCtx = useFieldContext({ width: props.width }, permission)
       return () => h(FieldContextRenderer, fieldCtx.value)
     },
   })
 
   function mountFieldLike(fieldAttrs: Record<string, unknown>) {
-    return mount(FieldLikeStub, {
-      props: { field: 'id', label: 'ID', width: 80 },
-      attrs: fieldAttrs,
+    const Provider = defineComponent({
+      setup() {
+        useSparkComponent({ type: 'r-table' }, { parentContext: rootContext })
+        return () => h(FieldLikeStub, {
+          field: 'id',
+          label: 'ID',
+          width: 80,
+          ...fieldAttrs,
+        })
+      },
+    })
+
+    return mount(Provider, {
       global: {
+        provide: {
+          [SPARK_REGISTRY_KEY as symbol]: registry,
+        },
         stubs: {
+          'el-form-item': ElFormItemStub,
           'el-table-column': ElTableColumnStub,
           'SparkComponentRenderer': true,
         },

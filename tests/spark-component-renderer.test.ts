@@ -87,6 +87,37 @@ test('SparkComponentRenderer resolves kebab-case el-* type from globally registe
   expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
 })
 
+test('SparkComponentRenderer renders children for Vue global el-* components via unified slot path', () => {
+  const ElButton = defineComponent({
+    name: 'ElButton',
+    setup(_, { slots }) {
+      return () => h('button', { class: 'el-button-slot-stub' }, slots['default']?.())
+    }
+  })
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'el-button',
+        children: ['提交'],
+      },
+      parentContext: rootContext
+    },
+    global: {
+      components: {
+        ElButton
+      },
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.el-button-slot-stub, .el-button-global-stub').exists()).toBe(true)
+  expect(wrapper.text()).toContain('提交')
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
+})
+
 test('SparkComponentRenderer passes config props into Vue global Render* components', () => {
   const RenderRowAction = defineComponent({
     name: 'RenderRowAction',
@@ -115,7 +146,7 @@ test('SparkComponentRenderer passes config props into Vue global Render* compone
   expect(wrapper.find('.render-row-action').text()).toBe('王晓明')
 })
 
-test('SparkComponentRenderer forwards root-level inputs to registered components without page binding migration', () => {
+test('SparkComponentRenderer only forwards config.props to registered components', () => {
   const RootFieldReader = defineComponent({
     props: {
       label: String,
@@ -138,6 +169,50 @@ test('SparkComponentRenderer forwards root-level inputs to registered components
     props: {
       config: {
         type: 'root-field-reader',
+        props: {
+          label: 'props 标签',
+          status: 'active',
+          gridGap: 18,
+        },
+      } as unknown as Record<string, unknown>,
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  const reader = wrapper.find('.root-field-reader')
+  expect(reader.attributes('data-label')).toBe('props 标签')
+  expect(reader.attributes('data-status')).toBe('active')
+  expect(reader.attributes('data-gap')).toBe('18')
+})
+
+test('SparkComponentRenderer ignores root-level non-struct fields for registered components', () => {
+  const RootFieldReader = defineComponent({
+    props: {
+      label: String,
+      status: String,
+      gridGap: Number,
+    },
+    setup(componentProps) {
+      return () => h('div', {
+        class: 'root-field-reader-ignored',
+        'data-label': componentProps.label ?? '',
+        'data-status': componentProps.status ?? '',
+        'data-gap': String(componentProps.gridGap ?? ''),
+      }, 'root')
+    }
+  })
+
+  registry.register('root-field-reader-ignored', RootFieldReader)
+
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'root-field-reader-ignored',
         label: '根级标签',
         status: 'active',
         gridGap: 18,
@@ -151,10 +226,10 @@ test('SparkComponentRenderer forwards root-level inputs to registered components
     }
   })
 
-  const reader = wrapper.find('.root-field-reader')
-  expect(reader.attributes('data-label')).toBe('根级标签')
-  expect(reader.attributes('data-status')).toBe('active')
-  expect(reader.attributes('data-gap')).toBe('18')
+  const reader = wrapper.find('.root-field-reader-ignored')
+  expect(reader.attributes('data-label')).toBe('')
+  expect(reader.attributes('data-status')).toBe('')
+  expect(reader.attributes('data-gap')).toBe('')
 })
 
 test('SparkComponentRenderer renders unregistered native tags with recursive children', () => {

@@ -104,18 +104,16 @@ describe('RendererTabs and RendererCollapse integration', () => {
     expect(onTabChange).toHaveBeenCalledWith('more')
   })
 
-  it('should resolve root-level pane fields without binding-layer props migration', () => {
+  it('should resolve pane fields from props only', () => {
     const wrapper = mount(RendererTabs as any, {
       props: {
         children: [
           {
             type: 'r-tab-pane',
-            label: '根级标签',
-            name: 'root-pane',
-            gridGap: 18,
+            props: { label: '根级标签', name: 'root-pane', gridGap: 18 },
             children: [
-              { type: 'child-a', colSpan: 10 },
-              { type: 'child-b', colSpan: 14, rowSpan: 2 },
+              { type: 'child-a', props: { colSpan: 10 } },
+              { type: 'child-b', props: { colSpan: 14, rowSpan: 2 } },
             ],
           },
         ],
@@ -193,7 +191,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
     expect(wrapper.findAll('.el-collapse-item-stub')).toHaveLength(2)
     expect(wrapper.find('.renderer-collapse-item-body').attributes('style')).toContain('display: grid;')
     expect(wrapper.find('.renderer-collapse-item-body').attributes('style')).toContain('gap: 12px;')
-    const gridItems = wrapper.findAll('.renderer-collapse-grid-item')
+    const gridItems = wrapper.findAll('.renderer-collapse-item-grid-item')
     expect(gridItems[0]?.attributes('style')).toContain('grid-column: span 8 / span 8;')
     expect(gridItems[1]?.attributes('style')).toContain('grid-column: span 16 / span 16;')
 
@@ -201,18 +199,16 @@ describe('RendererTabs and RendererCollapse integration', () => {
     expect(onChange).toHaveBeenCalledWith(['one'])
   })
 
-  it('should resolve root-level collapse item fields without binding-layer props migration', () => {
+  it('should resolve collapse item fields from props only', () => {
     const wrapper = mount(RendererCollapse as any, {
       props: {
         children: [
           {
             type: 'r-collapse-item',
-            title: '根级分组',
-            name: 'root-item',
-            gridGap: 20,
+            props: { title: '根级分组', name: 'root-item', gridGap: 20 },
             children: [
-              { type: 'child-a', colSpan: 6 },
-              { type: 'child-b', colSpan: 18 },
+              { type: 'child-a', props: { colSpan: 6 } },
+              { type: 'child-b', props: { colSpan: 18 } },
             ],
           },
         ],
@@ -230,7 +226,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
     expect(item.attributes('data-title')).toBe('根级分组')
     expect(item.attributes('data-name')).toBe('root-item')
     expect(wrapper.find('.renderer-collapse-item-body').attributes('style')).toContain('gap: 20px;')
-    const gridItems = wrapper.findAll('.renderer-collapse-grid-item')
+    const gridItems = wrapper.findAll('.renderer-collapse-item-grid-item')
     expect(gridItems[0]?.attributes('style')).toContain('grid-column: span 6 / span 6;')
     expect(gridItems[1]?.attributes('style')).toContain('grid-column: span 18 / span 18;')
   })

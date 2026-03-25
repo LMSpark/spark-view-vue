@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { RendererTable } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
@@ -311,6 +311,18 @@ async function mountRendererTreeWithView(
 
 describe('RendererTable - DataView as single data intermediary', () => {
   const silentWarnHandler = () => undefined
+  let consoleErrorSpy: { mockRestore(): void } | null = null
+
+  beforeEach(() => {
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+  })
+
+  afterEach(async () => {
+    await flushPromises()
+    await nextTick()
+    consoleErrorSpy?.mockRestore()
+    consoleErrorSpy = null
+  })
 
   function withSilencedConsoleWarn(assertion: () => void): void {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
@@ -322,16 +334,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
   }
 
   it('should fail fast when migrated containers still use legacy root toolbar config', () => {
-    expect(() => mount(RendererTable as any, {
-      props: {
-        children: [],
-      },
-      attrs: {
-        toolbar: [
-          { type: 'builtin-action', props: { builtinAction: 'refresh' } },
-        ],
-      },
-    })).toThrow(/props\.toolbar 已废除/)
+    withSilencedConsoleWarn(() => {
+      expect(() => mount(RendererTable as any, {
+        props: {
+          children: [],
+        },
+        attrs: {
+          toolbar: [
+            { type: 'builtin-action', props: { builtinAction: 'refresh' } },
+          ],
+        },
+      })).toThrow(/props\.toolbar 已废除/)
+    })
   })
 
   it('should bind dataKey and react to DataView changes', async () => {
@@ -1372,6 +1386,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     await wrapper.find('.renderer-filter-input[data-name="name"]').setValue('Ali')
     await flushPromises()
+    await nextTick()
 
     expect(setFilterSpy).toHaveBeenCalledWith({ field: 'name', op: 'contains', value: 'Ali' })
     expect(refreshSpy).toHaveBeenCalled()

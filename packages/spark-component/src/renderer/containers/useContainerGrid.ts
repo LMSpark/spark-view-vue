@@ -1,5 +1,5 @@
-import { computed } from 'vue'
-import type { CSSProperties, Ref } from 'vue'
+import { computed, toValue } from 'vue'
+import type { CSSProperties, MaybeRefOrGetter } from 'vue'
 import { nodeInputProp, type SparkNode } from '../_pkg'
 
 // ── 默认值 ────────────────────────────────────────────────────────────────────
@@ -38,38 +38,31 @@ function getSpanValue(child: SparkNode, keys: string[], fallback: number): numbe
 }
 
 interface UseContainerGridOptions {
-  children: Ref<SparkNode[]>
-  columns?: Ref<number>
-  gap?: Ref<number | string>
-  autoRows?: Ref<string>
-  autoFitMinWidth?: Ref<string>
-  defaultColSpan?: Ref<number>
+  children: MaybeRefOrGetter<SparkNode[]>
+  columns?: MaybeRefOrGetter<number>
+  gap?: MaybeRefOrGetter<number | string>
+  autoRows?: MaybeRefOrGetter<string>
+  autoFitMinWidth?: MaybeRefOrGetter<string>
+  defaultColSpan?: MaybeRefOrGetter<number>
 }
 
 // ── 组合式函数 ───────────────────────────────────────────────────────────────
 
 export function useContainerGrid(options: UseContainerGridOptions) {
-  // 默认 ref 让使用 24 列默认网格的容器调用更简洁。
-  const columns = options.columns ?? computed(() => DEFAULT_GRID_COLUMNS)
-  const gap = options.gap ?? computed(() => DEFAULT_GRID_GAP)
-  const autoRows = options.autoRows ?? computed(() => DEFAULT_AUTO_ROWS)
-  const autoFitMinWidth = options.autoFitMinWidth ?? computed(() => '')
-  const defaultColSpan = options.defaultColSpan ?? computed(() => DEFAULT_GRID_COLUMNS)
-
   // 容器内容区共用的 grid 布局样式。
   const gridStyle = computed<CSSProperties>(() => ({
     display: 'grid',
-    gridTemplateColumns: autoFitMinWidth.value.trim().length > 0
-      ? `repeat(auto-fit, minmax(${autoFitMinWidth.value}, 1fr))`
-      : `repeat(${Math.max(columns.value, 1)}, minmax(0, 1fr))`,
-    gap: normalizeGridGap(gap.value),
-    gridAutoRows: autoRows.value || DEFAULT_AUTO_ROWS,
+    gridTemplateColumns: toValue(options.autoFitMinWidth ?? '').trim().length > 0
+      ? `repeat(auto-fit, minmax(${toValue(options.autoFitMinWidth ?? '')}, 1fr))`
+      : `repeat(${Math.max(toValue(options.columns ?? DEFAULT_GRID_COLUMNS), 1)}, minmax(0, 1fr))`,
+    gap: normalizeGridGap(toValue(options.gap ?? DEFAULT_GRID_GAP)),
+    gridAutoRows: toValue(options.autoRows ?? DEFAULT_AUTO_ROWS) || DEFAULT_AUTO_ROWS,
     alignItems: 'start',
   }))
 
   // 子项可通过布局 props 覆盖默认的跨列 / 跨行占位。
   function getChildGridStyle(child: SparkNode): CSSProperties {
-    const colSpan = getSpanValue(child, ['colSpan', 'gridColSpan', 'span'], defaultColSpan.value)
+    const colSpan = getSpanValue(child, ['colSpan', 'gridColSpan', 'span'], toValue(options.defaultColSpan ?? DEFAULT_GRID_COLUMNS))
     const rowSpan = getSpanValue(child, ['rowSpan', 'gridRowSpan'], 1)
 
     return {
@@ -83,6 +76,6 @@ export function useContainerGrid(options: UseContainerGridOptions) {
   return {
     gridStyle,
     getChildGridStyle,
-    gridChildren: options.children,
+    gridChildren: computed(() => toValue(options.children)),
   }
 }
