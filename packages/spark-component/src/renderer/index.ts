@@ -72,8 +72,8 @@ export { default as FieldProductPicker } from './fields/FieldProductPicker.vue'
 export { default as FieldCascader } from './fields/FieldCascader.vue'
 export { default as FieldTreeSelect } from './fields/FieldTreeSelect.vue'
 export { default as FieldTransfer } from './fields/FieldTransfer.vue'
-export { default as FieldColumnGroup } from './fields/FieldColumnGroup.vue'
 export { default as FieldContextRenderer } from './fields/FieldContextRenderer.vue'
+export { default as FieldColumnGroup } from './fields/FieldContextRenderer.vue'
 
 // ── 容器 Composable（仅保留有外部消费的） ──────────────────────────────────
 export { useFieldPermission } from './fields/useFieldPermission'

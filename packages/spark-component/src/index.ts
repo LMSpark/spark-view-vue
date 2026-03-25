@@ -148,8 +148,8 @@ export {
   FieldCascader,
   FieldTreeSelect,
   FieldTransfer,
-  FieldColumnGroup,
   FieldContextRenderer,
+  FieldColumnGroup,
   // 注册
   registerAllRenderers,
   // Composable

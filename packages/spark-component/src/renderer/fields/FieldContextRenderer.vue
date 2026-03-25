@@ -1,16 +1,20 @@
 <template>
   <!-- table 上下文：el-table-column -->
-  <template v-if="context === 'table'">
+  <template v-if="resolvedContext === 'table'">
     <!-- 分组列（多行表头） -->
     <el-table-column
-      v-if="mergedChildren.length > 0"
-      :label="displayLabel"
+      v-if="resolvedChildren.length > 0"
+      :label="resolvedDisplayLabel"
       :width="width"
-      :header-align="resolvedTitleAlign"
+      :min-width="minWidth"
+      :fixed="fixed"
+      :align="resolvedValueAlign"
+      :header-align="resolvedHeaderAlign"
       :label-class-name="tableHeaderClassName"
+      :class-name="tableCellClassName"
     >
       <SparkComponentRenderer
-        v-for="(child, i) in mergedChildren"
+        v-for="(child, i) in resolvedChildren"
         :key="nodeId(child) ?? `fcr-child-${i}`"
         :config="child"
       />
@@ -18,18 +22,20 @@
     <!-- 数据列 -->
     <el-table-column
       v-else
-      :label="displayLabel"
-      :prop="fieldName"
+      :label="resolvedDisplayLabel"
+      :prop="resolvedFieldName"
       :width="width"
-      :header-align="resolvedTitleAlign"
+      :min-width="minWidth"
+      :fixed="fixed"
+      :header-align="resolvedHeaderAlign"
       :align="resolvedValueAlign"
       :label-class-name="tableHeaderClassName"
       :class-name="tableCellClassName"
     >
       <template #default="{ row }">
-        <template v-if="!isTableCellHidden(row)">
-          <slot name="table-cell" :row="row" :value="getTableCellDisplayValue(row)">
-            <span :class="['field-table-value', tableValueClassName]">{{ getTableCellDisplayValue(row) }}</span>
+        <template v-if="!resolveTableCellHidden(row)">
+          <slot name="table-cell" :row="row" :value="resolveTableCellDisplayValue(row)">
+            <span :class="['field-table-value', tableValueClassName]">{{ resolveTableCellDisplayValue(row) }}</span>
           </slot>
         </template>
       </template>
@@ -38,30 +44,30 @@
 
   <!-- form 上下文：el-form-item（携带列级验证规则） -->
   <el-form-item
-    v-else-if="context === 'form' && !isCurrentFieldHidden"
-    :label="displayLabel"
-    :prop="fieldName"
-    :rules="validationRules"
+    v-else-if="resolvedContext === 'form' && !resolvedCurrentFieldHidden"
+    :label="resolvedDisplayLabel"
+    :prop="resolvedFieldName"
+    :rules="resolvedValidationRules"
   >
     <slot name="form" />
   </el-form-item>
 
   <!-- tree 上下文：树节点文本 -->
-  <template v-else-if="context === 'tree'">
-    <template v-if="!isCurrentFieldHidden">
+  <template v-else-if="resolvedContext === 'tree'">
+    <template v-if="!resolvedCurrentFieldHidden">
       <slot name="tree">
-        <span class="tree-node-text">{{ currentDisplayValue }}</span>
+        <span class="tree-node-text">{{ resolvedCurrentDisplayValue }}</span>
       </slot>
     </template>
   </template>
 
   <!-- detail / 其他上下文：只读展示 -->
   <template v-else>
-    <template v-if="!isCurrentFieldHidden">
+    <template v-if="!resolvedCurrentFieldHidden">
       <slot name="detail">
         <div class="field-display">
-          <span :class="['field-label', detailTitleClassName]">{{ displayLabel }}：</span>
-          <span :class="['field-value', detailValueClassName]">{{ currentDisplayValue }}</span>
+          <span :class="['field-label', detailTitleClassName]">{{ resolvedDisplayLabel }}：</span>
+          <span :class="['field-value', detailValueClassName]">{{ resolvedCurrentDisplayValue }}</span>
         </div>
       </slot>
     </template>
@@ -71,56 +77,96 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import { nodeId, type SparkNode } from '../_pkg'
+import { FIELD_CONTEXT, nodeId, type SparkNode, useSparkComponent } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from './columnFormRules'
 
+type TextAlign = 'left' | 'center' | 'right'
+
 interface Props {
   /** 渲染上下文（table / form / detail / tree） */
-  context: string
+  context?: string | undefined
   /** 显示标签 */
-  displayLabel: string
+  displayLabel?: string | undefined
+  /** 直接传入的标签（供 r-column-group 直连使用） */
+  label?: string | undefined
   /** 字段绑定名 */
-  fieldName: string
+  fieldName?: string | undefined
+  /** 直接传入的字段名（供裸列节点使用） */
+  field?: string | undefined
   /** 列宽 */
-  width: number | undefined
+  width?: string | number | undefined
+  /** 最小列宽 */
+  minWidth?: string | number | undefined
+  /** 固定列方向 */
+  fixed?: boolean | 'left' | 'right' | undefined
+  /** 列对齐 */
+  align?: TextAlign | undefined
+  /** 表头对齐 */
+  headerAlign?: TextAlign | undefined
   /** 合并后的子组件配置 */
-  mergedChildren: SparkNode[]
+  mergedChildren?: SparkNode[] | undefined
+  /** 直接传入的子节点（供 r-column-group 直连使用） */
+  children?: SparkNode[] | undefined
   /** 当前字段是否隐藏 */
-  isCurrentFieldHidden: boolean
+  isCurrentFieldHidden?: boolean | undefined
   /** 当前显示值 */
-  currentDisplayValue: string
+  currentDisplayValue?: string | undefined
   /** 表格行级隐藏判断 */
-  isTableCellHidden: (row: IDataRow) => boolean
+  isTableCellHidden?: ((row: IDataRow) => boolean) | undefined
   /** 表格行级显示值获取 */
-  getTableCellDisplayValue: (row: IDataRow) => string
+  getTableCellDisplayValue?: ((row: IDataRow) => string) | undefined
   /** 表单验证规则 */
-  validationRules: FormItemRule[]
+  validationRules?: FormItemRule[] | undefined
   /** 标题对齐（table/detail） */
-  titleAlign?: 'left' | 'center' | 'right'
+  titleAlign?: TextAlign | undefined
   /** 值对齐（table/detail） */
-  valueAlign?: 'left' | 'center' | 'right'
+  valueAlign?: TextAlign | undefined
   /** 表头 class（table） */
-  headerCellClassName?: string
+  headerCellClassName?: string | undefined
+  /** 兼容直接传入的列头 class */
+  labelClassName?: string | undefined
   /** 单元格 class（table） */
-  cellClassName?: string
+  cellClassName?: string | undefined
+  /** 兼容直接传入的列 class */
+  className?: string | undefined
   /** 标题 class（detail） */
-  titleClassName?: string
+  titleClassName?: string | undefined
   /** 值 class（detail/table value） */
-  valueClassName?: string
+  valueClassName?: string | undefined
 }
 
 const props = defineProps<Props>()
 
+const { sparkConsume } = useSparkComponent(undefined, { mode: 'consume-only' })
+
+const inheritedContext = computed(() => {
+  const consumed = sparkConsume(FIELD_CONTEXT)
+  return typeof consumed === 'string' ? consumed : null
+})
+
+const resolvedContext = computed(() => props.context ?? inheritedContext.value ?? 'detail')
+const resolvedDisplayLabel = computed(() => props.displayLabel ?? props.label ?? '')
+const resolvedFieldName = computed(() => props.fieldName ?? props.field ?? '')
+const resolvedChildren = computed<SparkNode[]>(() => {
+  const children = props.mergedChildren ?? props.children
+  if (Array.isArray(children) && children.length > 0) return children
+  return []
+})
+const resolvedCurrentFieldHidden = computed(() => props.isCurrentFieldHidden ?? false)
+const resolvedCurrentDisplayValue = computed(() => props.currentDisplayValue ?? '')
+const resolvedValidationRules = computed<FormItemRule[]>(() => props.validationRules ?? [])
+
 const resolvedTitleAlign = computed(() => props.titleAlign ?? 'left')
-const resolvedValueAlign = computed(() => props.valueAlign ?? 'left')
+const resolvedHeaderAlign = computed(() => props.headerAlign ?? resolvedTitleAlign.value)
+const resolvedValueAlign = computed(() => props.align ?? props.valueAlign ?? 'left')
 
 const tableHeaderClassName = computed(() => (
-  props.headerCellClassName ?? `spark-col-header--${resolvedTitleAlign.value}`
+  props.headerCellClassName ?? props.labelClassName ?? `spark-col-header--${resolvedHeaderAlign.value}`
 ))
 
 const tableCellClassName = computed(() => (
-  props.cellClassName ?? `spark-col-cell--${resolvedValueAlign.value}`
+  props.cellClassName ?? props.className ?? `spark-col-cell--${resolvedValueAlign.value}`
 ))
 
 const tableValueClassName = computed(() => (
@@ -144,6 +190,18 @@ const detailValueClassName = computed(() => (
     ? `field-align--${props.valueAlign}`
     : 'field-align--var-value'
 ))
+
+function resolveTableCellHidden(row: IDataRow): boolean {
+  return props.isTableCellHidden?.(row) ?? false
+}
+
+function resolveTableCellDisplayValue(row: IDataRow): string {
+  if (props.getTableCellDisplayValue) return props.getTableCellDisplayValue(row)
+  const fieldName = resolvedFieldName.value
+  if (!fieldName) return ''
+  const value = row[fieldName]
+  return value == null ? '' : String(value)
+}
 
 defineSlots<{
   'table-cell'(props: { row: IDataRow; value: string }): unknown

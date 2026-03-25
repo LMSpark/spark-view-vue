@@ -32,7 +32,7 @@ import FieldProductPicker from './fields/FieldProductPicker.vue'
 import FieldCascader from './fields/FieldCascader.vue'
 import FieldTreeSelect from './fields/FieldTreeSelect.vue'
 import FieldTransfer from './fields/FieldTransfer.vue'
-import FieldColumnGroup from './fields/FieldColumnGroup.vue'
+import FieldContextRenderer from './fields/FieldContextRenderer.vue'
 
 export function registerAllRenderers(): void {
   // ── 容器组件：懒加载（体积大，按需加载） ──
@@ -78,5 +78,5 @@ export function registerAllRenderers(): void {
   Spark.register('r-cascader', FieldCascader)
   Spark.register('r-tree-select', FieldTreeSelect)
   Spark.register('r-transfer', FieldTransfer)
-  Spark.register('r-column-group', FieldColumnGroup)
+  Spark.register('r-column-group', FieldContextRenderer)
 }

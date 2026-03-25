@@ -100,6 +100,36 @@ const TableTextFieldStub = createTableFieldStub('r-text')
 const TableNumberFieldStub = createTableFieldStub('r-number')
 const TableDateFieldStub = createTableFieldStub('r-date')
 
+const TableColumnGroupStub = defineComponent({
+  props: {
+    config: {
+      type: Object,
+      required: true,
+    },
+    label: String,
+    children: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  setup(props) {
+    return () => {
+      const config = props.config as Record<string, unknown>
+      const configProps = (config['props'] as Record<string, unknown> | undefined) ?? {}
+      const children = Array.isArray(props.children) && props.children.length > 0
+        ? props.children
+        : ((config['children'] as unknown[]) ?? [])
+
+      return h(ElTableColumnStub, {
+        label: props.label ?? String(configProps['label'] ?? ''),
+      }, () => children.map((child, index) => h(SparkColumnRendererStub, {
+        key: index,
+        config: child as Record<string, unknown>,
+      })))
+    }
+  },
+})
+
 const SparkColumnRendererStub = defineComponent({
   props: {
     config: {
@@ -115,11 +145,13 @@ const SparkColumnRendererStub = defineComponent({
         'r-text': TableTextFieldStub,
         'r-number': TableNumberFieldStub,
         'r-date': TableDateFieldStub,
+        'r-column-group': TableColumnGroupStub,
       }
       const component = componentMap[type]
       if (component) {
         return h(component as never, {
           config,
+          ...(type === 'r-column-group' && { children: ((config['children'] as unknown[]) ?? []) }),
           ...((config['props'] as Record<string, unknown> | undefined) ?? {}),
         })
       }
@@ -1007,6 +1039,52 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const columns = wrapper.findAll('.el-table-column-stub')
     const labels = columns.map(column => column.attributes('data-label'))
     expect(labels).toContain('姓名')
+    expect(labels).toContain('分数')
+  })
+
+  it('should recurse grouped table columns through r-column-group children', () => {
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: {
+          rows: [{ id: 1, province: '浙江', city: '杭州', score: 95 }],
+        },
+        children: [
+          {
+            type: 'r-column-group',
+            props: { label: '地址信息' },
+            children: [
+              {
+                type: 'r-column-group',
+                props: { label: '地区' },
+                children: [
+                  { type: 'r-text', props: { field: 'province', label: '省份' } },
+                  { type: 'r-text', props: { field: 'city', label: '城市' } },
+                ],
+              },
+              { type: 'r-number', props: { field: 'score', label: '分数' } },
+            ],
+          },
+        ],
+      },
+      global: {
+        components: {
+          'r-text': TableTextFieldStub,
+          'r-number': TableNumberFieldStub,
+          'r-column-group': TableColumnGroupStub,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        }
+      }
+    })
+
+    const labels = wrapper.findAll('.el-table-column-stub').map(column => column.attributes('data-label'))
+    expect(labels).toContain('地址信息')
+    expect(labels).toContain('地区')
+    expect(labels).toContain('省份')
+    expect(labels).toContain('城市')
     expect(labels).toContain('分数')
   })
 

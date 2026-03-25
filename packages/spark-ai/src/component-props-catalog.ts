@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-25T01:40:17.545Z
+ * 生成时间：2026-03-25T03:58:40.047Z
  * 条目数量：78
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -23,7 +23,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-25T01:40:17.540Z",
+  "buildTime": "2026-03-25T03:58:40.042Z",
   "componentCount": 78,
   "registry": {
     "containers": [
@@ -3548,62 +3548,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         "valueType": "array"
       }
     },
-    "r-column-group": {
-      "type": "r-column-group",
-      "category": "group",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-column-group\" 使用。",
-      "props": [
-        {
-          "name": "label",
-          "type": "string",
-          "required": false,
-          "description": "分组标题（必填）"
-        },
-        {
-          "name": "width",
-          "type": "string | number",
-          "required": false,
-          "description": "列宽"
-        },
-        {
-          "name": "minWidth",
-          "type": "string | number",
-          "required": false,
-          "description": "最小宽度"
-        },
-        {
-          "name": "fixed",
-          "type": "boolean | \"left\" | \"right\"",
-          "required": false,
-          "description": "固定方向"
-        },
-        {
-          "name": "align",
-          "type": "\"left\" | \"right\" | \"center\"",
-          "required": false,
-          "description": "对齐方式"
-        },
-        {
-          "name": "headerAlign",
-          "type": "\"left\" | \"right\" | \"center\"",
-          "required": false,
-          "description": "表头对齐"
-        },
-        {
-          "name": "className",
-          "type": "string",
-          "required": false,
-          "description": "列自定义样式类"
-        },
-        {
-          "name": "labelClassName",
-          "type": "string",
-          "required": false,
-          "description": "表头自定义样式类"
-        }
-      ],
-      "notes": "【使用场景】复杂表格需要多级表头分组，例如「基本信息」下包含「姓名」「年龄」「邮箱」\n\n【示例】\n{ \"type\": \"r-column-group\", \"props\": { \"label\": \"基本信息\" }, \"children\": [\n  { \"type\": \"r-text\", \"field\": \"name\", \"props\": { \"label\": \"姓名\" } },\n  { \"type\": \"r-number\", \"field\": \"age\", \"props\": { \"label\": \"年龄\" } }\n]}\nchildren 内放 r-* 字段组件作为实际数据列"
-    },
     "r-color": {
       "type": "r-color",
       "category": "field",
@@ -4794,6 +4738,62 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "feature",
       "description": "SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。",
       "props": []
+    },
+    "r-column-group": {
+      "type": "r-column-group",
+      "category": "group",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-column-group\" 使用。",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "分组标题（必填）"
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "列宽"
+        },
+        {
+          "name": "minWidth",
+          "type": "string | number",
+          "required": false,
+          "description": "最小宽度"
+        },
+        {
+          "name": "fixed",
+          "type": "boolean | \"left\" | \"right\"",
+          "required": false,
+          "description": "固定方向"
+        },
+        {
+          "name": "align",
+          "type": "\"left\" | \"right\" | \"center\"",
+          "required": false,
+          "description": "对齐方式"
+        },
+        {
+          "name": "headerAlign",
+          "type": "\"left\" | \"right\" | \"center\"",
+          "required": false,
+          "description": "表头对齐"
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false,
+          "description": "列自定义样式类"
+        },
+        {
+          "name": "labelClassName",
+          "type": "string",
+          "required": false,
+          "description": "表头自定义样式类"
+        }
+      ],
+      "notes": "【使用场景】复杂表格需要多级表头分组，例如「基本信息」下包含「姓名」「年龄」「邮箱」\n\n【示例】\n{ \"type\": \"r-column-group\", \"props\": { \"label\": \"基本信息\" }, \"children\": [\n  { \"type\": \"r-text\", \"field\": \"name\", \"props\": { \"label\": \"姓名\" } },\n  { \"type\": \"r-number\", \"field\": \"age\", \"props\": { \"label\": \"年龄\" } }\n]}\nchildren 内放 r-* 字段组件作为实际数据列"
     }
   },
   "constraints": {
