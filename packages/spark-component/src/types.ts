@@ -210,6 +210,50 @@ export function nodeId(node: { id?: string; props?: Record<string, unknown> }): 
   return typeof propsId === 'string' ? propsId : undefined
 }
 
+/**
+ * 读取节点输入属性。
+ *
+ * 优先级：props[key] → 根级兼容字段 → 兼容 name -> field。
+ * 用于组件/渲染层统一解释 SparkNode 输入，减少绑定层预处理职责。
+ */
+export function nodeInputProp(node: SparkNode, key: string): unknown {
+  const propsValue = node.props?.[key]
+  if (propsValue !== undefined) return propsValue
+
+  const rawNode = node as SparkNode & Record<string, unknown>
+  if (key === 'field') {
+    const legacyName = rawNode['name']
+    if (typeof legacyName === 'string' && legacyName.length > 0) return legacyName
+  }
+
+  if (SPARK_NODE_STRUCT_KEYS.has(key)) return undefined
+  return rawNode[key]
+}
+
+/**
+ * 收集节点可传递输入属性。
+ *
+ * 根级非结构字段会并入 props；已存在的 props 优先。
+ */
+export function nodeInputProps(node: SparkNode): Record<string, unknown> {
+  const merged: Record<string, unknown> = {}
+  const rawNode = node as SparkNode & Record<string, unknown>
+
+  for (const [key, value] of Object.entries(rawNode)) {
+    if (SPARK_NODE_STRUCT_KEYS.has(key) || key === 'name') continue
+    merged[key] = value
+  }
+
+  if (merged['field'] === undefined) {
+    const legacyName = rawNode['name']
+    if (typeof legacyName === 'string' && legacyName.length > 0) {
+      merged['field'] = legacyName
+    }
+  }
+
+  return node.props ? { ...merged, ...node.props } : merged
+}
+
 // ============================================================================
 // 停靠区域描述符（Dock Descriptor）—— 容器显示配置
 // ============================================================================

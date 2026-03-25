@@ -29,8 +29,8 @@ import type { ComponentRegistry } from '../../types.js'
 
 // ── 分区 A：委托依赖 ───────────────────────────────────────────────────────
 
-import { resolveRuleDataKey, setRuleProp, pageLogger } from './bind-helpers'
-import { normalizeRuleEvents, normalizeOnProps, unpackContainerStructures, migrateNameToField, migrateRootLevelStyleClass } from './bind-normalize'
+import { resolveRuleDataKey, readRuleInputProp, setRuleProp, pageLogger } from './bind-helpers'
+import { normalizeRuleEvents, normalizeOnProps, unpackContainerStructures } from './bind-normalize'
 import { bindTableRule } from './bind-table-delegate'
 import { bindPaginationRule } from './bind-pagination-delegate'
 import { bindFormElementRule } from './bind-form-delegate'
@@ -41,6 +41,32 @@ import { getBindingDelegate, isSelfResolvingType, isDataContainerType } from './
 // ── 分区 B：递归辅助常量 ───────────────────────────────────────────────────
 
 const _COMPONENT_ARRAY_PROP_KEYS = new Set(['headerActions', 'footerActions', 'toolbar', 'rowActions', 'nodeActions', 'itemActions'])
+
+function isCloneableRecord(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object') return false
+  const prototype = Object.getPrototypeOf(value) as object | null
+  return prototype === Object.prototype || prototype === null
+}
+
+function cloneRuleValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(item => cloneRuleValue(item))
+  }
+
+  if (isCloneableRecord(value)) {
+    const clonedRecord: Record<string, unknown> = {}
+    for (const key of Object.keys(value)) {
+      clonedRecord[key] = cloneRuleValue(value[key])
+    }
+    return clonedRecord
+  }
+
+  return value
+}
+
+function cloneRuntimeRules(rules: BindRule[]): BindRule[] {
+  return rules.map(rule => cloneRuleValue(rule) as BindRule)
+}
 
 // ── 分区 D：私有辅助函数 ────────────────────────────────────────
 
@@ -145,10 +171,11 @@ function createFunctionCaller(
 export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
   const { dataSet, registry, pageFunctions } = options
   const callFunc = createFunctionCaller(pageFunctions)
+  const runtimeRules = cloneRuntimeRules(options.rules)
 
   // 闭包捕获不变字段，递归中仅传变化的 rules + parentContext，
   // 消除每层递归的 `{ ...options, rules }` 对象分配。
-  return recurse(options.rules, EMPTY_CONTEXT)
+  return recurse(runtimeRules, EMPTY_CONTEXT)
 
   function recurse(
     rules: BindRule[],
@@ -172,19 +199,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
       normalizeOnProps(newRule.props, callFunc)
     }
 
-    // ── r-* 自定义组件：透传 dataKey / field → props ──
-    // 容器组件（self-resolving）：透传 dataKey（组件自行 sparkConsume PAGE_DATASET 解析）
-    // 所有 r-* 组件：透传 field（字段名，与父组件 dataKey 叠加定位数据）
     const ruleType = newRule.type
-    if (isSelfResolvingType(ruleType, registry)) {
-      if (newRule['dataKey'] !== undefined) {
-        setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
-      }
-    }
-    // 向后兼容：v2 配置使用 name 作为字段绑定名，v3 统一为 field
-    if (ruleType.startsWith('r-')) {
-      migrateNameToField(newRule)
-    }
 
     // ── 容器结构化字段：root → props 扁平化（配置驱动，OCP） ──
     if (ruleType.startsWith('r-')) {
@@ -192,7 +207,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
     }
 
     // ── el-table / el-pagination / 表单组件 / 通用组件：dataKey 互斥委托 ──
-    if (newRule['dataKey'] !== undefined) {
+    if (readRuleInputProp(newRule, 'dataKey') !== undefined) {
       dispatchDataKeyBinding(newRule, ruleType, dataSet, registry)
     }
 
@@ -202,7 +217,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
     // ── 构建子级上下文（数据容器组件更新 dataSource，字段提供者更新 fieldName） ──
     let resolvedDataSource = null
     if (isDataContainerType(ruleType)) {
-      const rawKey = newRule['dataKey'] as string | undefined
+      const rawKey = readRuleInputProp(newRule, 'dataKey') as string | undefined
       if (rawKey && dataSet) {
         const binding = resolveDataKeyBinding(rawKey, dataSet)
         if (binding?.kind === 'view') {
@@ -210,12 +225,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
         }
       }
     }
-    const childContext = buildChildContext(
-      newRule.type,
-      newRule.props,
-      parentContext,
-      resolvedDataSource
-    )
+    const childContext = buildChildContext(newRule, parentContext, resolvedDataSource)
 
     if (newRule.props && typeof newRule.props === 'object') {
       for (const key of _COMPONENT_ARRAY_PROP_KEYS) {
@@ -245,9 +255,6 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
       }
     }
 
-    // ── 向下兼容：旧 rule.json 顶层 style / class → props ──────────────────
-    migrateRootLevelStyleClass(newRule)
-
     return newRule
   })
   } // end recurse
@@ -262,7 +269,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
  * 同时注入 DataView 到 props（如适用）
  */
 function bindGenericDataKey(rule: BindRule, dataSet: IDataSet | null): void {
-  const rawKey = rule['dataKey'] as string
+  const rawKey = readRuleInputProp(rule, 'dataKey') as string
   if (!isDataKey(rawKey)) return
 
   const resolved = resolveRuleDataKey(rawKey, dataSet)

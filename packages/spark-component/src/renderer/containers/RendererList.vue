@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useAttrs, useSlots } from 'vue'
+import { computed, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
@@ -90,7 +90,7 @@ import type { RendererListApi } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
-import { useContainerDataSource } from './useContainerDataSource'
+import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
 import { useContainerSlots } from './useContainerSlots'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
@@ -99,6 +99,8 @@ import { createRowActionSlotScope, createToolbarSlotScope } from './slotScopeFac
 interface Props {
   /** 数据绑定键 */
   dataKey?: string
+  /** @deprecated 旧版直接注入 DataView；优先改用 dataKey + PAGE_DATASET */
+  dataView?: DataView
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -157,7 +159,6 @@ const props = withDefaults(defineProps<Props>(), {
   gridAutoRows: 'minmax(32px, auto)',
   itemRowSpan: 1,
 })
-const attrs = useAttrs()
 const slots = useSlots()
 
 const effectiveDataKey = computed(() => props.dataKey)
@@ -175,9 +176,14 @@ const pageDataSet = sparkConsume(PAGE_DATASET)
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
+  legacySource: computed(() => props.dataView ?? null),
   mapView: view => view,
-  provideDataSource: view => sparkProvide(DATA_SOURCE, view),
+})
+
+useContainerDataSourceEffects({
+  resolvedDataSource: resolvedView,
+  legacySource: computed(() => props.dataView ?? null),
+  provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererList',
 })

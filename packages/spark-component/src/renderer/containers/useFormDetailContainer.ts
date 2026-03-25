@@ -6,7 +6,7 @@ import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerGrid } from './useContainerGrid'
-import { useContainerDataSource } from './useContainerDataSource'
+import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
 import { useContainerContextData } from './useContainerContextData'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createCurrentRowSlotScope } from './slotScopeFactories'
@@ -16,7 +16,7 @@ import { createCurrentRowSlotScope } from './slotScopeFactories'
 interface FormDetailContainerProps {
   dataKey: string | undefined
   children: SparkNode[] | undefined
-  fallbackDataView?: ComputedRef<DataView | undefined>
+  legacyDataView?: ComputedRef<DataView | undefined>
   docks?: ContainerDocks
   gridColumns: number | undefined
   gridGap: number | string | undefined
@@ -61,13 +61,19 @@ export function useFormDetailContainer(
     { type: containerType }
   )
   const pageDataSet = sparkConsume(PAGE_DATASET)
+  const legacySource = computed(() => props.legacyDataView?.value ?? null)
 
   const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
     dataKey: effectiveDataKey,
     pageDataSet,
-    fallbackSource: computed(() => props.fallbackDataView?.value ?? null),
+    legacySource,
     mapView: view => view,
-    provideDataSource: view => sparkProvide(DATA_SOURCE, view),
+  })
+
+  useContainerDataSourceEffects({
+    resolvedDataSource: resolvedView,
+    legacySource,
+    provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
     logger,
     logPrefix,
   })

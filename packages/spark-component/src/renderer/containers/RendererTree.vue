@@ -57,7 +57,7 @@
  * 内部通过 useSparkComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
-import { computed, ref, useAttrs } from 'vue'
+import { computed, ref } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
@@ -65,7 +65,7 @@ import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import type { RendererTreeApi } from '../_pkg'
-import { useContainerDataSource } from './useContainerDataSource'
+import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
 import RendererDataScope from './RendererDataScope.vue'
@@ -92,6 +92,8 @@ interface ElTreeComponent {
 interface Props {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
+  /** @deprecated 旧版直接注入 DataView；优先改用 dataKey + PAGE_DATASET */
+  dataView?: DataView
   /** 子节点（树节点内容配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -109,7 +111,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const attrs = useAttrs()
 /** dataKey 直接来自 Props */
 const effectiveDataKey = computed(() => props.dataKey)
 
@@ -137,9 +138,14 @@ const pageDataSet = sparkConsume(PAGE_DATASET)
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
+  legacySource: computed(() => props.dataView ?? null),
   mapView: view => view,
-  provideDataSource: view => sparkProvide(DATA_SOURCE, view),
+})
+
+useContainerDataSourceEffects({
+  resolvedDataSource: resolvedView,
+  legacySource: computed(() => props.dataView ?? null),
+  provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererTree',
 })

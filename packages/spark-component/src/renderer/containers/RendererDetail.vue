@@ -43,7 +43,7 @@
  * RendererDetail - 详情展示容器组件
  */
 import { SparkComponentRenderer } from '../_pkg'
-import { computed, useAttrs, type StyleValue } from 'vue'
+import { computed, type StyleValue } from 'vue'
 import { nodeId, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import type { DataView } from '@spark-view/spark-data'
@@ -53,6 +53,8 @@ import type { RendererDetailApi } from '../_pkg'
 interface Props {
   /** 数据绑定键 */
   dataKey?: string
+  /** @deprecated 旧版直接注入 DataView；优先改用 dataKey + PAGE_DATASET */
+  dataView?: DataView
   /** 子节点列表 */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -77,7 +79,6 @@ const props = withDefaults(defineProps<Props>(), {
   titleAlign: 'left',
   valueAlign: 'left',
 })
-const attrs = useAttrs()
 
 const detailAlignStyle = computed<StyleValue>(() => ({
   '--spark-detail-title-align': props.titleAlign,
@@ -98,7 +99,7 @@ const {
   contextData: detailData,
 } = useFormDetailContainer({
   ...props,
-  fallbackDataView: computed(() => attrs['dataView'] as DataView | undefined),
+  legacyDataView: computed(() => props.dataView),
 }, 'detail')
 
 // ── r-detail 包装 API ────────────────────────────────────────────────────

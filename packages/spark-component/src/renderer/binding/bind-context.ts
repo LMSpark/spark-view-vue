@@ -24,7 +24,9 @@
  */
 
 import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
+import type { BindRule } from '../types'
 import { isDataContainerType, isFieldProviderType } from './component-binding-registry'
+import { readRuleInputProp } from './bind-helpers'
 
 // ── 分区 A：上下文模型 ─────────────────────────────────────────────────────
 
@@ -69,18 +71,17 @@ export const EMPTY_CONTEXT: Readonly<BindingContext> = Object.freeze({})
  * - 字段提供者（el-table-column / el-form-item）：更新 fieldName
  * - 其他组件：透传父级上下文（不修改）
  *
- * @param currentType        当前规则的组件类型
- * @param currentProps       当前规则的 props
+ * @param currentRule        当前规则
  * @param parentContext      父级上下文
  * @param resolvedDataSource 当前规则解析出的 DataSource（仅数据容器组件传入）
  * @returns 子级上下文（无变化时复用父级对象，减少 GC 压力）
  */
 export function buildChildContext(
-  currentType: string | undefined,
-  currentProps: Record<string, unknown> | undefined,
+  currentRule: BindRule,
   parentContext: BindingContext,
   resolvedDataSource?: IDataSource | null
 ): BindingContext {
+  const currentType = currentRule.type
   let changed = false
   let dataSource = parentContext.dataSource
   let modelPerm = parentContext.modelPerm
@@ -95,7 +96,7 @@ export function buildChildContext(
 
   // 字段提供者：提取 prop 作为 fieldName
   if (currentType && isFieldProviderType(currentType)) {
-    const prop = currentProps?.['prop'] as string | undefined
+    const prop = readRuleInputProp(currentRule, 'prop') as string | undefined
     if (prop) {
       fieldName = prop
       changed = true
@@ -108,7 +109,7 @@ export function buildChildContext(
   // exactOptionalPropertyTypes 要求：optional 属性不能赋值 undefined
   // 只在值非 undefined 时才写入属性
   const child: BindingContext = {}
-  if (currentType !== undefined) child.parentType = currentType
+  child.parentType = currentType
   if (dataSource !== undefined) child.dataSource = dataSource
   if (fieldName !== undefined) child.fieldName = fieldName
   if (modelPerm !== undefined) child.modelPerm = modelPerm

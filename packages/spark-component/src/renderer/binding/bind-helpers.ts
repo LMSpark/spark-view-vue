@@ -27,6 +27,24 @@ export function setRuleProp(rule: BindRule, key: string, value: unknown): void {
   rule.props[key] = value
 }
 
+/**
+ * 读取规则输入属性。
+ *
+ * 优先级：props[key] → 根级兼容字段 → 兼容 name -> field。
+ * 让绑定层不再隐式依赖“上游已先把根级字段搬入 props”。
+ */
+export function readRuleInputProp(rule: BindRule, key: string): unknown {
+  const propsValue = rule.props?.[key]
+  if (propsValue !== undefined) return propsValue
+
+  if (key === 'field') {
+    const legacyName = rule['name']
+    if (typeof legacyName === 'string' && legacyName.length > 0) return legacyName
+  }
+
+  return rule[key]
+}
+
 // ── 分区 B：响应式读取桥接 ─────────────────────────────────────────────────
 
 /**
