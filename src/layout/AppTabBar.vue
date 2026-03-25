@@ -40,12 +40,41 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { inject, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useTabPages } from '@spark-view/spark-app'
 import type { TabPage } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
+import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 
-const { tabs, activeTab, closeTab, closeOthers, closeAll, switchTo } = useTabPages()
+const router = useRouter()
+const route = useRoute()
+const projectSwitchService = inject(PROJECT_SWITCH_KEY, null)
+
+function parseScopedProjectId(path: string): string | null {
+  const match = /^\/t\/[^/]+\/([^/]+)/.exec(path)
+  return match?.[1] ?? null
+}
+
+async function navigateTab(fullPath: string): Promise<void> {
+  const targetProjectId = parseScopedProjectId(fullPath)
+  const currentProjectId = typeof route.params['projectId'] === 'string' ? route.params['projectId'] : null
+
+  if (
+    projectSwitchService !== null &&
+    targetProjectId !== null &&
+    currentProjectId !== null &&
+    targetProjectId !== currentProjectId
+  ) {
+    await projectSwitchService.switchAndReload(targetProjectId)
+  }
+
+  await router.push(fullPath)
+}
+
+const { tabs, activeTab, closeTab, closeOthers, closeAll, switchTo } = useTabPages({
+  navigate: navigateTab,
+})
 
 /* ── 右键菜单 ── */
 const ctxVisible = ref(false)

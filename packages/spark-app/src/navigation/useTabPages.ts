@@ -19,6 +19,10 @@ export interface TabPage {
 
 export type PageMode = 'single' | 'multi'
 
+export interface UseTabPagesOptions {
+  navigate?: (fullPath: string) => Promise<void> | void
+}
+
 const _tabs = ref<TabPage[]>([])
 const _activeTab = ref('')
 const _mode = ref<PageMode>('multi')
@@ -43,9 +47,17 @@ function toTab(route: RouteLocationNormalizedGeneric): TabPage | null {
   }
 }
 
-export function useTabPages() {
+export function useTabPages(options?: UseTabPagesOptions) {
   const route = useRoute()
   const router = useRouter()
+
+  function navigate(fullPath: string) {
+    if (options?.navigate) {
+      void options.navigate(fullPath)
+      return
+    }
+    void router.push(fullPath)
+  }
 
   // 只安装一次 route watcher
   if (!_watchInstalled) {
@@ -81,7 +93,7 @@ export function useTabPages() {
     if (_activeTab.value === path) {
       const next = _tabs.value[Math.min(idx, _tabs.value.length - 1)]
       if (next) {
-        void router.push(next.fullPath)
+        navigate(next.fullPath)
       }
     }
   }
@@ -91,7 +103,7 @@ export function useTabPages() {
     if (!_tabs.value.some(t => t.path === _activeTab.value)) {
       const target = _tabs.value.find(t => t.path === path) ?? _tabs.value[0]
       if (target) {
-        void router.push(target.fullPath)
+        navigate(target.fullPath)
       }
     }
   }
@@ -100,14 +112,14 @@ export function useTabPages() {
     _tabs.value = _tabs.value.filter(t => !t.closable)
     const target = _tabs.value[0]
     if (target) {
-      void router.push(target.fullPath)
+      navigate(target.fullPath)
     }
   }
 
   function switchTo(path: string) {
     const tab = _tabs.value.find(t => t.path === path)
     if (tab) {
-      void router.push(tab.fullPath)
+      navigate(tab.fullPath)
     }
   }
 

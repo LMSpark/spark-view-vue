@@ -8,33 +8,88 @@ const rootStyle: Record<string, string> = {
   flexDirection: 'column',
   overflow: 'hidden',
   WebkitOverflowScrolling: 'touch',
+  padding: '8px 8px 0',
+  background: 'transparent',
+}
+
+const pageHeaderStyle: Record<string, string> = {
+  flex: '0 0 auto',
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: '16px',
+  marginBottom: '12px',
+}
+
+const pageHeaderMainStyle: Record<string, string> = {
+  minWidth: '0',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+}
+
+const pageTitleStyle: Record<string, string> = {
+  fontSize: '22px',
+  lineHeight: '30px',
+  fontWeight: '600',
+  color: 'var(--spark-text-primary)',
+}
+
+const pageSubtitleStyle: Record<string, string> = {
+  fontSize: '13px',
+  lineHeight: '20px',
+  color: 'var(--spark-text-secondary)',
+}
+
+const shellStyle: Record<string, string> = {
+  flex: '1 1 auto',
+  minHeight: '0',
+  display: 'flex',
+  flexDirection: 'column',
+  border: '1px solid var(--spark-border-light)',
+  borderRadius: '12px',
+  overflow: 'hidden',
+  background: 'var(--spark-bg-page)',
+  boxShadow: 'var(--spark-shadow-light)',
 }
 
 const toolbarStyle: Record<string, string> = {
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-  padding: '8px 12px',
-  borderBottom: '1px solid var(--el-border-color)',
-  background: 'var(--el-fill-color-light)',
+  justifyContent: 'space-between',
+  gap: '12px',
+  padding: '10px 14px',
+  borderBottom: '1px solid var(--spark-border-light)',
+  background: 'var(--spark-bg-page)',
   flex: '0 0 auto',
 }
 
-const urlTextStyle: Record<string, string> = {
+const shellHintStyle: Record<string, string> = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '2px 0',
+  borderRadius: '999px',
+  color: 'var(--spark-text-secondary)',
+  fontSize: '12px',
+  fontWeight: '500',
+}
+
+const toolbarMetaStyle: Record<string, string> = {
   flex: '1',
   minWidth: '0',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
-  color: 'var(--el-text-color-regular)',
-  fontSize: '13px',
+  color: 'var(--spark-text-secondary)',
+  fontSize: '12px',
 }
 
 const openButtonStyle: Record<string, string> = {
   flex: '0 0 auto',
-  border: '1px solid var(--el-border-color)',
-  background: 'var(--el-bg-color)',
-  color: 'var(--el-text-color-primary)',
+  border: '1px solid var(--spark-border-color)',
+  background: 'var(--spark-bg-page)',
+  color: 'var(--spark-text-primary)',
   borderRadius: '6px',
   padding: '4px 10px',
   cursor: 'pointer',
@@ -44,7 +99,9 @@ const openButtonStyle: Record<string, string> = {
 const frameWrapStyle: Record<string, string> = {
   flex: '1 1 auto',
   minHeight: '0',
-  overflow: 'auto',
+  overflow: 'hidden',
+  padding: '12px',
+  background: 'var(--spark-bg)',
 }
 
 const frameStyle: Record<string, string> = {
@@ -52,8 +109,10 @@ const frameStyle: Record<string, string> = {
   height: '100%',
   minHeight: '100%',
   display: 'block',
-  border: '0',
-  overflow: 'auto',
+  border: '1px solid var(--spark-border-light)',
+  borderRadius: '10px',
+  overflow: 'hidden',
+  background: '#fff',
 }
 
 const emptyStyle: Record<string, string> = {
@@ -70,12 +129,36 @@ export const ExternalLinkFramePage = defineComponent({
   setup() {
     const route = useRoute()
 
+    const pageTitle = computed(() => {
+      const title = route.meta['title']
+      return typeof title === 'string' && title.trim() !== '' ? title.trim() : '引用页面'
+    })
+
+    function resolveRouteTemplate(path: string): string {
+      let resolved = path
+      const tenantId = route.params['tenantId']
+      const projectId = route.params['projectId']
+
+      if (typeof tenantId === 'string' && tenantId !== '') {
+        resolved = resolved.replaceAll(':tenantId', encodeURIComponent(tenantId))
+      }
+      if (typeof projectId === 'string' && projectId !== '') {
+        resolved = resolved.replaceAll(':projectId', encodeURIComponent(projectId))
+      }
+
+      return resolved
+    }
+
     const sourceUrl = computed(() => {
       const metaUrl = route.meta['externalUrl']
-      if (typeof metaUrl === 'string' && metaUrl.trim() !== '') return metaUrl.trim()
+      if (typeof metaUrl === 'string' && metaUrl.trim() !== '') {
+        return resolveRouteTemplate(metaUrl.trim())
+      }
 
       const queryUrl = route.query['url']
-      if (typeof queryUrl === 'string' && queryUrl.trim() !== '') return queryUrl.trim()
+      if (typeof queryUrl === 'string' && queryUrl.trim() !== '') {
+        return resolveRouteTemplate(queryUrl.trim())
+      }
 
       return ''
     })
@@ -91,17 +174,26 @@ export const ExternalLinkFramePage = defineComponent({
       }
 
       return h('div', { style: rootStyle }, [
-        h('div', { style: toolbarStyle }, [
-          h('span', { style: urlTextStyle, title: sourceUrl.value }, sourceUrl.value),
-          h('button', { type: 'button', style: openButtonStyle, onClick: openInNewTab }, '新标签打开'),
+        h('div', { style: pageHeaderStyle }, [
+          h('div', { style: pageHeaderMainStyle }, [
+            h('div', { style: pageTitleStyle }, pageTitle.value),
+            h('div', { style: pageSubtitleStyle }, '当前页面以内嵌方式展示外部链接内容'),
+          ]),
         ]),
-        h('div', { style: frameWrapStyle }, [
-          h('iframe', {
-            src: sourceUrl.value,
-            style: frameStyle,
-            loading: 'lazy',
-            scrolling: 'auto',
-          }),
+        h('div', { style: shellStyle }, [
+          h('div', { style: toolbarStyle }, [
+            h('span', { style: shellHintStyle }, '引用内容'),
+            h('span', { style: toolbarMetaStyle, title: sourceUrl.value }, sourceUrl.value),
+            h('button', { type: 'button', style: openButtonStyle, onClick: openInNewTab }, '新标签打开'),
+          ]),
+          h('div', { style: frameWrapStyle }, [
+            h('iframe', {
+              src: sourceUrl.value,
+              style: frameStyle,
+              loading: 'lazy',
+              scrolling: 'auto',
+            }),
+          ]),
         ]),
       ])
     }

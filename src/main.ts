@@ -481,7 +481,7 @@ async function startApp() {
               return `${scopePrefix}${rest || getNavHomePath()}`
             }
             if (urlProjectId && urlProjectId !== projectId) {
-              // 同租户不同项目 → 切换项目上下文，放行导航
+              // 同租户不同项目 → 切换项目上下文，具体导航刷新由项目切换服务负责
               switchProject(urlProjectId)
             }
           }

@@ -374,6 +374,7 @@ function applyConfig(pageId: string, config: PageConfig): void {
 async function loadConfig(): Promise<void> {
   // system-page 路由不走 PageRenderer，防止 transition out-in 期间误触发
   if (route.meta['type'] === 'system-page') return
+  if (route.matched.length === 0) return
 
   const targetPageId = resolvePageId(route, props.pageId, props.pageConfig?.pageId)
   if (loading.value && _inFlightPageId === targetPageId) return

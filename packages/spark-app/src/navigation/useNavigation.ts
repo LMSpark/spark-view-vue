@@ -503,6 +503,13 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
     // 跨工程引用：后端已解析 refPath
     if (node.nodeKind === 'ref' && node.refPath) {
+      if (typeof node.refProjectId === 'string' && node.refProjectId.trim() !== '') {
+        const localHostPath = typeof node.path === 'string' && node.path.trim() !== ''
+          ? node.path
+          : `/__ref/${encodeURIComponent(node.id)}`
+        navigateByPath(localHostPath)
+        return
+      }
       navigateByPath(node.refPath)
       return
     }
