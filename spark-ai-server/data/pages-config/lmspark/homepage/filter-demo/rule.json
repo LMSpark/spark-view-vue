@@ -7,14 +7,14 @@
         "type": "h2",
         "style": "margin-bottom: 16px;",
         "children": [
-          "过滤面板演示"
+          "过滤面板演示 · Dock 版"
         ]
       },
       {
         "type": "p",
         "style": "color: #909399; margin-bottom: 20px;",
         "children": [
-          "过滤项统一通过 dock=filter 子节点声明，支持文本、数字、下拉、多选、日期等字段类型。"
+          "Dock 版规则：过滤项统一通过 dock=filter 子节点声明，支持文本、数字、下拉、多选、日期等字段类型。"
         ]
       },
       {

@@ -221,7 +221,7 @@ SparkNode
 
 ## 4. 各容器类型属性速查表
 
-### 4.1 r-table（数据表格）
+### 4.1 r-table（数据表格，Dock 版规范）
 
 > 规范：r-table 默认区只允许列节点。除列以外，工具栏、筛选项、行操作必须写在 children 中，并分别声明 dock: "toolbar"、dock: "filter"、dock: "actions"。
 

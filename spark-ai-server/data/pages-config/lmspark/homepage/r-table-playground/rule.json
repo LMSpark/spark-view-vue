@@ -9,14 +9,14 @@
       {
         "type": "h1",
         "children": [
-          "r-table 多用法演练场"
+          "r-table 多用法演练场 · Dock 版"
         ]
       },
       {
         "type": "p",
         "class": "r-table-playground-page__desc",
         "children": [
-          "本页演示 r-table 的常见组合：工具栏动作、筛选面板、主从联动、当前行表单。"
+          "本页演示 Dock 版 r-table 的常见组合：工具栏动作、筛选面板、主从联动、当前行表单。"
         ]
       },
       {
