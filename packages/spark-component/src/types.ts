@@ -235,8 +235,8 @@ export function nodeId(node: { id?: string; props?: Record<string, unknown> }): 
  *   },
  *   "children": [
  *     { "type": "el-table-column", "props": { "field": "name" } },
- *     { "type": "el-button", "dock": "toolbar", "props": { "builtinAction": "append-row" } },
- *     { "type": "el-button", "dock": "actions", "props": { "builtinAction": "delete-row" } }
+ *     { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "append-row" } },
+ *     { "type": "builtin-action", "dock": "actions", "props": { "builtinAction": "delete-row" } }
  *   ]
  * }
  * ```

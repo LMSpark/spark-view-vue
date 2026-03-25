@@ -1,10 +1,10 @@
 <!--
 /**
  * @skill r-list
- * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件
+ * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件，支持 dock 分区工具栏
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string, toolbar?: SparkNode[], itemActions?: SparkNode[] } }
+ * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string, itemActions?: SparkNode[] } }
  * @example { "type": "r-list", "dataKey": "Users@rows", "children": [{ "type": "r-text", "name": "name" }] }
  */
 -->
@@ -15,10 +15,6 @@
         v-for="(action, index) in visibleToolbarConfigs"
         :key="nodeId(action) ?? `r-list-toolbar-${index}`"
         :config="action"
-      />
-      <slot
-        name="toolbar"
-        v-bind="getToolbarSlotScope()"
       />
     </div>
 
@@ -86,7 +82,8 @@
 import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { nodeId, type SparkNode } from '../_pkg'
+import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
+import type { ContainerDocks } from '../../types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import type { RendererListApi } from '../_pkg'
@@ -104,12 +101,8 @@ interface Props {
   dataKey?: string
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
-  /** 工具栏按钮配置 */
-  toolbar?: SparkNode[]
-  /** 工具栏位置 */
-  toolbarPosition?: ToolbarPosition
-  /** 工具栏 CSS 类名 */
-  toolbarClass?: string
+  /** 停靠区域显示配置 */
+  docks?: ContainerDocks
   /** 列表项操作按钮配置 */
   itemActions?: SparkNode[]
   /** 列表项操作位置 */
@@ -147,8 +140,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  toolbarPosition: 'top',
-  toolbarClass: '',
+  docks: () => ({}),
   itemActionsPosition: 'right',
   itemActionsClass: '',
   columns: 1,
@@ -170,9 +162,9 @@ const slots = useSlots()
 
 const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
-  const c = props.children
-  return Array.isArray(c) && c.length > 0 ? c : []
+  return getDockedChildren(props.children)
 })
+const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
@@ -199,11 +191,10 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => props.toolbar),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
+  toolbar: computed(() => dockedToolbar.value),
+  toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission,
-  slots,
 })
 
 const {
@@ -302,15 +293,6 @@ function getItemKey(row: IDataRow, index: number): string | number {
   const keyValue = row[props.rowKey]
   if (typeof keyValue === 'string' || typeof keyValue === 'number') return keyValue
   return `${props.rowKey}-${index}`
-}
-
-function getToolbarSlotScope() {
-  return createToolbarSlotScope({
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
-  }, {
-    rows: listRows.value,
-  })
 }
 
 function getRowSlotScope(row: IDataRow, index: number) {

@@ -1,14 +1,14 @@
-import { computed, useSlots, type ComputedRef } from 'vue'
+import { computed, type ComputedRef } from 'vue'
 import { useSparkComponent } from '../_pkg'
-import type { SparkNode } from '../_pkg'
+import { getDockedChildren, type SparkNode } from '../_pkg'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
+import type { ContainerDocks } from '../../types'
 import { useContainerGrid } from './useContainerGrid'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerContextData } from './useContainerContextData'
 import { useContainerToolbar } from './useContainerToolbar'
-import type { ToolbarPosition } from './useContainerToolbar'
 import { createCurrentRowSlotScope } from './slotScopeFactories'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
@@ -17,9 +17,7 @@ interface FormDetailContainerProps {
   dataKey: string | undefined
   children: SparkNode[] | undefined
   fallbackDataView?: ComputedRef<DataView | undefined>
-  toolbar: SparkNode[] | undefined
-  toolbarPosition: ToolbarPosition | undefined
-  toolbarClass: string | undefined
+  docks?: ContainerDocks
   gridColumns: number | undefined
   gridGap: number | string | undefined
   gridAutoRows: string | undefined
@@ -37,8 +35,6 @@ export function useFormDetailContainer(
   props: FormDetailContainerProps,
   fieldContext: 'form' | 'detail',
 ) {
-  const slots = useSlots()
-
   // ── 输入解析 ──────────────────────────────────────────────────────────
 
   const effectiveDataKey = computed(() => props.dataKey)
@@ -47,8 +43,10 @@ export function useFormDetailContainer(
     return Array.isArray(c) && c.length > 0 ? c : []
   })
 
+  const dockedToolbar = computed(() => getDockedChildren(configChildren.value, 'toolbar'))
+
   const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-    children: configChildren,
+    children: computed(() => getDockedChildren(configChildren.value)),
     columns: computed(() => props.gridColumns ?? 24),
     gap: computed(() => props.gridGap ?? 0),
     autoRows: computed(() => props.gridAutoRows ?? 'minmax(32px, auto)'),
@@ -85,11 +83,10 @@ export function useFormDetailContainer(
     visibleToolbarConfigs,
     showToolbar,
   } = useContainerToolbar({
-    toolbar: computed(() => props.toolbar),
-    toolbarPosition: computed(() => props.toolbarPosition),
-    toolbarClass: computed(() => props.toolbarClass),
+    toolbar: computed(() => dockedToolbar.value),
+      toolbarPosition: computed(() => props.docks?.toolbar?.position),
+    toolbarClass: computed(() => props.docks?.toolbar?.class),
     modelPermission,
-    slots,
   })
 
   // ── 能力提供 ──────────────────────────────────────────────────────────────
@@ -98,15 +95,6 @@ export function useFormDetailContainer(
   sparkProvide(CONTEXT_DATA, contextData)
 
   // ── 槽位作用域 ────────────────────────────────────────────────────────────
-
-  function getToolbarSlotScope() {
-    return createCurrentRowSlotScope({
-      dataSource: resolvedView.value,
-      modelPermission: modelPermission.value,
-      row: contextData,
-      model: contextData,
-    })
-  }
 
   function getDefaultSlotScope() {
     return createCurrentRowSlotScope({
@@ -128,7 +116,6 @@ export function useFormDetailContainer(
     toolbarClassValue,
     visibleToolbarConfigs,
     showToolbar,
-    getToolbarSlotScope,
     getDefaultSlotScope,
   }
 }

@@ -494,7 +494,6 @@ pagedata.json (前端数据模型)
     "headers": { "Content-Type": "application/json" },
     "errorMapping": {
       "401": "redirect:/login",
-      "403": "toast:无权限访问",
       "500": "toast:服务器内部错误"
     }
   }
@@ -547,8 +546,8 @@ pagedata.json (前端数据模型)
             {
               "type": "r-table",
               "dataKey": "{{masterTable}}@rows",
-              "props": { "border": true, "highlightCurrentRow": true, "toolbar": ["search", "refresh"] },
-              "children": "{{masterColumns}}"
+              "props": { "border": true, "highlightCurrentRow": true, "docks": { "toolbar": { "position": "top" } } },
+              "children": ["{{masterToolbar}}", "{{masterColumns}}"]
             }
           ]
         },
@@ -559,8 +558,8 @@ pagedata.json (前端数据模型)
             {
               "type": "r-table",
               "dataKey": "{{detailTable}}@rows",
-              "props": { "border": true, "stripe": true, "toolbar": ["add", "delete"] },
-              "children": "{{detailColumns}}"
+              "props": { "border": true, "stripe": true, "docks": { "toolbar": { "position": "top" } } },
+              "children": ["{{detailToolbar}}", "{{detailColumns}}"]
             }
           ]
         }

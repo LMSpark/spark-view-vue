@@ -7,7 +7,7 @@
  * - CATALOG_ADDENDUMS: 追加条目，附加在 VCM 生成内容之后（透传 Props、使用说明）
  *
  * 为什么容器用 override 而非 VCM？
- * 容器组件的 rule.json 根级字段（filter.columns, toolbar.items, actions.items, on.*）
+ * 容器组件的 rule.json 根级字段（filter.columns, actions.items, on.*）
  * 与 Vue Props 名称不同（filterColumns, toolbar, rowActions），由 bindRules 转换。
  * AI 生成 rule.json 需要看到 rule.json 格式，VCM 提取的是内部 Props 名，会误导 AI。
  *
@@ -39,10 +39,10 @@ export const SHARED_TYPE_DEFINITIONS: Record<string, SharedTypeDefinition> = {
       { name: 'children', type: 'SparkNode[]', description: '子组件配置（递归结构），容器组件渲染其 children 形成组件树' },
       { name: 'visible', type: 'boolean', description: '可见性控制，false 时组件不渲染' },
       { name: 'disabled', type: 'boolean', description: '禁用状态控制' },
+      { name: 'dock', type: 'string', description: '停靠区域名。声明子节点归属哪个 dock，例如 toolbar / actions / filter。' },
       { name: 'on', type: 'Record<string, string>', description: '事件绑定（key=camelCase 事件名，value=script.js 函数名），如 { "rowDblclick": "handleRowDblclick" }' },
-      { name: 'toolbar', type: 'SparkNodeToolbar', description: '工具栏配置（容器级），详见 SparkNodeToolbar' },
-      { name: 'actions', type: 'SparkNodeActions', description: '行操作列配置（容器级），详见 SparkNodeActions' },
-      { name: 'filter', type: 'SparkNodeFilter', description: '筛选器配置（容器级），详见 SparkNodeFilter' },
+      { name: 'actions', type: 'DockActions', description: '行操作列配置（容器级），详见 DockActions' },
+      { name: 'filter', type: 'DockFilter', description: '筛选器配置（容器级），详见 DockFilter' },
     ],
     notes: `【组件与 SparkNode 的关系】
 rule.json 是一棵 SparkNode 树。渲染引擎（SparkComponentRenderer）递归遍历这棵树，对每个节点：
@@ -67,22 +67,22 @@ rule.json → SparkNode 树
   → 子组件 consume() 获取数据与语境 → 自适应渲染
 
 【toolbar / actions / filter 的宿主】
-这三个根级字段仅在容器组件（r-table、r-form、r-detail、r-list、r-tree 等）上有效。
-toolbar.items 和 actions.items 中的每一项也是 SparkNode（常见 type: "builtin-action"）。`,
+- toolbar 已迁移为 dock 模型：工具栏节点直接放在 children 内，并声明 dock: "toolbar"。
+- 工具栏显示配置写在 props.docks.toolbar，例如 position / class。
+- actions 与 filter 仍使用根级结构；actions.items 中的每一项也是 SparkNode（常见 type: "builtin-action"）。`,
   },
 
-  SparkNodeToolbar: {
-    name: 'SparkNodeToolbar',
-    description: '工具栏配置，放置在容器组件的 toolbar 根级字段。items 中的每一项也是 SparkNode（通常是 builtin-action 或 Render* 组件）。',
+  DockToolbar: {
+    name: 'DockToolbar',
+    description: 'toolbar dock 的显示配置，通常放在容器 props.docks.toolbar 中。工具栏项本身由 children 中 dock="toolbar" 的节点声明。',
     properties: [
-      { name: 'items', type: 'SparkNode[]', required: true, description: '工具栏按钮列表（通常放 builtin-action 或 Render* 自定义渲染函数）' },
       { name: 'position', type: "'top' | 'bottom' | 'left' | 'right'", description: "工具栏位置，默认 'top'" },
       { name: 'class', type: 'string', description: '自定义 CSS 类名' },
     ],
   },
 
-  SparkNodeActions: {
-    name: 'SparkNodeActions',
+  DockActions: {
+    name: 'DockActions',
     description: '行操作列配置（r-table / r-list），放置在容器组件的 actions 根级字段。items 中的每一项也是 SparkNode。',
     properties: [
       { name: 'items', type: 'SparkNode[]', required: true, description: '操作按钮列表（通常放 builtin-action 或 Render* 自定义渲染函数）' },
@@ -95,11 +95,11 @@ toolbar.items 和 actions.items 中的每一项也是 SparkNode（常见 type: "
     ],
   },
 
-  SparkNodeFilter: {
-    name: 'SparkNodeFilter',
-    description: '筛选器配置（r-table），放置在容器组件的 filter 根级字段。columns 中可以是字段名字符串（简写）或完整的 SparkNodeFilterItem 对象。',
+  DockFilter: {
+    name: 'DockFilter',
+    description: '筛选器配置（r-table），放置在容器组件的 filter 根级字段。columns 中可以是字段名字符串（简写）或完整的 DockFilterItem 对象。',
     properties: [
-      { name: 'columns', type: 'Array<string | SparkNodeFilterItem>', required: true, description: '筛选项列表。字符串简写 "fieldName" 等价于 { field: "fieldName", component: "text" }' },
+      { name: 'columns', type: 'Array<string | DockFilterItem>', required: true, description: '筛选项列表。字符串简写 "fieldName" 等价于 { field: "fieldName", component: "text" }' },
       { name: 'class', type: 'string', description: '筛选区 CSS 类名' },
       { name: 'collapsible', type: 'boolean', description: '是否可折叠，默认 false' },
       { name: 'defaultCollapsed', type: 'boolean', description: '默认是否折叠，默认 false' },
@@ -111,8 +111,8 @@ toolbar.items 和 actions.items 中的每一项也是 SparkNode（常见 type: "
     ],
   },
 
-  SparkNodeFilterItem: {
-    name: 'SparkNodeFilterItem',
+  DockFilterItem: {
+    name: 'DockFilterItem',
     description: '单个筛选项完整配置。在 filter.columns 中使用，控制单个字段的筛选 UI。',
     properties: [
       { name: 'field', type: 'string', required: true, description: '字段名（映射到数据源字段）' },
@@ -203,9 +203,10 @@ filter.gridColumns: number — 栅格总列数，默认 24
 filter.gridGap: number | string — 间距，默认 12
 filter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'
 
-【根级字段 — toolbar 工具栏】
-toolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）
-toolbar.position: 'top' | 'bottom' — 默认 'top'
+【工具栏】
+children 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。
+props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+props.docks.toolbar.class: string — 工具栏 CSS 类名
 
 【根级字段 — actions 行操作列】
 actions.items: SparkNode[] — 行操作按钮（优先 builtin-action）
@@ -224,9 +225,9 @@ children 内仅用 r-* 字段组件做列，禁止 el-table-column`,
 
   'r-form': `**r-form** — 数据表单容器（读写 currentRow）
 dataKey: string — 数据绑定键，如 "Users@currentRow"
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' — 默认 'top'
-toolbarClass: string — 工具栏 CSS 类名
+dock='toolbar' children — 工具栏节点
+props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+props.docks.toolbar.class: string — 工具栏 CSS 类名
 labelWidth: string — 标签宽度，默认 '100px'
 gridColumns: number — CSS Grid 列数，默认 24
 gridGap: number | string — 栅格间距，默认 0
@@ -240,9 +241,9 @@ children 内放 r-* 字段组件`,
 
   'r-detail': `**r-detail** — 只读详情容器（展示 currentRow）
 dataKey: string — 数据绑定键
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' — 默认 'top'
-toolbarClass: string — 工具栏 CSS 类名
+dock='toolbar' children — 工具栏节点
+props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+props.docks.toolbar.class: string — 工具栏 CSS 类名
 gridColumns: number — CSS Grid 列数，默认 24
 gridGap: number | string — 栅格间距，默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
@@ -256,9 +257,9 @@ children 内放 r-* 字段组件（只读模式）`,
   'r-tree': `**r-tree** — 树形组件容器
 dataKey: string — 数据绑定键，如 "TreeData@rows"
 dataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
-toolbar: SparkNode[] — 工具栏按钮配置
-toolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）
-toolbarClass: string — 工具栏 CSS 类名
+dock='toolbar' children — 工具栏节点
+props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置
+props.docks.toolbar.class: string — 工具栏 CSS 类名
 allowAppend: boolean — 允许追加子节点（自动生成追加按钮）
 allowDelete: boolean — 允许删除节点（自动生成删除按钮）
 onNodeClick: string — script.js 节点点击回调函数名
@@ -272,9 +273,9 @@ provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA`,
 
   'r-list': `**r-list** — 列表容器
 dataKey: string — 数据绑定键
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' — 默认 'top'
-toolbarClass: string — 工具栏 CSS 类名
+dock='toolbar' children — 工具栏节点
+props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+props.docks.toolbar.class: string — 工具栏 CSS 类名
 itemActions: Rule[] — 列表项操作区
 itemActionsPosition: 'left' | 'right' — 默认 'right'
 itemActionsClass: string — 操作区 CSS 类名
@@ -298,26 +299,26 @@ consumes: PAGE_DATASET
 provides: DATA_SOURCE`,
 
   'r-tabs': `**r-tabs** — 标签页容器
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
-toolbarClass: string — 工具栏 CSS 类名
+dock='toolbar' children — 工具栏节点
+props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+props.docks.toolbar.class: string — 工具栏 CSS 类名
 modelValue: string | number — 当前激活 tab
 onTabChange: string — 切换回调
 onTabClick: string — 点击回调
 children 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）`,
 
   'r-collapse': `**r-collapse** — 折叠面板容器
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
-toolbarClass: string — 工具栏 CSS 类名
+dock='toolbar' children — 工具栏节点
+props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+props.docks.toolbar.class: string — 工具栏 CSS 类名
 modelValue: string | number | Array — 展开的面板
 onChange: string — 切换回调
 children 内放 r-collapse-item`,
 
   'r-steps': `**r-steps** — 步骤条容器
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
-toolbarClass: string — 工具栏 CSS 类名
+dock='toolbar' children — 工具栏节点
+props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+props.docks.toolbar.class: string — 工具栏 CSS 类名
 modelValue: string | number — 当前步骤
 onStepChange: string — 步骤切换回调
 children 内放 r-step`,

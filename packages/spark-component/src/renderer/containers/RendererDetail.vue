@@ -1,12 +1,12 @@
 <!--
 /**
  * @skill r-detail
- * @description 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写
+ * @description 只读详情容器，绑定 DataView.currentRow 展示当前行字段，支持 dock 分区工具栏，不支持编辑回写
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @provides FIELD_CONTEXT
  * @consumes PAGE_DATASET
- * @input { dataKey: string }
+ * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } } } }
  * @example { "type": "r-detail", "dataKey": "Users@currentRow", "children": [] }
  */
 -->
@@ -18,7 +18,6 @@
         :key="nodeId(action) ?? `r-detail-toolbar-${index}`"
         :config="action"
       />
-      <slot name="toolbar" v-bind="getToolbarSlotScope()" />
     </div>
 
     <div class="renderer-detail-main">
@@ -46,8 +45,8 @@
 import { SparkComponentRenderer } from '../_pkg'
 import { computed, useAttrs, type StyleValue } from 'vue'
 import { nodeId, type SparkNode } from '../_pkg'
+import type { ContainerDocks } from '../../types'
 import type { DataView } from '@spark-view/spark-data'
-import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
 import type { RendererDetailApi } from '../_pkg'
 
@@ -56,12 +55,8 @@ interface Props {
   dataKey?: string
   /** 子节点列表 */
   children?: SparkNode[]
-  /** 工具栏按钮配置 */
-  toolbar?: SparkNode[]
-  /** 工具栏位置 */
-  toolbarPosition?: ToolbarPosition
-  /** 工具栏 CSS 类名 */
-  toolbarClass?: string
+  /** 停靠区域显示配置 */
+  docks?: ContainerDocks
   /** CSS Grid 列数 */
   gridColumns?: number
   /** 栅格间距 */
@@ -75,8 +70,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  toolbarPosition: 'top',
-  toolbarClass: '',
+  docks: () => ({}),
   gridColumns: 24,
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
@@ -100,7 +94,6 @@ const {
   toolbarClassValue,
   visibleToolbarConfigs,
   showToolbar,
-  getToolbarSlotScope,
   getDefaultSlotScope,
   contextData: detailData,
 } = useFormDetailContainer({

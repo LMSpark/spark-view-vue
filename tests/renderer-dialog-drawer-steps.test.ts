@@ -130,13 +130,13 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     expect(wrapper.find('.biz-drawer-footer').attributes('data-visible')).toBe('true')
   })
 
-  it('should render steps toolbar and switch active step content', async () => {
+  it('should render docked steps toolbar children and switch active step content', async () => {
     const onStepChange = vi.fn()
     const wrapper = mount(RendererSteps as any, {
       props: {
-        toolbar: [{ type: 'steps-toolbar-action' }],
         onStepChange,
         children: [
+          { type: 'steps-toolbar-action', dock: 'toolbar' },
           {
             type: 'r-step',
             props: { title: '步骤一', name: 'step1', gridGap: 16 },
@@ -153,12 +153,6 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
           },
         ],
       },
-      slots: {
-        toolbar: ({ steps }: Record<string, unknown>) => h('button', {
-          class: 'biz-steps-toolbar',
-          'data-step-count': String(Array.isArray(steps) ? steps.length : 0),
-        }, 'biz-steps-toolbar'),
-      },
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,
@@ -169,7 +163,6 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     })
 
     expect(wrapper.find('.spark-action-stub[data-type="steps-toolbar-action"]').exists()).toBe(true)
-    expect(wrapper.find('.biz-steps-toolbar').attributes('data-step-count')).toBe('2')
     expect(wrapper.find('.renderer-steps-content').attributes('style')).toContain('display: grid;')
     expect(wrapper.find('.renderer-steps-content').attributes('style')).toContain('gap: 16px;')
 

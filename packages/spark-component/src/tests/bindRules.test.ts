@@ -81,4 +81,23 @@ describe('bindRules - DataKey rows -> IDataSource binding', () => {
     expect((bound[0]!.props as any).field).toBe('name')
     expect((bound[1]!.props as any).field).toBe('id')
   })
+
+  it('已迁移容器使用根级 toolbar 结构时应 fail-fast', () => {
+    expect(() => bindDataToRules({
+      rules: [
+        {
+          type: 'r-table',
+          dataKey: 'Users@rows',
+          toolbar: {
+            items: [
+              { type: 'builtin-action', props: { builtinAction: 'refresh' } },
+            ],
+            position: 'top',
+          },
+        },
+      ] as any[],
+      pageFunctions: {},
+      dataSet: null,
+    })).toThrow(/已废除根级 toolbar 配置/)
+  })
 })

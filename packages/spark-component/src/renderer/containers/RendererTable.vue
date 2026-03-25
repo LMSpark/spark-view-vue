@@ -1,10 +1,10 @@
 <!--
 /**
  * @skill r-table
- * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页
+ * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持 dock 分区工具栏、当前行高亮、多选、分页
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
+ * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
  * @example { "type": "r-table", "dataKey": "Orders@rows", "props": { "border": true, "highlightCurrentRow": true } }
  */
 -->
@@ -29,10 +29,6 @@
           :config="action"
         />
       </template>
-      <slot
-        name="toolbar"
-        v-bind="getToolbarSlotScope()"
-      />
     </div>
 
     <!-- 过滤区 -->
@@ -194,6 +190,7 @@
 import { computed, defineComponent, ref, useAttrs, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import { nodeId, getDockedChildren, nodeDock, DEFAULT_DOCK, type SparkNode, type RendererTableApi } from '../_pkg'
+import type { ContainerDocks } from '../../types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
@@ -204,7 +201,7 @@ import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerSlots } from './useContainerSlots'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
-import { createRowActionSlotScope, createToolbarSlotScope } from './slotScopeFactories'
+import { createRowActionSlotScope } from './slotScopeFactories'
 import { useModuleContext } from './useModuleContext'
 import RendererFieldScope from './RendererFieldScope.vue'
 import { useTableFilters } from './useTableFilters'
@@ -229,12 +226,8 @@ interface Props {
   dataKey?: string
   /** 子节点列表 */
   children?: SparkNode[]
-  /** 工具栏按钮配置 */
-  toolbar?: SparkNode[]
-  /** 工具栏位置 */
-  toolbarPosition?: ToolbarPosition
-  /** 工具栏 CSS 类名 */
-  toolbarClass?: string
+  /** 停靠区域显示配置 */
+  docks?: ContainerDocks
   /** 筛选项字段列表 */
   filterColumns?: string[]
   /** 筛选区 CSS 类名 */
@@ -270,8 +263,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  toolbarPosition: 'top',
-  toolbarClass: '',
+  docks: () => ({}),
   filterColumns: () => [],
   filterClass: '',
   filterCollapsible: false,
@@ -353,11 +345,10 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => [...(props.toolbar ?? []), ...dockedToolbar.value]),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
+  toolbar: computed(() => dockedToolbar.value),
+  toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission,
-  slots,
 })
 
 // ── 过滤区与表格数据 ──────────────────────────────────────────────────────
@@ -537,18 +528,6 @@ const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
   if (props.rowActionsFixed !== undefined) return props.rowActionsFixed
   return rowActionsPositionValue.value
 })
-
-// ── 槽位作用域 ────────────────────────────────────────────────────────────
-
-function getToolbarSlotScope() {
-  return createToolbarSlotScope({
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
-  }, {
-    rows: tableRows.value,
-    moduleContext: moduleContext.value,
-  })
-}
 
 function getRowActionSlotScope(row: IDataRow, index: number) {
   return createRowActionSlotScope({

@@ -28,26 +28,21 @@ const ElCardStub = defineComponent({
 })
 
 describe('RendererList and RendererSection container integration', () => {
-  it('should allow list toolbar slot, item actions and template-driven item rendering with grid layout', async () => {
+  it('should render docked list toolbar children, item actions and template-driven item rendering with grid layout', async () => {
     const wrapper = mount(RendererList as any, {
       props: {
         dataView: {
           rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob', _perm: { allowDelete: false } }],
           _modelPerm: { allowExport: true },
         },
-        toolbar: [{ type: 'list-toolbar-action' }],
-        toolbarPosition: 'bottom',
+        docks: { toolbar: { position: 'bottom' } },
         itemActions: [{ type: 'list-item-delete', props: { permAction: 'delete' } }],
         itemActionsPosition: 'left',
         gridGap: 12,
         itemColSpan: 12,
+        children: [{ type: 'list-toolbar-action', dock: 'toolbar' }],
       },
       slots: {
-        toolbar: ({ rows, modelPermission }: Record<string, unknown>) => h('button', {
-          class: 'biz-list-toolbar',
-          'data-row-count': String(Array.isArray(rows) ? rows.length : 0),
-          'data-can-export': String((modelPermission as Record<string, unknown>)['allowExport'] ?? ''),
-        }, 'biz-list-toolbar'),
         default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {
           class: 'biz-list-item',
           'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
@@ -70,8 +65,6 @@ describe('RendererList and RendererSection container integration', () => {
     expect(wrapper.find('.renderer-list-layout--bottom').exists()).toBe(true)
     expect(wrapper.find('.spark-action-stub[data-type="list-toolbar-action"]').exists()).toBe(true)
     expect(wrapper.find('.renderer-list-item-shell--left').exists()).toBe(true)
-    expect(wrapper.find('.biz-list-toolbar').attributes('data-row-count')).toBe('2')
-    expect(wrapper.find('.biz-list-toolbar').attributes('data-can-export')).toBe('true')
     expect(wrapper.findAll('.biz-list-item')).toHaveLength(2)
     expect(wrapper.findAll('.biz-list-item')[1]?.attributes('data-row-id')).toBe('2')
     const renderedItemActions = wrapper.findAll('.spark-action-stub[data-type="list-item-delete"]')

@@ -126,7 +126,7 @@ SparkNode
 ├─ 🔗 DataBinding : dataKey
 ├─ 👁️ State       : visible, disabled
 ├─ 🎨 Layout      : grid.*, style, class
-├─ 🔧 Toolbar     : toolbar, toolbarPosition, toolbarClass
+├─ 🧭 Docking     : dock, props.docks.*
 ├─ ⚡ Actions     : *Actions, *ActionsPosition, *ActionsClass
 ├─ 📡 Events      : on.*
 └─ 📦 Props       : 组件特有属性（透传）
@@ -174,12 +174,13 @@ SparkNode
   "type": "r-table",
   "dataKey": "Users@rows",
   "props": {
-    // ── Toolbar 工具栏 ──
-    "toolbar": [                 // SparkNode[] — 工具栏项
-      { "type": "el-button", "children": ["新增"], "on": { "click": "handleAdd" } }
-    ],
-    "toolbarPosition": "top",    // 'top' | 'bottom' | 'left' | 'right'（默认 'top'）
-    "toolbarClass": "",          // 自定义 CSS 类
+    // ── Docks 停靠区 ──
+    "docks": {
+      "toolbar": {
+        "position": "top",      // 'top' | 'bottom' | 'left' | 'right'（默认 'top'）
+        "class": ""
+      }
+    },
 
     // ── Grid 网格布局（form/detail/list/section 等）──
     "gridColumns": 24,           // 网格列数（默认 24）
@@ -237,9 +238,10 @@ SparkNode
     "height": "400px",
     "maxHeight": "600px",
 
-    // ── Toolbar ──
-    "toolbar": [],                       // SparkNode[]
-    "toolbarPosition": "top",
+    // ── Docks ──
+    "docks": {
+      "toolbar": { "position": "top" }
+    },
 
     // ── Filter 筛选 ──
     "filterColumns": ["name", "type"],   // 指定参与筛选的字段
@@ -258,6 +260,7 @@ SparkNode
     "rowActionsFixed": "right"
   },
   "children": [
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } },
     // ⚠️ r-table 的 children 必须是 el-table-column
     {
       "type": "el-table-column",
@@ -286,14 +289,12 @@ SparkNode
     "gridColumns": 24,
     "gridGap": "16px",
     "gridAutoRows": "minmax(32px, auto)",
-
-    // ── Toolbar ──
-    "toolbar": [
-      { "type": "el-button", "props": { "type": "primary" }, "children": ["保存"], "on": { "click": "handleSave" } }
-    ],
-    "toolbarPosition": "top"
+    "docks": {
+      "toolbar": { "position": "top" }
+    }
   },
   "children": [
+    { "type": "el-button", "dock": "toolbar", "props": { "type": "primary" }, "children": ["保存"], "on": { "click": "handleSave" } },
     // r-form 的 children 是字段组件（r-text, r-select 等）
     { "type": "r-text", "name": "userName", "props": { "label": "用户名", "colSpan": 12 } },
     { "type": "r-select", "name": "role", "props": { "label": "角色", "colSpan": 12, "options": [...] } },
@@ -312,10 +313,12 @@ SparkNode
     "gridColumns": 24,
     "gridGap": "16px",
     "gridAutoRows": "minmax(32px, auto)",
-    "toolbar": [],
-    "toolbarPosition": "top"
+    "docks": {
+      "toolbar": { "position": "top" }
+    }
   },
   "children": [
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } },
     // 结构与 r-form 相同，但字段只读
     { "type": "r-text", "name": "userName", "props": { "label": "用户名", "colSpan": 12 } },
     { "type": "r-number", "name": "age", "props": { "label": "年龄", "colSpan": 12 } }
@@ -330,9 +333,9 @@ SparkNode
   "type": "r-tree",
   "dataKey": "hierarchicalTreeData@rows", // 嵌套树数据
   "props": {
-    // ── Toolbar ──
-    "toolbar": [],
-    "toolbarPosition": "top",
+    "docks": {
+      "toolbar": { "position": "top" }
+    },
 
     // ── Node Actions 节点操作 ──
     "nodeActions": [
@@ -343,7 +346,10 @@ SparkNode
     // ── 事件回调（on* 属性形式）──
     "onNodeClick": "handleNodeClick",
     "onNodeExpand": "handleNodeExpand"
-  }
+  },
+  "children": [
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } }
+  ]
 }
 ```
 
@@ -365,12 +371,12 @@ SparkNode
     // ── Item Actions ──
     "itemActions": [],
     "itemActionsPosition": "right",
-
-    // ── Toolbar ──
-    "toolbar": [],
-    "toolbarPosition": "top"
+    "docks": {
+      "toolbar": { "position": "top" }
+    }
   },
   "children": [
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "append-row" } },
     // 列表项内的字段组件
     { "type": "r-text", "name": "title", "props": { "label": "标题" } }
   ]
@@ -384,12 +390,14 @@ SparkNode
   "type": "r-tabs",
   "props": {
     "modelValue": "tab1",               // 默认激活标签
-    "toolbar": [],
-    "toolbarPosition": "top",
+    "docks": {
+      "toolbar": { "position": "top" }
+    },
     "onTabChange": "handleTabChange",
     "onTabClick": "handleTabClick"
   },
   "children": [
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } },
     // 每个 child 代表一个标签面板
     {
       "type": "div",
@@ -414,10 +422,13 @@ SparkNode
   "type": "r-collapse",
   "props": {
     "modelValue": ["panel1"],
-    "toolbar": [],
+    "docks": {
+      "toolbar": { "position": "top" }
+    },
     "onChange": "handleCollapseChange"
   },
   "children": [
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } },
     {
       "type": "div",
       "props": { "title": "面板一", "name": "panel1" },
@@ -464,10 +475,13 @@ SparkNode
   "type": "r-steps",
   "props": {
     "modelValue": 0,                    // 当前步骤索引
-    "toolbar": [],
+    "docks": {
+      "toolbar": { "position": "top" }
+    },
     "onStepChange": "handleStepChange"
   },
   "children": [
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } },
     {
       "type": "div",
       "props": { "title": "步骤一", "description": "基本信息" },
@@ -679,11 +693,12 @@ r-text / r-select / r-number / ...（字段组件）
       "dataKey": "treeData@rows",
       "props": {
         "style": { "width": "280px", "flexShrink": "0" },
-        "toolbar": [
-          { "type": "el-button", "props": { "size": "small" }, "children": ["刷新"] }
-        ],
+        "docks": { "toolbar": { "position": "top" } },
         "onNodeClick": "handleNodeClick"
-      }
+      },
+      "children": [
+        { "type": "el-button", "dock": "toolbar", "props": { "size": "small" }, "children": ["刷新"] }
+      ]
     },
     {
       "type": "r-table",
@@ -692,17 +707,18 @@ r-text / r-select / r-number / ...（字段组件）
         "style": { "flex": "1" },
         "border": true,
         "highlightCurrentRow": true,
-        "toolbar": [
-          { "type": "el-button", "props": { "type": "primary" }, "children": ["新增"], "on": { "click": "handleAdd" } }
-        ],
+        "docks": { "toolbar": { "position": "top" } },
         "rowActions": [
           { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
           { "type": "el-button", "props": { "type": "danger", "link": true }, "children": ["删除"], "on": { "click": "handleDelete" } }
         ],
-        "rowActionsLabel": "操作",
         "rowActionsWidth": 150
       },
       "children": [
+      },
+      "children": [
+        { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } }
+      ]
         { "type": "el-table-column", "props": { "prop": "name", "label": "名称" } },
         { "type": "el-table-column", "props": { "prop": "type", "label": "类型" } },
         { "type": "el-table-column", "props": { "prop": "status", "label": "状态" } }
@@ -722,9 +738,7 @@ r-text / r-select / r-number / ...（字段组件）
     "props": {
       "border": true,
       "highlightCurrentRow": true,
-      "toolbar": [
-        { "type": "el-button", "props": { "type": "primary" }, "children": ["新增"], "on": { "click": "handleAdd" } }
-      ],
+      "docks": { "toolbar": { "position": "top" } },
       "rowActions": [
         { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } }
       ]
@@ -1195,8 +1209,8 @@ interface ToolbarConfig {
 
 | 旧写法 | 新写法 |
 |--------|--------|
-| `"props": { "toolbar": [...], "toolbarPosition": "top" }` | `meta.toolbar: { items: [...], position: "top" }` |
-| `"props": { "toolbarClass": "my-toolbar" }` | `meta.toolbar.class` |
+| `"toolbar": { "items": [...] }` | `children: [{ ..., "dock": "toolbar" }]` |
+| `"props": { "toolbarPosition": "top", "toolbarClass": "my-toolbar" }` | `"props": { "docks": { "toolbar": { "position": "top", "class": "my-toolbar" } } }` |
 
 #### ActionsConfig — 操作区（v2 支持双区）
 
@@ -1424,10 +1438,9 @@ interface BehaviorConfig {
   "props": {
     "border": true,
     "highlightCurrentRow": true,
-    "toolbar": [
-      { "type": "el-button", "props": { "type": "primary" }, "children": ["新增"], "on": { "click": "handleAdd" } }
-    ],
-    "toolbarPosition": "top",
+    "docks": {
+      "toolbar": { "position": "top" }
+    },
     "rowActions": [
       { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
       { "type": "el-button", "props": { "type": "danger", "link": true }, "children": ["删除"], "on": { "click": "handleDelete" } }
@@ -1439,6 +1452,7 @@ interface BehaviorConfig {
     "filterCollapsible": true
   },
   "children": [
+    { "type": "el-button", "dock": "toolbar", "props": { "type": "primary" }, "children": ["新增"], "on": { "click": "handleAdd" } },
     { "type": "el-table-column", "props": { "prop": "name", "label": "名称" } },
     { "type": "el-table-column", "props": { "prop": "status", "label": "状态" } }
   ],
@@ -1493,11 +1507,10 @@ interface BehaviorConfig {
     "labelWidth": "100px",
     "gridColumns": 24,
     "gridGap": "16px",
-    "toolbar": [
-      { "type": "el-button", "props": { "type": "primary" }, "children": ["保存"], "on": { "click": "handleSave" } }
-    ]
+    "docks": { "toolbar": { "position": "top" } }
   },
   "children": [
+    { "type": "el-button", "dock": "toolbar", "props": { "type": "primary" }, "children": ["保存"], "on": { "click": "handleSave" } },
     { "type": "r-text", "name": "userName", "props": { "label": "用户名", "colSpan": 12 } },
     { "type": "r-select", "name": "role", "props": { "label": "角色", "colSpan": 12, "options": [] } }
   ]
@@ -1690,11 +1703,19 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
   if (m.layout?.style) setRuleProp(rule, 'style', m.layout.style)
   if (m.layout?.class) setRuleProp(rule, 'class', m.layout.class)
 
-  // ── toolbar → props ──────────────────────────────────────────
+  // ── toolbar → children + props.docks.toolbar ─────────────────
   if (m.toolbar) {
-    setRuleProp(rule, 'toolbar', m.toolbar.items)
-    if (m.toolbar.position) setRuleProp(rule, 'toolbarPosition', m.toolbar.position)
-    if (m.toolbar.class)    setRuleProp(rule, 'toolbarClass', m.toolbar.class)
+    rule.children = [
+      ...(rule.children ?? []),
+      ...m.toolbar.items.map(item => ({ ...item, dock: 'toolbar' })),
+    ]
+    setRuleProp(rule, 'docks', {
+      ...(rule.props?.docks ?? {}),
+      toolbar: {
+        ...(m.toolbar.position ? { position: m.toolbar.position } : {}),
+        ...(m.toolbar.class ? { class: m.toolbar.class } : {}),
+      },
+    })
   }
 
   // ── actions → props（按容器类型分派） ────────────────────────

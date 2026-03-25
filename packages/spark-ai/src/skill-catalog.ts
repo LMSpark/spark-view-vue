@@ -237,16 +237,21 @@ function handleSave(row) {
     checks: ['selectionType: checkbox 已声明', 'selectedRows 空数组守卫'],
     detail: `## batch-select 配置要点
 
-### rule.json — selectionType + toolbar
+### rule.json — selectionType + docked toolbar
 \`\`\`json
 {
   "type": "r-table",
-  "props": { "selectionType": "checkbox" },
-  "toolbar": {
-    "items": [
-      { "label": "批量删除", "event": "handleBatchDelete", "type": "danger" }
-    ]
-  }
+  "props": {
+    "selectionType": "checkbox",
+    "docks": { "toolbar": { "position": "top" } }
+  },
+  "children": [
+    {
+      "type": "builtin-action",
+      "dock": "toolbar",
+      "props": { "builtinAction": "delete-selected", "label": "批量删除", "type": "danger" }
+    }
+  ]
 }
 \`\`\`
 
@@ -522,10 +527,9 @@ function RenderRowActions(row) {
   {
     "type": "r-table",
     "dataKey": "Orders@rows",
-    "toolbar": {
-      "items": [
-        { "type": "builtin-action", "props": { "builtinAction": "append-row", "label": "新增", "type": "primary" } }
-      ]
+    "props": {
+      "docks": { "toolbar": { "position": "top" } },
+      "border": true, "stripe": true, "highlightCurrentRow": true
     },
     "actions": {
       "items": [
@@ -533,8 +537,10 @@ function RenderRowActions(row) {
         { "type": "builtin-action", "props": { "builtinAction": "delete-row", "label": "删除", "type": "danger" } }
       ]
     },
-    "props": { "border": true, "stripe": true, "highlightCurrentRow": true },
-    "children": [...]
+    "children": [
+      { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "append-row", "label": "新增", "type": "primary" } },
+      ...
+    ]
   },
   {
     "type": "r-dialog",
@@ -621,17 +627,16 @@ function RenderRowActions(row) {
     checks: ['_modelPerm.canImport / canExport 权限检查', '导入后调用 refreshData 刷新', '导出使用 selectedRows 或全量 rows'],
     detail: `## import-export 配置要点
 
-### toolbar 配置
+### docked toolbar 配置
 \`\`\`json
 {
   "type": "r-table",
-  "toolbar": {
-    "items": [
-      { "type": "builtin-action", "props": { "builtinAction": "refresh", "label": "刷新" } },
-      { "type": "RenderImportButton" },
-      { "type": "RenderExportButton" }
-    ]
-  }
+  "props": { "docks": { "toolbar": { "position": "top" } } },
+  "children": [
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh", "label": "刷新" } },
+    { "type": "RenderImportButton", "dock": "toolbar" },
+    { "type": "RenderExportButton", "dock": "toolbar" }
+  ]
 }
 \`\`\`
 

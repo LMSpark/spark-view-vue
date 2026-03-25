@@ -1,8 +1,8 @@
 <!--
 /**
  * @skill r-tabs
- * @description 标签页容器，内部使用 r-tab-pane 定义面板；每个面板内容默认采用 24 列 CSS Grid
- * @input { props: { modelValue?: string|number, toolbar?: SparkNode[], toolbarPosition?: 'top'|'bottom'|'left'|'right' } }
+ * @description 标签页容器，内部使用 r-tab-pane 定义面板；支持 dock 分区工具栏，每个面板内容默认采用 24 列 CSS Grid
+ * @input { props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, modelValue?: string|number } }
  * @example { "type": "r-tabs", "children": [{ "type": "r-tab-pane", "props": { "label": "基本信息", "name": "base" }, "children": [] }] }
  */
 -->
@@ -14,7 +14,6 @@
         :key="nodeId(action) ?? `r-tabs-toolbar-${index}`"
         :config="action"
       />
-      <slot name="toolbar" v-bind="getToolbarSlotScope()" />
     </div>
 
     <div class="renderer-tabs-main">
@@ -60,12 +59,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useSlots, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { nodeId, type SparkNode } from '../_pkg'
+import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
+import type { ContainerDocks } from '../../types'
 import { useContainerToolbar } from './useContainerToolbar'
-import { createToolbarSlotScope } from './slotScopeFactories'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 import type { RendererTabsApi } from '../_pkg'
 
@@ -77,12 +76,8 @@ interface TabsClickEvent {
 interface Props {
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
-  /** 工具栏按钮配置 */
-  toolbar?: SparkNode[]
-  /** 工具栏位置 */
-  toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
-  /** 工具栏 CSS 类名 */
-  toolbarClass?: string
+  /** 停靠区域显示配置 */
+  docks?: ContainerDocks
   /** 当前激活标签页 */
   modelValue?: string | number
   /** 标签页切换回调 */
@@ -92,20 +87,19 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  toolbarPosition: 'top',
-  toolbarClass: '',
+  docks: () => ({}),
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const slots = useSlots()
 const { registerApi } = useSparkComponent({ type: 'r-tabs' })
 
 const paneConfigs = computed(() =>
-  (props.children ?? []).filter(child => child.type === 'r-tab-pane')
+  getDockedChildren(props.children).filter(child => child.type === 'r-tab-pane')
 )
+const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 
 const currentActiveName = ref<string | number | undefined>(props.modelValue)
 
@@ -126,11 +120,10 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => props.toolbar),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
+  toolbar: computed(() => dockedToolbar.value),
+  toolbarPosition: computed(() => props.docks?.toolbar?.position),
+  toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission: computed(() => undefined),
-  slots,
 })
 
 // ── r-tabs 包装 API ──────────────────────────────────────────────────────
@@ -227,16 +220,6 @@ function handleTabChange(value: string | number): void {
 
 function handleTabClick(pane: TabsClickEvent, event: Event): void {
   props.onTabClick?.(pane, event)
-}
-
-function getToolbarSlotScope() {
-  return createToolbarSlotScope({
-    dataSource: undefined,
-    modelPermission: undefined,
-  }, {
-    activeName: currentActiveName.value,
-    panes: paneConfigs.value,
-  })
 }
 
 function getPaneSlotScope(pane: SparkNode, index: number) {

@@ -300,17 +300,21 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
     "columns": ["name", "status"],
     "collapsible": true
   },
-  "toolbar": {                     // 工具栏配置（根级）
-    "items": [ /* SparkNode[] */ ],
-    "position": "top"
-  },
   "actions": {                     // 行操作列配置（根级）
     "items": [ /* SparkNode[] */ ],
     "label": "操作", "width": 160, "position": "right"
   },
+  "props": {
+    "docks": {
+      "toolbar": { "position": "top" }
+    }
+  },
   "visible": true,                 // 显示/禁用控制（根级）
   "disabled": false,
-  "children": [ /* r-* 字段组件，递归 SparkNode */ ]
+  "children": [
+    /* r-* 字段组件，递归 SparkNode */,
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } }
+  ]
 }
 \`\`\`
 

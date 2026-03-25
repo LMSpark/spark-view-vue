@@ -122,6 +122,8 @@ interface ContainerStructConfig {
   fields: ContainerStructField[]
 }
 
+const LEGACY_TOOLBAR_ROOT_CONTAINER_TYPES = new Set(['r-table', 'r-form', 'r-detail', 'r-list', 'r-tree', 'r-tabs', 'r-collapse', 'r-steps'])
+
 /**
  * 容器结构配置表
  *
@@ -129,14 +131,6 @@ interface ContainerStructConfig {
  * 扩展点：新增容器结构只需在此数组末尾追加。
  */
 const CONTAINER_STRUCTS: readonly ContainerStructConfig[] = [
-  {
-    key: 'toolbar',
-    fields: [
-      { source: 'items', target: 'toolbar', arrayOnly: true },
-      { source: 'position', target: 'toolbarPosition' },
-      { source: 'class', target: 'toolbarClass' },
-    ],
-  },
   {
     key: 'filter',
     fields: [
@@ -166,16 +160,19 @@ const CONTAINER_STRUCTS: readonly ContainerStructConfig[] = [
 ]
 
 /**
- * 将 r-* 组件根级结构化字段（toolbar / filter / actions）扁平化到 props
+ * 将 r-* 组件根级结构化字段（filter / actions）扁平化到 props
  *
  * rule.json 中容器结构为根级对象，扁平化使组件通过 Vue Props 直接接收。
  * 配置驱动：新增结构类型只需扩展 CONTAINER_STRUCTS，不修改本函数。
  */
 function unpackContainerStructures(rule: BindRule): void {
+  assertNoLegacyToolbarRoot(rule)
+
   for (const struct of CONTAINER_STRUCTS) {
     const raw = rule[struct.key]
     if (raw === null || raw === undefined || typeof raw !== 'object' || Array.isArray(raw)) continue
     const obj = raw as Record<string, unknown>
+
     for (const field of struct.fields) {
       const value = obj[field.source]
       if (value === undefined) continue
@@ -183,6 +180,18 @@ function unpackContainerStructures(rule: BindRule): void {
       setRuleProp(rule, field.target, value)
     }
   }
+}
+
+function assertNoLegacyToolbarRoot(rule: BindRule): void {
+  if (!LEGACY_TOOLBAR_ROOT_CONTAINER_TYPES.has(rule.type)) return
+
+  const rawToolbar = rule['toolbar']
+  if (rawToolbar === null || rawToolbar === undefined) return
+  if (typeof rawToolbar !== 'object' || Array.isArray(rawToolbar)) return
+
+  throw new Error(
+    `[bindRules] ${rule.type} 已废除根级 toolbar 配置。请将工具栏项移动到 children，并为每个节点声明 dock: "toolbar"；位置与样式请改为 props.docks.toolbar。`,
+  )
 }
 
 // ── 分区 C：v2→v3 兼容迁移 ───────────────────────────────────────────────

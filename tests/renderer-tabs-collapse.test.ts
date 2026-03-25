@@ -61,13 +61,13 @@ const ElCollapseItemStub = defineComponent({
 })
 
 describe('RendererTabs and RendererCollapse integration', () => {
-  it('should render tabs panes with toolbar and pane grid body', () => {
+  it('should render tabs panes with docked toolbar children and pane grid body', () => {
     const onTabChange = vi.fn()
     const wrapper = mount(RendererTabs as any, {
       props: {
-        toolbar: [{ type: 'tabs-toolbar-action' }],
         onTabChange,
         children: [
+          { type: 'tabs-toolbar-action', dock: 'toolbar' },
           {
             type: 'r-tab-pane',
             props: { label: '基本信息', name: 'base', gridGap: 16 },
@@ -83,12 +83,6 @@ describe('RendererTabs and RendererCollapse integration', () => {
           },
         ],
       },
-      slots: {
-        toolbar: ({ panes }: Record<string, unknown>) => h('button', {
-          class: 'biz-tabs-toolbar',
-          'data-pane-count': String(Array.isArray(panes) ? panes.length : 0),
-        }, 'biz-tabs-toolbar'),
-      },
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,
@@ -99,7 +93,6 @@ describe('RendererTabs and RendererCollapse integration', () => {
     })
 
     expect(wrapper.find('.spark-action-stub[data-type="tabs-toolbar-action"]').exists()).toBe(true)
-    expect(wrapper.find('.biz-tabs-toolbar').attributes('data-pane-count')).toBe('2')
     expect(wrapper.findAll('.el-tab-pane-stub')).toHaveLength(2)
     expect(wrapper.find('.renderer-tabs-pane-body').attributes('style')).toContain('display: grid;')
     expect(wrapper.find('.renderer-tabs-pane-body').attributes('style')).toContain('gap: 16px;')
@@ -131,13 +124,13 @@ describe('RendererTabs and RendererCollapse integration', () => {
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['a'])
   })
 
-  it('should render collapse items with toolbar and item grid body', () => {
+  it('should render collapse items with docked toolbar children and item grid body', () => {
     const onChange = vi.fn()
     const wrapper = mount(RendererCollapse as any, {
       props: {
-        toolbar: [{ type: 'collapse-toolbar-action' }],
         onChange,
         children: [
+          { type: 'collapse-toolbar-action', dock: 'toolbar' },
           {
             type: 'r-collapse-item',
             props: { title: '分组一', name: 'one', gridGap: 12 },
@@ -153,12 +146,6 @@ describe('RendererTabs and RendererCollapse integration', () => {
           },
         ],
       },
-      slots: {
-        toolbar: ({ items }: Record<string, unknown>) => h('button', {
-          class: 'biz-collapse-toolbar',
-          'data-item-count': String(Array.isArray(items) ? items.length : 0),
-        }, 'biz-collapse-toolbar'),
-      },
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,
@@ -169,7 +156,6 @@ describe('RendererTabs and RendererCollapse integration', () => {
     })
 
     expect(wrapper.find('.spark-action-stub[data-type="collapse-toolbar-action"]').exists()).toBe(true)
-    expect(wrapper.find('.biz-collapse-toolbar').attributes('data-item-count')).toBe('2')
     expect(wrapper.findAll('.el-collapse-item-stub')).toHaveLength(2)
     expect(wrapper.find('.renderer-collapse-item-body').attributes('style')).toContain('display: grid;')
     expect(wrapper.find('.renderer-collapse-item-body').attributes('style')).toContain('gap: 12px;')

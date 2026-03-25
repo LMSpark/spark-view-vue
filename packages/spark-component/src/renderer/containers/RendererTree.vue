@@ -1,10 +1,10 @@
 <!--
 /**
  * @skill r-tree
- * @description 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件
+ * @description 树形数据容器，绑定 DataView 渲染嵌套树结构，支持 dock 分区工具栏、懒加载、节点点击、展开/折叠事件
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { nodeKey?: string, lazy?: boolean } }
+ * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, nodeKey?: string, lazy?: boolean } }
  * @example { "type": "r-tree", "dataKey": "departments@rows", "props": { "nodeKey": "id" } }
  */
 -->
@@ -15,10 +15,6 @@
         v-for="(action, index) in visibleToolbarConfigs"
         :key="nodeId(action) ?? `r-tree-toolbar-${index}`"
         :config="action"
-      />
-      <slot
-        name="toolbar"
-        v-bind="getToolbarSlotScope()"
       />
     </div>
 
@@ -61,9 +57,10 @@
  * 内部通过 useSparkComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
-import { computed, ref, useAttrs, useSlots } from 'vue'
+import { computed, ref, useAttrs } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { nodeId, type SparkNode } from '../_pkg'
+import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
+import type { ContainerDocks } from '../../types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
@@ -71,7 +68,6 @@ import type { RendererTreeApi } from '../_pkg'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
-import { createToolbarSlotScope } from './slotScopeFactories'
 import RendererDataScope from './RendererDataScope.vue'
 
 interface TreeNode {
@@ -98,12 +94,8 @@ interface Props {
   dataKey?: string
   /** 子节点（树节点内容配置） */
   children?: SparkNode[]
-  /** 工具栏按钮配置 */
-  toolbar?: SparkNode[]
-  /** 工具栏位置 */
-  toolbarPosition?: ToolbarPosition
-  /** 工具栏 CSS 类名 */
-  toolbarClass?: string
+  /** 停靠区域显示配置 */
+  docks?: ContainerDocks
   /** 允许追加子节点（自动生成追加按钮） */
   allowAppend?: boolean
   /** 允许删除节点（自动生成删除按钮） */
@@ -118,8 +110,6 @@ interface Props {
 
 const props = defineProps<Props>()
 const attrs = useAttrs()
-const slots = useSlots()
-
 /** dataKey 直接来自 Props */
 const effectiveDataKey = computed(() => props.dataKey)
 
@@ -134,10 +124,9 @@ const hasNodeActions = computed(() => effectiveAllowAppend.value || effectiveAll
 
 /** 节点内容 children — 完全由父级（rule.json / 父组件）提供 */
 const nodeContentChildren = computed<SparkNode[]>(() => {
-  const kids = props.children
-  if (Array.isArray(kids) && kids.length > 0) return kids
-  return []
+  return getDockedChildren(props.children)
 })
+const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 
 // 接入 SPARK 能力链
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
@@ -185,21 +174,11 @@ function getNodeLabel(data: unknown): string {
 const {
   toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => props.toolbar),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
+  toolbar: computed(() => dockedToolbar.value),
+  toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission,
-  slots,
 })
-
-function getToolbarSlotScope() {
-  return createToolbarSlotScope({
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
-  }, {
-    rows: treeData.value,
-  })
-}
 
 // 向字段子组件提供渲染上下文（同步，先于 watcher）
 sparkProvide(FIELD_CONTEXT, 'tree')

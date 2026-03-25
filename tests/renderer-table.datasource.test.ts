@@ -4,6 +4,7 @@ import { RendererTable } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
+import { bindDataToRules } from '../packages/spark-component/src/renderer/binding/bindRules'
 
 const SparkActionStub = defineComponent({
   props: {
@@ -203,6 +204,25 @@ const RendererFieldScopeStub = defineComponent({
 })
 
 describe('RendererTable - DataView as single data intermediary', () => {
+  it('should fail fast when migrated containers still use legacy root toolbar config', () => {
+    expect(() => bindDataToRules({
+      rules: [
+        {
+          type: 'r-table',
+          dataKey: 'Users@rows',
+          toolbar: {
+            items: [
+              { type: 'builtin-action', props: { builtinAction: 'refresh' } },
+            ],
+            position: 'top',
+          },
+        },
+      ] as never[],
+      pageFunctions: {},
+      dataSet: null,
+    })).toThrow(/已废除根级 toolbar 配置/)
+  })
+
   it('should bind dataView prop and react to DataView changes', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS',
@@ -319,16 +339,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
     spy.mockRestore()
   })
 
-  it('should render table toolbar and scoped row actions with position props', async () => {
+  it('should render table toolbar from docked children and scoped row actions', async () => {
     const rowActionSpy = vi.fn()
 
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: { rows: [{ id: 1 }] },
-        toolbar: [{ type: 'toolbar-button' }],
-        toolbarPosition: 'bottom',
+        docks: { toolbar: { position: 'bottom' } },
         rowActions: [{ type: 'row-button', on: { click: rowActionSpy } }],
         rowActionsPosition: 'left',
+        children: [{ type: 'toolbar-button', dock: 'toolbar' }],
       },
       global: {
         components: {
@@ -377,9 +397,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        toolbar: [
+        children: [
           {
             type: 'builtin-action',
+            dock: 'toolbar',
             props: {
               builtinAction: 'append-row',
               label: '新增',
@@ -389,6 +410,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           },
           {
             type: 'builtin-action',
+            dock: 'toolbar',
             props: {
               builtinAction: 'refresh',
               label: '刷新',
@@ -445,9 +467,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        toolbar: [
+        children: [
           {
             type: 'builtin-action',
+            dock: 'toolbar',
             props: {
               builtinAction: 'refresh',
               label: '刷新',
@@ -495,9 +518,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        toolbar: [
+        children: [
           {
             type: 'builtin-action',
+            dock: 'toolbar',
             props: {
               builtinAction: 'append-row',
               label: '新增',
@@ -601,9 +625,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        toolbar: [
+        children: [
           {
             type: 'builtin-action',
+            dock: 'toolbar',
             props: {
               builtinAction: 'delete-selected',
               label: '删除勾选',
@@ -651,9 +676,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        toolbar: [
+        children: [
           {
             type: 'builtin-action',
+            dock: 'toolbar',
             props: {
               builtinAction: 'append-row',
               label: '新增静默',
@@ -708,9 +734,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        toolbar: [
+        children: [
           {
             type: 'builtin-action',
+            dock: 'toolbar',
             props: {
               builtinAction: 'refresh',
               label: '刷新',
@@ -764,9 +791,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        toolbar: [
+        children: [
           {
             type: 'builtin-action',
+            dock: 'toolbar',
             props: {
               builtinAction: 'delete-selected',
               label: '删除勾选',
@@ -799,16 +827,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
     warnSpy.mockRestore()
   })
 
-  it('should render tree toolbar and scoped node actions with position props', async () => {
+  it('should render tree toolbar from docked children and scoped node actions', async () => {
     const nodeActionSpy = vi.fn()
 
     const { RendererTree } = await import('@spark-view/spark-component')
     const wrapper = mount(RendererTree as any, {
       props: {
         data: [{ id: 'node-1', label: '节点 1' }],
-        toolbar: [{ type: 'tree-toolbar' }],
-        toolbarPosition: 'right',
+        docks: { toolbar: { position: 'right' } },
         children: [
+          { type: 'tree-toolbar', dock: 'toolbar' },
           { type: 'node-button', on: { click: nodeActionSpy } },
         ],
       },
@@ -830,17 +858,14 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(nodeActionSpy).toHaveBeenCalled()
   })
 
-  it('should allow business slots to append table toolbar and row actions', () => {
+  it('should allow row-action slots and render docked toolbar children', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: { rows: [{ id: 1 }] },
         rowActionsPosition: 'right',
+        children: [{ type: 'biz-toolbar', dock: 'toolbar' }],
       },
       slots: {
-        toolbar: ({ rows }: Record<string, unknown>) => h('button', {
-          class: 'biz-toolbar-button',
-          'data-row-count': String(Array.isArray(rows) ? rows.length : 0),
-        }, 'biz-toolbar'),
         'row-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
           class: 'biz-row-action',
           'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
@@ -861,9 +886,36 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
-    expect(wrapper.find('.biz-toolbar-button').attributes('data-row-count')).toBe('1')
+    expect(wrapper.find('.spark-action-stub[data-type="biz-toolbar"]').exists()).toBe(true)
     expect(wrapper.find('.biz-row-action').attributes('data-row-id')).toBe('7')
     expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
+  })
+
+  it('should ignore legacy toolbar props once docked toolbar mode is enabled', () => {
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: { rows: [{ id: 1 }] },
+        toolbar: [{ type: 'legacy-toolbar-button' }],
+        toolbarPosition: 'bottom',
+        children: [{ type: 'toolbar-button', dock: 'toolbar' }],
+      },
+      global: {
+        components: {
+          'r-text': TableTextFieldStub,
+          'r-number': TableNumberFieldStub,
+          'r-date': TableDateFieldStub,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        }
+      }
+    })
+
+    expect(wrapper.find('.spark-action-stub[data-type="toolbar-button"]').exists()).toBe(true)
+    expect(wrapper.find('.spark-action-stub[data-type="legacy-toolbar-button"]').exists()).toBe(false)
+    expect(wrapper.find('.renderer-table-layout--bottom').exists()).toBe(false)
   })
 
   it('should render primitive field configs as direct table columns', () => {
@@ -930,7 +982,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(labels).toContain('分数')
   })
 
-  it('should allow business slots to append tree toolbar and content template', async () => {
+  it('should render docked tree toolbar children and content template', async () => {
     const { RendererTree } = await import('@spark-view/spark-component')
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS-Tree-Slots',
@@ -946,12 +998,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTree as any, {
       props: {
         dataView: dv,
+        children: [{ type: 'biz-tree-toolbar', dock: 'toolbar' }],
       },
       slots: {
-        toolbar: ({ rows }: Record<string, unknown>) => h('button', {
-          class: 'biz-tree-toolbar',
-          'data-node-count': String(Array.isArray(rows) ? rows.length : 0),
-        }, 'biz-tree-toolbar'),
         default: ({ data }: Record<string, unknown>) => h('span', {
           class: 'biz-node-template',
           'data-node-label': String((data as Record<string, unknown>)['label'] ?? ''),
@@ -965,7 +1014,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
-    expect(wrapper.find('.biz-tree-toolbar').attributes('data-node-count')).toBe('1')
+    expect(wrapper.find('.spark-action-stub[data-type="biz-tree-toolbar"]').exists()).toBe(true)
     expect(wrapper.find('.biz-node-template').attributes('data-node-label')).toBe('节点 1')
   })
 
@@ -976,9 +1025,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           rows: [{ id: 1 }],
           _modelPerm: { allowCreate: false },
         },
-        toolbar: [
-          { type: 'create-button', props: { permAction: 'create' } },
-          { type: 'export-button', props: { permAction: 'export' } },
+        children: [
+          { type: 'create-button', dock: 'toolbar', props: { permAction: 'create' } },
+          { type: 'export-button', dock: 'toolbar', props: { permAction: 'export' } },
         ],
         rowActions: [
           { type: 'delete-row', props: { permAction: 'delete' } },
@@ -1028,11 +1077,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTree as any, {
       props: {
         dataView: dv,
-        toolbar: [
-          { type: 'import-tree', props: { permAction: 'import' } },
-          { type: 'export-tree', props: { permAction: 'export' } },
-        ],
         children: [
+          { type: 'import-tree', dock: 'toolbar', props: { permAction: 'import' } },
+          { type: 'export-tree', dock: 'toolbar', props: { permAction: 'export' } },
           { type: 'delete-node', props: { permAction: 'delete' } },
           { type: 'plain-node' },
         ],

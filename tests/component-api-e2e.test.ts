@@ -57,13 +57,11 @@ describe('End-to-end: real component extraction (VCM)', () => {
     const api = extractComponentApiVcm(checker, absPath, `${CONTAINERS_DIR}/RendererTable.vue`, 'r-table')
 
     expect(api).not.toBeNull()
-    // RendererTable 有很多 props（>20）
-    expect(api!.props.length).toBeGreaterThanOrEqual(20)
+    // RendererTable 仍然保留较丰富的容器 props，但旧 toolbar props 已移除
+    expect(api!.props.length).toBeGreaterThanOrEqual(18)
 
-    // 有 withDefaults — VCM 也能提取默认值
-    const toolbarPosition = api!.props.find(p => p.name === 'toolbarPosition')
-    expect(toolbarPosition).toBeDefined()
-    expect(toolbarPosition!.default).toBeDefined()
+    const docks = api!.props.find(p => p.name === 'docks')
+    expect(docks).toBeDefined()
   })
 
   it('extracts RendererTree.vue correctly', () => {

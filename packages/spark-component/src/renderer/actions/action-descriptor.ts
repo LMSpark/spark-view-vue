@@ -12,8 +12,13 @@
  * // rule.json — confirm → chain
  * { "on": { "click": { "action": "confirm", "message": "确认删除？", "onConfirm": { "action": "delete-current" } } } }
  *
- * // toolbar — prompt → append
- * { "toolbar": [{ "type": "action", "props": { "builtinAction": "prompt-append", "promptMessage": "请输入名称", "field": "name" } }] }
+ * // docked toolbar — prompt → append
+ * {
+ *   "props": { "docks": { "toolbar": { "position": "top" } } },
+ *   "children": [
+ *     { "type": "action", "dock": "toolbar", "props": { "builtinAction": "prompt-append", "promptMessage": "请输入名称", "field": "name" } }
+ *   ]
+ * }
  * ```
  */
 

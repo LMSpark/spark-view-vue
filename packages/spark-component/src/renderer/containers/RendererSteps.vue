@@ -1,8 +1,8 @@
 <!--
 /**
  * @skill r-steps
- * @description 步骤容器，内部使用 r-step 定义步骤；当前步骤内容区采用 24 列 CSS Grid
- * @input { props: { modelValue?: string|number, toolbar?: SparkNode[] } }
+ * @description 步骤容器，内部使用 r-step 定义步骤；支持 dock 分区工具栏，当前步骤内容区采用 24 列 CSS Grid
+ * @input { props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, modelValue?: string|number } }
  * @example { "type": "r-steps", "children": [{ "type": "r-step", "props": { "title": "步骤一", "name": "s1" }, "children": [] }] }
  */
 -->
@@ -14,7 +14,6 @@
         :key="nodeId(action) ?? `r-steps-toolbar-${index}`"
         :config="action"
       />
-      <slot name="toolbar" v-bind="getToolbarSlotScope()" />
     </div>
 
     <div class="renderer-steps-main">
@@ -47,24 +46,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useSlots, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { nodeId, type SparkNode } from '../_pkg'
+import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
+import type { ContainerDocks } from '../../types'
 import { useContainerToolbar } from './useContainerToolbar'
-import { createToolbarSlotScope } from './slotScopeFactories'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 import type { RendererStepsApi } from '../_pkg'
 
 interface Props {
   /** 子节点（步骤配置） */
   children?: SparkNode[]
-  /** 工具栏按钮配置 */
-  toolbar?: SparkNode[]
-  /** 工具栏位置 */
-  toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
-  /** 工具栏 CSS 类名 */
-  toolbarClass?: string
+  /** 停靠区域显示配置 */
+  docks?: ContainerDocks
   /** 当前步骤 */
   modelValue?: string | number
   /** 步骤切换回调 */
@@ -72,20 +67,19 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  toolbarPosition: 'top',
-  toolbarClass: '',
+  docks: () => ({}),
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const slots = useSlots()
 const { registerApi } = useSparkComponent({ type: 'r-steps' })
 
 const stepConfigs = computed(() =>
-  (props.children ?? []).filter(child => child.type === 'r-step')
+  getDockedChildren(props.children).filter(child => child.type === 'r-step')
 )
+const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 
 const activeStepName = ref<string | number | undefined>(props.modelValue)
 
@@ -106,11 +100,10 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => props.toolbar),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
+  toolbar: computed(() => dockedToolbar.value),
+  toolbarPosition: computed(() => props.docks?.toolbar?.position),
+  toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission: computed(() => undefined),
-  slots,
 })
 
 const activeStepIndex = computed(() => {
@@ -221,17 +214,6 @@ const stepsApi: RendererStepsApi = {
 registerApi(stepsApi)
 
 defineExpose(stepsApi)
-
-function getToolbarSlotScope() {
-  return createToolbarSlotScope({
-    dataSource: undefined,
-    modelPermission: undefined,
-  }, {
-    activeStepName: activeStepName.value,
-    activeStepIndex: activeStepIndex.value,
-    steps: stepConfigs.value,
-  })
-}
 
 function getStepSlotScope(step: SparkNode, index: number) {
   return {

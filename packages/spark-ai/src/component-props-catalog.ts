@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-24T19:51:43.452Z
+ * 生成时间：2026-03-25T01:18:38.212Z
  * 条目数量：78
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -23,7 +23,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-24T19:51:43.448Z",
+  "buildTime": "2026-03-25T01:18:38.207Z",
   "componentCount": 78,
   "registry": {
     "containers": [
@@ -114,6 +114,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "DataKey 格式：tableName@field"
+        },
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "default": "{}",
+          "description": "停靠区域显示配置"
         }
       ],
       "rootFields": [
@@ -173,16 +180,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "行高，默认 'minmax(32px, auto)'"
         },
         {
-          "name": "toolbar.items",
-          "type": "SparkNode[]",
-          "description": "工具栏按钮（优先 builtin-action，其次 Render*）"
-        },
-        {
-          "name": "toolbar.position",
-          "type": "'top' | 'bottom'",
-          "description": "默认 'top'"
-        },
-        {
           "name": "actions.items",
           "type": "SparkNode[]",
           "description": "行操作按钮（优先 builtin-action）"
@@ -218,7 +215,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "操作列 CSS 类名"
         }
       ],
-      "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【根级字段 — toolbar 工具栏】\ntoolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）\ntoolbar.position: 'top' | 'bottom' — 默认 'top'\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE, FIELD_CONTEXT\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
+      "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【工具栏】\nchildren 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE, FIELD_CONTEXT\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
       "binding": {
         "selfResolving": true
       }
@@ -233,6 +230,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "数据绑定键，如 \"Users@currentRow\""
+        },
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "default": "{}",
+          "description": "停靠区域显示配置"
         },
         {
           "name": "labelWidth",
@@ -270,17 +274,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键，如 \"Users@currentRow\""
         },
         {
-          "name": "toolbar",
-          "type": "Rule[]",
-          "description": "工具栏"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "'top' | 'bottom'",
+          "name": "props.docks.toolbar.position",
+          "type": "'top' | 'bottom' | 'left' | 'right'",
           "description": "默认 'top'"
         },
         {
-          "name": "toolbarClass",
+          "name": "props.docks.toolbar.class",
           "type": "string",
           "description": "工具栏 CSS 类名"
         },
@@ -305,7 +304,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "行高定义，默认 'minmax(32px, auto)'"
         }
       ],
-      "notes": "**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
+      "notes": "**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
       "binding": {
         "selfResolving": true
       }
@@ -320,6 +319,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "数据绑定键"
+        },
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "default": "{}",
+          "description": "停靠区域显示配置"
         },
         {
           "name": "gridColumns",
@@ -364,17 +370,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键"
         },
         {
-          "name": "toolbar",
-          "type": "Rule[]",
-          "description": "工具栏"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "'top' | 'bottom'",
+          "name": "props.docks.toolbar.position",
+          "type": "'top' | 'bottom' | 'left' | 'right'",
           "description": "默认 'top'"
         },
         {
-          "name": "toolbarClass",
+          "name": "props.docks.toolbar.class",
           "type": "string",
           "description": "工具栏 CSS 类名"
         },
@@ -394,7 +395,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "行高定义，默认 'minmax(32px, auto)'"
         }
       ],
-      "notes": "**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
+      "notes": "**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
       "binding": {
         "selfResolving": true
       }
@@ -409,6 +410,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "数据绑定键，如 \"TreeData@rows\""
+        },
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "description": "停靠区域显示配置"
         },
         {
           "name": "allowAppend",
@@ -435,17 +442,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "直接传入的 DataView（与 Table/List/Form/Detail 一致）"
         },
         {
-          "name": "toolbar",
-          "type": "SparkNode[]",
-          "description": "工具栏按钮配置"
+          "name": "props.docks.toolbar.position",
+          "type": "'top' | 'bottom' | 'left' | 'right'",
+          "description": "工具栏位置"
         },
         {
-          "name": "toolbarPosition",
-          "type": "ToolbarPosition",
-          "description": "工具栏位置（'top' | 'bottom' | 'left' | 'right'）"
-        },
-        {
-          "name": "toolbarClass",
+          "name": "props.docks.toolbar.class",
           "type": "string",
           "description": "工具栏 CSS 类名"
         },
@@ -475,7 +477,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "节点折叠回调"
         }
       ],
-      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ntoolbar: SparkNode[] — 工具栏按钮配置\ntoolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）\ntoolbarClass: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
+      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
       "binding": {
         "selfResolving": true
       }
@@ -490,6 +492,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "数据绑定键"
+        },
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "default": "{}",
+          "description": "停靠区域显示配置"
         },
         {
           "name": "columns",
@@ -596,17 +605,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键"
         },
         {
-          "name": "toolbar",
-          "type": "Rule[]",
-          "description": "工具栏"
-        },
-        {
-          "name": "toolbarPosition",
-          "type": "'top' | 'bottom'",
+          "name": "props.docks.toolbar.position",
+          "type": "'top' | 'bottom' | 'left' | 'right'",
           "description": "默认 'top'"
         },
         {
-          "name": "toolbarClass",
+          "name": "props.docks.toolbar.class",
           "type": "string",
           "description": "工具栏 CSS 类名"
         },
@@ -696,7 +700,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "项跨行数，默认 1"
         }
       ],
-      "notes": "**r-list** — 列表容器\ndataKey: string — 数据绑定键\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nitemActions: Rule[] — 列表项操作区\nitemActionsPosition: 'left' | 'right' — 默认 'right'\nitemActionsClass: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
+      "notes": "**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nitemActions: Rule[] — 列表项操作区\nitemActionsPosition: 'left' | 'right' — 默认 'right'\nitemActionsClass: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
       "binding": {
         "selfResolving": true
       }
@@ -706,6 +710,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。",
       "props": [
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "default": "{}",
+          "description": "停靠区域显示配置"
+        },
         {
           "name": "modelValue",
           "type": "string | number",
@@ -731,17 +742,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       ],
       "rootFields": [
         {
-          "name": "toolbar",
-          "type": "Rule[]",
-          "description": "工具栏"
-        },
-        {
-          "name": "toolbarPosition",
+          "name": "props.docks.toolbar.position",
           "type": "'top' | 'bottom' | 'left' | 'right'",
           "description": "默认 'top'"
         },
         {
-          "name": "toolbarClass",
+          "name": "props.docks.toolbar.class",
           "type": "string",
           "description": "工具栏 CSS 类名"
         },
@@ -761,7 +767,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "点击回调"
         }
       ],
-      "notes": "**r-tabs** — 标签页容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\nchildren 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）",
+      "notes": "**r-tabs** — 标签页容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\nchildren 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）",
       "binding": {
         "bindingDelegate": "form-element",
         "valueType": "string"
@@ -772,6 +778,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。",
       "props": [
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "default": "{}",
+          "description": "停靠区域显示配置"
+        },
         {
           "name": "modelValue",
           "type": "CollapseValue",
@@ -798,17 +811,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       ],
       "rootFields": [
         {
-          "name": "toolbar",
-          "type": "Rule[]",
-          "description": "工具栏"
-        },
-        {
-          "name": "toolbarPosition",
+          "name": "props.docks.toolbar.position",
           "type": "'top' | 'bottom' | 'left' | 'right'",
           "description": "默认 'top'"
         },
         {
-          "name": "toolbarClass",
+          "name": "props.docks.toolbar.class",
           "type": "string",
           "description": "工具栏 CSS 类名"
         },
@@ -823,7 +831,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "切换回调"
         }
       ],
-      "notes": "**r-collapse** — 折叠面板容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\nchildren 内放 r-collapse-item",
+      "notes": "**r-collapse** — 折叠面板容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\nchildren 内放 r-collapse-item",
       "binding": {
         "bindingDelegate": "form-element",
         "valueType": "string"
@@ -834,6 +842,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。",
       "props": [
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "default": "{}",
+          "description": "停靠区域显示配置"
+        },
         {
           "name": "modelValue",
           "type": "string | number",
@@ -859,17 +874,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       ],
       "rootFields": [
         {
-          "name": "toolbar",
-          "type": "Rule[]",
-          "description": "工具栏"
-        },
-        {
-          "name": "toolbarPosition",
+          "name": "props.docks.toolbar.position",
           "type": "'top' | 'bottom' | 'left' | 'right'",
           "description": "默认 'top'"
         },
         {
-          "name": "toolbarClass",
+          "name": "props.docks.toolbar.class",
           "type": "string",
           "description": "工具栏 CSS 类名"
         },
@@ -884,7 +894,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "步骤切换回调"
         }
       ],
-      "notes": "**r-steps** — 步骤条容器\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\ntoolbarClass: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\nchildren 内放 r-step",
+      "notes": "**r-steps** — 步骤条容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\nchildren 内放 r-step",
       "binding": {
         "bindingDelegate": "form-element",
         "valueType": "string"
@@ -4388,8 +4398,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@52402": {
-                        "name": "__@toPrimitive@52402",
+                      "__@toPrimitive@860": {
+                        "name": "__@toPrimitive@860",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."

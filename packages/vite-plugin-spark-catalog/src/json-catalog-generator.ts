@@ -281,7 +281,7 @@ function buildPlatformConstraints(): PlatformConstraints {
  * bindRules 内部 Props 过滤（容器组件专用）
  *
  * 容器组件的 SparkNode 根级字段（toolbar / actions / filter / on）
- * 由 bindRules 拆解后注入为 Vue 内部 Props（如 toolbar → toolbar + toolbarPosition + toolbarClass）。
+ * 由 bindRules 拆解后注入为 Vue 内部 Props（如 filter → filterColumns；actions → rowActions）。
  * 这些内部 Props 名与 rule.json 字段名不同，rootFields 已用 rule.json 格式描述，
  * VCM 提取的内部名会误导 AI → 对有 override 的容器组件过滤。
  * ----------------------------------------------------------------------- */
