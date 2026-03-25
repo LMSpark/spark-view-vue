@@ -380,6 +380,7 @@ const refProjectOptions = ref<SelectOption[]>([])
 const refPageOptions = ref<SelectOption[]>([])
 const refProjectSelection = ref('')
 const refPageSelection = ref('')
+const syncingRefSelection = ref(false)
 
 /** 加载工程列表（排除当前工程） */
 async function loadRefProjects() {
@@ -428,29 +429,58 @@ async function loadRefPages(projectId: string) {
   }
 }
 
-// 当 isRefNode 变为 true 时加载工程列表
-watch(() => flags.isRefNode.value, (isRef) => {
-  if (isRef) {
-    void loadRefProjects()
-    // 回填已有选择
-    const selectedNode = props.state.selectedNode.value
-    if (selectedNode?.nodeKind === 'ref' && selectedNode.refId) {
-      if (selectedNode.refProjectId) {
-        refProjectSelection.value = selectedNode.refProjectId
-      } else {
-        const user = getUser()
-        refProjectSelection.value = user?.defaultProjectId ?? ''
-      }
-      refPageSelection.value = selectedNode.refId
-    } else {
-      refProjectSelection.value = ''
-      refPageSelection.value = ''
-    }
+async function syncRefSelectionFromNode(): Promise<void> {
+  if (!flags.isRefNode.value) {
+    syncingRefSelection.value = true
+    refProjectSelection.value = ''
+    refPageSelection.value = ''
+    refPageOptions.value = []
+    syncingRefSelection.value = false
+    return
   }
-}, { immediate: true })
+
+  await loadRefProjects()
+
+  const selectedNode = props.state.selectedNode.value
+  syncingRefSelection.value = true
+
+  if (selectedNode?.nodeKind === 'ref' && selectedNode.refId) {
+    const user = getUser()
+    const projectId = selectedNode.refProjectId ?? user?.defaultProjectId ?? ''
+    refProjectSelection.value = projectId
+
+    if (projectId) {
+      await loadRefPages(projectId)
+    } else {
+      refPageOptions.value = []
+    }
+
+    refPageSelection.value = selectedNode.refId
+  } else {
+    refProjectSelection.value = ''
+    refPageSelection.value = ''
+    refPageOptions.value = []
+  }
+
+  syncingRefSelection.value = false
+}
+
+watch(
+  () => [
+    flags.isRefNode.value,
+    props.state.selectedNode.value?.id ?? '',
+    props.state.selectedNode.value?.refId ?? '',
+    props.state.selectedNode.value?.refProjectId ?? '',
+  ],
+  () => {
+    void syncRefSelectionFromNode()
+  },
+  { immediate: true },
+)
 
 // 工程切换→加载该工程页面列表
 watch(refProjectSelection, (projectId) => {
+  if (syncingRefSelection.value) return
   refPageSelection.value = ''
   if (projectId) {
     void loadRefPages(projectId)
@@ -463,6 +493,7 @@ watch(refProjectSelection, (projectId) => {
 
 // 页面选择→写入 refId
 watch(refPageSelection, (nodeId) => {
+  if (syncingRefSelection.value) return
   if (nodeId && nodeId !== props.state.editForm.id) {
     props.state.editForm.refId = nodeId
     props.state.markNavDirty()
