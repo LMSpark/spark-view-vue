@@ -49,6 +49,7 @@
                 "order": 1,
                 "props": {
                   "builtinAction": "append-row",
+                  "label": "✚ 新增",
                   "type": "primary",
                   "size": "small"
                 }
@@ -59,6 +60,7 @@
                 "order": 2,
                 "props": {
                   "builtinAction": "delete-selected",
+                  "label": "✖ 删除勾选",
                   "type": "danger",
                   "size": "small",
                   "plain": true
@@ -70,6 +72,7 @@
                 "order": 3,
                 "props": {
                   "builtinAction": "refresh",
+                  "label": "↻ 刷新",
                   "size": "small"
                 }
               },
