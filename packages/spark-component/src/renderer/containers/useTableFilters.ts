@@ -11,6 +11,7 @@ interface LoggerLike {
 
 interface UseTableFiltersOptions {
   children: ComputedRef<SparkNode[]>
+  filterChildren: ComputedRef<SparkNode[]>
   dataView: ComputedRef<DataView | null>
   filterColumns: ComputedRef<string[] | undefined>
   filterClass: ComputedRef<string | undefined>
@@ -215,6 +216,8 @@ export function useTableFilters(options: UseTableFiltersOptions) {
 
   // 将过滤字段名解析回对应的字段组件配置。
   const filterConfigs = computed(() => {
+    if (options.filterChildren.value.length > 0) return options.filterChildren.value
+
     if (filterColumnsValue.value.length === 0) return []
     const configMap = new Map<string, SparkNode>()
     for (const child of options.children.value) {

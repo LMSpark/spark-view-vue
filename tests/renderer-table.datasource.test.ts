@@ -346,9 +346,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
       props: {
         dataView: { rows: [{ id: 1 }] },
         docks: { toolbar: { position: 'bottom' } },
-        rowActions: [{ type: 'row-button', on: { click: rowActionSpy } }],
         rowActionsPosition: 'left',
-        children: [{ type: 'toolbar-button', dock: 'toolbar' }],
+        children: [
+          { type: 'toolbar-button', dock: 'toolbar' },
+          { type: 'row-button', dock: 'actions', on: { click: rowActionSpy } },
+        ],
       },
       global: {
         components: {
@@ -572,9 +574,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        rowActions: [
+        children: [
           {
             type: 'builtin-action',
+            dock: 'actions',
             props: {
               builtinAction: 'delete-row',
               label: '删除',
@@ -891,12 +894,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
   })
 
-  it('should ignore legacy toolbar props once docked toolbar mode is enabled', () => {
-    const wrapper = mount(RendererTable as any, {
+  it('should fail fast for legacy toolbar props', () => {
+    expect(() => mount(RendererTable as any, {
       props: {
         dataView: { rows: [{ id: 1 }] },
         toolbar: [{ type: 'legacy-toolbar-button' }],
-        toolbarPosition: 'bottom',
         children: [{ type: 'toolbar-button', dock: 'toolbar' }],
       },
       global: {
@@ -911,11 +913,37 @@ describe('RendererTable - DataView as single data intermediary', () => {
           SparkComponentRenderer: SparkColumnRendererStub,
         }
       }
-    })
+    })).toThrow('props.toolbar 已废除')
+  })
 
-    expect(wrapper.find('.spark-action-stub[data-type="toolbar-button"]').exists()).toBe(true)
-    expect(wrapper.find('.spark-action-stub[data-type="legacy-toolbar-button"]').exists()).toBe(false)
-    expect(wrapper.find('.renderer-table-layout--bottom').exists()).toBe(false)
+  it('should fail fast for legacy rowActions props and non-docked non-column children', () => {
+    expect(() => mount(RendererTable as any, {
+      props: {
+        dataView: { rows: [{ id: 1 }] },
+        rowActions: [{ type: 'row-button' }],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        }
+      }
+    })).toThrow('props.rowActions 已废除')
+
+    expect(() => mount(RendererTable as any, {
+      props: {
+        dataView: { rows: [{ id: 1 }] },
+        children: [{ type: 'RenderRowActions' }],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        }
+      }
+    })).toThrow('默认区仅允许列节点')
   })
 
   it('should render primitive field configs as direct table columns', () => {
@@ -1028,10 +1056,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
         children: [
           { type: 'create-button', dock: 'toolbar', props: { permAction: 'create' } },
           { type: 'export-button', dock: 'toolbar', props: { permAction: 'export' } },
-        ],
-        rowActions: [
-          { type: 'delete-row', props: { permAction: 'delete' } },
-          { type: 'plain-row' },
+          { type: 'delete-row', dock: 'actions', props: { permAction: 'delete' } },
+          { type: 'plain-row', dock: 'actions' },
         ],
       },
       global: {
@@ -1119,10 +1145,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        filterColumns: ['name'],
         children: [
           { type: 'r-text', props: { field: 'name', label: '姓名' } },
           { type: 'r-number', props: { field: 'age', label: '年龄' } },
+          { type: 'r-text', dock: 'filter', props: { field: 'name', label: '姓名' } },
         ],
       },
       global: {
@@ -1171,9 +1197,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        filterColumns: ['name'],
         children: [
           { type: 'r-text', props: { field: 'name', label: '姓名' } },
+          { type: 'r-text', dock: 'filter', props: { field: 'name', label: '姓名' } },
         ],
       },
       global: {
@@ -1223,10 +1249,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        filterColumns: ['score', 'status'],
         children: [
           { type: 'r-number', props: { field: 'score', label: '分数', filterMode: 'range' } },
           { type: 'r-multi-select', props: { field: 'status', label: '状态' } },
+          { type: 'r-number', dock: 'filter', props: { field: 'score', label: '分数', filterMode: 'range' } },
+          { type: 'r-multi-select', dock: 'filter', props: { field: 'status', label: '状态' } },
         ],
       },
       global: {
@@ -1266,11 +1293,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTable as any, {
       props: {
         dataView: dv,
-        filterColumns: ['name'],
         filterCollapsible: true,
         filterDefaultCollapsed: true,
         children: [
           { type: 'r-text', props: { field: 'name', label: '姓名' } },
+          { type: 'r-text', dock: 'filter', props: { field: 'name', label: '姓名' } },
         ],
       },
       global: {
@@ -1301,5 +1328,24 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((filterContent.element as HTMLElement).style.display).not.toBe('none')
     expect(wrapper.find('.renderer-field-scope-stub').exists()).toBe(true)
     expect(wrapper.find('.renderer-filter-input[data-name="name"]').exists()).toBe(true)
+  })
+
+  it('should fail fast for legacy filterColumns props', () => {
+    expect(() => mount(RendererTable as any, {
+      props: {
+        dataView: { rows: [{ id: 1, name: 'Alice' }] },
+        filterColumns: ['name'],
+        children: [
+          { type: 'r-text', props: { field: 'name', label: '姓名' } },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          SparkComponentRenderer: SparkActionStub,
+          RendererFieldScope: RendererFieldScopeStub,
+        },
+      },
+    })).toThrow('props.filterColumns 已废除')
   })
 })

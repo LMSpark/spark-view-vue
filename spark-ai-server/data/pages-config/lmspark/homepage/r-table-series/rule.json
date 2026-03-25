@@ -31,167 +31,131 @@
             "id": "ordersTable",
             "dataKey": "Orders@rows",
             "props": {
+              "docks": {
+                "toolbar": {
+                  "position": "top"
+                }
+              },
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "toolbar": [
-                {
-                  "type": "builtin-action",
-                  "props": {
-                    "builtinAction": "append-row",
-                    "label": "新增订单",
-                    "buttonType": "primary",
-                    "appendPayload": {
-                      "customer": "新客户",
-                      "status": "draft",
-                      "priority": "medium",
-                      "owner": "系统",
-                      "amount": 8800,
-                      "orderDate": "2026-03-18",
-                      "region": "east",
-                      "_perm": {
-                        "allowDelete": true,
-                        "editableFields": [
-                          "status",
-                          "priority",
-                          "owner",
-                          "amount"
-                        ]
-                      }
-                    },
-                    "successMessage": "已新增订单"
-                  }
-                },
-                {
-                  "type": "builtin-action",
-                  "props": {
-                    "builtinAction": "refresh",
-                    "label": "刷新列表",
-                    "successMessage": "列表已刷新"
-                  }
-                },
-                {
-                  "type": "button",
-                  "props": {
-                    "type": "button"
-                  },
-                  "children": [
-                    "脚本刷新(ID)"
-                  ],
-                  "on": {
-                    "click": "refreshOrders"
-                  }
-                },
-                {
-                  "type": "button",
-                  "props": {
-                    "type": "button"
-                  },
-                  "children": [
-                    "脚本选首行(ID)"
-                  ],
-                  "on": {
-                    "click": "selectFirstOrder"
-                  }
-                },
-                {
-                  "type": "button",
-                  "props": {
-                    "type": "button"
-                  },
-                  "children": [
-                    "脚本更新当前(ID)"
-                  ],
-                  "on": {
-                    "click": "markCurrentOrderDone"
-                  }
-                },
-                {
-                  "type": "builtin-action",
-                  "props": {
-                    "builtinAction": "delete-current",
-                    "label": "删除当前",
-                    "buttonType": "danger",
-                    "confirmTitle": "删除确认",
-                    "confirmMessage": "确认删除当前订单吗？",
-                    "successMessage": "当前订单已删除"
-                  }
-                },
-                {
-                  "type": "builtin-action",
-                  "props": {
-                    "builtinAction": "patch-current",
-                    "label": "更新当前订单",
-                    "patch": {
-                      "status": "done",
-                      "priority": "low"
-                    },
-                    "successMessage": "当前订单已更新"
-                  }
-                },
-                {
-                  "type": "builtin-action",
-                  "props": {
-                    "builtinAction": "message-current",
-                    "label": "查看当前",
-                    "message": "当前订单 {orderNo} | 客户 {customer} | 状态 {status} | 优先级 {priority}"
-                  }
-                }
-              ],
-              "toolbarPosition": "top",
               "filterCollapsible": true,
               "filterDefaultCollapsed": false,
-              "filterColumns": [
-                "orderNo",
-                "customer",
-                "status",
-                "priority",
-                "owner",
-                "amount",
-                "orderDate",
-                "region"
-              ],
-              "rowActions": [
-                {
-                  "type": "builtin-action",
-                  "props": {
-                    "builtinAction": "message-row",
-                    "label": "查看",
-                    "buttonSize": "small",
-                    "message": "订单 {orderNo} | 客户 {customer} | 优先级 {priority}"
-                  }
-                },
-                {
-                  "type": "builtin-action",
-                  "props": {
-                    "builtinAction": "patch-row",
-                    "label": "提级",
-                    "buttonSize": "small",
-                    "patch": {
-                      "priority": "high"
-                    },
-                    "successMessage": "订单优先级已提升",
-                    "permAction": "edit"
-                  }
-                },
-                {
-                  "type": "builtin-action",
-                  "props": {
-                    "builtinAction": "delete-row",
-                    "label": "删除",
-                    "buttonSize": "small",
-                    "buttonType": "danger",
-                    "confirmTitle": "删除确认",
-                    "confirmMessage": "确认删除当前订单吗？",
-                    "permAction": "delete"
-                  }
-                }
-              ],
               "rowActionsPosition": "right",
               "rowActionsLabel": "操作",
               "rowActionsWidth": 220
             },
             "children": [
+              {
+                "type": "builtin-action",
+                "dock": "toolbar",
+                "props": {
+                  "builtinAction": "append-row",
+                  "label": "新增订单",
+                  "buttonType": "primary",
+                  "appendPayload": {
+                    "customer": "新客户",
+                    "status": "draft",
+                    "priority": "medium",
+                    "owner": "系统",
+                    "amount": 8800,
+                    "orderDate": "2026-03-18",
+                    "region": "east",
+                    "_perm": {
+                      "allowDelete": true,
+                      "editableFields": [
+                        "status",
+                        "priority",
+                        "owner",
+                        "amount"
+                      ]
+                    }
+                  },
+                  "successMessage": "已新增订单"
+                }
+              },
+              {
+                "type": "builtin-action",
+                "dock": "toolbar",
+                "props": {
+                  "builtinAction": "refresh",
+                  "label": "刷新列表",
+                  "successMessage": "列表已刷新"
+                }
+              },
+              {
+                "type": "button",
+                "dock": "toolbar",
+                "props": {
+                  "type": "button"
+                },
+                "children": [
+                  "脚本刷新(ID)"
+                ],
+                "on": {
+                  "click": "refreshOrders"
+                }
+              },
+              {
+                "type": "button",
+                "dock": "toolbar",
+                "props": {
+                  "type": "button"
+                },
+                "children": [
+                  "脚本选首行(ID)"
+                ],
+                "on": {
+                  "click": "selectFirstOrder"
+                }
+              },
+              {
+                "type": "button",
+                "dock": "toolbar",
+                "props": {
+                  "type": "button"
+                },
+                "children": [
+                  "脚本更新当前(ID)"
+                ],
+                "on": {
+                  "click": "markCurrentOrderDone"
+                }
+              },
+              {
+                "type": "builtin-action",
+                "dock": "toolbar",
+                "props": {
+                  "builtinAction": "delete-current",
+                  "label": "删除当前",
+                  "buttonType": "danger",
+                  "confirmTitle": "删除确认",
+                  "confirmMessage": "确认删除当前订单吗？",
+                  "successMessage": "当前订单已删除"
+                }
+              },
+              {
+                "type": "builtin-action",
+                "dock": "toolbar",
+                "props": {
+                  "builtinAction": "patch-current",
+                  "label": "更新当前订单",
+                  "patch": {
+                    "status": "done",
+                    "priority": "low"
+                  },
+                  "successMessage": "当前订单已更新"
+                }
+              },
+              {
+                "type": "builtin-action",
+                "dock": "toolbar",
+                "props": {
+                  "builtinAction": "message-current",
+                  "label": "查看当前",
+                  "message": "当前订单 {orderNo} | 客户 {customer} | 状态 {status} | 优先级 {priority}"
+                }
+              },
               {
                 "type": "r-text",
                 "field": "orderNo",
@@ -329,6 +293,158 @@
                       "value": "west"
                     }
                   ]
+                }
+              },
+              {
+                "type": "r-text",
+                "dock": "filter",
+                "field": "orderNo",
+                "props": {
+                  "label": "订单号"
+                }
+              },
+              {
+                "type": "r-text",
+                "dock": "filter",
+                "field": "customer",
+                "props": {
+                  "label": "客户"
+                }
+              },
+              {
+                "type": "r-select",
+                "dock": "filter",
+                "field": "status",
+                "props": {
+                  "label": "状态",
+                  "options": [
+                    {
+                      "label": "草稿",
+                      "value": "draft"
+                    },
+                    {
+                      "label": "待审核",
+                      "value": "pending"
+                    },
+                    {
+                      "label": "已完成",
+                      "value": "done"
+                    },
+                    {
+                      "label": "已取消",
+                      "value": "cancelled"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-select",
+                "dock": "filter",
+                "field": "priority",
+                "props": {
+                  "label": "优先级",
+                  "options": [
+                    {
+                      "label": "低",
+                      "value": "low"
+                    },
+                    {
+                      "label": "中",
+                      "value": "medium"
+                    },
+                    {
+                      "label": "高",
+                      "value": "high"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-text",
+                "dock": "filter",
+                "field": "owner",
+                "props": {
+                  "label": "负责人"
+                }
+              },
+              {
+                "type": "r-number",
+                "dock": "filter",
+                "field": "amount",
+                "props": {
+                  "label": "金额",
+                  "filterMode": "range"
+                }
+              },
+              {
+                "type": "r-date",
+                "dock": "filter",
+                "field": "orderDate",
+                "props": {
+                  "label": "下单日期"
+                }
+              },
+              {
+                "type": "r-select",
+                "dock": "filter",
+                "field": "region",
+                "props": {
+                  "label": "区域",
+                  "options": [
+                    {
+                      "label": "华东",
+                      "value": "east"
+                    },
+                    {
+                      "label": "华南",
+                      "value": "south"
+                    },
+                    {
+                      "label": "华北",
+                      "value": "north"
+                    },
+                    {
+                      "label": "西南",
+                      "value": "west"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "builtin-action",
+                "dock": "actions",
+                "props": {
+                  "builtinAction": "message-row",
+                  "label": "查看",
+                  "buttonSize": "small",
+                  "message": "订单 {orderNo} | 客户 {customer} | 优先级 {priority}"
+                }
+              },
+              {
+                "type": "builtin-action",
+                "dock": "actions",
+                "props": {
+                  "builtinAction": "patch-row",
+                  "label": "提级",
+                  "buttonSize": "small",
+                  "patch": {
+                    "priority": "high"
+                  },
+                  "successMessage": "订单优先级已提升",
+                  "permAction": "edit"
+                }
+              },
+              {
+                "type": "builtin-action",
+                "dock": "actions",
+                "props": {
+                  "builtinAction": "delete-row",
+                  "label": "删除",
+                  "buttonSize": "small",
+                  "buttonType": "danger",
+                  "confirmTitle": "删除确认",
+                  "confirmMessage": "确认删除当前订单吗？",
+                  "permAction": "delete"
                 }
               }
             ]
@@ -539,11 +655,6 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "filterColumns": [
-                "product",
-                "qty",
-                "lineAmount"
-              ],
               "filterCollapsible": true,
               "filterDefaultCollapsed": true
             },
@@ -587,6 +698,32 @@
                 "props": {
                   "label": "行金额",
                   "width": 120
+                }
+              },
+              {
+                "type": "r-text",
+                "dock": "filter",
+                "field": "product",
+                "props": {
+                  "label": "商品"
+                }
+              },
+              {
+                "type": "r-number",
+                "dock": "filter",
+                "field": "qty",
+                "props": {
+                  "label": "数量",
+                  "filterMode": "range"
+                }
+              },
+              {
+                "type": "r-number",
+                "dock": "filter",
+                "field": "lineAmount",
+                "props": {
+                  "label": "行金额",
+                  "filterMode": "range"
                 }
               }
             ]

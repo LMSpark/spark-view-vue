@@ -40,13 +40,17 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "toolbar": [
-                {
-                  "type": "RenderSearchBar"
+              "docks": {
+                "toolbar": {
+                  "position": "top"
                 }
-              ]
+              }
             },
             "children": [
+              {
+                "type": "RenderSearchBar",
+                "dock": "toolbar"
+              },
               {
                 "type": "r-text",
                 "field": "id",

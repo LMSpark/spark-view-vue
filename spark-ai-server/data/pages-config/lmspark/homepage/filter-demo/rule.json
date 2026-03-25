@@ -14,7 +14,7 @@
         "type": "p",
         "style": "color: #909399; margin-bottom: 20px;",
         "children": [
-          "配置 filterColumns 即可启用表格过滤面板，支持文本、数字、下拉、多选、日期等字段类型。"
+          "过滤项统一通过 dock=filter 子节点声明，支持文本、数字、下拉、多选、日期等字段类型。"
         ]
       },
       {
@@ -24,13 +24,7 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "filterCollapsible": true,
-          "filterColumns": [
-            "name",
-            "department",
-            "status",
-            "salary"
-          ]
+          "filterCollapsible": true
         },
         "children": [
           {
@@ -108,6 +102,67 @@
             "props": {
               "label": "入职日期",
               "width": 130
+            }
+          },
+          {
+            "type": "r-text",
+            "dock": "filter",
+            "field": "name",
+            "props": {
+              "label": "姓名"
+            }
+          },
+          {
+            "type": "r-select",
+            "dock": "filter",
+            "field": "department",
+            "props": {
+              "label": "部门",
+              "options": [
+                {
+                  "label": "技术部",
+                  "value": "技术部"
+                },
+                {
+                  "label": "产品部",
+                  "value": "产品部"
+                },
+                {
+                  "label": "设计部",
+                  "value": "设计部"
+                },
+                {
+                  "label": "市场部",
+                  "value": "市场部"
+                }
+              ]
+            }
+          },
+          {
+            "type": "r-multi-select",
+            "dock": "filter",
+            "field": "status",
+            "props": {
+              "label": "状态",
+              "options": [
+                {
+                  "label": "在职",
+                  "value": "在职"
+                },
+                {
+                  "label": "离职",
+                  "value": "离职"
+                }
+              ]
+            }
+          },
+          {
+            "type": "r-number",
+            "dock": "filter",
+            "field": "salary",
+            "props": {
+              "label": "薪资",
+              "filterMode": "range"
             }
           }
         ]

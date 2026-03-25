@@ -1,10 +1,10 @@
 <!--
 /**
  * @skill r-table
- * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持 dock 分区工具栏、当前行高亮、多选、分页
+ * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据；除列区外，其它结构统一通过 dock 分区（toolbar / filter / actions）组织；支持当前行高亮、多选、分页
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
+ * @input { dataKey: string, children?: [{ dock?: 'default'|'toolbar'|'filter'|'actions' }], props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
  * @example { "type": "r-table", "dataKey": "Orders@rows", "props": { "border": true, "highlightCurrentRow": true } }
  */
 -->
@@ -228,37 +228,37 @@ interface Props {
   children?: SparkNode[]
   /** 停靠区域显示配置 */
   docks?: ContainerDocks
-  /** 筛选项字段列表 */
+  /** @deprecated legacy filter.columns：筛选项字段列表；优先使用 dock='filter' 子节点 */
   filterColumns?: string[]
-  /** 筛选区 CSS 类名 */
+  /** @deprecated legacy filter.class：筛选区 CSS 类名 */
   filterClass?: string
-  /** 筛选区可折叠 */
+  /** @deprecated legacy filter.collapsible：筛选区可折叠 */
   filterCollapsible?: boolean
-  /** 筛选区默认折叠 */
+  /** @deprecated legacy filter.defaultCollapsed：筛选区默认折叠 */
   filterDefaultCollapsed?: boolean
-  /** 筛选区最小宽度 */
+  /** @deprecated legacy filter.autoFitMinWidth：筛选区最小宽度 */
   filterAutoFitMinWidth?: string
-  /** 每项跨列数 */
+  /** @deprecated legacy filter.itemSpan：每项跨列数 */
   filterItemSpan?: number
-  /** 筛选栅格总列数 */
+  /** @deprecated legacy filter.gridColumns：筛选栅格总列数 */
   filterGridColumns?: number
-  /** 筛选栅格间距 */
+  /** @deprecated legacy filter.gridGap：筛选栅格间距 */
   filterGridGap?: number | string
-  /** 筛选栅格行高 */
+  /** @deprecated legacy filter.gridAutoRows：筛选栅格行高 */
   filterGridAutoRows?: string
-  /** 行操作按钮配置 */
+  /** @deprecated legacy actions.items：行操作按钮配置；优先使用 dock='actions' 子节点 */
   rowActions?: SparkNode[]
-  /** 行操作列位置 */
+  /** @deprecated legacy actions.position：行操作列位置 */
   rowActionsPosition?: RowActionsPosition
-  /** 行操作列标题 */
+  /** @deprecated legacy actions.label：行操作列标题 */
   rowActionsLabel?: string
-  /** 行操作列宽度 */
+  /** @deprecated legacy actions.width：行操作列宽度 */
   rowActionsWidth?: string | number
-  /** 行操作列对齐方式 */
+  /** @deprecated legacy actions.align：行操作列对齐方式 */
   rowActionsAlign?: 'left' | 'center' | 'right'
-  /** 行操作列固定方向 */
+  /** @deprecated legacy actions.fixed：行操作列固定方向 */
   rowActionsFixed?: boolean | 'left' | 'right'
-  /** 行操作列 CSS 类名 */
+  /** @deprecated legacy actions.class：行操作列 CSS 类名 */
   rowActionsClass?: string
 }
 
@@ -297,12 +297,12 @@ const configChildren = computed<SparkNode[]>(() => {
   return Array.isArray(c) && c.length > 0 ? c : []
 })
 
-const legacyRowActionConfigs = computed(() =>
-  configChildren.value.filter(child => nodeDock(child) === DEFAULT_DOCK && /^Render[A-Z]/.test(child.type))
-)
-
 const dockedToolbar = computed(() =>
   getDockedChildren(configChildren.value, 'toolbar')
+)
+
+const dockedFilters = computed(() =>
+  getDockedChildren(configChildren.value, 'filter')
 )
 
 const dockedRowActions = computed(() =>
@@ -322,6 +322,8 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 const moduleContext = useModuleContext(sparkConsume(MODULE_CONTEXT))
+
+assertNoLegacyTableStructures()
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
@@ -366,6 +368,7 @@ const {
   resetFilters,
 } = useTableFilters({
   children: sparkChildren,
+  filterChildren: computed(() => dockedFilters.value),
   dataView: resolvedView,
   filterColumns: computed(() => props.filterColumns),
   filterClass: computed(() => props.filterClass),
@@ -494,8 +497,7 @@ const {
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => {
-    const explicit = props.rowActions ?? []
-    return [...legacyRowActionConfigs.value, ...explicit, ...dockedRowActions.value]
+    return [...dockedRowActions.value]
   }),
   actionPosition: computed(() => props.rowActionsPosition),
   actionClass: computed(() => props.rowActionsClass),
@@ -577,6 +579,29 @@ function isCollectedTableColumn(config: SparkNode): boolean {
   const kids = Array.isArray(config.children) ? config.children : []
   if (kids.length > 0) return true
   return false
+}
+
+function assertNoLegacyTableStructures(): void {
+  if (Array.isArray(attrs['toolbar']) && attrs['toolbar'].length > 0) {
+    throw new Error('[RendererTable] props.toolbar 已废除。请将工具栏节点移动到 children，并声明 dock: "toolbar"；位置与样式请改为 props.docks.toolbar。')
+  }
+
+  if (props.filterColumns.length > 0) {
+    throw new Error('[RendererTable] props.filterColumns 已废除。请将筛选项移动到 children，并为每个筛选节点声明 dock: "filter"。')
+  }
+
+  if (Array.isArray(props.rowActions) && props.rowActions.length > 0) {
+    throw new Error('[RendererTable] props.rowActions 已废除。请将行操作节点移动到 children，并声明 dock: "actions"。')
+  }
+
+  const legacyDefaultChildren = configChildren.value.filter(child =>
+    nodeDock(child) === DEFAULT_DOCK && !isCollectedTableColumn(child)
+  )
+
+  if (legacyDefaultChildren.length > 0) {
+    const childTypes = legacyDefaultChildren.map(child => child.type).join(', ')
+    throw new Error(`[RendererTable] r-table 默认区仅允许列节点。检测到未声明 dock 的非列表达式节点: ${childTypes}。请将工具栏/筛选/行操作节点分别移动到 dock: "toolbar" | "filter" | "actions"。`)
+  }
 }
 
 // ── 过滤操作 ──────────────────────────────────────────────────────────────

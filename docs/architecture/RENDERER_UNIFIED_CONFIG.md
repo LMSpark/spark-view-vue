@@ -187,16 +187,14 @@ SparkNode
     "gridGap": "16px",           // 列间距
     "gridAutoRows": "minmax(32px, auto)",
 
-    // ── Actions 行/节点/项操作 ──
-    "rowActions": [              // 表格行操作（r-table 专用键名）
-      { "type": "el-button", "children": ["编辑"], "on": { "click": "handleEdit" } }
-    ],
+    // ── r-table 非列区结构约束 ──
+    // toolbar / filter / actions 一律通过 children + dock 声明
+    // props 仅保留这些区域的展示参数，不再承载结构节点
     "rowActionsPosition": "right",
     "rowActionsLabel": "操作",
     "rowActionsWidth": 150,
 
-    // ── Filter 筛选区（r-table 专用）──
-    "filterColumns": ["name", "status"],
+    // ── Filter 筛选区展示参数（r-table 专用）──
     "filterClass": "",
     "filterGridColumns": 4,
     "filterCollapsible": true,
@@ -225,6 +223,8 @@ SparkNode
 
 ### 4.1 r-table（数据表格）
 
+> 规范：r-table 默认区只允许列节点。除列以外，工具栏、筛选项、行操作必须写在 children 中，并分别声明 dock: "toolbar"、dock: "filter"、dock: "actions"。
+
 ```jsonc
 {
   "type": "r-table",
@@ -243,16 +243,14 @@ SparkNode
       "toolbar": { "position": "top" }
     },
 
-    // ── Filter 筛选 ──
-    "filterColumns": ["name", "type"],   // 指定参与筛选的字段
+    // ── Filter 筛选展示参数 ──
     "filterCollapsible": true,
     "filterDefaultCollapsed": false,
     "filterAutoFitMinWidth": "200px",
     "filterItemSpan": 6,
     "filterGridColumns": 4,
 
-    // ── Row Actions 行操作 ──
-    "rowActions": [],                    // SparkNode[]
+    // ── Row Actions 行操作列展示参数 ──
     "rowActionsPosition": "right",
     "rowActionsLabel": "操作",
     "rowActionsWidth": 180,
@@ -261,7 +259,10 @@ SparkNode
   },
   "children": [
     { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } },
-    // ⚠️ r-table 的 children 必须是 el-table-column
+    { "type": "r-text", "dock": "filter", "props": { "field": "name", "label": "名称" } },
+    { "type": "r-select", "dock": "filter", "props": { "field": "type", "label": "类型" } },
+    { "type": "el-button", "dock": "actions", "children": ["编辑"], "on": { "click": "handleEdit" } },
+    // ⚠️ 默认区只允许列节点
     {
       "type": "el-table-column",
       "props": { "prop": "name", "label": "名称", "width": 200 }
@@ -1188,7 +1189,7 @@ interface FilterConfig {
 
 | 旧写法 | 新写法 |
 |--------|--------|
-| `"props": { "filterColumns": ["name", "status"] }` | `meta.filter.columns` |
+| `"props": { "filterColumns": ["name", "status"] }` | legacy，仅迁移参考；当前规范改为 `children` 中的 `dock: "filter"` 节点 |
 | `"props": { "filterCollapsible": true }` | `meta.filter.collapsible` |
 | `"props": { "filterGridColumns": 12 }` | `meta.filter.gridColumns` |
 
@@ -1429,7 +1430,7 @@ interface BehaviorConfig {
 
 #### 示例 A：数据表格（r-table）
 
-**旧写法（当前 SparkNode）**：
+**当前规范写法**：
 
 ```jsonc
 {
@@ -1441,57 +1442,21 @@ interface BehaviorConfig {
     "docks": {
       "toolbar": { "position": "top" }
     },
-    "rowActions": [
-      { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
-      { "type": "el-button", "props": { "type": "danger", "link": true }, "children": ["删除"], "on": { "click": "handleDelete" } }
-    ],
     "rowActionsLabel": "操作",
     "rowActionsWidth": 150,
     "rowActionsPosition": "right",
-    "filterColumns": ["name", "status"],
     "filterCollapsible": true
   },
   "children": [
     { "type": "el-button", "dock": "toolbar", "props": { "type": "primary" }, "children": ["新增"], "on": { "click": "handleAdd" } },
+    { "type": "r-text", "dock": "filter", "props": { "field": "name", "label": "名称" } },
+    { "type": "r-select", "dock": "filter", "props": { "field": "status", "label": "状态" } },
+    { "type": "el-button", "dock": "actions", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
+    { "type": "el-button", "dock": "actions", "props": { "type": "danger", "link": true }, "children": ["删除"], "on": { "click": "handleDelete" } },
     { "type": "el-table-column", "props": { "prop": "name", "label": "名称" } },
     { "type": "el-table-column", "props": { "prop": "status", "label": "状态" } }
   ],
   "on": { "rowDblclick": "handleRowDblclick" }
-}
-```
-
-**新写法（SparkNode v2）**：
-
-```jsonc
-{
-  "type": "r-table",
-  "props": { "border": true, "highlightCurrentRow": true },
-  "meta": {
-    "data": { "dataKey": "Users@rows" },
-    "filter": { "columns": ["name", "status"], "collapsible": true },
-    "toolbar": {
-      "items": [
-        { "type": "el-button", "props": { "type": "primary" }, "children": ["新增"],
-          "meta": { "behavior": { "on": { "click": "handleAdd" } } } }
-      ]
-    },
-    "actions": {
-      "items": [
-        { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"],
-          "meta": { "behavior": { "on": { "click": "handleEdit" } } } },
-        { "type": "el-button", "props": { "type": "danger", "link": true }, "children": ["删除"],
-          "meta": { "behavior": { "on": { "click": "handleDelete" } } } }
-      ],
-      "label": "操作",
-      "width": 150
-    },
-    "behavior": { "on": { "rowDblclick": "handleRowDblclick" } }
-  },
-  "children": [
-    { "type": "el-table-column", "props": { "type": "selection" } },
-    { "type": "r-text",   "meta": { "data": { "name": "name" } },   "props": { "label": "名称" } },
-    { "type": "r-select", "meta": { "data": { "name": "status", "options": [{"label":"启用","value":"active"},{"label":"停用","value":"inactive"}] } }, "props": { "label": "状态" } }
-  ]
 }
 ```
 
@@ -1681,7 +1646,7 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
   // ── filter → props（独立域） ─────────────────────────────────
   if (m.filter) {
     const f = m.filter
-    if (f.columns)          setRuleProp(rule, 'filterColumns', f.columns)
+    // 旧方案曾将 filter.columns 扁平化为 props.filterColumns；当前 r-table 已改为 dock='filter' 子节点
     if (f.collapsible != null)      setRuleProp(rule, 'filterCollapsible', f.collapsible)
     if (f.defaultCollapsed != null) setRuleProp(rule, 'filterDefaultCollapsed', f.defaultCollapsed)
     if (f.autoFitMinWidth)  setRuleProp(rule, 'filterAutoFitMinWidth', f.autoFitMinWidth)

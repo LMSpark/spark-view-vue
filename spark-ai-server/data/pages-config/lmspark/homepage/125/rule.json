@@ -32,11 +32,6 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "rowActions": [
-            {
-              "type": "RenderRowActions"
-            }
-          ],
           "filterable": true
         },
         "children": [
@@ -89,6 +84,10 @@
                 }
               ]
             }
+          },
+          {
+            "type": "RenderRowActions",
+            "dock": "actions"
           }
         ]
       }

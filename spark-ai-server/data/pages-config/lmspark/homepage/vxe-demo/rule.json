@@ -50,25 +50,24 @@
                 "type": "r-table",
                 "dataKey": "DemoData@rows",
                 "props": {
+                  "docks": {
+                    "toolbar": {
+                      "position": "top"
+                    }
+                  },
                   "border": true,
                   "stripe": true,
                   "highlightCurrentRow": true,
-                  "rowActions": [
-                    {
-                      "type": "RenderRowActions"
-                    }
-                  ],
-                  "toolbar": [
-                    {
-                      "type": "RenderTableToolbar"
-                    }
-                  ],
                   "showPagination": true,
                   "pageSize": 10,
                   "sortable": true,
                   "filterable": true
                 },
                 "children": [
+                  {
+                    "type": "RenderTableToolbar",
+                    "dock": "toolbar"
+                  },
                   {
                     "type": "r-text",
                     "field": "id",
@@ -153,6 +152,10 @@
                       "width": 100,
                       "sortable": true
                     }
+                  },
+                  {
+                    "type": "RenderRowActions",
+                    "dock": "actions"
                   }
                 ]
               }
