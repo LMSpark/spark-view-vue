@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { RendererTable } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
@@ -236,6 +236,17 @@ const RendererFieldScopeStub = defineComponent({
 })
 
 describe('RendererTable - DataView as single data intermediary', () => {
+  const silentWarnHandler = () => undefined
+
+  function withSilencedConsoleWarn(assertion: () => void): void {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    try {
+      assertion()
+    } finally {
+      warnSpy.mockRestore()
+    }
+  }
+
   it('should fail fast when migrated containers still use legacy root toolbar config', () => {
     expect(() => bindDataToRules({
       rules: [
@@ -385,6 +396,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
         ],
       },
       global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
         components: {
           'r-text': TableTextFieldStub,
           'r-number': TableNumberFieldStub,
@@ -454,6 +468,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
         ],
       },
       global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
         stubs: {
           'el-table': ElTableStub,
           'el-table-column': ElTableColumnStub,
@@ -514,6 +531,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
         ],
       },
       global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
         stubs: {
           'el-table': ElTableStub,
           'el-table-column': ElTableColumnStub,
@@ -566,6 +586,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
         ],
       },
       global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
         stubs: {
           'el-table': ElTableStub,
           'el-table-column': ElTableColumnStub,
@@ -927,55 +950,61 @@ describe('RendererTable - DataView as single data intermediary', () => {
   })
 
   it('should fail fast for legacy toolbar props', () => {
-    expect(() => mount(RendererTable as any, {
-      props: {
-        dataView: { rows: [{ id: 1 }] },
-        toolbar: [{ type: 'legacy-toolbar-button' }],
-        children: [{ type: 'toolbar-button', dock: 'toolbar' }],
-      },
-      global: {
-        components: {
-          'r-text': TableTextFieldStub,
-          'r-number': TableNumberFieldStub,
-          'r-date': TableDateFieldStub,
+    withSilencedConsoleWarn(() => {
+      expect(() => mount(RendererTable as any, {
+        props: {
+          dataView: { rows: [{ id: 1 }] },
+          toolbar: [{ type: 'legacy-toolbar-button' }],
+          children: [{ type: 'toolbar-button', dock: 'toolbar' }],
         },
-        stubs: {
-          'el-table': ElTableStub,
-          'el-table-column': ElTableColumnStub,
-          SparkComponentRenderer: SparkColumnRendererStub,
+        global: {
+          components: {
+            'r-text': TableTextFieldStub,
+            'r-number': TableNumberFieldStub,
+            'r-date': TableDateFieldStub,
+          },
+          stubs: {
+            'el-table': ElTableStub,
+            'el-table-column': ElTableColumnStub,
+            SparkComponentRenderer: SparkColumnRendererStub,
+          }
         }
-      }
-    })).toThrow('props.toolbar 已废除')
+      })).toThrow('props.toolbar 已废除')
+    })
   })
 
   it('should fail fast for legacy rowActions props and non-docked non-column children', () => {
-    expect(() => mount(RendererTable as any, {
-      props: {
-        dataView: { rows: [{ id: 1 }] },
-        rowActions: [{ type: 'row-button' }],
-      },
-      global: {
-        stubs: {
-          'el-table': ElTableStub,
-          'el-table-column': ElTableColumnStub,
-          SparkComponentRenderer: SparkColumnRendererStub,
+    withSilencedConsoleWarn(() => {
+      expect(() => mount(RendererTable as any, {
+        props: {
+          dataView: { rows: [{ id: 1 }] },
+          rowActions: [{ type: 'row-button' }],
+        },
+        global: {
+          stubs: {
+            'el-table': ElTableStub,
+            'el-table-column': ElTableColumnStub,
+            SparkComponentRenderer: SparkColumnRendererStub,
+          }
         }
-      }
-    })).toThrow('props.rowActions 已废除')
+      })).toThrow('props.rowActions 已废除')
+    })
 
-    expect(() => mount(RendererTable as any, {
-      props: {
-        dataView: { rows: [{ id: 1 }] },
-        children: [{ type: 'RenderRowActions' }],
-      },
-      global: {
-        stubs: {
-          'el-table': ElTableStub,
-          'el-table-column': ElTableColumnStub,
-          SparkComponentRenderer: SparkColumnRendererStub,
+    withSilencedConsoleWarn(() => {
+      expect(() => mount(RendererTable as any, {
+        props: {
+          dataView: { rows: [{ id: 1 }] },
+          children: [{ type: 'RenderRowActions' }],
+        },
+        global: {
+          stubs: {
+            'el-table': ElTableStub,
+            'el-table-column': ElTableColumnStub,
+            SparkComponentRenderer: SparkColumnRendererStub,
+          }
         }
-      }
-    })).toThrow('默认区仅允许列节点')
+      })).toThrow('默认区仅允许列节点')
+    })
   })
 
   it('should render primitive field configs as direct table columns', () => {
@@ -1409,21 +1438,23 @@ describe('RendererTable - DataView as single data intermediary', () => {
   })
 
   it('should fail fast for legacy filterColumns props', () => {
-    expect(() => mount(RendererTable as any, {
-      props: {
-        dataView: { rows: [{ id: 1, name: 'Alice' }] },
-        filterColumns: ['name'],
-        children: [
-          { type: 'r-text', props: { field: 'name', label: '姓名' } },
-        ],
-      },
-      global: {
-        stubs: {
-          'el-table': ElTableStub,
-          SparkComponentRenderer: SparkActionStub,
-          RendererFieldScope: RendererFieldScopeStub,
+    withSilencedConsoleWarn(() => {
+      expect(() => mount(RendererTable as any, {
+        props: {
+          dataView: { rows: [{ id: 1, name: 'Alice' }] },
+          filterColumns: ['name'],
+          children: [
+            { type: 'r-text', props: { field: 'name', label: '姓名' } },
+          ],
         },
-      },
-    })).toThrow('props.filterColumns 已废除')
+        global: {
+          stubs: {
+            'el-table': ElTableStub,
+            SparkComponentRenderer: SparkActionStub,
+            RendererFieldScope: RendererFieldScopeStub,
+          },
+        },
+      })).toThrow('props.filterColumns 已废除')
+    })
   })
 })
