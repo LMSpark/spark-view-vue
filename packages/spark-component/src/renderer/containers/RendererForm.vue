@@ -42,19 +42,16 @@
 /**
  * RendererForm - 表单容器组件
  */
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
 import { nodeId, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
-import type { DataView } from '@spark-view/spark-data'
 import { useFormDetailContainer } from './useFormDetailContainer'
 import type { RendererFormApi } from '../_pkg'
 
 interface Props {
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
-  /** @deprecated 旧版直接注入 DataView；优先改用 dataKey + PAGE_DATASET */
-  dataView?: DataView
   /** 子节点列表 */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -91,7 +88,6 @@ const {
   getDefaultSlotScope,
 } = useFormDetailContainer({
   ...props,
-  legacyDataView: computed(() => props.dataView),
 }, 'form')
 
 // ── r-form 包装 API ──────────────────────────────────────────────────────

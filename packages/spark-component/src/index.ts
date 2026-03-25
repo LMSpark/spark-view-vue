@@ -98,7 +98,6 @@ export type {
 } from './renderer/index.js'
 
 export type {
-  BindRule,
   PageContext,
   PageConfig,
   PageRendererProps,

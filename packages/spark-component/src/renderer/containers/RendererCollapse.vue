@@ -24,30 +24,14 @@
         @change="handleChange"
       >
         <template v-if="itemConfigs.length">
-          <el-collapse-item
+          <RendererCollapseItem
             v-for="(item, index) in itemConfigs"
             :key="getItemKey(item, index)"
-            :name="getItemName(item, index)"
-            :title="getItemTitle(item, index)"
-            :disabled="getItemDisabled(item)"
+            :config="item"
+            :index="index"
           >
-            <div :class="['renderer-collapse-item-body', getItemBodyClass(item)]" :style="getItemGridStyle(item)">
-              <template v-if="getItemChildren(item).length">
-                <div
-                  v-for="(child, childIndex) in getItemChildren(item)"
-                  :key="nodeId(child) ?? `r-collapse-item-child-${childIndex}`"
-                  class="renderer-collapse-grid-item"
-                  :style="getItemChildGridStyle(child)"
-                >
-                  <SparkComponentRenderer :config="child" />
-                </div>
-              </template>
-              <slot
-                v-else
-                v-bind="getItemSlotScope(item, index)"
-              />
-            </div>
-          </el-collapse-item>
+            <slot v-if="!hasItemChildren(item)" v-bind="getItemSlotScope(item, index)" />
+          </RendererCollapseItem>
         </template>
         <slot v-else />
       </el-collapse>
@@ -57,12 +41,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { CSSProperties } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
+import { useSparkComponent } from '../_pkg'
+import { getDockedChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerToolbar } from './useContainerToolbar'
-import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import RendererCollapseItem from './RendererCollapseItem.vue'
 import type { RendererCollapseApi } from '../_pkg'
 
 type CollapseValue = string | number | Array<string | number>
@@ -150,12 +133,12 @@ registerApi(collapseApi)
 
 defineExpose(collapseApi)
 
-function getItemChildren(item: SparkNode): SparkNode[] {
-  return item.children ?? []
+function hasItemChildren(item: SparkNode): boolean {
+  return Array.isArray(item.children) && item.children.length > 0
 }
 
 function getItemName(item: SparkNode, index: number): string | number {
-  const value = item.props?.['name'] ?? nodeId(item)
+  const value = nodeInputProp(item, 'name') ?? nodeId(item)
   return typeof value === 'string' || typeof value === 'number' ? value : `collapse-${index}`
 }
 
@@ -164,41 +147,8 @@ function getItemKey(item: SparkNode, index: number): string | number {
 }
 
 function getItemTitle(item: SparkNode, index: number): string {
-  const value = item.props?.['title'] ?? item.props?.['label']
+  const value = nodeInputProp(item, 'title') ?? nodeInputProp(item, 'label')
   return typeof value === 'string' && value.trim().length > 0 ? value : `分组${index + 1}`
-}
-
-function getItemDisabled(item: SparkNode): boolean {
-  return item.props?.['disabled'] === true
-}
-
-function getItemBodyClass(item: SparkNode): string {
-  return typeof item.props?.['bodyClass'] === 'string' ? item.props['bodyClass'] as string : ''
-}
-
-function getItemGridStyle(item: SparkNode): CSSProperties {
-  const columns = normalizeSpan(item.props?.['gridColumns'], 24)
-  const autoRows = typeof item.props?.['gridAutoRows'] === 'string' && item.props['gridAutoRows'].trim().length > 0
-    ? item.props['gridAutoRows'] as string
-    : 'minmax(32px, auto)'
-
-  return {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-    gap: normalizeGridGap(item.props?.['gridGap']),
-    gridAutoRows: autoRows,
-    alignItems: 'start',
-  }
-}
-
-function getItemChildGridStyle(child: SparkNode): CSSProperties {
-  const colSpan = normalizeSpan(child.props?.['colSpan'] ?? child.props?.['gridColSpan'] ?? child.props?.['span'], 24)
-  const rowSpan = normalizeSpan(child.props?.['rowSpan'] ?? child.props?.['gridRowSpan'], 1)
-  return {
-    gridColumn: `span ${colSpan} / span ${colSpan}`,
-    gridRow: `span ${rowSpan} / span ${rowSpan}`,
-    minWidth: 0,
-  }
 }
 
 function handleModelUpdate(value: CollapseValue): void {

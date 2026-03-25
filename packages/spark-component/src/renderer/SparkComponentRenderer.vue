@@ -1,5 +1,5 @@
 <template>
-  <!-- 已注册：SparkNode 根级字段 + config.props + 事件处理器 → 统一作为 Vue Props 传递 -->
+  <!-- 已注册：SparkNode 运行时输入 + 事件处理器 → 统一作为 Vue Props 传递 -->
   <component
     v-if="resolvedComponent"
     :is="resolvedComponent"
@@ -79,7 +79,7 @@
  * ```
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, nodeId, nodeDock, DEFAULT_DOCK } from '../types.js'
+import { SPARK_REGISTRY_KEY, nodeId, nodeDock, nodeInputProps, DEFAULT_DOCK } from '../types.js'
 import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
 import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal-context.js'
 
@@ -203,8 +203,8 @@ function toListenerPropName(eventName: string): string {
 
 const forwardedProps = computed(() => {
   const config = props.config
-  const rawProps = config.props ?? {}
-  // h() 模型：on 从 props 中读取（bindSparkRuleEvents 已将根级 on 收入 props）
+  const rawProps = nodeInputProps(config)
+  // h() 模型：on 从节点输入读取，允许 props.on 与根级 on 共存，后者由 nodeInputProps 统一并入
   const onMap = rawProps['on']
 
   // fast-path: 叶子组件大多无事件绑定且无 layout/framework key，直接返回原引用

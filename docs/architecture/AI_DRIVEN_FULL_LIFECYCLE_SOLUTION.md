@@ -65,7 +65,7 @@
 │                        配置运行时层                                   │
 │  ┌───────────────────────────────────────────────────────────────┐  │
 │  │  PageConfigLoader → parsePageData → DataSet → DataView → UI  │  │
-│  │  bindRules → sparkChildren → SparkComponentRenderer           │  │
+│  │  SparkPageRenderer → SparkComponentRenderer → 容器/字段组件    │  │
 │  │  Sandbox(script.js) → $dataSet / $page / $route                │  │
 │  └───────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘

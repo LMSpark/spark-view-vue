@@ -75,10 +75,10 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
       props: {
         title: '编辑用户',
         modelValue: true,
-        headerActions: [{ type: 'dialog-header-action' }],
-        footerActions: [{ type: 'dialog-footer-action' }],
         gridGap: 12,
         children: [
+          { type: 'dialog-header-action', dock: 'header' },
+          { type: 'dialog-footer-action', dock: 'footer' },
           { type: 'child-a', props: { colSpan: 8 } },
           { type: 'child-b', props: { colSpan: 16 } },
         ],
@@ -103,6 +103,34 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     expect(wrapper.find('.biz-dialog-footer').attributes('data-title')).toBe('编辑用户')
     expect(wrapper.find('.renderer-dialog-body').attributes('style')).toContain('display: grid;')
     expect(wrapper.findAll('.renderer-dialog-grid-item')[0]?.attributes('style')).toContain('grid-column: span 8 / span 8;')
+  })
+
+  it('should fail fast for legacy dialog header/footer action props', () => {
+    expect(() => mount(RendererDialog as any, {
+      props: {
+        title: '编辑用户',
+        headerActions: [{ type: 'legacy-header-action' }],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-dialog': ElDialogStub,
+        },
+      },
+    })).toThrow('props.headerActions 已废除')
+
+    expect(() => mount(RendererDialog as any, {
+      props: {
+        title: '编辑用户',
+        footerActions: [{ type: 'legacy-footer-action' }],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-dialog': ElDialogStub,
+        },
+      },
+    })).toThrow('props.footerActions 已废除')
   })
 
   it('should emit drawer model updates and render footer slot', () => {
@@ -169,5 +197,47 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
     expect(onStepChange).toHaveBeenCalledWith('step2', expect.objectContaining({ type: 'r-step' }), 1)
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['step2'])
+  })
+
+  it('should resolve root-level step fields without binding-layer props migration', async () => {
+    const onStepChange = vi.fn()
+    const wrapper = mount(RendererSteps as any, {
+      props: {
+        onStepChange,
+        children: [
+          {
+            type: 'r-step',
+            title: '根级步骤一',
+            name: 'root-step-1',
+            gridGap: 14,
+            children: [
+              { type: 'child-a', colSpan: 11 },
+            ],
+          },
+          {
+            type: 'r-step',
+            title: '根级步骤二',
+            name: 'root-step-2',
+            children: [
+              { type: 'child-b', colSpan: 24 },
+            ],
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-steps': ElStepsStub,
+          'el-step': ElStepStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.renderer-steps-content').attributes('style')).toContain('gap: 14px;')
+    expect(wrapper.find('.renderer-steps-grid-item').attributes('style')).toContain('grid-column: span 11 / span 11;')
+
+    await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
+    expect(onStepChange).toHaveBeenCalledWith('root-step-2', expect.objectContaining({ type: 'r-step' }), 1)
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['root-step-2'])
   })
 })

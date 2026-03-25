@@ -25,32 +25,14 @@
         @tab-change="handleTabChange"
       >
         <template v-if="paneConfigs.length">
-          <el-tab-pane
+          <RendererTabPane
             v-for="(pane, index) in paneConfigs"
             :key="getPaneKey(pane, index)"
-            :label="getPaneLabel(pane, index)"
-            :name="getPaneName(pane, index)"
-            :disabled="getPaneDisabled(pane)"
-            :lazy="getPaneLazy(pane)"
-            :closable="getPaneClosable(pane)"
+            :config="pane"
+            :index="index"
           >
-            <div :class="['renderer-tabs-pane-body', getPaneBodyClass(pane)]" :style="getPaneGridStyle(pane)">
-              <template v-if="getPaneChildren(pane).length">
-                <div
-                  v-for="(child, childIndex) in getPaneChildren(pane)"
-                  :key="nodeId(child) ?? `r-tab-pane-child-${childIndex}`"
-                  class="renderer-tabs-pane-grid-item"
-                  :style="getPaneChildGridStyle(child)"
-                >
-                  <SparkComponentRenderer :config="child" />
-                </div>
-              </template>
-              <slot
-                v-else
-                v-bind="getPaneSlotScope(pane, index)"
-              />
-            </div>
-          </el-tab-pane>
+            <slot v-if="!hasPaneChildren(pane)" v-bind="getPaneSlotScope(pane, index)" />
+          </RendererTabPane>
         </template>
         <slot v-else />
       </el-tabs>
@@ -60,12 +42,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { CSSProperties } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
+import { useSparkComponent } from '../_pkg'
+import { getDockedChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerToolbar } from './useContainerToolbar'
-import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import RendererTabPane from './RendererTabPane.vue'
 import type { RendererTabsApi } from '../_pkg'
 
 interface TabsClickEvent {
@@ -149,12 +130,12 @@ registerApi(tabsApi)
 
 defineExpose(tabsApi)
 
-function getPaneChildren(pane: SparkNode): SparkNode[] {
-  return pane.children ?? []
+function hasPaneChildren(pane: SparkNode): boolean {
+  return Array.isArray(pane.children) && pane.children.length > 0
 }
 
 function getPaneName(pane: SparkNode, index: number): string | number {
-  const value = pane.props?.['name'] ?? pane.props?.['value'] ?? nodeId(pane)
+  const value = nodeInputProp(pane, 'name') ?? nodeInputProp(pane, 'value') ?? nodeId(pane)
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${index}`
 }
 
@@ -163,49 +144,8 @@ function getPaneKey(pane: SparkNode, index: number): string | number {
 }
 
 function getPaneLabel(pane: SparkNode, index: number): string {
-  const value = pane.props?.['label'] ?? pane.props?.['title']
+  const value = nodeInputProp(pane, 'label') ?? nodeInputProp(pane, 'title')
   return typeof value === 'string' && value.trim().length > 0 ? value : `标签页${index + 1}`
-}
-
-function getPaneDisabled(pane: SparkNode): boolean {
-  return pane.props?.['disabled'] === true
-}
-
-function getPaneLazy(pane: SparkNode): boolean {
-  return pane.props?.['lazy'] === true
-}
-
-function getPaneClosable(pane: SparkNode): boolean {
-  return pane.props?.['closable'] === true
-}
-
-function getPaneBodyClass(pane: SparkNode): string {
-  return typeof pane.props?.['bodyClass'] === 'string' ? pane.props['bodyClass'] as string : ''
-}
-
-function getPaneGridStyle(pane: SparkNode): CSSProperties {
-  const columns = normalizeSpan(pane.props?.['gridColumns'], 24)
-  const autoRows = typeof pane.props?.['gridAutoRows'] === 'string' && pane.props['gridAutoRows'].trim().length > 0
-    ? pane.props['gridAutoRows'] as string
-    : 'minmax(32px, auto)'
-
-  return {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-    gap: normalizeGridGap(pane.props?.['gridGap']),
-    gridAutoRows: autoRows,
-    alignItems: 'start',
-  }
-}
-
-function getPaneChildGridStyle(child: SparkNode): CSSProperties {
-  const colSpan = normalizeSpan(child.props?.['colSpan'] ?? child.props?.['gridColSpan'] ?? child.props?.['span'], 24)
-  const rowSpan = normalizeSpan(child.props?.['rowSpan'] ?? child.props?.['gridRowSpan'], 1)
-  return {
-    gridColumn: `span ${colSpan} / span ${colSpan}`,
-    gridRow: `span ${rowSpan} / span ${rowSpan}`,
-    minWidth: 0,
-  }
 }
 
 function handleModelUpdate(value: string | number): void {

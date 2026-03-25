@@ -15,6 +15,8 @@ import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE, defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
+import { PAGE_COMPONENT_REGISTRY } from '@spark-view/spark-component'
+import { createPageComponentRegistry } from '../renderer/page/page-component-registry'
 
 describe('Capability system integration', () => {
   /**
@@ -105,6 +107,54 @@ describe('Capability system integration', () => {
       })
 
       mount(ParentComp, {
+        global: { plugins: [plugin] }
+      })
+    })
+
+    it('reads runtime vnode inputs for id, visible and disabled without parent passing child config', () => {
+      const { plugin } = createTestPlugin()
+      const registry = createPageComponentRegistry()
+
+      const TestComp = defineComponent({
+        props: {
+          id: String,
+          visible: Boolean,
+          disabled: Boolean,
+          field: String,
+        },
+        setup() {
+          const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
+          const pageRegistry = result.sparkConsume(PAGE_COMPONENT_REGISTRY)
+
+          expect(result.context.id).toBe('orders-table')
+          expect(result.isVisible.value).toBe(false)
+          expect(result.isDisabled.value).toBe(true)
+
+          const instance = pageRegistry?.getInstance('orders-table')
+          expect(instance?.id).toBe('orders-table')
+          expect(instance?.type).toBe('test-comp')
+          expect(instance?.props?.['field']).toBe('orderNo')
+          expect(instance?.props?.['visible']).toBe(false)
+          expect(instance?.props?.['disabled']).toBe(true)
+
+          return () => h('div', { class: 'runtime-input-comp' }, 'ok')
+        }
+      })
+
+      const RootComp = defineComponent({
+        setup() {
+          const result = useSparkComponent({ type: 'root-comp' } as SparkNode)
+          result.sparkProvide(PAGE_COMPONENT_REGISTRY, registry)
+          return () => h(TestComp, {
+            id: 'orders-table',
+            visible: false,
+            disabled: true,
+            field: 'orderNo',
+          })
+        }
+      })
+
+      mount(RootComp, {
         global: { plugins: [plugin] }
       })
     })

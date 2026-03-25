@@ -34,17 +34,14 @@ interface SparkNode {
 
 ```
 rule.json (JSON 配置)
-    ↓ bindDataToRules()
-    ├─ 1. on.* 字符串 → 可调用函数
-    ├─ 2. r-* 组件：dataKey/name 注入 props
-    ├─ 3. 类型委托：el-table/el-pagination/el-select 等数据绑定
-    ├─ 4. 权限过滤：按 _perm 隐藏/禁用
-    ├─ 5. sparkChildren 注入（r-* 容器提取 children → props）
-    ↓
-BindRule[] (运行时规则)
+  ↓ SparkPageRenderer
+  ├─ 1. on / props.on* 字符串 → 可调用函数
+  ├─ 2. 规则树保持 SparkNode 结构
+  ├─ 3. SparkComponentRenderer 统一解释根级输入 + props
+  ├─ 4. 容器组件自行解析 dataKey / children / dock / 权限上下文
     ↓ SparkComponentRenderer
     ├─ 查注册表 → 解析组件类型
-    ├─ :config="config" + v-bind="config.props" → 双通道传参
+  ├─ nodeInputProps(config) → 统一组件输入
     ├─ children 递归渲染
     ↓
 渲染后的 Vue 组件树
@@ -942,7 +939,7 @@ function RenderStatusTag() {
 
 **现状**：每个字段需要完整的 `{ type, name, props: { label } }` 三层结构。
 
-**建议**：支持字段简写（在 bindRules 层展开）：
+**建议**：支持字段简写（由渲染器输入解释层展开，而不是新增页面级 bindRules）：
 
 ```jsonc
 // 完整写法
@@ -1032,7 +1029,7 @@ function RenderStatusTag() {
 |------|------|------|
 | **props 黑盒** | `props: Record<string, unknown>` | AI 无法区分 toolbar/layout/actions/原生属性 |
 | **语义扁平** | `dataKey`/`name`/`visible` 散落在顶层和 props 中 | 同一概念有两种写法 |
-| **事件混杂** | `on.*`（顶层）与 `props.on*`（属性）两套路径 | 解析逻辑分散在 bindRules + SparkComponentRenderer |
+| **事件混杂** | `on.*`（顶层）与 `props.on*`（属性）两套路径 | 解析逻辑分散在 SparkPageRenderer + SparkComponentRenderer |
 | **AI 难以推断** | 所有属性混在 props 里 | 无法自动校验、无法区分输入/输出/控制属性 |
 
 ### 10.2 v1 → v2 关键改进
@@ -1592,14 +1589,17 @@ interface BehaviorConfig {
 
 ### 10.8 架构影响分析
 
-#### 改动面评估
+#### 改动面评估（历史方案，已归档）
+
+> 下面这段是早期“保留 BindRule 归一化层”的方案记录。
+> 当前代码已移除 bindRules/BindRule 运行链，现行实现改为：SparkNode 直接进入 SparkPageRenderer / SparkComponentRenderer，由渲染器与容器组件解释输入。
 
 | 模块 | 改动量 | 说明 |
 |------|--------|------|
 | **types.ts** | 低 | 新增 `SparkNode` 接口 + 7 个子类型 |
 | **binding/normalize.ts** | 新增 | `normalizeSparkNode()` 归一化函数（纯映射，无业务逻辑） |
-| **bindRules.ts** | 1 行 | 入口增加 `'meta' in rule ? normalizeSparkNode(rule) : rule` |
-| **SparkComponentRenderer.vue** | 无 | 归一化发生在 bindRules 之前，渲染器看到的还是 BindRule |
+| **bindRules.ts** | 已移除 | 旧方案曾计划在入口增加 `'meta' in rule ? normalizeSparkNode(rule) : rule` |
+| **SparkComponentRenderer.vue** | 现行主路径 | 当前由渲染器直接消费 SparkNode，并统一解释根级输入 + props |
 | **容器/字段组件** | 无 | 归一化层已将 meta 展开为现有 props 格式 |
 | **pagedata.json** | 无 | 不受影响 |
 | **script.js** | 无 | 不受影响 |
@@ -1607,8 +1607,10 @@ interface BehaviorConfig {
 #### 归一化函数：normalizeSparkNode v2
 
 ```typescript
-import { setRuleProp } from './bind-helpers'
-import type { BindRule } from '../types'
+// 历史归档片段：展示过往的 BindRule 归一化思路。
+// 当前实现已不再存在 BindRule / bindDataToRules 主链。
+
+import type { SparkNode } from '../types'
 
 /** 容器类型 → actions props 键名映射 */
 const ACTION_KEY_MAP: Record<string, string> = {
@@ -1627,8 +1629,8 @@ const DUAL_ACTION_TYPES = new Set(['r-dialog', 'r-drawer'])
  * 纯映射函数，将 meta.* 展开到现有 BindRule 扁平结构，
  * 使所有下游管线（delegate / 容器组件 / 字段组件）零改动。
  */
-export function normalizeSparkNode(node: SparkNode): BindRule {
-  const rule: BindRule = { type: node.type, props: { ...node.props } }
+export function normalizeSparkNode(node: SparkNode) {
+  const rule = { type: node.type, props: { ...node.props } }
   if (node.id) rule['id'] = node.id
   if (node.children) rule.children = node.children.map(normalizeSparkNode)
 
@@ -1721,7 +1723,7 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
     const eventMap: Record<string, string> = {}
     for (const [eventName, fnName] of Object.entries(m.behavior.on)) {
       // 生命周期事件（open/close/...）和组件特定事件（nodeClick/tabChange/...）
-      // 需要加 on 前缀才能被 bindRules 的 props.on* 通道识别
+      // 需要加 on 前缀才能被渲染器 props.on* 通道识别
       if (isLifecycleOrComponentEvent(eventName)) {
         const propName = `on${eventName.charAt(0).toUpperCase()}${eventName.slice(1)}`
         setRuleProp(rule, propName, fnName)
@@ -1753,20 +1755,13 @@ function isLifecycleOrComponentEvent(eventName: string): boolean {
 }
 ```
 
-**核心优势**：归一化层让所有下游代码（bindRules 全部 delegate + 容器组件 + 字段组件）**零改动**。
+**历史说明**：这套方案的核心思路是保留中间归一化层；当前代码已改为直接由渲染器和容器组件解释 SparkNode，不再采用 BindRule 中间层。
 
-### 10.9 双格式共存（渐进迁移）
+### 10.9 双格式共存（渐进迁移，历史方案）
 
 ```typescript
-// bindDataToRules 入口增加自动检测（仅需 +3 行代码）
-export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
-  // SparkNode v2 自动检测：含 meta 字段 → 先归一化
-  const normalizedRules = options.rules.map(rule =>
-    'meta' in rule ? normalizeSparkNode(rule as unknown as SparkNode) : rule
-  )
-  const callFunc = createFunctionCaller(options.pageFunctions)
-  return bindRulesRecursive({ ...options, rules: normalizedRules }, EMPTY_CONTEXT, callFunc)
-}
+// 历史提案：曾计划在 bindDataToRules 入口做双格式归一化。
+// 当前现行方案已删除 bindDataToRules，改为 SparkNode 直接进入渲染器路径。
 ```
 
 **效果**：
@@ -1844,13 +1839,13 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
 ### 10.13 实施路线图
 
 ```
-Phase 0 — 类型定义 + 归一化函数（无运行时变化）
+Phase 0 — 类型定义 + 归一化函数（历史方案，未作为现行路径落地）
   ├─ 新增 SparkNode + 7 个域类型到 spark-component/src/renderer/types.ts
   ├─ 新增 normalizeSparkNode() 到 binding/normalize-spark-node.ts
-  ├─ bindDataToRules() 入口 +3 行调用归一化
+  ├─ 历史上曾计划在 bindDataToRules() 入口调用归一化；现已改为渲染器直接解释 SparkNode
   └─ 单元测试：
-       - 旧格式输入 → 等价 BindRule（零改动验证）
-       - SparkNode v2 输入 → 等价 BindRule（新格式验证）
+       - 旧格式输入 → 等价 SparkNode 输入解释（零改动验证）
+       - SparkNode v2 输入 → 渲染器/容器行为一致（新格式验证）
        - 混合格式 → 正确处理（兼容性验证）
        - 双区 actions → headerActions/footerActions props（dialog/drawer 验证）
 

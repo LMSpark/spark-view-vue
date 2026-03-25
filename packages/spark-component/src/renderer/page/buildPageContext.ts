@@ -12,7 +12,7 @@ import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from '../types'
 import type { PageComponentRegistry } from '../../capability-keys'
-import { pageLogger } from '../binding/bind-helpers'
+import { pageLogger } from '../pageLogger'
 
 // ─── 共享 $refreshData 实现 ──────────────────────────────────────────────────
 

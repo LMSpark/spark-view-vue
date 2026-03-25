@@ -92,8 +92,6 @@ interface ElTreeComponent {
 interface Props {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
-  /** @deprecated 旧版直接注入 DataView；优先改用 dataKey + PAGE_DATASET */
-  dataView?: DataView
   /** 子节点（树节点内容配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -114,7 +112,7 @@ const props = defineProps<Props>()
 /** dataKey 直接来自 Props */
 const effectiveDataKey = computed(() => props.dataKey)
 
-/** allowAppend / allowDelete — 优先 props，兜底 config.props */
+/** allowAppend / allowDelete 直接来自当前组件运行时输入 */
 const effectiveAllowAppend = computed(() =>
   props.allowAppend ?? false
 )
@@ -138,13 +136,11 @@ const pageDataSet = sparkConsume(PAGE_DATASET)
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  legacySource: computed(() => props.dataView ?? null),
   mapView: view => view,
 })
 
 useContainerDataSourceEffects({
   resolvedDataSource: resolvedView,
-  legacySource: computed(() => props.dataView ?? null),
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererTree',

@@ -1,8 +1,8 @@
 <!--
 /**
  * @skill r-drawer
- * @description 抽屉容器，支持头部动作、底部动作和 24 列 Grid 内容区
- * @input { props: { modelValue?: boolean, title?: string, headerActions?: SparkNode[], footerActions?: SparkNode[] } }
+ * @description 抽屉容器，支持 header/footer dock 动作区和 24 列 Grid 内容区
+ * @input { props: { modelValue?: boolean, title?: string, docks?: { header?: { class?: string }, footer?: { class?: string } } } }
  * @example { "type": "r-drawer", "props": { "title": "详情", "modelValue": true }, "children": [] }
  */
 -->
@@ -60,28 +60,31 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { nodeId, type SparkNode } from '../_pkg'
+import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
+import type { ContainerDocks } from '../../types'
 import { useContainerGrid } from './useContainerGrid'
 import type { RendererDrawerApi } from '../_pkg'
 
 interface Props {
   /** 子节点 */
   children?: SparkNode[]
+  /** dock 布局配置 */
+  docks?: ContainerDocks
   /** 抽屉标题 */
   title?: string
   /** 控制显隐（v-model） */
   modelValue?: boolean
-  /** 头部操作按钮配置 */
+  /** @deprecated 请改用 children + dock='header' */
   headerActions?: SparkNode[]
-  /** 底部操作按钮配置 */
+  /** @deprecated 请改用 children + dock='footer' */
   footerActions?: SparkNode[]
-  /** 头部 CSS 类名 */
+  /** @deprecated 请改用 props.docks.header.class */
   headerClass?: string
-  /** 头部操作区 CSS 类名 */
+  /** @deprecated 请改用 props.docks.header.class */
   headerActionsClass?: string
   /** 内容区 CSS 类名 */
   bodyClass?: string
-  /** 底部 CSS 类名 */
+  /** @deprecated 请改用 props.docks.footer.class */
   footerClass?: string
   /** CSS Grid 列数 */
   gridColumns?: number
@@ -120,11 +123,14 @@ const emit = defineEmits<{
 const slots = useSlots()
 const { registerApi } = useSparkComponent({ type: 'r-drawer' })
 
+assertNoLegacyDrawerStructures()
+
 const resolvedTitle = computed(() => props.title || '')
-const headerActionConfigs = computed(() => props.headerActions ?? [])
-const footerActionConfigs = computed(() => props.footerActions ?? [])
+const configChildren = computed(() => props.children ?? [])
+const headerActionConfigs = computed(() => getDockedChildren(configChildren.value, 'header'))
+const footerActionConfigs = computed(() => getDockedChildren(configChildren.value, 'footer'))
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: computed(() => props.children ?? []),
+  children: computed(() => getDockedChildren(configChildren.value)),
   columns: computed(() => props.gridColumns),
   gap: computed(() => props.gridGap),
   autoRows: computed(() => props.gridAutoRows),
@@ -202,6 +208,15 @@ function getFooterSlotScope() {
     title: resolvedTitle.value,
     visible: visibleValue.value,
     close: closeDrawer,
+  }
+}
+
+function assertNoLegacyDrawerStructures(): void {
+  if (Array.isArray(props.headerActions) && props.headerActions.length > 0) {
+    throw new Error('[RendererDrawer] props.headerActions 已废除。请将头部动作节点移动到 children，并声明 dock: "header"。')
+  }
+  if (Array.isArray(props.footerActions) && props.footerActions.length > 0) {
+    throw new Error('[RendererDrawer] props.footerActions 已废除。请将底部动作节点移动到 children，并声明 dock: "footer"。')
   }
 }
 </script>

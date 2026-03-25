@@ -58,7 +58,7 @@ import type { HttpClient } from '@spark-view/spark-utils'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
-import { nodeId, SPARK_NODE_STRUCT_KEYS, type SparkNode } from '../types'
+import { nodeId, type SparkNode } from '../types'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE } from '../capability-keys'
 import type { ModuleContextCapability, PageCssScopeCapability } from '../capability-keys'
 import { useRendererSetup } from './useRendererSetup'
@@ -276,23 +276,6 @@ function bindSparkRuleEvents(
     // ── children 递归 ──
     if (Array.isArray(current['children'])) {
       cloned['children'] = (current['children'] as unknown[]).map(bindNode)
-    }
-
-    // ── 根级字段 → props 规范化 ──
-    // 收集非结构键，一次性合并到 props（根级覆盖 props 同名字段）
-    let extras: Record<string, unknown> | undefined
-    for (const key of Object.keys(cloned)) {
-      if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
-      if (cloned[key] === undefined) continue
-      extras ??= {}
-      extras[key] = cloned[key]
-    }
-    if (extras !== undefined) {
-      const cp = cloned['props']
-      const existing = (typeof cp === 'object' && cp !== null && !Array.isArray(cp))
-        ? cp as Record<string, unknown>
-        : {}
-      cloned['props'] = { ...existing, ...extras }
     }
 
     // ── ID 去重（顶层 id 优先，兼容 props.id） ──

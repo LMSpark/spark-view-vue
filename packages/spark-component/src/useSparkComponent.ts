@@ -10,7 +10,7 @@ import { computed, onMounted, onUnmounted, inject, provide as vueProvide, getCur
 import { sparkProvide, sparkConsume, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode, ComponentRegistry } from './types.js'
-import { SPARK_REGISTRY_KEY } from './types.js'
+import { SPARK_REGISTRY_KEY, nodeId, nodeInputProp, nodeInputProps } from './types.js'
 import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from './internal-context.js'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
@@ -114,6 +114,50 @@ export interface UseSparkComponentOptions {
 /** 全局单调递增 ID 计数器，替代 Date.now()+random（更快、确定、SSR 友好） */
 let _idCounter = 0
 
+function isVueListenerProp(key: string): boolean {
+  return /^on[A-Z]/.test(key) || key === 'on'
+}
+
+function isVueInternalVNodeProp(key: string): boolean {
+  return key === 'key'
+    || key === 'ref'
+    || key === 'ref_for'
+    || key === 'ref_key'
+    || key.startsWith('onVnode')
+}
+
+function readRuntimeVNodeProps(instance: ReturnType<typeof getCurrentInstance>): Record<string, unknown> {
+  const rawProps = instance?.vnode.props
+  if (!rawProps || typeof rawProps !== 'object') return {}
+
+  const runtimeProps: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(rawProps)) {
+    if (isVueInternalVNodeProp(key) || isVueListenerProp(key)) continue
+    runtimeProps[key] = value
+  }
+  return runtimeProps
+}
+
+function buildEffectiveConfig(instance: ReturnType<typeof getCurrentInstance>, fallbackConfig?: SparkNode): SparkNode {
+  const runtimeProps = readRuntimeVNodeProps(instance)
+  const base = fallbackConfig === undefined
+    ? ({ type: 'unknown' } as SparkNode & Record<string, unknown>)
+    : ({ ...fallbackConfig } as SparkNode & Record<string, unknown>)
+
+  if (Object.keys(runtimeProps).length > 0) {
+    base.props = base.props === undefined
+      ? runtimeProps
+      : { ...base.props, ...runtimeProps }
+  }
+
+  const runtimeId = typeof runtimeProps['id'] === 'string' ? runtimeProps['id'] : undefined
+  if (base.id === undefined && runtimeId !== undefined) {
+    base.id = runtimeId
+  }
+
+  return base
+}
+
 function resolveParentAccess(overrideParentContext?: SparkCapabilityContext): Omit<UseSparkCapabilityReaderReturn, 'sparkConsume'> {
   const parentContext = inject(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, null)
   const resolvedParentContext = overrideParentContext ?? parentContext
@@ -162,14 +206,14 @@ export function useSparkComponent(
   }
 
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
+  const currentInstance = getCurrentInstance()
 
   // 组件配置来自 fallbackConfig 参数（调用方在 setup 中传入，如 { type: 'r-table' }）。
   // SparkComponentRenderer 通过 v-bind="componentProps" 传递 SparkNode.props（含 id），
   // ID 已在绑定阶段（bindSparkRuleEvents）按组件类型自动分配并去重。
-  const config: SparkNode = fallbackConfig ?? { type: 'unknown' }
+  const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
 
-  const resolvedId = (typeof config.props?.['id'] === 'string' ? config.props['id'] : undefined)
-    ?? `spark-${++_idCounter}`
+  const resolvedId = nodeId(config) ?? `spark-${++_idCounter}`
 
   // ── 上下文创建 ──
   // 纯能力上下文不再进入 Vue 响应系统，仅保留能力链遍历所需字段。
@@ -189,9 +233,10 @@ export function useSparkComponent(
   // ── 页面级实例登记（可选） ──
   const pageComponentRegistry = sparkConsume<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
   if (pageComponentRegistry) {
-    const instanceEntry = config.props === undefined
+    const normalizedProps = nodeInputProps(config)
+    const instanceEntry = Object.keys(normalizedProps).length === 0
       ? { id: context.id, type: context.type }
-      : { id: context.id, type: context.type, props: config.props }
+      : { id: context.id, type: context.type, props: normalizedProps }
     pageComponentRegistry.registerInstance(instanceEntry)
   }
 
@@ -239,8 +284,8 @@ export function useSparkComponent(
 
   // ── 计算属性 ──
 
-  const isVisible = computed(() => config.props?.['visible'] !== false)
-  const isDisabled = computed(() => config.props?.['disabled'] === true)
+  const isVisible = computed(() => nodeInputProp(buildEffectiveConfig(currentInstance, fallbackConfig), 'visible') !== false)
+  const isDisabled = computed(() => nodeInputProp(buildEffectiveConfig(currentInstance, fallbackConfig), 'disabled') === true)
 
   // ── 能力提供 ──
 
@@ -317,7 +362,7 @@ export function useSparkComponent(
   // ── 生命周期 ──
 
   let _initialized = false
-  const instanceUid = getCurrentInstance()?.uid
+  const instanceUid = currentInstance?.uid
 
   const initialize = () => {
     if (_initialized) return

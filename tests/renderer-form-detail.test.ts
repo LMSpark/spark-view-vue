@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererForm, RendererDetail } from '@spark-view/spark-component'
+import { SparkData } from '@spark-view/spark-data'
+import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 
 const SparkActionStub = defineComponent({
   props: {
@@ -26,12 +27,27 @@ const ElFormStub = defineComponent({
 
 describe('RendererForm and RendererDetail toolbar integration', () => {
   it('should render docked form toolbar children and default slot scopes', () => {
-    const wrapper = mount(RendererForm as any, {
-      props: {
-        dataView: {
-          currentRow: { id: 1, name: 'Alice' },
-          _modelPerm: { allowCreate: true },
+    const ds = SparkData.createDataSet({
+      dataSetName: 'FormDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }],
         },
+      },
+    })
+    const formView = ds.getView('Users', 'default')!
+    formView.selection.setCurrentRow(formView.rows[0] ?? null)
+    ;(formView as typeof formView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: true }
+
+    const wrapper = mountWithPageDataSet(RendererForm as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
         children: [{ type: 'form-toolbar-action', dock: 'toolbar' }],
       },
       slots: {
@@ -53,12 +69,27 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
   })
 
   it('should render docked detail toolbar children and default slot scopes', () => {
-    const wrapper = mount(RendererDetail as any, {
-      props: {
-        dataView: {
-          currentRow: { id: 2, title: 'Detail Row' },
-          _modelPerm: { allowExport: true },
+    const ds = SparkData.createDataSet({
+      dataSetName: 'DetailDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'title', type: 'string' as const },
+          ],
+          rows: [{ id: 2, title: 'Detail Row' }],
         },
+      },
+    })
+    const detailView = ds.getView('Users', 'default')!
+    detailView.selection.setCurrentRow(detailView.rows[0] ?? null)
+    ;(detailView as typeof detailView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowExport: true }
+
+    const wrapper = mountWithPageDataSet(RendererDetail as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
         children: [{ type: 'detail-toolbar-action', dock: 'toolbar' }],
       },
       slots: {

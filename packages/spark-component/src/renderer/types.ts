@@ -2,15 +2,13 @@
  * 渲染器类型定义
  *
  * 功能分区：
- * 1) BindRule 运行时规则（绑定管线输出层）
- * 2) 脚本沙箱上下文与组件访问 API（执行层）
- * 3) 页面渲染器与规则绑定参数（编排层）
+ * 1) 脚本沙箱上下文与组件访问 API（执行层）
+ * 2) 页面渲染器参数（编排层）
  */
 
 import type { IDataSet, SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig, IPageRoute, IScriptContext } from '@spark-view/spark-page-config'
 import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
-import type { ComponentRegistry } from '../types.js'
 import type { PageComponentInstanceEntry } from '../capability-keys.js'
 
 // ── 基础重导出 ────────────────────────────────────────────────────────────
@@ -19,30 +17,6 @@ import type { PageComponentInstanceEntry } from '../capability-keys.js'
 export type { PageConfig }
 // IPageRoute 重导出供渲染层实现层使用
 export type { IPageRoute }
-
-// ── BindRule（绑定管线运行时模型） ───────────────────────────────────────────
-
-/**
- * 框架无关的运行时规则类型（绑定管线使用）
- *
- * `RuleConfig`（JSON 配置输入）经过 `bindDataToRules` 处理后的运行时表示：
- * - `on`: 字符串函数名 → 可调用函数
- * - `props`: 注入 DataView / 响应式 getter 等运行时对象
- * - `children`: 子规则递归处理后的运行时数组
- *
- * SPARK 渲染器将 `BindRule` 向下转型为 `SparkNode`。
- */
-export interface BindRule {
-  type: string
-  field?: string
-  label?: string
-  optionKey?: string
-  props?: Record<string, unknown>
-  children?: Array<BindRule | string>
-  on?: Record<string, unknown>
-  /** 索引签名覆盖 dataKey / display / options / style / class / slots 等动态属性 */
-  [key: string]: unknown
-}
 
 // ── 分区 C：脚本沙箱能力（页面运行时访问面） ─────────────────────────────────
 
@@ -132,17 +106,5 @@ export interface PageRendererProps {
   onError?: (error: Error) => void
 }
 
-/**
- * Rule 绑定选项
- */
-export interface RuleBindingOptions {
-  rules: BindRule[]
-  /** script.js 可调用函数表（key 为函数名） */
-  pageFunctions: Record<string, (...args: unknown[]) => unknown>
-  /** 页面级 DataSet（单一数据入口） */
-  dataSet: IDataSet | null
-  /** 组件注册表（可选）——用于查询 dataKey 行为元数据，替代硬编码的组件白名单 */
-  registry?: ComponentRegistry
-}
 
 

@@ -33,7 +33,7 @@ export interface ComponentDefinition {
  * 组件 dataKey 行为声明（Registry meta.dataKey）
  *
  * - `'self-resolve'`：组件内部 sparkConsume(PAGE_DATASET) 自行解析 dataKey prop（r-table、r-form 等）
- * - `'injected'`：由 bindRules 外部注入数据（el-table 等原生组件）
+ * - `'injected'`：由渲染器/宿主层注入数据（如原生 el-* 适配场景）
  * - `'none'`：不参与 dataKey 系统
  */
 export type ComponentDataKeyBehavior = 'self-resolve' | 'injected' | 'none'
@@ -72,10 +72,10 @@ export type ComponentContext = SparkCapabilityContext
  *   order    → 同 dock 内排序权重（升序，默认 0）
  *
  * rule.json 允许将 id / visible / disabled / on / dataKey / field 等写在根级（便于阅读），
- * 绑定阶段（bindSparkRuleEvents / bindDataToRules）会统一收入 props，
- * 渲染层一律通过 Vue Props 消费——组件代码只需关心 props，零认知负担。
+ * 渲染器通过 nodeInputProp / nodeInputProps 在运行时统一解释这些输入；
+ * 组件层一律通过 Vue Props 消费，避免把结构迁移职责绑定在页面级预处理管线中。
  *
- * ❗ id / dock / order 是**结构键**（框架基础设施使用），绑定阶段**不收入 props**。
+ * ❗ id / dock / order 是**结构键**（框架基础设施使用），不会被视为组件业务输入。
  *
  * @example
  * ```jsonc

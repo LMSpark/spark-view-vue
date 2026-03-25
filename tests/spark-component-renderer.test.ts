@@ -115,6 +115,48 @@ test('SparkComponentRenderer passes config props into Vue global Render* compone
   expect(wrapper.find('.render-row-action').text()).toBe('王晓明')
 })
 
+test('SparkComponentRenderer forwards root-level inputs to registered components without page binding migration', () => {
+  const RootFieldReader = defineComponent({
+    props: {
+      label: String,
+      status: String,
+      gridGap: Number,
+    },
+    setup(componentProps) {
+      return () => h('div', {
+        class: 'root-field-reader',
+        'data-label': componentProps.label ?? '',
+        'data-status': componentProps.status ?? '',
+        'data-gap': String(componentProps.gridGap ?? ''),
+      }, 'root')
+    }
+  })
+
+  registry.register('root-field-reader', RootFieldReader)
+
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'root-field-reader',
+        label: '根级标签',
+        status: 'active',
+        gridGap: 18,
+      } as unknown as Record<string, unknown>,
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  const reader = wrapper.find('.root-field-reader')
+  expect(reader.attributes('data-label')).toBe('根级标签')
+  expect(reader.attributes('data-status')).toBe('active')
+  expect(reader.attributes('data-gap')).toBe('18')
+})
+
 test('SparkComponentRenderer renders unregistered native tags with recursive children', () => {
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {

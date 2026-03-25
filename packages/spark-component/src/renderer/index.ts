@@ -4,7 +4,7 @@
  * 提供纯渲染层能力：
  * - SparkPageRenderer  SPARK 原生页面渲染组件（SparkNode 结构）
  * - SparkComponentRenderer  递归组件引擎
- * - 类型定义（BindRule、PageContext、PageConfig 等）
+ * - 类型定义（PageContext、PageConfig 等）
  *
  * 内部实现（不导出）：
  * - useCssScope — 由 SparkPageRenderer 组合调用
@@ -22,7 +22,6 @@ export type { UsePageDataSetOptions, UsePageDataSetReturn } from './usePageDataS
 
 // 类型（仅渲染层自有类型，SparkNode 系列类型由包顶层 types.ts 导出）
 export type {
-  BindRule,
   PageContext,
   PageConfig,
   PageRendererProps,

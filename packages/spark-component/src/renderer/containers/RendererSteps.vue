@@ -18,41 +18,35 @@
 
     <div class="renderer-steps-main">
       <el-steps v-bind="$attrs" :active="activeStepIndex">
-        <el-step
+        <RendererStepItem
           v-for="(step, index) in stepConfigs"
           :key="getStepKey(step, index)"
-          :title="getStepTitle(step, index)"
-          :description="getStepDescription(step)"
-          :status="getStepStatus(step)"
-          @click="activateStep(index)"
+          :config="step"
+          :index="index"
+          mode="header"
+          @activate="activateStep"
         />
       </el-steps>
 
-      <div v-if="activeStep" :class="['renderer-steps-content', getStepBodyClass(activeStep)]" :style="getStepGridStyle(activeStep)">
-        <template v-if="getStepChildren(activeStep).length">
-          <div
-            v-for="(child, index) in getStepChildren(activeStep)"
-            :key="nodeId(child) ?? `r-step-child-${index}`"
-            class="renderer-steps-grid-item"
-            :style="getStepChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
-          </div>
-        </template>
-        <slot v-else v-bind="getStepSlotScope(activeStep, activeStepIndex)" />
-      </div>
+      <RendererStepItem
+        v-if="activeStep"
+        :config="activeStep"
+        :index="activeStepIndex"
+        mode="content"
+      >
+        <slot v-if="!hasStepChildren(activeStep)" v-bind="getStepSlotScope(activeStep, activeStepIndex)" />
+      </RendererStepItem>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { CSSProperties } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
+import { useSparkComponent } from '../_pkg'
+import { getDockedChildren, nodeId, nodeInputProp, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerToolbar } from './useContainerToolbar'
-import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import RendererStepItem from './RendererStepItem.vue'
 import type { RendererStepsApi } from '../_pkg'
 
 interface Props {
@@ -113,58 +107,17 @@ const activeStepIndex = computed(() => {
 
 const activeStep = computed(() => stepConfigs.value[activeStepIndex.value])
 
-function getStepChildren(step: SparkNode): SparkNode[] {
-  return step.children ?? []
+function hasStepChildren(step: SparkNode): boolean {
+  return Array.isArray(step.children) && step.children.length > 0
 }
 
 function getStepName(step: SparkNode, index: number): string | number {
-  const value = step.props?.['name'] ?? step.props?.['value'] ?? nodeId(step)
+  const value = nodeInputProp(step, 'name') ?? nodeInputProp(step, 'value') ?? nodeId(step)
   return typeof value === 'string' || typeof value === 'number' ? value : `step-${index}`
 }
 
 function getStepKey(step: SparkNode, index: number): string | number {
   return nodeId(step) ?? getStepName(step, index)
-}
-
-function getStepTitle(step: SparkNode, index: number): string {
-  const value = step.props?.['title'] ?? step.props?.['label']
-  return typeof value === 'string' && value.trim().length > 0 ? value : `步骤${index + 1}`
-}
-
-function getStepDescription(step: SparkNode): string {
-  return typeof step.props?.['description'] === 'string' ? step.props['description'] as string : ''
-}
-
-function getStepStatus(step: SparkNode): string | undefined {
-  return typeof step.props?.['status'] === 'string' ? step.props['status'] as string : undefined
-}
-
-function getStepBodyClass(step: SparkNode): string {
-  return typeof step.props?.['bodyClass'] === 'string' ? step.props['bodyClass'] as string : ''
-}
-
-function getStepGridStyle(step: SparkNode): CSSProperties {
-  const columns = normalizeSpan(step.props?.['gridColumns'], 24)
-  const autoRows = typeof step.props?.['gridAutoRows'] === 'string' && step.props['gridAutoRows'].trim().length > 0
-    ? step.props['gridAutoRows'] as string
-    : 'minmax(32px, auto)'
-  return {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-    gap: normalizeGridGap(step.props?.['gridGap']),
-    gridAutoRows: autoRows,
-    alignItems: 'start',
-  }
-}
-
-function getStepChildGridStyle(child: SparkNode): CSSProperties {
-  const colSpan = normalizeSpan(child.props?.['colSpan'] ?? child.props?.['gridColSpan'] ?? child.props?.['span'], 24)
-  const rowSpan = normalizeSpan(child.props?.['rowSpan'] ?? child.props?.['gridRowSpan'], 1)
-  return {
-    gridColumn: `span ${colSpan} / span ${colSpan}`,
-    gridRow: `span ${rowSpan} / span ${rowSpan}`,
-    minWidth: 0,
-  }
 }
 
 function activateStep(index: number): void {
@@ -220,9 +173,14 @@ function getStepSlotScope(step: SparkNode, index: number) {
     step,
     stepIndex: index,
     stepName: getStepName(step, index),
-    stepTitle: getStepTitle(step, index),
+    stepTitle: getStepLabel(step, index),
     activeStepName: activeStepName.value,
   }
+}
+
+function getStepLabel(step: SparkNode, index: number): string {
+  const value = nodeInputProp(step, 'title') ?? nodeInputProp(step, 'label')
+  return typeof value === 'string' && value.trim().length > 0 ? value : `步骤${index + 1}`
 }
 </script>
 

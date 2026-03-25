@@ -35,7 +35,7 @@ SPARK 页面配置的**全部 4 个文件**。rule.json 是主文件，其他 3 
 ═══════════════════════════════════════════════════
 
 rule.json 是一个 JSON 数组，每个元素是一条 Rule 对象，描述 UI 组件树。
-框架（SPARK bindRules）解析此数组并渲染页面。
+框架通过 SparkPageRenderer + SparkComponentRenderer 解析此数组并渲染页面。
 
 ───────────────────────────────────────────────────
 1.1  Rule 对象可用字段
@@ -483,7 +483,7 @@ vxe-table, vxe-column 等（需已注册）
 }
 ```
 
-**框架处理**：bindRules 自动将函数名字符串解析为 script.js 中对应的函数引用。
+**框架处理**：SparkPageRenderer 自动将函数名字符串解析为 script.js 中对应的函数引用。
 
 **el-table 特殊事件**（在 `on` 中声明）：
 

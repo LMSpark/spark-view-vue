@@ -1,6 +1,6 @@
 # 数据加载与绑定 — 完整指南
 
-快速概览：页面配置 → DataSet 初始化 → DataView（视图）为数据单元 → 渲染器通过 `props.dataSource` 绑定 `DataView` → `DataView` 事件驱动（`stateChanged`）完成加载与级联触发。
+快速概览：页面配置 → DataSet 初始化 → 容器组件按 `dataKey` 解析 `DataView` → 渲染器通过 `props.dataSource` / 组件上下文消费 `DataView` → `DataView` 事件驱动（`stateChanged`）完成加载与级联触发。
 
 ---
 
@@ -37,7 +37,7 @@
 ## 4. 完整加载流程（按步骤） 🔁
 1. 页面初始化：`usePageDataSet.initDataSet()` — 将 `pagedata.json` 归一化为 `DataSet`。
 2. 视图创建：`DataTable.getOrCreateView()` → `DataView`（响应式）并 `setupCascade()`。
-3. 规则绑定：`bindRules.ts` 将 `dataKey`/`dataSource` 注入 `props.dataSource`（`DataView`）。
+3. 容器解析：`RendererTable` / `RendererTree` / `RendererForm` 等组件自行根据 `dataKey` 解析 `DataView`。
 4. 渲染时：
    - 若 `dataSource.rows` 已有数据 → 直接渲染；
    - 若 `rows` 为空且 `dataSource.loadFromServer` 可用 → `RendererTable/RendererTree` 在 `mounted` 调用 `loadFromServer()`（视图主动加载）。
@@ -69,7 +69,7 @@ await view.loadFromServer({ page: 1 })
 ## 6. 渲染器行为要点（注意） ⚠️
 - `RendererTable` / `RendererTree` 只信任 `props.dataSource`（`DataView` / `IDataSource`）。
 - 当 `props.dataSource.rows` 为空时，组件会调用 `dataSource.loadFromServer()`（不直接调用 `DataLoader`）。
-- 表的 `currentChange` / `selectionChange` 由 `bindRules.injectTableEvents()` 注入并同步回 `DataView`（调用 `setCurrentRow()` / `setSelectedRows()`）。
+- 表的 `currentChange` / `selectionChange` 由 `RendererTable` 直接同步回 `DataView.selection`。
 
 ## 6.1 r-table 统一过滤器（列即过滤项）
 - `r-table` 支持在表级容器直接声明 `filterColumns`，只写要过滤的列名即可。
@@ -160,7 +160,7 @@ await view.loadFromServer({ page: 1 })
 
 ## 9. 单元测试要点 ✔️
 - `DataView.loadFromServer()` 更新 `rows/total/page` 并通过 `events.emit('stateChanged')` 通知。
-- `dataKey(rows)` → `props.dataSource` 注入为 `DataView`（见 `tests/bindRules.test.ts`）。
+- `dataKey(rows)` → 容器组件解析为 `DataView` / `IDataSource`（见 `tests/renderer-table.datasource.test.ts`）。
 - 渲染器：当 `dataSource.rows` 为空时，应调用 `loadFromServer()`（已覆盖在 `tests/renderer-table.datasource.test.ts`）。
 - 级联联动：父变更应触发子 `loadFromServer()`（当 `autoLoad` 为 true）。
 
@@ -174,9 +174,9 @@ await view.loadFromServer({ page: 1 })
 ## 参考代码位置（快速跳转）
 - Data 层： `packages/spark-data/src/data-view.ts`、`data-table.ts`、`dataset.ts`
 - 级联 / 加载： `packages/spark-data/src/data-view.ts`（`setupCascade` / `respondToParentChange`）
-- 绑定 / 渲染： `packages/spark-component/src/renderer/binding/bindRules.ts`、`src/components/renderer-containers/RendererTable.vue`
+- 绑定 / 渲染： `packages/spark-component/src/renderer/SparkComponentRenderer.vue`、`packages/spark-component/src/renderer/containers/RendererTable.vue`
 - 初始化： `packages/spark-component/src/renderer/usePageDataSet.ts`
-- 测试： `tests/renderer-table.datasource.test.ts`、`tests/bindRules.test.ts`
+- 测试： `tests/renderer-table.datasource.test.ts`、`tests/spark-component-renderer.test.ts`
 
 ---
 

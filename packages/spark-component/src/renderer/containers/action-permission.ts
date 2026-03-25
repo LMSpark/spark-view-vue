@@ -1,4 +1,5 @@
 import type { SparkNode } from '../_pkg'
+import { nodeInputProp } from '../_pkg'
 import { createPermissionChecker } from '@spark-view/spark-data'
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 
@@ -11,7 +12,7 @@ export function isActionDisplayed(action: SparkNode): boolean {
 }
 
 export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined): boolean {
-  const permAction = action.props?.['permAction'] as string | undefined
+  const permAction = nodeInputProp(action, 'permAction') as string | undefined
   if (permAction === undefined) return true
 
   switch (permAction) {
@@ -27,7 +28,7 @@ export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermiss
 }
 
 export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined): boolean {
-  const permAction = action.props?.['permAction'] as string | undefined
+  const permAction = nodeInputProp(action, 'permAction') as string | undefined
   if (!row) return true
   if (permAction === undefined) return true
 

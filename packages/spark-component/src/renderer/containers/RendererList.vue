@@ -1,10 +1,10 @@
 <!--
 /**
  * @skill r-list
- * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件，支持 dock 分区工具栏
+ * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件，支持 dock 分区工具栏与项操作区
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string, itemActions?: SparkNode[] } }
+ * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string }, actions?: { position?: 'left'|'right', class?: string } }, columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string } }
  * @example { "type": "r-list", "dataKey": "Users@rows", "children": [{ "type": "r-text", "name": "name" }] }
  */
 -->
@@ -84,7 +84,7 @@ import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
-import type { IDataRow, DataView } from '@spark-view/spark-data'
+import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import type { RendererListApi } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
@@ -99,13 +99,11 @@ import { createRowActionSlotScope, createToolbarSlotScope } from './slotScopeFac
 interface Props {
   /** 数据绑定键 */
   dataKey?: string
-  /** @deprecated 旧版直接注入 DataView；优先改用 dataKey + PAGE_DATASET */
-  dataView?: DataView
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
   docks?: ContainerDocks
-  /** 列表项操作按钮配置 */
+  /** @deprecated 请改用 children + dock='actions' */
   itemActions?: SparkNode[]
   /** 列表项操作位置 */
   itemActionsPosition?: LateralActionPosition
@@ -161,11 +159,14 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const slots = useSlots()
 
+assertNoLegacyListStructures()
+
 const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
   return getDockedChildren(props.children)
 })
 const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
+const dockedItemActions = computed(() => getDockedChildren(props.children, 'actions'))
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(
@@ -176,13 +177,11 @@ const pageDataSet = sparkConsume(PAGE_DATASET)
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  legacySource: computed(() => props.dataView ?? null),
   mapView: view => view,
 })
 
 useContainerDataSourceEffects({
   resolvedDataSource: resolvedView,
-  legacySource: computed(() => props.dataView ?? null),
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererList',
@@ -210,9 +209,9 @@ const {
   showActionsRight: showItemActionsRight,
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => props.itemActions),
-  actionPosition: computed(() => props.itemActionsPosition),
-  actionClass: computed(() => props.itemActionsClass),
+  actionConfigs: computed(() => dockedItemActions.value),
+  actionPosition: computed(() => props.docks?.actions?.position as LateralActionPosition | undefined ?? props.itemActionsPosition),
+  actionClass: computed(() => props.docks?.actions?.class ?? props.itemActionsClass),
   modelPermission,
   resolveScope: ({ row, index }) => ({
     row,
@@ -326,6 +325,12 @@ function getDefaultSlotScope() {
   }, {
     rows: listRows.value,
   })
+}
+
+function assertNoLegacyListStructures(): void {
+  if (Array.isArray(props.itemActions) && props.itemActions.length > 0) {
+    throw new Error('[RendererList] props.itemActions 已废除。请将列表项动作节点移动到 children，并声明 dock: "actions"。')
+  }
 }
 </script>
 

@@ -46,15 +46,12 @@ import { SparkComponentRenderer } from '../_pkg'
 import { computed, type StyleValue } from 'vue'
 import { nodeId, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
-import type { DataView } from '@spark-view/spark-data'
 import { useFormDetailContainer } from './useFormDetailContainer'
 import type { RendererDetailApi } from '../_pkg'
 
 interface Props {
   /** 数据绑定键 */
   dataKey?: string
-  /** @deprecated 旧版直接注入 DataView；优先改用 dataKey + PAGE_DATASET */
-  dataView?: DataView
   /** 子节点列表 */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -99,7 +96,6 @@ const {
   contextData: detailData,
 } = useFormDetailContainer({
   ...props,
-  legacyDataView: computed(() => props.dataView),
 }, 'detail')
 
 // ── r-detail 包装 API ────────────────────────────────────────────────────

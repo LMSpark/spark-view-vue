@@ -1391,7 +1391,7 @@ interface InteractionAction {
 
 /**
  * 解析 interactions.json 并绑定到组件事件
- * 在 bindRules 阶段调用
+ * 历史上计划在 bindRules 阶段调用；当前现行实现应接入 SparkPageRenderer / 渲染器事件归一化路径
  */
 export function applyInteractions(
   rules: Rule[],

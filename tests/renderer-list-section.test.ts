@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { RendererList, RendererSection } from '@spark-view/spark-component'
+import { SparkData } from '@spark-view/spark-data'
+import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 
 const SparkActionStub = defineComponent({
   props: {
@@ -29,18 +31,34 @@ const ElCardStub = defineComponent({
 
 describe('RendererList and RendererSection container integration', () => {
   it('should render docked list toolbar children, item actions and template-driven item rendering with grid layout', async () => {
-    const wrapper = mount(RendererList as any, {
-      props: {
-        dataView: {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'ListDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
           rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob', _perm: { allowDelete: false } }],
-          _modelPerm: { allowExport: true },
         },
-        docks: { toolbar: { position: 'bottom' } },
-        itemActions: [{ type: 'list-item-delete', props: { permAction: 'delete' } }],
+      },
+    })
+    const listView = ds.getView('Users', 'default')!
+    ;(listView as typeof listView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowExport: true }
+
+    const wrapper = mountWithPageDataSet(RendererList as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+        docks: { toolbar: { position: 'bottom' }, actions: { position: 'left' } },
         itemActionsPosition: 'left',
         gridGap: 12,
         itemColSpan: 12,
-        children: [{ type: 'list-toolbar-action', dock: 'toolbar' }],
+        children: [
+          { type: 'list-toolbar-action', dock: 'toolbar' },
+          { type: 'list-item-delete', dock: 'actions', props: { permAction: 'delete' } },
+        ],
       },
       slots: {
         default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {
@@ -79,6 +97,33 @@ describe('RendererList and RendererSection container integration', () => {
     await nextTick()
   })
 
+  it('should fail fast for legacy list itemActions prop', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'ListLegacyDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'id', type: 'number' as const }],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+
+    expect(() => mountWithPageDataSet(RendererList as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+        itemActions: [{ type: 'legacy-list-action' }],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-card': ElCardStub,
+        },
+      },
+    })).toThrow('props.itemActions 已废除')
+  })
+
   it('should allow section header slot and default slot scopes to control collapse state', async () => {
     const wrapper = mount(RendererSection as any, {
       props: {
@@ -86,7 +131,7 @@ describe('RendererList and RendererSection container integration', () => {
         description: 'desc',
         collapsible: true,
         defaultCollapsed: true,
-        headerActions: [{ type: 'section-header-action' }],
+        children: [{ type: 'section-header-action', dock: 'header' }],
       },
       slots: {
         'header-actions': ({ collapsed, toggleCollapsed }: Record<string, unknown>) => h('button', {
@@ -119,6 +164,21 @@ describe('RendererList and RendererSection container integration', () => {
     expect(wrapper.find('.biz-section-body').attributes('data-collapsed')).toBe('false')
   })
 
+  it('should fail fast for legacy section headerActions prop', () => {
+    expect(() => mount(RendererSection as any, {
+      props: {
+        title: '基础信息',
+        headerActions: [{ type: 'legacy-section-action' }],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-card': ElCardStub,
+        },
+      },
+    })).toThrow('props.headerActions 已废除')
+  })
+
   it('should keep section body on CSS Grid and honor child spans', () => {
     const wrapper = mount(RendererSection as any, {
       props: {
@@ -144,5 +204,31 @@ describe('RendererList and RendererSection container integration', () => {
     expect(gridItems).toHaveLength(2)
     expect(gridItems[0]?.attributes('style')).toContain('grid-column: span 12 / span 12;')
     expect(gridItems[0]?.attributes('style')).toContain('grid-row: span 2 / span 2;')
+  })
+
+  it('should honor root-level child spans in section without props migration', () => {
+    const wrapper = mount(RendererSection as any, {
+      props: {
+        title: '根级布局区块',
+        gridGap: 10,
+        children: [
+          { type: 'child-a', colSpan: 7, rowSpan: 2 },
+          { type: 'child-b', colSpan: 17 },
+        ],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-card': ElCardStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.renderer-section-body').attributes('style')).toContain('gap: 10px;')
+    const gridItems = wrapper.findAll('.renderer-section-grid-item')
+    expect(gridItems).toHaveLength(2)
+    expect(gridItems[0]?.attributes('style')).toContain('grid-column: span 7 / span 7;')
+    expect(gridItems[0]?.attributes('style')).toContain('grid-row: span 2 / span 2;')
+    expect(gridItems[1]?.attributes('style')).toContain('grid-column: span 17 / span 17;')
   })
 })

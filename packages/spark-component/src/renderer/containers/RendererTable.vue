@@ -224,8 +224,6 @@ type RowActionsPosition = LateralActionPosition
 interface Props {
   /** DataKey 格式：tableName@field */
   dataKey?: string
-  /** @deprecated 旧版直接注入 DataView；优先改用 dataKey + PAGE_DATASET */
-  dataView?: DataView
   /** 子节点列表 */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -330,13 +328,11 @@ assertNoLegacyTableStructures()
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  legacySource: computed(() => props.dataView ?? null),
   mapView: view => view,
 })
 
 useContainerDataSourceEffects({
   resolvedDataSource: resolvedView,
-  legacySource: computed(() => props.dataView ?? null),
   provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
   logger,
   logPrefix: 'RendererTable',

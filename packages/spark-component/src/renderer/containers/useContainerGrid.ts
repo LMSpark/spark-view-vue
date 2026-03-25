@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import type { CSSProperties, Ref } from 'vue'
-import type { SparkNode } from '../_pkg'
+import { nodeInputProp, type SparkNode } from '../_pkg'
 
 // ── 默认值 ────────────────────────────────────────────────────────────────────
 
@@ -30,9 +30,8 @@ export function normalizeSpan(value: unknown, fallback: number): number {
 // ── 跨列跨行辅助函数 ─────────────────────────────────────────────────────────
 
 function getSpanValue(child: SparkNode, keys: string[], fallback: number): number {
-  const props = child.props ?? {}
   for (const key of keys) {
-    const value = props[key]
+    const value = nodeInputProp(child, key)
     if (value !== undefined) return normalizeSpan(value, fallback)
   }
   return fallback

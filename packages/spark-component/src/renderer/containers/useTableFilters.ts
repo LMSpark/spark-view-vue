@@ -1,6 +1,7 @@
 import { computed, reactive, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { SparkNode } from '../_pkg'
+import { nodeInputProp } from '../_pkg'
 import type { DataView, FilterExpression, FilterOperator, IDataRow } from '@spark-view/spark-data'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
@@ -56,20 +57,20 @@ function isEmptyFilterValue(value: unknown): boolean {
 }
 
 function isRangeFilterConfig(config: SparkNode): boolean {
-  const filterMode = config.props?.['filterMode'] ?? config.props?.['filterVariant']
-  return filterMode === 'range' || config.props?.['filterRange'] === true
+  const filterMode = nodeInputProp(config, 'filterMode') ?? nodeInputProp(config, 'filterVariant')
+  return filterMode === 'range' || nodeInputProp(config, 'filterRange') === true
 }
 
 // ── 过滤表达式构建 ───────────────────────────────────────────────────────────
 
-/** 从 SparkNode 中提取 field 名称（bindSparkRuleEvents 已规范化到 props） */
+/** 从 SparkNode 中提取 field 名称，由组件自行解释输入，不依赖绑定层预先搬运 props。 */
 function getNodeField(config: SparkNode): string | undefined {
-  const f = config.props?.['field']
+  const f = nodeInputProp(config, 'field')
   return typeof f === 'string' ? f : undefined
 }
 
 function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
-  const explicit = config.props?.['filterOp'] ?? config.props?.['filterOperator']
+  const explicit = nodeInputProp(config, 'filterOp') ?? nodeInputProp(config, 'filterOperator')
   if (typeof explicit === 'string') return explicit as FilterOperator
   if (Array.isArray(value)) {
     if (isRangeFilterConfig(config) || config.type === 'r-date' || config.type === 'r-number') {

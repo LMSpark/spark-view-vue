@@ -405,11 +405,9 @@ export {
   SparkPageRenderer,
   SparkComponentRenderer,
   usePageDataSet,
-  bindDataToRules,
 }
 export type {
   PageContext,
   PageConfig,
-  RuleBindingOptions,
 }
 ```

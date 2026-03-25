@@ -1,4 +1,4 @@
-import { computed, type ComputedRef } from 'vue'
+import { computed } from 'vue'
 import { useSparkComponent } from '../_pkg'
 import { getDockedChildren, type SparkNode } from '../_pkg'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
@@ -16,7 +16,6 @@ import { createCurrentRowSlotScope } from './slotScopeFactories'
 interface FormDetailContainerProps {
   dataKey: string | undefined
   children: SparkNode[] | undefined
-  legacyDataView?: ComputedRef<DataView | undefined>
   docks?: ContainerDocks
   gridColumns: number | undefined
   gridGap: number | string | undefined
@@ -61,18 +60,15 @@ export function useFormDetailContainer(
     { type: containerType }
   )
   const pageDataSet = sparkConsume(PAGE_DATASET)
-  const legacySource = computed(() => props.legacyDataView?.value ?? null)
 
   const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
     dataKey: effectiveDataKey,
     pageDataSet,
-    legacySource,
     mapView: view => view,
   })
 
   useContainerDataSourceEffects({
     resolvedDataSource: resolvedView,
-    legacySource,
     provideDataSource: (view: DataView) => sparkProvide(DATA_SOURCE, view),
     logger,
     logPrefix,

@@ -104,6 +104,40 @@ describe('RendererTabs and RendererCollapse integration', () => {
     expect(onTabChange).toHaveBeenCalledWith('more')
   })
 
+  it('should resolve root-level pane fields without binding-layer props migration', () => {
+    const wrapper = mount(RendererTabs as any, {
+      props: {
+        children: [
+          {
+            type: 'r-tab-pane',
+            label: '根级标签',
+            name: 'root-pane',
+            gridGap: 18,
+            children: [
+              { type: 'child-a', colSpan: 10 },
+              { type: 'child-b', colSpan: 14, rowSpan: 2 },
+            ],
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-tabs': ElTabsStub,
+          'el-tab-pane': ElTabPaneStub,
+        },
+      },
+    })
+
+    const pane = wrapper.find('.el-tab-pane-stub')
+    expect(pane.attributes('data-label')).toBe('根级标签')
+    expect(pane.attributes('data-name')).toBe('root-pane')
+    expect(wrapper.find('.renderer-tabs-pane-body').attributes('style')).toContain('gap: 18px;')
+    const gridItems = wrapper.findAll('.renderer-tabs-pane-grid-item')
+    expect(gridItems[0]?.attributes('style')).toContain('grid-column: span 10 / span 10;')
+    expect(gridItems[1]?.attributes('style')).toContain('grid-row: span 2 / span 2;')
+  })
+
   it('should emit tabs model updates', () => {
     const wrapper = mount(RendererTabs as any, {
       props: {
@@ -165,5 +199,39 @@ describe('RendererTabs and RendererCollapse integration', () => {
 
     wrapper.findComponent(ElCollapseStub).vm.$emit('change', ['one'])
     expect(onChange).toHaveBeenCalledWith(['one'])
+  })
+
+  it('should resolve root-level collapse item fields without binding-layer props migration', () => {
+    const wrapper = mount(RendererCollapse as any, {
+      props: {
+        children: [
+          {
+            type: 'r-collapse-item',
+            title: '根级分组',
+            name: 'root-item',
+            gridGap: 20,
+            children: [
+              { type: 'child-a', colSpan: 6 },
+              { type: 'child-b', colSpan: 18 },
+            ],
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-collapse': ElCollapseStub,
+          'el-collapse-item': ElCollapseItemStub,
+        },
+      },
+    })
+
+    const item = wrapper.find('.el-collapse-item-stub')
+    expect(item.attributes('data-title')).toBe('根级分组')
+    expect(item.attributes('data-name')).toBe('root-item')
+    expect(wrapper.find('.renderer-collapse-item-body').attributes('style')).toContain('gap: 20px;')
+    const gridItems = wrapper.findAll('.renderer-collapse-grid-item')
+    expect(gridItems[0]?.attributes('style')).toContain('grid-column: span 6 / span 6;')
+    expect(gridItems[1]?.attributes('style')).toContain('grid-column: span 18 / span 18;')
   })
 })

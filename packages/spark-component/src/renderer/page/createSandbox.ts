@@ -4,7 +4,7 @@
 
 import { toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
 import type { PageContext } from '../types'
-import { pageLogger } from '../binding/bind-helpers'
+import { pageLogger } from '../pageLogger'
 
 /**
  * 从脚本文本中提取所有顶层函数名

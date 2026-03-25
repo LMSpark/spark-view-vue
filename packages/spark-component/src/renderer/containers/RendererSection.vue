@@ -1,7 +1,7 @@
 <!--
 /**
  * @skill r-section
- * @description 分组块容器，支持标题、描述、折叠和 24 列网格布局；r-block 为其别名
+ * @description 分组块容器，支持标题、描述、折叠、header dock 动作区和 24 列网格布局；r-block 为其别名
  * @input { props: { title?: string, description?: string, collapsible?: boolean, defaultCollapsed?: boolean } }
  * @example { "type": "r-section", "props": { "title": "基本信息" }, "children": [] }
  */
@@ -91,14 +91,14 @@
 <script setup lang="ts">
 import { computed, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import { nodeId, type SparkNode } from '../_pkg'
+import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 import type { RendererSectionApi } from '../_pkg'
 
 interface Props {
   /** 子节点 */
   children?: SparkNode[]
-  /** 头部操作按钮配置 */
+  /** @deprecated 请改用 children + dock='header' */
   headerActions?: SparkNode[]
   /** 分区标题 */
   title?: string
@@ -161,10 +161,12 @@ const props = withDefaults(defineProps<Props>(), {
 const slots = useSlots()
 const { registerApi } = useSparkComponent({ type: 'r-section' })
 
+assertNoLegacySectionStructures()
+
 const configChildren = computed(() => props.children ?? [])
-const headerActionConfigs = computed(() => props.headerActions ?? [])
+const headerActionConfigs = computed(() => getDockedChildren(configChildren.value, 'header'))
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: configChildren,
+  children: computed(() => getDockedChildren(configChildren.value)),
   columns: computed(() => props.gridColumns),
   gap: computed(() => props.gridGap),
   autoRows: computed(() => props.gridAutoRows),
@@ -222,6 +224,12 @@ function getDefaultSlotScope() {
     description: props.description,
     collapsed: collapsed.value,
     toggleCollapsed,
+  }
+}
+
+function assertNoLegacySectionStructures(): void {
+  if (Array.isArray(props.headerActions) && props.headerActions.length > 0) {
+    throw new Error('[RendererSection] props.headerActions 已废除。请将头部动作节点移动到 children，并声明 dock: "header"。')
   }
 }
 </script>

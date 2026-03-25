@@ -835,7 +835,7 @@ rule.json                         pagedata.json
 
 1. **LLM Token 效率**：JSON 约为 XML 的 65-80%（SPARK 对 Copilot 的 token 优势从 1:4~1:5 缩减到 1:3~1:4）
 2. **pagedata.json 反模式**：XML 不区分数据类型（所有属性值为字符串），`total: 100`(number) 变成 `total="100"`(string)
-3. **迁移成本极高**：涉及 bindRules / parsePageData / AiPageService / system-prompt / 所有页面配置 / 全部测试
+3. **迁移成本极高**：涉及旧 bindRules 链（现已移除）、parsePageData、AiPageService、system-prompt、所有页面配置、全部测试
 4. **现有验证链重写**：JSON.parse + 括号平衡已稳定运行，XML parser + DTD/XSD 从零开始
 
 **最终决策**：页面配置保持 JSON，AI 交互协议使用 `@@type:name` 定界符（两者互补）。

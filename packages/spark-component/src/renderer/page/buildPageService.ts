@@ -20,7 +20,7 @@ import type {
   RequestError,
 } from '@spark-view/spark-utils'
 import { createRequest } from '@spark-view/spark-utils'
-import { pageLogger } from '../binding/bind-helpers'
+import { pageLogger } from '../pageLogger'
 
 /** ElMessageBox 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常 */
 function isElCancelAction(e: unknown): boolean {

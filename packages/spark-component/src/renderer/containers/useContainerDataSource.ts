@@ -13,24 +13,20 @@ interface LoggerLike {
 interface UseContainerDataSourceOptions<TSource> {
   dataKey: ComputedRef<string | undefined>
   pageDataSet: IDataSet | null
-  legacySource: ComputedRef<TSource | null | undefined>
   mapView: (view: DataView) => TSource
 }
 
 interface UseContainerDataSourceEffectsOptions<TSource> {
   resolvedDataSource: ComputedRef<TSource | null>
-  legacySource?: ComputedRef<TSource | null | undefined>
   provideDataSource?: (source: TSource) => void
   logger: LoggerLike
   logPrefix: string
 }
 
-const warnedLegacySourcePrefixes = new Set<string>()
-
 // ── 组合式函数 ───────────────────────────────────────────────────────────────
 
 export function useContainerDataSource<TSource>(options: UseContainerDataSourceOptions<TSource>) {
-  // 优先根据 DataKey 从页面级 DataSet 解析数据源，失败时才走遗留注入链。
+  // 仅根据 DataKey 从页面级 DataSet 解析数据源。
   const resolvedDataSource = computed<TSource | null>(() => {
     if (options.dataKey.value !== undefined && options.pageDataSet !== null) {
       const descriptor = parseDataKey(options.dataKey.value)
@@ -39,7 +35,7 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
         if (view) return options.mapView(view)
       }
     }
-    return options.legacySource.value ?? null
+    return null
   })
 
   /** 从 resolvedDataSource 提取模型级权限快照（IDataSource._modelPerm） */
@@ -54,16 +50,6 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
 }
 
 export function useContainerDataSourceEffects<TSource>(options: UseContainerDataSourceEffectsOptions<TSource>) {
-  watch(options.legacySource ?? computed(() => undefined), (legacySource) => {
-    if (!import.meta.env.DEV) return
-    if (legacySource === null || legacySource === undefined) return
-    if (warnedLegacySourcePrefixes.has(options.logPrefix)) return
-    warnedLegacySourcePrefixes.add(options.logPrefix)
-    options.logger.warn(
-      `[${options.logPrefix}] dataView 输入已降级为遗留兼容入口；优先改用 dataKey + PAGE_DATASET。`
-    )
-  }, { immediate: true })
-
   function tryAutoLoad(source: TSource | null): void {
     if (source === null) return
     const maybeView = source as DataView
