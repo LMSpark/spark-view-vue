@@ -26,8 +26,8 @@ export interface UserInfo {
   displayName?: string
   email?: string
   avatar?: string
-  roles: string[]        // ['admin', 'sales', 'manager']
-  permissions: string[]  // ['order:create', 'user:read', 'report:export']
+  readonly roles: string[]        // ['admin', 'sales', 'manager']
+  readonly permissions: string[]  // ['order:create', 'user:read', 'report:export']
 }
 
 /**
