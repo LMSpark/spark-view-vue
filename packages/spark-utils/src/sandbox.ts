@@ -14,6 +14,7 @@ export const SANDBOX_BLOCKED_KEYS = new Set<string | symbol>([
   'setTimeout', 'setInterval', 'setImmediate',
   'fetch', 'XMLHttpRequest', 'WebSocket', 'importScripts',
   'Proxy', 'Reflect',
+  'import', 'Symbol',
 ])
 
 /**
