@@ -84,7 +84,7 @@ const optionResult = useOptionField<TreeSelectValue>({
 })
 
 const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext({ width: props.width }, optionResult)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
 
 function handleChange(value: TreeSelectValue): void {
   emit('update:modelValue', value)

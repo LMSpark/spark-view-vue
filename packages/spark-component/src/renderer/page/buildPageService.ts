@@ -22,7 +22,7 @@ import type {
 import { createRequest } from '@spark-view/spark-utils'
 import { pageLogger } from '../pageLogger'
 
-/** ElMessageBox 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常 */
+/** 内部实现：ElMessageBox.confirm() 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常。这是 IPageServiceCapability 内部实现细节，script.js 不能直接访问 ElMessageBox（已从沙箱移除）。 */
 function isElCancelAction(e: unknown): boolean {
   if (e === 'cancel') return true
   return typeof e === 'object' && e !== null && (e as Record<string, unknown>)['action'] === 'cancel'

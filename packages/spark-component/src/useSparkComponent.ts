@@ -100,7 +100,22 @@ export interface UseSparkCapabilityReaderReturn {
 export interface UseSparkComponentOptions {
   registry?: ComponentRegistry
   parentContext?: SparkCapabilityContext
-  mode?: 'full' | 'consume-only'
+}
+
+/**
+ * useSparkComponent 入参类型 — 兼容 Vue 组件 props 和手动构造的 SparkNode。
+ *
+ * Vue 的 `defineProps` / `withDefaults` 会将未传入的 optional 字段解析为 `undefined`，
+ * 在 `exactOptionalPropertyTypes: true` 下 `SparkNode`（optional ≠ undefined）无法直接接收。
+ * 本类型在 SparkNode 基础上允许 optional 字段为 `undefined`，并开放额外键（组件自有 props）。
+ */
+export type SparkNodeInput = {
+  type: string
+  props?: Record<string, unknown> | undefined
+  children?: SparkNode['children'] | undefined
+  id?: string | undefined
+  dock?: string | undefined
+  order?: number | undefined
 }
 
 /* -------------------------------------------------------------------------- */
@@ -138,7 +153,7 @@ function readRuntimeVNodeProps(instance: ReturnType<typeof getCurrentInstance>):
   return runtimeProps
 }
 
-function buildEffectiveConfig(instance: ReturnType<typeof getCurrentInstance>, fallbackConfig?: SparkNode): SparkNode {
+function buildEffectiveConfig(instance: ReturnType<typeof getCurrentInstance>, fallbackConfig?: SparkNodeInput): SparkNode {
   const runtimeProps = readRuntimeVNodeProps(instance)
   const base = fallbackConfig === undefined
     ? ({ type: 'unknown' } as SparkNode & Record<string, unknown>)
@@ -179,31 +194,28 @@ function createSparkConsume(
   }) as UseSparkCapabilityReaderReturn['sparkConsume']
 }
 
-export function useSparkComponent(
-  fallbackConfig: SparkNode | undefined,
-  options: UseSparkComponentOptions & { mode: 'consume-only' }
-): UseSparkCapabilityReaderReturn
-export function useSparkComponent(
-  fallbackConfig?: SparkNode,
-  options?: UseSparkComponentOptions
-): UseSparkComponentReturn
+/**
+ * 轻量能力消费 — 仅沿 parent 链查找能力，不创建自身上下文。
+ *
+ * 适用于只需读取祖先能力的工具 composable（useFieldOptions、useResolvedFieldContext 等）。
+ */
+export function useSparkConsume(): UseSparkCapabilityReaderReturn {
+  const { parentContext, parentType } = resolveParentAccess()
+  return {
+    parentContext,
+    parentType,
+    sparkConsume: createSparkConsume(parentContext),
+  }
+}
 
 export function useSparkComponent(
-  fallbackConfig?: SparkNode,
+  fallbackConfig?: SparkNodeInput,
   options?: UseSparkComponentOptions
-): UseSparkComponentReturn | UseSparkCapabilityReaderReturn {
+): UseSparkComponentReturn {
 
   // ── 依赖注入 ──
 
   const { parentContext, parentType } = resolveParentAccess(options?.parentContext)
-
-  if (options?.mode === 'consume-only') {
-    return {
-      parentContext,
-      parentType,
-      sparkConsume: createSparkConsume(parentContext),
-    }
-  }
 
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
   const currentInstance = getCurrentInstance()
@@ -228,7 +240,7 @@ export function useSparkComponent(
     context.parent = parentContext
   }
 
-  // 向子组件提供当前 context
+  // 向子组件提供当前 context（能力链 parent 发现的基础设施）
   vueProvide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, context)
 
   // ── 页面级实例登记（可选） ──

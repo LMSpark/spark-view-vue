@@ -77,13 +77,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const { registerApi } = useSparkComponent({
-  type: props.type,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-})
+const { registerApi } = useSparkComponent(props)
 
 const paneConfigs = computed(() =>
   getDockedChildren(props.children).filter(child => child.type === 'r-tab-pane')
@@ -152,13 +146,9 @@ function getPaneKey(pane: SparkNode, index: number): string | number {
 }
 
 function getPaneComponentProps(pane: SparkNode): Record<string, unknown> {
-  const paneNodeId = nodeId(pane)
+  const resolvedId = nodeId(pane)
   return {
-    type: pane.type,
-    ...(pane.id !== undefined ? { id: pane.id } : {}),
-    ...(paneNodeId !== undefined ? { nodeId: paneNodeId } : {}),
-    ...(pane.dock !== undefined ? { dock: pane.dock } : {}),
-    ...(pane.order !== undefined ? { order: pane.order } : {}),
+    ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(pane.children !== undefined ? { children: pane.children } : {}),
     ...(pane.props ?? {}),
   }

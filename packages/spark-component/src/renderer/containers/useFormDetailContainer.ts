@@ -3,7 +3,7 @@ import { useSparkComponent } from '../_pkg'
 import { getDockedChildren, type SparkNode } from '../_pkg'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
-import { CONTEXT_DATA } from '../_pkg'
+import { CONTEXT_DATA, FIELD_CONTEXT } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import { useContainerGrid } from './useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
@@ -54,15 +54,8 @@ export function useFormDetailContainer(
   // ── SPARK 上下文与数据源 ─────────────────────────────────────────────────
 
   const logPrefix = fieldContext === 'form' ? 'RendererForm' : 'RendererDetail'
-  const componentType = props.type
 
-  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkComponent({
-    type: componentType,
-    ...(props.id !== undefined ? { id: props.id } : {}),
-    ...(props.dock !== undefined ? { dock: props.dock } : {}),
-    ...(props.order !== undefined ? { order: props.order } : {}),
-    ...(props.children !== undefined ? { children: props.children } : {}),
-  })
+  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkComponent(props)
   const pageDataSet = sparkConsume(PAGE_DATASET)
 
   const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
@@ -98,6 +91,7 @@ export function useFormDetailContainer(
   // ── 能力提供 ──────────────────────────────────────────────────────────────
 
   sparkProvide(CONTEXT_DATA, contextData)
+  sparkProvide(FIELD_CONTEXT, fieldContext)
 
   // ── 槽位作用域 ────────────────────────────────────────────────────────────
 

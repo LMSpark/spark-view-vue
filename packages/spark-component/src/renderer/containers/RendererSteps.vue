@@ -71,13 +71,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const { registerApi } = useSparkComponent({
-  type: props.type,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-})
+const { registerApi } = useSparkComponent(props)
 
 const stepConfigs = computed(() =>
   getDockedChildren(props.children).filter(child => child.type === 'r-step')
@@ -130,13 +124,9 @@ function getStepKey(step: SparkNode, index: number): string | number {
 }
 
 function getStepComponentProps(step: SparkNode): Record<string, unknown> {
-  const stepNodeId = nodeId(step)
+  const resolvedId = nodeId(step)
   return {
-    type: step.type,
-    ...(step.id !== undefined ? { id: step.id } : {}),
-    ...(stepNodeId !== undefined ? { nodeId: stepNodeId } : {}),
-    ...(step.dock !== undefined ? { dock: step.dock } : {}),
-    ...(step.order !== undefined ? { order: step.order } : {}),
+    ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(step.children !== undefined ? { children: step.children } : {}),
     ...(step.props ?? {}),
   }

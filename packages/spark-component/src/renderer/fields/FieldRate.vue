@@ -51,7 +51,7 @@ const permission = useFieldPermission<number>({
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext({ width: props.width }, permission)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
 function handleChange(value: number): void {
   emit('update:modelValue', value)

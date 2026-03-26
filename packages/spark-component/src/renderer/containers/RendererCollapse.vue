@@ -71,13 +71,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: CollapseValue]
 }>()
 
-const { registerApi } = useSparkComponent({
-  type: props.type,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-})
+const { registerApi } = useSparkComponent(props)
 
 const itemConfigs = computed(() =>
   getDockedChildren(props.children).filter(child => child.type === 'r-collapse-item')
@@ -155,13 +149,9 @@ function getItemKey(item: SparkNode, index: number): string | number {
 }
 
 function getItemComponentProps(item: SparkNode): Record<string, unknown> {
-  const itemNodeId = nodeId(item)
+  const resolvedId = nodeId(item)
   return {
-    type: item.type,
-    ...(item.id !== undefined ? { id: item.id } : {}),
-    ...(itemNodeId !== undefined ? { nodeId: itemNodeId } : {}),
-    ...(item.dock !== undefined ? { dock: item.dock } : {}),
-    ...(item.order !== undefined ? { order: item.order } : {}),
+    ...(resolvedId !== undefined ? { id: resolvedId } : {}),
     ...(item.children !== undefined ? { children: item.children } : {}),
     ...(item.props ?? {}),
   }

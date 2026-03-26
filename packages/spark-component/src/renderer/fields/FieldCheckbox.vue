@@ -58,7 +58,7 @@ const permission = useFieldPermission<boolean>({
 })
 
 const { fieldValue, isCurrentFieldEditable, displayLabel, syncValue } = permission
-const fieldCtx = useFieldContext({ width: props.width }, permission)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
 function handleChange(value: boolean): void {
   emit('update:modelValue', value)

@@ -98,6 +98,7 @@ const {
 } = optionResult
 
 const fieldCtx = useFieldContext({
+  type: props.type,
   width: props.width,
   ...(props.children !== undefined ? { children: props.children } : {}),
 }, optionResult)

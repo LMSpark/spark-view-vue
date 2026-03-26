@@ -108,7 +108,7 @@ const {
   syncValue,
 } = optionResult
 
-const fieldCtx = useFieldContext({ width: props.width }, optionResult)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
 
 function iconClass(value: string): string {
   return props.classPrefix ? `${props.classPrefix}${value}` : value

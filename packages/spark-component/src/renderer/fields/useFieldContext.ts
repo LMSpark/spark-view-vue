@@ -7,6 +7,7 @@ import type { FormItemRule } from './columnFormRules'
 type TextAlign = 'left' | 'center' | 'right'
 
 interface FieldContextProps {
+  type: string
   displayLabel: string
   fieldName: string
   width: number | undefined
@@ -40,7 +41,7 @@ interface FieldPermissionForContext {
  * 将 useFieldPermission 返回值 + 组件 props 聚合为一个响应式对象。
  */
 export function useFieldContext(
-  fieldProps: { width: number | undefined; children?: SparkNode[] | undefined },
+  fieldProps: { type: string; width: number | undefined; children?: SparkNode[] | undefined },
   permission: FieldPermissionForContext,
 ): ComputedRef<FieldContextProps> {
   const attrs = useAttrs()
@@ -76,6 +77,7 @@ export function useFieldContext(
     const valueClassName = readText(readAttr('valueClassName', 'value-class-name'))
 
     const result: FieldContextProps = {
+      type: fieldProps.type,
       displayLabel: permission.displayLabel.value,
       fieldName: permission.fieldName.value,
       width: fieldProps.width,

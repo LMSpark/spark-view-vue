@@ -195,6 +195,7 @@ import type { ContainerDocks } from '../../types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
+import { FIELD_CONTEXT } from '../_pkg'
 import { MODULE_CONTEXT } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -229,10 +230,6 @@ interface Props {
   props?: Record<string, unknown>
   /** 节点唯一标识 */
   id?: string
-  /** 停靠区域 */
-  dock?: string
-  /** 排序权重 */
-  order?: number
   /** DataKey 格式：tableName@field */
   dataKey?: string
   /** 子节点列表 */
@@ -292,7 +289,6 @@ const props = withDefaults(defineProps<Props>(), {
   rowActionsClass: '',
 })
 
-const componentType = computed(() => props.type ?? 'r-table')
 const attrs = useAttrs()
 const slots = useSlots()
 const tableAttrs = computed<Record<string, unknown>>(() => {
@@ -333,13 +329,7 @@ const sparkChildren = computed(() => {
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent({
-  type: componentType.value,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-})
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(props)
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
@@ -359,6 +349,8 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererTable',
 })
+
+sparkProvide(FIELD_CONTEXT, 'table')
 
 // ── 视图状态 ──────────────────────────────────────────────────────────────
 

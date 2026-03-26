@@ -69,7 +69,7 @@ const optionResult = useOptionField<TransferValue>({
 })
 
 const { transferData, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext({ width: props.width }, optionResult)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
 
 function handleChange(value: TransferValue): void {
   emit('update:modelValue', value)

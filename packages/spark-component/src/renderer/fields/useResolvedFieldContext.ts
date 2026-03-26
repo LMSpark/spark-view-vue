@@ -1,40 +1,17 @@
 import { computed } from 'vue'
-import { useSparkComponent } from '../_pkg'
-import type { ComponentContext, FieldContext } from '../_pkg'
+import { useSparkConsume } from '../_pkg'
+import { FIELD_CONTEXT } from '../_pkg'
+import type { FieldContext } from '../_pkg'
 
-function resolveFieldContextFromType(type: string | null | undefined): FieldContext | null {
-  if (type === null || type === undefined) return null
-
-  switch (type) {
-    case 'r-table':
-      return 'table'
-    case 'r-form':
-    case 'r-field-scope':
-      return 'form'
-    case 'r-detail':
-      return 'detail'
-    case 'r-tree':
-      return 'tree'
-    case 'r-list-item':
-    case 'r-list':
-      return 'list'
-    default:
-      return null
-  }
-}
-
-function resolveFieldContextFromAncestors(parentContext: ComponentContext | null): FieldContext | null {
-  let current: ComponentContext | null = parentContext
-  while (current !== null) {
-    const resolved = resolveFieldContextFromType(current.type)
-    if (resolved !== null) return resolved
-    current = current.parent ?? null
-  }
-  return null
-}
-
+/**
+ * 通过 SPARK 能力体系解析字段渲染上下文。
+ *
+ * 容器组件（r-table / r-form / r-detail / r-tree / r-list）通过
+ * sparkProvide(FIELD_CONTEXT, context) 声明渲染语义，
+ * 字段组件通过本函数 sparkConsume 沿能力链向上查找。
+ */
 export function useResolvedFieldContext() {
-  const { parentContext } = useSparkComponent(undefined, { mode: 'consume-only' })
+  const { sparkConsume } = useSparkConsume()
 
-  return computed<FieldContext>(() => resolveFieldContextFromAncestors(parentContext) ?? 'detail')
+  return computed<FieldContext>(() => sparkConsume(FIELD_CONTEXT) ?? 'detail')
 }

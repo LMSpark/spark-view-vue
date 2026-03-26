@@ -252,11 +252,15 @@ const forwardedProps = computed(() => {
 })
 
 /**
- * 已注册组件的完整 Props = forwardedProps + SparkNode 结构字段。
+ * 已注册组件的完整 Props = forwardedProps + 必要的 SparkNode 结构字段。
  *
  * 对齐运行时约束：
  *   - 业务输入 → config.props
- *   - 结构输入 → type / id / dock / order / children
+ *   - 结构输入 → type / id / children
+ *
+ * `dock/order` 属于父容器布局元数据（父容器通过 getDockedChildren 在渲染前已消费），
+ * 不应透传到业务组件——否则会继续作为 fallthrough attrs 污染到根子组件。
+ *
  * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
  */
 const componentProps = computed(() => {
@@ -268,8 +272,6 @@ const componentProps = computed(() => {
   const extra: Record<string, unknown> = {}
   extra['type'] = config.type
   if (config.id !== undefined) extra['id'] = config.id
-  if (config.dock !== undefined) extra['dock'] = config.dock
-  if (config.order !== undefined) extra['order'] = config.order
   if (config.children !== undefined) extra['children'] = config.children
   return Object.keys(extra).length > 0 ? { ...base, ...extra } : base
 })

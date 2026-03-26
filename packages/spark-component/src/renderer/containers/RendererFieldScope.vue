@@ -36,6 +36,7 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
 import { nodeId, type SparkNode } from '../_pkg'
+import { FIELD_CONTEXT } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'
 import { useDataScope } from './useDataScope'
@@ -77,19 +78,15 @@ const props = withDefaults(defineProps<Props>(), {
   inline: false,
   compact: false,
 })
-const componentType = computed(() => props.type ?? 'r-field-scope')
-
-useDataScope({
-  type: componentType.value,
+const { sparkProvide } = useDataScope({
+  type: props.type,
   nodeConfig: {
-    type: componentType.value,
+    type: props.type,
     ...(props.id !== undefined ? { id: props.id } : {}),
-    ...(props.dock !== undefined ? { dock: props.dock } : {}),
-    ...(props.order !== undefined ? { order: props.order } : {}),
-    ...(props.children !== undefined ? { children: props.children } : {}),
   },
   data: computed(() => props.model),
 })
+sparkProvide(FIELD_CONTEXT, 'form')
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: () => props.configs,

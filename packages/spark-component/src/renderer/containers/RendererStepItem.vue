@@ -41,9 +41,6 @@ interface Props {
   props?: Record<string, unknown>
   children?: SparkNode['children']
   id?: string
-  dock?: string
-  order?: number
-  nodeId?: SparkNode['id'] | undefined
   title?: string
   label?: string
   description?: string
@@ -57,22 +54,15 @@ interface Props {
   mode: 'header' | 'content'
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-step',
+})
 
 const emit = defineEmits<{
   activate: [index: number]
 }>()
 
-const logicNodeId = computed(() => props.nodeId ?? props.id)
-const componentType = computed(() => props.type ?? 'r-step')
-
-useSparkComponent({
-  type: componentType.value,
-  ...(logicNodeId.value !== undefined ? { id: logicNodeId.value } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-})
+useSparkComponent(props)
 
 const {
   contentChildren: stepChildren,

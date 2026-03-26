@@ -70,7 +70,7 @@ const optionResult = useOptionField<string | number>({
 })
 
 const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext({ width: props.width }, optionResult)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
 
 function handleChange(value: string | number): void {
   emit('update:modelValue', value)

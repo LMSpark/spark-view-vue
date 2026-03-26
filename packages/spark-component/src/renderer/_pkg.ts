@@ -6,7 +6,7 @@
  */
 
 // ── Composable ──
-export { useSparkComponent } from '../useSparkComponent.js'
+export { useSparkComponent, useSparkConsume } from '../useSparkComponent.js'
 export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions } from '../useSparkComponent.js'
 
 // ── 递归渲染器 ──
@@ -29,6 +29,7 @@ export {
   PAGE_DATASET,
   DATA_SOURCE,
   CONTEXT_DATA,
+  FIELD_CONTEXT,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
 } from '../capability-keys.js'

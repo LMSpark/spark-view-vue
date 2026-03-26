@@ -90,8 +90,6 @@ const {
 } = useFormDetailContainer({
   type: props.type,
   ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
   ...(props.children !== undefined ? { children: props.children } : {}),
   dataKey: props.dataKey,
   docks: props.docks,

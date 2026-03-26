@@ -11,7 +11,7 @@ import { computed, defineComponent, h } from 'vue'
 import FieldContextRenderer from '../packages/spark-component/src/renderer/fields/FieldContextRenderer.vue'
 import { useFieldContext } from '../packages/spark-component/src/renderer/fields/useFieldContext'
 import type { IDataRow } from '@spark-view/spark-data'
-import { SPARK_REGISTRY_KEY, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { SPARK_REGISTRY_KEY, Spark, useSparkComponent, FIELD_CONTEXT } from '@spark-view/spark-component'
 
 const { registry, rootContext } = Spark.createSystem()
 
@@ -53,8 +53,10 @@ const noop = () => false
 function mountFCR(overrides: Record<string, unknown> = {}) {
   const Provider = defineComponent({
     setup() {
-      useSparkComponent({ type: 'r-table' }, { parentContext: rootContext })
+      const { sparkProvide } = useSparkComponent({ type: 'r-table' }, { parentContext: rootContext })
+      sparkProvide(FIELD_CONTEXT, 'table')
       return () => h(FieldContextRenderer, {
+        type: 'r-column-group',
         displayLabel: 'ID',
         fieldName: 'id',
         width: 80,
@@ -161,7 +163,7 @@ describe('useFieldContext attrs 集成传递', () => {
         getTableCellDisplayValue: (row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? ''),
         validationRules: computed(() => [] as never[]),
       }
-      const fieldCtx = useFieldContext({ width: props.width }, permission)
+      const fieldCtx = useFieldContext({ type: 'r-text', width: props.width }, permission)
       return () => h(FieldContextRenderer, fieldCtx.value)
     },
   })
@@ -169,7 +171,8 @@ describe('useFieldContext attrs 集成传递', () => {
   function mountFieldLike(fieldAttrs: Record<string, unknown>) {
     const Provider = defineComponent({
       setup() {
-        useSparkComponent({ type: 'r-table' }, { parentContext: rootContext })
+        const { sparkProvide } = useSparkComponent({ type: 'r-table' }, { parentContext: rootContext })
+        sparkProvide(FIELD_CONTEXT, 'table')
         return () => h(FieldLikeStub, {
           field: 'id',
           label: 'ID',

@@ -81,7 +81,7 @@ const optionResult = useOptionField<CascaderValue>({
 })
 
 const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext({ width: props.width }, optionResult)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
 
 const cascaderProps = computed(() => ({
   multiple: props.multiple,

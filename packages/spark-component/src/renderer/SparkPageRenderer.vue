@@ -249,6 +249,11 @@ function bindSparkRuleEvents(
     if (node === null || typeof node !== 'object') return node
 
     const current = node as Record<string, unknown>
+
+    // 只对 SparkNode（有 type 属性的对象）做结构归一化；
+    // 纯数据对象（如 options: [{ label, value }]）原样保留，不做 props 包装。
+    if (typeof current['type'] !== 'string') return node
+
     const cloned: Record<string, unknown> = {}
 
     for (const key of SPARK_NODE_STRUCT_KEYS) {

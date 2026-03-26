@@ -84,7 +84,7 @@ import { useResolvedFieldContext } from './useResolvedFieldContext'
 
 type TextAlign = 'left' | 'center' | 'right'
 
-interface Props {
+interface Props extends SparkNode {
   /** 显示标签 */
   displayLabel?: string | undefined
   /** 直接传入的标签（供 r-column-group 直连使用） */
@@ -105,8 +105,6 @@ interface Props {
   headerAlign?: TextAlign | undefined
   /** 合并后的子组件配置 */
   mergedChildren?: SparkNode[] | undefined
-  /** 直接传入的子节点（供 r-column-group 直连使用） */
-  children?: SparkNode[] | undefined
   /** 当前字段是否隐藏 */
   isCurrentFieldHidden?: boolean | undefined
   /** 当前显示值 */
@@ -242,8 +240,7 @@ defineSlots<{
 }
 
 .field-table-value {
-  display: inline-block;
-  width: 100%;
+  display: inline;
 }
 
 .field-table-value--left {

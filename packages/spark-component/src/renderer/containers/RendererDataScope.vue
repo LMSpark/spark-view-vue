@@ -29,19 +29,13 @@ interface Props extends SparkNode {
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-data-scope',
 })
-const componentType = computed(() => props.type ?? 'r-data-scope')
-
 const renderChildren = computed<SparkNode[]>(() => getSparkNodeChildren(props.children))
 
 useDataScope({
-  type: componentType.value,
+  type: props.type,
   nodeConfig: {
-    type: componentType.value,
+    type: props.type,
     ...(props.id !== undefined ? { id: props.id } : {}),
-    ...(props.dock !== undefined ? { dock: props.dock } : {}),
-    ...(props.order !== undefined ? { order: props.order } : {}),
-    ...(props.children !== undefined ? { children: props.children } : {}),
-    ...(props.props !== undefined ? { props: props.props } : {}),
   },
   data: computed(() => props.data),
 })

@@ -62,7 +62,7 @@ import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
-import { CONTEXT_DATA } from '../_pkg'
+import { CONTEXT_DATA, FIELD_CONTEXT } from '../_pkg'
 import type { RendererTreeApi } from '../_pkg'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
 import { useContainerToolbar } from './useContainerToolbar'
@@ -95,10 +95,6 @@ interface Props {
   props?: Record<string, unknown>
   /** 节点唯一标识 */
   id?: string
-  /** 停靠区域 */
-  dock?: string
-  /** 排序权重 */
-  order?: number
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
   /** 子节点（树节点内容配置） */
@@ -120,7 +116,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-tree',
 })
-const componentType = computed(() => props.type ?? 'r-tree')
 /** dataKey 直接来自 Props */
 const effectiveDataKey = computed(() => props.dataKey)
 
@@ -140,13 +135,7 @@ const nodeContentChildren = computed<SparkNode[]>(() => {
 const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 
 // 接入 SPARK 能力链
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent({
-  type: componentType.value,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-})
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
@@ -199,6 +188,7 @@ const {
 })
 
 sparkProvide(CONTEXT_DATA, {} as Record<string, unknown>)
+sparkProvide(FIELD_CONTEXT, 'tree')
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────
 

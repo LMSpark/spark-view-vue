@@ -43,6 +43,7 @@ import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
 import { nodeId, type SparkNode } from '../_pkg'
+import { FIELD_CONTEXT } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from './useContainerGrid'
 import { useDataScope } from './useDataScope'
@@ -78,19 +79,15 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
-const componentType = computed(() => props.type ?? 'r-list-item')
-
-useDataScope({
-  type: componentType.value,
+const { sparkProvide } = useDataScope({
+  type: props.type,
   nodeConfig: {
-    type: componentType.value,
+    type: props.type,
     ...(props.id !== undefined ? { id: props.id } : {}),
-    ...(props.dock !== undefined ? { dock: props.dock } : {}),
-    ...(props.order !== undefined ? { order: props.order } : {}),
-    ...(props.children !== undefined ? { children: props.children } : {}),
   },
   data: computed(() => props.row as Record<string, unknown>),
 })
+sparkProvide(FIELD_CONTEXT, 'list')
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: () => props.children,

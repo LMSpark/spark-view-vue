@@ -160,14 +160,7 @@ const props = withDefaults(defineProps<Props>(), {
   gridAutoRows: 'minmax(32px, auto)',
 })
 const slots = useSlots()
-const componentType = computed(() => props.type ?? 'r-section')
-const { registerApi } = useSparkComponent({
-  type: componentType.value,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-})
+const { registerApi } = useSparkComponent(props)
 
 assertNoLegacySectionStructures()
 

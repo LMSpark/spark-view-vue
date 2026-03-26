@@ -86,7 +86,7 @@ import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import { getDockedChildren, nodeId, type SparkNode } from '../_pkg'
 import type { ContainerDocks } from '../../types'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, FIELD_CONTEXT } from '../_pkg'
 import type { RendererListApi } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
@@ -171,13 +171,7 @@ const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'
 const dockedItemActions = computed(() => getDockedChildren(props.children, 'actions'))
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent({
-  type: props.type,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
-})
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
@@ -192,6 +186,8 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererList',
 })
+
+sparkProvide(FIELD_CONTEXT, 'list')
 
 const listRows = computed<IDataRow[]>(() => resolvedView.value?.rows ?? [])
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))

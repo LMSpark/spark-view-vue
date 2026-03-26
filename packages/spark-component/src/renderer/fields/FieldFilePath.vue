@@ -94,7 +94,7 @@ const {
   syncValue,
 } = permission
 
-const fieldCtx = useFieldContext({ width: props.width }, permission)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
 const { hasBrowseCapability, hasUploadCapability, primaryAction, browseFiles, uploadFiles } = useFileFieldActions({
   pageService,

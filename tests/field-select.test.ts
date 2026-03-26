@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { Spark, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, FieldSelect } from '@spark-view/spark-component'
+import { Spark, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, FIELD_CONTEXT, FieldSelect } from '@spark-view/spark-component'
 
 const { registry, rootContext } = Spark.createSystem()
 
@@ -55,7 +55,9 @@ function mountFieldSelect(
     setup() {
       const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
       sparkProvide(CONTEXT_DATA, model)
+      sparkProvide(FIELD_CONTEXT, 'form')
       return () => h(FieldSelect as never, {
+        type: 'r-select',
         field: fieldName,
         ...componentProps,
       })
@@ -265,7 +267,9 @@ describe('FieldSelect 下拉组件', () => {
         setup() {
           const { sparkProvide } = useSparkComponent({ type: 'r-form' })
           sparkProvide(CONTEXT_DATA, model)
+          sparkProvide(FIELD_CONTEXT, 'form')
           return () => h(FieldSelect as never, {
+            type: 'r-select',
             field: 'department',
             options: departmentOptions,
           })

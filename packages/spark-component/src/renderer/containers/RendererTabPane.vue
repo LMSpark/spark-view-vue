@@ -40,9 +40,6 @@ interface Props {
   props?: Record<string, unknown>
   children?: SparkNode['children']
   id?: string
-  dock?: string
-  order?: number
-  nodeId?: SparkNode['id'] | undefined
   name?: string | number
   value?: string | number
   label?: string
@@ -57,18 +54,11 @@ interface Props {
   index: number
 }
 
-const props = defineProps<Props>()
-
-const logicNodeId = computed(() => props.nodeId ?? props.id)
-const componentType = computed(() => props.type ?? 'r-tab-pane')
-
-useSparkComponent({
-  type: componentType.value,
-  ...(logicNodeId.value !== undefined ? { id: logicNodeId.value } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-tab-pane',
 })
+
+useSparkComponent(props)
 
 const {
   contentChildren: paneChildren,
@@ -84,7 +74,7 @@ const {
 })
 
 const paneName = computed<string | number>(() => {
-  const value = props.name ?? props.value ?? logicNodeId.value
+  const value = props.name ?? props.value ?? props.id
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${props.index}`
 })
 

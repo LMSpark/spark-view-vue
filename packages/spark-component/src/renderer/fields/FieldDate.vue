@@ -67,7 +67,7 @@ const permission = useFieldPermission<string | Date | Array<string | Date>>({
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext({ width: props.width }, permission)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
 const handleChange = (val: string | Date | Array<string | Date>) => {
   emit('update:modelValue', val)

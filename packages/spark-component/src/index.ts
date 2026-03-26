@@ -14,8 +14,8 @@ export type {
 } from './spark.js'
 
 // ── 2. 组件开发 Composable ──
-export { useSparkComponent } from './useSparkComponent.js'
-export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions } from './useSparkComponent.js'
+export { useSparkComponent, useSparkConsume } from './useSparkComponent.js'
+export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions, SparkNodeInput } from './useSparkComponent.js'
 
 // ── 3. Vue 插件 ──
 export { createSparkPlugin } from './plugin.js'
@@ -65,6 +65,7 @@ export {
   PAGE_DATASET,
   DATA_SOURCE,
   CONTEXT_DATA,
+  FIELD_CONTEXT,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
 } from './capability-keys.js'

@@ -90,7 +90,7 @@ const permission = useFieldPermission<number | [number | undefined, number | und
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext({ width: props.width }, permission)
+const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
 const rangeStart = Array.isArray(fieldValue.value) ? fieldValue.value[0] : undefined
 const rangeEnd = Array.isArray(fieldValue.value) ? fieldValue.value[1] : undefined

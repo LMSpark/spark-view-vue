@@ -38,9 +38,6 @@ interface Props {
   props?: Record<string, unknown>
   children?: SparkNode['children']
   id?: string
-  dock?: string
-  order?: number
-  nodeId?: SparkNode['id'] | undefined
   name?: string | number
   title?: string
   label?: string
@@ -52,18 +49,11 @@ interface Props {
   index: number
 }
 
-const props = defineProps<Props>()
-
-const logicNodeId = computed(() => props.nodeId ?? props.id)
-const componentType = computed(() => props.type ?? 'r-collapse-item')
-
-useSparkComponent({
-  type: componentType.value,
-  ...(logicNodeId.value !== undefined ? { id: logicNodeId.value } : {}),
-  ...(props.dock !== undefined ? { dock: props.dock } : {}),
-  ...(props.order !== undefined ? { order: props.order } : {}),
-  ...(props.children !== undefined ? { children: props.children } : {}),
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-collapse-item',
 })
+
+useSparkComponent(props)
 
 const {
   contentChildren: itemChildren,
@@ -79,7 +69,7 @@ const {
 })
 
 const itemName = computed<string | number>(() => {
-  const value = props.name ?? logicNodeId.value
+  const value = props.name ?? props.id
   return typeof value === 'string' || typeof value === 'number' ? value : `collapse-${props.index}`
 })
 

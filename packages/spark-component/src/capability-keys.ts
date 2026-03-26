@@ -309,6 +309,8 @@ declare module '@spark-view/spark-utils' {
     'app:page-component-registry': PageComponentRegistry
     /** 模块上下文能力（页面级） */
     'app:module-context': ModuleContextCapability
+    /** 字段渲染上下文（容器组件 sparkProvide，字段组件 sparkConsume） */
+    'spark:capability:field-context': FieldContext
     /** 页面 CSS 作用域注入能力（由 SparkPageRenderer sparkProvide，四文件 style.css 收口） */
     'spark:capability:css-scope': PageCssScopeCapability
   }
@@ -329,6 +331,14 @@ export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-da
  * 子组件通过 sparkConsume 获取行数据、选中状态等。
  */
 export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
+
+/**
+ * 字段渲染上下文能力键
+ *
+ * 由容器组件（r-table / r-form / r-detail / r-tree / r-list）sparkProvide，
+ * 字段组件（r-text / r-number …）通过 sparkConsume 获取当前渲染语义。
+ */
+export const FIELD_CONTEXT = defineCapability<FieldContext>('spark:capability:field-context')
 
 /**
  * 字段数据上下文能力键
