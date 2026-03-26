@@ -121,6 +121,8 @@ export interface RendererTreeApi {
   getCurrentNode(): IDataRow | null
   /** 按 key 设置当前选中节点 */
   setCurrentKey(key: string | number): void
+  /** 展开到指定节点并同步当前选中 */
+  expandToNode(key: string | number): Promise<void>
   /** 按关键词过滤节点 */
   filter(keyword: string): void
   /** 获取已勾选节点的 key 列表（show-checkbox 模式） */

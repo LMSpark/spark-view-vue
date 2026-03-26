@@ -29,14 +29,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 导航配置持久化服务（NAVIGATION_NODE_FLAT）— 按 (tenantId, projectId) 隔离。
+ * 项目导航树持久化服务（NAVIGATION_NODE_FLAT）— 按 (tenantId, projectId) 隔离。
  */
 @Service
-public class NavigationService {
+public class ProjectNavigationTreeService {
 
     private record FlatNode(String nodeId, String parentId, Integer sortOrder, Map<String, Object> node) {}
 
-    private static final Logger log = LoggerFactory.getLogger(NavigationService.class);
+    private static final Logger log = LoggerFactory.getLogger(ProjectNavigationTreeService.class);
     private static final String DEFAULT_HOME_PATH = "/dashboard";
     private static final Pattern FRAME_ANCESTORS_PATTERN = Pattern.compile("frame-ancestors\\s+([^;]+)", Pattern.CASE_INSENSITIVE);
     private static final Set<String> VALID_NODE_KINDS = Set.of("system-directory", "module", "system-page", "system-action", "page", "link", "sub-page", "ref");
@@ -114,8 +114,8 @@ public class NavigationService {
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
 
-    public NavigationService(ObjectMapper objectMapper,
-                             JdbcTemplate jdbcTemplate) {
+    public ProjectNavigationTreeService(ObjectMapper objectMapper,
+                                        JdbcTemplate jdbcTemplate) {
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -317,7 +317,150 @@ public class NavigationService {
     // ─────────────────────────────────────────────────────────────────────────
 
     public List<Map<String, Object>> listNodes(String tenantId, String projectId) throws IOException {
-        return fetchFlatRows(tenantId, projectId);
+        Map<String, Object> root = getNavConfig(tenantId, projectId);
+        if (root == null) {
+            return List.of();
+        }
+        return flattenNodes(readChildren(root), null);
+    }
+
+    public List<Map<String, Object>> listNestedNodes(String tenantId,
+                                                     String projectId,
+                                                     String rootId,
+                                                     Integer limit,
+                                                     Integer depthLimit) throws IOException {
+        Map<String, Object> root = getNavConfig(tenantId, projectId);
+        if (root == null) {
+            return List.of();
+        }
+        List<Map<String, Object>> nodes = resolveNestedRoots(root, rootId);
+        List<Map<String, Object>> limited = limitNodes(nodes, limit);
+        Integer normalizedDepthLimit = normalizePositive(depthLimit);
+        return cloneNodesWithDepthLimit(limited, normalizedDepthLimit, 0);
+    }
+
+    public List<Map<String, Object>> listNodeChildren(String tenantId,
+                                                      String projectId,
+                                                      String parentId,
+                                                      Integer limit) throws IOException {
+        Map<String, Object> root = getNavConfig(tenantId, projectId);
+        if (root == null) {
+            return List.of();
+        }
+
+        List<Map<String, Object>> children;
+        String normalizedParentId = trimOrNull(parentId);
+        if (normalizedParentId == null) {
+            children = readChildren(root);
+        } else {
+            Map<String, Object> parent = findById(readChildren(root), normalizedParentId);
+            if (parent == null) {
+                return List.of();
+            }
+            children = readChildren(parent);
+        }
+
+        List<Map<String, Object>> limited = limitNodes(children, limit);
+        List<Map<String, Object>> result = new ArrayList<>();
+        String flatParentId = normalizedParentId == null ? "" : normalizedParentId;
+        for (Map<String, Object> child : limited) {
+            result.add(toFlatNode(child, flatParentId));
+        }
+        return result;
+    }
+
+    public Map<String, Object> getNodePath(String tenantId, String projectId, String nodeId) throws IOException {
+        Map<String, Object> root = getNavConfig(tenantId, projectId);
+        if (root == null) {
+            return Map.of("pathIds", List.of());
+        }
+        List<String> pathIds = new ArrayList<>();
+        boolean found = findPathIds(readChildren(root), nodeId, pathIds);
+        return Map.of("pathIds", found ? pathIds : List.of());
+    }
+
+    public Map<String, Map<String, Object>> getNodeSubtree(String tenantId,
+                                                           String projectId,
+                                                           String fromId,
+                                                           String toId,
+                                                           boolean includeTargetChildren) throws IOException {
+        Map<String, Object> root = getNavConfig(tenantId, projectId);
+        if (root == null) {
+            return Map.of();
+        }
+
+        List<Map<String, Object>> path = new ArrayList<>();
+        if (!findPathNodes(readChildren(root), toId, path)) {
+            return Map.of();
+        }
+
+        int startIndex = 0;
+        String normalizedFromId = trimOrNull(fromId);
+        if (normalizedFromId != null) {
+            for (int index = 0; index < path.size(); index++) {
+                if (normalizedFromId.equals(asTrimmedString(path.get(index).get("id")))) {
+                    startIndex = index + 1;
+                    break;
+                }
+            }
+        }
+
+        Map<String, Map<String, Object>> result = new LinkedHashMap<>();
+        for (int index = startIndex; index < path.size(); index++) {
+            Map<String, Object> node = path.get(index);
+            String parentNodeId = index > 0 ? asTrimmedString(path.get(index - 1).get("id")) : "";
+            result.put(asTrimmedString(node.get("id")), toFlatNode(node, parentNodeId));
+        }
+
+        if (includeTargetChildren && !path.isEmpty()) {
+            Map<String, Object> target = path.get(path.size() - 1);
+            appendDescendantFlatNodes(readChildren(target), asTrimmedString(target.get("id")), result);
+        }
+
+        return result;
+    }
+
+    public List<Map<String, Object>> searchNestedNodes(String tenantId,
+                                                       String projectId,
+                                                       String keyword,
+                                                       Integer limit) throws IOException {
+        Map<String, Object> root = getNavConfig(tenantId, projectId);
+        if (root == null) {
+            return List.of();
+        }
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        int normalizedLimit = limit != null && limit > 0 ? limit : Integer.MAX_VALUE;
+        searchNestedNodes(readChildren(root), keyword, "", new ArrayList<>(), results, normalizedLimit);
+        return results;
+    }
+
+    public List<Map<String, Object>> searchFlatNodes(String tenantId,
+                                                     String projectId,
+                                                     String keyword,
+                                                     Integer limit) throws IOException {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+        if (normalizedKeyword.isBlank()) {
+            return List.of();
+        }
+
+        List<Map<String, Object>> nodes = listNodes(tenantId, projectId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        int normalizedLimit = limit != null && limit > 0 ? limit : Integer.MAX_VALUE;
+        for (Map<String, Object> node : nodes) {
+            String title = asTrimmedString(node.get("title")).toLowerCase();
+            String path = asTrimmedString(node.get("path")).toLowerCase();
+            String nodeKind = asTrimmedString(node.get("nodeKind")).toLowerCase();
+            if (title.contains(normalizedKeyword)
+                    || path.contains(normalizedKeyword)
+                    || nodeKind.contains(normalizedKeyword)) {
+                result.add(node);
+                if (result.size() >= normalizedLimit) {
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     public List<Map<String, Object>> listRawFlatRows(String tenantId, String projectId) {
@@ -405,6 +548,15 @@ public class NavigationService {
         return list;
     }
 
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> readChildren(Map<String, Object> node) {
+        Object children = node.get("children");
+        if (children instanceof List) {
+            return (List<Map<String, Object>>) children;
+        }
+        return List.of();
+    }
+
     /** 递归查找 id 对应的节点，找不到返回 null。 */
     @SuppressWarnings("unchecked")
     private Map<String, Object> findById(List<Map<String, Object>> nodes, String id) {
@@ -457,22 +609,169 @@ public class NavigationService {
                                                     String parentId) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (Map<String, Object> node : nodes) {
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("id", node.getOrDefault("id", ""));
-            item.put("title", node.getOrDefault("title", ""));
-            item.put("icon", node.getOrDefault("icon", ""));
-            item.put("path", node.getOrDefault("path", ""));
-            item.put("nodeKind", node.getOrDefault("nodeKind", ""));
-            item.put("parentId", parentId != null ? parentId : "");
-            item.put("hasChildren", node.containsKey("children"));
+            Map<String, Object> item = toFlatNode(node, parentId);
             result.add(item);
 
-            List<Map<String, Object>> children = (List<Map<String, Object>>) node.get("children");
+            List<Map<String, Object>> children = readChildren(node);
             if (children != null) {
                 result.addAll(flattenNodes(children, String.valueOf(node.get("id"))));
             }
         }
         return result;
+    }
+
+    private Map<String, Object> toFlatNode(Map<String, Object> node, String parentId) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("id", asTrimmedString(node.get("id")));
+        item.put("title", asTrimmedString(node.get("title")));
+        item.put("icon", asTrimmedString(node.get("icon")));
+        item.put("path", asTrimmedString(node.get("path")));
+        item.put("nodeKind", asTrimmedString(node.get("nodeKind")));
+        item.put("parentId", parentId != null ? parentId : "");
+        item.put("hasChildren", !readChildren(node).isEmpty());
+
+        putIfNotBlank(item, "description", asTrimmedString(node.get("description")));
+        putIfNotBlank(item, "linkTarget", asTrimmedString(node.get("linkTarget")));
+        putIfNotBlank(item, "childPlacement", asTrimmedString(node.get("childPlacement")));
+        putIfNotBlank(item, "refId", asTrimmedString(node.get("refId")));
+
+        if (Boolean.TRUE.equals(node.get("dividerAfter"))) {
+            item.put("dividerAfter", true);
+        }
+        if (Boolean.TRUE.equals(node.get("hidden"))) {
+            item.put("hidden", true);
+        }
+        if (Boolean.TRUE.equals(node.get("disabled"))) {
+            item.put("disabled", true);
+        }
+        if (node.get("sortOrder") instanceof Number sortOrder) {
+            item.put("sortOrder", sortOrder.intValue());
+        }
+        if (node.containsKey("context") && node.get("context") != null) {
+            item.put("context", node.get("context"));
+        }
+        return item;
+    }
+
+    private List<Map<String, Object>> resolveNestedRoots(Map<String, Object> root, String rootId) {
+        String normalizedRootId = trimOrNull(rootId);
+        if (normalizedRootId == null) {
+            return readChildren(root);
+        }
+        Map<String, Object> target = findById(readChildren(root), normalizedRootId);
+        if (target == null) {
+            return List.of();
+        }
+        return List.of(target);
+    }
+
+    private List<Map<String, Object>> limitNodes(List<Map<String, Object>> nodes, Integer limit) {
+        Integer normalizedLimit = normalizePositive(limit);
+        if (normalizedLimit == null || nodes.size() <= normalizedLimit) {
+            return new ArrayList<>(nodes);
+        }
+        return new ArrayList<>(nodes.subList(0, normalizedLimit));
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> cloneNodesWithDepthLimit(List<Map<String, Object>> nodes,
+                                                               Integer depthLimit,
+                                                               int depth) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> node : nodes) {
+            Map<String, Object> copy = new LinkedHashMap<>(node);
+            List<Map<String, Object>> children = readChildren(node);
+            if (!children.isEmpty()) {
+                if (depthLimit != null && depth >= depthLimit) {
+                    copy.remove("children");
+                } else {
+                    copy.put("children", cloneNodesWithDepthLimit(children, depthLimit, depth + 1));
+                }
+            }
+            result.add(copy);
+        }
+        return result;
+    }
+
+    private Integer normalizePositive(Integer value) {
+        if (value == null || value <= 0) {
+            return null;
+        }
+        return value;
+    }
+
+    private boolean findPathIds(List<Map<String, Object>> nodes, String targetId, List<String> pathIds) {
+        for (Map<String, Object> node : nodes) {
+            String nodeId = asTrimmedString(node.get("id"));
+            pathIds.add(nodeId);
+            if (targetId.equals(nodeId)) {
+                return true;
+            }
+            if (findPathIds(readChildren(node), targetId, pathIds)) {
+                return true;
+            }
+            pathIds.remove(pathIds.size() - 1);
+        }
+        return false;
+    }
+
+    private boolean findPathNodes(List<Map<String, Object>> nodes, String targetId, List<Map<String, Object>> path) {
+        for (Map<String, Object> node : nodes) {
+            path.add(node);
+            if (targetId.equals(asTrimmedString(node.get("id")))) {
+                return true;
+            }
+            if (findPathNodes(readChildren(node), targetId, path)) {
+                return true;
+            }
+            path.remove(path.size() - 1);
+        }
+        return false;
+    }
+
+    private void appendDescendantFlatNodes(List<Map<String, Object>> nodes,
+                                           String parentId,
+                                           Map<String, Map<String, Object>> result) {
+        for (Map<String, Object> node : nodes) {
+            String nodeId = asTrimmedString(node.get("id"));
+            result.put(nodeId, toFlatNode(node, parentId));
+            appendDescendantFlatNodes(readChildren(node), nodeId, result);
+        }
+    }
+
+    private void searchNestedNodes(List<Map<String, Object>> nodes,
+                                   String keyword,
+                                   String parentId,
+                                   List<Map<String, Object>> path,
+                                   List<Map<String, Object>> results,
+                                   int limit) {
+        if (results.size() >= limit) {
+            return;
+        }
+        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+        for (Map<String, Object> node : nodes) {
+            String nodeId = asTrimmedString(node.get("id"));
+            Map<String, Object> flatNode = toFlatNode(node, parentId);
+            path.add(flatNode);
+
+            String title = asTrimmedString(node.get("title")).toLowerCase();
+            if (!normalizedKeyword.isBlank() && title.contains(normalizedKeyword)) {
+                Map<String, Object> hit = new LinkedHashMap<>();
+                hit.put("node", flatNode);
+                hit.put("path", new ArrayList<>(path));
+                results.add(hit);
+                if (results.size() >= limit) {
+                    path.remove(path.size() - 1);
+                    return;
+                }
+            }
+
+            searchNestedNodes(readChildren(node), keyword, nodeId, path, results, limit);
+            path.remove(path.size() - 1);
+            if (results.size() >= limit) {
+                return;
+            }
+        }
     }
 
     private void persistTree(String tenantId, String projectId,
@@ -826,6 +1125,9 @@ public class NavigationService {
             putIfNotBlank(node, "childPlacement", asTrimmedString(row.get("CHILD_PLACEMENT")));
             putIfNotBlank(node, "linkTarget", asTrimmedString(row.get("LINK_TARGET")));
             putIfNotBlank(node, "refId", asTrimmedString(row.get("REF_ID")));
+            if (sortOrder != null) {
+                node.put("sortOrder", sortOrder);
+            }
 
             String contextJson = asTrimmedString(row.get("CONTEXT"));
             if (!contextJson.isBlank()) {
@@ -884,6 +1186,9 @@ public class NavigationService {
     private Map<String, Object> buildNodeTree(FlatNode current,
                                                Map<String, List<FlatNode>> childrenByParent) {
         Map<String, Object> node = new LinkedHashMap<>(current.node());
+        if (current.parentId() != null) {
+            node.put("parentId", current.parentId());
+        }
         List<FlatNode> children = childrenByParent.getOrDefault(current.nodeId(), List.of());
         if (!children.isEmpty()) {
             List<Map<String, Object>> childNodes = new ArrayList<>();

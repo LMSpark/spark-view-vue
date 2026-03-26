@@ -80,8 +80,17 @@ export class TreeManager {
     const http = this._getHttp()
     const method = endpoint.method ?? 'GET'
     const config = endpoint.headers ? { headers: endpoint.headers } : {}
-    if (method === 'GET') return http.get<T>(url, rest, config)
-    return http.post<T>(url, rest, config)
+    switch (method) {
+      case 'GET':
+        return http.get<T>(url, rest, config)
+      case 'POST':
+      case 'PATCH':
+        return http.post<T>(url, rest, config)
+      case 'PUT':
+        return http.put<T>(url, rest, config)
+      case 'DELETE':
+        return http.delete<T>(url, rest, config)
+    }
   }
 
   // ===== 配置和缓存访问 =====
@@ -180,7 +189,10 @@ export class TreeManager {
   async fetchChildren(parentId: string | number | null, limit?: number): Promise<FlatTreeNode[]> {
     const endpoint = this.api?.children
     if (!endpoint) throw new Error('[TreeManager] api.children 未配置')
-    const params: Record<string, unknown> = { parentId: parentId ?? '' }
+    const params: Record<string, unknown> = {
+      parentId: parentId ?? '',
+      treeMode: this.config.treeMode ?? 'flat'
+    }
     const effectiveLimit = limit ?? endpoint.limit
     if (effectiveLimit !== undefined) params['limit'] = effectiveLimit
     const nodes = await this._callEndpoint<FlatTreeNode[]>(endpoint, params)
@@ -194,7 +206,10 @@ export class TreeManager {
   async fetchPath(id: string | number): Promise<TreePath> {
     const endpoint = this.api?.path
     if (!endpoint) throw new Error('[TreeManager] api.path 未配置')
-    const result = await this._callEndpoint<{ pathIds: Array<string | number> }>(endpoint, { id })
+    const result = await this._callEndpoint<{ pathIds: Array<string | number> }>(endpoint, {
+      id,
+      treeMode: this.config.treeMode ?? 'flat'
+    })
     return { pathIds: result.pathIds }
   }
 
@@ -224,11 +239,48 @@ export class TreeManager {
     this.logger.info(`差量补齐: 从 ${fromId} 到 ${targetId}`)
     const params: Record<string, unknown> = {
       toId: targetId,
+      treeMode: this.config.treeMode ?? 'flat',
       includeTargetChildren: subtreeEndpoint.includeTargetChildren ?? true,
     }
     if (fromId !== null) params['fromId'] = fromId
     const result = await this._callEndpoint<Record<string, FlatTreeNode>>(subtreeEndpoint, params)
     this.addNodesToCache(Object.values(result))
+  }
+
+  async moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<FlatTreeNode> {
+    const existing = this.cache[nodeId]
+    if (!existing) throw new Error(`[TreeManager] 节点不存在: ${String(nodeId)}`)
+
+    if (newParentId !== null) {
+      const pathIds = this.getNodePath(newParentId).pathIds
+      if (pathIds.includes(nodeId)) {
+        throw new Error('[TreeManager] 不能将节点移动到其自身的子孙节点下')
+      }
+    }
+
+    const endpoint = this.api?.move
+    if (endpoint) {
+      const payload: Record<string, unknown> = { id: nodeId, newParentId }
+      if (index !== undefined) payload['index'] = index
+      const response = await this._callEndpoint<{ node?: FlatTreeNode } | FlatTreeNode>(endpoint, payload)
+      const moved = (response as { node?: FlatTreeNode }).node ?? (response as FlatTreeNode)
+      const normalized: FlatTreeNode = {
+        ...existing,
+        ...moved,
+        id: moved.id,
+        parentId: moved.parentId ?? newParentId,
+        name: typeof moved.name === 'string' ? moved.name : existing.name,
+      }
+      this.addNodesToCache([normalized])
+      return normalized
+    }
+
+    const moved: FlatTreeNode = {
+      ...existing,
+      parentId: newParentId ?? null,
+    }
+    this.addNodesToCache([moved])
+    return moved
   }
 
   /**
@@ -237,10 +289,30 @@ export class TreeManager {
   async fetchNestedSearch(keyword: string, limit?: number): Promise<NestedTreeSearchResult[]> {
     const endpoint = this.api?.nestedSearch
     if (!endpoint) throw new Error('[TreeManager] api.nestedSearch 未配置')
-    const params: Record<string, unknown> = { keyword }
+    const params: Record<string, unknown> = {
+      keyword,
+      treeMode: this.config.treeMode ?? 'flat'
+    }
     const effectiveLimit = limit ?? endpoint.limit
     if (effectiveLimit !== undefined) params['limit'] = effectiveLimit
     return this._callEndpoint<NestedTreeSearchResult[]>(endpoint, params)
+  }
+
+  /**
+   * 拉取完整嵌套树（对应 /tree/nested）
+   */
+  async fetchNested(rootId?: string | number | null, limit?: number, depthLimit?: number, treeMode?: 'flat' | 'nested'): Promise<NestedTreeNode[]> {
+    const endpoint = this.api?.nested
+    if (!endpoint) throw new Error('[TreeManager] api.nested 未配置')
+    const params: Record<string, unknown> = {
+      treeMode: treeMode ?? this.config.treeMode ?? 'flat'
+    }
+    if (rootId !== undefined && rootId !== null) params['rootId'] = rootId
+    const effectiveLimit = limit ?? endpoint.limit
+    if (effectiveLimit !== undefined) params['limit'] = effectiveLimit
+    const effectiveDepthLimit = depthLimit ?? endpoint.depthLimit ?? this.config.depthLimit
+    if (effectiveDepthLimit !== undefined) params['depthLimit'] = effectiveDepthLimit
+    return this._callEndpoint<NestedTreeNode[]>(endpoint, params)
   }
 
   // ===== 搜索功能 =====

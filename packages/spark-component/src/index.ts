@@ -172,6 +172,7 @@ export {
   FieldTransfer,
   FieldContextRenderer,
   FieldColumnGroup,
+  FieldTreeNodeSummary,
   // 注册
   registerAllRenderers,
   // Composable

@@ -17,6 +17,7 @@ export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermiss
 
   switch (permAction) {
     case 'create':
+    case 'create-child':
       return permissionChecker.canCreate(modelPerm)
     case 'import':
       return permissionChecker.canImport(modelPerm)
@@ -33,6 +34,8 @@ export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined)
   if (permAction === undefined) return true
 
   switch (permAction) {
+    case 'create-child':
+      return permissionChecker.canCreateChild(row)
     case 'delete':
       return permissionChecker.canDelete(row)
     case 'edit':

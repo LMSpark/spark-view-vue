@@ -31,13 +31,13 @@ public class ProjectService {
     public static final String APP_PROJECT_TYPE = "app";
 
     private final ProjectRepository projectRepo;
-    private final NavigationService navigationService;
+    private final ProjectNavigationTreeService navigationTreeService;
     private final ObjectMapper objectMapper;
     private Map<String, Object> appNavigationTemplate = Map.of();
 
-    public ProjectService(ProjectRepository projectRepo, NavigationService navigationService, ObjectMapper objectMapper) {
+    public ProjectService(ProjectRepository projectRepo, ProjectNavigationTreeService navigationTreeService, ObjectMapper objectMapper) {
         this.projectRepo = projectRepo;
-        this.navigationService = navigationService;
+        this.navigationTreeService = navigationTreeService;
         this.objectMapper = objectMapper;
     }
 
@@ -173,7 +173,7 @@ public class ProjectService {
         try {
             Map<String, Object> navRoot = objectMapper.convertValue(appNavigationTemplate,
                     new TypeReference<Map<String, Object>>() {});
-            navigationService.saveNavConfig(tenantId, projectId, navRoot);
+            navigationTreeService.saveNavConfig(tenantId, projectId, navRoot);
             log.info("[Project] 已初始化应用导航: tenant={}, project={}", tenantId, projectId);
         } catch (Exception e) {
             log.warn("[Project] 应用导航模板初始化失败（不影响项目创建）: tenant={}, project={}", tenantId, projectId, e);

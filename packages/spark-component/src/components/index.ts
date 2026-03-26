@@ -79,6 +79,7 @@ export { default as FieldTreeSelect } from './fields/data-components/FieldTreeSe
 export { default as FieldTransfer } from './fields/data-components/FieldTransfer.vue'
 export { default as FieldContextRenderer } from './fields/non-data-components/FieldContextRenderer.vue'
 export { default as FieldColumnGroup } from './fields/non-data-components/FieldContextRenderer.vue'
+export { default as FieldTreeNodeSummary } from './fields/non-data-components/TreeNodeSummary.vue'
 
 export { registerAllRenderers } from './register-renderers.js'
 export { useFieldPermission } from './fields/composables.js'

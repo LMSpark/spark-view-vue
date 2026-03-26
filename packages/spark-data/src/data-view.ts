@@ -11,7 +11,7 @@ import type {
   QueryParams, DataColumn, DataRelation,
   CrudResult, CrudOperationConfig,
   IDataSource,
-  FlatTreeNode, TreePath, NestedTreeSearchResult,
+  FlatTreeNode, TreePath, NestedTreeSearchResult, NestedTreeNode,
   TreeConfig, AggregateColumnConfig,
 } from './types'
 import { RequestState } from './types'
@@ -152,26 +152,25 @@ export class DataView implements IDataSource {
   /** 是否为多选模式（selectionDelimiter 非空时为多选） */
   get isMultiSelect(): boolean { return this.selectionDelimiter !== '' }
 
-  /** 当前行（getter：从 rows 中按主键查找，带缓存；rows 刷新后自动指向新对象） */
+  /** 当前行（getter：按主键从整棵 rows 树查找，带缓存；rows 刷新后自动指向新对象） */
   get currentRow(): IDataRow | null {
     if (this._currentRowId === null) return null
     const c = this._crCache
     if (c.id === this._currentRowId && c.ver === this._rowsVersion) return c.row
-    const row = this.rows.find(r => this.getPkKey(r) === this._currentRowId) ?? null
+    const row = this.getRowById(this._currentRowId)
     this._crCache = { id: this._currentRowId, ver: this._rowsVersion, row }
     return row
   }
 
-  /** 多选行数组（getter：从 rows 中按主键集合过滤，带缓存；rows 刷新后自动指向新对象） */
+  /** 多选行数组（getter：按主键从整棵 rows 树查找，带缓存；rows 刷新后自动指向新对象） */
   get selectedRows(): IDataRow[] {
     if (this._selectedRowIds.length === 0) return []
     const c = this._srCache
     if (c.selVer === this._selectionIdsVersion && c.rowsVer === this._rowsVersion) return c.rows
-    const idSet = new Set(this._selectedRowIds)
-    const rows = this.rows.filter(r => {
-      const pk = this.getPkKey(r)
-      return pk !== undefined && idSet.has(pk)
-    })
+    const rowById = this.getRowByIdMap()
+    const rows = this._selectedRowIds
+      .map(id => rowById.get(id) ?? null)
+      .filter((row): row is IDataRow => row !== null)
     this._srCache = { selVer: this._selectionIdsVersion, rowsVer: this._rowsVersion, rows }
     return rows
   }
@@ -406,6 +405,8 @@ export class DataView implements IDataSource {
   private _crCache: { id: string | number | null; ver: number; row: IDataRow | null } = { id: null, ver: -1, row: null }
   /** selectedRows getter 缓存 */
   private _srCache: { selVer: number; rowsVer: number; rows: IDataRow[] } = { selVer: -1, rowsVer: -1, rows: [] }
+  /** 整棵 rows 树的 ID → row 缓存（含 nested children） */
+  private _rowByIdCache: { ver: number; rows: Map<string | number, IDataRow> } = { ver: -1, rows: new Map() }
 
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
@@ -419,6 +420,87 @@ export class DataView implements IDataSource {
   rowIndexMap?: Map<IDataRow, number> | undefined
   /** rowsChanged 事件防抖定时器 */
   private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
+
+  /** 深度遍历整棵 rows 树（含 nested children） */
+  private visitRowsDeep(visitor: (row: IDataRow) => void): void {
+    const stack = [...this.rows]
+    while (stack.length > 0) {
+      const row = stack.shift()
+      if (!row) continue
+      visitor(row)
+      const children = (row as Record<string, unknown>)['children']
+      if (Array.isArray(children) && children.length > 0) {
+        stack.unshift(...children.filter((child): child is IDataRow => typeof child === 'object' && child !== null))
+      }
+    }
+  }
+
+  /** 获取整棵 rows 树的 ID → row 映射（rowsVersion 缓存） */
+  private getRowByIdMap(): Map<string | number, IDataRow> {
+    if (this._rowByIdCache.ver === this._rowsVersion) return this._rowByIdCache.rows
+    const rows = new Map<string | number, IDataRow>()
+    this.visitRowsDeep(row => {
+      const pk = this.getPkKey(row)
+      if (pk !== undefined) rows.set(pk, row)
+    })
+    this._rowByIdCache = { ver: this._rowsVersion, rows }
+    return rows
+  }
+
+  /** 按 ID 从整棵 rows 树查找节点 */
+  private getRowById(id: string | number): IDataRow | null {
+    return this.getRowByIdMap().get(id) ?? null
+  }
+
+  private collectTreeSeedRowsFromRows(): FlatTreeNode[] {
+    if (!this.treeConfig) return []
+
+    const idField = this.treeConfig.idField ?? 'id'
+    const parentIdField = this.treeConfig.parentIdField ?? 'parentId'
+    const textField = this.treeConfig.textField ?? 'name'
+    const result: FlatTreeNode[] = []
+
+    this.visitRowsDeep(row => {
+      const rawId = row[idField]
+      if (typeof rawId !== 'string' && typeof rawId !== 'number') return
+      const rawParentId = row[parentIdField]
+      const textValue = row[textField]
+      result.push({
+        ...row,
+        id: rawId,
+        parentId: typeof rawParentId === 'string' || typeof rawParentId === 'number'
+          ? rawParentId
+          : rawParentId === null || rawParentId === undefined
+            ? null
+            : String(rawParentId),
+        name: typeof textValue === 'string'
+          ? textValue
+          : typeof row['name'] === 'string'
+            ? row['name']
+            : typeof row['label'] === 'string'
+              ? row['label']
+              : String(rawId),
+      })
+    })
+
+    return result
+  }
+
+  private syncTreeManagerFromRows(): void {
+    if (!this.treeConfig || !this.treeManager) {
+      if (!this.treeConfig) return
+      if (this.rows.length === 0) return
+    }
+    const treeManager = this._ensureTreeManager()
+    treeManager.clear()
+    if (this.rows.length === 0) return
+    treeManager.addNodesToCache(this.collectTreeSeedRowsFromRows())
+  }
+
+  private syncRowsFromTreeManager(): void {
+    if (!this.treeManager) return
+    this.replaceRows(this.treeManager.getAllNodes() as IDataRow[])
+  }
 
   // ─────────────────────────────────────────────
   // 委托实例
@@ -690,7 +772,8 @@ export class DataView implements IDataSource {
     const requestId = ++this.currentLoadRequestId
 
     try {
-      const result = await this.crudDelegate.list(params)
+      const loadParams = this.buildTreeModeParams(params)
+      const result = await this.crudDelegate.list(loadParams)
       
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadFromServer 请求 ${requestId} 被更新的请求 ${this.currentLoadRequestId} 替代，忽略响应`)
@@ -714,6 +797,50 @@ export class DataView implements IDataSource {
         return { success: false, message: 'Request superseded' }
       }
       
+      this.loadingError = toError(error)
+      this.requestState = RequestState.Failed
+      this.events.emit('requestStateChanged', this.requestState)
+      throw error
+    }
+  }
+
+  private buildTreeModeParams(params?: QueryParams, treeMode?: 'flat' | 'nested'): QueryParams {
+    return {
+      ...(params ?? {}),
+      treeMode: treeMode ?? this.treeMode,
+    }
+  }
+
+  async loadTreeNested(rootId?: string | number | null, limit?: number, depthLimit?: number): Promise<CrudResult<NestedTreeNode[]>> {
+    this.checkDestroyed()
+    if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
+
+    this.requestState = RequestState.Loading
+    this.loadingError = null
+
+    const requestId = ++this.currentLoadRequestId
+
+    try {
+      const treeManager: TreeManager = this._ensureTreeManager()
+      const rows = await treeManager.fetchNested(rootId, limit, depthLimit, 'nested')
+
+      if (requestId !== this.currentLoadRequestId) {
+        this.logger.debug(`loadTreeNested 请求 ${requestId} 被更新的请求 ${this.currentLoadRequestId} 替代，忽略响应`)
+        return { success: false, message: 'Request superseded' }
+      }
+
+      this.updateFromServer(rows as IDataRow[])
+      this.selectionDelegate.applyAutoFirst()
+      this.requestState = RequestState.Loaded
+      this.events.emit('requestStateChanged', this.requestState)
+      this.emitRowsChanged()
+      return { success: true, data: rows }
+    } catch (error) {
+      if (requestId !== this.currentLoadRequestId) {
+        this.logger.debug(`loadTreeNested 请求 ${requestId} 异常被忽略（已被新请求替代）`)
+        return { success: false, message: 'Request superseded' }
+      }
+
       this.loadingError = toError(error)
       this.requestState = RequestState.Failed
       this.events.emit('requestStateChanged', this.requestState)
@@ -757,19 +884,34 @@ export class DataView implements IDataSource {
   /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定 */
   updateFromServer(data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[]): void {
     this.localMutationDelegate.updateFromServer(data)
+    this.syncTreeManagerFromRows()
   }
 
   /** 本地追加一行，触发计算列求值 + 聚合重算 + rowsChanged */
-  appendRow(row: IDataRow): void { this.localMutationDelegate.appendRow(row) }
+  appendRow(row: IDataRow): void {
+    this.localMutationDelegate.appendRow(row)
+    this.syncTreeManagerFromRows()
+  }
 
   /** 本地按主键部分更新一行；返回是否成功（行不存在时 false） */
-  updateRowById(id: string | number, data: Partial<IDataRow>): boolean { return this.localMutationDelegate.updateRowById(id, data) }
+  updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
+    const updated = this.localMutationDelegate.updateRowById(id, data)
+    if (updated) this.syncTreeManagerFromRows()
+    return updated
+  }
 
   /** 本地按主键删除一行，清理选中引用；返回是否成功（行不存在时 false） */
-  deleteRowById(id: string | number): boolean { return this.localMutationDelegate.deleteRowById(id) }
+  deleteRowById(id: string | number): boolean {
+    const deleted = this.localMutationDelegate.deleteRowById(id)
+    if (deleted) this.syncTreeManagerFromRows()
+    return deleted
+  }
 
   /** 本地整批替换所有行，清理无效选中引用 */
-  replaceRows(rows: IDataRow[]): void { this.localMutationDelegate.replaceRows(rows) }
+  replaceRows(rows: IDataRow[]): void {
+    this.localMutationDelegate.replaceRows(rows)
+    this.syncTreeManagerFromRows()
+  }
 
   // ─────────────────────────────────────────────
   // 手工编辑（带脏追踪）
@@ -911,7 +1053,10 @@ export class DataView implements IDataSource {
 
   /** 拉取直接子节点并写入缓存（对应 /tree/children） */
   loadTreeChildren(parentId: string | number | null, limit?: number): Promise<FlatTreeNode[]> {
-    return this._ensureTreeManager().fetchChildren(parentId, limit)
+    return this._ensureTreeManager().fetchChildren(parentId, limit).then(rows => {
+      this.syncRowsFromTreeManager()
+      return rows
+    })
   }
 
   /** 获取节点祖先链 ID（对应 /tree/path） */
@@ -921,7 +1066,16 @@ export class DataView implements IDataSource {
 
   /** 展开到目标节点，差量补齐缓存（对应 /tree/path + /tree/subtree） */
   expandTreeToNode(targetId: string | number): Promise<void> {
-    return this._ensureTreeManager().expandToNode(targetId)
+    return this._ensureTreeManager().expandToNode(targetId).then(() => {
+      this.syncRowsFromTreeManager()
+    })
+  }
+
+  moveTreeNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<IDataRow | null> {
+    return this._ensureTreeManager().moveNode(nodeId, newParentId, index).then(() => {
+      this.syncRowsFromTreeManager()
+      return this.getRowById(nodeId)
+    })
   }
 
   /** 嵌套模式远端搜索（对应 /tree/nested/search） */

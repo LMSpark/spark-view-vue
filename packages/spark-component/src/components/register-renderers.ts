@@ -49,6 +49,7 @@ import FieldCascader from './fields/data-components/FieldCascader.vue'
 import FieldTreeSelect from './fields/data-components/FieldTreeSelect.vue'
 import FieldTransfer from './fields/data-components/FieldTransfer.vue'
 import FieldContextRenderer from './fields/non-data-components/FieldContextRenderer.vue'
+import TreeNodeSummary from './fields/non-data-components/TreeNodeSummary.vue'
 
 export function registerAllRenderers(): void {
   // ── 容器组件：同步注册（与公共静态导出保持一致） ──
@@ -95,4 +96,5 @@ export function registerAllRenderers(): void {
   Spark.register('r-tree-select', FieldTreeSelect)
   Spark.register('r-transfer', FieldTransfer)
   Spark.register('r-column-group', FieldContextRenderer)
+  Spark.register('r-tree-node-summary', TreeNodeSummary)
 }

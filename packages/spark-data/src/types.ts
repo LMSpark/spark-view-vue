@@ -46,6 +46,7 @@ export interface ViewChangeHandlers {
  * 前端保存权限快照，在数据更新时回传给服务端，避免重复计算。
  */
 export interface IInstancePermission {
+  allowCreateChild?: boolean
   allowDelete?: boolean
   editableFields?: string[]
   hiddenFields?: string[]
@@ -654,6 +655,11 @@ export interface TreeApi {
     /** 是否包含目标节点的直接子节点（默认 true） */
     includeTargetChildren?: boolean
   }
+  /**
+   * /tree/move — 移动节点到新父节点下
+   * params/body: id, newParentId?, index?
+   */
+  move?: HttpEndpoint
   /**
    * /tree/search — 扁平模式搜索（返回匹配节点 + pathIds）
    * params: keyword, limit?

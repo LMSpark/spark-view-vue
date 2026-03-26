@@ -17,10 +17,13 @@ function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
           { name: 'name', type: 'string' },
         ],
         api: {
+          list: { url: NAV_BASE, method: 'GET' },
+          nested: { url: NAV_BASE, method: 'GET' },
           children: { url: NAV_BASE, method: 'GET' },
           path: { url: `${NAV_BASE}/path/{id}`, method: 'GET' },
           subtree: { url: `${NAV_BASE}/subtree`, method: 'POST' },
-          nestedSearch: { url: `${NAV_BASE}/nested-search`, method: 'GET' },
+          move: { url: `${NAV_BASE}/{id}/move`, method: 'PUT' },
+          nestedSearch: { url: `${NAV_BASE}/search`, method: 'GET' },
         },
         views: {
           default: {
@@ -41,7 +44,55 @@ function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
 }
 
 describe('DataSet Tree 4+7 interfaces', () => {
-  describe('4 remote interfaces (DataView delegates)', () => {
+  describe('5 remote interfaces (DataView delegates)', () => {
+    it('loadFromServer should call list endpoint for first-screen data and keep treeMode as query signal', async () => {
+      const get = vi.fn().mockResolvedValue([
+        {
+          id: 1,
+          parentId: null,
+          name: 'Root',
+        },
+      ])
+      const post = vi.fn()
+      const dataSet = createRemoteTreeDataSet({ get, post })
+      const view = dataSet.getView('NavigationNodes', 'default')
+      expect(view).toBeDefined()
+      view!.treeMode = 'nested'
+
+      const result = await view!.loadFromServer()
+
+      expect(result.success).toBe(true)
+      expect(get).toHaveBeenCalledOnce()
+      expect(get.mock.calls[0]?.[0]).toBe(NAV_BASE)
+      expect(get.mock.calls[0]?.[1]).toEqual({ treeMode: 'nested' })
+      expect(view!.rows[0]?.['id']).toBe(1)
+    })
+
+    it('loadTreeNested should call nested endpoint for explicit nested contract', async () => {
+      const get = vi.fn().mockResolvedValue([
+        {
+          id: 1,
+          parentId: null,
+          name: 'Root',
+          children: [
+            { id: 2, parentId: 1, name: 'Child', children: [] },
+          ],
+        },
+      ])
+      const post = vi.fn()
+      const dataSet = createRemoteTreeDataSet({ get, post })
+      const view = dataSet.getView('NavigationNodes', 'default')
+      expect(view).toBeDefined()
+
+      const result = await view!.loadTreeNested()
+
+      expect(result.success).toBe(true)
+      expect(get).toHaveBeenCalledOnce()
+      expect(get.mock.calls[0]?.[0]).toBe(NAV_BASE)
+      expect(get.mock.calls[0]?.[1]).toEqual({ treeMode: 'nested' })
+      expect(view!.rows[0]?.['children']).toBeDefined()
+    })
+
     it('loadTreeChildren should call navigation/nodes and return children', async () => {
       const get = vi.fn().mockResolvedValue([
         { id: 1, parentId: null, name: 'Root' },
@@ -57,7 +108,8 @@ describe('DataSet Tree 4+7 interfaces', () => {
       expect(rows[0]?.['name']).toBe('Root')
       expect(get).toHaveBeenCalledOnce()
       expect(get.mock.calls[0]?.[0]).toBe(NAV_BASE)
-      expect(get.mock.calls[0]?.[1]).toEqual({ parentId: '', limit: 20 })
+      expect(get.mock.calls[0]?.[1]).toEqual({ parentId: '', treeMode: 'flat', limit: 20 })
+      expect(view!.rows[0]?.['id']).toBe(1)
     })
 
     it('loadTreePath should call navigation path endpoint and return pathIds', async () => {
@@ -97,15 +149,37 @@ describe('DataSet Tree 4+7 interfaces', () => {
       expect(post.mock.calls[0]?.[1]).toEqual({
         fromId: 1,
         toId: 3,
+        treeMode: 'flat',
         includeTargetChildren: true,
       })
+      expect(view!.rows.map(row => row['id'])).toEqual([1, 2, 3])
 
       get.mockResolvedValueOnce({ pathIds: [1, 2, 3] })
       await view!.expandTreeToNode(3)
       expect(post).toHaveBeenCalledTimes(1)
     })
 
-    it('searchTreeNested should call navigation nested-search endpoint and return nested results', async () => {
+    it('moveTreeNode should call move endpoint and update local rows', async () => {
+      const get = vi.fn().mockResolvedValue([
+        { id: 1, parentId: null, name: 'Root' },
+        { id: 2, parentId: null, name: 'Leaf' },
+      ])
+      const post = vi.fn()
+      const put = vi.fn().mockResolvedValue({ node: { id: 2, parentId: 1, name: 'Leaf' } })
+      const dataSet = createRemoteTreeDataSet({ get, post, put })
+      const view = dataSet.getView('NavigationNodes', 'default')
+      expect(view).toBeDefined()
+
+      await view!.loadFromServer()
+      const moved = await view!.moveTreeNode(2, 1, -1)
+
+      expect(put).toHaveBeenCalledOnce()
+      expect(put.mock.calls[0]?.[0]).toBe(`${NAV_BASE}/2/move`)
+      expect(put.mock.calls[0]?.[1]).toEqual({ id: 2, newParentId: 1, index: -1 })
+      expect(moved?.['parentId']).toBe(1)
+    })
+
+    it('searchTreeNested should call unified navigation search endpoint and return nested results', async () => {
       const get = vi.fn().mockResolvedValue([
         {
           node: { id: 3, parentId: 2, name: 'Leaf' },
@@ -126,8 +200,8 @@ describe('DataSet Tree 4+7 interfaces', () => {
       expect(result).toHaveLength(1)
       expect(result[0]?.node['id']).toBe(3)
       expect(get).toHaveBeenCalledOnce()
-      expect(get.mock.calls[0]?.[0]).toBe(`${NAV_BASE}/nested-search`)
-      expect(get.mock.calls[0]?.[1]).toEqual({ keyword: 'leaf', limit: 10 })
+      expect(get.mock.calls[0]?.[0]).toBe(`${NAV_BASE}/search`)
+      expect(get.mock.calls[0]?.[1]).toEqual({ keyword: 'leaf', treeMode: 'flat', limit: 10 })
     })
   })
 

@@ -22,11 +22,13 @@
       <el-tree
         ref="nativeTreeRef"
         :data="treeData"
+        :node-key="nodeKeyField"
         :props="elTreeFieldProps"
         v-bind="$attrs"
         @node-click="handleNodeClick"
         @node-expand="handleNodeExpand"
         @node-collapse="handleNodeCollapse"
+        @node-drop="handleNodeDrop"
       >
         <template #default="slotProps">
           <span class="custom-tree-node">
@@ -40,8 +42,25 @@
               <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
             </slot>
             <span v-if="hasNodeActions" class="tree-node-actions">
-              <el-button v-if="effectiveAllowAppend" type="primary" size="small" link @click.stop="handleAppendNode(slotProps?.data)">添加</el-button>
-              <el-button v-if="effectiveAllowDelete" type="danger" size="small" link @click.stop="handleDeleteNode(slotProps?.data)">删除</el-button>
+              <template v-for="(action, index) in getScopedNodeActions({ row: ((slotProps?.data as IDataRow) ?? {}), index: 0 })" :key="nodeId(action) ?? `r-tree-node-action-${index}`">
+                <el-button
+                  v-if="isBuiltinAction(action)"
+                  :type="getBuiltinButtonType(action)"
+                  :size="getBuiltinButtonSize(action)"
+                  :plain="getBuiltinButtonPlain(action)"
+                  :text="getBuiltinButtonText(action)"
+                  :link="getBuiltinButtonLink(action)"
+                  :disabled="isBuiltinNodeActionDisabled(action, ((slotProps?.data as IDataRow) ?? {}), 0)"
+                  :class="getBuiltinButtonClass(action)"
+                  @click="handleBuiltinNodeAction(action, ((slotProps?.data as IDataRow) ?? {}), 0)"
+                >{{ getBuiltinActionLabel(action) }}</el-button>
+                <SparkComponentRenderer
+                  v-else
+                  :config="action"
+                />
+              </template>
+              <el-button v-if="shouldShowLegacyAppend((slotProps?.data as IDataRow) ?? {})" type="primary" size="small" link @click.stop="handleAppendNode(slotProps?.data)">添加</el-button>
+              <el-button v-if="shouldShowLegacyDelete((slotProps?.data as IDataRow) ?? {})" type="danger" size="small" link @click.stop="handleDeleteNode(slotProps?.data)">删除</el-button>
             </span>
           </span>
         </template>
@@ -56,14 +75,28 @@
  *
  * 内部通过 useSparkComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey。
  */
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../../internal'
 import { getDockedChildren, nodeId, type SparkNode } from '../../internal'
 import type { ContainerDocks } from '../../../core/types'
-import type { IDataRow, DataView } from '@spark-view/spark-data'
+import { SparkData, type IDataRow, type DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { CONTEXT_DATA, FIELD_CONTEXT } from '../../internal'
 import type { RendererTreeApi } from '../../internal'
+import { PAGE_SERVICE } from '@spark-view/spark-utils'
+import { useContainerActions } from '../actions/useContainerActions'
+import {
+  isBuiltinAction,
+  isBuiltinActionDisabled as _isBuiltinActionDisabled,
+  getBuiltinActionLabel,
+  getBuiltinButtonType,
+  getBuiltinButtonSize,
+  getBuiltinButtonPlain,
+  getBuiltinButtonText,
+  getBuiltinButtonLink,
+  getBuiltinButtonClass,
+  createBuiltinActionHandler,
+} from '../builtin-actions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../data/useContainerDataSource'
 import { useContainerToolbar } from '../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../layout/useContainerToolbar'
@@ -78,15 +111,39 @@ interface TreeNode {
   [key: string]: unknown
 }
 
+interface TreeManagerSeedNode extends Record<string, unknown> {
+  id: string | number
+  name: string
+  parentId?: string | number | null
+}
+
 interface ElTreeNode {
   level: number
   expanded: boolean
+  data?: Record<string, unknown>
+  parent?: ElTreeNode | null
   [key: string]: unknown
 }
 
 interface ElTreeComponent {
   [key: string]: unknown
 }
+
+interface TreeEventControl {
+  cancel: boolean
+}
+
+type TreeEventHandler = (
+  data: TreeNode,
+  node: ElTreeNode,
+  component: ElTreeComponent,
+  control: TreeEventControl,
+) => void | Promise<void>
+
+type TreeNodeActionHandler = (
+  data: TreeNode,
+  control: TreeEventControl,
+) => void | Promise<void>
 
 interface Props {
   /** 组件类型（运行时缺省回落为 r-tree） */
@@ -97,6 +154,14 @@ interface Props {
   id?: string
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
+  /** 节点主键字段名，默认取 treeConfig.idField */
+  nodeKey?: string
+  /** 当前选中节点 ID */
+  currentKey?: string | number | null
+  /** 初始化展开并定位到目标节点 ID */
+  expandToKey?: string | number | null
+  /** 初始化自动展开到指定层级（根节点为第 1 层） */
+  expandLevel?: number
   /** 子节点（树节点内容配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */
@@ -106,11 +171,15 @@ interface Props {
   /** 允许删除节点（自动生成删除按钮） */
   allowDelete?: boolean
   /** 节点点击回调 */
-  onNodeClick?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
+  onNodeClick?: TreeEventHandler
   /** 节点展开回调 */
-  onNodeExpand?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
+  onNodeExpand?: TreeEventHandler
   /** 节点折叠回调 */
-  onNodeCollapse?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
+  onNodeCollapse?: TreeEventHandler
+  /** 节点追加前回调 */
+  onNodeAppend?: TreeNodeActionHandler
+  /** 节点删除前回调 */
+  onNodeDelete?: TreeNodeActionHandler
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -126,17 +195,22 @@ const effectiveAllowAppend = computed(() =>
 const effectiveAllowDelete = computed(() =>
   props.allowDelete ?? false
 )
-const hasNodeActions = computed(() => effectiveAllowAppend.value || effectiveAllowDelete.value)
 
 /** 节点内容 children — 完全由父级（rule.json / 父组件）提供 */
 const nodeContentChildren = computed<SparkNode[]>(() => {
   return getDockedChildren(props.children)
 })
 const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
+const dockedNodeActions = computed(() => getDockedChildren(props.children, 'actions'))
+const hasLegacyNodeActions = computed(() =>
+  dockedNodeActions.value.length === 0 && (effectiveAllowAppend.value || effectiveAllowDelete.value)
+)
+const hasNodeActions = computed(() => dockedNodeActions.value.length > 0 || hasLegacyNodeActions.value)
 
 // 接入 SPARK 能力链
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
+const pageService = sparkConsume(PAGE_SERVICE)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
@@ -151,7 +225,50 @@ useContainerDataSourceEffects({
   logPrefix: 'RendererTree',
 })
 
-const treeData = computed(() => resolvedView.value?.rows as TreeNode[] ?? [])
+const nodeKeyField = computed(() =>
+  props.nodeKey ?? resolvedView.value?.primaryKey ?? resolvedView.value?.treeConfig?.idField ?? 'id'
+)
+
+const treeIdField = computed(() =>
+  resolvedView.value?.treeConfig?.idField ?? 'id'
+)
+
+const treeData = computed<TreeNode[]>(() => {
+  const rows = resolvedView.value?.rows as TreeNode[] ?? []
+  if (rows.length === 0) return []
+  if (rows.some(row => Array.isArray(row?.children))) return rows
+  if (!resolvedView.value?.treeConfig) return rows
+
+  const seedNodes: TreeManagerSeedNode[] = rows.flatMap(row => {
+    const rawId = row?.[treeIdField.value]
+    if (typeof rawId !== 'string' && typeof rawId !== 'number') {
+      return []
+    }
+
+    const rawParentId = row?.[resolvedView.value?.treeConfig?.parentIdField ?? 'parentId']
+    const parentId = typeof rawParentId === 'string' || typeof rawParentId === 'number'
+      ? rawParentId
+      : rawParentId == null
+        ? null
+        : String(rawParentId)
+
+    return [{
+      ...row,
+      id: rawId,
+      parentId,
+      name: getNodeLabel(row),
+    }]
+  })
+
+  const treeManager = SparkData.createTreeManager({
+    idField: treeIdField.value,
+    parentIdField: resolvedView.value?.treeConfig?.parentIdField ?? 'parentId',
+    textField: resolvedView.value?.treeConfig?.textField ?? 'label',
+    treeMode: 'nested',
+  }, seedNodes)
+
+  return treeManager.buildNestedTree() as TreeNode[]
+})
 
 /** 从 DataView.treeConfig.textField 推导 el-tree 的字段映射 */
 const labelField = computed(() =>
@@ -187,6 +304,53 @@ const {
   modelPermission,
 })
 
+const {
+  getScopedActionConfigs: getScopedNodeActions,
+} = useContainerActions<{ row: IDataRow, index: number }>({
+  actionConfigs: computed(() => [...dockedNodeActions.value]),
+  actionPosition: computed(() => 'right'),
+  actionClass: computed(() => props.docks?.actions?.class),
+  modelPermission,
+  resolveScope: ({ row, index }) => ({
+    row,
+    listenerArgs: [row, index],
+    scopedProps: {
+      row,
+      rowIndex: index,
+      $index: index,
+      data: row,
+    },
+  }),
+})
+
+const builtinHandler = createBuiltinActionHandler({
+  getView: () => resolvedView.value,
+  getPageService: () => pageService,
+  getLogger: () => logger,
+  hasRemoteListApi: (view: DataView) => Boolean(view.dataTable?.api?.list),
+})
+
+function isBuiltinNodeActionDisabled(action: SparkNode, row: IDataRow, index: number): boolean {
+  return _isBuiltinActionDisabled(action, resolvedView.value, { row, index })
+}
+
+function handleBuiltinNodeAction(action: SparkNode, row: IDataRow, index: number): void {
+  builtinHandler.handleRow(action, row, index)
+}
+
+function shouldShowLegacyAppend(row: IDataRow): boolean {
+  return hasLegacyNodeActions.value
+    && effectiveAllowAppend.value
+    && modelPermission.value?.allowCreate !== false
+    && row._perm?.allowCreateChild !== false
+}
+
+function shouldShowLegacyDelete(row: IDataRow): boolean {
+  return hasLegacyNodeActions.value
+    && effectiveAllowDelete.value
+    && row._perm?.allowDelete !== false
+}
+
 sparkProvide(CONTEXT_DATA, {} as Record<string, unknown>)
 sparkProvide(FIELD_CONTEXT, 'tree')
 
@@ -207,6 +371,54 @@ interface NativeTreeLike {
   getNode?: (key: string | number) => unknown
 }
 
+interface NativeTreeNodeLike {
+  expand?: () => void
+  data?: Record<string, unknown>
+}
+
+function getNodeKey(data: unknown): string | number | null {
+  const node = data as Record<string, unknown> | null | undefined
+  const key = node?.[nodeKeyField.value]
+  return typeof key === 'string' || typeof key === 'number' ? key : null
+}
+
+function collectExpandKeysByLevel(nodes: TreeNode[], targetLevel: number, currentLevel = 1): Array<string | number> {
+  const result: Array<string | number> = []
+  if (targetLevel <= 1) return result
+  for (const node of nodes) {
+    const key = getNodeKey(node)
+    if (key !== null && currentLevel < targetLevel) {
+      result.push(key)
+    }
+    const children = Array.isArray(node?.children) ? node.children : []
+    if (children.length > 0 && currentLevel < targetLevel) {
+      result.push(...collectExpandKeysByLevel(children, targetLevel, currentLevel + 1))
+    }
+  }
+  return result
+}
+
+async function applyExpandLevel(level: number): Promise<void> {
+  if (!Number.isFinite(level) || level < 2) return
+  await nextTick()
+  const tree = nativeTreeRef.value as NativeTreeLike | null
+  for (const key of collectExpandKeysByLevel(treeData.value, level)) {
+    const nativeNode = tree?.getNode?.(key) as NativeTreeNodeLike | undefined
+    nativeNode?.expand?.()
+  }
+}
+
+function syncCurrentByKey(key: string | number | null | undefined): void {
+  const tree = nativeTreeRef.value as NativeTreeLike | null
+  if (key == null) {
+    resolvedView.value?.setCurrentRowById(null)
+    tree?.setCurrentKey?.(null)
+    return
+  }
+  resolvedView.value?.setCurrentRowById(key)
+  tree?.setCurrentKey?.(key)
+}
+
 const treeApi: RendererTreeApi = {
   getDataSource() {
     return resolvedView.value ?? null
@@ -221,7 +433,23 @@ const treeApi: RendererTreeApi = {
     return ((nativeTreeRef.value as NativeTreeLike)?.getCurrentNode?.() as IDataRow | null) ?? null
   },
   setCurrentKey(key) {
-    (nativeTreeRef.value as NativeTreeLike)?.setCurrentKey?.(key)
+    syncCurrentByKey(key)
+  },
+  async expandToNode(key) {
+    const view = resolvedView.value
+    if (!view) return
+
+    const path = await view.loadTreePath(key)
+    await view.expandTreeToNode(key)
+    await nextTick()
+
+    const tree = nativeTreeRef.value as NativeTreeLike | null
+    for (const pathId of path.pathIds) {
+      const nativeNode = tree?.getNode?.(pathId) as NativeTreeNodeLike | undefined
+      nativeNode?.expand?.()
+    }
+
+    syncCurrentByKey(key)
   },
   filter(keyword) {
     (nativeTreeRef.value as NativeTreeLike)?.filter?.(keyword)
@@ -285,32 +513,140 @@ registerApi(treeApi)
 
 defineExpose(treeApi)
 
+watch(
+  () => resolvedView.value?.currentRow,
+  async currentRow => {
+    await nextTick()
+    const tree = nativeTreeRef.value as NativeTreeLike | null
+    if (!tree?.setCurrentKey) return
+    const key = getNodeKey(currentRow)
+    tree.setCurrentKey(key ?? null)
+  },
+  { immediate: true }
+)
+
+watch(
+  [() => treeData.value, () => props.expandLevel],
+  async ([rows, expandLevel]) => {
+    if (rows.length === 0 || expandLevel == null) return
+    await applyExpandLevel(expandLevel)
+  },
+  { immediate: true }
+)
+
+watch(
+  [() => treeData.value.length, () => props.currentKey],
+  async ([rowCount, currentKey]) => {
+    if (rowCount === 0 || currentKey === undefined) return
+    await nextTick()
+    syncCurrentByKey(currentKey)
+  },
+  { immediate: true }
+)
+
+watch(
+  [() => treeData.value.length, () => props.expandToKey],
+  async ([rowCount, expandToKey]) => {
+    if (rowCount === 0 || expandToKey == null) return
+    await treeApi.expandToNode(expandToKey)
+  },
+  { immediate: true }
+)
+
 // 事件处理器
-const handleNodeClick = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-  // 同步 currentRow 到 DataView，使 script.js 可通过 view.currentRow 访问当前节点
-  resolvedView.value?.setCurrentRow(data as IDataRow)
-  if (props.onNodeClick) props.onNodeClick(data, node, component)
+function createTreeEventControl(): TreeEventControl {
+  return { cancel: false }
 }
-const handleNodeExpand = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-  if (props.onNodeExpand) props.onNodeExpand(data, node, component)
+
+async function runTreeEvent(
+  handler: TreeEventHandler | undefined,
+  data: TreeNode,
+  node: ElTreeNode,
+  component: ElTreeComponent,
+  autoHandle?: () => void,
+): Promise<void> {
+  const control = createTreeEventControl()
+  if (handler) {
+    await handler(data, node, component, control)
+  }
+  if (!control.cancel) {
+    autoHandle?.()
+  }
 }
-const handleNodeCollapse = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-  if (props.onNodeCollapse) props.onNodeCollapse(data, node, component)
+
+async function runTreeNodeAction(
+  handler: TreeNodeActionHandler | undefined,
+  data: TreeNode,
+  autoHandle?: () => void,
+): Promise<void> {
+  const control = createTreeEventControl()
+  if (handler) {
+    await handler(data, control)
+  }
+  if (!control.cancel) {
+    autoHandle?.()
+  }
+}
+
+const handleNodeClick = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
+  await runTreeEvent(props.onNodeClick, data, node, component, () => {
+    const key = getNodeKey(data)
+    if (key === null) {
+      logger.warn('RendererTree node-click 跳过自动选中：节点缺少主键', { nodeKey: nodeKeyField.value, treeIdField: treeIdField.value })
+      return
+    }
+    resolvedView.value?.setCurrentRowById(key)
+  })
+}
+const handleNodeExpand = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
+  await runTreeEvent(props.onNodeExpand, data, node, component)
+}
+const handleNodeCollapse = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
+  await runTreeEvent(props.onNodeCollapse, data, node, component)
+}
+
+const handleNodeDrop = async (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => {
+  const view = resolvedView.value as (DataView & {
+    moveTreeNode?: (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<IDataRow | null>
+  }) | null
+  if (!view || typeof view.moveTreeNode !== 'function') return
+
+  const draggedKey = getNodeKey(draggingNode?.data)
+  if (draggedKey == null) return
+
+  const parentIdField = resolvedView.value?.treeConfig?.parentIdField ?? 'parentId'
+  let newParentId: string | number | null = null
+  if (dropType === 'inner') {
+    newParentId = getNodeKey(dropNode?.data)
+  } else {
+    const rawParentId = dropNode?.data?.[parentIdField]
+    newParentId = typeof rawParentId === 'string' || typeof rawParentId === 'number'
+      ? rawParentId
+      : rawParentId == null
+        ? null
+        : String(rawParentId)
+  }
+
+  await view.moveTreeNode(draggedKey, newParentId, -1)
 }
 
 // ── 节点操作 ────────────────────────────────────────────────────────────
 
-function handleAppendNode(data: unknown) {
+async function handleAppendNode(data: unknown) {
   const node = data as Record<string, unknown> | undefined
-  const nodeKey = node?.['id'] as string | number | null ?? null
-  treeApi.appendNode(nodeKey, {})
+  const nodeKey = getNodeKey(node)
+  await runTreeNodeAction(props.onNodeAppend, (node ?? {}) as TreeNode, () => {
+    treeApi.appendNode(nodeKey, {})
+  })
 }
 
-function handleDeleteNode(data: unknown) {
+async function handleDeleteNode(data: unknown) {
   const node = data as Record<string, unknown> | undefined
-  const nodeKey = node?.['id'] as string | number | undefined
+  const nodeKey = getNodeKey(node)
   if (nodeKey == null) return
-  treeApi.removeNode(nodeKey)
+  await runTreeNodeAction(props.onNodeDelete, (node ?? {}) as TreeNode, () => {
+    treeApi.removeNode(nodeKey)
+  })
 }
 </script>
 

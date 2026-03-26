@@ -16,7 +16,7 @@
 import { Logger } from '@spark-view/spark-utils'
 import type { IDataRow } from '../types'
 import type { ISelectionHost, EmitCurrentRowChangedFn, EmitSelectedRowsChangedFn } from './types'
-import { buildPkSet, pruneInvalidSelections } from '../core/utils'
+import { pruneInvalidSelections } from '../core/utils'
 
 const logger = Logger('DataView:Selection')
 
@@ -46,12 +46,28 @@ export class SelectionDelegate {
     }
   }
 
+  /** 深度遍历整棵 rows 树（含 nested children） */
+  private getAllRows(): IDataRow[] {
+    const result: IDataRow[] = []
+    const stack = [...this.host.rows]
+    while (stack.length > 0) {
+      const row = stack.shift()
+      if (!row) continue
+      result.push(row)
+      const children = (row as Record<string, unknown>)['children']
+      if (Array.isArray(children) && children.length > 0) {
+        stack.unshift(...children.filter((child): child is IDataRow => typeof child === 'object' && child !== null))
+      }
+    }
+    return result
+  }
+
   /** 获取 pk → row 映射（version-cached：行引用不变时复用） */
   private getIdToRowMap(): Map<string | number, IDataRow> {
     const rows = this.host.rows
     if (rows === this._cachedRows && this._cachedIdToRowMap) return this._cachedIdToRowMap
     const m = new Map<string | number, IDataRow>()
-    for (const row of rows) {
+    for (const row of this.getAllRows()) {
       const pk = this.host.getPkKey(row)
       if (pk !== undefined) m.set(pk, row)
     }
@@ -437,7 +453,7 @@ export class SelectionDelegate {
    */
   cleanupInvalidSelections(): boolean {
     const host = this.host
-    const rowPkSet = buildPkSet(host.rows, r => host.getPkKey(r))
+    const rowPkSet = new Set(this.getIdToRowMap().keys())
     const { currentRowPruned, selectedRowsPruned } = pruneInvalidSelections(host, rowPkSet)
 
     if (currentRowPruned) {
@@ -505,7 +521,7 @@ export class SelectionDelegate {
         const fields = host.valueField
         const tokenSet = new Set(tokens)
         const matchedPks: Array<string | number> = []
-        for (const row of host.rows) {
+        for (const row of this.getAllRows()) {
           const parts = fields.map(f => {
             const v: unknown = (row as Record<string, unknown>)[f]
             return v !== undefined && v !== null ? String(v) : ''
@@ -521,7 +537,7 @@ export class SelectionDelegate {
       const field = host.valueField
       const tokenSet = new Set(tokens)
       const matchedPks: Array<string | number> = []
-      for (const row of host.rows) {
+      for (const row of this.getAllRows()) {
         const fv: unknown = (row as Record<string, unknown>)[field]
         if (fv !== undefined && fv !== null && tokenSet.has(String(fv))) {
           const pk = host.getPkKey(row)
@@ -552,7 +568,7 @@ export class SelectionDelegate {
       return host._selectedRowIds.map(id => String(id))
     }
     const field = host.labelField
-    const rowMap = new Map(host.rows.map(r => [host.getPkKey(r), r]))
+    const rowMap = this.getIdToRowMap()
     return host._selectedRowIds.map(id => {
       const row = rowMap.get(id)
       if (!row) return String(id)

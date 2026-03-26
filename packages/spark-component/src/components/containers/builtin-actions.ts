@@ -33,6 +33,8 @@ const BUILTIN_ACTION_META = {
   'append-row': { label: '新增', buttonType: 'primary' },
   'prompt-append': { label: '新增', buttonType: 'primary' },
   'prompt-edit': { label: '编辑', buttonType: 'success' },
+  'move-row': { label: '移动', buttonType: 'warning', buttonPlain: true },
+  'move-current': { label: '移动当前', buttonType: 'warning', buttonPlain: true },
   'refresh': { label: '刷新' },
   'delete-row': { label: '删除', buttonType: 'danger', buttonPlain: true },
   'delete-current': { label: '删除当前', buttonType: 'danger', buttonPlain: true },
@@ -249,6 +251,103 @@ function inferNextRowId(view: DataView, idField: string): string | number {
   return candidate
 }
 
+function applyScopeRowAppendPayload(
+  appendPayload: Record<string, unknown>,
+  scope: BuiltinActionScope | undefined,
+  propsMap: Record<string, unknown>,
+): Record<string, unknown> {
+  const scopeRow = scope?.row
+  if (!scopeRow) return appendPayload
+
+  for (const field of readStringArray(propsMap['inheritFields'])) {
+    if (scopeRow[field] !== undefined) {
+      appendPayload[field] = scopeRow[field]
+    }
+  }
+
+  const inheritFieldMap = asRecord(propsMap['inheritFieldMap']) ?? {}
+  for (const [targetField, sourceField] of Object.entries(inheritFieldMap)) {
+    if (typeof sourceField !== 'string' || sourceField.trim().length === 0) continue
+    const value = scopeRow[sourceField]
+    if (value !== undefined) {
+      appendPayload[targetField] = value
+    }
+  }
+
+  return appendPayload
+}
+
+function resolveEditTargetRow(
+  view: DataView,
+  scope: BuiltinActionScope | undefined,
+  propsMap: Record<string, unknown>,
+): IDataRow | null {
+  const targetRow = readString(propsMap['targetRow'])
+  if (targetRow === 'current') {
+    return view.currentRow
+  }
+  if (targetRow === 'scope') {
+    return scope?.row ?? null
+  }
+  return scope?.row ?? view.currentRow ?? null
+}
+
+function resolveMoveTargetParentId(
+  view: DataView,
+  scope: BuiltinActionScope | undefined,
+  propsMap: Record<string, unknown>,
+  idField: string,
+): string | number | null {
+  if (hasOwnProp(propsMap, 'newParentId')) {
+    const literal = propsMap['newParentId']
+    return typeof literal === 'string' || typeof literal === 'number'
+      ? literal
+      : literal === null || literal === undefined
+        ? null
+        : null
+  }
+
+  const source = readString(propsMap['targetParentSource'])
+  if (source === 'field') {
+    const field = readString(propsMap['targetParentField'])
+    const row = scope?.row ?? view.currentRow
+    if (!field || !row) return null
+    const value = row[field]
+    return typeof value === 'string' || typeof value === 'number'
+      ? value
+      : value === null || value === undefined
+        ? null
+        : null
+  }
+
+  if (source === 'scope') {
+    return scope?.row ? resolveRowId(scope.row, idField) : null
+  }
+
+  return view.currentRow ? resolveRowId(view.currentRow, idField) : null
+}
+
+async function executeTreeMove(
+  view: DataView,
+  row: IDataRow,
+  propsMap: Record<string, unknown>,
+  idField: string,
+): Promise<boolean> {
+  const mover = view as DataView & {
+    moveTreeNode?: (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<IDataRow | null>
+  }
+  if (typeof mover.moveTreeNode !== 'function') return false
+
+  const id = resolveRowId(row, idField)
+  if (id === null) return false
+
+  const newParentId = resolveMoveTargetParentId(view, { row }, propsMap, idField)
+  const rawIndex = propsMap['index']
+  const index = typeof rawIndex === 'number' && Number.isFinite(rawIndex) ? rawIndex : undefined
+  await mover.moveTreeNode(id, newParentId, index)
+  return true
+}
+
 function resolvePatch(propsMap: Record<string, unknown>): Partial<IDataRow> {
   const patch = asRecord(propsMap['patch']) ?? {}
   const resolved: Record<string, unknown> = { ...patch }
@@ -316,6 +415,8 @@ export function isBuiltinActionDisabled(
     case 'prompt-append':
     case 'refresh':
       return false
+    case 'move-row':
+      return scope?.row === undefined
     case 'delete-row':
     case 'patch-row':
     case 'message-row':
@@ -323,8 +424,10 @@ export function isBuiltinActionDisabled(
     case 'delete-current':
     case 'patch-current':
     case 'message-current':
-    case 'prompt-edit':
+    case 'move-current':
       return view.currentRow === null
+    case 'prompt-edit':
+      return resolveEditTargetRow(view, scope, propsMap) === null
     case 'delete-selected':
     case 'patch-selected':
       return getSelectedRows(view).length === 0
@@ -401,7 +504,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
     try {
       switch (actionName) {
         case 'append-row': {
-          const payload = { ...(asRecord(propsMap['appendPayload']) ?? {}) }
+          const payload = applyScopeRowAppendPayload({ ...(asRecord(propsMap['appendPayload']) ?? {}) }, scope, propsMap)
           if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
             payload[idField] = inferNextRowId(view, idField)
           }
@@ -426,7 +529,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           if (ph !== undefined) promptOpts.placeholder = ph
           const result = await pageService.showPrompt(promptMsg, promptTitle, promptOpts)
           if (result === null) return
-          const appendPayload = { ...(asRecord(propsMap['appendPayload']) ?? {}) }
+          const appendPayload = applyScopeRowAppendPayload({ ...(asRecord(propsMap['appendPayload']) ?? {}) }, scope, propsMap)
           appendPayload[field] = result
           if (!(idField in appendPayload) || appendPayload[idField] === undefined || appendPayload[idField] === null) {
             appendPayload[idField] = inferNextRowId(view, idField)
@@ -438,7 +541,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
         case 'prompt-edit': {
           const pageService = ctx.getPageService()
           if (!pageService) return
-          const row = view.currentRow
+          const row = resolveEditTargetRow(view, scope, propsMap)
           if (!row) {
             notifyAction(propsMap, 'warning', '请先选择当前行')
             return
@@ -476,6 +579,34 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           }
           await view.refresh()
           notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '刷新完成'))
+          return
+        }
+        case 'move-row': {
+          const row = scope?.row
+          if (!row) {
+            notifyAction(propsMap, 'warning', '当前行不可用')
+            return
+          }
+          const moved = await executeTreeMove(view, row, propsMap, idField)
+          notifyAction(
+            propsMap,
+            moved ? 'success' : 'warning',
+            resolveConfiguredText(propsMap, moved ? 'successMessage' : 'failureMessage', moved ? '移动成功' : '移动失败')
+          )
+          return
+        }
+        case 'move-current': {
+          const row = view.currentRow
+          if (!row) {
+            notifyAction(propsMap, 'warning', '请先选择当前行')
+            return
+          }
+          const moved = await executeTreeMove(view, row, propsMap, idField)
+          notifyAction(
+            propsMap,
+            moved ? 'success' : 'warning',
+            resolveConfiguredText(propsMap, moved ? 'successMessage' : 'failureMessage', moved ? '移动成功' : '移动失败')
+          )
           return
         }
         case 'delete-row': {

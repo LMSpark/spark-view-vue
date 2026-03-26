@@ -1,6 +1,6 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.service.NavigationService;
+import com.spark.ai.service.ProjectNavigationTreeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +15,10 @@ import java.util.Map;
 @RequestMapping("/api/tenants/{tenantId}/projects/{projectId}/navigation")
 public class NavigationController {
 
-    private final NavigationService navigationService;
+    private final ProjectNavigationTreeService navigationTreeService;
 
-    public NavigationController(NavigationService navigationService) {
-        this.navigationService = navigationService;
+    public NavigationController(ProjectNavigationTreeService navigationTreeService) {
+        this.navigationTreeService = navigationTreeService;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -28,12 +28,14 @@ public class NavigationController {
     @GetMapping
     public ResponseEntity<?> getNavConfig(@PathVariable String tenantId,
                                            @PathVariable String projectId,
-                                           @RequestParam(name = "raw", defaultValue = "false") boolean raw) {
+                                           @RequestParam(name = "raw", defaultValue = "false") boolean raw,
+                                           @RequestParam(name = "treeMode", required = false) String treeMode) {
         try {
+            validateTreeMode(treeMode);
             if (raw) {
-                return ResponseEntity.ok(navigationService.listRawFlatRows(tenantId, projectId));
+                return ResponseEntity.ok(navigationTreeService.listRawFlatRows(tenantId, projectId));
             }
-            Map<String, Object> config = navigationService.getNavConfig(tenantId, projectId);
+            Map<String, Object> config = navigationTreeService.getNavConfig(tenantId, projectId);
             if (config == null) {
                 return ResponseEntity.ok(Map.of(
                         "childPlacement", "header",
@@ -56,7 +58,7 @@ public class NavigationController {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "缺少 children 字段"));
             }
-            navigationService.saveNavConfig(tenantId, projectId, navRoot);
+            navigationTreeService.saveNavConfig(tenantId, projectId, navRoot);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (IOException e) {
             return ResponseEntity.internalServerError()
@@ -70,20 +72,95 @@ public class NavigationController {
 
     @GetMapping("/nodes")
     public ResponseEntity<?> listNodes(@PathVariable String tenantId,
-                                        @PathVariable String projectId) {
+                                        @PathVariable String projectId,
+                                        @RequestParam(name = "parentId", required = false) String parentId,
+                                        @RequestParam(name = "limit", required = false) Integer limit,
+                                        @RequestParam(name = "rootId", required = false) String rootId,
+                                        @RequestParam(name = "depthLimit", required = false) Integer depthLimit,
+                                        @RequestParam(name = "treeMode", required = false) String treeMode) {
         try {
-            List<Map<String, Object>> nodes = navigationService.listNodes(tenantId, projectId);
+            validateTreeMode(treeMode);
+            String normalizedTreeMode = normalizeTreeMode(treeMode);
+            List<Map<String, Object>> nodes;
+            if (parentId != null && !parentId.isBlank()) {
+                nodes = navigationTreeService.listNodeChildren(tenantId, projectId, parentId, limit);
+            } else if ("nested".equals(normalizedTreeMode)) {
+                nodes = navigationTreeService.listNestedNodes(tenantId, projectId, rootId, limit, depthLimit);
+            } else {
+                nodes = navigationTreeService.listNodes(tenantId, projectId);
+            }
             return ResponseEntity.ok(nodes);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IOException e) {
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "获取节点列表失败: " + e.getMessage()));
         }
     }
 
+    @GetMapping("/nodes/path/{id}")
+    public ResponseEntity<?> getNodePath(@PathVariable String tenantId,
+                                         @PathVariable String projectId,
+                                         @PathVariable String id,
+                                         @RequestParam(name = "treeMode", required = false) String treeMode) {
+        try {
+            validateTreeMode(treeMode);
+            return ResponseEntity.ok(navigationTreeService.getNodePath(tenantId, projectId, id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "获取节点路径失败: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/nodes/subtree")
+    public ResponseEntity<?> getNodeSubtree(@PathVariable String tenantId,
+                                            @PathVariable String projectId,
+                                            @RequestBody(required = false) Map<String, Object> body,
+                                            @RequestParam(name = "treeMode", required = false) String treeMode) {
+        try {
+            validateTreeMode(treeMode);
+            String fromId = body != null ? String.valueOf(body.getOrDefault("fromId", "")).trim() : "";
+            String toId = body != null ? String.valueOf(body.getOrDefault("toId", "")).trim() : "";
+            boolean includeTargetChildren = body == null || !body.containsKey("includeTargetChildren")
+                    || Boolean.TRUE.equals(body.get("includeTargetChildren"));
+            if (toId.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "缺少 toId 字段"));
+            }
+            return ResponseEntity.ok(navigationTreeService.getNodeSubtree(tenantId, projectId, fromId, toId, includeTargetChildren));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "获取节点子树失败: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/nodes/search")
+    public ResponseEntity<?> searchNodes(@PathVariable String tenantId,
+                                         @PathVariable String projectId,
+                                         @RequestParam(name = "keyword") String keyword,
+                                         @RequestParam(name = "limit", required = false) Integer limit,
+                                         @RequestParam(name = "treeMode", required = false) String treeMode) {
+        try {
+            validateTreeMode(treeMode);
+            if ("nested".equals(normalizeTreeMode(treeMode))) {
+                return ResponseEntity.ok(navigationTreeService.searchNestedNodes(tenantId, projectId, keyword, limit));
+            }
+            return ResponseEntity.ok(navigationTreeService.searchFlatNodes(tenantId, projectId, keyword, limit));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "搜索节点失败: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/raw")
     public ResponseEntity<?> listRawRows(@PathVariable String tenantId,
                                          @PathVariable String projectId) {
-        List<Map<String, Object>> rows = navigationService.listRawFlatRows(tenantId, projectId);
+        List<Map<String, Object>> rows = navigationTreeService.listRawFlatRows(tenantId, projectId);
         return ResponseEntity.ok(rows);
     }
 
@@ -100,7 +177,7 @@ public class NavigationController {
             if (node == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "缺少 node 字段"));
             }
-            Map<String, Object> created = navigationService.addNode(
+                Map<String, Object> created = navigationTreeService.addNode(
                     tenantId, projectId, parentId, node, index);
             return ResponseEntity.ok(Map.of("success", true, "node", created));
         } catch (IllegalArgumentException e) {
@@ -117,7 +194,7 @@ public class NavigationController {
                                          @PathVariable String id,
                                          @RequestBody Map<String, Object> patch) {
         try {
-            Map<String, Object> updated = navigationService.updateNode(
+                Map<String, Object> updated = navigationTreeService.updateNode(
                     tenantId, projectId, id, patch);
             return ResponseEntity.ok(Map.of("success", true, "node", updated));
         } catch (IllegalArgumentException e) {
@@ -133,7 +210,7 @@ public class NavigationController {
                                          @PathVariable String projectId,
                                          @PathVariable String id) {
         try {
-            Map<String, Object> deleted = navigationService.deleteNode(
+                Map<String, Object> deleted = navigationTreeService.deleteNode(
                     tenantId, projectId, id);
             return ResponseEntity.ok(Map.of("success", true, "deleted", deleted));
         } catch (IllegalArgumentException e) {
@@ -153,7 +230,7 @@ public class NavigationController {
             String newParentId = (String) body.get("newParentId");
             int index = body.containsKey("index")
                     ? ((Number) body.get("index")).intValue() : -1;
-            Map<String, Object> moved = navigationService.moveNode(
+                Map<String, Object> moved = navigationTreeService.moveNode(
                     tenantId, projectId, id, newParentId, index);
             return ResponseEntity.ok(Map.of("success", true, "node", moved));
         } catch (IllegalArgumentException e) {
@@ -173,7 +250,7 @@ public class NavigationController {
             if (url.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "缺少 url 字段"));
             }
-            Map<String, Object> result = navigationService.probeLinkEmbeddable(url);
+            Map<String, Object> result = navigationTreeService.probeLinkEmbeddable(url);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -181,6 +258,19 @@ public class NavigationController {
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "检测链接失败: " + e.getMessage()));
         }
+    }
+
+    private void validateTreeMode(String treeMode) {
+        if (treeMode == null || treeMode.isBlank()) {
+            return;
+        }
+        if (!"flat".equals(treeMode) && !"nested".equals(treeMode)) {
+            throw new IllegalArgumentException("非法 treeMode: " + treeMode);
+        }
+    }
+
+    private String normalizeTreeMode(String treeMode) {
+        return treeMode == null || treeMode.isBlank() ? "flat" : treeMode;
     }
 }
 

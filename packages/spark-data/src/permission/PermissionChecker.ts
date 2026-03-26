@@ -49,6 +49,15 @@ export class PermissionChecker {
   }
 
   /**
+   * 检查是否允许在当前记录下新增子记录
+   * @param row 数据行
+   * @returns 是否允许新增子记录
+   */
+  canCreateChild(row: IDataRow): boolean {
+    return row._perm?.allowCreateChild !== false
+  }
+
+  /**
    * 检查是否允许编辑行数据
    * @param row 数据行
    * @returns 是否允许编辑
@@ -164,6 +173,8 @@ export function createPermissionChecker(): PermissionChecker {
 export const checkPermission = {
   canCreate: (modelPermission?: IModelPermission) =>
     createPermissionChecker().canCreate(modelPermission),
+  canCreateChild: (row: IDataRow) =>
+    createPermissionChecker().canCreateChild(row),
   canDelete: (row: IDataRow) =>
     createPermissionChecker().canDelete(row),
   canEdit: (row: IDataRow) =>
