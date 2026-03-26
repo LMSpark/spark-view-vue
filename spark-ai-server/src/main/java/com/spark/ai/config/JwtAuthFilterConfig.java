@@ -50,6 +50,7 @@ public class JwtAuthFilterConfig {
 
     /** 不需要认证的完整路径 */
     private static final Set<String> PUBLIC_PATHS = Set.of(
+        "/api/ai/component-metadata",
         "/health",
         "/h2-console"
     );

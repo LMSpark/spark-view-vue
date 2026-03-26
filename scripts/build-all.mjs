@@ -32,8 +32,9 @@ const args = process.argv.slice(2)
 const skipJava = process.env['SKIP_JAVA'] === 'true'
 const skipFe = args.includes('--skip-fe') || process.env['SKIP_FE'] === 'true'
 const noUpload = args.includes('--no-upload')
-const BACKEND_PORT = process.env['BACKEND_PORT'] || '8080'
-const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
+const REQUESTED_BACKEND_PORT = process.env['BACKEND_PORT']?.trim() || ''
+let backendPort = REQUESTED_BACKEND_PORT || '18080'
+let backendExited = false
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
@@ -65,16 +66,66 @@ function run(cmd, opts = {}) {
   execSync(cmd, { stdio: 'inherit', ...opts })
 }
 
+function getBackendUrl() {
+  return `http://localhost:${backendPort}`
+}
+
+async function isPortAvailable(port) {
+  return new Promise((resolveP) => {
+    const server = http.createServer()
+    server.once('error', () => resolveP(false))
+    server.once('listening', () => {
+      server.close(() => resolveP(true))
+    })
+    server.listen(Number(port), '127.0.0.1')
+  })
+}
+
+async function resolveBackendPort() {
+  if (REQUESTED_BACKEND_PORT) {
+    return REQUESTED_BACKEND_PORT
+  }
+
+  if (await isPortAvailable(backendPort)) {
+    return backendPort
+  }
+
+  return new Promise((resolveP, reject) => {
+    const server = http.createServer()
+    server.once('error', reject)
+    server.once('listening', () => {
+      const address = server.address()
+      if (!address || typeof address === 'string') {
+        server.close(() => reject(new Error('无法为构建临时后端分配可用端口')))
+        return
+      }
+      const freePort = String(address.port)
+      server.close((closeErr) => {
+        if (closeErr) {
+          reject(closeErr)
+          return
+        }
+        resolveP(freePort)
+      })
+    })
+    server.listen(0, '127.0.0.1')
+  })
+}
+
 // ── 等待后端就绪 ─────────────────────────────────────────────────────────────
 function waitForBackend(timeoutMs = 120_000) {
   const start = Date.now()
   return new Promise((resolveP, reject) => {
     const check = () => {
+      if (backendExited) {
+        reject(new Error('Java 后端在就绪前已退出'))
+        return
+      }
       if (Date.now() - start > timeoutMs) {
         reject(new Error(`Java 后端 ${timeoutMs / 1000}s 内未就绪`))
         return
       }
-      const req = http.get(`${BACKEND_URL}/api/config/default`, { timeout: 2000 }, (res) => {
+      const req = http.get(`${getBackendUrl()}/api/config/default`, { timeout: 2000 }, (res) => {
         if (res.statusCode === 200) {
           res.resume()
           resolveP()
@@ -106,7 +157,7 @@ async function uploadMetadata() {
     return
   }
 
-  const endpoint = `${BACKEND_URL}/api/ai/component-metadata`
+  const endpoint = `${getBackendUrl()}/api/ai/component-metadata`
   console.log(`\n📦 组件元数据: ${metadata.componentCount} 个组件, ${metadata.skillCount} 个 Skill`)
   console.log(`📤 上传到: ${endpoint}`)
 
@@ -185,8 +236,11 @@ try {
       process.exit(1)
     }
 
-    console.log(`\n🚀 启动 Java 后端 (port ${BACKEND_PORT})...`)
-    backendProcess = spawn(mvnCmd, ['spring-boot:run', `-Dserver.port=${BACKEND_PORT}`], {
+    backendPort = await resolveBackendPort()
+
+    console.log(`\n🚀 启动 Java 后端 (port ${backendPort})...`)
+    backendExited = false
+    backendProcess = spawn(mvnCmd, ['spring-boot:run', `-Dspring-boot.run.arguments=--server.port=${backendPort}`], {
       cwd: SERVER_DIR,
       env: javaEnv,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -198,9 +252,12 @@ try {
       console.error(`❌ Java 启动失败: ${err.message}`)
       process.exit(1)
     })
+    backendProcess.on('exit', () => {
+      backendExited = true
+    })
 
     await waitForBackend()
-    console.log(`✅ Java 后端就绪: ${BACKEND_URL}`)
+    console.log(`✅ Java 后端就绪: ${getBackendUrl()}`)
   }
 
   // ── 3. Vite 前端构建 ──────────────────────────────────────────────────────
