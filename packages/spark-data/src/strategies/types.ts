@@ -241,7 +241,7 @@ export interface ICascadeHost extends IViewIdentity {
    * 从源 DataTable.rows 中按 rel.childField === parentRow[parentField|'id'] 过滤，
    * 结果直接写入视图（相当于一次无网络的 loadFromServer）。
    */
-  applyInMemoryCascade(rel: DataRelation, parentRows: IDataRow[]): void
+  applyInMemoryCascade(rel: DataRelation, parentRows: readonly IDataRow[]): void
 }
 
 // ─────────────────────────────────────────────

@@ -111,7 +111,7 @@ export type IDataRow = Record<string, unknown> & {
 
 /** 数据源（带权限、分页和元数据） */
 export interface IDataSource {
-  rows?: IDataRow[]
+  rows?: readonly IDataRow[]
   _modelPerm?: IModelPermission
   total?: number
   page?: number
@@ -119,7 +119,7 @@ export interface IDataSource {
   /** 当前聚焦行（UI 高亮行 / 级联父行） */
   currentRow?: IDataRow | null
   /** 当前选中行集合（勾选行 / 级联选中行） */
-  selectedRows?: IDataRow[]
+  selectedRows?: readonly IDataRow[]
   /** 视图聚合汇总行（由 view.aggregates 配置驱动，行变更后自动重算） */
   summaryRow?: Readonly<IDataRow>
   /** 选中行聚合汇总行（仅对 selectedRows 执行聚合，选中/数据变更后自动重算） */
@@ -139,7 +139,7 @@ export interface IDataSource {
   /** 当前行显示标签（按 labelField 或主键回退） */
   label?: string | null
   /** 选中行标签数组 */
-  labels?: string[]
+  labels?: readonly string[]
 
   // ===== 请求状态（加载指示器消费） =====
 

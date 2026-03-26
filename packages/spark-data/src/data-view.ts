@@ -601,7 +601,7 @@ export class DataView implements IDataSource {
     const parents = ds ? ds.getParentRelations(this.tableName, this.viewId) : []
 
     // 合并两轮循环：检查父依赖就绪度的同时缓存视图和行数据，避免 getView/getParentRows 二次调用
-    const resolvedParents: Array<{ rel: (typeof parents)[number]; pView: DataView; rows: IDataRow[] }> = []
+    const resolvedParents: Array<{ rel: (typeof parents)[number]; pView: DataView; rows: readonly IDataRow[] }> = []
     for (const rel of parents) {
       const pView = ds?.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!pView) continue
@@ -728,7 +728,7 @@ export class DataView implements IDataSource {
   }
 
   /** 无 API 时的内存级联过滤（从 DataTable.rows 按关系字段过滤写入视图）。 */
-  applyInMemoryCascade(rel: DataRelation, parentRows: IDataRow[]): void {
+  applyInMemoryCascade(rel: DataRelation, parentRows: readonly IDataRow[]): void {
     // 从 DataTable.rows 读取全量静态源数据（可在多次父行切换中反复过滤）
     const srcRows: IDataRow[] = this._dataTable?.rows ?? []
     const childField = typeof rel.childField === 'string' ? rel.childField : undefined

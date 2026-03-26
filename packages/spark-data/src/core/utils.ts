@@ -181,7 +181,7 @@ export function pruneInvalidSelections(
  * @param dep 依赖类型
  * @returns 数据行数组
  */
-export function getParentRows(sourceView: IDataSource, dep: DependencyType): IDataRow[] {
+export function getParentRows(sourceView: IDataSource, dep: DependencyType): readonly IDataRow[] {
   switch (dep) {
     case 'currentRow':   return sourceView.currentRow ? [sourceView.currentRow] : []
     case 'selectedRows': return sourceView.selectedRows ?? []
