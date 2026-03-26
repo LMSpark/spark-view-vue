@@ -1,295 +1,288 @@
 [
-  {
-    "type": "div",
-    "class": "tree-demo-container",
-    "children": [
-      {
+    {
         "type": "div",
-        "class": "demo-header",
+        "class": "nav-editor-page",
         "children": [
-          {
-            "type": "h2",
-            "children": [
-              "RendererTree 组件演示"
-            ]
-          },
-          {
-            "type": "p",
-            "children": [
-              "使用导航节点数据演示 TreeManager/DataView 的 4 个远程接口 + 7 个本地接口"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "div",
-        "class": "demo-toolbar",
-        "children": [
-          {
-            "type": "el-input",
-            "field": "searchKeyword",
-            "value": "",
-            "props": {
-              "placeholder": "搜索节点...",
-              "clearable": true
-            },
-            "on": {
-              "clear": "handleClearSearch",
-              "keyup": "handleSearchKeyup"
-            },
-            "style": {
-              "width": "300px",
-              "marginRight": "10px"
-            }
-          },
-          {
-            "type": "el-button",
-            "props": {
-              "type": "primary",
-              "icon": "Search"
-            },
-            "on": {
-              "click": "handleSearch"
-            },
-            "children": [
-              "搜索"
-            ]
-          },
-          {
-            "type": "el-button",
-            "props": {
-              "icon": "Plus"
-            },
-            "on": {
-              "click": "handleAddNode"
-            },
-            "children": [
-              "添加子节点"
-            ]
-          },
-          {
-            "type": "el-button",
-            "props": {
-              "icon": "Delete",
-              "type": "danger"
-            },
-            "on": {
-              "click": "handleDeleteNode"
-            },
-            "children": [
-              "删除节点"
-            ]
-          },
-          {
-            "type": "el-button",
-            "props": {
-              "icon": "Download"
-            },
-            "on": {
-              "click": "handleExport"
-            },
-            "children": [
-              "导出数据"
-            ]
-          },
-          {
-            "type": "el-button",
-            "props": {
-              "type": "success"
-            },
-            "on": {
-              "click": "handleRunRemote4"
-            },
-            "children": [
-              "远程4接口"
-            ]
-          },
-          {
-            "type": "el-button",
-            "props": {
-              "type": "warning"
-            },
-            "on": {
-              "click": "handleRunLocal7"
-            },
-            "children": [
-              "本地7接口"
-            ]
-          },
-          {
-            "type": "el-button",
-            "props": {
-              "type": "info"
-            },
-            "on": {
-              "click": "handleRunAll4Plus7"
-            },
-            "children": [
-              "4+7全跑"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-row",
-        "props": {
-          "gutter": 20
-        },
-        "children": [
-          {
-            "type": "el-col",
-            "props": {
-              "span": 12
-            },
-            "children": [
-              {
-                "type": "el-card",
-                "props": {
-                  "header": "组织架构树（RendererTree 演示）"
-                },
-                "children": [
-                  {
-                    "type": "div",
-                    "class": "tree-wrapper",
-                    "children": [
-                      {
-                        "type": "r-tree",
-                        "key": "organization-tree",
-                        "dataKey": "hierarchicalTreeData@rows",
-                        "props": {
-                          "node-key": "id",
-                          "highlight-current": true,
-                          "default-expand-all": false,
-                          "expand-on-click-node": false,
-                          "onNodeClick": "handleNodeClick",
-                          "onNodeExpand": "handleNodeExpand",
-                          "onNodeCollapse": "handleNodeCollapse"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "el-col",
-            "props": {
-              "span": 12
-            },
-            "children": [
-              {
-                "type": "el-card",
-                "props": {
-                  "header": "节点信息"
-                },
-                "children": [
-                  {
-                    "type": "div",
-                    "class": "node-info",
-                    "children": [
-                      {
-                        "type": "RenderNodeInfo"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "type": "el-card",
-                "props": {
-                  "header": "子节点 / 搜索结果"
-                },
-                "style": {
-                  "marginTop": "20px"
-                },
-                "children": [
-                  {
-                    "type": "r-table",
-                    "dataKey": "childNodes@rows",
-                    "props": {
-                      "border": true,
-                      "stripe": true,
-                      "maxHeight": "300",
-                      "highlightCurrentRow": true,
-                      "rowKey": "id"
-                    },
-                    "on": {
-                      "rowClick": "handleLocateNode"
-                    },
-                    "children": [
-                      {
-                        "type": "el-table-column",
-                        "props": {
-                          "prop": "name",
-                          "label": "节点名称",
-                          "width": "150"
-                        }
-                      },
-                      {
-                        "type": "el-table-column",
-                        "props": {
-                          "prop": "type",
-                          "label": "类型",
-                          "width": "100"
-                        }
-                      },
-                      {
-                        "type": "el-table-column",
-                        "props": {
-                          "prop": "pathText",
-                          "label": "路径"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "div",
-        "class": "demo-info",
-        "style": {
-          "marginTop": "30px"
-        },
-        "children": [
-          {
-            "type": "el-alert",
-            "props": {
-              "title": "功能说明",
-              "type": "info",
-              "showIcon": true
-            },
-            "children": [
-              {
+            {
                 "type": "div",
+                "class": "nav-editor-header",
                 "children": [
-                  "1. RendererTree 组件：使用 r-tree 容器组件展示树形数据",
-                  {
-                    "type": "br"
-                  },
-                  "2. 数据绑定：通过 dataSource 属性自动绑定 hierarchicalTreeData",
-                  {
-                    "type": "br"
-                  },
-                  "3. 嵌套结构：树数据采用嵌套的层级结构（children 属性）",
-                  {
-                    "type": "br"
-                  },
-                  "4. 事件处理：支持节点点击、展开、折叠等事件",
-                  {
-                    "type": "br"
-                  },
-                  "5. 自定义样式：可以通过 RendererTree 的 slot 自定义节点渲染"
+                    {
+                        "type": "div",
+                        "class": "nav-editor-header__title",
+                        "children": [
+                            {
+                                "type": "span",
+                                "class": "nav-editor-badge",
+                                "children": [
+                                    "Navigation Demo"
+                                ]
+                            },
+                            {
+                                "type": "h1",
+                                "children": [
+                                    "导航树服务端编辑 Demo"
+                                ]
+                            },
+                            {
+                                "type": "p",
+                                "children": [
+                                    "左侧直接绑定服务端导航节点，树形由视图 treeConfig 自动构建，右侧展示当前节点字段。"
+                                ]
+                            }
+                        ]
+                    }
                 ]
-              }
-            ]
-          }
+            },
+            {
+                "type": "el-row",
+                "class": "nav-editor-body",
+                "props": {
+                    "gutter": 18
+                },
+                "children": [
+                    {
+                        "type": "el-col",
+                        "props": {
+                            "xl": 8,
+                            "lg": 9,
+                            "md": 24,
+                            "sm": 24,
+                            "xs": 24
+                        },
+                        "children": [
+                            {
+                                "type": "el-card",
+                                "class": "nav-editor-panel nav-editor-panel--tree",
+                                "props": {
+                                    "shadow": "never"
+                                },
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "nav-editor-panel__head",
+                                        "children": [
+                                            {
+                                                "type": "h3",
+                                                "children": [
+                                                    "导航树"
+                                                ]
+                                            },
+                                            {
+                                                "type": "p",
+                                                "children": [
+                                                    "树数据由服务端扁平节点重建，当前先保持最简单结构。"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "nav-editor-tree-shell",
+                                        "children": [
+                                            {
+                                                "type": "r-tree",
+                                                "dataKey": "NavigationNodes@rows",
+                                                "props": {
+                                                    "node-key": "id",
+                                                    "highlight-current": true,
+                                                    "default-expand-all": true,
+                                                    "expand-on-click-node": false
+                                                },
+                                                "children": [
+                                                    {
+                                                        "type": "r-tree-node-summary",
+                                                        "props": {
+                                                            "nameField": "title",
+                                                            "typeField": "nodeKind",
+                                                            "metaField": "path",
+                                                            "extraField": "childPlacement",
+                                                            "showType": true,
+                                                            "showMeta": true,
+                                                            "showExtra": true,
+                                                            "showStatus": false,
+                                                            "showOwner": false
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "type": "el-col",
+                        "props": {
+                            "xl": 16,
+                            "lg": 15,
+                            "md": 24,
+                            "sm": 24,
+                            "xs": 24
+                        },
+                        "children": [
+                            {
+                                "type": "el-card",
+                                "class": "nav-editor-panel",
+                                "props": {
+                                    "shadow": "never",
+                                    "header": "基础信息"
+                                },
+                                "children": [
+                                    {
+                                        "type": "r-form",
+                                        "dataKey": "NavigationNodes@currentRow",
+                                        "children": [
+                                            {
+                                                "type": "r-text",
+                                                "field": "title",
+                                                "props": {
+                                                    "label": "标题"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text",
+                                                "field": "id",
+                                                "props": {
+                                                    "label": "节点 ID"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text",
+                                                "field": "parentId",
+                                                "props": {
+                                                    "label": "父节点 ID"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text",
+                                                "field": "icon",
+                                                "props": {
+                                                    "label": "图标"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-radio",
+                                                "field": "nodeKind",
+                                                "props": {
+                                                    "label": "节点类型",
+                                                    "buttonStyle": true,
+                                                    "optionKey": "NodeKindOptions@rows",
+                                                    "optionLabelField": "label",
+                                                    "optionValueField": "value"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-textarea",
+                                                "field": "description",
+                                                "props": {
+                                                    "label": "描述",
+                                                    "rows": 3
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "el-card",
+                                "class": "nav-editor-panel",
+                                "props": {
+                                    "shadow": "never",
+                                    "header": "导航与布局"
+                                },
+                                "children": [
+                                    {
+                                        "type": "r-form",
+                                        "dataKey": "NavigationNodes@currentRow",
+                                        "children": [
+                                            {
+                                                "type": "r-text",
+                                                "field": "path",
+                                                "props": {
+                                                    "label": "路径 / URL"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-select",
+                                                "field": "linkTarget",
+                                                "props": {
+                                                    "label": "链接打开方式",
+                                                    "optionKey": "LinkTargetOptions@rows",
+                                                    "optionLabelField": "label",
+                                                    "optionValueField": "value"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-select",
+                                                "field": "childPlacement",
+                                                "props": {
+                                                    "label": "子项布局",
+                                                    "optionKey": "ChildPlacementOptions@rows",
+                                                    "optionLabelField": "label",
+                                                    "optionValueField": "value"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-number",
+                                                "field": "sortOrder",
+                                                "props": {
+                                                    "label": "排序"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "el-card",
+                                "class": "nav-editor-panel",
+                                "props": {
+                                    "shadow": "never",
+                                    "header": "状态、引用与上下文"
+                                },
+                                "children": [
+                                    {
+                                        "type": "r-form",
+                                        "dataKey": "NavigationNodes@currentRow",
+                                        "children": [
+                                            {
+                                                "type": "r-switch",
+                                                "field": "dividerAfter",
+                                                "props": {
+                                                    "label": "后置分隔线"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-switch",
+                                                "field": "hidden",
+                                                "props": {
+                                                    "label": "隐藏"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-switch",
+                                                "field": "disabled",
+                                                "props": {
+                                                    "label": "禁用"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text",
+                                                "field": "refId",
+                                                "props": {
+                                                    "label": "引用节点 ID"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
         ]
-      }
-    ]
-  }
+    }
 ]

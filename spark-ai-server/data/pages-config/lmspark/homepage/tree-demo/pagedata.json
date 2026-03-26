@@ -1,378 +1,573 @@
 {
-  "expandedKeys": [],
-  "currentNodeKey": null,
-  "childNodes": [],
-  "hierarchicalTreeData": [],
-  "treeData": {
-    "config": {
-      "mode": "flat",
-      "idField": "id",
-      "parentIdField": "parentId",
-      "textField": "name",
-      "lazy": false
-    },
-    "nodes": [
-      {
-        "id": 1,
-        "parentId": null,
-        "name": "武汉领码科技",
-        "type": "company",
-        "level": 0
-      },
-      {
-        "id": 2,
-        "parentId": 1,
-        "name": "研发中心",
-        "type": "department",
-        "level": 1
-      },
-      {
-        "id": 3,
-        "parentId": 1,
-        "name": "市场部",
-        "type": "department",
-        "level": 1
-      },
-      {
-        "id": 4,
-        "parentId": 1,
-        "name": "行政部",
-        "type": "department",
-        "level": 1
-      },
-      {
-        "id": 5,
-        "parentId": 2,
-        "name": "前端团队",
-        "type": "team",
-        "level": 2
-      },
-      {
-        "id": 6,
-        "parentId": 2,
-        "name": "后端团队",
-        "type": "team",
-        "level": 2
-      },
-      {
-        "id": 7,
-        "parentId": 2,
-        "name": "测试团队",
-        "type": "team",
-        "level": 2
-      },
-      {
-        "id": 8,
-        "parentId": 3,
-        "name": "品牌推广组",
-        "type": "team",
-        "level": 2
-      },
-      {
-        "id": 9,
-        "parentId": 3,
-        "name": "渠道销售组",
-        "type": "team",
-        "level": 2
-      },
-      {
-        "id": 10,
-        "parentId": 4,
-        "name": "人力资源组",
-        "type": "team",
-        "level": 2
-      },
-      {
-        "id": 11,
-        "parentId": 4,
-        "name": "财务组",
-        "type": "team",
-        "level": 2
-      },
-      {
-        "id": 12,
-        "parentId": 5,
-        "name": "张三",
-        "type": "employee",
-        "title": "高级前端工程师",
-        "level": 3
-      },
-      {
-        "id": 13,
-        "parentId": 5,
-        "name": "李四",
-        "type": "employee",
-        "title": "前端工程师",
-        "level": 3
-      },
-      {
-        "id": 14,
-        "parentId": 5,
-        "name": "王五",
-        "type": "employee",
-        "title": "前端实习生",
-        "level": 3
-      },
-      {
-        "id": 15,
-        "parentId": 6,
-        "name": "赵六",
-        "type": "employee",
-        "title": "架构师",
-        "level": 3
-      },
-      {
-        "id": 16,
-        "parentId": 6,
-        "name": "孙七",
-        "type": "employee",
-        "title": "后端工程师",
-        "level": 3
-      },
-      {
-        "id": 17,
-        "parentId": 7,
-        "name": "周八",
-        "type": "employee",
-        "title": "测试工程师",
-        "level": 3
-      },
-      {
-        "id": 18,
-        "parentId": 7,
-        "name": "吴九",
-        "type": "employee",
-        "title": "自动化测试",
-        "level": 3
-      },
-      {
-        "id": 19,
-        "parentId": 8,
-        "name": "郑十",
-        "type": "employee",
-        "title": "品牌经理",
-        "level": 3
-      },
-      {
-        "id": 20,
-        "parentId": 9,
-        "name": "钱十一",
-        "type": "employee",
-        "title": "销售经理",
-        "level": 3
-      },
-      {
-        "id": 21,
-        "parentId": 10,
-        "name": "陈十二",
-        "type": "employee",
-        "title": "HR专员",
-        "level": 3
-      },
-      {
-        "id": 22,
-        "parentId": 11,
-        "name": "林十三",
-        "type": "employee",
-        "title": "会计",
-        "level": 3
-      }
-    ]
-  },
-  "hierarchicalTreeData": [
-    {
-      "id": 1,
-      "name": "武汉领码科技",
-      "label": "武汉领码科技",
-      "type": "company",
-      "level": 0,
-      "children": [
-        {
-          "id": 2,
-          "name": "研发中心",
-          "label": "研发中心",
-          "type": "department",
-          "level": 1,
-          "children": [
-            {
-              "id": 5,
-              "name": "前端团队",
-              "label": "前端团队",
-              "type": "team",
-              "level": 2,
-              "children": [
-                {
-                  "id": 12,
-                  "name": "张三",
-                  "label": "张三",
-                  "type": "employee",
-                  "title": "高级前端工程师",
-                  "level": 3
-                },
-                {
-                  "id": 13,
-                  "name": "李四",
-                  "label": "李四",
-                  "type": "employee",
-                  "title": "前端工程师",
-                  "level": 3
-                },
-                {
-                  "id": 14,
-                  "name": "王五",
-                  "label": "王五",
-                  "type": "employee",
-                  "title": "前端实习生",
-                  "level": 3
+    "dataset": {
+        "dataSetName": "TreeDemoNavigationEditor",
+        "tables": {
+            "PageMeta": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "totalNodes",
+                        "type": "number"
+                    },
+                    {
+                        "name": "pageCount",
+                        "type": "number"
+                    },
+                    {
+                        "name": "groupCount",
+                        "type": "number"
+                    },
+                    {
+                        "name": "refCount",
+                        "type": "number"
+                    },
+                    {
+                        "name": "hiddenCount",
+                        "type": "number"
+                    },
+                    {
+                        "name": "statusText",
+                        "type": "string"
+                    },
+                    {
+                        "name": "lastSync",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "totalNodes": 0,
+                                "pageCount": 0,
+                                "groupCount": 0,
+                                "refCount": 0,
+                                "hiddenCount": 0,
+                                "statusText": "等待服务端数据",
+                                "lastSync": "-"
+                            }
+                        ],
+                        "autoCurrentFirst": true
+                    }
                 }
-              ]
             },
-            {
-              "id": 6,
-              "name": "后端团队",
-              "label": "后端团队",
-              "type": "team",
-              "level": 2,
-              "children": [
-                {
-                  "id": 15,
-                  "name": "赵六",
-                  "label": "赵六",
-                  "type": "employee",
-                  "title": "架构师",
-                  "level": 3
-                },
-                {
-                  "id": 16,
-                  "name": "孙七",
-                  "label": "孙七",
-                  "type": "employee",
-                  "title": "后端工程师",
-                  "level": 3
+            "EditorFilters": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "searchKeyword",
+                        "type": "string"
+                    },
+                    {
+                        "name": "nodeKindFilter",
+                        "type": "string"
+                    },
+                    {
+                        "name": "placementFilter",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "searchKeyword": "",
+                                "nodeKindFilter": "all",
+                                "placementFilter": "all"
+                            }
+                        ],
+                        "autoCurrentFirst": true
+                    }
                 }
-              ]
             },
-            {
-              "id": 7,
-              "name": "测试团队",
-              "label": "测试团队",
-              "type": "team",
-              "level": 2,
-              "children": [
-                {
-                  "id": 17,
-                  "name": "周八",
-                  "label": "周八",
-                  "type": "employee",
-                  "title": "测试工程师",
-                  "level": 3
-                },
-                {
-                  "id": 18,
-                  "name": "吴九",
-                  "label": "吴九",
-                  "type": "employee",
-                  "title": "自动化测试",
-                  "level": 3
+            "NodeKindOptions": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "label",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "label": "系统目录",
+                                "value": "system-directory"
+                            },
+                            {
+                                "id": 2,
+                                "label": "模块",
+                                "value": "module"
+                            },
+                            {
+                                "id": 3,
+                                "label": "系统页面",
+                                "value": "system-page"
+                            },
+                            {
+                                "id": 4,
+                                "label": "系统动作",
+                                "value": "system-action"
+                            },
+                            {
+                                "id": 5,
+                                "label": "页面",
+                                "value": "page"
+                            },
+                            {
+                                "id": 6,
+                                "label": "链接",
+                                "value": "link"
+                            },
+                            {
+                                "id": 7,
+                                "label": "子页面",
+                                "value": "sub-page"
+                            },
+                            {
+                                "id": 8,
+                                "label": "引用",
+                                "value": "ref"
+                            }
+                        ]
+                    }
                 }
-              ]
+            },
+            "NodeKindFilterOptions": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "label",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "label": "全部类型",
+                                "value": "all"
+                            },
+                            {
+                                "id": 2,
+                                "label": "系统目录",
+                                "value": "system-directory"
+                            },
+                            {
+                                "id": 3,
+                                "label": "模块",
+                                "value": "module"
+                            },
+                            {
+                                "id": 4,
+                                "label": "系统页面",
+                                "value": "system-page"
+                            },
+                            {
+                                "id": 5,
+                                "label": "系统动作",
+                                "value": "system-action"
+                            },
+                            {
+                                "id": 6,
+                                "label": "页面",
+                                "value": "page"
+                            },
+                            {
+                                "id": 7,
+                                "label": "链接",
+                                "value": "link"
+                            },
+                            {
+                                "id": 8,
+                                "label": "子页面",
+                                "value": "sub-page"
+                            },
+                            {
+                                "id": 9,
+                                "label": "引用",
+                                "value": "ref"
+                            }
+                        ]
+                    }
+                }
+            },
+            "ChildPlacementOptions": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "label",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "label": "头部",
+                                "value": "header"
+                            },
+                            {
+                                "id": 2,
+                                "label": "侧栏",
+                                "value": "sidebar"
+                            },
+                            {
+                                "id": 3,
+                                "label": "工具栏",
+                                "value": "toolbar"
+                            },
+                            {
+                                "id": 4,
+                                "label": "用户菜单",
+                                "value": "user-menu"
+                            },
+                            {
+                                "id": 5,
+                                "label": "父级容器",
+                                "value": "parent"
+                            },
+                            {
+                                "id": 6,
+                                "label": "平铺",
+                                "value": "flat"
+                            }
+                        ]
+                    }
+                }
+            },
+            "PlacementFilterOptions": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "label",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "label": "全部布局",
+                                "value": "all"
+                            },
+                            {
+                                "id": 2,
+                                "label": "头部",
+                                "value": "header"
+                            },
+                            {
+                                "id": 3,
+                                "label": "侧栏",
+                                "value": "sidebar"
+                            },
+                            {
+                                "id": 4,
+                                "label": "工具栏",
+                                "value": "toolbar"
+                            },
+                            {
+                                "id": 5,
+                                "label": "用户菜单",
+                                "value": "user-menu"
+                            },
+                            {
+                                "id": 6,
+                                "label": "父级容器",
+                                "value": "parent"
+                            },
+                            {
+                                "id": 7,
+                                "label": "平铺",
+                                "value": "flat"
+                            }
+                        ]
+                    }
+                }
+            },
+            "LinkTargetOptions": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "label",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "label": "Iframe",
+                                "value": "iframe"
+                            },
+                            {
+                                "id": 2,
+                                "label": "新标签页",
+                                "value": "new-tab"
+                            },
+                            {
+                                "id": 3,
+                                "label": "当前页",
+                                "value": "self"
+                            }
+                        ]
+                    }
+                }
+            },
+            "RefNodeKindOptions": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "label",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "label": "页面",
+                                "value": "page"
+                            },
+                            {
+                                "id": 2,
+                                "label": "系统页面",
+                                "value": "system-page"
+                            },
+                            {
+                                "id": 3,
+                                "label": "子页面",
+                                "value": "sub-page"
+                            },
+                            {
+                                "id": 4,
+                                "label": "模块",
+                                "value": "module"
+                            }
+                        ]
+                    }
+                }
+            },
+            "NavigationNodes": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "string",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "parentId",
+                        "type": "string"
+                    },
+                    {
+                        "name": "title",
+                        "type": "string"
+                    },
+                    {
+                        "name": "description",
+                        "type": "string"
+                    },
+                    {
+                        "name": "icon",
+                        "type": "string"
+                    },
+                    {
+                        "name": "nodeKind",
+                        "type": "string"
+                    },
+                    {
+                        "name": "path",
+                        "type": "string"
+                    },
+                    {
+                        "name": "linkTarget",
+                        "type": "string"
+                    },
+                    {
+                        "name": "childPlacement",
+                        "type": "string"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "type": "number"
+                    },
+                    {
+                        "name": "dividerAfter",
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "hidden",
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "disabled",
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "refId",
+                        "type": "string"
+                    }
+                ],
+                "api": {
+                    "list": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "method": "GET"
+                    },
+                    "nested": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "method": "GET"
+                    },
+                    "children": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "method": "GET"
+                    },
+                    "path": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/path/{id}",
+                        "method": "GET"
+                    },
+                    "subtree": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/subtree",
+                        "method": "POST"
+                    },
+                    "nestedSearch": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/search",
+                        "method": "GET"
+                    },
+                    "create": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "method": "POST"
+                    },
+                    "update": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
+                        "method": "PUT"
+                    },
+                    "delete": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
+                        "method": "DELETE"
+                    }
+                },
+                "views": {
+                    "default": {
+                        "rows": [],
+                        "treeConfig": {
+                            "idField": "id",
+                            "parentIdField": "parentId",
+                            "textField": "title",
+                            "treeMode": "nested"
+                        },
+                        "autoLoad": true,
+                        "autoCurrentFirst": true
+                    }
+                }
+            },
+            "ActionLogs": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "time",
+                        "type": "string"
+                    },
+                    {
+                        "name": "action",
+                        "type": "string"
+                    },
+                    {
+                        "name": "target",
+                        "type": "string"
+                    },
+                    {
+                        "name": "status",
+                        "type": "string"
+                    },
+                    {
+                        "name": "detail",
+                        "type": "string"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "time": "-",
+                                "action": "页面初始化",
+                                "target": "tree-demo",
+                                "status": "waiting",
+                                "detail": "等待远程导航数据加载"
+                            }
+                        ]
+                    }
+                }
             }
-          ]
-        },
-        {
-          "id": 3,
-          "name": "市场部",
-          "label": "市场部",
-          "type": "department",
-          "level": 1,
-          "children": [
-            {
-              "id": 8,
-              "name": "品牌推广组",
-              "label": "品牌推广组",
-              "type": "team",
-              "level": 2,
-              "children": [
-                {
-                  "id": 19,
-                  "name": "郑十",
-                  "label": "郑十",
-                  "type": "employee",
-                  "title": "品牌经理",
-                  "level": 3
-                }
-              ]
-            },
-            {
-              "id": 9,
-              "name": "渠道销售组",
-              "label": "渠道销售组",
-              "type": "team",
-              "level": 2,
-              "children": [
-                {
-                  "id": 20,
-                  "name": "钱十一",
-                  "label": "钱十一",
-                  "type": "employee",
-                  "title": "销售经理",
-                  "level": 3
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": 4,
-          "name": "行政部",
-          "label": "行政部",
-          "type": "department",
-          "level": 1,
-          "children": [
-            {
-              "id": 10,
-              "name": "人力资源组",
-              "label": "人力资源组",
-              "type": "team",
-              "level": 2,
-              "children": [
-                {
-                  "id": 21,
-                  "name": "陈十二",
-                  "label": "陈十二",
-                  "type": "employee",
-                  "title": "HR专员",
-                  "level": 3
-                }
-              ]
-            },
-            {
-              "id": 11,
-              "name": "财务组",
-              "label": "财务组",
-              "type": "team",
-              "level": 2,
-              "children": [
-                {
-                  "id": 22,
-                  "name": "林十三",
-                  "label": "林十三",
-                  "type": "employee",
-                  "title": "会计",
-                  "level": 3
-                }
-              ]
-            }
-          ]
         }
-      ]
     }
-  ],
-  "searchKeyword": "",
-  "searchResults": [],
-  "selectedNode": null,
-  "selectedPath": [],
-  "selectedPathText": "",
-  "expandedKeys": [],
-  "currentNodeKey": null
 }

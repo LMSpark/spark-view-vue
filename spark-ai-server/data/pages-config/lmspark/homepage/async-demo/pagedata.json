@@ -2,44 +2,6 @@
     "dataset": {
         "dataSetName": "AsyncDemoDataSet",
         "tables": {
-            "Stats": {
-                "columns": [
-                    {
-                        "name": "id",
-                        "type": "number",
-                        "isPrimaryKey": true,
-                        "label": "ID"
-                    },
-                    {
-                        "name": "totalUsers",
-                        "type": "number",
-                        "label": "总用户数"
-                    },
-                    {
-                        "name": "todayOrders",
-                        "type": "number",
-                        "label": "今日订单"
-                    },
-                    {
-                        "name": "revenue",
-                        "type": "number",
-                        "label": "总收入"
-                    }
-                ],
-                "views": {
-                    "default": {
-                        "rows": [
-                            {
-                                "id": 1,
-                                "totalUsers": 6,
-                                "todayOrders": 2,
-                                "revenue": 7360
-                            }
-                        ],
-                        "autoCurrentFirst": true
-                    }
-                }
-            },
             "RecentOrders": {
                 "columns": [
                     {
@@ -126,7 +88,16 @@
                                 "date": "2026-03-15"
                             }
                         ],
-                        "autoCurrentFirst": true
+                        "autoCurrentFirst": true,
+                        "aggregates": {
+                            "orderCount": {
+                                "type": "count",
+                                "field": "id"
+                            },
+                            "amount": {
+                                "type": "sum"
+                            }
+                        }
                     }
                 }
             }

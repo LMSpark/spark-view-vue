@@ -1,315 +1,1073 @@
 [
-  {
-    "type": "el-row",
-    "props": {
-      "gutter": 16
-    },
-    "children": [
-      {
-        "type": "el-col",
-        "props": {
-          "span": 6
-        },
+    {
+        "type": "div",
+        "class": "pm-dashboard-page",
         "children": [
-          {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
-            "children": [
-              {
+            {
                 "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px"
-                },
+                "class": "pm-dashboard-shell",
                 "children": [
-                  {
-                    "type": "div",
-                    "style": {
-                      "fontSize": "32px",
-                      "fontWeight": "bold",
-                      "color": "#409eff"
+                    {
+                        "type": "div",
+                        "class": "pm-dashboard-hero",
+                        "children": [
+                            {
+                                "type": "div",
+                                "class": "pm-dashboard-hero__content",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "pm-dashboard-hero__eyebrow",
+                                        "children": [
+                                            "ENGINEERING PM HUB"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "pm-dashboard-hero__title",
+                                        "children": [
+                                            "工程项目管理总览"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "pm-dashboard-hero__subtitle",
+                                        "children": [
+                                            "把项目状态、任务节奏和团队风险放进同一张驾驶舱，避免被表格和零散模块切碎。"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "hero-tags",
+                                        "children": [
+                                            {
+                                                "type": "span",
+                                                "class": "hero-tag",
+                                                "children": [
+                                                    "里程碑 3 个"
+                                                ]
+                                            },
+                                            {
+                                                "type": "span",
+                                                "class": "hero-tag",
+                                                "children": [
+                                                    "本周评审 2 场"
+                                                ]
+                                            },
+                                            {
+                                                "type": "span",
+                                                "class": "hero-tag",
+                                                "children": [
+                                                    "高风险项目 1 个"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "div",
+                                "class": "pm-dashboard-hero__aside",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "hero-panel",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "hero-panel__title",
+                                                "children": [
+                                                    "交付温度计"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "hero-panel__subtitle",
+                                                "children": [
+                                                    "把 PM 最关心的稳定性、节奏和风险收敛成一眼能读懂的状态。"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "hero-panel__grid",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "hero-panel__metric hero-panel__metric--good",
+                                                        "children": [
+                                                            {
+                                                                "type": "div",
+                                                                "class": "hero-panel__metric-label",
+                                                                "children": [
+                                                                    "整体准时率"
+                                                                ]
+                                                            },
+                                                            {
+                                                                "type": "div",
+                                                                "class": "hero-panel__metric-value",
+                                                                "children": [
+                                                                    "86%"
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "hero-panel__metric hero-panel__metric--warn",
+                                                        "children": [
+                                                            {
+                                                                "type": "div",
+                                                                "class": "hero-panel__metric-label",
+                                                                "children": [
+                                                                    "本周关键节点"
+                                                                ]
+                                                            },
+                                                            {
+                                                                "type": "div",
+                                                                "class": "hero-panel__metric-value",
+                                                                "children": [
+                                                                    "7"
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "hero-panel__metric hero-panel__metric--danger",
+                                                        "children": [
+                                                            {
+                                                                "type": "div",
+                                                                "class": "hero-panel__metric-label",
+                                                                "children": [
+                                                                    "风险待处理"
+                                                                ]
+                                                            },
+                                                            {
+                                                                "type": "div",
+                                                                "class": "hero-panel__metric-value",
+                                                                "children": [
+                                                                    "3"
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
                     },
-                    "children": [
-                      {
-                        "type": "RenderProjectCount"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "div",
-                    "style": {
-                      "color": "#909399",
-                      "marginTop": "8px"
+                    {
+                        "type": "div",
+                        "class": "pm-dashboard-metrics-grid",
+                        "children": [
+                            {
+                                "type": "el-card",
+                                "class": "metric-card metric-card--blue",
+                                "props": {
+                                    "shadow": "never"
+                                },
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__label",
+                                        "children": [
+                                            "进行中项目"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__accent"
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__value",
+                                        "children": [
+                                            "5"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__meta",
+                                        "children": [
+                                            "本周交付节点稳定推进"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "el-card",
+                                "class": "metric-card metric-card--amber",
+                                "props": {
+                                    "shadow": "never"
+                                },
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__label",
+                                        "children": [
+                                            "待办任务"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__accent"
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__value",
+                                        "children": [
+                                            "12"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__meta",
+                                        "children": [
+                                            "需要优先排布本周资源"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "el-card",
+                                "class": "metric-card metric-card--green",
+                                "props": {
+                                    "shadow": "never"
+                                },
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__label",
+                                        "children": [
+                                            "团队成员"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__accent"
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__value",
+                                        "children": [
+                                            "18"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__meta",
+                                        "children": [
+                                            "跨产品、研发、测试协同中"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "el-card",
+                                "class": "metric-card metric-card--red",
+                                "props": {
+                                    "shadow": "never"
+                                },
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__label",
+                                        "children": [
+                                            "逾期任务"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__accent"
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__value",
+                                        "children": [
+                                            "3"
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "metric-card__meta",
+                                        "children": [
+                                            "建议今天完成风险清理"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
                     },
-                    "children": [
-                      "进行中项目"
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-col",
-        "props": {
-          "span": 6
-        },
-        "children": [
-          {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
-            "children": [
-              {
-                "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px"
-                },
-                "children": [
-                  {
-                    "type": "div",
-                    "style": {
-                      "fontSize": "32px",
-                      "fontWeight": "bold",
-                      "color": "#e6a23c"
+                    {
+                        "type": "el-card",
+                        "class": "dashboard-panel dashboard-panel--signals",
+                        "props": {
+                            "shadow": "never"
+                        },
+                        "children": [
+                            {
+                                "type": "div",
+                                "class": "dashboard-panel__header dashboard-panel__header--compact",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__eyebrow",
+                                                "children": [
+                                                    "CONTROL PANEL"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__title",
+                                                "children": [
+                                                    "管理信号"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__subtitle",
+                                                "children": [
+                                                    "把节奏、资源和风险从零散横条收敛进右侧总控位。"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "div",
+                                "class": "signal-strip-wrap",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "signal-strip",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "signal-strip__card signal-strip__card--good",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__title",
+                                                        "children": [
+                                                            "交付节奏"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__value",
+                                                        "children": [
+                                                            "稳定推进"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__note",
+                                                        "children": [
+                                                            "里程碑连续两周未滑动"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "signal-strip__card signal-strip__card--warn",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__title",
+                                                        "children": [
+                                                            "资源状态"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__value",
+                                                        "children": [
+                                                            "轻度拥挤"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__note",
+                                                        "children": [
+                                                            "前端与测试本周容量偏满"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "signal-strip__card signal-strip__card--danger",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__title",
+                                                        "children": [
+                                                            "风险观察"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__value",
+                                                        "children": [
+                                                            "需今天处理"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "signal-strip__note",
+                                                        "children": [
+                                                            "逾期任务集中在联调阶段"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "rail-digest",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "rail-digest__item",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "rail-digest__label",
+                                                        "children": [
+                                                            "本周评审"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "rail-digest__value",
+                                                        "children": [
+                                                            "2 场"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "rail-digest__item",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "rail-digest__label",
+                                                        "children": [
+                                                            "待确认依赖"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "rail-digest__value",
+                                                        "children": [
+                                                            "4 项"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "rail-digest__item",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "rail-digest__label",
+                                                        "children": [
+                                                            "跨组协作"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "rail-digest__value",
+                                                        "children": [
+                                                            "3 条"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
                     },
-                    "children": [
-                      {
-                        "type": "RenderTaskCount"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "div",
-                    "style": {
-                      "color": "#909399",
-                      "marginTop": "8px"
+                    {
+                        "type": "el-card",
+                        "class": "dashboard-panel dashboard-panel--focus",
+                        "props": {
+                            "shadow": "never"
+                        },
+                        "children": [
+                            {
+                                "type": "div",
+                                "class": "dashboard-panel__header dashboard-panel__header--compact",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__eyebrow",
+                                                "children": [
+                                                    "FOCUS"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__title",
+                                                "children": [
+                                                    "重点项目"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "div",
+                                "class": "focus-list",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "focus-card",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__top",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "children": [
+                                                            {
+                                                                "type": "div",
+                                                                "class": "focus-card__name",
+                                                                "children": [
+                                                                    "智慧园区项目"
+                                                                ]
+                                                            },
+                                                            {
+                                                                "type": "div",
+                                                                "class": "focus-card__phase",
+                                                                "children": [
+                                                                    "联调阶段 · 负责人 张三"
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__health focus-card__health--stable",
+                                                        "children": [
+                                                            "稳定"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__progress-row",
+                                                "children": [
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-label",
+                                                        "children": [
+                                                            "进度"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-value",
+                                                        "children": [
+                                                            "68%"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__progress-track",
+                                                "children": [
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-bar focus-card__progress-bar--stable",
+                                                        "props": {
+                                                            "style": {
+                                                                "width": "68%"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "focus-card",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__top",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "children": [
+                                                            {
+                                                                "type": "div",
+                                                                "class": "focus-card__name",
+                                                                "children": [
+                                                                    "ERP 升级项目"
+                                                                ]
+                                                            },
+                                                            {
+                                                                "type": "div",
+                                                                "class": "focus-card__phase",
+                                                                "children": [
+                                                                    "验收准备 · 负责人 李四"
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__health focus-card__health--attention",
+                                                        "children": [
+                                                            "关注"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__progress-row",
+                                                "children": [
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-label",
+                                                        "children": [
+                                                            "进度"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-value",
+                                                        "children": [
+                                                            "82%"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__progress-track",
+                                                "children": [
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-bar focus-card__progress-bar--attention",
+                                                        "props": {
+                                                            "style": {
+                                                                "width": "82%"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "focus-card",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__top",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "children": [
+                                                            {
+                                                                "type": "div",
+                                                                "class": "focus-card__name",
+                                                                "children": [
+                                                                    "移动办公平台"
+                                                                ]
+                                                            },
+                                                            {
+                                                                "type": "div",
+                                                                "class": "focus-card__phase",
+                                                                "children": [
+                                                                    "缺陷收口 · 负责人 王五"
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__health focus-card__health--risk",
+                                                        "children": [
+                                                            "风险"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__progress-row",
+                                                "children": [
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-label",
+                                                        "children": [
+                                                            "进度"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-value",
+                                                        "children": [
+                                                            "54%"
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "focus-card__progress-track",
+                                                "children": [
+                                                    {
+                                                        "type": "span",
+                                                        "class": "focus-card__progress-bar focus-card__progress-bar--risk",
+                                                        "props": {
+                                                            "style": {
+                                                                "width": "54%"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
                     },
-                    "children": [
-                      "待办任务"
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-col",
-        "props": {
-          "span": 6
-        },
-        "children": [
-          {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
-            "children": [
-              {
-                "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px"
-                },
-                "children": [
-                  {
-                    "type": "div",
-                    "style": {
-                      "fontSize": "32px",
-                      "fontWeight": "bold",
-                      "color": "#67c23a"
+                    {
+                        "type": "el-card",
+                        "class": "dashboard-panel dashboard-panel--table",
+                        "props": {
+                            "shadow": "never"
+                        },
+                        "children": [
+                            {
+                                "type": "div",
+                                "class": "dashboard-panel__header",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__eyebrow",
+                                                "children": [
+                                                    "TASK BOARD"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__title",
+                                                "children": [
+                                                    "我的待办任务"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__subtitle",
+                                                "children": [
+                                                    "任务板保留为页面主工作区，宽度优先让给高频操作与扫读。"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "task-board-hint",
+                                        "children": [
+                                            {
+                                                "type": "span",
+                                                "class": "task-board-hint__dot"
+                                            },
+                                            {
+                                                "type": "span",
+                                                "children": [
+                                                    "按优先级和截止日快速扫一遍今天最该推进的事项"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "r-table",
+                                "dataKey": "MyTasks@rows",
+                                "class": "dashboard-task-table",
+                                "props": {
+                                    "border": false,
+                                    "stripe": false,
+                                    "highlightCurrentRow": true
+                                },
+                                "children": [
+                                    {
+                                        "type": "el-table-column",
+                                        "props": {
+                                            "prop": "title",
+                                            "label": "任务名称",
+                                            "minWidth": 220
+                                        }
+                                    },
+                                    {
+                                        "type": "el-table-column",
+                                        "props": {
+                                            "prop": "projectName",
+                                            "label": "所属项目",
+                                            "width": 150
+                                        }
+                                    },
+                                    {
+                                        "type": "el-table-column",
+                                        "props": {
+                                            "prop": "priority",
+                                            "label": "优先级",
+                                            "width": 100
+                                        }
+                                    },
+                                    {
+                                        "type": "el-table-column",
+                                        "props": {
+                                            "prop": "dueDate",
+                                            "label": "截止日期",
+                                            "width": 120
+                                        }
+                                    },
+                                    {
+                                        "type": "el-table-column",
+                                        "props": {
+                                            "prop": "status",
+                                            "label": "状态",
+                                            "width": 110
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
                     },
-                    "children": [
-                      {
-                        "type": "RenderMemberCount"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "div",
-                    "style": {
-                      "color": "#909399",
-                      "marginTop": "8px"
-                    },
-                    "children": [
-                      "团队成员"
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-col",
-        "props": {
-          "span": 6
-        },
-        "children": [
-          {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
-            "children": [
-              {
-                "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px"
-                },
-                "children": [
-                  {
-                    "type": "div",
-                    "style": {
-                      "fontSize": "32px",
-                      "fontWeight": "bold",
-                      "color": "#f56c6c"
-                    },
-                    "children": [
-                      {
-                        "type": "RenderOverdueCount"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "div",
-                    "style": {
-                      "color": "#909399",
-                      "marginTop": "8px"
-                    },
-                    "children": [
-                      "逾期任务"
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "type": "el-row",
-    "props": {
-      "gutter": 16
-    },
-    "style": {
-      "marginTop": "16px"
-    },
-    "children": [
-      {
-        "type": "el-col",
-        "props": {
-          "span": 16
-        },
-        "children": [
-          {
-            "type": "el-card",
-            "children": [
-              {
-                "type": "div",
-                "style": {
-                  "fontSize": "16px",
-                  "fontWeight": "bold",
-                  "marginBottom": "12px"
-                },
-                "children": [
-                  "我的待办任务"
-                ]
-              },
-              {
-                "type": "r-table",
-                "dataKey": "MyTasks@rows",
-                "props": {
-                  "border": true,
-                  "stripe": true,
-                  "highlightCurrentRow": true
-                },
-                "children": [
-                  {
-                    "type": "el-table-column",
-                    "props": {
-                      "prop": "title",
-                      "label": "任务名称",
-                      "minWidth": 200
+                    {
+                        "type": "el-card",
+                        "class": "dashboard-panel dashboard-panel--activity",
+                        "props": {
+                            "shadow": "never"
+                        },
+                        "children": [
+                            {
+                                "type": "div",
+                                "class": "dashboard-panel__header dashboard-panel__header--compact",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "children": [
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__eyebrow",
+                                                "children": [
+                                                    "ACTIVITY"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__title",
+                                                "children": [
+                                                    "项目动态"
+                                                ]
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "dashboard-panel__subtitle",
+                                                "children": [
+                                                    "保留独立侧栏，用来承接当天更新和里程碑变化。"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "div",
+                                "class": "activity-feed",
+                                "children": [
+                                    {
+                                        "type": "div",
+                                        "class": "activity-feed__item",
+                                        "children": [
+                                            {
+                                                "type": "span",
+                                                "class": "activity-feed__dot activity-feed__dot--done"
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "activity-feed__content",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__text",
+                                                        "children": [
+                                                            "张三 完成了任务「接口文档编写」"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__time",
+                                                        "children": [
+                                                            "10 分钟前"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "activity-feed__item",
+                                        "children": [
+                                            {
+                                                "type": "span",
+                                                "class": "activity-feed__dot activity-feed__dot--new"
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "activity-feed__content",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__text",
+                                                        "children": [
+                                                            "李四 创建了任务「前端页面开发」"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__time",
+                                                        "children": [
+                                                            "30 分钟前"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "activity-feed__item",
+                                        "children": [
+                                            {
+                                                "type": "span",
+                                                "class": "activity-feed__dot activity-feed__dot--doc"
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "activity-feed__content",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__text",
+                                                        "children": [
+                                                            "王五 上传了文档「需求规格说明书 v2.0」"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__time",
+                                                        "children": [
+                                                            "1 小时前"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "activity-feed__item",
+                                        "children": [
+                                            {
+                                                "type": "span",
+                                                "class": "activity-feed__dot activity-feed__dot--progress"
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "activity-feed__content",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__text",
+                                                        "children": [
+                                                            "赵六 更新了「智慧园区项目」进度至 68%"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__time",
+                                                        "children": [
+                                                            "2 小时前"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "div",
+                                        "class": "activity-feed__item",
+                                        "children": [
+                                            {
+                                                "type": "span",
+                                                "class": "activity-feed__dot activity-feed__dot--milestone"
+                                            },
+                                            {
+                                                "type": "div",
+                                                "class": "activity-feed__content",
+                                                "children": [
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__text",
+                                                        "children": [
+                                                            "ERP 升级项目进入验收阶段"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "div",
+                                                        "class": "activity-feed__time",
+                                                        "children": [
+                                                            "3 小时前"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
                     }
-                  },
-                  {
-                    "type": "el-table-column",
-                    "props": {
-                      "prop": "projectName",
-                      "label": "所属项目",
-                      "width": 150
-                    }
-                  },
-                  {
-                    "type": "el-table-column",
-                    "props": {
-                      "prop": "priority",
-                      "label": "优先级",
-                      "width": 100
-                    }
-                  },
-                  {
-                    "type": "el-table-column",
-                    "props": {
-                      "prop": "dueDate",
-                      "label": "截止日期",
-                      "width": 120
-                    }
-                  },
-                  {
-                    "type": "el-table-column",
-                    "props": {
-                      "prop": "status",
-                      "label": "状态",
-                      "width": 100
-                    }
-                  }
                 ]
-              }
-            ]
-          }
+            }
         ]
-      },
-      {
-        "type": "el-col",
-        "props": {
-          "span": 8
-        },
-        "children": [
-          {
-            "type": "el-card",
-            "children": [
-              {
-                "type": "div",
-                "style": {
-                  "fontSize": "16px",
-                  "fontWeight": "bold",
-                  "marginBottom": "12px"
-                },
-                "children": [
-                  "项目动态"
-                ]
-              },
-              {
-                "type": "RenderRecentActivities"
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
+    }
 ]

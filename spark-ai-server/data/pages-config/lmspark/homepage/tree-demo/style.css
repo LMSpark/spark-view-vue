@@ -1,138 +1,222 @@
 [data-page="tree-demo"] {
-  padding: 20px;
-  max-width: 1600px;
+  padding: 18px;
+  max-width: 1680px;
   margin: 0 auto;
+  background:
+    linear-gradient(180deg, #f5f7fa 0%, #eef2f6 100%),
+    radial-gradient(circle at top left, rgba(64, 158, 255, 0.08), transparent 24%);
 }
 
-[data-page="tree-demo"] .demo-header {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #67c23a;
+[data-page="tree-demo"] .nav-editor-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-[data-page="tree-demo"] .demo-header h2 {
-  color: #67c23a;
-  margin: 0 0 10px 0;
-  font-size: 28px;
+[data-page="tree-demo"] .nav-editor-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
 }
 
-[data-page="tree-demo"] .demo-header p {
-  color: #666;
+[data-page="tree-demo"] .nav-editor-header__title,
+[data-page="tree-demo"] .nav-editor-header__status,
+[data-page="tree-demo"] .nav-editor-panel,
+[data-page="tree-demo"] .nav-editor-toolbar-card,
+[data-page="tree-demo"] .nav-editor-metric {
+  border-radius: 16px;
+  border: 1px solid #dbe3ec;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 30px rgba(15, 35, 55, 0.06);
+}
+
+[data-page="tree-demo"] .nav-editor-header__title {
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #1f2f45 0%, #314967 60%, #416189 100%);
+  color: #f5f7fb;
+}
+
+[data-page="tree-demo"] .nav-editor-header__title h1 {
+  margin: 14px 0 8px;
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+[data-page="tree-demo"] .nav-editor-header__title p {
   margin: 0;
-  font-size: 14px;
-}
-
-[data-page="tree-demo"] .demo-toolbar {
-  margin-bottom: 20px;
-  padding: 15px;
-  background: #f5f7fa;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-[data-page="tree-demo"] .tree-wrapper {
-  max-height: 600px;
-  overflow-y: auto;
-  padding: 10px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  background: #fff;
-}
-
-/* RendererTree 自定义节点样式 */
-[data-page="tree-demo"] .custom-tree-node {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  width: 100%;
-}
-
-[data-page="tree-demo"] .custom-tree-node .node-label {
-  font-size: 14px;
-  color: #303133;
-  flex: 1;
-}
-
-[data-page="tree-demo"] .custom-tree-node:hover .node-label {
-  color: #409eff;
-}
-
-[data-page="tree-demo"] .tree-node-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-[data-page="tree-demo"] .node-icon {
-  font-size: 16px;
-}
-
-[data-page="tree-demo"] .node-info {
-  padding: 10px;
-}
-
-[data-page="tree-demo"] .node-path {
-  padding: 15px;
-  background: #f9fafc;
-  border-radius: 4px;
-}
-
-[data-page="tree-demo"] .node-path h4 {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  color: #606266;
-}
-
-[data-page="tree-demo"] .demo-info {
-  margin-top: 30px;
-}
-
-[data-page="tree-demo"] .el-card {
-  margin-bottom: 20px;
-}
-
-[data-page="tree-demo"] .el-tree {
-  font-size: 14px;
-}
-
-[data-page="tree-demo"] .el-tree-node__content {
-  height: auto;
-  padding: 8px 0;
-}
-
-[data-page="tree-demo"] .el-tag {
-  font-size: 12px;
-}
-
-[data-page="tree-demo"] .el-descriptions {
-  font-size: 14px;
-}
-
-[data-page="tree-demo"] .el-table {
-  font-size: 14px;
-}
-
-[data-page="tree-demo"] .el-breadcrumb {
+  color: rgba(245, 247, 251, 0.82);
   line-height: 1.8;
 }
 
-/* 节点类型图标 */
-[data-page="tree-demo"] .tree-node-label[data-type="company"] .node-icon::before {
-  content: "🏢";
+[data-page="tree-demo"] .nav-editor-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-[data-page="tree-demo"] .tree-node-label[data-type="department"] .node-icon::before {
-  content: "🏛️";
+[data-page="tree-demo"] .nav-editor-header__status {
+  overflow: hidden;
 }
 
-[data-page="tree-demo"] .tree-node-label[data-type="team"] .node-icon::before {
-  content: "👥";
+[data-page="tree-demo"] .nav-editor-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 
-[data-page="tree-demo"] .tree-node-label[data-type="employee"] .node-icon::before {
-  content: "👤";
+[data-page="tree-demo"] .nav-editor-metric__label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #738294;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[data-page="tree-demo"] .nav-editor-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+[data-page="tree-demo"] .nav-editor-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+[data-page="tree-demo"] .nav-editor-body {
+  align-items: start;
+}
+
+[data-page="tree-demo"] .nav-editor-panel {
+  margin-bottom: 16px;
+}
+
+[data-page="tree-demo"] .nav-editor-panel--tree {
+  position: sticky;
+  top: 12px;
+}
+
+[data-page="tree-demo"] .nav-editor-panel__head {
+  margin-bottom: 14px;
+}
+
+[data-page="tree-demo"] .nav-editor-panel__head h3 {
+  margin: 0;
+  color: #24374e;
+  font-size: 20px;
+}
+
+[data-page="tree-demo"] .nav-editor-panel__head p {
+  margin: 8px 0 0;
+  color: #7a8796;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+[data-page="tree-demo"] .nav-editor-tree-shell {
+  min-height: 760px;
+  border-radius: 14px;
+  border: 1px solid #e0e7ef;
+  background: linear-gradient(180deg, #fbfcfe 0%, #f4f7fa 100%);
+  overflow: hidden;
+}
+
+[data-page="tree-demo"] .nav-editor-tree-shell .renderer-tree-main {
+  padding: 10px;
+}
+
+[data-page="tree-demo"] .nav-editor-tree-shell .el-tree {
+  background: transparent;
+}
+
+[data-page="tree-demo"] .nav-editor-tree-shell .el-tree-node__content {
+  height: 40px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+[data-page="tree-demo"] .nav-editor-tree-shell .el-tree-node__content:hover {
+  background: #eef4fb;
+}
+
+[data-page="tree-demo"] .el-card__header {
+  border-bottom-color: #e7edf4;
+  color: #223248;
+  font-weight: 700;
+}
+
+[data-page="tree-demo"] .el-input,
+[data-page="tree-demo"] .el-select,
+[data-page="tree-demo"] .el-radio-group,
+[data-page="tree-demo"] .el-table {
+  font-size: 13px;
+}
+
+[data-page="tree-demo"] .el-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+[data-page="tree-demo"] .el-card__body {
+  padding-top: 18px;
+}
+
+@media (max-width: 1360px) {
+  [data-page="tree-demo"] .nav-editor-header {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page="tree-demo"] .nav-editor-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-page="tree-demo"] .nav-editor-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page="tree-demo"] .nav-editor-toolbar__actions {
+    justify-content: flex-start;
+  }
+
+  [data-page="tree-demo"] .nav-editor-panel--tree {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  [data-page="tree-demo"] {
+    padding: 12px;
+  }
+
+  [data-page="tree-demo"] .nav-editor-header__title {
+    padding: 18px 20px;
+  }
+
+  [data-page="tree-demo"] .nav-editor-header__title h1 {
+    font-size: 24px;
+  }
+
+  [data-page="tree-demo"] .nav-editor-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page="tree-demo"] .nav-editor-toolbar__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  [data-page="tree-demo"] .nav-editor-tree-shell {
+    min-height: 420px;
+  }
 }

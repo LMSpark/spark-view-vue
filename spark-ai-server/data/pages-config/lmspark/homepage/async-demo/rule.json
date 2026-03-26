@@ -1,62 +1,311 @@
 [
   {
     "type": "div",
-    "class": "dashboard-page",
-    "style": {
-      "padding": "20px"
-    },
+    "class": "async-demo-page",
     "children": [
       {
         "type": "div",
-        "class": "page-header",
+        "class": "async-hero",
         "children": [
           {
-            "type": "h1",
+            "type": "div",
+            "class": "async-hero__copy",
             "children": [
-              "异步数据加载演示"
+              {
+                "type": "div",
+                "class": "async-hero__eyebrow",
+                "children": [
+                  "ASYNC SNAPSHOT"
+                ]
+              },
+              {
+                "type": "h1",
+                "class": "async-hero__title",
+                "children": [
+                  "异步数据加载演示"
+                ]
+              },
+              {
+                "type": "p",
+                "class": "async-hero__desc",
+                "children": [
+                  "当前页只保留 DataSet 与规则配置，统计卡直接来自汇总行，明细区直接来自当前行；点击表格行即可切换详情，无需额外脚本绑定。"
+                ]
+              }
             ]
           },
           {
-            "type": "RenderRefreshButton"
+            "type": "div",
+            "class": "async-hero__note",
+            "children": [
+              {
+                "type": "div",
+                "class": "async-note__label",
+                "children": [
+                  "当前模式"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "async-note__value",
+                "children": [
+                  "配置驱动"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "async-note__subtext",
+                "children": [
+                  "无 Render* 自定义节点"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "async-note__subtext async-note__subtext--muted",
+                "children": [
+                  "主从明细由 DataView.currentRow 自动驱动"
+                ]
+              }
+            ]
           }
         ]
       },
       {
         "type": "div",
-        "class": "stats-container",
+        "class": "async-stats-grid",
         "children": [
           {
-            "type": "RenderStatCard",
-            "props": {
-              "label": "总用户数",
-              "dataKey": "Stats@currentRow.totalUsers"
-            }
+            "type": "div",
+            "class": "async-stat-card async-stat-card--blue",
+            "children": [
+              {
+                "type": "div",
+                "class": "async-stat-card__label",
+                "children": [
+                  "订单总数"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "async-stat-card__value",
+                "dataKey": "RecentOrders@summaryRow.orderCount",
+                "children": [
+                  ""
+                ]
+              }
+            ]
           },
           {
-            "type": "RenderStatCard",
-            "props": {
-              "label": "今日订单",
-              "dataKey": "Stats@currentRow.todayOrders"
-            }
+            "type": "div",
+            "class": "async-stat-card async-stat-card--green",
+            "children": [
+              {
+                "type": "div",
+                "class": "async-stat-card__label",
+                "children": [
+                  "当前订单金额"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "async-stat-card__value",
+                "dataKey": "RecentOrders@currentRow.amount",
+                "children": [
+                  ""
+                ]
+              }
+            ]
           },
           {
-            "type": "RenderStatCard",
-            "props": {
-              "label": "总收入",
-              "dataKey": "Stats@currentRow.revenue"
-            }
+            "type": "div",
+            "class": "async-stat-card async-stat-card--amber",
+            "children": [
+              {
+                "type": "div",
+                "class": "async-stat-card__label",
+                "children": [
+                  "金额合计"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "async-stat-card__value",
+                "dataKey": "RecentOrders@summaryRow.amount",
+                "children": [
+                  ""
+                ]
+              }
+            ]
           }
         ]
       },
       {
-        "type": "r-section",
+        "type": "div",
+        "class": "async-content-grid",
+        "children": [
+          {
+            "type": "el-card",
+            "class": "async-panel async-panel--detail",
+            "props": {
+              "shadow": "never",
+              "header": "汇总详情"
+            },
+            "children": [
+              {
+                "type": "r-detail",
+                "dataKey": "RecentOrders@summaryRow",
+                "children": [
+                  {
+                    "type": "r-number",
+                    "field": "orderCount",
+                    "props": {
+                      "label": "订单总数"
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "field": "amount",
+                    "props": {
+                      "label": "金额合计"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "el-card",
+            "class": "async-panel async-panel--detail",
+            "props": {
+              "shadow": "never",
+              "header": "当前订单明细"
+            },
+            "children": [
+              {
+                "type": "r-detail",
+                "dataKey": "RecentOrders@currentRow",
+                "children": [
+                  {
+                    "type": "r-text",
+                    "field": "orderNo",
+                    "props": {
+                      "label": "订单号"
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "customer",
+                    "props": {
+                      "label": "客户"
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "field": "amount",
+                    "props": {
+                      "label": "金额"
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "status",
+                    "props": {
+                      "label": "状态"
+                    }
+                  },
+                  {
+                    "type": "r-date",
+                    "field": "date",
+                    "props": {
+                      "label": "日期"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "async-content-grid",
+        "children": [
+          {
+            "type": "el-card",
+            "class": "async-panel async-panel--hint",
+            "props": {
+              "shadow": "never",
+              "header": "配置说明"
+            },
+            "children": [
+              {
+                "type": "div",
+                "class": "async-bullet-list",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      "数据来源：pagedata.json 中的 DataSet 默认视图。"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "children": [
+                      "交互方式：汇总卡来自 summaryRow，订单明细来自 currentRow。"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "children": [
+                      "脚本状态：仅保留 __init__ 占位，不再维护刷新按钮和自定义渲染函数。"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "el-card",
+            "class": "async-panel async-panel--hint",
+            "props": {
+              "shadow": "never",
+              "header": "当前能力边界"
+            },
+            "children": [
+              {
+                "type": "div",
+                "class": "async-bullet-list",
+                "children": [
+                  {
+                    "type": "p",
+                    "children": [
+                      "已保留：零代码数据绑定、主从明细、样式层表达。"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "children": [
+                      "已移除：随机造数、按钮刷新、自定义渲染函数。"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "children": [
+                      "如需真实异步演示，下一步应把 RecentOrders 接到 API.list，而不是恢复 script.js 逻辑。"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-card",
+        "class": "async-table-panel",
         "props": {
-          "title": "最近订单（异步加载）",
-          "headerActions": [
-            {
-              "type": "RenderRefreshOrdersButton"
-            }
-          ]
+          "shadow": "never",
+          "header": "最近订单快照"
         },
         "children": [
           {
@@ -80,21 +329,24 @@
                 "type": "r-text",
                 "field": "customer",
                 "props": {
-                  "label": "客户"
+                  "label": "客户",
+                  "width": 120
                 }
               },
               {
                 "type": "r-number",
                 "field": "amount",
                 "props": {
-                  "label": "金额"
+                  "label": "金额",
+                  "width": 120
                 }
               },
               {
                 "type": "r-text",
                 "field": "status",
                 "props": {
-                  "label": "状态"
+                  "label": "状态",
+                  "width": 120
                 }
               },
               {
@@ -102,7 +354,7 @@
                 "field": "date",
                 "props": {
                   "label": "日期",
-                  "width": 120
+                  "width": 140
                 }
               }
             ]

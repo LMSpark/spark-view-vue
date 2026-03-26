@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-26T09:35:42.299Z
+ * 生成时间：2026-03-26T18:27:59.340Z
  * 条目数量：83
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -23,7 +23,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-26T09:35:42.292Z",
+  "buildTime": "2026-03-26T18:27:59.336Z",
   "componentCount": 83,
   "registry": {
     "containers": [
@@ -1366,6 +1366,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。",
       "props": [
+        {
+          "name": "docks",
+          "type": "ContainerDocks",
+          "required": false,
+          "description": "dock 布局配置"
+        },
         {
           "name": "title",
           "type": "string",

@@ -1,83 +1,126 @@
 [
   {
     "type": "div",
-    "style": {
-      "marginBottom": "16px"
-    },
+    "class": "doc-templates-page",
     "children": [
       {
-        "type": "el-page-header",
-        "props": {
-          "title": "文档模板",
-          "content": "标准化文档模板，一键创建"
-        }
-      }
-    ]
-  },
-  {
-    "type": "el-row",
-    "props": {
-      "gutter": 16
-    },
-    "children": [
-      {
-        "type": "el-col",
-        "props": {
-          "span": 8
-        },
+        "type": "div",
+        "class": "doc-templates-hero",
         "children": [
           {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
+            "type": "div",
+            "class": "doc-templates-hero__main",
             "children": [
               {
                 "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px 0"
-                },
+                "class": "doc-templates-hero__eyebrow",
+                "children": [
+                  "TEMPLATE CENTER"
+                ]
+              },
+              {
+                "type": "h1",
+                "class": "doc-templates-hero__title",
+                "children": [
+                  "工程文档模板中心"
+                ]
+              },
+              {
+                "type": "p",
+                "class": "doc-templates-hero__desc",
+                "children": [
+                  "把常用工程文档收敛为统一模板入口，减少重复搭建和文档结构不一致的问题。当前页保持纯配置实现，不依赖自定义脚本组件。"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "doc-templates-hero__tags",
                 "children": [
                   {
-                    "type": "el-icon",
-                    "props": {
-                      "size": 48
-                    },
-                    "style": {
-                      "color": "#409eff",
-                      "marginBottom": "12px"
-                    },
+                    "type": "span",
+                    "class": "doc-tag",
                     "children": [
-                      {
-                        "type": "Document"
-                      }
+                      "标准结构"
                     ]
                   },
                   {
-                    "type": "h3",
+                    "type": "span",
+                    "class": "doc-tag",
                     "children": [
-                      "需求规格说明书"
+                      "快速复用"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "class": "doc-tag",
+                    "children": [
+                      "零代码维护"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "doc-templates-hero__side",
+            "children": [
+              {
+                "type": "div",
+                "class": "doc-hero-metric",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "doc-hero-metric__value",
+                    "children": [
+                      "6"
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "doc-hero-metric__label",
+                    "children": [
+                      "核心模板"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "doc-hero-metric",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "doc-hero-metric__value",
+                    "children": [
+                      "3"
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "class": "doc-hero-metric__label",
+                    "children": [
+                      "使用阶段"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "doc-hero-callout",
+                "children": [
+                  {
+                    "type": "div",
+                    "class": "doc-hero-callout__title",
+                    "children": [
+                      "推荐路径"
                     ]
                   },
                   {
                     "type": "p",
-                    "style": {
-                      "color": "#909399",
-                      "fontSize": "13px"
-                    },
+                    "class": "doc-hero-callout__text",
                     "children": [
-                      "标准SRS模板，含功能/非功能需求"
-                    ]
-                  },
-                  {
-                    "type": "el-button",
-                    "props": {
-                      "type": "primary",
-                      "size": "small"
-                    },
-                    "children": [
-                      "使用模板"
+                      "先选模板，再按项目场景补充业务字段，尽量复用既有结构。"
                     ]
                   }
                 ]
@@ -87,65 +130,352 @@
         ]
       },
       {
-        "type": "el-col",
-        "props": {
-          "span": 8
-        },
+        "type": "div",
+        "class": "doc-templates-section-head",
         "children": [
           {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
+            "type": "h2",
+            "children": [
+              "常用模板"
+            ]
+          },
+          {
+            "type": "p",
+            "children": [
+              "覆盖需求、设计、测试、会议、周报与验收六类高频场景。"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "doc-templates-grid",
+        "children": [
+          {
+            "type": "div",
+            "class": "template-card",
             "children": [
               {
                 "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px 0"
-                },
+                "class": "template-badge template-badge--blue",
+                "children": [
+                  "SRS"
+                ]
+              },
+              {
+                "type": "h3",
+                "children": [
+                  "需求规格说明书"
+                ]
+              },
+              {
+                "type": "p",
+                "class": "template-card__desc",
+                "children": [
+                  "标准 SRS 模板，适合梳理功能范围、角色场景和非功能约束。"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "template-card__meta",
                 "children": [
                   {
-                    "type": "el-icon",
-                    "props": {
-                      "size": 48
-                    },
-                    "style": {
-                      "color": "#67c23a",
-                      "marginBottom": "12px"
-                    },
+                    "type": "span",
                     "children": [
-                      {
-                        "type": "Notebook"
-                      }
+                      "阶段：立项 / 需求"
                     ]
                   },
                   {
-                    "type": "h3",
+                    "type": "span",
                     "children": [
-                      "系统设计文档"
-                    ]
-                  },
-                  {
-                    "type": "p",
-                    "style": {
-                      "color": "#909399",
-                      "fontSize": "13px"
-                    },
-                    "children": [
-                      "架构设计、接口设计、数据库设计"
-                    ]
-                  },
-                  {
-                    "type": "el-button",
-                    "props": {
-                      "type": "success",
-                      "size": "small"
-                    },
-                    "children": [
-                      "使用模板"
+                      "推荐：产品 / BA"
                     ]
                   }
+                ]
+              },
+              {
+                "type": "el-button",
+                "props": {
+                  "type": "primary",
+                  "size": "small",
+                  "plain": true
+                },
+                "children": [
+                  "使用模板"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "template-card",
+            "children": [
+              {
+                "type": "div",
+                "class": "template-badge template-badge--green",
+                "children": [
+                  "SD"
+                ]
+              },
+              {
+                "type": "h3",
+                "children": [
+                  "系统设计文档"
+                ]
+              },
+              {
+                "type": "p",
+                "class": "template-card__desc",
+                "children": [
+                  "覆盖总体架构、模块划分、接口约定和数据模型，适合研发交付前统一设计口径。"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "template-card__meta",
+                "children": [
+                  {
+                    "type": "span",
+                    "children": [
+                      "阶段：设计"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "children": [
+                      "推荐：架构 / 开发"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "el-button",
+                "props": {
+                  "type": "success",
+                  "size": "small",
+                  "plain": true
+                },
+                "children": [
+                  "使用模板"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "template-card",
+            "children": [
+              {
+                "type": "div",
+                "class": "template-badge template-badge--amber",
+                "children": [
+                  "QA"
+                ]
+              },
+              {
+                "type": "h3",
+                "children": [
+                  "测试计划与报告"
+                ]
+              },
+              {
+                "type": "p",
+                "class": "template-card__desc",
+                "children": [
+                  "用于测试范围、用例计划、执行结果和缺陷统计的统一沉淀。"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "template-card__meta",
+                "children": [
+                  {
+                    "type": "span",
+                    "children": [
+                      "阶段：测试"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "children": [
+                      "推荐：测试 / 交付"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "el-button",
+                "props": {
+                  "type": "warning",
+                  "size": "small",
+                  "plain": true
+                },
+                "children": [
+                  "使用模板"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "template-card",
+            "children": [
+              {
+                "type": "div",
+                "class": "template-badge template-badge--red",
+                "children": [
+                  "MT"
+                ]
+              },
+              {
+                "type": "h3",
+                "children": [
+                  "会议纪要模板"
+                ]
+              },
+              {
+                "type": "p",
+                "class": "template-card__desc",
+                "children": [
+                  "适合记录议题、结论、责任人和待办清单，保证会议输出可跟踪。"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "template-card__meta",
+                "children": [
+                  {
+                    "type": "span",
+                    "children": [
+                      "阶段：协同"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "children": [
+                      "推荐：PM / 团队负责人"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "el-button",
+                "props": {
+                  "type": "danger",
+                  "size": "small",
+                  "plain": true
+                },
+                "children": [
+                  "使用模板"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "template-card",
+            "children": [
+              {
+                "type": "div",
+                "class": "template-badge template-badge--slate",
+                "children": [
+                  "WB"
+                ]
+              },
+              {
+                "type": "h3",
+                "children": [
+                  "项目周报模板"
+                ]
+              },
+              {
+                "type": "p",
+                "class": "template-card__desc",
+                "children": [
+                  "用于输出周进展、风险、阻塞项和下周计划，适合项目例行同步。"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "template-card__meta",
+                "children": [
+                  {
+                    "type": "span",
+                    "children": [
+                      "阶段：执行跟踪"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "children": [
+                      "推荐：PM / 交付经理"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "el-button",
+                "props": {
+                  "size": "small",
+                  "plain": true
+                },
+                "children": [
+                  "使用模板"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "template-card",
+            "children": [
+              {
+                "type": "div",
+                "class": "template-badge template-badge--indigo",
+                "children": [
+                  "ACC"
+                ]
+              },
+              {
+                "type": "h3",
+                "children": [
+                  "验收报告模板"
+                ]
+              },
+              {
+                "type": "p",
+                "class": "template-card__desc",
+                "children": [
+                  "支持沉淀功能验收、性能结论和签字确认结果，适合阶段性交付归档。"
+                ]
+              },
+              {
+                "type": "div",
+                "class": "template-card__meta",
+                "children": [
+                  {
+                    "type": "span",
+                    "children": [
+                      "阶段：验收 / 归档"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "children": [
+                      "推荐：交付 / 客户接口人"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "el-button",
+                "props": {
+                  "type": "primary",
+                  "size": "small",
+                  "plain": true
+                },
+                "children": [
+                  "使用模板"
                 ]
               }
             ]
@@ -153,271 +483,102 @@
         ]
       },
       {
-        "type": "el-col",
-        "props": {
-          "span": 8
-        },
+        "type": "div",
+        "class": "doc-flow-panel",
         "children": [
           {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
+            "type": "div",
+            "class": "doc-flow-panel__head",
             "children": [
               {
-                "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px 0"
-                },
+                "type": "h2",
                 "children": [
-                  {
-                    "type": "el-icon",
-                    "props": {
-                      "size": 48
-                    },
-                    "style": {
-                      "color": "#e6a23c",
-                      "marginBottom": "12px"
-                    },
-                    "children": [
-                      {
-                        "type": "Tickets"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "h3",
-                    "children": [
-                      "测试计划与报告"
-                    ]
-                  },
-                  {
-                    "type": "p",
-                    "style": {
-                      "color": "#909399",
-                      "fontSize": "13px"
-                    },
-                    "children": [
-                      "测试用例、执行报告、缺陷统计"
-                    ]
-                  },
-                  {
-                    "type": "el-button",
-                    "props": {
-                      "type": "warning",
-                      "size": "small"
-                    },
-                    "children": [
-                      "使用模板"
-                    ]
-                  }
+                  "模板使用流程"
+                ]
+              },
+              {
+                "type": "p",
+                "children": [
+                  "把常见动作收敛成固定路径，降低协作成本。"
                 ]
               }
             ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "type": "el-row",
-    "props": {
-      "gutter": 16
-    },
-    "style": {
-      "marginTop": "16px"
-    },
-    "children": [
-      {
-        "type": "el-col",
-        "props": {
-          "span": 8
-        },
-        "children": [
+          },
           {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
+            "type": "div",
+            "class": "doc-flow-grid",
             "children": [
               {
                 "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px 0"
-                },
+                "class": "doc-flow-step",
                 "children": [
                   {
-                    "type": "el-icon",
-                    "props": {
-                      "size": 48
-                    },
-                    "style": {
-                      "color": "#f56c6c",
-                      "marginBottom": "12px"
-                    },
+                    "type": "span",
+                    "class": "doc-flow-step__index",
                     "children": [
-                      {
-                        "type": "Calendar"
-                      }
+                      "01"
                     ]
                   },
                   {
                     "type": "h3",
                     "children": [
-                      "会议纪要模板"
+                      "选择模板"
                     ]
                   },
                   {
                     "type": "p",
-                    "style": {
-                      "color": "#909399",
-                      "fontSize": "13px"
-                    },
                     "children": [
-                      "议题、决议、待办跟踪"
-                    ]
-                  },
-                  {
-                    "type": "el-button",
-                    "props": {
-                      "type": "danger",
-                      "size": "small"
-                    },
-                    "children": [
-                      "使用模板"
+                      "按场景选择标准模板，优先复用已有结构，而不是重新起草。"
                     ]
                   }
                 ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-col",
-        "props": {
-          "span": 8
-        },
-        "children": [
-          {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
-            "children": [
+              },
               {
                 "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px 0"
-                },
+                "class": "doc-flow-step",
                 "children": [
                   {
-                    "type": "el-icon",
-                    "props": {
-                      "size": 48
-                    },
-                    "style": {
-                      "color": "#909399",
-                      "marginBottom": "12px"
-                    },
+                    "type": "span",
+                    "class": "doc-flow-step__index",
                     "children": [
-                      {
-                        "type": "DataLine"
-                      }
+                      "02"
                     ]
                   },
                   {
                     "type": "h3",
                     "children": [
-                      "项目周报模板"
+                      "补充项目字段"
                     ]
                   },
                   {
                     "type": "p",
-                    "style": {
-                      "color": "#909399",
-                      "fontSize": "13px"
-                    },
                     "children": [
-                      "本周进展、风险、下周计划"
-                    ]
-                  },
-                  {
-                    "type": "el-button",
-                    "props": {
-                      "size": "small"
-                    },
-                    "children": [
-                      "使用模板"
+                      "将模板中的通用章节替换为项目实际信息，补齐责任人、时间点与边界条件。"
                     ]
                   }
                 ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-col",
-        "props": {
-          "span": 8
-        },
-        "children": [
-          {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
-            "children": [
+              },
               {
                 "type": "div",
-                "style": {
-                  "textAlign": "center",
-                  "padding": "20px 0"
-                },
+                "class": "doc-flow-step",
                 "children": [
                   {
-                    "type": "el-icon",
-                    "props": {
-                      "size": 48
-                    },
-                    "style": {
-                      "color": "#409eff",
-                      "marginBottom": "12px"
-                    },
+                    "type": "span",
+                    "class": "doc-flow-step__index",
                     "children": [
-                      {
-                        "type": "Stamp"
-                      }
+                      "03"
                     ]
                   },
                   {
                     "type": "h3",
                     "children": [
-                      "验收报告模板"
+                      "评审与归档"
                     ]
                   },
                   {
                     "type": "p",
-                    "style": {
-                      "color": "#909399",
-                      "fontSize": "13px"
-                    },
                     "children": [
-                      "功能验收、性能验收、签字确认"
-                    ]
-                  },
-                  {
-                    "type": "el-button",
-                    "props": {
-                      "type": "primary",
-                      "size": "small"
-                    },
-                    "children": [
-                      "使用模板"
+                      "完成评审后再归档沉淀，后续同类项目继续沿用同一模板链路。"
                     ]
                   }
                 ]
