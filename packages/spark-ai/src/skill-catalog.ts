@@ -139,15 +139,22 @@ function __init__() {
 \`\`\`json
 [{
   "type": "r-table", "dataKey": "Items@rows",
-  "props": { "border": true, "stripe": true, "highlightCurrentRow": true },
-  "filter": { "columns": ["name", "status"] },
-  "actions": {
-    "items": [{ "label": "新增", "event": "handleAdd", "type": "primary" }],
-    "rowActions": [
-      { "label": "编辑",  "event": "handleEdit" },
-      { "label": "删除",  "event": "handleDelete", "type": "danger" }
-    ]
-  }
+  "props": {
+    "border": true,
+    "stripe": true,
+    "highlightCurrentRow": true,
+    "docks": {
+      "filter": { "collapsible": true },
+      "actions": { "position": "right" }
+    }
+  },
+  "children": [
+    { "type": "r-text", "field": "name", "props": { "label": "名称", "dock": "filter" } },
+    { "type": "r-select", "field": "status", "props": { "label": "状态", "dock": "filter", "options": [{ "label": "启用", "value": 1 }, { "label": "停用", "value": 0 }] } },
+    { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "append-row", "label": "新增", "type": "primary" } },
+    { "type": "builtin-action", "dock": "actions", "props": { "builtinAction": "patch-row", "label": "编辑" } },
+    { "type": "builtin-action", "dock": "actions", "props": { "builtinAction": "delete-row", "label": "删除", "type": "danger" } }
+  ]
 }]
 \`\`\``,
   },
@@ -162,21 +169,26 @@ function __init__() {
     avoid: '内联数据 < 20 条直接展示更直观；极简场景一个搜索框即可',
     requires: [],
     produces: ['ui-structure', 'interaction'],
-    checks: ['filter.items 字段名存在于表列定义', 'on.search/on.reset 函数已声明'],
+    checks: ['dock=filter 的字段名存在于表列定义', 'on.search/on.reset 函数已声明'],
     detail: `## search-filter 标准配置
 
-### 使用根级 filter（零代码，推荐）
+### 使用 docked filter children（零代码，推荐）
 \`\`\`json
 {
-  "type": "r-table", "dataKey": "Orders@rows",
-  "filter": {
-    "columns": [
-      "orderNo",
-      { "field": "status",    "component": "select",     "options": "OrderStatus" },
-      { "field": "createdAt", "component": "date-range", "label": "创建日期" }
-    ],
-    "collapsible": true
+  "type": "r-table",
+  "dataKey": "Orders@rows",
+  "props": {
+    "docks": {
+      "filter": {
+        "collapsible": true
+      }
+    }
   },
+  "children": [
+    { "type": "r-text", "field": "orderNo", "dock": "filter", "props": { "label": "订单号" } },
+    { "type": "r-select", "field": "status", "dock": "filter", "props": { "label": "状态", "options": "OrderStatus" } },
+    { "type": "r-date", "field": "createdAt", "dock": "filter", "props": { "label": "创建日期", "type": "date-range" } }
+  ],
   "on": { "search": "handleSearch", "reset": "handleReset" }
 }
 \`\`\`
@@ -214,14 +226,14 @@ function handleSave(row) {
 }
 \`\`\`
 
-### rowActions 绑定编辑/保存/取消
+### children + dock='actions' 绑定编辑/保存/取消
 \`\`\`json
 {
-  "rowActions": [
-    { "label": "编辑", "event": "handleEdit",   "hideWhen": "row._editing" },
-    { "label": "保存", "event": "handleSave",   "showWhen": "row._editing", "type": "primary" },
-    { "label": "取消", "event": "handleCancel", "showWhen": "row._editing" },
-    { "label": "删除", "event": "handleDelete", "hideWhen": "row._editing", "type": "danger" }
+  "children": [
+    { "type": "builtin-action", "dock": "actions", "props": { "builtinAction": "patch-row", "label": "编辑", "hideWhen": "row._editing" } },
+    { "type": "builtin-action", "dock": "actions", "props": { "builtinAction": "patch-row", "label": "保存", "showWhen": "row._editing", "type": "primary" } },
+    { "type": "builtin-action", "dock": "actions", "props": { "builtinAction": "message-row", "label": "取消", "showWhen": "row._editing" } },
+    { "type": "builtin-action", "dock": "actions", "props": { "builtinAction": "delete-row", "label": "删除", "hideWhen": "row._editing", "type": "danger" } }
   ]
 }
 \`\`\``,

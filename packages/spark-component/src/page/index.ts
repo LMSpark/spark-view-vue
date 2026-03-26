@@ -4,16 +4,22 @@
  * 仅聚合页面渲染、页面数据集生命周期以及页面上下文类型。
  */
 
-export { default as SparkPageRenderer } from './SparkPageRenderer.vue'
-export { usePageDataSet } from './usePageDataSet.js'
+export { default as SparkPageRenderer } from './renderer/SparkPageRenderer.vue'
+export { usePageDataSet } from './renderer/usePageDataSet.js'
+
+export * as pageContextFiles from './context/index.js'
+export * as pageServiceFiles from './services/index.js'
+export * as pageSandboxFiles from './sandbox/index.js'
+export * as pageActionFiles from './actions/index.js'
+export * as pageBindingFiles from './binding/index.js'
 
 export type {
   UsePageDataSetOptions,
   UsePageDataSetReturn,
-} from './usePageDataSet.js'
+} from './renderer/usePageDataSet.js'
 
 export type {
   PageContext,
   PageConfig,
   PageRendererProps,
-} from './types.js'
+} from './context/types.js'

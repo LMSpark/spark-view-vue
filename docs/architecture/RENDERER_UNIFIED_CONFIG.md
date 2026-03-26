@@ -64,17 +64,17 @@ rule.json (JSON 配置)
 
 | type | 用途 | 数据绑定 | sparkChildren | 关键特性 |
 |------|------|----------|---------------|----------|
-| `r-table` | 数据表格 | ✅ dataKey→DataView→rows | ✅ el-table-column | toolbar, filter, rowActions |
+| `r-table` | 数据表格 | ✅ dataKey→DataView→rows | ✅ 列节点 | toolbar, filter, actions |
 | `r-form` | 编辑表单 | ✅ dataKey→DataView→currentRow | ✅ r-field-* | toolbar, grid, CONTEXT_DATA |
 | `r-detail` | 详情展示 | ✅ dataKey→DataView→currentRow | ✅ r-field-* | toolbar, grid, CONTEXT_DATA |
 | `r-tree` | 树形控件 | ✅ dataKey→DataView→rows | ✅ | toolbar, nodeActions |
-| `r-list` | 列表/卡片 | ✅ dataKey→DataView→rows | ✅ | toolbar, itemActions, card |
+| `r-list` | 列表/卡片 | ✅ dataKey→DataView→rows | ✅ | toolbar, actions, card |
 | `r-tabs` | 标签页 | ❌ | ✅ tab panels | toolbar, modelValue |
 | `r-collapse` | 折叠面板 | ❌ | ✅ collapse panels | toolbar, modelValue |
-| `r-dialog` | 弹窗 | ❌ | ✅ | header/footerActions, grid |
-| `r-drawer` | 抽屉 | ❌ | ✅ | header/footerActions, grid |
+| `r-dialog` | 弹窗 | ❌ | ✅ | header/footer docks, grid |
+| `r-drawer` | 抽屉 | ❌ | ✅ | header/footer docks, grid |
 | `r-steps` | 步骤条 | ❌ | ✅ step panels | toolbar, modelValue |
-| `r-section` | 区域块 | ❌ | ✅ | collapsible, card, headerActions |
+| `r-section` | 区域块 | ❌ | ✅ | collapsible, card, header dock |
 | `r-block` | 纯布局块 | ❌ | ❌ | 最简容器 |
 
 ### 2.3 SPARK 字段组件完整清单
@@ -186,16 +186,20 @@ SparkNode
 
     // ── r-table 非列区结构约束 ──
     // toolbar / filter / actions 一律通过 children + dock 声明
-    // props 仅保留这些区域的展示参数，不再承载结构节点
-    "rowActionsPosition": "right",
-    "rowActionsLabel": "操作",
-    "rowActionsWidth": 150,
-
-    // ── Filter 筛选区展示参数（r-table 专用）──
-    "filterClass": "",
-    "filterGridColumns": 4,
-    "filterCollapsible": true,
-    "filterDefaultCollapsed": false
+    // props.docks.* 仅保留这些区域的展示参数，不再承载结构节点
+    "docks": {
+      "actions": {
+        "position": "right",
+        "label": "操作",
+        "width": 150
+      },
+      "filter": {
+        "class": "",
+        "gridColumns": 4,
+        "collapsible": true,
+        "defaultCollapsed": false
+      }
+    }
   }
 }
 ```
@@ -237,22 +241,22 @@ SparkNode
 
     // ── Docks ──
     "docks": {
-      "toolbar": { "position": "top" }
-    },
-
-    // ── Filter 筛选展示参数 ──
-    "filterCollapsible": true,
-    "filterDefaultCollapsed": false,
-    "filterAutoFitMinWidth": "200px",
-    "filterItemSpan": 6,
-    "filterGridColumns": 4,
-
-    // ── Row Actions 行操作列展示参数 ──
-    "rowActionsPosition": "right",
-    "rowActionsLabel": "操作",
-    "rowActionsWidth": 180,
-    "rowActionsAlign": "center",
-    "rowActionsFixed": "right"
+      "toolbar": { "position": "top" },
+      "filter": {
+        "collapsible": true,
+        "defaultCollapsed": false,
+        "autoFitMinWidth": "200px",
+        "itemSpan": 6,
+        "gridColumns": 4
+      },
+      "actions": {
+        "position": "right",
+        "label": "操作",
+        "width": 180,
+        "align": "center",
+        "fixed": "right"
+      }
+    }
   },
   "children": [
     { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } },
@@ -366,15 +370,14 @@ SparkNode
     "emptyText": "暂无数据",
     "rowKey": "id",
 
-    // ── Item Actions ──
-    "itemActions": [],
-    "itemActionsPosition": "right",
     "docks": {
-      "toolbar": { "position": "top" }
+      "toolbar": { "position": "top" },
+      "actions": { "position": "right" }
     }
   },
   "children": [
     { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "append-row" } },
+    { "type": "el-button", "dock": "actions", "children": ["查看"], "on": { "click": "handleInspect" } },
     // 列表项内的字段组件
     { "type": "r-text", "name": "title", "props": { "label": "标题" } }
   ]
@@ -445,12 +448,11 @@ SparkNode
     "title": "编辑用户",
     "modelValue": false,                // 显示/隐藏
 
-    // ── Header/Footer Actions ──
-    "headerActions": [],
-    "footerActions": [
-      { "type": "el-button", "children": ["取消"], "on": { "click": "handleCancel" } },
-      { "type": "el-button", "props": { "type": "primary" }, "children": ["确定"], "on": { "click": "handleConfirm" } }
-    ],
+    // ── Dock 展示参数 ──
+    "docks": {
+      "header": { "class": "dialog-header" },
+      "footer": { "class": "dialog-footer" }
+    },
 
     // ── Grid 布局 ──
     "gridColumns": 24,
@@ -461,6 +463,9 @@ SparkNode
     "onClose": "handleDialogClose"
   },
   "children": [
+    { "type": "el-button", "dock": "header", "children": ["帮助"], "on": { "click": "handleHelp" } },
+    { "type": "el-button", "dock": "footer", "children": ["取消"], "on": { "click": "handleCancel" } },
+    { "type": "el-button", "dock": "footer", "props": { "type": "primary" }, "children": ["确定"], "on": { "click": "handleConfirm" } },
     { "type": "r-form", "dataKey": "Users@currentRow", "children": [...] }
   ]
 }
@@ -509,11 +514,14 @@ SparkNode
     "gridColumns": 24,
     "gridGap": "16px",
 
-    "headerActions": [
-      { "type": "el-button", "children": ["刷新"] }
-    ]
+    "docks": {
+      "header": { "class": "section-header" }
+    }
   },
-  "children": [...]
+  "children": [
+    { "type": "el-button", "dock": "header", "children": ["刷新"] },
+    ...
+  ]
 }
 ```
 
@@ -705,18 +713,15 @@ r-text / r-select / r-number / ...（字段组件）
         "style": { "flex": "1" },
         "border": true,
         "highlightCurrentRow": true,
-        "docks": { "toolbar": { "position": "top" } },
-        "rowActions": [
-          { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
-          { "type": "el-button", "props": { "type": "danger", "link": true }, "children": ["删除"], "on": { "click": "handleDelete" } }
-        ],
-        "rowActionsWidth": 150
+        "docks": {
+          "toolbar": { "position": "top" },
+          "actions": { "width": 150, "position": "right" }
+        }
       },
       "children": [
-      },
-      "children": [
-        { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } }
-      ]
+        { "type": "builtin-action", "dock": "toolbar", "props": { "builtinAction": "refresh" } },
+        { "type": "el-button", "dock": "actions", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
+        { "type": "el-button", "dock": "actions", "props": { "type": "danger", "link": true }, "children": ["删除"], "on": { "click": "handleDelete" } },
         { "type": "el-table-column", "props": { "prop": "name", "label": "名称" } },
         { "type": "el-table-column", "props": { "prop": "type", "label": "类型" } },
         { "type": "el-table-column", "props": { "prop": "status", "label": "状态" } }
@@ -736,12 +741,13 @@ r-text / r-select / r-number / ...（字段组件）
     "props": {
       "border": true,
       "highlightCurrentRow": true,
-      "docks": { "toolbar": { "position": "top" } },
-      "rowActions": [
-        { "type": "el-button", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } }
-      ]
+      "docks": {
+        "toolbar": { "position": "top" },
+        "actions": { "position": "right", "label": "操作" }
+      }
     },
     "children": [
+      { "type": "el-button", "dock": "actions", "props": { "type": "primary", "link": true }, "children": ["编辑"], "on": { "click": "handleEdit" } },
       { "type": "el-table-column", "props": { "type": "selection", "width": 50 } },
       { "type": "el-table-column", "props": { "prop": "name", "label": "姓名" } },
       { "type": "el-table-column", "props": { "prop": "email", "label": "邮箱" } }
@@ -752,12 +758,13 @@ r-text / r-select / r-number / ...（字段组件）
     "id": "editDialog",
     "props": {
       "title": "编辑用户",
-      "footerActions": [
-        { "type": "el-button", "children": ["取消"], "on": { "click": "handleCancel" } },
-        { "type": "el-button", "props": { "type": "primary" }, "children": ["保存"], "on": { "click": "handleSave" } }
-      ]
+      "docks": {
+        "footer": { "class": "dialog-footer" }
+      }
     },
     "children": [
+      { "type": "el-button", "dock": "footer", "children": ["取消"], "on": { "click": "handleCancel" } },
+      { "type": "el-button", "dock": "footer", "props": { "type": "primary" }, "children": ["保存"], "on": { "click": "handleSave" } },
       {
         "type": "r-form",
         "dataKey": "Users@currentRow",
@@ -1011,9 +1018,9 @@ function RenderStatusTag() {
 | 事件源 | 函数签名 |
 |--------|----------|
 | el-button click | `handleClick()` |
-| r-table rowActions click | `handleAction(row, index)` |
+| r-table actions dock click | `handleAction(row, index)` |
 | r-tree nodeClick | `handleNodeClick(nodeData, node, event)` |
-| r-list itemActions click | `handleAction(item, index)` |
+| r-list actions dock click | `handleAction(item, index)` |
 | r-tabs tabChange | `handleTabChange(tabName)` |
 | r-dialog open/close | `handleOpen()` / `handleClose()` |
 
@@ -1187,8 +1194,8 @@ interface FilterConfig {
 | 旧写法 | 新写法 |
 |--------|--------|
 | `"props": { "filterColumns": ["name", "status"] }` | legacy，仅迁移参考；当前规范改为 `children` 中的 `dock: "filter"` 节点 |
-| `"props": { "filterCollapsible": true }` | `meta.filter.collapsible` |
-| `"props": { "filterGridColumns": 12 }` | `meta.filter.gridColumns` |
+| `"props": { "filterCollapsible": true }` | `props.docks.filter.collapsible` |
+| `"props": { "filterGridColumns": 12 }` | `props.docks.filter.gridColumns` |
 
 #### ToolbarConfig — 工具栏
 
@@ -1250,23 +1257,23 @@ interface DualActionsConfig {
 }
 ```
 
-**语义映射**（容器类型决定 actions 含义）：
+**历史语义映射**（以下为旧模型归档，当前规范统一迁移为 children + dock + props.docks）：
 
 | 容器类型 | actions 语义 | 映射到现有 props |
 |---------|-------------|-----------------|
-| r-table | 行操作列 | `rowActions` + `rowActionsWidth/Label/Position/...` |
-| r-tree | 节点操作 | `nodeActions` |
-| r-list | 项操作 | `itemActions` |
-| r-dialog | 头尾操作区 | `headerActions` + `footerActions` |
-| r-drawer | 头尾操作区 | `headerActions` + `footerActions` |
+| r-table | 行操作列 | `children[dock='actions']` + `props.docks.actions.*` |
+| r-tree | 节点操作 | `children[dock='actions']` |
+| r-list | 项操作 | `children[dock='actions']` + `props.docks.actions.*` |
+| r-dialog | 头尾操作区 | `children[dock='header'/'footer']` + `props.docks.header/footer.*` |
+| r-drawer | 头尾操作区 | `children[dock='header'/'footer']` + `props.docks.header/footer.*` |
 
 **对照迁移**：
 
 | 旧写法 | 新写法 |
 |--------|--------|
-| `"props": { "rowActions": [...], "rowActionsWidth": 150 }` | `meta.actions: { items: [...], width: 150 }` |
-| `"props": { "nodeActions": [...] }` | `meta.actions: { items: [...] }` |
-| `"props": { "headerActions": [...], "footerActions": [...] }` | `meta.actions: { header: { items: [...] }, footer: { items: [...] } }` |
+| `"props": { "rowActions": [...], "rowActionsWidth": 150 }` | `children[dock='actions'] + props.docks.actions.width` |
+| `"props": { "nodeActions": [...] }` | `children[dock='actions']` |
+| `"props": { "headerActions": [...], "footerActions": [...] }` | `children[dock='header'/'footer'] + props.docks.header/footer` |
 
 #### StateConfig — 状态控制
 
@@ -1437,12 +1444,16 @@ interface BehaviorConfig {
     "border": true,
     "highlightCurrentRow": true,
     "docks": {
-      "toolbar": { "position": "top" }
+      "toolbar": { "position": "top" },
+      "actions": {
+        "label": "操作",
+        "width": 150,
+        "position": "right"
+      },
+      "filter": {
+        "collapsible": true
+      }
     },
-    "rowActionsLabel": "操作",
-    "rowActionsWidth": 150,
-    "rowActionsPosition": "right",
-    "filterCollapsible": true
   },
   "children": [
     { "type": "el-button", "dock": "toolbar", "props": { "type": "primary" }, "children": ["新增"], "on": { "click": "handleAdd" } },
@@ -1604,11 +1615,11 @@ interface BehaviorConfig {
 | **pagedata.json** | 无 | 不受影响 |
 | **script.js** | 无 | 不受影响 |
 
-#### 归一化函数：normalizeSparkNode v2
+#### 历史归档：normalizeSparkNode v2
 
 ```typescript
 // 历史归档片段：展示过往的 BindRule 归一化思路。
-// 当前实现已不再存在 BindRule / bindDataToRules 主链。
+// 当前实现已切换到 SparkNode + dock/docks 规范，本段仅保留迁移背景，不作为新实现依据。
 
 import type { SparkNode } from '../types'
 
@@ -1840,14 +1851,14 @@ function isLifecycleOrComponentEvent(eventName: string): boolean {
 
 ```
 Phase 0 — 类型定义 + 归一化函数（历史方案，未作为现行路径落地）
-  ├─ 新增 SparkNode + 7 个域类型到 spark-component/src/types.ts
+  ├─ 新增 SparkNode + 7 个域类型到 spark-component/src/core/types.ts
   ├─ 新增 normalizeSparkNode() 到 binding/normalize-spark-node.ts
   ├─ 历史上曾计划在 bindDataToRules() 入口调用归一化；现已改为渲染器直接解释 SparkNode
   └─ 单元测试：
        - 旧格式输入 → 等价 SparkNode 输入解释（零改动验证）
        - SparkNode v2 输入 → 渲染器/容器行为一致（新格式验证）
        - 混合格式 → 正确处理（兼容性验证）
-       - 双区 actions → headerActions/footerActions props（dialog/drawer 验证）
+      - 双区 actions → children[dock='header'/'footer'] + props.docks.header/footer（dialog/drawer 验证）
 
 Phase 1 — AI 生成入口切换
   ├─ AI system-prompt 指定生成 SparkNode v2 格式

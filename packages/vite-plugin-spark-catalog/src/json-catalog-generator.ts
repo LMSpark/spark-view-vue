@@ -71,8 +71,8 @@ interface ScannedComponent {
 
 function scanRendererComponents(root: string): ScannedComponent[] {
   const patterns = [
-    './packages/spark-component/src/components/containers/Renderer*.vue',
-    './packages/spark-component/src/components/fields/Field*.vue',
+    './packages/spark-component/src/components/containers/**/Renderer*.vue',
+    './packages/spark-component/src/components/fields/**/Field*.vue',
   ]
   const results: ScannedComponent[] = []
 
@@ -278,16 +278,15 @@ function buildPlatformConstraints(): PlatformConstraints {
 }
 
 /* --------------------------------------------------------------------------
- * bindRules 内部 Props 过滤（容器组件专用）
+ * 容器内部兼容 Props 过滤（容器组件专用）
  *
- * 容器组件的 SparkNode 根级字段（toolbar / actions / filter / on）
- * 由 bindRules 拆解后注入为 Vue 内部 Props（如 filter → filterColumns；actions → rowActions）。
- * 这些内部 Props 名与 rule.json 字段名不同，rootFields 已用 rule.json 格式描述，
- * VCM 提取的内部名会误导 AI → 对有 override 的容器组件过滤。
+ * 容器组件对外规范已经统一为 children + dock + props.docks + on.*。
+ * 运行时内部仍可能存在兼容用 prop/attr 名（例如旧的 rowActionsXxx / filterXxx），
+ * 但这些名字不应出现在最终 AI catalog 中，因此对有 override 的容器组件统一过滤。
  * ----------------------------------------------------------------------- */
 
 /**
- * bindRules 拆解 SparkNode 根级字段后产生的容器内部 prop 名前缀。
+ * 兼容层内部 prop 名前缀。
  * 仅对有 override（= rootFields 已描述）的容器组件执行过滤。
  * 字段组件的同名 props（如 r-select.filterable）不受影响。
  */

@@ -48,6 +48,50 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
     }
   },
+  // 仓库级限制：禁止引用已移除的 spark-component 历史子路径
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.vue'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: [
+              '@spark-view/spark-component/types',
+              '@spark-view/spark-component/capabilities',
+              '@spark-view/spark-component/capability-keys',
+              '@spark-view/spark-component/useSparkComponent',
+              '@spark-view/spark-component/internal-context',
+              '@spark-view/spark-component/renderer',
+              '@spark-view/spark-component/src/types',
+              '@spark-view/spark-component/src/capabilities',
+              '@spark-view/spark-component/src/capability-keys',
+              '@spark-view/spark-component/src/useSparkComponent',
+              '@spark-view/spark-component/src/internal-context',
+              '@spark-view/spark-component/src/renderer'
+            ],
+            message: '这些 spark-component 历史子路径已移除，请改用包根出口或现行 core/page/system/internal 路径。'
+          },
+          {
+            group: [
+              '**/spark-component/src/types',
+              '**/spark-component/src/types.*',
+              '**/spark-component/src/capabilities',
+              '**/spark-component/src/capabilities.*',
+              '**/spark-component/src/capability-keys',
+              '**/spark-component/src/capability-keys.*',
+              '**/spark-component/src/useSparkComponent',
+              '**/spark-component/src/useSparkComponent.*',
+              '**/spark-component/src/internal-context',
+              '**/spark-component/src/internal-context.*',
+              '**/spark-component/src/renderer',
+              '**/spark-component/src/renderer/**'
+            ],
+            message: '禁止引用 spark-component 已删除的旧源码入口，请改用现行目录结构。'
+          }
+        ]
+      }]
+    }
+  },
   // Core package restriction: prevent importing concrete UI components into core
   {
     files: ['packages/spark-component/**'],

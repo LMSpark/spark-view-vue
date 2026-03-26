@@ -209,10 +209,6 @@ const SCHEMA_TYPE_BLOCKLIST = new Set([
   // SPARK 框架节点类型（结构已在 rootFields/notes 中描述，无需 VCM 展开）
   'SparkNode',
   'SparkNode[]',
-  'SparkNodeToolbar',
-  'SparkNodeActions',
-  'SparkNodeFilter',
-  'SparkNodeFilterItem',
 ])
 
 /** 检测是否为需要跳过 schema 展开的巨型 / 框架类型 */

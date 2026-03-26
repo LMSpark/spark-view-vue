@@ -52,7 +52,6 @@ describe('RendererList and RendererSection container integration', () => {
       props: {
         dataKey: 'Users@rows',
         docks: { toolbar: { position: 'bottom' }, actions: { position: 'left' } },
-        itemActionsPosition: 'left',
         gridGap: 12,
         itemColSpan: 12,
         children: [

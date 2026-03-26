@@ -16,8 +16,8 @@ import {
 import { COMPONENT_CATALOG } from '../packages/spark-ai/src/component-props-catalog'
 
 const ROOT = resolve('.')
-const FIELD_DIR = 'packages/spark-component/src/components/fields'
-const CONTAINER_DIR = 'packages/spark-component/src/components/containers'
+const FIELD_DIR = 'packages/spark-component/src/components/fields/data-components'
+const CONTAINER_DIR = 'packages/spark-component/src/components/containers/data-components'
 
 const checker = getOrCreateChecker(resolve(ROOT, 'tsconfig.catalog.json'))
 const diffCatalog = Object.fromEntries(
@@ -57,11 +57,16 @@ describe('End-to-end: real component extraction (VCM)', () => {
     const api = extractComponentApiVcm(checker, absPath, `${CONTAINER_DIR}/RendererTable.vue`, 'r-table')
 
     expect(api).not.toBeNull()
-    // RendererTable 仍然保留较丰富的容器 props，但旧 toolbar props 已移除
-    expect(api!.props.length).toBeGreaterThanOrEqual(18)
+    // RendererTable 公开 API 已收敛到 canonical docks 结构，旧的扁平 action/filter props 不应再暴露
+    expect(api!.props.length).toBeGreaterThanOrEqual(6)
 
     const docks = api!.props.find(p => p.name === 'docks')
     expect(docks).toBeDefined()
+    const propNames = api!.props.map(p => p.name)
+    expect(propNames).not.toContain('filterColumns')
+    expect(propNames).not.toContain('rowActions')
+    expect(propNames).not.toContain('rowActionsPosition')
+    expect(propNames).not.toContain('rowActionsLabel')
   })
 
   it('extracts RendererTree.vue correctly', () => {

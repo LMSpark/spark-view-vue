@@ -2,7 +2,7 @@ import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 
 // ── 通用作用域结构 ───────────────────────────────────────────────────────────
 
-interface BaseSlotScope<TSource> {
+export interface BaseSlotScope<TSource> {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
 }

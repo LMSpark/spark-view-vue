@@ -126,10 +126,10 @@
 
 ```text
 [组件名] RendererTable
-[文件路径1] packages/spark-component/src/components/containers/RendererTable.vue
+[文件路径1] packages/spark-component/src/components/containers/data-components/RendererTable.vue
 [文件路径2] tests/renderer-table.datasource.test.ts
 [文件路径3] spark-ai-server/data/pages-config/lmspark/homepage/r-table-series/rule.json
-[功能标准1] toolbar/rowActions 的 builtin-action 行为正确
+[功能标准1] toolbar/dock='actions' 的 builtin-action 行为正确
 [功能标准2] successMessage 空字符串与 silent 语义正确
 [测试命令] npx vitest run tests/renderer-table.datasource.test.ts --reporter verbose
 ```

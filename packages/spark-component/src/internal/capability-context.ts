@@ -1,5 +1,5 @@
 import type { InjectionKey } from 'vue'
-import type { SparkCapabilityContext } from '../types.js'
+import type { SparkCapabilityContext } from '../core/types.js'
 
 /**
  * renderer / plugin / composable 之间共享的内部父能力上下文注入键。

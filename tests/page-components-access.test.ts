@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ref } from 'vue'
-import { buildPageContext } from '../packages/spark-component/src/page/buildPageContext'
-import { createPageComponentRegistry } from '../packages/spark-component/src/page/page-component-registry'
+import { buildPageContext } from '../packages/spark-component/src/page/context/buildPageContext'
+import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
 
 const mockPageService = {

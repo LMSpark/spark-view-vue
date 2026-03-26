@@ -12,8 +12,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { compileFunctions } from '../page/createSandbox'
-import type { PageContext } from '../page/types'
+import { compileFunctions } from '../page/sandbox/createSandbox'
+import type { PageContext } from '../page/context/types'
 
 /** 创建最小化的 PageContext mock */
 function createMockContext(overrides: Partial<PageContext> = {}): PageContext {

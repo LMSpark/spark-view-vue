@@ -356,15 +356,15 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 | r-collapse | r-collapse-item → 同上 |
 | r-dialog / r-drawer | r-* 容器/字段/Render* |
 | r-steps | r-step → 同上 |
-| r-section / r-block | r-* 容器/字段/Render*；props.headerActions 放操作区 |
+| r-section / r-block | r-* 容器/字段/Render*；头部操作节点放到 children 并声明 dock='header' |
 
 **速记**：
 - \`type\` — 是什么组件
 - \`props\` — 组件属性（border / size / style / class / colSpan）
 - \`dataKey\` — 绑什么数据（容器级，根级字段）
 - \`field\` — 对应哪个字段（字段组件，根级字段）
-- \`filter\` — 筛选配置（columns / collapsible）
-- \`toolbar / actions\` — 操作按钮（根级字段）
+- \`docks\` — 容器各停靠区域的显示配置（toolbar / filter / actions / header / footer）
+- \`dock\` — 子节点停靠区域（toolbar / filter / actions / header / footer）
 - \`on\` — 事件绑定（根级字段，→ script.js 函数名）
 - \`visible / disabled\` — 显示/禁用控制（根级字段）
 - \`children\` — 子组件（递归 SparkNode）
@@ -396,11 +396,11 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 |------|------|
 | r-table 列（推荐） | 用 r-text / r-number / r-date 等 r-* 字段，field=字段名，label=表头；支持权限渲染、上下文感知 |
 | r-table 列（强制） | r-table 内只能使用 r-* 字段列；禁止 el-table-column |
-| r-table 行操作 | 写在 \`actions.items\`；优先 builtin-action（零代码），复杂场景再用 Render* |
+| r-table 行操作 | 节点写在 children 且 \`dock='actions'\`；显示参数写在 \`props.docks.actions\`；优先 builtin-action |
 | el-table 列 | 仅限 el-table-column 或 Render*；el-table-column.width 用字符串 \`"100"\`，r-* 字段 width 用数字 \`120\` |
 | Render* 内 h() | 仅限原生 HTML 标签（div/span/button/table/tr/td/input 等） |
 | 块状容器 | r-form / r-detail / r-section / r-block 默认 CSS Grid 24 列 |
-| 容器操作区 | \`toolbar\` / \`actions\` 优先 builtin-action，其次 Render*，不直接放 el-button |
+| 容器操作区 | children + \`dock\` 优先 builtin-action，其次 Render*，不直接放 el-button |
 
 ## 子组件语境感知渲染（高优先级）
 
@@ -482,8 +482,8 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 
 必须覆盖以下 6 类能力（缺一不可）：
 1. 主表展示：\`r-table\` + 规范列定义（含 \`highlightCurrentRow\`）
-2. 过滤面板：\`filter.columns\`（字符串简写或完整 FilterItem 对象）+ 可折叠
-3. 动作系统：\`toolbar\` + \`rowActions\` + builtin-action 声明式动作
+2. 过滤面板：children + \`dock='filter'\` + \`props.docks.filter\` 可折叠配置
+3. 动作系统：children + \`dock='toolbar' / 'actions'\` + builtin-action 声明式动作
 4. 汇总能力：\`summaryRow\`（\`selectionSummaryRow\` 为可选增强）
 5. 编辑能力：\`r-form\` / \`r-detail\`（基于 \`currentRow\`）
 6. 主从联动：\`relations\` + 子表 \`r-table\`
@@ -501,7 +501,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
   - \`currentRow\` 表单或详情
   - 子表 \`r-table\`
 3. \`@@proposal:interaction\`：必须包含：
-  - toolbar/rowActions 的 builtin-action 配置（append/patch/delete/refresh/message 至少覆盖 3 类）
+  - toolbar/actions dock 的 builtin-action 配置（append/patch/delete/refresh/message 至少覆盖 3 类）
   - 若无需复杂业务逻辑，\`script.js\` 仅保留空 \`__init__\`
   - 仅在配置无法表达时，才补充 Render* 或脚本函数
 
@@ -522,19 +522,20 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 \`\`\`jsonc
 {
   "dataKey": "TableName@rows",
-  "filter": {
-    "columns": ["field1", "field2"],
-    "collapsible": true
-  },
-  "actions": {
-    "items": [ /* builtin-action 节点 */ ],
-    "position": "right"
+  "docks": {
+    "filter": {
+      "collapsible": true
+    },
+    "actions": {
+      "position": "right"
+    }
   }
 }
 \`\`\`
 
 补充约束：
 - r-table 示例与方案中禁止出现 \`el-table-column\`
+- 过滤项与行动作节点必须直接写在 children 中，并分别声明 \`dock='filter'\` / \`dock='actions'\`
 - 若声明 \`actions\`，必须保证每个动作可独立执行（不可仅占位）
 - 若声明 \`permAction\`，必须在样例数据行中提供 \`_perm\` 进行演示
 
@@ -553,10 +554,10 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 1. 主表 \`dataKey\` 是否绑定 \`@rows\`
 2. 汇总区是否至少包含 \`@summaryRow\`（\`@selectionSummaryRow\` 仅在存在选中能力时使用）
 3. 是否存在子表 relation 且字段映射可闭环
-4. 是否包含至少 3 个 builtin-action（覆盖 toolbar + rowActions）
+4. 是否包含至少 3 个 builtin-action（覆盖 toolbar + actions dock）
 5. script.js 是否保持最小（无复杂逻辑时仅空 \`__init__\`）
 6. 所有 \`field\` 字段是否在 data-model 列定义中存在
-7. 筛选配置是否使用 \`filter.columns\`（禁止使用旧的 \`filterColumns\` 平铺属性）
+7. 筛选配置是否使用 children + \`dock='filter'\` 与 \`props.docks.filter\`（禁止旧的 \`filterColumns\` 平铺属性）
 
 ### 推荐输出骨架（可直接复用）
 

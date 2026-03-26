@@ -129,10 +129,10 @@ div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
 - 子组件可通过 `props.rowSpan` 指定跨行数，例如 `2` 表示占两行网格高度。
 - 容器可选 props：`gridColumns`、`gridGap`、`gridAutoRows`；默认分别为 `24`、`0`、`minmax(32px, auto)`。
 - `r-list` 的外层重复项也使用 24 列；通过 `itemColSpan`、`itemRowSpan` 控制每个列表项占位。
-- `r-list` 的工具栏动作请放在 `children` 中并声明 `dock: "toolbar"`；显示参数放在 `props.docks.toolbar`。每个列表项的动作区仍使用 `props.itemActions`。
-- `r-dialog` / `r-drawer` 可通过 `props.headerActions`、`props.footerActions` 声明头部/底部动作区。
+- `r-list` 的工具栏动作与列表项动作都放在 `children` 中，并分别声明 `dock: "toolbar"`、`dock: "actions"`；显示参数放在 `props.docks.toolbar`、`props.docks.actions`。
+- `r-dialog` / `r-drawer` 的头部/底部动作区统一使用 `children + dock: "header" | "footer"`；显示参数放在 `props.docks.header`、`props.docks.footer`。
 - `r-steps` 的步骤条上方动作区请使用 `children + dock: "toolbar"`，并通过 `props.docks.toolbar` 控制位置与样式。
-- `r-section` / `r-block` 可通过 `props.headerActions` 放置头部动作区；值为组件配置数组，常用于 `el-button`。
+- `r-section` / `r-block` 的头部动作区统一使用 `children + dock: "header"`；显示参数放在 `props.docks.header`。
 
 **SPARK 字段组件**（在 r-* 容器内使用，通过 name 绑定行字段）
 
@@ -244,15 +244,14 @@ vxe-table, vxe-column 等（需已注册）
     "itemColSpan": 12,
     "itemRowSpan": 1,
     "docks": {
-      "toolbar": { "position": "top" }
-    },
-    "itemActions": [
-      { "type": "el-button", "props": { "size": "small" }, "children": ["查看"] },
-      { "type": "el-button", "props": { "size": "small", "permAction": "delete" }, "children": ["删除"] }
-    ]
+      "toolbar": { "position": "top" },
+      "actions": { "position": "right" }
+    }
   },
   "children": [
     { "type": "el-button", "dock": "toolbar", "props": { "type": "primary", "size": "small" }, "children": ["新增"] },
+    { "type": "el-button", "dock": "actions", "props": { "size": "small" }, "children": ["查看"] },
+    { "type": "el-button", "dock": "actions", "props": { "size": "small", "permAction": "delete" }, "children": ["删除"] },
     { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
     { "type": "r-number", "name": "age", "props": { "label": "年龄", "colSpan": 12 } },
     { "type": "r-select", "name": "status", "props": { "label": "状态", "colSpan": 8, "options": [{ "label": "启用", "value": 1 }, { "label": "停用", "value": 0 }] } },
@@ -343,15 +342,15 @@ vxe-table, vxe-column 等（需已注册）
     "title": "编辑用户",
     "modelValue": true,
     "width": "720px",
-    "headerActions": [
-      { "type": "el-button", "props": { "size": "small" }, "children": ["刷新"] }
-    ],
-    "footerActions": [
-      { "type": "el-button", "props": { "size": "small" }, "children": ["取消"] },
-      { "type": "el-button", "props": { "size": "small", "type": "primary" }, "children": ["保存"] }
-    ]
+    "docks": {
+      "header": { "class": "dialog-header-dock" },
+      "footer": { "class": "dialog-footer-dock" }
+    }
   },
   "children": [
+    { "type": "el-button", "dock": "header", "props": { "size": "small" }, "children": ["刷新"] },
+    { "type": "el-button", "dock": "footer", "props": { "size": "small" }, "children": ["取消"] },
+    { "type": "el-button", "dock": "footer", "props": { "size": "small", "type": "primary" }, "children": ["保存"] },
     { "type": "r-form", "dataKey": "Users@currentRow", "props": { "colSpan": 24 }, "children": [
       { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
       { "type": "r-textarea", "name": "remark", "props": { "label": "备注", "colSpan": 24 } }
@@ -400,12 +399,13 @@ vxe-table, vxe-column 等（需已注册）
     "description": "用于编辑主档字段",
     "collapsible": true,
     "useCard": true,
-    "headerActions": [
-      { "type": "el-button", "props": { "type": "primary", "size": "small" }, "on": { "click": "handleSave" }, "children": ["保存"] },
-      { "type": "el-button", "props": { "size": "small" }, "on": { "click": "handlePreview" }, "children": ["预览"] }
-    ]
+    "docks": {
+      "header": { "class": "section-header-dock" }
+    }
   },
   "children": [
+    { "type": "el-button", "dock": "header", "props": { "type": "primary", "size": "small" }, "on": { "click": "handleSave" }, "children": ["保存"] },
+    { "type": "el-button", "dock": "header", "props": { "size": "small" }, "on": { "click": "handlePreview" }, "children": ["预览"] },
     { "type": "r-form", "dataKey": "Users@currentRow", "props": { "labelWidth": "88px", "colSpan": 16 }, "children": [
       { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
       { "type": "r-date", "name": "birthday", "props": { "label": "生日", "colSpan": 12 } }

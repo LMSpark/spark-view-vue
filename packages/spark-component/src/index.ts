@@ -4,25 +4,22 @@
  * @packageDocumentation
  */
 
-// ── 1. 命名空间 ──
-export { Spark } from './spark.js'
+// ── 1. System 层（命名空间 / 插件 / 注册表） ──
+export { Spark } from './system/index.js'
 export type {
   ComponentLoader,
   GlobModules,
   RegisterContext,
   SparkSystem
-} from './spark.js'
+} from './system/index.js'
 
-// ── 2. 组件开发 Composable ──
-export { useSparkComponent, useSparkConsume } from './useSparkComponent.js'
-export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions, SparkNodeInput } from './useSparkComponent.js'
+// ── 2. Core 层（基础 composable / 类型 / 能力键） ──
+export { useSparkComponent, useSparkConsume } from './core/index.js'
+export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions, SparkNodeInput } from './core/index.js'
 
-// ── 3. Vue 插件 ──
-export { createSparkPlugin } from './plugin.js'
-export type { SparkPluginOptions } from './plugin.js'
-
-// ── 4. 注册表 ──
-export { createComponentRegistry, getGlobalRegistry } from './registry.js'
+// ── 3. Vue 插件 + 注册表 ──
+export { createSparkPlugin, createComponentRegistry, getGlobalRegistry } from './system/index.js'
+export type { SparkPluginOptions } from './system/index.js'
 
 // ── 5. 核心类型 ──
 export type {
@@ -37,16 +34,10 @@ export type {
   DockFilterItem,
   DockFilter,
   ContainerDocks,
-  // @deprecated 向后兼容别名
-  SparkNodeFilterItem,
-  SparkNodeToolbar,
-  SparkNodeActions,
-  SparkNodeFilter,
-  ComponentContext,
   ComponentDefinition,
   ComponentRegistry,
   LoggerApi
-} from './types.js'
+} from './core/index.js'
 
 // ── 6. DI Keys + SparkNode 结构常量 ──
 export {
@@ -58,7 +49,7 @@ export {
   nodeDock,
   nodeOrder,
   getDockedChildren,
-} from './types.js'
+} from './core/index.js'
 
 // ── 6b. 数据 + Renderer 能力键 ──
 export {
@@ -68,7 +59,7 @@ export {
   FIELD_CONTEXT,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
-} from './capabilities.js'
+} from './core/index.js'
 export type {
   FieldContext,
   RendererTableApi,
@@ -86,7 +77,7 @@ export type {
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   ModuleContextCapability,
-} from './capabilities.js'
+} from './core/index.js'
 
 // ── 7. 页面渲染引擎 ──
 export {
@@ -95,6 +86,34 @@ export {
 export {
   SparkComponentRenderer,
 } from './components/index.js'
+export * as componentComposables from './components/composables.js'
+export * as containerComposables from './components/containers/composables.js'
+export * as containerDataComponents from './components/containers/data-components/index.js'
+export * as containerNonDataComponents from './components/containers/non-data-components/index.js'
+export * as containerDataComponentComposables from './components/containers/data-components/composables/index.js'
+export * as containerNonDataComponentComposables from './components/containers/non-data-components/composables/index.js'
+export * as containerDataComponentSupport from './components/containers/data-components/support/index.js'
+export * as containerDataUi from './components/containers/data-components/index.js'
+export * as containerNonDataUi from './components/containers/non-data-components/index.js'
+export * as containerDataUiComposables from './components/containers/data-components/composables/index.js'
+export * as containerNonDataUiComposables from './components/containers/non-data-components/composables/index.js'
+export * as containerActionComposables from './components/containers/actions/index.js'
+export * as containerContextComposables from './components/containers/context/index.js'
+export * as containerDataComposables from './components/containers/data/index.js'
+export * as containerLayoutComposables from './components/containers/layout/index.js'
+export * as fieldComposables from './components/fields/composables.js'
+export * as fieldDataComponents from './components/fields/data-components/index.js'
+export * as fieldNonDataComponents from './components/fields/non-data-components/index.js'
+export * as fieldDataComponentComposables from './components/fields/data-components/composables/index.js'
+export * as fieldNonDataComponentComposables from './components/fields/non-data-components/composables/index.js'
+export * as fieldDataComponentSupport from './components/fields/data-components/support/index.js'
+export * as fieldDataUi from './components/fields/data-components/index.js'
+export * as fieldNonDataUi from './components/fields/non-data-components/index.js'
+export * as fieldDataUiComposables from './components/fields/data-components/composables/index.js'
+export * as fieldNonDataUiComposables from './components/fields/non-data-components/composables/index.js'
+export * as fieldContextComposables from './components/fields/context/index.js'
+export * as fieldOptionComposables from './components/fields/options/index.js'
+export * as fieldActionComposables from './components/fields/actions/index.js'
 
 export type {
   UsePageDataSetOptions,

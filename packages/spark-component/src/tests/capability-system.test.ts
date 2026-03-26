@@ -16,7 +16,7 @@ import type { SparkNode } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE, defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 import { PAGE_COMPONENT_REGISTRY } from '@spark-view/spark-component'
-import { createPageComponentRegistry } from '../page/page-component-registry'
+import { createPageComponentRegistry } from '../page/context/page-component-registry'
 
 describe('Capability system integration', () => {
   /**

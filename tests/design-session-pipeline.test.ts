@@ -386,7 +386,8 @@ nonexistent-component
     const resolved = resolveComponentQuery(['r-table#filter'])
     expect(resolved).not.toBeNull()
     expect(resolved ?? '').toContain('精确片段: filter')
-    expect(resolved ?? '').toContain('filter.columns')
+    expect(resolved ?? '').toContain("dock: 'filter'")
+    expect(resolved ?? '').toContain('props.docks.filter')
   })
 
   it('supports component API catalog index query', () => {

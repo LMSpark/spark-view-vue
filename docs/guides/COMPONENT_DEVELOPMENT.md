@@ -125,7 +125,7 @@ app.mount('#app')
 
 ```typescript
 const {
-  context,              // ComponentContext — 当前组件上下文（响应式）
+  context,              // SparkCapabilityContext — 当前能力上下文（响应式）
   isVisible,            // ComputedRef<boolean> — 基于 config.visible
   isDisabled,           // ComputedRef<boolean> — 基于 config.disabled
 
@@ -529,7 +529,7 @@ import MyWidget from '../components/MyWidget.vue'
 describe('MyWidget', () => {
   it('renders correctly', () => {
     const wrapper = mount(MyWidget, {
-      global: { plugins: [Spark.createPlugin()] },  // 必须：提供 ComponentContext 基础设施
+      global: { plugins: [Spark.createPlugin()] },  // 必须：提供能力上下文基础设施
       props: {
         config: { type: 'my-widget', title: 'Test Widget' }
       }

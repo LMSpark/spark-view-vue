@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest'
-import type { ComponentContext, LoggerApi } from '@spark-view/spark-component'
+import type { SparkCapabilityContext, LoggerApi } from '@spark-view/spark-component'
 
 describe('file transport (replaced by custom provider test)', () => {
   it('uses context-level logger provider', () => {
@@ -11,7 +11,7 @@ describe('file transport (replaced by custom provider test)', () => {
       error: (..._args: unknown[]) => {}
     }
 
-    const ctx: ComponentContext = {
+    const ctx: SparkCapabilityContext = {
       id: 'ctx-transport',
       type: 'test',
       capabilities: new Map([['logger', loggerImpl]])

@@ -71,9 +71,9 @@ await view.loadFromServer({ page: 1 })
 - 当 `props.dataSource.rows` 为空时，组件会调用 `dataSource.loadFromServer()`（不直接调用 `DataLoader`）。
 - 表的 `currentChange` / `selectionChange` 由 `RendererTable` 直接同步回 `DataView.selection`。
 
-## 6.1 r-table 统一过滤器（列即过滤项）
-- `r-table` 支持在表级容器直接声明 `filterColumns`，只写要过滤的列名即可。
-- 过滤项直接复用同名列配置，不需要再维护单独的 filter schema。
+## 6.1 r-table 统一过滤器（dock='filter'）
+- `r-table` 的筛选项统一放在 `children` 中，并声明 `dock: "filter"`。
+- 筛选区的布局与折叠参数统一写在 `props.docks.filter.*`，不再推荐扁平 `filterColumns` / `filterGrid*` 写法。
 - 远端表：过滤值会同步到 `DataView.filterExpression` 并触发 `refresh()`。
 - 内联数据表：容器会按同一份过滤表达式做本地过滤。
 
@@ -86,20 +86,26 @@ await view.loadFromServer({ page: 1 })
   "props": {
     "border": true,
     "highlightCurrentRow": true,
-    "filterColumns": ["name", "status", "score", "createdAt"],
-    "filterGridColumns": 24,
-    "filterGridGap": 12
+    "docks": {
+      "filter": {
+        "gridColumns": 24,
+        "gridGap": 12,
+        "collapsible": true,
+        "defaultCollapsed": false
+      }
+    }
   },
   "children": [
     {
       "type": "r-text",
-      "name": "name",
+      "dock": "filter",
       "props": { "label": "姓名" }
     },
     {
       "type": "r-multi-select",
-      "name": "status",
+      "dock": "filter",
       "props": {
+        "field": "status",
         "label": "状态",
         "options": [
           { "label": "草稿", "value": "draft" },
@@ -110,16 +116,18 @@ await view.loadFromServer({ page: 1 })
     },
     {
       "type": "r-number",
-      "name": "score",
+      "dock": "filter",
       "props": {
+        "field": "score",
         "label": "分数",
         "filterMode": "range"
       }
     },
     {
       "type": "r-date",
-      "name": "createdAt",
+      "dock": "filter",
       "props": {
+        "field": "createdAt",
         "label": "创建日期",
         "filterMode": "range"
       }
@@ -174,7 +182,7 @@ await view.loadFromServer({ page: 1 })
 ## 参考代码位置（快速跳转）
 - Data 层： `packages/spark-data/src/data-view.ts`、`data-table.ts`、`dataset.ts`
 - 级联 / 加载： `packages/spark-data/src/data-view.ts`（`setupCascade` / `respondToParentChange`）
-- 绑定 / 渲染： `packages/spark-component/src/components/SparkComponentRenderer.vue`、`packages/spark-component/src/components/containers/RendererTable.vue`
+- 绑定 / 渲染： `packages/spark-component/src/components/SparkComponentRenderer.vue`、`packages/spark-component/src/components/containers/data-components/RendererTable.vue`
 - 初始化： `packages/spark-component/src/page/usePageDataSet.ts`
 - 测试： `tests/renderer-table.datasource.test.ts`、`tests/spark-component-renderer.test.ts`
 

@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest'
-import type { ComponentContext, LoggerApi } from '@spark-view/spark-component'
+import type { SparkCapabilityContext, LoggerApi } from '@spark-view/spark-component'
 
 describe('logger capability', () => {
   it('uses context-level logger provider', () => {
@@ -11,7 +11,7 @@ describe('logger capability', () => {
       error: (..._args: unknown[]) => {}
     }
 
-    const ctx: ComponentContext = {
+    const ctx: SparkCapabilityContext = {
       id: 'ctx-logger',
       type: 'test',
       capabilities: new Map([['logger', loggerImpl]])
@@ -32,7 +32,7 @@ describe('logger capability', () => {
       error: (..._args: unknown[]) => {}
     }
 
-    const ctx: ComponentContext = {
+    const ctx: SparkCapabilityContext = {
       id: 'ctx-1',
       type: 'test',
       capabilities: new Map([['logger', loggerImpl]])

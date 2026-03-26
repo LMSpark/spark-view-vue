@@ -466,8 +466,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       dataSet: toolbarDataSet,
       props: {
         dataKey: 'Users@rows',
-        docks: { toolbar: { position: 'bottom' } },
-        rowActionsPosition: 'left',
+        docks: { toolbar: { position: 'bottom' }, actions: { position: 'left' } },
         children: [
           { type: 'toolbar-button', dock: 'toolbar' },
           { type: 'row-button', dock: 'actions', on: { click: rowActionSpy } },
@@ -984,7 +983,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       dataSet: slotDataSet,
       props: {
         dataKey: 'Users@rows',
-        rowActionsPosition: 'right',
+        docks: { actions: { position: 'right' } },
         children: [{ type: 'biz-toolbar', dock: 'toolbar' }],
       },
       slots: {

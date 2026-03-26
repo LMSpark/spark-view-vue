@@ -1,7 +1,7 @@
 /**
  * Logger 上下文集成测试
  * 
- * 验证 Logger 与 ComponentContext 的集成，包括：
+ * 验证 Logger 与 SparkCapabilityContext 的集成，包括：
  * 1. 默认使用字符串模式的 logger
  * 2. 提供自定义 logger provider 后自动切换
  * 3. 子组件继承父组件的 logger provider

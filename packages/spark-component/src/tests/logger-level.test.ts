@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest'
-import type { ComponentContext } from '@spark-view/spark-component'
+import type { SparkCapabilityContext } from '@spark-view/spark-component'
 
 describe('logger level filtering', () => {
   it('partial logger with only warn/error can be stored in capabilities', () => {
@@ -10,7 +10,7 @@ describe('logger level filtering', () => {
       error: (..._args: unknown[]) => {}
     }
 
-    const ctx: ComponentContext = {
+    const ctx: SparkCapabilityContext = {
       id: 'ctx-level',
       type: 'test',
       capabilities: new Map([['logger', loggerImpl]])

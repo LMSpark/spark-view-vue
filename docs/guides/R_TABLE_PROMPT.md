@@ -45,14 +45,14 @@
 【推荐页面结构】
 - 顶部：标题 + 说明
 - 第一块：r-table 主表（工具栏 + 行动作）
-- 第二块：r-table 过滤演示（filterColumns + filterCollapsible）
+- 第二块：r-table 过滤演示（children 中 `dock='filter'` + `props.docks.filter`）
 - 第三块：主从联动（父表 currentRow 切换影响子表 rows）
 - 第四块（可选）：r-form 或 r-detail 展示 currentRow
 
 【rule.json 质量要求】
 - 使用 r-section 分块，结构清晰。
 - 每个 r-table 都要有明确列定义和必要 props。
-- toolbar / rowActions 优先 builtin-action；脚本按钮仅保留少量演示动作。
+- toolbar / actions 区优先 builtin-action；脚本按钮仅保留少量演示动作。
 
 【pagedata.json 质量要求】
 - 真实可演示的示例数据（不少于 5 行主表数据）。

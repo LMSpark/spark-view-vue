@@ -61,8 +61,8 @@ Spark.register('my-grid', () => import('./MyGrid.vue'))
 // 批量注册（推荐大型项目）
 const reg = Spark.createRegister(import.meta.glob('./components/*.vue'))
 reg.registerAll({
-  'r-table': './RendererTable.vue',
-  'r-form': './RendererForm.vue',
+  'r-table': './data-components/RendererTable.vue',
+  'r-form': './data-components/RendererForm.vue',
 })
 ```
 
@@ -194,7 +194,7 @@ sparkProvide(SELECTION, {
 
 ## 6. 能力传递链
 
-所有能力通过 **SPARK 能力系统**（基于 `ComponentContext.capabilities` Map + 向上查找链）传递，而非 Vue DI。
+所有能力通过 **SPARK 能力系统**（基于 `SparkCapabilityContext.capabilities` Map + 向上查找链）传递，而非 Vue DI。
 
 ```
 rootContext (SparkPlugin 创建)

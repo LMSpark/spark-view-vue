@@ -8,6 +8,12 @@
 
   <!-- 非 registry 组件（Vue 全局组件 / 原生标签）：统一走 attrs + slot children -->
   <component
+    v-else-if="externalComponent && renderableChildren.length === 0"
+    :is="externalComponent"
+    v-bind="forwardedProps"
+  />
+
+  <component
     v-else-if="externalComponent"
     :is="externalComponent"
     v-bind="forwardedProps"
@@ -79,8 +85,8 @@
  * ```
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, nodeId, nodeDock, DEFAULT_DOCK, isSparkNode, normalizeSparkNode } from '../types.js'
-import type { SparkNode, SparkNodeChildren, ComponentContext, ComponentRegistry } from '../types.js'
+import { SPARK_REGISTRY_KEY, nodeId, nodeDock, DEFAULT_DOCK, isSparkNode, normalizeSparkNode } from '../core/types.js'
+import type { SparkNode, SparkNodeChildren, SparkCapabilityContext, ComponentRegistry } from '../core/types.js'
 import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal/capability-context.js'
 
 // h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
@@ -136,7 +142,7 @@ interface Props {
    * 仅用于根节点 / 测试场景：将其注入 DI 链，子业务组件 inject 时自动获取。
    * 普通递归渲染无需传递，子组件继承已有的 DI 链。
    */
-  parentContext?: ComponentContext
+  parentContext?: SparkCapabilityContext
 }
 
 const props = defineProps<Props>()

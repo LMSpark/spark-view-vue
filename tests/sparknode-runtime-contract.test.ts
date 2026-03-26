@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import { createPageComponentRegistry } from '../packages/spark-component/src/page/page-component-registry'
+import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 
 describe('SparkNode runtime contract', () => {
   function createTestPlugin() {

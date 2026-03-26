@@ -27,7 +27,7 @@
 ```ts
 // 1. 初始化 —— 任何 SPARK 组件的第一行 setup
 const {
-  context,          // ComponentContext（响应式）
+  context,          // SparkCapabilityContext（响应式能力上下文）
   isVisible,        // ComputedRef<boolean>
   isDisabled,       // ComputedRef<boolean>
   provide,          // (capKey, impl) => void   — SPARK 能力提供（非 Vue DI）

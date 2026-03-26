@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-26T06:45:53.073Z
+ * 生成时间：2026-03-26T09:35:42.299Z
  * 条目数量：83
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -23,7 +23,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-26T06:45:53.066Z",
+  "buildTime": "2026-03-26T09:35:42.292Z",
   "componentCount": 83,
   "registry": {
     "containers": [
@@ -106,7 +106,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "动作类型"
         }
       ],
-      "notes": "**builtin-action** — 声明式动作节点（零代码优先）\n\n【节点形态】\ntype: \"builtin-action\"\nprops.builtinAction: string — 动作类型\nprops.label?: string — 按钮文案\nprops.type?: 'primary'|'success'|'warning'|'danger'|'info'\nprops.confirmTitle?: string — 删除类动作确认标题\nprops.confirmMessage?: string — 删除类动作确认文案\nprops.silent?: boolean — true 时关闭默认消息提示\n\n【常用动作】\nappend-row | refresh | patch-row | patch-current | patch-selected | delete-row | delete-selected | message-row\n\n【放置位置】\n- toolbar.items（工具栏动作）\n- actions.items（行内动作）\n\n适用于 r-table / r-list / r-form / r-detail 的常见 CRUD 场景"
+      "notes": "**builtin-action** — 声明式动作节点（零代码优先）\n\n【节点形态】\ntype: \"builtin-action\"\nprops.builtinAction: string — 动作类型\nprops.label?: string — 按钮文案\nprops.type?: 'primary'|'success'|'warning'|'danger'|'info'\nprops.confirmTitle?: string — 删除类动作确认标题\nprops.confirmMessage?: string — 删除类动作确认文案\nprops.silent?: boolean — true 时关闭默认消息提示\n\n【常用动作】\nappend-row | refresh | patch-row | patch-current | patch-selected | delete-row | delete-selected | message-row\n\n【放置位置】\n- children + dock: 'toolbar'（工具栏动作）\n- children + dock: 'actions'（行/项动作）\n\n适用于 r-table / r-list / r-form / r-detail 的常见 CRUD 场景"
     },
     "r-table": {
       "type": "r-table",
@@ -156,89 +156,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "on.rowDblclick",
           "type": "string",
           "description": "行双击（→ script.js 函数名）"
-        },
-        {
-          "name": "filter.columns",
-          "type": "Array<string | FilterItem>",
-          "description": "筛选项列表"
-        },
-        {
-          "name": "filter.collapsible",
-          "type": "boolean",
-          "description": "可折叠，默认 false"
-        },
-        {
-          "name": "filter.defaultCollapsed",
-          "type": "boolean",
-          "description": "默认折叠，默认 false"
-        },
-        {
-          "name": "filter.autoFitMinWidth",
-          "type": "string",
-          "description": "最小宽度，默认 '220px'"
-        },
-        {
-          "name": "filter.class",
-          "type": "string",
-          "description": "筛选区 CSS 类名"
-        },
-        {
-          "name": "filter.itemSpan",
-          "type": "number",
-          "description": "每项跨列数，默认 1"
-        },
-        {
-          "name": "filter.gridColumns",
-          "type": "number",
-          "description": "栅格总列数，默认 24"
-        },
-        {
-          "name": "filter.gridGap",
-          "type": "number | string",
-          "description": "间距，默认 12"
-        },
-        {
-          "name": "filter.gridAutoRows",
-          "type": "string",
-          "description": "行高，默认 'minmax(32px, auto)'"
-        },
-        {
-          "name": "actions.items",
-          "type": "SparkNode[]",
-          "description": "行操作按钮（优先 builtin-action）"
-        },
-        {
-          "name": "actions.position",
-          "type": "'left' | 'right'",
-          "description": "默认 'right'"
-        },
-        {
-          "name": "actions.label",
-          "type": "string",
-          "description": "操作列标题，默认 '操作'"
-        },
-        {
-          "name": "actions.width",
-          "type": "number",
-          "description": "操作列宽度，默认 160"
-        },
-        {
-          "name": "actions.align",
-          "type": "'left' | 'center' | 'right'",
-          "description": "默认 'left'"
-        },
-        {
-          "name": "actions.fixed",
-          "type": "boolean | 'left' | 'right'",
-          "description": "固定方向"
-        },
-        {
-          "name": "actions.class",
-          "type": "string",
-          "description": "操作列 CSS 类名"
         }
       ],
-      "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【根级字段 — filter 筛选配置】\nfilter.columns: Array<string | FilterItem> — 筛选项列表\n  字符串简写：\"fieldName\" 等价于 { field: \"fieldName\", component: \"text\" }\n  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }\n  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio\nfilter.collapsible: boolean — 可折叠，默认 false\nfilter.defaultCollapsed: boolean — 默认折叠，默认 false\nfilter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nfilter.class: string — 筛选区 CSS 类名\nfilter.itemSpan: number — 每项跨列数，默认 1\nfilter.gridColumns: number — 栅格总列数，默认 24\nfilter.gridGap: number | string — 间距，默认 12\nfilter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【工具栏】\nchildren 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\n\n【根级字段 — actions 行操作列】\nactions.items: SparkNode[] — 行操作按钮（优先 builtin-action）\nactions.position: 'left' | 'right' — 默认 'right'\nactions.label: string — 操作列标题，默认 '操作'\nactions.width: number — 操作列宽度，默认 160\nactions.align: 'left' | 'center' | 'right' — 默认 'left'\nactions.fixed: boolean | 'left' | 'right' — 固定方向\nactions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
+      "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【筛选区】\nchildren 中声明 dock: 'filter' 的字段节点会渲染到筛选区。\nprops.docks.filter.collapsible: boolean — 可折叠，默认 false\nprops.docks.filter.defaultCollapsed: boolean — 默认折叠，默认 false\nprops.docks.filter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nprops.docks.filter.class: string — 筛选区 CSS 类名\nprops.docks.filter.itemSpan: number — 每项跨列数，默认 1\nprops.docks.filter.gridColumns: number — 栅格总列数，默认 24\nprops.docks.filter.gridGap: number | string — 间距，默认 12\nprops.docks.filter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【工具栏】\nchildren 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\n\n【行操作区】\nchildren 中声明 dock: 'actions' 的节点会渲染为行操作区（优先 builtin-action）。\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.label: string — 操作列标题，默认 '操作'\nprops.docks.actions.width: number — 操作列宽度，默认 160\nprops.docks.actions.align: 'left' | 'center' | 'right' — 默认 'left'\nprops.docks.actions.fixed: boolean | 'left' | 'right' — 固定方向\nprops.docks.actions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
       "binding": {
         "selfResolving": true
       }
@@ -404,14 +324,14 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"right\" | \"center\"",
+          "type": "\"center\" | \"left\" | \"right\"",
           "required": false,
           "default": "\"left\"",
           "description": "标题对齐"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"right\" | \"center\"",
+          "type": "\"center\" | \"left\" | \"right\"",
           "required": false,
           "default": "\"left\"",
           "description": "值对齐"
@@ -750,17 +670,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "工具栏 CSS 类名"
         },
         {
-          "name": "itemActions",
-          "type": "Rule[]",
-          "description": "列表项操作区"
-        },
-        {
-          "name": "itemActionsPosition",
+          "name": "props.docks.actions.position",
           "type": "'left' | 'right'",
           "description": "默认 'right'"
         },
         {
-          "name": "itemActionsClass",
+          "name": "props.docks.actions.class",
           "type": "string",
           "description": "操作区 CSS 类名"
         },
@@ -835,7 +750,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "项跨行数，默认 1"
         }
       ],
-      "notes": "**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nitemActions: Rule[] — 列表项操作区\nitemActionsPosition: 'left' | 'right' — 默认 'right'\nitemActionsClass: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
+      "notes": "**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\ndock='actions' children — 列表项动作节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
       "binding": {
         "selfResolving": true
       }
@@ -1154,23 +1069,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "控制显隐（v-model）"
         },
         {
-          "name": "headerClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\""
-        },
-        {
           "name": "bodyClass",
           "type": "string",
           "required": false,
           "default": "\"\"",
           "description": "内容区 CSS 类名"
-        },
-        {
-          "name": "footerClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\""
         },
         {
           "name": "gridColumns",
@@ -1253,24 +1156,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "控制显隐"
         },
         {
-          "name": "headerActions",
-          "type": "Rule[]",
-          "description": "头部操作区"
-        },
-        {
-          "name": "footerActions",
-          "type": "Rule[]",
-          "description": "底部操作区"
-        },
-        {
-          "name": "headerClass",
+          "name": "props.docks.header.class",
           "type": "string",
           "description": "头部 CSS 类名"
-        },
-        {
-          "name": "headerActionsClass",
-          "type": "string",
-          "description": "头部操作区 CSS 类名"
         },
         {
           "name": "bodyClass",
@@ -1278,7 +1166,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "内容区 CSS 类名"
         },
         {
-          "name": "footerClass",
+          "name": "props.docks.footer.class",
           "type": "string",
           "description": "底部 CSS 类名"
         },
@@ -1318,7 +1206,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "关闭动画结束回调"
         }
       ],
-      "notes": "**r-dialog** — 对话框容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nheaderActions: Rule[] — 头部操作区\nfooterActions: Rule[] — 底部操作区\nheaderClass: string — 头部 CSS 类名\nheaderActionsClass: string — 头部操作区 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nfooterClass: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调",
+      "notes": "**r-dialog** — 对话框容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调",
       "binding": {
         "bindingDelegate": "form-element",
         "valueType": "boolean"
@@ -1350,23 +1238,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "控制显隐（v-model）"
         },
         {
-          "name": "headerClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\""
-        },
-        {
           "name": "bodyClass",
           "type": "string",
           "required": false,
           "default": "\"\"",
           "description": "内容区 CSS 类名"
-        },
-        {
-          "name": "footerClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\""
         },
         {
           "name": "gridColumns",
@@ -1449,24 +1325,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "控制显隐"
         },
         {
-          "name": "headerActions",
-          "type": "Rule[]",
-          "description": "头部操作区"
-        },
-        {
-          "name": "footerActions",
-          "type": "Rule[]",
-          "description": "底部操作区"
-        },
-        {
-          "name": "headerClass",
+          "name": "props.docks.header.class",
           "type": "string",
           "description": "头部 CSS 类名"
-        },
-        {
-          "name": "headerActionsClass",
-          "type": "string",
-          "description": "头部操作区 CSS 类名"
         },
         {
           "name": "bodyClass",
@@ -1474,7 +1335,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "内容区 CSS 类名"
         },
         {
-          "name": "footerClass",
+          "name": "props.docks.footer.class",
           "type": "string",
           "description": "底部 CSS 类名"
         },
@@ -1494,7 +1355,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "行高定义，默认 'minmax(32px, auto)'"
         }
       ],
-      "notes": "**r-drawer** — 抽屉容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nheaderActions: Rule[] — 头部操作区\nfooterActions: Rule[] — 底部操作区\nheaderClass: string — 头部 CSS 类名\nheaderActionsClass: string — 头部操作区 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nfooterClass: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen / onClose / onOpened / onClosed: string — 生命周期回调",
+      "notes": "**r-drawer** — 抽屉容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen / onClose / onOpened / onClosed: string — 生命周期回调",
       "binding": {
         "bindingDelegate": "form-element",
         "valueType": "boolean"
@@ -1553,13 +1414,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
-        },
-        {
-          "name": "headerClass",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "头部 CSS 类名"
         },
         {
           "name": "bodyClass",
@@ -1693,9 +1547,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "卡片阴影"
         },
         {
-          "name": "headerActions",
-          "type": "Rule[]",
-          "description": "头部操作区"
+          "name": "props.docks.header.class",
+          "type": "string",
+          "description": "头部 CSS 类名"
         },
         {
           "name": "expandText",
@@ -1728,7 +1582,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "行高"
         }
       ],
-      "notes": "**r-section** — 分区容器\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\nheaderActions: Rule[] — 头部操作区\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高"
+      "notes": "**r-section** — 分区容器\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高"
     },
     "r-block": {
       "type": "r-block",
@@ -1747,9 +1601,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "描述"
         },
         {
-          "name": "headerActions",
-          "type": "Rule[]",
-          "description": "头部操作区"
+          "name": "props.docks.header.class",
+          "type": "string",
+          "description": "头部 CSS 类名"
         },
         {
           "name": "bordered",
@@ -1777,7 +1631,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "行高定义"
         }
       ],
-      "notes": "**r-block** — 块容器（轻量分区）\ntitle: string — 标题\ndescription: string — 描述\nheaderActions: Rule[] — 头部操作区\nbordered: boolean — 边框，默认 true\nuseCard: boolean — 卡片样式，默认 false\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高定义\n适合做页面中的局部块，不强制数据绑定"
+      "notes": "**r-block** — 块容器（轻量分区）\ntitle: string — 标题\ndescription: string — 描述\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbordered: boolean — 边框，默认 true\nuseCard: boolean — 卡片样式，默认 false\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高定义\n适合做页面中的局部块，不强制数据绑定"
     },
     "r-user-picker": {
       "type": "r-user-picker",
@@ -1785,17 +1639,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。",
       "props": [
         {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
           "name": "modelValue",
           "type": "EntityPickerValue",
           "required": false
         },
         {
           "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
           "type": "string",
           "required": false
         },
@@ -1912,17 +1766,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。",
       "props": [
         {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
           "name": "modelValue",
           "type": "EntityPickerValue",
           "required": false
         },
         {
           "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
           "type": "string",
           "required": false
         },
@@ -2039,17 +1893,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。",
       "props": [
         {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
           "name": "modelValue",
           "type": "EntityPickerValue",
           "required": false
         },
         {
           "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
           "type": "string",
           "required": false
         },
@@ -5681,8 +5535,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@937": {
-                        "name": "__@toPrimitive@937",
+                      "__@toPrimitive@945": {
+                        "name": "__@toPrimitive@945",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -6125,6 +5979,18 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string | number | undefined",
           "required": false,
           "description": "列宽"
+        },
+        {
+          "name": "sortable",
+          "type": "boolean | \"custom\" | undefined",
+          "required": false,
+          "description": "Element Plus 表格列排序能力"
+        },
+        {
+          "name": "filterable",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning"
         },
         {
           "name": "minWidth",

@@ -70,8 +70,8 @@ Spark.register('my-detail', () => import('./MyDetail.vue'))
 // 3. 路径注册（批量管理）
 const register = Spark.createRegister(import.meta.glob('./*.vue'))
 register.registerAll({
-  'r-table':   './RendererTable.vue',
-  'r-form':    './RendererForm.vue'
+  'r-table':   './data-components/RendererTable.vue',
+  'r-form':    './data-components/RendererForm.vue'
 })
 ```
 

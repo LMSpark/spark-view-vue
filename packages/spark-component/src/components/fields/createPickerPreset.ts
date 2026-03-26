@@ -11,7 +11,7 @@ import { computed, defineComponent, h, useAttrs } from 'vue'
 import type { PropType } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import type { SparkNode } from '../internal'
-import FieldEntityPicker from './FieldEntityPicker.vue'
+import FieldEntityPicker from './data-components/FieldEntityPicker.vue'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 

@@ -7,9 +7,9 @@
  * - CATALOG_ADDENDUMS: 追加条目，附加在 VCM 生成内容之后（透传 Props、使用说明）
  *
  * 为什么容器用 override 而非 VCM？
- * 容器组件的 rule.json 根级字段（filter.columns, actions.items, on.*）
- * 与 Vue Props 名称不同（filterColumns, toolbar, rowActions），由 bindRules 转换。
- * AI 生成 rule.json 需要看到 rule.json 格式，VCM 提取的是内部 Props 名，会误导 AI。
+ * 容器组件对外暴露的是 rule.json 语义：children + dock + props.docks + on.*。
+ * 运行时内部仍可能保留少量兼容 props / attrs 读取，但那不是 AI 应学习的配置面。
+ * AI 生成 rule.json 需要看到规范化配置结构，而不是内部兼容实现细节。
  *
  * @module component-props-supplement
  */
@@ -39,10 +39,9 @@ export const SHARED_TYPE_DEFINITIONS: Record<string, SharedTypeDefinition> = {
       { name: 'children', type: 'SparkNode[]', description: '子组件配置（递归结构），容器组件渲染其 children 形成组件树' },
       { name: 'visible', type: 'boolean', description: '可见性控制，false 时组件不渲染' },
       { name: 'disabled', type: 'boolean', description: '禁用状态控制' },
-      { name: 'dock', type: 'string', description: '停靠区域名。声明子节点归属哪个 dock，例如 toolbar / actions / filter。' },
+      { name: 'dock', type: 'string', description: '停靠区域名。声明子节点归属哪个 dock，例如 toolbar / actions / filter / header / footer。' },
       { name: 'on', type: 'Record<string, string>', description: '事件绑定（key=camelCase 事件名，value=script.js 函数名），如 { "rowDblclick": "handleRowDblclick" }' },
-      { name: 'actions', type: 'DockActions', description: '行操作列配置（容器级），详见 DockActions' },
-      { name: 'filter', type: 'DockFilter', description: '筛选器配置（容器级），详见 DockFilter' },
+      { name: 'docks', type: 'ContainerDocks', description: '容器停靠区域显示配置。工具栏/筛选区/行操作区/头部/底部的布局参数统一写在这里。' },
     ],
     notes: `【组件与 SparkNode 的关系】
 rule.json 是一棵 SparkNode 树。渲染引擎（SparkComponentRenderer）递归遍历这棵树，对每个节点：
@@ -66,10 +65,10 @@ rule.json → SparkNode 树
   → 容器组件 provide(DATA_SOURCE, CONTEXT_DATA)
   → 子组件 consume() 获取数据与语境 → 自适应渲染
 
-【toolbar / actions / filter 的宿主】
-- toolbar 已迁移为 dock 模型：工具栏节点直接放在 children 内，并声明 dock: "toolbar"。
-- 工具栏显示配置写在 props.docks.toolbar，例如 position / class。
-- actions 与 filter 仍使用根级结构；actions.items 中的每一项也是 SparkNode（常见 type: "builtin-action"）。`,
+【children + dock + docks 统一结构】
+- toolbar / filter / actions / header / footer 的内容节点一律直接放在 children 内，并通过 dock 标识归属区域。
+- 各区域的显示配置统一写在 props.docks.*，例如 props.docks.toolbar.position、props.docks.actions.width。
+- 容器主内容区节点省略 dock（或视为默认区）。`,
   },
 
   DockToolbar: {
@@ -83,9 +82,8 @@ rule.json → SparkNode 树
 
   DockActions: {
     name: 'DockActions',
-    description: '行操作列配置（r-table / r-list），放置在容器组件的 actions 根级字段。items 中的每一项也是 SparkNode。',
+    description: '行/项操作区显示配置（r-table / r-list），内容节点本身通过 children + dock="actions" 声明。',
     properties: [
-      { name: 'items', type: 'SparkNode[]', required: true, description: '操作按钮列表（通常放 builtin-action 或 Render* 自定义渲染函数）' },
       { name: 'position', type: "'left' | 'right'", description: "操作列位置，默认 'right'" },
       { name: 'label', type: 'string', description: "列标题，默认 '操作'" },
       { name: 'width', type: 'string | number', description: '列宽度，默认 160' },
@@ -97,9 +95,8 @@ rule.json → SparkNode 树
 
   DockFilter: {
     name: 'DockFilter',
-    description: '筛选器配置（r-table），放置在容器组件的 filter 根级字段。columns 中可以是字段名字符串（简写）或完整的 DockFilterItem 对象。',
+    description: '筛选区显示配置（r-table），筛选节点本身通过 children + dock="filter" 声明。',
     properties: [
-      { name: 'columns', type: 'Array<string | DockFilterItem>', required: true, description: '筛选项列表。字符串简写 "fieldName" 等价于 { field: "fieldName", component: "text" }' },
       { name: 'class', type: 'string', description: '筛选区 CSS 类名' },
       { name: 'collapsible', type: 'boolean', description: '是否可折叠，默认 false' },
       { name: 'defaultCollapsed', type: 'boolean', description: '默认是否折叠，默认 false' },
@@ -108,22 +105,6 @@ rule.json → SparkNode 树
       { name: 'gridColumns', type: 'number', description: '栅格总列数，默认 24' },
       { name: 'gridGap', type: 'number | string', description: '间距，默认 12' },
       { name: 'gridAutoRows', type: 'string', description: "行高，默认 'minmax(32px, auto)'" },
-    ],
-  },
-
-  DockFilterItem: {
-    name: 'DockFilterItem',
-    description: '单个筛选项完整配置。在 filter.columns 中使用，控制单个字段的筛选 UI。',
-    properties: [
-      { name: 'field', type: 'string', required: true, description: '字段名（映射到数据源字段）' },
-      { name: 'label', type: 'string', description: '显示标签（省略则用字段名）' },
-      { name: 'component', type: "'text' | 'select' | 'date' | 'date-range' | 'number' | 'number-range' | 'checkbox' | 'radio' | string", description: "输入组件类型，默认 'text'" },
-      { name: 'options', type: 'Array<{ label: string; value: unknown }>', description: '可选项列表（component 为 select/radio/checkbox 时使用）' },
-      { name: 'optionLabelField', type: 'string', description: '选项标签字段映射（options 来自 DataKey 时使用）' },
-      { name: 'optionValueField', type: 'string', description: '选项值字段映射' },
-      { name: 'logic', type: "'and' | 'or'", description: '与其他条件的逻辑关系（覆盖全局 filter.logic，默认继承）' },
-      { name: 'span', type: 'number', description: '跨列数（覆盖全局 filter.itemSpan）' },
-      { name: 'props', type: 'Record<string, unknown>', description: '透传到筛选组件的原生 props（如 placeholder、clearable 等）' },
     ],
   },
 }
@@ -165,8 +146,8 @@ props.silent?: boolean — true 时关闭默认消息提示
 append-row | refresh | patch-row | patch-current | patch-selected | delete-row | delete-selected | message-row
 
 【放置位置】
-- toolbar.items（工具栏动作）
-- actions.items（行内动作）
+- children + dock: 'toolbar'（工具栏动作）
+- children + dock: 'actions'（行/项动作）
 
 适用于 r-table / r-list / r-form / r-detail 的常见 CRUD 场景`,
 
@@ -189,33 +170,30 @@ dataKey: string — 数据绑定键，如 "Users@rows"（根级）
 on.rowDblclick: string — 行双击（→ script.js 函数名）
 （其他组件事件同理，key 为 camelCase 事件名）
 
-【根级字段 — filter 筛选配置】
-filter.columns: Array<string | FilterItem> — 筛选项列表
-  字符串简写："fieldName" 等价于 { field: "fieldName", component: "text" }
-  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }
-  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio
-filter.collapsible: boolean — 可折叠，默认 false
-filter.defaultCollapsed: boolean — 默认折叠，默认 false
-filter.autoFitMinWidth: string — 最小宽度，默认 '220px'
-filter.class: string — 筛选区 CSS 类名
-filter.itemSpan: number — 每项跨列数，默认 1
-filter.gridColumns: number — 栅格总列数，默认 24
-filter.gridGap: number | string — 间距，默认 12
-filter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'
+【筛选区】
+children 中声明 dock: 'filter' 的字段节点会渲染到筛选区。
+props.docks.filter.collapsible: boolean — 可折叠，默认 false
+props.docks.filter.defaultCollapsed: boolean — 默认折叠，默认 false
+props.docks.filter.autoFitMinWidth: string — 最小宽度，默认 '220px'
+props.docks.filter.class: string — 筛选区 CSS 类名
+props.docks.filter.itemSpan: number — 每项跨列数，默认 1
+props.docks.filter.gridColumns: number — 栅格总列数，默认 24
+props.docks.filter.gridGap: number | string — 间距，默认 12
+props.docks.filter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'
 
 【工具栏】
 children 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。
 props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
 props.docks.toolbar.class: string — 工具栏 CSS 类名
 
-【根级字段 — actions 行操作列】
-actions.items: SparkNode[] — 行操作按钮（优先 builtin-action）
-actions.position: 'left' | 'right' — 默认 'right'
-actions.label: string — 操作列标题，默认 '操作'
-actions.width: number — 操作列宽度，默认 160
-actions.align: 'left' | 'center' | 'right' — 默认 'left'
-actions.fixed: boolean | 'left' | 'right' — 固定方向
-actions.class: string — 操作列 CSS 类名
+【行操作区】
+children 中声明 dock: 'actions' 的节点会渲染为行操作区（优先 builtin-action）。
+props.docks.actions.position: 'left' | 'right' — 默认 'right'
+props.docks.actions.label: string — 操作列标题，默认 '操作'
+props.docks.actions.width: number — 操作列宽度，默认 160
+props.docks.actions.align: 'left' | 'center' | 'right' — 默认 'left'
+props.docks.actions.fixed: boolean | 'left' | 'right' — 固定方向
+props.docks.actions.class: string — 操作列 CSS 类名
 
 【能力链】
 consumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT
@@ -274,11 +252,11 @@ provides: DATA_SOURCE, CONTEXT_DATA`,
   'r-list': `**r-list** — 列表容器
 dataKey: string — 数据绑定键
 dock='toolbar' children — 工具栏节点
+dock='actions' children — 列表项动作节点
 props.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
 props.docks.toolbar.class: string — 工具栏 CSS 类名
-itemActions: Rule[] — 列表项操作区
-itemActionsPosition: 'left' | 'right' — 默认 'right'
-itemActionsClass: string — 操作区 CSS 类名
+props.docks.actions.position: 'left' | 'right' — 默认 'right'
+props.docks.actions.class: string — 操作区 CSS 类名
 columns: number — 列数，默认 1
 gap: number | string — 间距，默认 0
 minItemWidth: string — 最小项宽度
@@ -326,12 +304,11 @@ children 内放 r-step`,
   'r-dialog': `**r-dialog** — 对话框容器
 title: string — 标题
 modelValue: boolean — 控制显隐
-headerActions: Rule[] — 头部操作区
-footerActions: Rule[] — 底部操作区
-headerClass: string — 头部 CSS 类名
-headerActionsClass: string — 头部操作区 CSS 类名
+dock='header' children — 头部动作区
+dock='footer' children — 底部动作区
+props.docks.header.class: string — 头部 CSS 类名
 bodyClass: string — 内容区 CSS 类名
-footerClass: string — 底部 CSS 类名
+props.docks.footer.class: string — 底部 CSS 类名
 gridColumns: number — 默认 24
 gridGap: number | string — 默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
@@ -343,12 +320,11 @@ onClosed: string — 关闭动画结束回调`,
   'r-drawer': `**r-drawer** — 抽屉容器
 title: string — 标题
 modelValue: boolean — 控制显隐
-headerActions: Rule[] — 头部操作区
-footerActions: Rule[] — 底部操作区
-headerClass: string — 头部 CSS 类名
-headerActionsClass: string — 头部操作区 CSS 类名
+dock='header' children — 头部动作区
+dock='footer' children — 底部动作区
+props.docks.header.class: string — 头部 CSS 类名
 bodyClass: string — 内容区 CSS 类名
-footerClass: string — 底部 CSS 类名
+props.docks.footer.class: string — 底部 CSS 类名
 gridColumns: number — 默认 24
 gridGap: number | string — 默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
@@ -362,7 +338,8 @@ defaultCollapsed: boolean — 默认折叠
 bordered: boolean — 显示边框，默认 true
 useCard: boolean — 使用卡片样式，默认 false
 cardShadow: string — 卡片阴影
-headerActions: Rule[] — 头部操作区
+dock='header' children — 头部动作区
+props.docks.header.class: string — 头部 CSS 类名
 expandText: string — 展开文案，默认 '展开'
 collapseText: string — 收起文案，默认 '收起'
 showToggleIcon: boolean — 显示切换图标，默认 true
@@ -373,7 +350,8 @@ gridAutoRows: string — 行高`,
   'r-block': `**r-block** — 块容器（轻量分区）
 title: string — 标题
 description: string — 描述
-headerActions: Rule[] — 头部操作区
+dock='header' children — 头部动作区
+props.docks.header.class: string — 头部 CSS 类名
 bordered: boolean — 边框，默认 true
 useCard: boolean — 卡片样式，默认 false
 gridColumns: number — 默认 24

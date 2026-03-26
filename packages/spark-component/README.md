@@ -113,7 +113,7 @@ Spark.register('my-component', MyComponent)
 app.use(Spark.createPlugin())
 
 // 类型定义
-import type { ComponentContext } from '@spark-view/spark-component'
+import type { SparkCapabilityContext } from '@spark-view/spark-component'
 ```
 
 ## API 文档

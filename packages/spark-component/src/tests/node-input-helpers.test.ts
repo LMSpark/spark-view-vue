@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nodeInputProp, nodeInputProps, type SparkNode } from '../types'
+import { nodeInputProp, nodeInputProps, type SparkNode } from '../core/types'
 
 describe('SparkNode input helpers', () => {
   it('nodeInputProp should only read props', () => {

@@ -8,8 +8,8 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
-import FieldContextRenderer from '../packages/spark-component/src/components/fields/FieldContextRenderer.vue'
-import { useFieldContext } from '../packages/spark-component/src/components/fields/useFieldContext'
+import FieldContextRenderer from '../packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue'
+import { useFieldContext } from '../packages/spark-component/src/components/fields/context/useFieldContext'
 import type { IDataRow } from '@spark-view/spark-data'
 import { SPARK_REGISTRY_KEY, Spark, useSparkComponent, FIELD_CONTEXT } from '@spark-view/spark-component'
 
