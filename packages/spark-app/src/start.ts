@@ -11,6 +11,7 @@ import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
+import { setDynamicRouter } from './navigation/nav-access'
 import { createThemeService, type ThemeServiceOptions, type ThemeServiceReactive } from './theme'
 import { toError } from '@spark-view/spark-utils'
 
@@ -304,7 +305,6 @@ export async function start(options: StartOptions): Promise<void> {
       router.removeRoute('spark-bootstrap-login')
 
       // 注入到全局模块：导航访问 + 缓存管理（AI 热重载需要）
-      const { setDynamicRouter } = await import('./navigation/nav-access')
       const { setConfigLoader } = await import('@spark-view/spark-ai')
       setDynamicRouter(dynamicRouter)
       setConfigLoader(configLoader)

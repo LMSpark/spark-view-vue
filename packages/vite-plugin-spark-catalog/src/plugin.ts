@@ -59,8 +59,8 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
       const normalizedFile = normalizePath(file)
       // 仅当变更的文件在 renderer 或 feature 目录时才重新生成
       const isRelevant =
-        normalizedFile.includes('/renderer/containers/') ||
-        normalizedFile.includes('/renderer/fields/') ||
+        normalizedFile.includes('/packages/spark-component/src/components/') ||
+        normalizedFile.includes('/packages/spark-component/src/page/') ||
         normalizedFile.includes('/features/') ||
         normalizedFile.includes('/src/components/') ||
         normalizedFile.includes('/src/views/')

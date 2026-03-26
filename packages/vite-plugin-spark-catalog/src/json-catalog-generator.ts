@@ -71,8 +71,8 @@ interface ScannedComponent {
 
 function scanRendererComponents(root: string): ScannedComponent[] {
   const patterns = [
-    './packages/spark-component/src/renderer/containers/*.vue',
-    './packages/spark-component/src/renderer/fields/*.vue',
+    './packages/spark-component/src/components/containers/Renderer*.vue',
+    './packages/spark-component/src/components/fields/Field*.vue',
   ]
   const results: ScannedComponent[] = []
 

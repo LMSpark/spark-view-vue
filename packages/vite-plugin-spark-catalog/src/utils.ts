@@ -34,11 +34,11 @@ export function inferSkillType(absolutePath: string, fallbackType: string): stri
   const normalizedPath = normalizePath(absolutePath)
   const fileName = basename(absolutePath, '.vue')
 
-  if (normalizedPath.includes('/renderer/fields/')) {
+  if (normalizedPath.includes('/components/fields/') && fileName.startsWith('Field')) {
     return `r-${toKebabCase(fileName.replace(/^Field/, ''))}`
   }
 
-  if (normalizedPath.includes('/renderer/containers/')) {
+  if (normalizedPath.includes('/components/containers/') && fileName.startsWith('Renderer')) {
     if (fileName.endsWith('Scope')) return null
     return `r-${toKebabCase(fileName.replace(/^Renderer/, ''))}`
   }
@@ -51,12 +51,13 @@ export function inferSkillType(absolutePath: string, fallbackType: string): stri
  */
 export function buildImplicitSkillDescription(absolutePath: string, skillType: string): string {
   const normalizedPath = normalizePath(absolutePath)
+  const fileName = basename(absolutePath, '.vue')
 
-  if (normalizedPath.includes('/renderer/fields/')) {
+  if (normalizedPath.includes('/components/fields/') && fileName.startsWith('Field')) {
     return `SPARK 字段组件，可在 rule.json 中通过 type="${skillType}" 使用。`
   }
 
-  if (normalizedPath.includes('/renderer/containers/')) {
+  if (normalizedPath.includes('/components/containers/') && fileName.startsWith('Renderer')) {
     return `SPARK 容器组件，可在 rule.json 中通过 type="${skillType}" 组织子组件。`
   }
 

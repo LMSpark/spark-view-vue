@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 import { defineComponent, h } from 'vue'
 import type { DefineComponent } from 'vue'
-import SparkComponentRendererSource from '../packages/spark-component/src/renderer/SparkComponentRenderer.vue'
+import SparkComponentRendererSource from '../packages/spark-component/src/components/SparkComponentRenderer.vue'
 
 const { registry, rootContext } = Spark.createSystem()
 

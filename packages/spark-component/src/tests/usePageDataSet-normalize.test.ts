@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { usePageDataSet } from '../renderer/usePageDataSet'
+import { usePageDataSet } from '../page/usePageDataSet'
 import { DataSet } from '@spark-view/spark-data'
 
 describe('usePageDataSet - DataSet 生命周期管理', () => {

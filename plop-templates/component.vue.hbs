@@ -34,7 +34,7 @@ import type { SparkNode } from '@spark-view/spark-component'
 // 从对应包导入需要消费的能力键，例如：
 // import { APP_SERVICES } from '@spark-view/spark-utils'
 // import { DATA_SOURCE } from '@spark-view/spark-component'
-// 或使用字符串键（需在 capability-keys.ts 中通过 declare module 扩展 CapabilityTypeMap）
+// 或使用字符串键（需在 capabilities.ts 或项目自己的能力模块中通过 declare module 扩展 CapabilityTypeMap）
 {{/if}}
 {{#if isProvider}}
 // 向子组件提供的能力键：

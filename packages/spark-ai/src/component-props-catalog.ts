@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-26T05:24:45.417Z
- * 条目数量：81
+ * 生成时间：2026-03-26T06:22:03.868Z
+ * 条目数量：83
  */
 import type { ComponentCatalog } from './catalog-types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-26T05:24:45.412Z",
-  "componentCount": 81,
+  "buildTime": "2026-03-26T06:22:03.857Z",
+  "componentCount": 83,
   "registry": {
     "containers": [
       "r-block",
@@ -46,6 +46,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-checkbox-group",
       "r-collapse-item",
       "r-color",
+      "r-context-renderer",
       "r-date",
       "r-dept-picker",
       "r-entity-picker",
@@ -6076,6 +6077,188 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "feature",
       "description": "SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。",
       "props": []
+    },
+    "spark-component-renderer": {
+      "type": "spark-component-renderer",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。",
+      "props": [
+        {
+          "name": "parentContext",
+          "type": "ICapabilityContext",
+          "required": false,
+          "description": "显式父上下文（可选）\r\n仅用于根节点 / 测试场景：将其注入 DI 链，子业务组件 inject 时自动获取。\r\n普通递归渲染无需传递，子组件继承已有的 DI 链。"
+        }
+      ]
+    },
+    "r-context-renderer": {
+      "type": "r-context-renderer",
+      "category": "field",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。",
+      "props": [
+        {
+          "name": "displayLabel",
+          "type": "string | undefined",
+          "required": false,
+          "description": "显示标签"
+        },
+        {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false,
+          "description": "直接传入的标签（供 r-column-group 直连使用）"
+        },
+        {
+          "name": "fieldName",
+          "type": "string | undefined",
+          "required": false,
+          "description": "字段绑定名"
+        },
+        {
+          "name": "field",
+          "type": "string | undefined",
+          "required": false,
+          "description": "直接传入的字段名（供裸列节点使用）"
+        },
+        {
+          "name": "width",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "列宽"
+        },
+        {
+          "name": "minWidth",
+          "type": "string | number | undefined",
+          "required": false,
+          "description": "最小列宽"
+        },
+        {
+          "name": "fixed",
+          "type": "boolean | \"left\" | \"right\" | undefined",
+          "required": false,
+          "description": "固定列方向"
+        },
+        {
+          "name": "align",
+          "type": "TextAlign | undefined",
+          "required": false,
+          "description": "列对齐"
+        },
+        {
+          "name": "headerAlign",
+          "type": "TextAlign | undefined",
+          "required": false,
+          "description": "表头对齐"
+        },
+        {
+          "name": "isCurrentFieldHidden",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "当前字段是否隐藏"
+        },
+        {
+          "name": "currentDisplayValue",
+          "type": "string | undefined",
+          "required": false,
+          "description": "当前显示值"
+        },
+        {
+          "name": "isTableCellHidden",
+          "type": "((row: IDataRow) => boolean) | undefined",
+          "required": false,
+          "description": "表格行级隐藏判断"
+        },
+        {
+          "name": "getTableCellDisplayValue",
+          "type": "((row: IDataRow) => string) | undefined",
+          "required": false,
+          "description": "表格行级显示值获取"
+        },
+        {
+          "name": "validationRules",
+          "type": "FormItemRule[] | undefined",
+          "required": false,
+          "description": "表单验证规则"
+        },
+        {
+          "name": "titleAlign",
+          "type": "TextAlign | undefined",
+          "required": false,
+          "description": "标题对齐（table/detail）"
+        },
+        {
+          "name": "valueAlign",
+          "type": "TextAlign | undefined",
+          "required": false,
+          "description": "值对齐（table/detail）"
+        },
+        {
+          "name": "headerCellClassName",
+          "type": "string | undefined",
+          "required": false,
+          "description": "表头 class（table）"
+        },
+        {
+          "name": "labelClassName",
+          "type": "string | undefined",
+          "required": false,
+          "description": "兼容直接传入的列头 class"
+        },
+        {
+          "name": "cellClassName",
+          "type": "string | undefined",
+          "required": false,
+          "description": "单元格 class（table）"
+        },
+        {
+          "name": "className",
+          "type": "string | undefined",
+          "required": false,
+          "description": "兼容直接传入的列 class"
+        },
+        {
+          "name": "titleClassName",
+          "type": "string | undefined",
+          "required": false,
+          "description": "标题 class（detail）"
+        },
+        {
+          "name": "valueClassName",
+          "type": "string | undefined",
+          "required": false,
+          "description": "值 class（detail/table value）"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
+        }
+      ]
     },
     "r-column-group": {
       "type": "r-column-group",

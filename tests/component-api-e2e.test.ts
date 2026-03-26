@@ -16,8 +16,8 @@ import {
 import { COMPONENT_CATALOG } from '../packages/spark-ai/src/component-props-catalog'
 
 const ROOT = resolve('.')
-const FIELDS_DIR = 'packages/spark-component/src/renderer/fields'
-const CONTAINERS_DIR = 'packages/spark-component/src/renderer/containers'
+const FIELD_DIR = 'packages/spark-component/src/components/fields'
+const CONTAINER_DIR = 'packages/spark-component/src/components/containers'
 
 const checker = getOrCreateChecker(resolve(ROOT, 'tsconfig.catalog.json'))
 const diffCatalog = Object.fromEntries(
@@ -34,8 +34,8 @@ const diffCatalog = Object.fromEntries(
 describe('End-to-end: real component extraction (VCM)', () => {
   // VCM checker 首次调用需初始化 TypeScript 语言服务，CPU 密集，全量测试时可能超过默认 5s
   it('extracts FieldText.vue correctly', { timeout: 30_000 }, () => {
-    const absPath = resolve(ROOT, `${FIELDS_DIR}/FieldText.vue`)
-    const api = extractComponentApiVcm(checker, absPath, `${FIELDS_DIR}/FieldText.vue`, 'r-text')
+    const absPath = resolve(ROOT, `${FIELD_DIR}/FieldText.vue`)
+    const api = extractComponentApiVcm(checker, absPath, `${FIELD_DIR}/FieldText.vue`, 'r-text')
 
     expect(api).not.toBeNull()
     expect(api!.props.length).toBeGreaterThanOrEqual(4)
@@ -53,8 +53,8 @@ describe('End-to-end: real component extraction (VCM)', () => {
   })
 
   it('extracts RendererTable.vue correctly', () => {
-    const absPath = resolve(ROOT, `${CONTAINERS_DIR}/RendererTable.vue`)
-    const api = extractComponentApiVcm(checker, absPath, `${CONTAINERS_DIR}/RendererTable.vue`, 'r-table')
+    const absPath = resolve(ROOT, `${CONTAINER_DIR}/RendererTable.vue`)
+    const api = extractComponentApiVcm(checker, absPath, `${CONTAINER_DIR}/RendererTable.vue`, 'r-table')
 
     expect(api).not.toBeNull()
     // RendererTable 仍然保留较丰富的容器 props，但旧 toolbar props 已移除
@@ -65,8 +65,8 @@ describe('End-to-end: real component extraction (VCM)', () => {
   })
 
   it('extracts RendererTree.vue correctly', () => {
-    const absPath = resolve(ROOT, `${CONTAINERS_DIR}/RendererTree.vue`)
-    const api = extractComponentApiVcm(checker, absPath, `${CONTAINERS_DIR}/RendererTree.vue`, 'r-tree')
+    const absPath = resolve(ROOT, `${CONTAINER_DIR}/RendererTree.vue`)
+    const api = extractComponentApiVcm(checker, absPath, `${CONTAINER_DIR}/RendererTree.vue`, 'r-tree')
 
     expect(api).not.toBeNull()
 
@@ -76,9 +76,9 @@ describe('End-to-end: real component extraction (VCM)', () => {
 
   it('batch extracts multiple field components', () => {
     const fieldComponents = [
-      { skillType: 'r-text', absolutePath: resolve(ROOT, `${FIELDS_DIR}/FieldText.vue`), relativePath: `${FIELDS_DIR}/FieldText.vue` },
-      { skillType: 'r-select', absolutePath: resolve(ROOT, `${FIELDS_DIR}/FieldSelect.vue`), relativePath: `${FIELDS_DIR}/FieldSelect.vue` },
-      { skillType: 'r-checkbox', absolutePath: resolve(ROOT, `${FIELDS_DIR}/FieldCheckbox.vue`), relativePath: `${FIELDS_DIR}/FieldCheckbox.vue` },
+      { skillType: 'r-text', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldText.vue`), relativePath: `${FIELD_DIR}/FieldText.vue` },
+      { skillType: 'r-select', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldSelect.vue`), relativePath: `${FIELD_DIR}/FieldSelect.vue` },
+      { skillType: 'r-checkbox', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldCheckbox.vue`), relativePath: `${FIELD_DIR}/FieldCheckbox.vue` },
     ]
 
     const results = extractAllComponentApisVcm(checker, fieldComponents)
@@ -97,10 +97,10 @@ describe('End-to-end: real component extraction (VCM)', () => {
 describe('End-to-end: diff report with real catalog', () => {
   it('generates meaningful diff report', () => {
     const components = [
-      { skillType: 'r-text', absolutePath: resolve(ROOT, `${FIELDS_DIR}/FieldText.vue`), relativePath: `${FIELDS_DIR}/FieldText.vue` },
-      { skillType: 'r-select', absolutePath: resolve(ROOT, `${FIELDS_DIR}/FieldSelect.vue`), relativePath: `${FIELDS_DIR}/FieldSelect.vue` },
-      { skillType: 'r-table', absolutePath: resolve(ROOT, `${CONTAINERS_DIR}/RendererTable.vue`), relativePath: `${CONTAINERS_DIR}/RendererTable.vue` },
-      { skillType: 'r-tree', absolutePath: resolve(ROOT, `${CONTAINERS_DIR}/RendererTree.vue`), relativePath: `${CONTAINERS_DIR}/RendererTree.vue` },
+      { skillType: 'r-text', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldText.vue`), relativePath: `${FIELD_DIR}/FieldText.vue` },
+      { skillType: 'r-select', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldSelect.vue`), relativePath: `${FIELD_DIR}/FieldSelect.vue` },
+      { skillType: 'r-table', absolutePath: resolve(ROOT, `${CONTAINER_DIR}/RendererTable.vue`), relativePath: `${CONTAINER_DIR}/RendererTable.vue` },
+      { skillType: 'r-tree', absolutePath: resolve(ROOT, `${CONTAINER_DIR}/RendererTree.vue`), relativePath: `${CONTAINER_DIR}/RendererTree.vue` },
     ]
 
     const apis = extractAllComponentApisVcm(checker, components)

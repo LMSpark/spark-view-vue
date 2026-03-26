@@ -55,9 +55,9 @@ export default [
       'no-restricted-imports': ['error', { 'patterns': ['**/*.vue', '**/features/**'] }]
     }
   },
-  // Allow Vue SFC imports in the renderer sub-module (PageRenderer.vue 是合法组件)
+  // Allow Vue SFC imports in spark-component component/page sub-modules
   {
-    files: ['packages/spark-component/src/renderer/**'],
+    files: ['packages/spark-component/src/components/**', 'packages/spark-component/src/page/**'],
     rules: {
       'no-restricted-imports': 'off'
     }

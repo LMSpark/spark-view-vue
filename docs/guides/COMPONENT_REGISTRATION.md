@@ -69,7 +69,7 @@ declare module 'virtual:spark-components' {
 
 ```typescript
 // virtual:spark-components (自动生成)
-import pageRenderer from './packages/spark-component/src/renderer/SparkComponentRenderer.vue'
+import pageRenderer from './packages/spark-component/src/components/SparkComponentRenderer.vue'
 
 export function registerComponents() {
   const registry = Spark.getRegistry()
@@ -96,8 +96,8 @@ app.use(Spark.createPlugin())
 // 批量注册（懒加载）
 const reg = Spark.createRegister(import.meta.glob('./src/components/**/*.vue'))
 reg.registerAll({
-  'r-table':   './src/components/renderer-containers/RendererTable.vue',
-  'r-form':    './src/components/renderer-containers/RendererForm.vue'
+  'r-table':   './packages/spark-component/src/components/containers/RendererTable.vue',
+  'r-form':    './packages/spark-component/src/components/containers/RendererForm.vue'
 })
 
 app.mount('#app')
@@ -111,7 +111,7 @@ import PageRenderer from './components/PageRenderer.vue'
 Spark.register('page-renderer', PageRenderer)
 
 // 懒加载（大组件，推荐）
-Spark.register('r-table', () => import('./components/renderer-containers/RendererTable.vue'))
+Spark.register('r-table', () => import('./packages/spark-component/src/components/containers/RendererTable.vue'))
 ```
 
 ---

@@ -27,14 +27,14 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
   - `data/pages-config/` — 页面配置文件存储（git-tracked）
   - `data/component-metadata.json` — 组件元数据持久化（构建时自动生成）
 - **Build scripts**: `scripts/build-all.mjs`（完整构建管道）, `scripts/start-dev.mjs`（一键开发启动）
-- **Renderer containers**: `src/components/renderer-containers/` — RendererTable / RendererForm / RendererDetail（DataView-first 容器）
-- **Renderer capability keys**: `src/components/capability-keys.ts`（FIELD_CONTEXT, CONTEXT_DATA）
-- **bindRules（规则绑定引擎）**: `packages/spark-component/src/renderer/binding/bindRules.ts`
-- **SparkComponentRenderer**: `packages/spark-component/src/renderer/SparkComponentRenderer.vue`
+- **Renderer containers**: `packages/spark-component/src/components/containers/` — RendererTable / RendererForm / RendererDetail（DataView-first 容器）
+- **Renderer capability keys**: `packages/spark-component/src/capabilities.ts`（FIELD_CONTEXT, CONTEXT_DATA）
+- **bindRules（规则绑定引擎）**: `packages/spark-component/src/page/binding/bindRules.ts`
+- **SparkComponentRenderer**: `packages/spark-component/src/components/SparkComponentRenderer.vue`
 - **Key composable**: `packages/spark-component/src/useSparkComponent.ts`
-- **DataSet 生命周期**: `packages/spark-component/src/renderer/usePageDataSet.ts`（仅存储 DataSet，不转换）
+- **DataSet 生命周期**: `packages/spark-component/src/page/usePageDataSet.ts`（仅存储 DataSet，不转换）
 - **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
-- **Capability keys**: `packages/spark-utils/src/capability.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
+- **Capability keys**: `packages/spark-utils/src/capability.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capabilities.ts` (PAGE_DATASET, DATA_SOURCE)
 - **Tests**: `tests/` (重要: `capability-late-binding.test.ts`, `capability-system.test.ts`, `data-key.test.ts`)
 - **Computed column tests**: `packages/spark-data/src/tests/computed-columns.test.ts`（13 sections, 87 cases）
 - **Expression compiler**: `packages/spark-data/src/strategies/computed-column-delegate.ts`
@@ -847,8 +847,8 @@ function tryAutoLoad(view: DataView | null) {
 
 | 能力键 | 定义 | Provider | Consumer | 说明 |
 |--------|------|----------|----------|----- |
-| `FIELD_CONTEXT` | `src/components/capability-keys.ts` | r-table / r-form / r-detail | 字段组件 | 渲染上下文：`'table' \| 'form' \| 'detail' \| 'tree'` |
-| `CONTEXT_DATA` | `src/components/capability-keys.ts` | r-form / r-detail | 字段组件 | 可写响应式数据对象（`reactive({})` 同步自 currentRow） |
+| `FIELD_CONTEXT` | `packages/spark-component/src/capabilities.ts` | r-table / r-form / r-detail | 字段组件 | 渲染上下文：`'table' \| 'form' \| 'detail' \| 'tree'` |
+| `CONTEXT_DATA` | `packages/spark-component/src/capabilities.ts` | r-form / r-detail | 字段组件 | 可写响应式数据对象（`reactive({})` 同步自 currentRow） |
 | `DATA_SOURCE` | `packages/spark-component` | r-table / r-form / r-detail | 字段组件 | DataView 实例（`IDataSource` 接口） |
 | `PAGE_DATASET` | `packages/spark-component` | PageRenderer | 容器组件 | 页面级 DataSet |
 
@@ -889,7 +889,7 @@ const cap = consume(MY_CAP)  // { doSomething(): void } | null
 
 **方式二：字符串键 + CapabilityTypeMap（推荐，可扩展）**
 ```typescript
-// src/components/capability-keys.ts
+// packages/spark-component/src/capabilities.ts
 import type { MyServiceCapability } from './types'
 
 declare module '@spark-view/spark-utils' {
@@ -1003,7 +1003,7 @@ packages/
 ├── spark-component/     # 组件系统（Spark 命名空间、能力系统）
 │   └── src/
 │       ├── spark.ts          # Spark 命名空间（唯一入口）
-│       ├── capability-keys.ts # PAGE_DATASET, DATA_SOURCE（数据能力键）
+│       ├── capabilities.ts    # PAGE_DATASET, DATA_SOURCE 等能力键与类型
 │       ├── types.ts          # SparkNode, ComponentContext, ComponentRegistry
 │       ├── registry.ts       # ComponentRegistry 实现
 │       ├── useSparkComponent.ts # 核心 Composable

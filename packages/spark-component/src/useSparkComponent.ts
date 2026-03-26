@@ -11,9 +11,9 @@ import { sparkProvide as rawSparkProvide, sparkConsume as rawSparkConsume, norma
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode, ComponentRegistry } from './types.js'
 import { SPARK_REGISTRY_KEY, nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
-import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from './internal-context.js'
-import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
-import type { PageComponentRegistry } from './capability-keys.js'
+import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from './internal/capability-context.js'
+import { PAGE_COMPONENT_REGISTRY } from './capabilities.js'
+import type { PageComponentRegistry } from './capabilities.js'
 
 /* -------------------------------------------------------------------------- */
 

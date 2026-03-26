@@ -337,7 +337,7 @@ export interface IModuleContext {
  *
  * @example
  * ```ts
- * // packages/spark-component/src/capability-keys.ts
+ * // packages/spark-component/src/capabilities.ts
  * declare module '@spark-view/spark-utils' {
  *   interface CapabilityTypeMap {
  *     'spark:capability:page-dataset': IDataSet

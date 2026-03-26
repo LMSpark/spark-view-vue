@@ -1373,7 +1373,7 @@ public SseEmitter generateModule(
 
 #### C3.1 interactions.json 运行时解析
 
-**新增前端模块**（`packages/spark-component/src/renderer/utils/interactionEngine.ts`）：
+**新增前端模块**（建议归入 `packages/spark-component/src/page/interactionEngine.ts`）：
 
 ```typescript
 interface InteractionRule {

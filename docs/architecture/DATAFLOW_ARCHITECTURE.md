@@ -71,7 +71,7 @@ reg.registerAll({
 ## 3. 页面渲染层（PageRenderer）
 
 `PageRenderer` 通过 `useRendererSetup` composable 完成页面级协调
-（见 `packages/spark-component/src/renderer/useRendererSetup.ts`）：
+（见 `packages/spark-component/src/page/useRendererSetup.ts`）：
 
 ```typescript
 // SparkPageRenderer 内部（简化）

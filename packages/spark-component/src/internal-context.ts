@@ -1,4 +1,8 @@
-import type { InjectionKey } from 'vue'
-import type { SparkCapabilityContext } from './types.js'
+/**
+ * 兼容导出层。
+ *
+ * 新的权威路径位于 `internal/capability-context.ts`；
+ * 保留本文件仅为兼容存量 import。
+ */
 
-export const INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY: InjectionKey<SparkCapabilityContext> = Symbol('sparkParentCapabilityContext') as InjectionKey<SparkCapabilityContext>
+export { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from './internal/capability-context.js'

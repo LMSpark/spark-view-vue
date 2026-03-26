@@ -40,6 +40,7 @@
 
 // SPARK 架构包
 import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger, addGlobalTransport } from '@spark-view/spark-app'
+import { getNavHomePath } from '@spark-view/spark-app'
 import type { LogTransport } from '@spark-view/spark-app'
 import { addLogTransport } from '@spark-view/spark-utils'
 import { onDebugRouteRequest } from '@spark-view/spark-utils'
@@ -48,6 +49,8 @@ import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
 
 // 创建启动日志（临时用于启动流程）
 import { createLogger } from '@spark-view/spark-app'
+import { getUser, isAuthenticated, switchProject } from './services/auth'
+import { createAuthHeaders, http as appHttpClient } from './services/http'
 const startupLogger = createLogger('main')
 
 // AI 闭环：late-binding pageId（路由就绪后由 afterMount 注入）
@@ -239,11 +242,7 @@ async function startApp() {
     const platformPaths = getPlatformPaths()
     startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuthNav: ${preAuthNavTree.children.length} 个节点, platformPaths: ${platformPaths.size} 个`)
     
-    // 5. 导入 auth 工具
-    const { getUser, isAuthenticated, switchProject } = await import('./services/auth')
-    const { createAuthHeaders, http: appHttpClient } = await import('./services/http')
     const { getPageApi, getNavApi } = await import('./services/api-paths')
-    const { getNavHomePath } = await import('@spark-view/spark-app')
 
     type DebugBridgeState = {
       installed: boolean
@@ -422,8 +421,7 @@ async function startApp() {
         preAuthNavTree,
         // 导航树作为路由唯一来源 — DynamicRouter 从导航树派生路由
         loadNavigation: async () => {
-          const { http: httpClient } = await import('./services/http')
-          const data = await httpClient.get<{ childPlacement?: string; children?: unknown[]; homePath?: string }>(getNavApi())
+          const data = await appHttpClient.get<{ childPlacement?: string; children?: unknown[]; homePath?: string }>(getNavApi())
           return {
             childPlacement: (data.childPlacement ?? 'header') as 'header' | 'sidebar',
             children: Array.isArray(data.children) ? data.children : [],

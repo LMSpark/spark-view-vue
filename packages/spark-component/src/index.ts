@@ -68,7 +68,7 @@ export {
   FIELD_CONTEXT,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
-} from './capability-keys.js'
+} from './capabilities.js'
 export type {
   FieldContext,
   RendererTableApi,
@@ -86,24 +86,26 @@ export type {
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   ModuleContextCapability,
-} from './capability-keys.js'
+} from './capabilities.js'
 
 // ── 7. 页面渲染引擎 ──
 export {
   SparkPageRenderer,
+} from './page/index.js'
+export {
   SparkComponentRenderer,
-} from './renderer/index.js'
+} from './components/index.js'
 
 export type {
   UsePageDataSetOptions,
   UsePageDataSetReturn,
-} from './renderer/index.js'
+} from './page/index.js'
 
 export type {
   PageContext,
   PageConfig,
   PageRendererProps,
-} from './renderer/index.js'
+} from './page/index.js'
 
 // ── 8. 内置 Renderer 容器 + 字段组件 ──
 export {
@@ -155,4 +157,4 @@ export {
   registerAllRenderers,
   // Composable
   useFieldPermission,
-} from './renderer/index.js'
+} from './components/index.js'

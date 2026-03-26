@@ -1840,7 +1840,7 @@ function isLifecycleOrComponentEvent(eventName: string): boolean {
 
 ```
 Phase 0 — 类型定义 + 归一化函数（历史方案，未作为现行路径落地）
-  ├─ 新增 SparkNode + 7 个域类型到 spark-component/src/renderer/types.ts
+  ├─ 新增 SparkNode + 7 个域类型到 spark-component/src/types.ts
   ├─ 新增 normalizeSparkNode() 到 binding/normalize-spark-node.ts
   ├─ 历史上曾计划在 bindDataToRules() 入口调用归一化；现已改为渲染器直接解释 SparkNode
   └─ 单元测试：

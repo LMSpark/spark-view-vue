@@ -210,7 +210,7 @@ export const MY_CAP = defineCapability<{ doSomething(): void }>('app:my-capabili
 sparkConsume(MY_CAP)  // { doSomething(): void } | null
 
 // 方式二：字符串键 + CapabilityTypeMap（推荐，可扩展）
-// 在项目自己的 capability-keys.ts 中
+// 在项目自己的 capabilities.ts 或其他能力模块中
 declare module '@spark-view/spark-utils' {
   interface CapabilityTypeMap {
     'app:my-capability': { doSomething(): void }
