@@ -302,7 +302,7 @@ onMounted(() => {
     try {
       settings.value = { ...settings.value, ...JSON.parse(saved) }
     } catch (e) {
-      console.warn('加载保存的设置失败:', e)
+      if (import.meta.env.DEV) console.warn('加载保存的设置失败:', e)
     }
   }
   // 同步主题服务当前状态到 UI

@@ -293,8 +293,10 @@ const _mockApiClient = {
 
 // 初始化能力管理器
 onMounted(() => {
-  console.log('🚀 演示页面已加载')
-  console.log('📊 初始数据已就绪')
+  if (import.meta.env.DEV) {
+    console.log('🚀 演示页面已加载')
+    console.log('📊 初始数据已就绪')
+  }
   // 暂时禁用能力管理器，直接使用静态数据展示
 })
 

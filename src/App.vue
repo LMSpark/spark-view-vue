@@ -207,7 +207,7 @@ function applyNavTree(navData: AppNavRoot | null): void {
     _navRoot.children = navData.children
     if (import.meta.env.DEV) console.log(`[Nav] ✅ 导航已同步 (${navData.children.length} 个节点)`)
   } else if (import.meta.env.DEV) {
-    console.warn('[Nav] ⚠️ 导航树为空')
+    console.warn('[Nav] ⚠️ 导航树为空')  // DEV guard on outer branch
   }
 }
 
@@ -293,7 +293,7 @@ function handleUserCommand(command: string) {
         } else if (command.startsWith('/')) {
           // 兜底：path 带 '/' 但不在 userMenuItems 中（理论外路径）
           nav.navigateToPath(command)
-        } else {
+        } else if (import.meta.env.DEV) {
           console.error(`[handleUserCommand] 未处理的用户菜单命令: "${command}"`)
         }
       }

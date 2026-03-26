@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-25T17:03:01.135Z
+ * 生成时间：2026-03-26T05:24:45.417Z
  * 条目数量：81
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -23,7 +23,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-25T17:03:01.131Z",
+  "buildTime": "2026-03-26T05:24:45.412Z",
   "componentCount": 81,
   "registry": {
     "containers": [
@@ -130,18 +130,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重"
         },
         {
           "name": "dataKey",
@@ -519,18 +507,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重"
         },
         {
           "name": "dataKey",
@@ -2271,7 +2247,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "type",
           "type": "string",
-          "required": false
+          "required": false,
+          "default": "\"r-tab-pane\""
         },
         {
           "name": "props",
@@ -2281,21 +2258,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "id",
           "type": "string",
-          "required": false
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false
-        },
-        {
-          "name": "nodeId",
-          "type": "string | undefined",
           "required": false
         },
         {
@@ -2368,7 +2330,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "type",
           "type": "string",
-          "required": false
+          "required": false,
+          "default": "\"r-step\""
         },
         {
           "name": "props",
@@ -2378,21 +2341,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "id",
           "type": "string",
-          "required": false
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false
-        },
-        {
-          "name": "nodeId",
-          "type": "string | undefined",
           "required": false
         },
         {
@@ -2467,7 +2415,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "type",
           "type": "string",
-          "required": false
+          "required": false,
+          "default": "\"r-collapse-item\""
         },
         {
           "name": "props",
@@ -2477,21 +2426,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "id",
           "type": "string",
-          "required": false
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false
-        },
-        {
-          "name": "nodeId",
-          "type": "string | undefined",
           "required": false
         },
         {
@@ -5746,8 +5680,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@51435": {
-                        "name": "__@toPrimitive@51435",
+                      "__@toPrimitive@937": {
+                        "name": "__@toPrimitive@937",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
