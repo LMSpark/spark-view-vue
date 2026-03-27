@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-26T18:27:59.340Z
- * 条目数量：83
+ * 生成时间：2026-03-27T00:22:46.801Z
+ * 条目数量：84
  */
 import type { ComponentCatalog } from './catalog-types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-26T18:27:59.336Z",
-  "componentCount": 83,
+  "buildTime": "2026-03-27T00:22:46.784Z",
+  "componentCount": 84,
   "registry": {
     "containers": [
       "r-block",
@@ -434,6 +434,30 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "数据绑定键，如 \"TreeData@rows\""
+        },
+        {
+          "name": "nodeKey",
+          "type": "string",
+          "required": false,
+          "description": "节点主键字段名，默认取 treeConfig.idField"
+        },
+        {
+          "name": "currentKey",
+          "type": "string | number | null",
+          "required": false,
+          "description": "当前选中节点 ID"
+        },
+        {
+          "name": "expandToKey",
+          "type": "string | number | null",
+          "required": false,
+          "description": "初始化展开并定位到目标节点 ID"
+        },
+        {
+          "name": "expandLevel",
+          "type": "number",
+          "required": false,
+          "description": "初始化自动展开到指定层级（根节点为第 1 层）"
         },
         {
           "name": "docks",
@@ -5948,6 +5972,110 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "ICapabilityContext",
           "required": false,
           "description": "显式父上下文（可选）\r\n仅用于根节点 / 测试场景：将其注入 DI 链，子业务组件 inject 时自动获取。\r\n普通递归渲染无需传递，子组件继承已有的 DI 链。"
+        }
+      ]
+    },
+    "tree-node-summary": {
+      "type": "tree-node-summary",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。",
+      "props": [
+        {
+          "name": "nameField",
+          "type": "string",
+          "required": false,
+          "default": "\"name\""
+        },
+        {
+          "name": "typeField",
+          "type": "string",
+          "required": false,
+          "default": "\"type\""
+        },
+        {
+          "name": "statusField",
+          "type": "string",
+          "required": false,
+          "default": "\"status\""
+        },
+        {
+          "name": "ownerField",
+          "type": "string",
+          "required": false,
+          "default": "\"owner\""
+        },
+        {
+          "name": "metaField",
+          "type": "string",
+          "required": false,
+          "default": "\"route\""
+        },
+        {
+          "name": "extraField",
+          "type": "string",
+          "required": false,
+          "default": "\"childPlacement\""
+        },
+        {
+          "name": "showType",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "showStatus",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "showOwner",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "showMeta",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "showExtra",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tree-node-summary\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false,
+          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false,
+          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ]
     },

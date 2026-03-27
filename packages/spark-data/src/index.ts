@@ -48,6 +48,7 @@ export type {
   DataColumn,
   DataRelation,
   CrudApi,
+  CrudResult,
   HttpEndpoint,
 
   // 视图配置

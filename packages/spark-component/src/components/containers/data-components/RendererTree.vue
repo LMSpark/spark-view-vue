@@ -460,6 +460,26 @@ const treeApi: RendererTreeApi = {
   setCheckedKeys(keys) {
     (nativeTreeRef.value as NativeTreeLike)?.setCheckedKeys?.(keys)
   },
+  async addRow(row) {
+    const view = resolvedView.value
+    if (!view) return null
+    return await view.addRow(row)
+  },
+  async editRowById(id, patch) {
+    const view = resolvedView.value
+    if (!view) return false
+    return await view.editRowById(id, patch)
+  },
+  async removeRow(id) {
+    const view = resolvedView.value
+    if (!view) return false
+    return await view.removeRow(id)
+  },
+  async moveNode(nodeId, newParentId, index) {
+    const view = resolvedView.value
+    if (!view) return null
+    return await view.moveTreeNode(nodeId, newParentId, index)
+  },
 
   // ── 编辑操作 ──────────────────────────────────────────────────────────────
 

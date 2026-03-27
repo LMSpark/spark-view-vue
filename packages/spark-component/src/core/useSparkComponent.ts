@@ -12,7 +12,7 @@ import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, L
 import type { SparkCapabilityContext, SparkNode, ComponentRegistry } from './types.js'
 import { SPARK_REGISTRY_KEY, nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal/capability-context.js'
-import { PAGE_COMPONENT_REGISTRY } from './capabilities.js'
+import { CONTEXT_DATA, PAGE_COMPONENT_REGISTRY } from './capabilities.js'
 import type { PageComponentRegistry } from './capabilities.js'
 
 /* -------------------------------------------------------------------------- */
@@ -309,7 +309,7 @@ export function useSparkComponent(
     if (key === LOGGER || key === APP_SERVICES) {
       _loggerCache = null
     }
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && key !== CONTEXT_DATA) {
       logger.debug(`[spark] provided: ${String(name)}`)
     }
   }

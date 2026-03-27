@@ -26,7 +26,7 @@
  */
 
 import { defineCapability } from '@spark-view/spark-utils'
-import type { IDataSet, IDataSource, IDataRow } from '@spark-view/spark-data'
+import type { CrudResult, IDataSet, IDataSource, IDataRow } from '@spark-view/spark-data'
 import type { IModuleContext } from '@spark-view/spark-utils'
 
 /** 字段渲染上下文类型 */
@@ -45,6 +45,9 @@ export interface RendererTableApi {
   getCurrentRow(): IDataRow | null
   getSelectedRows(): IDataRow[]
   refresh(): Promise<void>
+  addRow(row: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow> | null>
+  editRowById(id: string | number, patch: Partial<IDataRow>): Promise<boolean | CrudResult<IDataRow>>
+  removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
   appendRow(row: IDataRow): void
   updateRowById(id: string | number, patch: Partial<IDataRow>): boolean
   deleteRowById(id: string | number): boolean
@@ -129,6 +132,15 @@ export interface RendererTreeApi {
   getCheckedKeys(): Array<string | number>
   /** 设置勾选节点 key 列表 */
   setCheckedKeys(keys: Array<string | number>): void
+
+  /** 通过底层 DataView 新增节点/行，遵循 autoCommit / dirty-tracking 语义 */
+  addRow(row: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow> | null>
+  /** 通过底层 DataView 编辑节点/行，遵循 autoCommit / dirty-tracking 语义 */
+  editRowById(id: string | number, patch: Partial<IDataRow>): Promise<boolean | CrudResult<IDataRow>>
+  /** 通过底层 DataView 删除节点/行，遵循 autoCommit / dirty-tracking 语义 */
+  removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
+  /** 通过底层 DataView 调用树移动接口 */
+  moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<IDataRow | null>
 
   // ── 编辑操作 ──────────────────────────────────────────────────────────────
 

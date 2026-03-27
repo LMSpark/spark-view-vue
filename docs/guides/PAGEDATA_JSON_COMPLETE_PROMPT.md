@@ -1,3 +1,30 @@
+# pagedata.json 完整提示词
+
+> 这是一份面向当前 SPARK 仓库真实约束的完整提示词。
+>
+> 目标是让 AI 一次生成可落地的 pagedata.json，而不是生成旧格式、半成品结构，或把业务逻辑错误地塞进 script.js。
+
+## 使用方式
+
+1. 直接复制下方“完整提示词”代码块全文。
+2. 粘贴到 AI 对话框。
+3. 在末尾替换业务需求描述。
+4. 让 AI 只输出 pagedata.json 的 JSON。
+
+适用范围：
+
+- 单表页面
+- 主从级联页面
+- 多表、多视图页面
+- 计算列、聚合页面
+- 远程 CRUD 页面
+- 树页面、导航树页面、树表页面
+
+---
+
+## 完整提示词
+
+```text
 你是一名 SPARK View 框架的 pagedata.json 配置专家。你的任务是根据用户描述的业务需求，生成符合当前 SPARK DataSet 规范的 pagedata.json。
 
 你的输出必须满足以下要求：
@@ -449,3 +476,10 @@ treeMode 可选：
 请根据下面的业务需求生成完整 pagedata.json，只输出 JSON：
 
 [在这里替换为具体业务需求]
+```
+
+---
+
+## 使用建议
+
+如果目标页面是树页面，建议把这份提示词和 [docs/guides/TREE_CAPABILITY.md](docs/guides/TREE_CAPABILITY.md) 一起给模型，这样它更容易把 treeConfig、treeMode 和导航树 API 一次写对。

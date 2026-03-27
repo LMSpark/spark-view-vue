@@ -11,7 +11,7 @@
  */
 
 import type { SparkNode } from '../internal'
-import type { IDataRow, DataView } from '@spark-view/spark-data'
+import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'
 import type { PageMessageType, IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────
@@ -126,6 +126,21 @@ function resolveConfiguredText(record: Record<string, unknown>, key: string, fal
   const raw = record[key]
   if (typeof raw === 'string') return raw.trim()
   return ''
+}
+
+function isCrudResult<T>(value: unknown): value is CrudResult<T> {
+  return value !== null
+    && typeof value === 'object'
+    && 'success' in value
+    && typeof (value as { success?: unknown }).success === 'boolean'
+}
+
+function isCrudSuccess<T>(value: boolean | IDataRow | CrudResult<T>): boolean {
+  return isCrudResult(value) ? value.success : value !== false
+}
+
+function getCrudErrorMessage<T>(value: CrudResult<T>, fallback: string): string {
+  return value.message ?? value.error?.message ?? fallback
 }
 
 // ── 动作名校验 ────────────────────────────────────────────────────────────
@@ -508,7 +523,11 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
             payload[idField] = inferNextRowId(view, idField)
           }
-          view.appendRow(payload as IDataRow)
+          const appendResult = await view.addRow(payload as IDataRow)
+          if (isCrudResult(appendResult) && !appendResult.success) {
+            notifyAction(propsMap, 'warning', getCrudErrorMessage(appendResult, resolveConfiguredText(propsMap, 'failureMessage', '新增失败')))
+            return
+          }
           notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
           return
         }
@@ -534,7 +553,11 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           if (!(idField in appendPayload) || appendPayload[idField] === undefined || appendPayload[idField] === null) {
             appendPayload[idField] = inferNextRowId(view, idField)
           }
-          view.appendRow(appendPayload as IDataRow)
+          const appendResult = await view.addRow(appendPayload as IDataRow)
+          if (isCrudResult(appendResult) && !appendResult.success) {
+            notifyAction(propsMap, 'warning', getCrudErrorMessage(appendResult, resolveConfiguredText(propsMap, 'failureMessage', '新增失败')))
+            return
+          }
           notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
           return
         }
@@ -565,11 +588,18 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           if (editPh !== undefined) editOpts.placeholder = editPh
           const result = await pageService.showPrompt(editMsg, editTitle, editOpts)
           if (result === null) return
-          if (view.updateRowById(id, { [field]: result })) {
+          const updateResult = await view.editRowById(id, { [field]: result })
+          if (isCrudSuccess(updateResult)) {
             notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '更新成功'))
             return
           }
-          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', '更新失败'))
+          notifyAction(
+            propsMap,
+            'warning',
+            isCrudResult(updateResult)
+              ? getCrudErrorMessage(updateResult, resolveConfiguredText(propsMap, 'failureMessage', '更新失败'))
+              : resolveConfiguredText(propsMap, 'failureMessage', '更新失败')
+          )
           return
         }
         case 'refresh': {
@@ -623,11 +653,18 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
             return
           }
-          if (view.deleteRowById(id)) {
+          const deleteResult = await view.removeRow(id)
+          if (isCrudSuccess(deleteResult)) {
             notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已删除 ${rowLabel}`))
             return
           }
-          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除'))
+          notifyAction(
+            propsMap,
+            'warning',
+            isCrudResult(deleteResult)
+              ? getCrudErrorMessage(deleteResult, resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除'))
+              : resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除')
+          )
           return
         }
         case 'delete-current': {
@@ -644,11 +681,18 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
             return
           }
-          if (view.deleteRowById(id)) {
+          const deleteResult = await view.removeRow(id)
+          if (isCrudSuccess(deleteResult)) {
             notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已删除 ${rowLabel}`))
             return
           }
-          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除'))
+          notifyAction(
+            propsMap,
+            'warning',
+            isCrudResult(deleteResult)
+              ? getCrudErrorMessage(deleteResult, resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除'))
+              : resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除')
+          )
           return
         }
         case 'delete-selected': {
@@ -662,7 +706,9 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           let removed = 0
           for (const row of [...selectedRows]) {
             const id = resolveRowId(row, idField)
-            if (id !== null && view.deleteRowById(id)) removed++
+            if (id === null) continue
+            const deleteResult = await view.removeRow(id)
+            if (isCrudSuccess(deleteResult)) removed++
           }
           if (removed > 0) {
             notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已删除 ${removed} 条记录`))
@@ -687,11 +733,18 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             notifyAction(propsMap, 'warning', '缺少 patch/field 配置，无法更新')
             return
           }
-          if (view.updateRowById(id, patch)) {
+          const patchResult = await view.editRowById(id, patch)
+          if (isCrudSuccess(patchResult)) {
             notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '更新成功'))
             return
           }
-          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除'))
+          notifyAction(
+            propsMap,
+            'warning',
+            isCrudResult(patchResult)
+              ? getCrudErrorMessage(patchResult, resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除'))
+              : resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除')
+          )
           return
         }
         case 'patch-current': {
@@ -710,11 +763,18 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             notifyAction(propsMap, 'warning', '缺少 patch/field 配置，无法更新')
             return
           }
-          if (view.updateRowById(id, patch)) {
+          const patchResult = await view.editRowById(id, patch)
+          if (isCrudSuccess(patchResult)) {
             notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '更新成功'))
             return
           }
-          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除'))
+          notifyAction(
+            propsMap,
+            'warning',
+            isCrudResult(patchResult)
+              ? getCrudErrorMessage(patchResult, resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除'))
+              : resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除')
+          )
           return
         }
         case 'patch-selected': {
@@ -731,7 +791,9 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           let updated = 0
           for (const row of selectedRows) {
             const id = resolveRowId(row, idField)
-            if (id !== null && view.updateRowById(id, patch)) updated++
+            if (id === null) continue
+            const patchResult = await view.editRowById(id, patch)
+            if (isCrudSuccess(patchResult)) updated++
           }
           if (updated > 0) {
             notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已更新 ${updated} 条记录`))

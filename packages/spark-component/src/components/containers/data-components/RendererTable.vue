@@ -453,6 +453,21 @@ const tableApi: RendererTableApi = {
     if (!view || !hasRemoteListApi(view)) return
     await view.refresh()
   },
+  async addRow(row) {
+    const view = resolvedView.value
+    if (!view) return null
+    return await view.addRow(row)
+  },
+  async editRowById(id, patch) {
+    const view = resolvedView.value
+    if (!view) return false
+    return await view.editRowById(id, patch)
+  },
+  async removeRow(id) {
+    const view = resolvedView.value
+    if (!view) return false
+    return await view.removeRow(id)
+  },
   appendRow(row) {
     resolvedView.value?.appendRow(row)
   },

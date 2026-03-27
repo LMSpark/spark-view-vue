@@ -254,6 +254,97 @@ test('SparkComponentRenderer renders unregistered native tags with recursive chi
   expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
 })
 
+test('SparkComponentRenderer does not forward $-prefixed scoped props to native elements', () => {
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'button',
+        props: {
+          class: 'native-scoped-button',
+          '$index': 3,
+          rowIndex: 3,
+        },
+        children: ['action'],
+      } as unknown as Record<string, unknown>,
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  const button = wrapper.find('.native-scoped-button')
+  expect(button.exists()).toBe(true)
+  expect(button.attributes('$index')).toBeUndefined()
+  expect(button.text()).toContain('action')
+})
+
+test('SparkComponentRenderer does not forward scoped row props to native elements', () => {
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'button',
+        props: {
+          class: 'native-row-button',
+          row: { id: 'n-1', title: '节点' },
+          rowIndex: 2,
+          data: { id: 'n-1' },
+        },
+        children: ['action'],
+      } as unknown as Record<string, unknown>,
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  const button = wrapper.find('.native-row-button')
+  expect(button.exists()).toBe(true)
+  expect(button.attributes('row')).toBeUndefined()
+  expect(button.attributes('rowindex')).toBeUndefined()
+  expect(button.attributes('data')).toBeUndefined()
+})
+
+test('SparkComponentRenderer still forwards scoped row props to Vue global components', () => {
+  const RenderRowAction = defineComponent({
+    name: 'RenderRowAction',
+    inheritAttrs: false,
+    setup(_, { attrs }) {
+      const row = attrs['row'] as { title?: string } | undefined
+      const rowIndex = attrs['rowIndex'] as number | undefined
+      return () => h('div', { class: 'render-row-action-global' }, `${row?.title ?? 'missing'}-${String(rowIndex ?? '')}`)
+    }
+  })
+
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'RenderRowAction',
+        props: {
+          row: { title: '工具栏' },
+          rowIndex: 5,
+        },
+      },
+      parentContext: rootContext,
+    },
+    global: {
+      components: {
+        RenderRowAction,
+      },
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.render-row-action-global').text()).toBe('工具栏-5')
+})
+
 test('SparkComponentRenderer keeps warning fallback for unknown non-native component types', () => {
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {

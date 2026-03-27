@@ -10,13 +10,13 @@
   <component
     v-else-if="externalComponent && renderableChildren.length === 0"
     :is="externalComponent"
-    v-bind="forwardedProps"
+    v-bind="externalForwardedProps"
   />
 
   <component
     v-else-if="externalComponent"
     :is="externalComponent"
-    v-bind="forwardedProps"
+    v-bind="externalForwardedProps"
   >
     <template
       v-for="(child, index) in renderableChildren"
@@ -92,6 +92,7 @@ import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal/capability-c
 // h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
 // layout/dock/order 只服务于容器布局，不透传到组件 props / DOM
 const FILTERED_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span', 'on', 'dock', 'order'])
+const NATIVE_ONLY_FILTERED_PROP_KEYS = new Set(['row', 'rowIndex', 'data', 'dataSource', 'modelPermission', 'model'])
 const NATIVE_RENDERABLE_TAGS = new Set([
   'div', 'span', 'p', 'a', 'img',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -218,7 +219,7 @@ const externalComponent = computed(() => {
 
 function hasFilteredKeys(obj: Record<string, unknown>): boolean {
   for (const key of Object.keys(obj)) {
-    if (FILTERED_PROP_KEYS.has(key)) return true
+    if (FILTERED_PROP_KEYS.has(key) || key.startsWith('$')) return true
   }
   return false
 }
@@ -251,10 +252,18 @@ const forwardedProps = computed(() => {
     : undefined
 
   const filteredProps = Object.fromEntries(
-    Object.entries(rawProps).filter(([key]) => !FILTERED_PROP_KEYS.has(key))
+    Object.entries(rawProps).filter(([key]) => !FILTERED_PROP_KEYS.has(key) && !key.startsWith('$'))
   )
 
   return eventProps ? { ...filteredProps, ...eventProps } : filteredProps
+})
+
+const externalForwardedProps = computed(() => {
+  if (nativeRenderableTag.value === null) return forwardedProps.value
+
+  return Object.fromEntries(
+    Object.entries(forwardedProps.value).filter(([key]) => !NATIVE_ONLY_FILTERED_PROP_KEYS.has(key))
+  )
 })
 
 /**

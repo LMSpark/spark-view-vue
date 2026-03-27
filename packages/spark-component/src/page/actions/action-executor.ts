@@ -22,7 +22,7 @@ import type {
   OpenAction,
 } from './action-descriptor'
 
-import type { DataView, IDataRow } from '@spark-view/spark-data'
+import type { CrudResult, DataView, IDataRow } from '@spark-view/spark-data'
 import { getViewFromRawKey } from '@spark-view/spark-data'
 import type { PageMessageType } from '@spark-view/spark-utils'
 
@@ -71,6 +71,21 @@ function interpolatePath(template: string, row: IDataRow | null): string {
   })
 }
 
+function isCrudResult<T>(value: unknown): value is CrudResult<T> {
+  return value !== null
+    && typeof value === 'object'
+    && 'success' in value
+    && typeof (value as { success?: unknown }).success === 'boolean'
+}
+
+function isCrudSuccess<T>(value: boolean | IDataRow | CrudResult<T>): boolean {
+  return isCrudResult(value) ? value.success : value !== false
+}
+
+function getCrudErrorMessage<T>(value: CrudResult<T>, fallback: string): string {
+  return value.message ?? value.error?.message ?? fallback
+}
+
 // ── 执行引擎 ──────────────────────────────────────────────────────────────
 
 /**
@@ -104,7 +119,7 @@ export async function executeActionDescriptor(
       executeNavigate(descriptor, ctx)
       break
     case 'append-row':
-      executeAppendRow(descriptor, ctx)
+      await executeAppendRow(descriptor, ctx)
       break
     case 'delete-current':
       await executeDeleteCurrent(descriptor, ctx)
@@ -116,10 +131,10 @@ export async function executeActionDescriptor(
       await executeRefresh(descriptor, ctx)
       break
     case 'patch-current':
-      executePatchCurrent(descriptor, ctx)
+      await executePatchCurrent(descriptor, ctx)
       break
     case 'set-field':
-      executeSetField(descriptor, ctx)
+      await executeSetField(descriptor, ctx)
       break
     case 'open':
       executeOpen(descriptor)
@@ -192,7 +207,7 @@ function executeNavigate(desc: NavigateAction, ctx: ActionExecutionContext): voi
   void router.push(path)
 }
 
-function executeAppendRow(desc: AppendRowAction, ctx: ActionExecutionContext): void {
+async function executeAppendRow(desc: AppendRowAction, ctx: ActionExecutionContext): Promise<void> {
   const view = resolveView(desc.dataKey, ctx)
   if (!view) return
 
@@ -202,9 +217,14 @@ function executeAppendRow(desc: AppendRowAction, ctx: ActionExecutionContext): v
     payload[idField] = inferNextRowId(view, idField)
   }
 
-  view.appendRow(payload as IDataRow)
   const ps = ctx.getPageService()
-  if (ps) ps.showMessage('新增成功', 'success')
+  const result = await view.addRow(payload as IDataRow)
+  if (ps) {
+    ps.showMessage(
+      isCrudResult(result) && !result.success ? getCrudErrorMessage(result, '新增失败') : '新增成功',
+      isCrudResult(result) && !result.success ? 'warning' : 'success'
+    )
+  }
 }
 
 async function executeDeleteCurrent(desc: DeleteCurrentAction, ctx: ActionExecutionContext): Promise<void> {
@@ -229,10 +249,16 @@ async function executeDeleteCurrent(desc: DeleteCurrentAction, ctx: ActionExecut
   const idField = desc.idField ?? 'id'
   const id = resolveRowId(row, idField)
   if (id !== null) {
-    const deleted = view.deleteRowById(id)
+    const deleted = await view.removeRow(id)
     const ps = ctx.getPageService()
     if (ps) {
-      ps.showMessage(deleted ? '已删除' : '删除失败', deleted ? 'success' : 'warning')
+      const deleteMessage = isCrudResult(deleted)
+        ? (deleted.success ? '已删除' : getCrudErrorMessage(deleted, '删除失败'))
+        : (deleted ? '已删除' : '删除失败')
+      ps.showMessage(
+        deleteMessage,
+        isCrudSuccess(deleted) ? 'success' : 'warning'
+      )
     }
   }
 }
@@ -260,7 +286,9 @@ async function executeDeleteSelected(desc: DeleteSelectedAction, ctx: ActionExec
   let removed = 0
   for (const row of [...selectedRows]) {
     const id = resolveRowId(row, idField)
-    if (id !== null && view.deleteRowById(id)) removed++
+    if (id === null) continue
+    const deleted = await view.removeRow(id)
+    if (isCrudSuccess(deleted)) removed++
   }
 
   const ps = ctx.getPageService()
@@ -284,7 +312,7 @@ async function executeRefresh(desc: RefreshAction, ctx: ActionExecutionContext):
   if (ps) ps.showMessage('刷新完成', 'success')
 }
 
-function executePatchCurrent(desc: PatchCurrentAction, ctx: ActionExecutionContext): void {
+async function executePatchCurrent(desc: PatchCurrentAction, ctx: ActionExecutionContext): Promise<void> {
   const view = resolveView(desc.dataKey, ctx)
   if (!view) return
 
@@ -305,13 +333,21 @@ function executePatchCurrent(desc: PatchCurrentAction, ctx: ActionExecutionConte
   }
 
   if (Object.keys(patch).length > 0) {
-    view.updateRowById(id, patch)
     const ps = ctx.getPageService()
-    if (ps) ps.showMessage('更新成功', 'success')
+    const result = await view.editRowById(id, patch)
+    if (ps) {
+      const updateMessage = isCrudResult(result)
+        ? (result.success ? '更新成功' : getCrudErrorMessage(result, '更新失败'))
+        : (result ? '更新成功' : '更新失败')
+      ps.showMessage(
+        updateMessage,
+        isCrudSuccess(result) ? 'success' : 'warning'
+      )
+    }
   }
 }
 
-function executeSetField(desc: SetFieldAction, ctx: ActionExecutionContext): void {
+async function executeSetField(desc: SetFieldAction, ctx: ActionExecutionContext): Promise<void> {
   const view = resolveView(desc.dataKey, ctx)
   if (!view) return
 
@@ -322,7 +358,7 @@ function executeSetField(desc: SetFieldAction, ctx: ActionExecutionContext): voi
   const id = resolveRowId(row, idField)
   if (id === null) return
 
-  view.updateRowById(id, { [desc.field]: desc.value })
+  await view.editRowById(id, { [desc.field]: desc.value })
 }
 
 function executeOpen(desc: OpenAction): void {

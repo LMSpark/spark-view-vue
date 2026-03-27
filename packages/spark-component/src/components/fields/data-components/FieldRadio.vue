@@ -6,7 +6,7 @@
           :is="buttonStyle ? 'el-radio-button' : 'el-radio'"
           v-for="option in options"
           :key="String(option.value)"
-          :label="option.value"
+          :value="option.value"
           :disabled="option.disabled"
         >
           {{ option.label }}

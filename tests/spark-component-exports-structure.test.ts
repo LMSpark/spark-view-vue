@@ -86,6 +86,7 @@ describe('spark-component export structure', () => {
         "fieldNonDataComponents": [
           "FieldColumnGroup",
           "FieldContextRenderer",
+          "FieldTreeNodeSummary",
         ],
       }
     `)

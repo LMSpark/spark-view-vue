@@ -90,11 +90,28 @@
 
     <!-- 主内容区 -->
     <router-view v-slot="{ Component }">
-      <keep-alive v-if="mode === 'multi'" :max="10">
+      <div v-if="contextGuard" class="app-context-guard">
+        <div class="app-context-guard__badge">Context Required</div>
+        <h2>{{ contextGuard.title }}</h2>
+        <p>{{ contextGuard.message }}</p>
+        <div class="app-context-guard__meta">
+          <span>当前路径：{{ route.path }}</span>
+          <span v-if="contextGuard.expectedPath">建议路径：{{ contextGuard.expectedPath }}</span>
+        </div>
+        <div class="app-context-guard__actions">
+          <button type="button" class="app-context-guard__primary" @click="handleContextGuardPrimary">
+            {{ contextGuard.primaryActionLabel }}
+          </button>
+          <button v-if="contextGuard.expectedPath" type="button" class="app-context-guard__secondary" @click="jumpToExpectedContext">
+            跳转到作用域路径
+          </button>
+        </div>
+      </div>
+      <keep-alive v-else-if="mode === 'multi'" :max="10">
         <component :is="Component" :key="route.path" />
       </keep-alive>
       <transition v-else name="fade" mode="out-in">
-        <component :is="Component" :key="route.fullPath" />
+        <component v-if="!contextGuard" :is="Component" :key="route.fullPath" />
       </transition>
     </router-view>
 
@@ -129,7 +146,7 @@ import { computed, defineAsyncComponent, onMounted, onUnmounted, provide, reacti
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
-import { getUser, isAuthenticated, logout } from '@/services/auth'
+import { getToken, getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
 import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
@@ -148,10 +165,12 @@ import { startSseDebugRouteBridge } from '@/services/sse-debug-route'
 import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
+import { getPlatformPaths } from '@/config/vue-page-map'
 
 const route = useRoute()
 const router = useRouter()
 const isLoginPage = computed(() => route.path === '/login' || route.path === '/')
+const platformPaths = getPlatformPaths()
 const currentUsername = computed(() => getUser()?.displayName ?? getUser()?.username ?? '管理员')
 const activeProjectId = ref(getUser()?.defaultProjectId ?? 'homepage')
 const headerTitle = computed(() =>
@@ -169,6 +188,92 @@ const { mode, setMode } = useTabPages()
 useColorScheme()
 let _stopSseDebugScreenshot: (() => void) | null = null
 let _stopSseDebugRoute: (() => void) | null = null
+
+interface AppContextGuardState {
+  title: string
+  message: string
+  primaryActionLabel: string
+  expectedPath?: string | undefined
+}
+
+function parseTenantScope(path: string): { tenantId: string; projectId: string } | null {
+  const match = /^\/t\/([^/]+)\/([^/]+)/.exec(path)
+  if (!match?.[1] || !match[2]) return null
+  return {
+    tenantId: match[1],
+    projectId: match[2],
+  }
+}
+
+function buildScopedPath(relativePath: string): string | null {
+  const user = getUser()
+  if (!user?.tenantId || !user.defaultProjectId) return null
+  const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+  return `/t/${user.tenantId}/${user.defaultProjectId}${normalized}`
+}
+
+const contextGuard = computed<AppContextGuardState | null>(() => {
+  if (isLoginPage.value) return null
+
+  const currentPath = route.path
+  const scoped = parseTenantScope(currentPath)
+  const token = getToken()
+  const user = getUser()
+
+  if (scoped === null) {
+    if (platformPaths.has(currentPath)) return null
+    return {
+      title: '当前页面缺少租户作用域',
+      message: '这个业务页需要在 /t/{tenantId}/{projectId}/... 作用域下运行。外部浏览器有数据而内嵌浏览器没数据，通常就是当前浏览器上下文没有进入正确租户路径或未完成登录。',
+      primaryActionLabel: user ? '进入当前项目首页' : '前往登录页',
+      ...(buildScopedPath(currentPath) ? { expectedPath: buildScopedPath(currentPath) ?? undefined } : {}),
+    }
+  }
+
+  if (!token || !user) {
+    return {
+      title: '当前浏览器上下文未登录',
+      message: '该页面的数据请求依赖 localStorage 中的 spark_token 和 spark_user。VS Code 内嵌浏览器与外部浏览器不共享登录态，所以这里需要单独登录。',
+      primaryActionLabel: '前往登录页',
+      expectedPath: '/login',
+    }
+  }
+
+  if (!user.tenantId || !user.defaultProjectId) {
+    return {
+      title: '当前浏览器上下文缺少项目信息',
+      message: '已检测到登录态，但 spark_user 中缺少 tenantId 或 defaultProjectId，后续请求无法带出 X-Tenant-Id / X-Project-Id，页面会表现为空数据。',
+      primaryActionLabel: '前往登录页',
+      expectedPath: '/login',
+    }
+  }
+
+  if (scoped.tenantId !== user.tenantId || scoped.projectId !== user.defaultProjectId) {
+    const expectedPath = `/t/${user.tenantId}/${user.defaultProjectId}${currentPath.replace(/^\/t\/[^/]+\/[^/]+/, '') || ''}`
+    return {
+      title: 'URL 作用域与本地上下文不一致',
+      message: '当前 URL 的 tenant/project 与浏览器 localStorage 中保存的 spark_user 不一致。继续渲染会导致接口上下文错位，出现空数据或错误数据。',
+      primaryActionLabel: '切回当前项目',
+      expectedPath,
+    }
+  }
+
+  return null
+})
+
+async function handleContextGuardPrimary(): Promise<void> {
+  if (contextGuard.value?.primaryActionLabel === '前往登录页') {
+    await router.replace('/login')
+    return
+  }
+  jumpToExpectedContext()
+}
+
+function jumpToExpectedContext(): void {
+  const expectedPath = contextGuard.value?.expectedPath
+  if (!expectedPath) return
+  void router.replace(expectedPath)
+}
 
 /** 检查工具栏配置中是否包含指定 action（无配置时默认全部显示） */
 function hasToolbarAction(...actions: string[]): boolean {
@@ -384,6 +489,89 @@ onMounted(() => {
 
 .app-ai-action:active {
   background: color-mix(in srgb, var(--spark-header-text) 18%, transparent);
+}
+
+.app-context-guard {
+  margin: 24px;
+  padding: 28px 30px;
+  border: 1px solid #f0d3aa;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fffaf2 0%, #fff4e6 100%);
+  box-shadow: 0 14px 36px rgba(88, 56, 16, 0.08);
+}
+
+.app-context-guard__badge {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(182, 116, 23, 0.12);
+  color: #8f5410;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-context-guard h2 {
+  margin: 0 0 10px;
+  color: #5d3608;
+  font-size: 26px;
+}
+
+.app-context-guard p {
+  margin: 0;
+  max-width: 88ch;
+  color: #7a5522;
+  line-height: 1.7;
+}
+
+.app-context-guard__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  color: #8f6a38;
+  font-size: 13px;
+}
+
+.app-context-guard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.app-context-guard__primary,
+.app-context-guard__secondary {
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.app-context-guard__primary {
+  border: 1px solid #bc7a1e;
+  background: #bc7a1e;
+  color: #fff;
+}
+
+.app-context-guard__primary:hover {
+  background: #a66b1a;
+  border-color: #a66b1a;
+}
+
+.app-context-guard__secondary {
+  border: 1px solid #d5b489;
+  background: #fff;
+  color: #8a5617;
+}
+
+.app-context-guard__secondary:hover {
+  background: #fff7eb;
+  border-color: #bc7a1e;
 }
 
 </style>

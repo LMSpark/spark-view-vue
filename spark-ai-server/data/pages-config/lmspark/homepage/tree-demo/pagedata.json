@@ -509,6 +509,10 @@
                     "delete": {
                         "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
                         "method": "DELETE"
+                    },
+                    "move": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}/move",
+                        "method": "PUT"
                     }
                 },
                 "views": {
@@ -521,7 +525,8 @@
                             "treeMode": "nested"
                         },
                         "autoLoad": true,
-                        "autoCurrentFirst": true
+                        "autoCurrentFirst": true,
+                        "autoCommit": true
                     }
                 }
             },

@@ -1,6 +1,6 @@
 [data-page="tree-demo"] {
-  padding: 18px;
-  max-width: 1680px;
+  padding: 16px;
+  max-width: 1600px;
   margin: 0 auto;
   background:
     linear-gradient(180deg, #f5f7fa 0%, #eef2f6 100%),
@@ -10,13 +10,14 @@
 [data-page="tree-demo"] .nav-editor-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 [data-page="tree-demo"] .nav-editor-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.95fr);
+  align-items: start;
+  gap: 14px;
 }
 
 [data-page="tree-demo"] .nav-editor-header__title,
@@ -31,21 +32,22 @@
 }
 
 [data-page="tree-demo"] .nav-editor-header__title {
-  padding: 24px 28px;
+  padding: 18px 22px;
   background: linear-gradient(135deg, #1f2f45 0%, #314967 60%, #416189 100%);
   color: #f5f7fb;
 }
 
 [data-page="tree-demo"] .nav-editor-header__title h1 {
-  margin: 14px 0 8px;
-  font-size: 30px;
+  margin: 10px 0 6px;
+  font-size: 26px;
   line-height: 1.2;
 }
 
 [data-page="tree-demo"] .nav-editor-header__title p {
   margin: 0;
   color: rgba(245, 247, 251, 0.82);
-  line-height: 1.8;
+  line-height: 1.65;
+  max-width: 72ch;
 }
 
 [data-page="tree-demo"] .nav-editor-badge {
@@ -63,6 +65,33 @@
 
 [data-page="tree-demo"] .nav-editor-header__status {
   overflow: hidden;
+}
+
+[data-page="tree-demo"] .nav-editor-header__status .el-card__body {
+  padding-top: 14px;
+}
+
+[data-page="tree-demo"] .nav-editor-header__status .renderer-detail-grid {
+  row-gap: 10px;
+}
+
+[data-page="tree-demo"] .nav-editor-header__status .renderer-detail-grid-item {
+  padding-bottom: 0;
+}
+
+[data-page="tree-demo"] .nav-editor-header__status .renderer-detail-label {
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+[data-page="tree-demo"] .nav-editor-header__status .renderer-detail-value {
+  line-height: 1.4;
+}
+
+[data-page="tree-demo"] .nav-editor-header__status .renderer-detail-grid-item,
+[data-page="tree-demo"] .nav-editor-toolbar-card .renderer-form-grid-item,
+[data-page="tree-demo"] .nav-editor-panel .renderer-form-grid-item {
+  min-width: 0;
 }
 
 [data-page="tree-demo"] .nav-editor-metrics {
@@ -93,12 +122,41 @@
   gap: 10px;
 }
 
+[data-page="tree-demo"] .nav-editor-toolbar-card .renderer-form-toolbar,
+[data-page="tree-demo"] .nav-editor-panel .renderer-form-toolbar,
+[data-page="tree-demo"] .nav-editor-tree-shell .renderer-tree-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+[data-page="tree-demo"] .nav-editor-toolbar-card button,
+[data-page="tree-demo"] .nav-editor-panel button,
+[data-page="tree-demo"] .nav-editor-tree-shell button {
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d5dfea;
+  background: #ffffff;
+  color: #203247;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+[data-page="tree-demo"] .nav-editor-toolbar-card button:hover,
+[data-page="tree-demo"] .nav-editor-panel button:hover,
+[data-page="tree-demo"] .nav-editor-tree-shell button:hover {
+  border-color: #8fb4db;
+  background: #f4f9ff;
+}
+
 [data-page="tree-demo"] .nav-editor-body {
   align-items: start;
 }
 
 [data-page="tree-demo"] .nav-editor-panel {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 [data-page="tree-demo"] .nav-editor-panel--tree {
@@ -107,7 +165,7 @@
 }
 
 [data-page="tree-demo"] .nav-editor-panel__head {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 [data-page="tree-demo"] .nav-editor-panel__head h3 {
@@ -124,15 +182,28 @@
 }
 
 [data-page="tree-demo"] .nav-editor-tree-shell {
-  min-height: 760px;
+  min-height: 620px;
+  max-height: calc(100vh - 240px);
   border-radius: 14px;
   border: 1px solid #e0e7ef;
   background: linear-gradient(180deg, #fbfcfe 0%, #f4f7fa 100%);
   overflow: hidden;
 }
 
+[data-page="tree-demo"] .nav-editor-tree-shell .renderer-tree-layout {
+  height: 100%;
+}
+
 [data-page="tree-demo"] .nav-editor-tree-shell .renderer-tree-main {
   padding: 10px;
+  height: 100%;
+  overflow: auto;
+}
+
+[data-page="tree-demo"] .nav-editor-tree-shell .tree-node-actions button {
+  padding: 0 8px;
+  min-height: 26px;
+  font-size: 12px;
 }
 
 [data-page="tree-demo"] .nav-editor-tree-shell .el-tree {
@@ -155,6 +226,12 @@
   font-weight: 700;
 }
 
+[data-page="tree-demo"] .nav-editor-panel .el-card__header,
+[data-page="tree-demo"] .nav-editor-toolbar-card .el-card__header,
+[data-page="tree-demo"] .nav-editor-header__status .el-card__header {
+  padding: 14px 18px;
+}
+
 [data-page="tree-demo"] .el-input,
 [data-page="tree-demo"] .el-select,
 [data-page="tree-demo"] .el-radio-group,
@@ -169,7 +246,37 @@
 }
 
 [data-page="tree-demo"] .el-card__body {
-  padding-top: 18px;
+  padding-top: 14px;
+}
+
+[data-page="tree-demo"] .renderer-detail-layout,
+[data-page="tree-demo"] .renderer-form-layout {
+  width: 100%;
+}
+
+[data-page="tree-demo"] .renderer-detail-grid,
+[data-page="tree-demo"] .renderer-form-grid {
+  width: 100%;
+}
+
+[data-page="tree-demo"] .nav-editor-panel .renderer-form-grid {
+  row-gap: 12px;
+}
+
+[data-page="tree-demo"] .nav-editor-panel .renderer-form-label {
+  margin-bottom: 4px;
+}
+
+[data-page="tree-demo"] .nav-editor-panel .renderer-form-control {
+  min-width: 0;
+}
+
+[data-page="tree-demo"] .nav-editor-panel .el-card__body,
+[data-page="tree-demo"] .nav-editor-toolbar-card .el-card__body,
+[data-page="tree-demo"] .nav-editor-header__status .el-card__body {
+  padding-left: 18px;
+  padding-right: 18px;
+  padding-bottom: 18px;
 }
 
 @media (max-width: 1360px) {
@@ -191,6 +298,10 @@
 
   [data-page="tree-demo"] .nav-editor-panel--tree {
     position: static;
+  }
+
+  [data-page="tree-demo"] .nav-editor-tree-shell {
+    max-height: none;
   }
 }
 
