@@ -90,6 +90,128 @@
                     }
                 }
             },
+            "NavigationNodes": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "string",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "parentId",
+                        "type": "string"
+                    },
+                    {
+                        "name": "title",
+                        "type": "string"
+                    },
+                    {
+                        "name": "description",
+                        "type": "string"
+                    },
+                    {
+                        "name": "icon",
+                        "type": "string"
+                    },
+                    {
+                        "name": "nodeKind",
+                        "type": "string"
+                    },
+                    {
+                        "name": "path",
+                        "type": "string"
+                    },
+                    {
+                        "name": "linkTarget",
+                        "type": "string"
+                    },
+                    {
+                        "name": "childPlacement",
+                        "type": "string"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "type": "number"
+                    },
+                    {
+                        "name": "dividerAfter",
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "hidden",
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "disabled",
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "refId",
+                        "type": "string"
+                    },
+                    {
+                        "name": "editorProfileKey",
+                        "type": "string",
+                        "computeExpression": "if (nodeKind === 'system-directory' || nodeKind === 'module') return 'container'; if (nodeKind === 'system-page' || nodeKind === 'page' || nodeKind === 'sub-page') return 'page'; if (nodeKind === 'link') return 'link'; if (nodeKind === 'ref') return 'ref'; if (nodeKind === 'system-action') return 'action'; return 'page';"
+                    }
+                ],
+                "api": {
+                    "list": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "method": "GET"
+                    },
+                    "nested": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "method": "GET"
+                    },
+                    "children": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "method": "GET"
+                    },
+                    "path": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/path/{id}",
+                        "method": "GET"
+                    },
+                    "subtree": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/subtree",
+                        "method": "POST"
+                    },
+                    "nestedSearch": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/search",
+                        "method": "GET"
+                    },
+                    "create": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "method": "POST"
+                    },
+                    "update": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
+                        "method": "PUT"
+                    },
+                    "delete": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
+                        "method": "DELETE"
+                    },
+                    "move": {
+                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}/move",
+                        "method": "PUT"
+                    }
+                },
+                "views": {
+                    "default": {
+                        "rows": [],
+                        "treeConfig": {
+                            "idField": "id",
+                            "parentIdField": "parentId",
+                            "textField": "title",
+                            "treeMode": "nested"
+                        },
+                        "autoLoad": true,
+                        "autoCurrentFirst": true,
+                        "autoCommit": true
+                    }
+                }
+            },
             "NodeKindOptions": {
                 "columns": [
                     {
@@ -229,6 +351,10 @@
                         "isPrimaryKey": true
                     },
                     {
+                        "name": "nodeKind",
+                        "type": "string"
+                    },
+                    {
                         "name": "label",
                         "type": "string"
                     },
@@ -242,31 +368,127 @@
                         "rows": [
                             {
                                 "id": 1,
+                                "nodeKind": "system-directory",
                                 "label": "头部",
                                 "value": "header"
                             },
                             {
                                 "id": 2,
+                                "nodeKind": "system-directory",
                                 "label": "侧栏",
                                 "value": "sidebar"
                             },
                             {
                                 "id": 3,
+                                "nodeKind": "system-directory",
                                 "label": "工具栏",
                                 "value": "toolbar"
                             },
                             {
                                 "id": 4,
+                                "nodeKind": "system-directory",
                                 "label": "用户菜单",
                                 "value": "user-menu"
                             },
                             {
                                 "id": 5,
+                                "nodeKind": "system-directory",
                                 "label": "父级容器",
                                 "value": "parent"
                             },
                             {
                                 "id": 6,
+                                "nodeKind": "system-directory",
+                                "label": "平铺",
+                                "value": "flat"
+                            },
+                            {
+                                "id": 7,
+                                "nodeKind": "module",
+                                "label": "头部",
+                                "value": "header"
+                            },
+                            {
+                                "id": 8,
+                                "nodeKind": "module",
+                                "label": "侧栏",
+                                "value": "sidebar"
+                            },
+                            {
+                                "id": 9,
+                                "nodeKind": "module",
+                                "label": "工具栏",
+                                "value": "toolbar"
+                            },
+                            {
+                                "id": 10,
+                                "nodeKind": "module",
+                                "label": "用户菜单",
+                                "value": "user-menu"
+                            },
+                            {
+                                "id": 11,
+                                "nodeKind": "module",
+                                "label": "父级容器",
+                                "value": "parent"
+                            },
+                            {
+                                "id": 12,
+                                "nodeKind": "module",
+                                "label": "平铺",
+                                "value": "flat"
+                            },
+                            {
+                                "id": 13,
+                                "nodeKind": "system-page",
+                                "label": "父级容器",
+                                "value": "parent"
+                            },
+                            {
+                                "id": 14,
+                                "nodeKind": "system-page",
+                                "label": "平铺",
+                                "value": "flat"
+                            },
+                            {
+                                "id": 15,
+                                "nodeKind": "page",
+                                "label": "父级容器",
+                                "value": "parent"
+                            },
+                            {
+                                "id": 16,
+                                "nodeKind": "page",
+                                "label": "平铺",
+                                "value": "flat"
+                            },
+                            {
+                                "id": 17,
+                                "nodeKind": "sub-page",
+                                "label": "父级容器",
+                                "value": "parent"
+                            },
+                            {
+                                "id": 18,
+                                "nodeKind": "sub-page",
+                                "label": "平铺",
+                                "value": "flat"
+                            },
+                            {
+                                "id": 19,
+                                "nodeKind": "link",
+                                "label": "平铺",
+                                "value": "flat"
+                            },
+                            {
+                                "id": 20,
+                                "nodeKind": "ref",
+                                "label": "平铺",
+                                "value": "flat"
+                            },
+                            {
+                                "id": 21,
+                                "nodeKind": "system-action",
                                 "label": "平铺",
                                 "value": "flat"
                             }
@@ -340,6 +562,10 @@
                         "isPrimaryKey": true
                     },
                     {
+                        "name": "nodeKind",
+                        "type": "string"
+                    },
+                    {
                         "name": "label",
                         "type": "string"
                     },
@@ -353,16 +579,61 @@
                         "rows": [
                             {
                                 "id": 1,
+                                "nodeKind": "system-directory",
+                                "label": "当前页",
+                                "value": "self"
+                            },
+                            {
+                                "id": 2,
+                                "nodeKind": "module",
+                                "label": "当前页",
+                                "value": "self"
+                            },
+                            {
+                                "id": 3,
+                                "nodeKind": "system-page",
+                                "label": "当前页",
+                                "value": "self"
+                            },
+                            {
+                                "id": 4,
+                                "nodeKind": "page",
+                                "label": "当前页",
+                                "value": "self"
+                            },
+                            {
+                                "id": 5,
+                                "nodeKind": "sub-page",
+                                "label": "当前页",
+                                "value": "self"
+                            },
+                            {
+                                "id": 6,
+                                "nodeKind": "system-action",
+                                "label": "当前页",
+                                "value": "self"
+                            },
+                            {
+                                "id": 7,
+                                "nodeKind": "ref",
+                                "label": "当前页",
+                                "value": "self"
+                            },
+                            {
+                                "id": 8,
+                                "nodeKind": "link",
                                 "label": "Iframe",
                                 "value": "iframe"
                             },
                             {
-                                "id": 2,
+                                "id": 9,
+                                "nodeKind": "link",
                                 "label": "新标签页",
                                 "value": "new-tab"
                             },
                             {
-                                "id": 3,
+                                "id": 10,
+                                "nodeKind": "link",
                                 "label": "当前页",
                                 "value": "self"
                             }
@@ -378,6 +649,10 @@
                         "isPrimaryKey": true
                     },
                     {
+                        "name": "profileKey",
+                        "type": "string"
+                    },
+                    {
                         "name": "label",
                         "type": "string"
                     },
@@ -391,21 +666,25 @@
                         "rows": [
                             {
                                 "id": 1,
+                                "profileKey": "ref",
                                 "label": "页面",
                                 "value": "page"
                             },
                             {
                                 "id": 2,
+                                "profileKey": "ref",
                                 "label": "系统页面",
                                 "value": "system-page"
                             },
                             {
                                 "id": 3,
+                                "profileKey": "ref",
                                 "label": "子页面",
                                 "value": "sub-page"
                             },
                             {
                                 "id": 4,
+                                "profileKey": "ref",
                                 "label": "模块",
                                 "value": "module"
                             }
@@ -413,120 +692,88 @@
                     }
                 }
             },
-            "NavigationNodes": {
+            "NodeEditorProfiles": {
                 "columns": [
                     {
                         "name": "id",
-                        "type": "string",
+                        "type": "number",
                         "isPrimaryKey": true
                     },
                     {
-                        "name": "parentId",
+                        "name": "profileKey",
                         "type": "string"
                     },
                     {
-                        "name": "title",
+                        "name": "label",
                         "type": "string"
                     },
                     {
-                        "name": "description",
-                        "type": "string"
-                    },
-                    {
-                        "name": "icon",
-                        "type": "string"
-                    },
-                    {
-                        "name": "nodeKind",
-                        "type": "string"
-                    },
-                    {
-                        "name": "path",
-                        "type": "string"
-                    },
-                    {
-                        "name": "linkTarget",
-                        "type": "string"
-                    },
-                    {
-                        "name": "childPlacement",
-                        "type": "string"
-                    },
-                    {
-                        "name": "sortOrder",
-                        "type": "number"
-                    },
-                    {
-                        "name": "dividerAfter",
+                        "name": "allowPath",
                         "type": "boolean"
                     },
                     {
-                        "name": "hidden",
+                        "name": "allowLinkTarget",
                         "type": "boolean"
                     },
                     {
-                        "name": "disabled",
+                        "name": "allowChildPlacement",
                         "type": "boolean"
                     },
                     {
-                        "name": "refId",
-                        "type": "string"
+                        "name": "allowRefId",
+                        "type": "boolean"
                     }
                 ],
-                "api": {
-                    "list": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
-                        "method": "GET"
-                    },
-                    "nested": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
-                        "method": "GET"
-                    },
-                    "children": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
-                        "method": "GET"
-                    },
-                    "path": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/path/{id}",
-                        "method": "GET"
-                    },
-                    "subtree": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/subtree",
-                        "method": "POST"
-                    },
-                    "nestedSearch": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/search",
-                        "method": "GET"
-                    },
-                    "create": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
-                        "method": "POST"
-                    },
-                    "update": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
-                        "method": "PUT"
-                    },
-                    "delete": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
-                        "method": "DELETE"
-                    },
-                    "move": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}/move",
-                        "method": "PUT"
-                    }
-                },
                 "views": {
                     "default": {
-                        "rows": [],
-                        "treeConfig": {
-                            "idField": "id",
-                            "parentIdField": "parentId",
-                            "textField": "title",
-                            "treeMode": "nested"
-                        },
-                        "autoLoad": true,
-                        "autoCurrentFirst": true,
-                        "autoCommit": true
+                        "rows": [
+                            {
+                                "id": 1,
+                                "profileKey": "container",
+                                "label": "容器节点",
+                                "allowPath": true,
+                                "allowLinkTarget": true,
+                                "allowChildPlacement": true,
+                                "allowRefId": false
+                            },
+                            {
+                                "id": 2,
+                                "profileKey": "page",
+                                "label": "页面节点",
+                                "allowPath": true,
+                                "allowLinkTarget": true,
+                                "allowChildPlacement": true,
+                                "allowRefId": false
+                            },
+                            {
+                                "id": 3,
+                                "profileKey": "link",
+                                "label": "外链节点",
+                                "allowPath": true,
+                                "allowLinkTarget": true,
+                                "allowChildPlacement": true,
+                                "allowRefId": false
+                            },
+                            {
+                                "id": 4,
+                                "profileKey": "ref",
+                                "label": "引用节点",
+                                "allowPath": false,
+                                "allowLinkTarget": true,
+                                "allowChildPlacement": true,
+                                "allowRefId": true
+                            },
+                            {
+                                "id": 5,
+                                "profileKey": "action",
+                                "label": "动作节点",
+                                "allowPath": true,
+                                "allowLinkTarget": true,
+                                "allowChildPlacement": true,
+                                "allowRefId": false
+                            }
+                        ],
+                        "autoCurrentFirst": true
                     }
                 }
             },
@@ -573,6 +820,48 @@
                     }
                 }
             }
-        }
+        },
+        "relations": [
+            {
+                "relationName": "NodeProfileToEditorProfile",
+                "parentTable": "NavigationNodes",
+                "parentViewId": "default",
+                "childTable": "NodeEditorProfiles",
+                "childViewId": "default",
+                "parentField": "editorProfileKey",
+                "childField": "profileKey",
+                "dependencyType": "currentRow"
+            },
+            {
+                "relationName": "NodeKindToLinkTargets",
+                "parentTable": "NavigationNodes",
+                "parentViewId": "default",
+                "childTable": "LinkTargetOptions",
+                "childViewId": "default",
+                "parentField": "nodeKind",
+                "childField": "nodeKind",
+                "dependencyType": "currentRow"
+            },
+            {
+                "relationName": "NodeKindToChildPlacements",
+                "parentTable": "NavigationNodes",
+                "parentViewId": "default",
+                "childTable": "ChildPlacementOptions",
+                "childViewId": "default",
+                "parentField": "nodeKind",
+                "childField": "nodeKind",
+                "dependencyType": "currentRow"
+            },
+            {
+                "relationName": "NodeProfileToRefNodeKinds",
+                "parentTable": "NavigationNodes",
+                "parentViewId": "default",
+                "childTable": "RefNodeKindOptions",
+                "childViewId": "default",
+                "parentField": "editorProfileKey",
+                "childField": "profileKey",
+                "dependencyType": "currentRow"
+            }
+        ]
     }
 }

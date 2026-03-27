@@ -105,6 +105,7 @@ dataset 内部结构：
 5. 如果是纯静态数据，可不写 api。
 6. 如果是远程表，可保留 rows: [] 作为初始空数据。
 7. 只有 relation 明确使用命名视图时，才添加其他 viewId。
+8. 如果某张表作为 relation 的 parentTable，被其他表依赖，则它在 tables 对象中的顺序必须排在所有 childTable 之前。
 
 ═══════════════════════════════════════════════════
 【5】列（columns）定义规范
@@ -214,6 +215,7 @@ dependencyType 可选值：
 4. 单视图页面可省略 parentViewId / childViewId，但写出来更清晰。
 5. childField 必须真实存在于子表 columns 中。
 6. parentField 不写时默认通常等于父表主键，但若业务是 code/uuid 关联则必须写清。
+7. 当存在 relation 时，tables 中的 parentTable 必须定义在 childTable 前面，避免 DataSet 构造期因父视图尚未注册而报错。
 
 ═══════════════════════════════════════════════════
 【8】计算列（computeExpression）规范
@@ -427,8 +429,9 @@ treeMode 可选：
 11. 远程表是否至少具备合理的 list 接口。
 12. 树表是否同时具备 treeConfig 和稳定 idField。
 13. 树远程表是否使用了符合 treeMode 的树端点。
-14. JSON 是否合法，无注释、无尾逗号、无省略号。
-15. 输出是否只有 JSON，没有解释文字。
+14. tables 中所有作为 parentTable 的表是否都排在对应 childTable 前面。
+15. JSON 是否合法，无注释、无尾逗号、无省略号。
+16. 输出是否只有 JSON，没有解释文字。
 
 ═══════════════════════════════════════════════════
 【16】输出偏好

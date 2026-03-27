@@ -675,6 +675,7 @@ async function handleDeleteNode(data: unknown) {
   display: flex;
   gap: 12px;
   width: 100%;
+  min-height: 0;
 }
 
 .renderer-tree-layout--top,
@@ -693,6 +694,7 @@ async function handleDeleteNode(data: unknown) {
 .renderer-tree-main {
   min-width: 0;
   flex: 1;
+  min-height: 0;
 }
 
 .renderer-tree-toolbar {
@@ -700,6 +702,7 @@ async function handleDeleteNode(data: unknown) {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .renderer-tree-layout--left .renderer-tree-toolbar,
