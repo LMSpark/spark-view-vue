@@ -13,6 +13,7 @@ import type {
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult, NestedTreeNode,
   TreeConfig, AggregateColumnConfig, CrudApi,
+  CommitMode,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -263,8 +264,13 @@ export class DataView implements IDataSource {
   /** 设置分页/排序/过滤后是否自动 refresh()（默认 false） */
   autoRefresh = false
 
-  /** 增删改是否自动提交到服务端（默认 false）。true=每次 addRow/editRowById/removeRow 立即调对应网络 CRUD */
-  autoCommit = false
+  /**
+   * 增删改提交模式（默认 `'immediate'`）。
+   *
+   * - `'immediate'`：每次 addRow/editRowById/removeRow 立即调用网络 CRUD（如已配置 API）
+   * - `'staged'`：仅修改内存并标脏，调用 saveChanges() 批量提交
+   */
+  commitMode: CommitMode = 'immediate'
 
   /** 视图级聚合配置——行变更后自动重算 summaryRow / selectionSummaryRow。仅由 applyViewConfig() 初始化 */
   readonly aggregates: Record<string, AggregateColumnConfig> = {}
@@ -305,7 +311,7 @@ export class DataView implements IDataSource {
   }
 
   private shouldDirectCommitCrud(operation: 'create' | 'update' | 'delete'): boolean {
-    if (this.autoCommit) return true
+    if (this.commitMode === 'staged') return false
     const api = this.getCrudApiConfig()
     if (!api) return false
     return api[operation] !== undefined
@@ -859,8 +865,9 @@ export class DataView implements IDataSource {
     }
   }
 
-  /** 强制刷新：先置 Idle 再 requestData()，无论当前状态一律重新拉取。 */
+  /** 强制刷新：先置 Idle 再 requestData()，无论当前状态一律重新拉取。清除 staged 模式的脏追踪状态。 */
   async refresh(): Promise<void> {
+    this._dirtyTrackingDelegate?.clearAll()
     this.requestState = RequestState.Idle
     return this.requestData()
   }
@@ -918,8 +925,9 @@ export class DataView implements IDataSource {
     return deleted
   }
 
-  /** 本地整批替换所有行，清理无效选中引用 */
+  /** 本地整批替换所有行，清理无效选中引用，清除 staged 模式的脏追踪状态 */
   replaceRows(rows: IDataRow[]): void {
+    this._dirtyTrackingDelegate?.clearAll()
     this.localMutationDelegate.replaceRows(rows)
     this.syncTreeManagerFromRows()
   }
@@ -929,8 +937,8 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /**
-   * 本地新增行。autoCommit=false 时标记为 pending-create（saveChanges 统一提交）；
-   * autoCommit=true 时立即调用 crud.createRecord。
+   * 本地新增行。commitMode='staged' 时标记为 pending-create（saveChanges 统一提交）；
+   * commitMode='immediate' 且已配置 API 时立即调用 crud.createRecord。
    */
   async addRow(data: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow>> {
     this.checkDestroyed()
@@ -947,8 +955,8 @@ export class DataView implements IDataSource {
   }
 
   /**
-   * 本地删除行。autoCommit=false 时标记为 pending-delete（saveChanges 统一提交）；
-   * autoCommit=true 时立即调用 crud.deleteRecord。
+   * 本地删除行。commitMode='staged' 时标记为 pending-delete（saveChanges 统一提交）；
+   * commitMode='immediate' 且已配置 API 时立即调用 crud.deleteRecord。
    */
   async removeRow(id: string | number): Promise<boolean | CrudResult<boolean>> {
     this.checkDestroyed()
@@ -965,8 +973,8 @@ export class DataView implements IDataSource {
   }
 
   /**
-   * 手工编辑指定行（标脏）。autoCommit=false 时仅更新内存并标脏；
-   * autoCommit=true 时立即调用 crud.updateRecord。
+   * 手工编辑指定行（标脏）。commitMode='staged' 时仅更新内存并标脏；
+   * commitMode='immediate' 且已配置 API 时立即调用 crud.updateRecord。
    * 连续编辑同一行只保留首次编辑前的快照。
    */
   async editRowById(
@@ -1031,6 +1039,7 @@ export class DataView implements IDataSource {
 
   /**
    * 静默重置行数据和选中状态，并将 requestState 重置为 Idle。
+   * 同时清除脏追踪状态（staged 模式下的未提交变更）。
    * 不发事件、不通知订阅者——该工作由调用方负责。
    */
   resetState(): void {
@@ -1040,6 +1049,7 @@ export class DataView implements IDataSource {
     this.rowIndexMap = undefined   // 行集合已清空，索引缓存失效
     this.requestState = RequestState.Idle
     this.loadingError = null
+    this._dirtyTrackingDelegate?.clearAll()
   }
 
   /** 清理已不在 rows 中的选中状态，返回是否发生了清理（委托给 SelectionDelegate） */
@@ -1267,7 +1277,12 @@ export class DataView implements IDataSource {
     if (vc.treeConfig !== undefined) this.treeConfig = vc.treeConfig
     if (vc.autoLoad !== undefined) this.autoLoad = vc.autoLoad
     if (vc.autoRefresh !== undefined) this.autoRefresh = vc.autoRefresh
-    if (vc.autoCommit !== undefined) this.autoCommit = vc.autoCommit
+    // commitMode 优先；回退到旧 autoCommit 向后兼容
+    if (vc.commitMode !== undefined) {
+      this.commitMode = vc.commitMode
+    } else if (vc.autoCommit !== undefined) {
+      this.commitMode = vc.autoCommit ? 'immediate' : 'staged'
+    }
     if (vc.valueField !== undefined) this.valueField = vc.valueField
     if (vc.labelField !== undefined) this.labelField = vc.labelField
     if (vc.selectionDelimiter !== undefined) this.selectionDelimiter = vc.selectionDelimiter
@@ -1297,7 +1312,7 @@ export class DataView implements IDataSource {
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     if (this.autoLoad !== false) result.autoLoad = this.autoLoad
     if (this.autoRefresh !== false) result.autoRefresh = this.autoRefresh
-    if (this.autoCommit !== false) result.autoCommit = this.autoCommit
+    if (this.commitMode !== 'immediate') result.commitMode = this.commitMode
     if (this.valueField !== undefined) result.valueField = this.valueField
     if (this.labelField !== undefined) result.labelField = this.labelField
     if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter

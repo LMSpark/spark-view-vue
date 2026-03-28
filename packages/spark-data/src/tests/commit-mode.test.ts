@@ -1,0 +1,345 @@
+import { describe, it, expect, vi } from 'vitest'
+import { SparkData, DataView } from '../index'
+import type { IDataRow, CrudApi } from '../types'
+
+// ─────────────────────────────────────────────
+// 辅助
+// ─────────────────────────────────────────────
+
+function createStagedView(rows: IDataRow[] = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]) {
+  const ds = SparkData.createDataSet({
+    dataSetName: 'TestDS',
+    tables: {
+      Users: {
+        tableName: 'Users',
+        columns: [
+          { name: 'id', type: 'number', isPrimaryKey: true },
+          { name: 'name', type: 'string' },
+        ],
+        rows,
+        commitMode: 'staged',
+      },
+    },
+  })
+  const view = ds.getView('Users', 'default')!
+  expect(view.commitMode).toBe('staged')
+  return { ds, view }
+}
+
+function createImmediateView(rows: IDataRow[] = [{ id: 1, name: 'Alice' }]) {
+  const ds = SparkData.createDataSet({
+    dataSetName: 'ImmDS',
+    tables: {
+      Users: {
+        tableName: 'Users',
+        columns: [
+          { name: 'id', type: 'number', isPrimaryKey: true },
+          { name: 'name', type: 'string' },
+        ],
+        rows,
+      },
+    },
+  })
+  const view = ds.getView('Users', 'default')!
+  expect(view.commitMode).toBe('immediate')
+  return { ds, view }
+}
+
+function setupMockApi(view: DataView) {
+  const mockCrud = {
+    create: vi.fn(async (row: Partial<IDataRow>) => ({
+      success: true,
+      data: { ...row, _server: true },
+    })),
+    update: vi.fn(async (_pk: Record<string, unknown>, data: Partial<IDataRow>) => ({
+      success: true,
+      data: { ...data, _server: true },
+    })),
+    delete: vi.fn(async () => ({
+      success: true,
+      data: true,
+    })),
+    executeBatch: vi.fn(),
+    list: vi.fn(),
+    getHttpClient: vi.fn(),
+  }
+
+  const api: CrudApi = {
+    create: { url: '/api/users', method: 'POST' },
+    update: { url: '/api/users/{id}', method: 'PUT' },
+    delete: { url: '/api/users/{id}', method: 'DELETE' },
+  }
+
+  const table = view.dataTable!
+  table.api = api
+   
+  ;(table as any)._crudService = mockCrud   // 注入 mock（绕过只读 getter）
+   
+  ;(view as any)._crudDelegate = undefined  // 重置懒初始化，下次调用时使用新 crudService
+
+  return mockCrud
+}
+
+// ─────────────────────────────────────────────
+// 测试
+// ─────────────────────────────────────────────
+
+describe('commitMode: basic field semantics', () => {
+  it('default commitMode is immediate', () => {
+    const { view } = createImmediateView()
+    expect(view.commitMode).toBe('immediate')
+  })
+
+  it('staged commitMode is respected from config', () => {
+    const { view } = createStagedView()
+    expect(view.commitMode).toBe('staged')
+  })
+
+  it('backward compat: autoCommit=true → immediate', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'LegacyDS',
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
+          rows: [],
+          autoCommit: true,
+        },
+      },
+    })
+    expect(ds.getView('T', 'default')!.commitMode).toBe('immediate')
+  })
+
+  it('backward compat: autoCommit=false → staged', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'LegacyDS',
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
+          rows: [],
+          autoCommit: false,
+        },
+      },
+    })
+    expect(ds.getView('T', 'default')!.commitMode).toBe('staged')
+  })
+
+  it('commitMode takes precedence over autoCommit', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'PrecedenceDS',
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
+          rows: [],
+          commitMode: 'staged',
+          autoCommit: true, // should be ignored
+        },
+      },
+    })
+    expect(ds.getView('T', 'default')!.commitMode).toBe('staged')
+  })
+
+  it('toData serializes commitMode only when non-default', () => {
+    const { view } = createImmediateView()
+    const data = view.toData()
+    expect(data.commitMode).toBeUndefined()
+    expect(data.autoCommit).toBeUndefined()
+
+    const { view: stagedView } = createStagedView()
+    const stagedData = stagedView.toData()
+    expect(stagedData.commitMode).toBe('staged')
+  })
+})
+
+describe('commitMode=staged: dirty tracking lifecycle', () => {
+  it('addRow in staged mode tracks pending-create (no remote call)', async () => {
+    const { view } = createStagedView()
+    setupMockApi(view)
+
+    const initialLen = view.rows.length
+    const newRow = await view.addRow({ id: 99, name: 'New' })
+
+    // Row added locally
+    expect(view.rows.length).toBe(initialLen + 1)
+    expect(newRow).toMatchObject({ id: 99, name: 'New' })
+
+    // Dirty tracking active
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(true)
+    expect(view.dirtyTracking.isPendingCreate(99)).toBe(true)
+  })
+
+  it('editRowById in staged mode marks dirty (no remote call)', async () => {
+    const { view } = createStagedView()
+    setupMockApi(view)
+
+    const result = await view.editRowById(1, { name: 'Alice Updated' })
+    expect(result).toBe(true)
+    expect(view.rows.find(r => r.id === 1)?.name).toBe('Alice Updated')
+
+    // Dirty tracking active
+    expect(view.dirtyTracking.isDirty(1)).toBe(true)
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(true)
+  })
+
+  it('removeRow in staged mode tracks pending-delete (no remote call)', async () => {
+    const { view } = createStagedView()
+    setupMockApi(view)
+
+    const result = await view.removeRow(1)
+    expect(result).toBe(true)
+    expect(view.rows.find(r => r.id === 1)).toBeUndefined()
+
+    // Dirty tracking active
+    expect(view.dirtyTracking.isPendingDelete(1)).toBe(true)
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(true)
+  })
+
+  it('removeRow of pending-create cancels creation silently', async () => {
+    const { view } = createStagedView()
+    setupMockApi(view)
+
+    await view.addRow({ id: 99, name: 'Temp' })
+    expect(view.dirtyTracking.isPendingCreate(99)).toBe(true)
+
+    await view.removeRow(99)
+    // Creation cancelled — not tracked as delete either
+    expect(view.dirtyTracking.isPendingCreate(99)).toBe(false)
+    expect(view.dirtyTracking.isPendingDelete(99)).toBe(false)
+  })
+})
+
+describe('commitMode=immediate: direct remote CRUD', () => {
+  it('addRow in immediate mode calls remote createRecord when API configured', async () => {
+    const { view } = createImmediateView()
+    const mockCrud = setupMockApi(view)
+
+    await view.addRow({ id: 10, name: 'NewUser' })
+    expect(mockCrud.create).toHaveBeenCalledTimes(1)
+  })
+
+  it('editRowById in immediate mode calls remote updateRecord when API configured', async () => {
+    const { view } = createImmediateView()
+    const mockCrud = setupMockApi(view)
+
+    await view.editRowById(1, { name: 'Updated' })
+    expect(mockCrud.update).toHaveBeenCalledTimes(1)
+  })
+
+  it('removeRow in immediate mode calls remote deleteRecord when API configured', async () => {
+    const { view } = createImmediateView()
+    const mockCrud = setupMockApi(view)
+
+    await view.removeRow(1)
+    expect(mockCrud.delete).toHaveBeenCalledTimes(1)
+  })
+
+  it('addRow in immediate mode does local-only when no API configured', async () => {
+    const { view } = createImmediateView()
+    // No API setup — should fall through to dirty tracking
+    const newRow = await view.addRow({ id: 10, name: 'Local' })
+    expect(newRow).toMatchObject({ id: 10, name: 'Local' })
+    expect(view.rows.length).toBe(2)
+    // Since no API, it falls through to dirty tracking path
+    expect(view.dirtyTracking.isPendingCreate(10)).toBe(true)
+  })
+})
+
+describe('dirty state cleanup on data reset operations', () => {
+  it('resetState clears dirty tracking', async () => {
+    const { view } = createStagedView()
+    await view.editRowById(1, { name: 'Dirty' })
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(true)
+
+    view.resetState()
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(false)
+  })
+
+  it('clearAll clears dirty tracking', async () => {
+    const { view } = createStagedView()
+    await view.editRowById(2, { name: 'Dirty' })
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(true)
+
+    view.clearAll()
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(false)
+  })
+
+  it('replaceRows clears dirty tracking', async () => {
+    const { view } = createStagedView()
+    await view.editRowById(1, { name: 'Dirty' })
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(true)
+
+    view.replaceRows([{ id: 3, name: 'Charlie' }])
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(false)
+  })
+
+  it('refresh clears dirty tracking', async () => {
+    const { view } = createStagedView()
+    await view.addRow({ id: 99, name: 'Staged' })
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(true)
+
+    // refresh() is async and calls requestData → which requires API
+    // We just verify the dirty state is cleared synchronously before the request
+    // by calling refresh in a try/catch (no API configured so it will fail, but dirty is already cleared)
+    try {
+      await view.refresh()
+    } catch {
+      // Expected: no API configured
+    }
+    expect(view.dirtyTracking.hasPendingChanges()).toBe(false)
+  })
+})
+
+describe('shouldDirectCommitCrud semantic fix', () => {
+  it('staged mode never direct-commits even with API configured', async () => {
+    const { view } = createStagedView()
+    const mockCrud = setupMockApi(view)
+
+    // This was the original bug: autoCommit=false + API configured → still direct committed
+    await view.addRow({ id: 99, name: 'New' })
+    expect(mockCrud.create).not.toHaveBeenCalled()
+    expect(view.dirtyTracking.isPendingCreate(99)).toBe(true)
+
+    await view.editRowById(1, { name: 'Changed' })
+    expect(mockCrud.update).not.toHaveBeenCalled()
+    expect(view.dirtyTracking.isDirty(1)).toBe(true)
+
+    await view.removeRow(2)
+    expect(mockCrud.delete).not.toHaveBeenCalled()
+    expect(view.dirtyTracking.isPendingDelete(2)).toBe(true)
+  })
+
+  it('immediate mode direct-commits when API exists for that operation', async () => {
+    const { view } = createImmediateView()
+    const mockCrud = setupMockApi(view)
+
+    await view.addRow({ id: 10, name: 'New' })
+    expect(mockCrud.create).toHaveBeenCalledTimes(1)
+  })
+
+  it('immediate mode falls through to dirty tracking when specific API operation missing', async () => {
+    const { view } = createImmediateView()
+    // Setup API with only 'create' — no update/delete
+    const table = view.dataTable!
+    table.api = { create: { url: '/api/users', method: 'POST' } }
+
+    // editRowById should fall through to dirty tracking (no update API)
+    await view.editRowById(1, { name: 'Changed' })
+    expect(view.dirtyTracking.isDirty(1)).toBe(true)
+  })
+})
+
+describe('commitMode runtime switching', () => {
+  it('can switch commitMode at runtime', async () => {
+    const { view } = createImmediateView()
+    expect(view.commitMode).toBe('immediate')
+
+    view.commitMode = 'staged'
+    expect(view.commitMode).toBe('staged')
+
+    // Now addRow should use dirty tracking
+    await view.addRow({ id: 10, name: 'Staged' })
+    expect(view.dirtyTracking.isPendingCreate(10)).toBe(true)
+  })
+})

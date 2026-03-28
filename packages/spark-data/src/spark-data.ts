@@ -9,7 +9,7 @@ import { DataView } from './data-view'
 import { CrudService } from './crud-service'
 import * as DataKeyModule from './core/data-key'
 import * as ColumnValidationModule from './column-validation'
-import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig, TreeConfig, FilterExpression, SortExpression } from './types'
+import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig, TreeConfig, FilterExpression, SortExpression, CommitMode } from './types'
 import type { RequestConfig } from '@spark-view/spark-utils'
 
 // ===== SparkData 命名空间 API =====
@@ -127,7 +127,9 @@ export namespace SparkData {
     labelField?: string
     /** 值序列化分隔符，见 {@link DataView.selectionDelimiter} */
     selectionDelimiter?: string
-    /** 增删改自动提交，见 {@link DataView.autoCommit} */
+    /** 增删改提交模式，见 {@link DataView.commitMode} */
+    commitMode?: CommitMode
+    /** @deprecated 使用 commitMode 代替，见 {@link DataView.commitMode} */
     autoCommit?: boolean
     /** 视图级聚合配置，见 {@link DataView.aggregates} */
     aggregates?: Record<string, AggregateColumnConfig>

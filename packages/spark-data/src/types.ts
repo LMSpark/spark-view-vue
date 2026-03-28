@@ -444,11 +444,15 @@ export interface IViewMetadata {
    */
   autoRefresh?: boolean
   /**
-   * 增删改是否自动提交到服务端（默认 `false`）。
+   * 增删改提交模式（默认 `'immediate'`）。
    *
-   * - `false`（默认）：`addRow` / `editRowById` / `removeRow` 仅修改内存，
-   *   需调用 `saveChanges()` 批量提交。
-   * - `true`：每次 `addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD 方法。
+   * - `'immediate'`（默认）：`addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD（如已配置 API）
+   * - `'staged'`：仅修改内存并标记脏状态，调用 `saveChanges()` 批量提交
+   */
+  commitMode?: CommitMode
+  /**
+   * @deprecated 使用 `commitMode` 代替。`true` 等价于 `'immediate'`，`false` 等价于 `'staged'`。
+   * 保留仅供旧配置向后兼容。当 `commitMode` 显式设置时，`autoCommit` 被忽略。
    */
   autoCommit?: boolean
   /**
@@ -745,6 +749,14 @@ export interface NestedTreeSearchResult {
  *                                              Loaded                        Failed
  * ```
  */
+/**
+ * 增删改提交模式。
+ *
+ * - `'immediate'`（默认）：`addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD（如已配置 API）
+ * - `'staged'`：仅修改内存并标记脏状态，需调用 `saveChanges()` 批量提交
+ */
+export type CommitMode = 'immediate' | 'staged'
+
 export enum RequestState {
   /** 未请求（初始态 / 被外部重置后） */
   Idle         = 0,

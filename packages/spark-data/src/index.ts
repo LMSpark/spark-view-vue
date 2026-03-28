@@ -65,6 +65,9 @@ export type {
   AggregateType,
   AggregateColumnConfig,
 
+  // 提交模式
+  CommitMode,
+
   // 事件订阅
   ViewChangeHandlers,
 
