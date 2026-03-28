@@ -13,11 +13,23 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-form-toolbar', toolbarClassValue]">
-      <SparkComponentRenderer
-        v-for="(action, index) in visibleToolbarConfigs"
-        :key="nodeId(action) ?? `r-form-toolbar-${index}`"
-        :config="action"
-      />
+      <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
+        <el-button
+          v-if="isBuiltinAction(action)"
+          :type="getBuiltinButtonType(action)"
+          :size="getBuiltinButtonSize(action)"
+          :plain="getBuiltinButtonPlain(action)"
+          :text="getBuiltinButtonText(action)"
+          :link="getBuiltinButtonLink(action)"
+          :disabled="isBuiltinActionDisabled(action)"
+          :class="getBuiltinButtonClass(action)"
+          @click="handleBuiltinToolbarAction(action)"
+        >{{ getBuiltinActionLabel(action) }}</el-button>
+        <SparkComponentRenderer
+          v-else
+          :config="action"
+        />
+      </template>
     </div>
 
     <div class="renderer-form-main">
@@ -48,6 +60,25 @@ import { nodeId, type SparkNode } from '../../internal'
 import type { ContainerDocks } from '../../../core/types'
 import { useFormDetailContainer } from '../context/useFormDetailContainer'
 import type { RendererFormApi } from '../../internal'
+import {
+  createCancelledCrudResult,
+  type AddRowHandler,
+  type EditRowHandler,
+  type RemoveRowHandler,
+  useEventDefaults,
+} from '../support/index.js'
+import {
+  createBuiltinActionHandler,
+  getBuiltinActionLabel,
+  getBuiltinButtonClass,
+  getBuiltinButtonLink,
+  getBuiltinButtonPlain,
+  getBuiltinButtonSize,
+  getBuiltinButtonText,
+  getBuiltinButtonType,
+  isBuiltinAction,
+  isBuiltinActionDisabled as _isBuiltinActionDisabled,
+} from '../builtin-actions'
 
 interface Props extends SparkNode {
   /** 数据绑定键，如 "Users@currentRow" */
@@ -64,6 +95,9 @@ interface Props extends SparkNode {
   gridGap?: number | string
   /** 栅格行高 */
   gridAutoRows?: string
+  onAddRow?: AddRowHandler
+  onEditRow?: EditRowHandler
+  onRemoveRow?: RemoveRowHandler
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -77,6 +111,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const {
   registerApi,
+  logger,
+  pageService,
   resolvedView,
   contextData: formModel,
   gridChildren,
@@ -108,15 +144,65 @@ interface NativeFormLike {
   clearValidate?: () => void
 }
 
+const { dispatch } = useEventDefaults({
+  'add-row': {},
+  'edit-row': {},
+  'remove-row': {},
+}, props as Readonly<Record<string, unknown>>)
+
 const formApi: RendererFormApi = {
   getDataSource() {
     return resolvedView.value ?? null
+  },
+  getCurrentRow() {
+    return resolvedView.value?.currentRow ?? null
   },
   getFormData() {
     return formModel
   },
   getNativeForm() {
     return nativeFormRef.value
+  },
+  async refresh() {
+    const view = resolvedView.value
+    if (!view?.dataTable?.api?.list) return
+    await view.refresh()
+  },
+  async addRow(row) {
+    const view = resolvedView.value
+    if (!view) return null
+    const { cancel } = await dispatch('add-row', row)
+    if (cancel) return createCancelledCrudResult('addRow cancelled by business handler')
+    return await view.addRow(row)
+  },
+  async editRowById(id, patch) {
+    const view = resolvedView.value
+    if (!view) return false
+    const { cancel } = await dispatch('edit-row', id, patch)
+    if (cancel) return createCancelledCrudResult('editRowById cancelled by business handler')
+    return await view.editRowById(id, patch)
+  },
+  async removeRow(id) {
+    const view = resolvedView.value
+    if (!view) return false
+    const { cancel } = await dispatch('remove-row', id)
+    if (cancel) return createCancelledCrudResult('removeRow cancelled by business handler')
+    return await view.removeRow(id)
+  },
+  appendRow(row) {
+    resolvedView.value?.appendRow(row)
+  },
+  updateRowById(id, patch) {
+    return resolvedView.value?.updateRowById(id, patch) ?? false
+  },
+  deleteRowById(id) {
+    return resolvedView.value?.deleteRowById(id) ?? false
+  },
+  setCurrentRow(row) {
+    resolvedView.value?.setCurrentRow(row ?? null)
+  },
+  setCurrentRowById(id) {
+    return resolvedView.value?.setCurrentRowById(id ?? null) ?? false
   },
   async validate() {
     const form = nativeFormRef.value as NativeFormLike
@@ -139,6 +225,22 @@ const formApi: RendererFormApi = {
   setFieldValue(field, value) {
     formModel[field] = value
   },
+}
+
+const builtinHandler = createBuiltinActionHandler({
+  getView: () => resolvedView.value,
+  getPageService: () => pageService,
+  getLogger: () => logger,
+  hasRemoteListApi: view => Boolean(view.dataTable?.api?.list),
+  getFormApi: () => formApi,
+})
+
+function isBuiltinActionDisabled(action: SparkNode): boolean {
+  return _isBuiltinActionDisabled(action, resolvedView.value)
+}
+
+function handleBuiltinToolbarAction(action: SparkNode): void {
+  builtinHandler.handleToolbar(action)
 }
 
 registerApi(formApi)

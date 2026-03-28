@@ -44,6 +44,29 @@ describe('DataValidator - 基础校验', () => {
     expect(result.errors).toHaveLength(0)
   })
 
+  it('未设置 allowDBNull 的字段默认不应视为必填', () => {
+    const localValidator = createValidator(createSchema([
+      { name: 'editorProfileKey', type: 'string', computeExpression: "return 'page'" },
+    ]))
+
+    const result = localValidator.validate({} as IDataRow)
+
+    expect(result.valid).toBe(true)
+    expect(result.errors).toHaveLength(0)
+  })
+
+  it('计算列不应参与 CRUD 输入校验', () => {
+    const localValidator = createValidator(createSchema([
+      { name: 'id', type: 'number', allowDBNull: false },
+      { name: 'editorProfileKey', type: 'string', computeExpression: "return 'page'" },
+    ]))
+
+    const result = localValidator.validate({ id: 1 } as IDataRow)
+
+    expect(result.valid).toBe(true)
+    expect(result.errors).toHaveLength(0)
+  })
+
   it('应校验number类型', () => {
     const row = { id: 'invalid', name: 'Alice', age: 25 } as unknown as IDataRow
     const result = validator.validate(row)

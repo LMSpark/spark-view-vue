@@ -7,6 +7,7 @@
 
 import type {
   ActionDescriptor,
+  ActionExecutionControl,
   ActionExecutionContext,
   ShowMessageAction,
   ShowConfirmAction,
@@ -25,6 +26,7 @@ import type {
 import type { CrudResult, DataView, IDataRow } from '@spark-view/spark-data'
 import { getViewFromRawKey } from '@spark-view/spark-data'
 import type { PageMessageType } from '@spark-view/spark-utils'
+import { extractActionExecutionControl } from './action-control'
 
 // ── 视图查找辅助 ──────────────────────────────────────────────────────────
 
@@ -48,6 +50,11 @@ function resolveView(dataKey: string | undefined, ctx: ActionExecutionContext): 
     if (view) return view
   }
   return null
+}
+
+export interface ActionExecutionOptions {
+  eventArgs?: unknown[]
+  control?: ActionExecutionControl
 }
 
 function resolveRowId(row: IDataRow, idField: string): string | number | null {
@@ -98,8 +105,18 @@ function getCrudErrorMessage<T>(value: CrudResult<T>, fallback: string): string 
 export async function executeActionDescriptor(
   descriptor: ActionDescriptor,
   ctx: ActionExecutionContext,
-  eventArgs?: unknown[],
+  eventArgsOrOptions?: unknown[] | ActionExecutionOptions,
 ): Promise<void> {
+  const options = Array.isArray(eventArgsOrOptions)
+    ? { eventArgs: eventArgsOrOptions }
+    : (eventArgsOrOptions ?? {})
+  const eventArgs = options.eventArgs
+  const control = options.control
+
+  if (descriptor.cancelDefault && control) {
+    control.cancel = true
+  }
+
   const action = descriptor.action
 
   switch (action) {
@@ -110,13 +127,13 @@ export async function executeActionDescriptor(
       executeShowMessage(descriptor, ctx)
       break
     case 'confirm':
-      await executeConfirm(descriptor, ctx, eventArgs)
+      await executeConfirm(descriptor, ctx, eventArgs, control)
       break
     case 'alert':
       await executeAlert(descriptor, ctx)
       break
     case 'navigate':
-      executeNavigate(descriptor, ctx)
+      executeNavigate(descriptor, ctx, eventArgs)
       break
     case 'append-row':
       await executeAppendRow(descriptor, ctx)
@@ -148,7 +165,10 @@ export async function executeActionDescriptor(
 
   // 链式执行
   if (descriptor.then) {
-    await executeActionDescriptor(descriptor.then, ctx, eventArgs)
+    const nextOptions: ActionExecutionOptions = {}
+    if (eventArgs !== undefined) nextOptions.eventArgs = eventArgs
+    if (control !== undefined) nextOptions.control = control
+    await executeActionDescriptor(descriptor.then, ctx, nextOptions)
   }
 }
 
@@ -167,6 +187,7 @@ async function executeConfirm(
   desc: ShowConfirmAction,
   ctx: ActionExecutionContext,
   eventArgs?: unknown[],
+  control?: ActionExecutionControl,
 ): Promise<void> {
   const ps = ctx.getPageService()
   if (!ps) return
@@ -178,12 +199,19 @@ async function executeConfirm(
     desc.title ?? '确认',
     confirmOpts,
   )
+  const nestedControl = control ?? extractActionExecutionControl(eventArgs)
 
   if (confirmed && desc.onConfirm) {
-    await executeActionDescriptor(desc.onConfirm, ctx, eventArgs)
+    const confirmOptions: ActionExecutionOptions = {}
+    if (eventArgs !== undefined) confirmOptions.eventArgs = eventArgs
+    if (nestedControl !== undefined) confirmOptions.control = nestedControl
+    await executeActionDescriptor(desc.onConfirm, ctx, confirmOptions)
   }
   if (!confirmed && desc.onCancel) {
-    await executeActionDescriptor(desc.onCancel, ctx, eventArgs)
+    const cancelOptions: ActionExecutionOptions = {}
+    if (eventArgs !== undefined) cancelOptions.eventArgs = eventArgs
+    if (nestedControl !== undefined) cancelOptions.control = nestedControl
+    await executeActionDescriptor(desc.onCancel, ctx, cancelOptions)
   }
 }
 
@@ -192,16 +220,19 @@ async function executeAlert(desc: ShowAlertAction, ctx: ActionExecutionContext):
   if (ps) await ps.showAlert(desc.message, desc.title, {})
 }
 
-function executeNavigate(desc: NavigateAction, ctx: ActionExecutionContext): void {
+function executeNavigate(desc: NavigateAction, ctx: ActionExecutionContext, eventArgs?: unknown[]): void {
   const router = ctx.getRouter()
   if (!router) return
 
   let path = desc.path
-  // 从 DataSet 第一个表的 currentRow 插值路径参数
   if (path.includes('{')) {
-    const view = resolveView(undefined, ctx)
-    const currentRow = view?.currentRow ?? null
-    path = interpolatePath(path, currentRow)
+    // 优先从事件参数取行数据（如 row-click 的 row），回退到 currentRow
+    const eventRow = eventArgs?.[0]
+    const rowFromEvent = (eventRow !== null && eventRow !== undefined && typeof eventRow === 'object' && !Array.isArray(eventRow))
+      ? eventRow as IDataRow
+      : null
+    const fallbackRow = resolveView(undefined, ctx)?.currentRow ?? null
+    path = interpolatePath(path, rowFromEvent ?? fallbackRow)
   }
 
   void router.push(path)

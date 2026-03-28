@@ -29,6 +29,7 @@
 import type { SparkNode } from '../../internal'
 import { useOptionField } from '../options/useFieldOptions'
 import { useFieldContext } from '../context/useFieldContext'
+import { useControlledFieldChange } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 type MultiValue = Array<string | number | boolean>
@@ -86,9 +87,13 @@ const optionResult = useOptionField<MultiValue>({
 
 const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
 const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
+const { handleControlledChange } = useControlledFieldChange<MultiValue>({
+  getValue: () => fieldValue.value,
+  emitUpdate: value => emit('update:modelValue', value),
+  syncValue,
+})
 
-function handleChange(value: MultiValue): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function handleChange(value: MultiValue): Promise<void> {
+  await handleControlledChange(value)
 }
 </script>

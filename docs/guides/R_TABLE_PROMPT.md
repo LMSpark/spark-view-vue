@@ -34,6 +34,7 @@
 1. r-table 的 children 只能是 r-* 字段组件（如 r-text / r-number / r-select / r-date），不要在 r-table 里放 el-table-column。
 2. dataKey 统一使用 @ 分隔格式：table@rows / table@currentRow / table@viewId@rows。
 3. 若使用 el-table，highlightCurrentRow/stripe/border 必须显式声明；若是 r-table 也显式声明 border/stripe/highlightCurrentRow。
+4. 若页面是树表，不要手工在 rows 里维护 children 嵌套；应在 pagedata.json 的 views.default 上声明 treeConfig，并保证 idField 稳定，r-table 会自动重建树形数据并注入 rowKey/treeProps。
 4. 能用 builtin-action 表达的行为，不要写 script.js 样板逻辑。
 5. 无 API 的内联数据表（pagedata 直接 rows）不要使用 refresh 动作触发远程请求。
 6. 若需要脚本访问组件，必须走 ID 寻址：$components.getApi('组件ID')。
@@ -53,6 +54,7 @@
 - 使用 r-section 分块，结构清晰。
 - 每个 r-table 都要有明确列定义和必要 props。
 - toolbar / actions 区优先 builtin-action；脚本按钮仅保留少量演示动作。
+- 若是树表，优先输出平铺 rows + treeConfig，不要在 rule.json 或 script.js 中手工拼 children。
 
 【pagedata.json 质量要求】
 - 真实可演示的示例数据（不少于 5 行主表数据）。
@@ -89,6 +91,7 @@
 
 - r-table 里误用了 el-table-column
 - dataKey 写成旧格式（点号链式）
+- 树表场景缺少 treeConfig 或主键不稳定，导致无法重建层级
 - 内联数据表误用 refresh 触发请求
 - script.js 使用了 $data / window / ElMessage
 - 事件没有在 rule.json 的 on 中声明

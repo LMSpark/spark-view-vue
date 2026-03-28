@@ -11,60 +11,80 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
-      <SparkComponentRenderer
-        v-for="(action, index) in visibleToolbarConfigs"
-        :key="nodeId(action) ?? `r-tree-toolbar-${index}`"
-        :config="action"
-      />
+      <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
+        <el-button
+          v-if="isBuiltinAction(action)"
+          :type="getBuiltinButtonType(action)"
+          :size="getBuiltinButtonSize(action)"
+          :plain="getBuiltinButtonPlain(action)"
+          :text="getBuiltinButtonText(action)"
+          :link="getBuiltinButtonLink(action)"
+          :disabled="isBuiltinToolbarActionDisabled(action)"
+          :class="getBuiltinButtonClass(action)"
+          @click="handleBuiltinToolbarAction(action)"
+        >{{ getBuiltinActionLabel(action) }}</el-button>
+        <SparkComponentRenderer
+          v-else
+          :config="action"
+        />
+      </template>
     </div>
 
-    <div class="renderer-tree-main">
-      <el-tree
-        ref="nativeTreeRef"
-        :data="treeData"
-        :node-key="nodeKeyField"
-        :props="elTreeFieldProps"
-        v-bind="$attrs"
-        @node-click="handleNodeClick"
-        @node-expand="handleNodeExpand"
-        @node-collapse="handleNodeCollapse"
-        @node-drop="handleNodeDrop"
-      >
-        <template #default="slotProps">
-          <span class="custom-tree-node">
-            <RendererDataScope
-              v-if="nodeContentChildren.length > 0"
-              type="r-data-scope"
-              :children="nodeContentChildren"
-              :data="(slotProps?.data as IDataRow) ?? {}"
-            />
-            <slot v-else :node="slotProps?.node" :data="slotProps?.data">
-              <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
-            </slot>
-            <span v-if="hasNodeActions" class="tree-node-actions">
-              <template v-for="(action, index) in getScopedNodeActions({ row: ((slotProps?.data as IDataRow) ?? {}), index: 0 })" :key="nodeId(action) ?? `r-tree-node-action-${index}`">
-                <el-button
-                  v-if="isBuiltinAction(action)"
-                  :type="getBuiltinButtonType(action)"
-                  :size="getBuiltinButtonSize(action)"
-                  :plain="getBuiltinButtonPlain(action)"
-                  :text="getBuiltinButtonText(action)"
-                  :link="getBuiltinButtonLink(action)"
-                  :disabled="isBuiltinNodeActionDisabled(action, ((slotProps?.data as IDataRow) ?? {}), 0)"
-                  :class="getBuiltinButtonClass(action)"
-                  @click="handleBuiltinNodeAction(action, ((slotProps?.data as IDataRow) ?? {}), 0)"
-                >{{ getBuiltinActionLabel(action) }}</el-button>
-                <SparkComponentRenderer
-                  v-else
-                  :config="action"
-                />
-              </template>
-              <el-button v-if="shouldShowLegacyAppend((slotProps?.data as IDataRow) ?? {})" type="primary" size="small" link @click.stop="handleAppendNode(slotProps?.data)">添加</el-button>
-              <el-button v-if="shouldShowLegacyDelete((slotProps?.data as IDataRow) ?? {})" type="danger" size="small" link @click.stop="handleDeleteNode(slotProps?.data)">删除</el-button>
+    <div :class="['renderer-tree-body', `renderer-tree-body--editor-${editorPositionValue}`]">
+      <div class="renderer-tree-main">
+        <el-tree
+          ref="nativeTreeRef"
+          :data="treeData"
+          :node-key="nodeKeyField"
+          :props="elTreeFieldProps"
+          v-bind="$attrs"
+          @node-click="handleNodeClick"
+          @node-expand="handleNodeExpand"
+          @node-collapse="handleNodeCollapse"
+          @node-drop="handleNodeDrop"
+        >
+          <template #default="slotProps">
+            <span class="custom-tree-node">
+              <RendererDataScope
+                v-if="nodeContentChildren.length > 0"
+                type="r-data-scope"
+                :children="nodeContentChildren"
+                :data="(slotProps?.data as IDataRow) ?? {}"
+              />
+              <slot v-else :node="slotProps?.node" :data="slotProps?.data">
+                <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
+              </slot>
+              <span v-if="hasNodeActions" class="tree-node-actions">
+                <template v-for="(action, index) in getScopedNodeActions({ row: ((slotProps?.data as IDataRow) ?? {}), index: 0 })" :key="nodeId(action) ?? `r-tree-node-action-${index}`">
+                  <el-button
+                    v-if="isBuiltinAction(action)"
+                    :type="getBuiltinButtonType(action)"
+                    :size="getBuiltinButtonSize(action)"
+                    :plain="getBuiltinButtonPlain(action)"
+                    :text="getBuiltinButtonText(action)"
+                    :link="getBuiltinButtonLink(action)"
+                    :disabled="isBuiltinNodeActionDisabled(action, ((slotProps?.data as IDataRow) ?? {}), 0)"
+                    :class="getBuiltinButtonClass(action)"
+                    @click="handleBuiltinNodeAction(action, ((slotProps?.data as IDataRow) ?? {}), 0)"
+                  >{{ getBuiltinActionLabel(action) }}</el-button>
+                  <SparkComponentRenderer
+                    v-else
+                    :config="action"
+                  />
+                </template>
+                <el-button v-if="shouldShowLegacyAppend((slotProps?.data as IDataRow) ?? {})" type="primary" size="small" link @click.stop="handleAppendNode(slotProps?.data)">添加</el-button>
+                <el-button v-if="shouldShowLegacyDelete((slotProps?.data as IDataRow) ?? {})" type="danger" size="small" link @click.stop="handleDeleteNode(slotProps?.data)">删除</el-button>
+              </span>
             </span>
-          </span>
+          </template>
+        </el-tree>
+      </div>
+
+      <div v-if="showEditor" :class="['renderer-tree-editor', editorClassValue]" :style="editorStyleValue">
+        <template v-for="(child, index) in editorConfigs" :key="nodeId(child) ?? `r-tree-editor-${index}`">
+          <SparkComponentRenderer :config="child" />
         </template>
-      </el-tree>
+      </div>
     </div>
   </div>
 </template>
@@ -79,6 +99,10 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../../internal'
 import { getDockedChildren, nodeId, type SparkNode } from '../../internal'
 import type { ContainerDocks } from '../../../core/types'
+import {
+  createDefaultBehaviorControl,
+  type DefaultBehaviorControl,
+} from '../../../internal/defaultBehaviorControl'
 import { SparkData, type IDataRow, type DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { CONTEXT_DATA, FIELD_CONTEXT } from '../../internal'
@@ -101,6 +125,13 @@ import { useContainerDataSource, useContainerDataSourceEffects } from '../data/u
 import { useContainerToolbar } from '../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../layout/useContainerToolbar'
 import RendererDataScope from './RendererDataScope.vue'
+import {
+  createCancelledCrudResult,
+  type AddRowHandler,
+  type EditRowHandler,
+  type RemoveRowHandler,
+  useEventDefaults,
+} from '../support/index.js'
 
 interface TreeNode {
   id?: string | number
@@ -129,9 +160,7 @@ interface ElTreeComponent {
   [key: string]: unknown
 }
 
-interface TreeEventControl {
-  cancel: boolean
-}
+type TreeEventControl = DefaultBehaviorControl
 
 type TreeEventHandler = (
   data: TreeNode,
@@ -180,6 +209,9 @@ interface Props {
   onNodeAppend?: TreeNodeActionHandler
   /** 节点删除前回调 */
   onNodeDelete?: TreeNodeActionHandler
+  onAddRow?: AddRowHandler
+  onEditRow?: EditRowHandler
+  onRemoveRow?: RemoveRowHandler
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -202,10 +234,37 @@ const nodeContentChildren = computed<SparkNode[]>(() => {
 })
 const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 const dockedNodeActions = computed(() => getDockedChildren(props.children, 'actions'))
+const dockedEditor = computed(() => getDockedChildren(props.children, 'editor'))
+const editorDock = computed<({ position?: ToolbarPosition } & { class?: string; width?: string | number }) | undefined>(() => {
+  const dock = props.docks?.['editor']
+  return dock as (({ position?: ToolbarPosition } & { class?: string; width?: string | number }) | undefined)
+})
 const hasLegacyNodeActions = computed(() =>
   dockedNodeActions.value.length === 0 && (effectiveAllowAppend.value || effectiveAllowDelete.value)
 )
 const hasNodeActions = computed(() => dockedNodeActions.value.length > 0 || hasLegacyNodeActions.value)
+const editorConfigs = computed(() => dockedEditor.value)
+const editorPositionValue = computed<ToolbarPosition>(() =>
+  editorDock.value?.position ?? 'right'
+)
+const editorClassValue = computed(() => editorDock.value?.class ?? '')
+const editorStyleValue = computed<Record<string, string>>(() => {
+  const width = editorDock.value?.width
+  if (typeof width === 'number' && Number.isFinite(width)) {
+    return {
+      width: `${width}px`,
+      flexBasis: `${width}px`,
+    }
+  }
+  if (typeof width === 'string' && width.trim().length > 0) {
+    return {
+      width,
+      flexBasis: width,
+    }
+  }
+  return {}
+})
+const showEditor = computed(() => editorConfigs.value.length > 0)
 
 // 接入 SPARK 能力链
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(props)
@@ -334,6 +393,14 @@ function isBuiltinNodeActionDisabled(action: SparkNode, row: IDataRow, index: nu
   return _isBuiltinActionDisabled(action, resolvedView.value, { row, index })
 }
 
+function isBuiltinToolbarActionDisabled(action: SparkNode): boolean {
+  return _isBuiltinActionDisabled(action, resolvedView.value)
+}
+
+function handleBuiltinToolbarAction(action: SparkNode): void {
+  builtinHandler.handleToolbar(action)
+}
+
 function handleBuiltinNodeAction(action: SparkNode, row: IDataRow, index: number): void {
   builtinHandler.handleRow(action, row, index)
 }
@@ -419,6 +486,12 @@ function syncCurrentByKey(key: string | number | null | undefined): void {
   tree?.setCurrentKey?.(key)
 }
 
+const { dispatch } = useEventDefaults({
+  'add-row': {},
+  'edit-row': {},
+  'remove-row': {},
+}, props as Readonly<Record<string, unknown>>)
+
 const treeApi: RendererTreeApi = {
   getDataSource() {
     return resolvedView.value ?? null
@@ -463,16 +536,22 @@ const treeApi: RendererTreeApi = {
   async addRow(row) {
     const view = resolvedView.value
     if (!view) return null
+    const { cancel } = await dispatch('add-row', row)
+    if (cancel) return createCancelledCrudResult('addRow cancelled by business handler')
     return await view.addRow(row)
   },
   async editRowById(id, patch) {
     const view = resolvedView.value
     if (!view) return false
+    const { cancel } = await dispatch('edit-row', id, patch)
+    if (cancel) return createCancelledCrudResult('editRowById cancelled by business handler')
     return await view.editRowById(id, patch)
   },
   async removeRow(id) {
     const view = resolvedView.value
     if (!view) return false
+    const { cancel } = await dispatch('remove-row', id)
+    if (cancel) return createCancelledCrudResult('removeRow cancelled by business handler')
     return await view.removeRow(id)
   },
   async moveNode(nodeId, newParentId, index) {
@@ -575,7 +654,7 @@ watch(
 
 // 事件处理器
 function createTreeEventControl(): TreeEventControl {
-  return { cancel: false }
+  return createDefaultBehaviorControl()
 }
 
 async function runTreeEvent(
@@ -695,6 +774,37 @@ async function handleDeleteNode(data: unknown) {
   min-width: 0;
   flex: 1;
   min-height: 0;
+}
+
+.renderer-tree-body {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.renderer-tree-body--editor-left {
+  flex-direction: row-reverse;
+}
+
+.renderer-tree-body--editor-top {
+  flex-direction: column-reverse;
+}
+
+.renderer-tree-body--editor-bottom {
+  flex-direction: column;
+}
+
+.renderer-tree-editor {
+  min-width: 280px;
+  width: min(420px, 42%);
+  flex-shrink: 0;
+}
+
+.renderer-tree-body--editor-top .renderer-tree-editor,
+.renderer-tree-body--editor-bottom .renderer-tree-editor {
+  width: 100%;
+  min-width: 0;
 }
 
 .renderer-tree-toolbar {

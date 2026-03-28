@@ -68,6 +68,7 @@ export class DataValidator {
 
     // 1. 字段级校验（基于列定义）
     for (const col of this.schema.columns) {
+      if (col.isComputed || col.computeExpression) continue
       const value = row[col.name]
       const fieldErrors = this.validateField(col, value)
       errors.push(...fieldErrors)
@@ -107,7 +108,7 @@ export class DataValidator {
     const label = col.label ?? col.name
 
     // 1. 必填校验（required 优先，回退到 allowDBNull）
-    const isRequired = col.required === true || (col.required === undefined && !col.allowDBNull)
+    const isRequired = col.required === true || (col.required === undefined && col.allowDBNull === false)
     if (isRequired && (value === null || value === undefined || value === '')) {
       errors.push({
         field: col.name,

@@ -19,3 +19,10 @@ export {
   useFileFieldActions,
   useSelectorFieldActions,
 } from '../../actions/index.js'
+
+export {
+  useControlledFieldChange,
+} from './useControlledFieldChange.js'
+export type {
+  FieldChangeControl,
+} from './useControlledFieldChange.js'

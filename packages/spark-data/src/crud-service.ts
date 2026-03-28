@@ -29,6 +29,7 @@ const UNRESOLVED_URL_TEMPLATE_RE = /:\w+|\{\w+\}/
 
 /** 批量操作默认并发度 */
 const DEFAULT_BATCH_CONCURRENCY = 5
+const WRAPPED_RESULT_KEYS = ['data', 'node', 'record', 'item', 'result', 'rows', 'deleted'] as const
 
 // ===== 接口定义 =====
 
@@ -438,35 +439,60 @@ export class CrudService {
   ): Promise<T> {
     const resolvedEndpoint = this.resolveEndpoint(endpoint, data)
 
+    const unwrap = (value: unknown): T => this.unwrapEndpointResult<T>(value)
+
     switch (endpoint.method) {
       case 'POST':
-        return this.http.post<T>(resolvedEndpoint.url, data, {
+        return unwrap(await this.http.post<T>(resolvedEndpoint.url, data, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        })
+        }))
       case 'PUT':
-        return this.http.put<T>(resolvedEndpoint.url, data, {
+        return unwrap(await this.http.put<T>(resolvedEndpoint.url, data, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        })
+        }))
       case 'PATCH':
-        return this.http.patch<T>(resolvedEndpoint.url, data, {
+        return unwrap(await this.http.patch<T>(resolvedEndpoint.url, data, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        })
+        }))
       case 'DELETE':
-        return this.http.delete<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
+        return unwrap(await this.http.delete<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        })
+        }))
       case 'GET':
       case undefined:
       default:
-        return this.http.get<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
+        return unwrap(await this.http.get<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
-        })
+        }))
     }
+  }
+
+  private unwrapEndpointResult<T>(value: unknown): T {
+    if (!this.isRecord(value)) return value as T
+
+    if (value['success'] === false) {
+      const message = typeof value['message'] === 'string' && value['message'].trim().length > 0
+        ? value['message']
+        : 'CRUD endpoint returned success=false'
+      throw new Error(message)
+    }
+
+    for (const key of WRAPPED_RESULT_KEYS) {
+      if (key in value) {
+        return value[key] as T
+      }
+    }
+
+    return value as T
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return value !== null && typeof value === 'object' && !Array.isArray(value)
   }
 
   /**

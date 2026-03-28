@@ -48,6 +48,13 @@ import { nodeId, type SparkNode } from '../../internal'
 import type { ContainerDocks } from '../../../core/types'
 import { useFormDetailContainer } from '../context/useFormDetailContainer'
 import type { RendererDetailApi } from '../../internal'
+import {
+  createCancelledCrudResult,
+  type AddRowHandler,
+  type EditRowHandler,
+  type RemoveRowHandler,
+  useEventDefaults,
+} from '../support/index.js'
 
 interface Props extends SparkNode {
   /** 数据绑定键 */
@@ -66,6 +73,9 @@ interface Props extends SparkNode {
   titleAlign?: 'left' | 'center' | 'right'
   /** 值对齐 */
   valueAlign?: 'left' | 'center' | 'right'
+  onAddRow?: AddRowHandler
+  onEditRow?: EditRowHandler
+  onRemoveRow?: RemoveRowHandler
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -108,9 +118,56 @@ const {
 
 // ── r-detail 包装 API ────────────────────────────────────────────────────
 
+const { dispatch } = useEventDefaults({
+  'add-row': {},
+  'edit-row': {},
+  'remove-row': {},
+}, props as Readonly<Record<string, unknown>>)
+
 const detailApi: RendererDetailApi = {
   getDataSource() {
     return resolvedView.value ?? null
+  },
+  async refresh() {
+    const view = resolvedView.value
+    if (!view?.dataTable?.api?.list) return
+    await view.refresh()
+  },
+  async addRow(row) {
+    const view = resolvedView.value
+    if (!view) return null
+    const { cancel } = await dispatch('add-row', row)
+    if (cancel) return createCancelledCrudResult('addRow cancelled by business handler')
+    return await view.addRow(row)
+  },
+  async editRowById(id, patch) {
+    const view = resolvedView.value
+    if (!view) return false
+    const { cancel } = await dispatch('edit-row', id, patch)
+    if (cancel) return createCancelledCrudResult('editRowById cancelled by business handler')
+    return await view.editRowById(id, patch)
+  },
+  async removeRow(id) {
+    const view = resolvedView.value
+    if (!view) return false
+    const { cancel } = await dispatch('remove-row', id)
+    if (cancel) return createCancelledCrudResult('removeRow cancelled by business handler')
+    return await view.removeRow(id)
+  },
+  appendRow(row) {
+    resolvedView.value?.appendRow(row)
+  },
+  updateRowById(id, patch) {
+    return resolvedView.value?.updateRowById(id, patch) ?? false
+  },
+  deleteRowById(id) {
+    return resolvedView.value?.deleteRowById(id) ?? false
+  },
+  setCurrentRow(row) {
+    resolvedView.value?.setCurrentRow(row ?? null)
+  },
+  setCurrentRowById(id) {
+    return resolvedView.value?.setCurrentRowById(id ?? null) ?? false
   },
   getDetailData() {
     return detailData

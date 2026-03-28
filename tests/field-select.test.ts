@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, reactive } from 'vue'
 import { Spark, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, FIELD_CONTEXT, FieldSelect } from '@spark-view/spark-component'
@@ -235,6 +235,27 @@ describe('FieldSelect 下拉组件', () => {
       select.vm.$emit('update:modelValue', '')
       await nextTick()
       expect(model['department']).toBe('')
+    })
+  })
+
+  describe('业务回调优先模式', () => {
+    it('onChange 应先于默认 syncValue 执行，且可取消默认写回', async () => {
+      const model = reactive<Record<string, unknown>>({ department: undefined })
+      const observed: string[] = []
+      const wrapper = mountFieldSelect(model, 'department', {
+        options: departmentOptions,
+        onChange: vi.fn((next: string, _prev: string, control: { cancel: boolean }) => {
+          observed.push(`change:${String(model['department'] ?? 'null')}:${next}:${String(control.cancel)}`)
+          control.cancel = true
+        }),
+      })
+
+      const select = wrapper.findComponent(ElSelectStub)
+      select.vm.$emit('update:modelValue', '技术部')
+      await nextTick()
+
+      expect(observed).toEqual(['change:null:技术部:false'])
+      expect(model['department']).toBeUndefined()
     })
   })
 

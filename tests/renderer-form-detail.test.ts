@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, nextTick } from 'vue'
 import { RendererForm, RendererDetail } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
@@ -107,5 +107,194 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     expect(wrapper.find('.spark-action-stub[data-type="detail-toolbar-action"]').exists()).toBe(true)
     expect(wrapper.find('.biz-detail-template').attributes('data-title')).toBe('Detail Row')
+  })
+
+  it('should expose form CRUD api aligned with tree/table containers', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'FormCrudDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const, isPrimaryKey: true },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }],
+        },
+      },
+    })
+    const view = ds.getView('Users', 'default')!
+    view.selection.setCurrentRow(view.rows[0] ?? null)
+
+    const wrapper = mountWithPageDataSet(RendererForm as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
+      },
+      global: {
+        stubs: {
+          'el-form': ElFormStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      getCurrentRow(): Record<string, unknown> | null
+      getFormData(): Record<string, unknown>
+      setCurrentRowById(id: number | null): boolean
+      appendRow(row: Record<string, unknown>): void
+      updateRowById(id: number, patch: Record<string, unknown>): boolean
+      deleteRowById(id: number): boolean
+      addRow(row: Record<string, unknown>): Promise<unknown>
+      editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
+      removeRow(id: number): Promise<unknown>
+    }
+
+    expect(api.getCurrentRow()?.['id']).toBe(1)
+    expect(api.getFormData()['name']).toBe('Alice')
+
+    expect(api.setCurrentRowById(2)).toBe(true)
+    await nextTick()
+    expect(api.getCurrentRow()?.['id']).toBe(2)
+
+    api.appendRow({ id: 3, name: 'Carol' })
+    await nextTick()
+    expect(view.rows.map(row => row['id'])).toEqual([1, 2, 3])
+
+    expect(api.updateRowById(3, { name: 'Caroline' })).toBe(true)
+    await nextTick()
+    expect(view.rows.find(row => row['id'] === 3)?.['name']).toBe('Caroline')
+
+    expect(api.deleteRowById(1)).toBe(true)
+    await nextTick()
+    expect(view.rows.map(row => row['id'])).toEqual([2, 3])
+
+    await api.addRow({ id: 4, name: 'Dave' })
+    await nextTick()
+    expect(view.rows.map(row => row['id'])).toEqual([2, 3, 4])
+
+    await api.editRowById(4, { name: 'David' })
+    await nextTick()
+    expect(view.rows.find(row => row['id'] === 4)?.['name']).toBe('David')
+
+    await api.removeRow(4)
+    await nextTick()
+    expect(view.rows.map(row => row['id'])).toEqual([2, 3])
+  })
+
+  it('should expose detail CRUD api aligned with tree/table containers', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'DetailCrudDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const, isPrimaryKey: true },
+            { name: 'title', type: 'string' as const },
+          ],
+          rows: [{ id: 10, title: 'Alpha' }, { id: 11, title: 'Beta' }],
+        },
+      },
+    })
+    const view = ds.getView('Users', 'default')!
+    view.selection.setCurrentRow(view.rows[0] ?? null)
+
+    const wrapper = mountWithPageDataSet(RendererDetail as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      getCurrentRow(): Record<string, unknown> | null
+      getDetailData(): Record<string, unknown>
+      setCurrentRowById(id: number | null): boolean
+      appendRow(row: Record<string, unknown>): void
+      updateRowById(id: number, patch: Record<string, unknown>): boolean
+      deleteRowById(id: number): boolean
+      addRow(row: Record<string, unknown>): Promise<unknown>
+      editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
+      removeRow(id: number): Promise<unknown>
+    }
+
+    expect(api.getCurrentRow()?.['id']).toBe(10)
+    expect(api.getDetailData()['title']).toBe('Alpha')
+
+    expect(api.setCurrentRowById(11)).toBe(true)
+    await nextTick()
+    expect(api.getCurrentRow()?.['id']).toBe(11)
+
+    api.appendRow({ id: 12, title: 'Gamma' })
+    await nextTick()
+    expect(view.rows.map(row => row['id'])).toEqual([10, 11, 12])
+
+    expect(api.updateRowById(12, { title: 'Gamma-2' })).toBe(true)
+    await nextTick()
+    expect(view.rows.find(row => row['id'] === 12)?.['title']).toBe('Gamma-2')
+
+    expect(api.deleteRowById(10)).toBe(true)
+    await nextTick()
+    expect(view.rows.map(row => row['id'])).toEqual([11, 12])
+
+    await api.addRow({ id: 13, title: 'Delta' })
+    await nextTick()
+    expect(view.rows.map(row => row['id'])).toEqual([11, 12, 13])
+
+    await api.editRowById(13, { title: 'Delta-2' })
+    await nextTick()
+    expect(view.rows.find(row => row['id'] === 13)?.['title']).toBe('Delta-2')
+
+    await api.removeRow(13)
+    await nextTick()
+    expect(view.rows.map(row => row['id'])).toEqual([11, 12])
+  })
+
+  it('should allow form CRUD business hooks to cancel default methods', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'FormCrudCancelDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const, isPrimaryKey: true },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }],
+        },
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererForm as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
+        onAddRow: async (_row: Record<string, unknown>, control: { cancel: boolean }) => { control.cancel = true },
+        onEditRow: async (_id: number, _patch: Record<string, unknown>, control: { cancel: boolean }) => { control.cancel = true },
+        onRemoveRow: async (_id: number, control: { cancel: boolean }) => { control.cancel = true },
+      },
+      global: {
+        stubs: {
+          'el-form': ElFormStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      addRow(row: Record<string, unknown>): Promise<Record<string, unknown>>
+      editRowById(id: number, patch: Record<string, unknown>): Promise<Record<string, unknown>>
+      removeRow(id: number): Promise<Record<string, unknown>>
+    }
+
+    await expect(api.addRow({ id: 2, name: 'Bob' })).resolves.toMatchObject({ success: false })
+    await expect(api.editRowById(1, { name: 'Alice-2' })).resolves.toMatchObject({ success: false })
+    await expect(api.removeRow(1)).resolves.toMatchObject({ success: false })
   })
 })

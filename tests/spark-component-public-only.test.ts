@@ -39,4 +39,9 @@ describe('spark-component public only root api', () => {
       expect(source).not.toContain(typeName)
     }
   })
+
+  it('does expose shared default behavior control type from public root', () => {
+    const source = readFileSync(ROOT_INDEX_FILE, 'utf8')
+    expect(source).toContain('DefaultBehaviorControl')
+  })
 })

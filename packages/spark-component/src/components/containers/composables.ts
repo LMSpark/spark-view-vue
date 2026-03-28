@@ -38,6 +38,20 @@ export { useContainerSlots } from './layout/index.js'
 export { useContainerToolbar } from './layout/index.js'
 export { useTableFilters } from './layout/index.js'
 
+// ── 事件控制 / 默认行为分发 ───────────────────────────────────────────────
+export {
+  useEventDefaults,
+  runControlledInteraction,
+  createInteractionControl,
+  createCancelledCrudResult,
+} from './support/index.js'
+export type {
+  InteractionControl,
+  CancelableHandler,
+  EventDefaultDeclaration,
+  EventDispatcher,
+} from './support/index.js'
+
 // ── 动作区 ──────────────────────────────────────────────────────────────────
 export {
   useContainerActions,

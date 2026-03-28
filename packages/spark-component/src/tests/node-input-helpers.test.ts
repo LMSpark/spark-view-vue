@@ -56,4 +56,5 @@ describe('SparkNode input helpers', () => {
     expect(merged['children']).toBeUndefined()
     expect(merged['type']).toBeUndefined()
   })
+
 })

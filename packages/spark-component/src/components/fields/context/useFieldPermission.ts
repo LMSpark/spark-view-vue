@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import { createPermissionChecker, FieldVisibility } from '@spark-view/spark-data'
+import type { DataColumn } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useSparkConsume, DATA_SOURCE } from '../../internal'
@@ -33,9 +34,13 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const pageService = sparkConsume(PAGE_SERVICE)
   const dataSource = sparkConsume(DATA_SOURCE)
 
+  const boundColumn = computed<DataColumn | null>(() => {
+    if (!fieldName.value || !dataSource?.columns) return null
+    return dataSource.columns.find(c => c.name === fieldName.value) ?? null
+  })
+
   const validationRules = computed<FormItemRule[]>(() => {
-    if (!fieldName.value || !dataSource?.columns) return []
-    const column = dataSource.columns.find(c => c.name === fieldName.value)
+    const column = boundColumn.value
     if (!column) return []
     return columnToFormRules(column)
   })
@@ -108,6 +113,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   return {
     fieldName,
     displayLabel,
+    boundColumn,
     context,
     contextData,
     pageService,

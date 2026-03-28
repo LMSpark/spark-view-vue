@@ -5,6 +5,7 @@
  */
 export type {
   ActionDescriptor,
+  ActionExecutionControl,
   ActionExecutionContext,
   RouterLike,
   ScriptCallAction,
@@ -23,3 +24,4 @@ export type {
 
 export { isActionDescriptor } from './action-descriptor'
 export { executeActionDescriptor } from './action-executor'
+export type { ActionExecutionOptions } from './action-executor'

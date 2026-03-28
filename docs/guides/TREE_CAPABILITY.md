@@ -652,6 +652,8 @@ npx vitest run tests/renderer-table.datasource.test.ts --reporter verbose
 
 不是。只要 treeConfig 完整，RendererTree 会在前端重建嵌套结构。
 
+同样地，树表场景也不需要在 rows 中手工维护 children。只要绑定到 r-table 的 DataView 存在 treeConfig，RendererTable 会把平铺 rows 重建为树表数据，并在未显式声明时自动补 rowKey 和 treeProps。
+
 ### 误区 4：移动节点必须页面自己发请求
 
 不是。当前拖拽和 builtinAction 都可以收口到 moveTreeNode。

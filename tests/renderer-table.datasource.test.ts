@@ -30,8 +30,51 @@ const SparkActionStub = defineComponent({
 })
 
 const ElTableStub = defineComponent({
-  setup(_, { slots }) {
-    return () => h('div', { class: 'el-table-stub' }, slots['default']?.())
+  emits: ['row-click', 'selection-change'],
+  props: {
+    data: {
+      type: Array,
+      default: () => [],
+    },
+    rowKey: {
+      type: [String, Function],
+      default: undefined,
+    },
+    treeProps: {
+      type: Object,
+      default: undefined,
+    },
+  },
+  setup(props, { slots, emit }) {
+    return () => {
+      const rows = Array.isArray(props.data) ? props.data as Array<Record<string, unknown>> : []
+      const firstRow = rows[0]
+      const firstChildren = Array.isArray(firstRow?.['children']) ? firstRow['children'] as Array<Record<string, unknown>> : []
+      return h('div', {
+        class: 'el-table-stub',
+        'data-row-count': String(rows.length),
+        'data-row-key': typeof props.rowKey === 'string' ? props.rowKey : '',
+        'data-tree-children-field': String((props.treeProps as Record<string, unknown> | undefined)?.['children'] ?? ''),
+        'data-first-row-id': String(firstRow?.['id'] ?? ''),
+        'data-first-children-count': String(firstChildren.length),
+      }, [
+        h('button', {
+          class: 'el-table-row-click-trigger',
+          type: 'button',
+          onClick: () => {
+            if (firstRow) emit('row-click', firstRow)
+          },
+        }, 'row-click'),
+        h('button', {
+          class: 'el-table-selection-trigger',
+          type: 'button',
+          onClick: () => {
+            emit('selection-change', firstRow ? [firstRow] : [])
+          },
+        }, 'selection-change'),
+        slots['default']?.(),
+      ])
+    }
   }
 })
 
@@ -880,6 +923,412 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(moveSpy).toHaveBeenCalledWith('leaf', 'root', -1)
   })
 
+  it('RendererTable should rebuild nested tree-table data from flat rows when treeConfig exists', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Table-Tree',
+      tables: {
+        Nodes: {
+          tableName: 'Nodes',
+          columns: [
+            { name: 'id', type: 'string' as const, isPrimaryKey: true },
+            { name: 'parentId', type: 'string' as const },
+            { name: 'label', type: 'string' as const },
+          ],
+          rows: [
+            { id: 'root', parentId: null, label: '根节点' },
+            { id: 'leaf', parentId: 'root', label: '叶子节点' },
+          ] as IDataRow[],
+          views: {
+            default: {
+              treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
+            },
+          },
+        },
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Nodes@rows',
+        children: [
+          { type: 'r-text', props: { field: 'label', label: '名称' } },
+        ],
+      },
+      global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
+        components: {
+          'r-text': TableTextFieldStub,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const table = wrapper.find('.el-table-stub')
+    expect(table.attributes('data-row-count')).toBe('1')
+    expect(table.attributes('data-row-key')).toBe('id')
+    expect(table.attributes('data-tree-children-field')).toBe('children')
+    expect(table.attributes('data-first-row-id')).toBe('root')
+    expect(table.attributes('data-first-children-count')).toBe('1')
+  })
+
+  it('should expose table CRUD api aligned with other data containers', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Table-CRUD',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const, isPrimaryKey: true },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] as IDataRow[],
+        },
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+      },
+      global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      getRows(): Array<Record<string, unknown>>
+      getCurrentRow(): Record<string, unknown> | null
+      getSelectedRows(): Array<Record<string, unknown>>
+      query(): Promise<void>
+      setCurrentRowById(id: number | null): boolean
+      setSelectedRowsById(ids: Array<number | string>): number
+      appendRow(row: Record<string, unknown>): void
+      updateRowById(id: number, patch: Record<string, unknown>): boolean
+      deleteRowById(id: number): boolean
+      addRow(row: Record<string, unknown>): Promise<unknown>
+      editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
+      removeRow(id: number): Promise<unknown>
+    }
+
+    expect(api.getRows().map(row => row['id'])).toEqual([1, 2])
+    expect(api.getCurrentRow()).toBeNull()
+    expect(api.getSelectedRows()).toEqual([])
+
+    expect(api.setCurrentRowById(2)).toBe(true)
+    await nextTick()
+    expect(api.getCurrentRow()?.['id']).toBe(2)
+
+    expect(api.setSelectedRowsById([2])).toBe(1)
+    await nextTick()
+    expect(api.getSelectedRows().map(row => row['id'])).toEqual([2])
+
+    api.appendRow({ id: 3, name: 'Carol' })
+    await nextTick()
+    expect(api.getRows().map(row => row['id'])).toEqual([1, 2, 3])
+
+    expect(api.updateRowById(3, { name: 'Caroline' })).toBe(true)
+    await nextTick()
+    expect(api.getRows().find(row => row['id'] === 3)?.['name']).toBe('Caroline')
+
+    expect(api.deleteRowById(1)).toBe(true)
+    await nextTick()
+    expect(api.getRows().map(row => row['id'])).toEqual([2, 3])
+
+    await api.addRow({ id: 4, name: 'Dave' })
+    await nextTick()
+    expect(api.getRows().map(row => row['id'])).toEqual([2, 3, 4])
+
+    await api.editRowById(4, { name: 'David' })
+    await nextTick()
+    expect(api.getRows().find(row => row['id'] === 4)?.['name']).toBe('David')
+
+    await api.removeRow(4)
+    await nextTick()
+    expect(api.getRows().map(row => row['id'])).toEqual([2, 3])
+  })
+
+  it('should sync row click to current row selection', async () => {
+    const ds = createInlineDataSet('Users', [
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+    ])
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      getCurrentRow(): Record<string, unknown> | null
+    }
+
+    expect(api.getCurrentRow()).toBeNull()
+
+    await wrapper.find('.el-table-row-click-trigger').trigger('click')
+    await nextTick()
+
+    expect(api.getCurrentRow()?.['id']).toBe(1)
+  })
+
+  it('should run table business handlers before default row and selection sync and allow cancel', async () => {
+    const ds = createInlineDataSet('Users', [
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+    ])
+    const view = ds.getView('Users', 'default')!
+    const observed: string[] = []
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+        onRowClick: async (_row: unknown, _column: unknown, _event: unknown, control: { cancel: boolean }) => {
+          observed.push(`row:${String(view.currentRow?.['id'] ?? 'null')}:${String(control.cancel)}`)
+          control.cancel = true
+        },
+        onSelectionChange: async (_rows: unknown[], control: { cancel: boolean }) => {
+          observed.push(`selection:${String(view.selectedRows.length)}:${String(control.cancel)}`)
+          control.cancel = true
+        },
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    await wrapper.find('.el-table-row-click-trigger').trigger('click')
+    await nextTick()
+    await wrapper.find('.el-table-selection-trigger').trigger('click')
+    await nextTick()
+
+    expect(observed).toEqual(['row:null:false', 'selection:0:false'])
+    expect(view.currentRow).toBeNull()
+    expect(view.selectedRows).toEqual([])
+  })
+
+  it('should run table CRUD business handlers before default methods and allow cancel', async () => {
+    const ds = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+        onAddRow: async (_row: Record<string, unknown>, control: { cancel: boolean }) => {
+          control.cancel = true
+        },
+        onEditRow: async (_id: number, _patch: Record<string, unknown>, control: { cancel: boolean }) => {
+          control.cancel = true
+        },
+        onRemoveRow: async (_id: number, control: { cancel: boolean }) => {
+          control.cancel = true
+        },
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      addRow(row: Record<string, unknown>): Promise<Record<string, unknown>>
+      editRowById(id: number, patch: Record<string, unknown>): Promise<Record<string, unknown>>
+      removeRow(id: number): Promise<Record<string, unknown>>
+      getRows(): Array<Record<string, unknown>>
+    }
+
+    await expect(api.addRow({ id: 2, name: 'Bob' })).resolves.toMatchObject({ success: false })
+    await expect(api.editRowById(1, { name: 'Alice-2' })).resolves.toMatchObject({ success: false })
+    await expect(api.removeRow(1)).resolves.toMatchObject({ success: false })
+    expect(api.getRows().map(row => row['id'])).toEqual([1])
+  })
+
+  it('should expose remote tree api through tableApi for tree-table views', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Table-Tree-Remote',
+      tables: {
+        Nodes: {
+          tableName: 'Nodes',
+          columns: [
+            { name: 'id', type: 'string' as const, isPrimaryKey: true },
+            { name: 'parentId', type: 'string' as const },
+            { name: 'label', type: 'string' as const },
+          ],
+          rows: [] as IDataRow[],
+          views: {
+            default: {
+              treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
+            },
+          },
+        },
+      },
+    })
+
+    const view = ds.getView('Nodes', 'default')!
+    const loadTreeNestedSpy = vi.spyOn(view, 'loadTreeNested').mockResolvedValue({
+      success: true,
+      data: [{ id: 'root', name: '根节点', parentId: null, label: '根节点', children: [] }],
+    })
+    const loadTreeChildrenSpy = vi.spyOn(view, 'loadTreeChildren').mockResolvedValue([{ id: 'root', name: '根节点', parentId: null, label: '根节点' }])
+    const loadTreePathSpy = vi.spyOn(view, 'loadTreePath').mockResolvedValue({ pathIds: ['root', 'leaf'] })
+    const expandTreeToNodeSpy = vi.spyOn(view, 'expandTreeToNode').mockImplementation(async () => {
+      view.replaceRows([
+        { id: 'root', parentId: null, label: '根节点' },
+        { id: 'leaf', parentId: 'root', label: '叶子节点' },
+      ])
+    })
+    const moveTreeNodeSpy = vi.spyOn(view, 'moveTreeNode').mockResolvedValue({ id: 'leaf', name: '叶子节点', parentId: 'root', label: '叶子节点' })
+    const searchTreeNestedSpy = vi.spyOn(view, 'searchTreeNested').mockResolvedValue([
+      { node: { id: 'leaf', name: '叶子节点', parentId: 'root', label: '叶子节点' }, path: [{ id: 'root', name: '根节点', parentId: null, label: '根节点' }] },
+    ])
+    const setCurrentRowByIdSpy = vi.spyOn(view.selection, 'setCurrentRowById')
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Nodes@rows',
+      },
+      global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      loadTreeNested(rootId?: string | number | null, limit?: number, depthLimit?: number): Promise<unknown>
+      loadTreeChildren(parentId: string | number | null, limit?: number): Promise<Array<Record<string, unknown>>>
+      loadTreePath(id: string | number): Promise<{ pathIds: Array<string | number> } | null>
+      expandToNode(key: string | number): Promise<void>
+      moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<Record<string, unknown> | null>
+      searchTreeNested(keyword: string, limit?: number): Promise<Array<Record<string, unknown>>>
+    }
+
+    await expect(api.loadTreeNested(null, 20, 3)).resolves.toEqual({
+      success: true,
+      data: [{ id: 'root', parentId: null, label: '根节点', children: [] }],
+    })
+    expect(loadTreeNestedSpy).toHaveBeenCalledWith(null, 20, 3)
+
+    await expect(api.loadTreeChildren(null, 20)).resolves.toEqual([{ id: 'root', parentId: null, label: '根节点' }])
+    expect(loadTreeChildrenSpy).toHaveBeenCalledWith(null, 20)
+
+    await expect(api.loadTreePath('leaf')).resolves.toEqual({ pathIds: ['root', 'leaf'] })
+    expect(loadTreePathSpy).toHaveBeenCalledWith('leaf')
+
+    await api.expandToNode('leaf')
+    expect(expandTreeToNodeSpy).toHaveBeenCalledWith('leaf')
+    expect(setCurrentRowByIdSpy).toHaveBeenCalledWith('leaf')
+
+    await expect(api.moveNode('leaf', 'root', -1)).resolves.toEqual({ id: 'leaf', parentId: 'root', label: '叶子节点' })
+    expect(moveTreeNodeSpy).toHaveBeenCalledWith('leaf', 'root', -1)
+
+    await expect(api.searchTreeNested('叶', 10)).resolves.toEqual([
+      { node: { id: 'leaf', parentId: 'root', label: '叶子节点' }, path: [{ id: 'root', parentId: null, label: '根节点' }] },
+    ])
+    expect(searchTreeNestedSpy).toHaveBeenCalledWith('叶', 10)
+  })
+
+  it('should direct table CRUD to remote when create update delete API is configured', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Table-Remote-CRUD',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const, isPrimaryKey: true },
+            { name: 'name', type: 'string' as const },
+          ],
+          api: {
+            create: { url: '/api/users', method: 'POST' },
+            update: { url: '/api/users/{id}', method: 'PUT' },
+            delete: { url: '/api/users/{id}', method: 'DELETE' },
+          },
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+        },
+      },
+    })
+
+    const httpClient = {
+      get: vi.fn(),
+      post: vi.fn(async () => ({ id: 2, name: 'Bob' })),
+      put: vi.fn(async () => ({ id: 1, name: 'Alice-2' })),
+      delete: vi.fn(async () => true),
+    }
+    ds.setSharedHttpClient(httpClient as never)
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+      },
+      global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      getRows(): Array<Record<string, unknown>>
+      addRow(row: Record<string, unknown>): Promise<unknown>
+      editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
+      removeRow(id: number): Promise<unknown>
+    }
+
+    await expect(api.addRow({ id: 2, name: 'Bob' })).resolves.toMatchObject({ success: true, data: { id: 2, name: 'Bob' } })
+    expect(httpClient.post).toHaveBeenCalledOnce()
+    expect(api.getRows().map(row => row['id'])).toEqual([1, 2])
+
+    await expect(api.editRowById(1, { name: 'Alice-2' })).resolves.toMatchObject({ success: true, data: { id: 1, name: 'Alice-2' } })
+    expect(httpClient.put).toHaveBeenCalledOnce()
+    expect(api.getRows().find(row => row['id'] === 1)?.['name']).toBe('Alice-2')
+
+    await expect(api.removeRow(2)).resolves.toMatchObject({ success: true, data: true })
+    expect(httpClient.delete).toHaveBeenCalledOnce()
+    expect(api.getRows().map(row => row['id'])).toEqual([1])
+  })
+
   it('should render table toolbar from docked children and scoped row actions', async () => {
     const rowActionSpy = vi.fn()
 
@@ -1399,6 +1848,56 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(nodeActionSpy).toHaveBeenCalled()
   })
 
+  it('should execute tree builtin toolbar actions without page script handlers', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Tree-Builtin-Toolbar',
+      tables: {
+        Nodes: {
+          tableName: 'Nodes',
+          columns: [
+            { name: 'id', type: 'string' as const, isPrimaryKey: true },
+            { name: 'label', type: 'string' as const },
+          ],
+          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+          api: { list: { url: '/api/nodes', method: 'GET' } },
+        },
+      },
+    })
+
+    const dv = ds.getView('Nodes', 'default')!
+    const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
+
+    const wrapper = await mountRendererTreeWithView(dv, {
+      children: [
+        {
+          type: 'builtin-action',
+          dock: 'toolbar',
+          props: {
+            builtinAction: 'refresh',
+            label: '刷新导航树',
+            successMessage: '',
+          },
+        },
+      ],
+    }, {
+      global: {
+        stubs: {
+          'el-tree': ElTreeStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    const toolbarButton = wrapper.find('.el-button-stub')
+    expect(toolbarButton.exists()).toBe(true)
+
+    await toolbarButton.trigger('click')
+    await flushPromises()
+
+    expect(refreshSpy).toHaveBeenCalledOnce()
+  })
+
   it('should allow row-action slots and render docked toolbar children', () => {
     const slotDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
@@ -1641,6 +2140,44 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.biz-node-template').attributes('data-node-label')).toBe('节点 1')
   })
 
+  it('should render tree editor dock content on the configured side', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Tree-Editor-Dock',
+      tables: {
+        Nodes: {
+          tableName: 'Nodes',
+          columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
+          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[]
+        }
+      }
+    })
+    const dv = ds.getView('Nodes', 'default')!
+    const wrapper = await mountRendererTreeWithView(dv, {
+      docks: {
+        editor: {
+          position: 'right',
+          class: 'tree-editor-panel',
+        },
+      },
+      children: [
+        { type: 'tree-node-content' },
+        { type: 'tree-editor-template', dock: 'editor' },
+      ],
+    }, {
+      global: {
+        stubs: {
+          'el-tree': ElTreeStub,
+          SparkComponentRenderer: SparkActionStub,
+        }
+      }
+    })
+
+    expect(wrapper.find('.renderer-tree-body--editor-right').exists()).toBe(true)
+    expect(wrapper.find('.renderer-tree-editor.tree-editor-panel').exists()).toBe(true)
+    expect(wrapper.find('.spark-action-stub[data-type="tree-editor-template"]').exists()).toBe(true)
+    expect(wrapper.find('.spark-action-stub[data-type="tree-node-content"]').exists()).toBe(true)
+  })
+
   it('should hide toolbar actions by model permission and row actions by instance permission', async () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const permissionView = permissionDataSet.getView('Users', 'default')!
@@ -1746,6 +2283,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
             builtinAction: 'append-row',
             permAction: 'create-child',
             label: '新增子节点',
+            setCurrentRowOnSuccess: true,
             appendPayload: { label: '新增节点' },
             inheritFieldMap: { parentId: 'id' },
             successMessage: '',
@@ -1772,6 +2310,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(dv.rows).toHaveLength(2)
     expect(dv.rows[1]?.['label']).toBe('新增节点')
     expect(dv.rows[1]?.['parentId']).toBe('node-1')
+    expect(dv.currentRow?.['label']).toBe('新增节点')
   })
 
   it('should reuse column configs as filter items and filter inline rows locally', async () => {
@@ -1870,6 +2409,45 @@ describe('RendererTable - DataView as single data intermediary', () => {
     requestDataSpy.mockRestore()
     setFilterSpy.mockRestore()
     refreshSpy.mockRestore()
+  })
+
+  it('should expose query api for remote filter refresh', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Filter-Query-Api',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'name', type: 'string' as const }],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+        },
+      },
+    })
+
+    ds.getTable('Users')!.setApi({ list: { url: '/api/users', method: 'GET' } })
+    const dv = ds.getView('Users', 'default')!
+    const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
+
+    const wrapper = mountRendererTableWithView(dv, {
+      children: [
+        { type: 'r-text', dock: 'filter', props: { field: 'name', label: '姓名' } },
+      ],
+    }, {
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          SparkComponentRenderer: SparkActionStub,
+          RendererFieldScope: RendererFieldScopeStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      query(): Promise<void>
+    }
+
+    await api.query()
+
+    expect(refreshSpy).toHaveBeenCalledOnce()
   })
 
   it('should infer between for range filters and in for multi-select filters', async () => {

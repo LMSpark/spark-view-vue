@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import { useSparkComponent } from '../../internal'
 import { getDockedChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
+import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { CONTEXT_DATA, FIELD_CONTEXT } from '../../internal'
 import type { ContainerDocks } from '../../../core/types'
@@ -43,6 +44,7 @@ export function useFormDetailContainer(
 
   const { sparkConsume, sparkProvide, logger, registerApi } = useSparkComponent(props)
   const pageDataSet = sparkConsume(PAGE_DATASET)
+  const pageService = sparkConsume(PAGE_SERVICE)
 
   const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
     dataKey: effectiveDataKey,
@@ -86,6 +88,8 @@ export function useFormDetailContainer(
 
   return {
     registerApi,
+    logger,
+    pageService,
     resolvedView,
     contextData,
     gridChildren,

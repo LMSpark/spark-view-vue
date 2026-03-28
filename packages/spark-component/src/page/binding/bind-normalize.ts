@@ -4,26 +4,91 @@
  * 从 SparkNode 输入中提取/转换事件处理器与 Props 回调。
  * 当前仅被 SparkPageRenderer 生产渲染路径复用。
  *
- * 职责分区：
- * 1) 事件归一化（normalizeRuleEvents / normalizeOnProps）
+ * ## 统一零代码事件机制
+ *
+ * 支持四种 handler 形式：
+ * - string → callFunc 闭包（脚本函数名）
+ * - { action: "...", cancelDefault?: boolean } → 声明式动作（异步执行，awaitable）
+ * - Array<string | ActionDescriptor | Function> → 折叠为单函数，顺序执行
+ * - Function → 透传
+ *
+ * ### cancelDefault 机制
+ *
+ * action descriptor 上设置 `cancelDefault: true` 时，包装闭包会提取事件参数中
+ * 最后一个控制对象（`{ cancel: boolean }`）并交给 action 执行器；
+ * 由执行器显式设置 `control.cancel = true`，从而阻止容器/字段默认行为。
+ *
+ * ### 数组折叠
+ *
+ * 数组 handler 折叠为**单个 async 函数**，依次执行每个子项。
+ * 数组内任一 action descriptor 设了 `cancelDefault`，则整体取消默认行为。
+ * 折叠后的单函数可被容器/字段统一控制包装层正确 await 并读取 cancel 标志。
  */
 
 import { isActionDescriptor, executeActionDescriptor } from '../actions'
-import type { ActionExecutionContext } from '../actions'
+import type { ActionExecutionContext, ActionDescriptor, ActionExecutionOptions } from '../actions'
+import { extractActionExecutionControl } from '../actions/action-control'
 
 /** 沙箱函数调用签名 */
 type CallFunc = (functionName: string, ...args: unknown[]) => unknown
 
-// ── 分区 A：事件归一化 ─────────────────────────────────────────────────────
+// ── 单项包装 ───────────────────────────────────────────────────────────────
+
+function wrapStringHandler(name: string, callFunc: CallFunc): (...args: unknown[]) => unknown {
+  return (...args: unknown[]) => callFunc(name, ...args)
+}
+
+function wrapActionDescriptor(
+  descriptor: ActionDescriptor,
+  ctx: ActionExecutionContext,
+): (...args: unknown[]) => Promise<void> {
+  return async (...args: unknown[]) => {
+    const options: ActionExecutionOptions = {
+      eventArgs: args,
+    }
+    const control = extractActionExecutionControl(args)
+    if (control !== undefined) {
+      options.control = control
+    }
+    await executeActionDescriptor(descriptor, ctx, options)
+  }
+}
+
+// ── 数组折叠 ───────────────────────────────────────────────────────────────
+
+/**
+ * 将数组 handler 折叠为单个 async 函数。
+ *
+ * - 各项按声明顺序依次 await
+ * - 任一 action descriptor 的 cancelDefault 生效后，cancel 标志保持 true
+ */
+function collapseHandlerArray(
+  items: unknown[],
+  callFunc: CallFunc,
+  actionCtx: ActionExecutionContext | undefined,
+): (...args: unknown[]) => Promise<void> {
+  const wrapped: Array<(...args: unknown[]) => unknown> = []
+  for (const item of items) {
+    if (typeof item === 'string') {
+      wrapped.push(wrapStringHandler(item, callFunc))
+    } else if (actionCtx && isActionDescriptor(item)) {
+      wrapped.push(wrapActionDescriptor(item, actionCtx))
+    } else if (typeof item === 'function') {
+      wrapped.push(item as (...args: unknown[]) => unknown)
+    }
+  }
+
+  return async (...args: unknown[]) => {
+    for (const fn of wrapped) {
+      await fn(...args)
+    }
+  }
+}
+
+// ── 公开 API ──────────────────────────────────────────────────────────────
 
 /**
  * 将事件记录中的 handler 归一化为可执行闭包
- *
- * 支持四种 handler 形式：
- * - string → callFunc 闭包（脚本函数名）
- * - { action: "..." } → executeActionDescriptor 闭包（声明式动作）
- * - Array<string | ActionDescriptor | Function> → 逐项包装
- * - Function → 透传
  *
  * @param actionCtx 可选 — 传入时启用 action descriptor 支持（SparkPageRenderer 提供）
  */
@@ -35,28 +100,11 @@ function normalizeRuleEvents(
   const result: Record<string, unknown> = {}
   for (const [eventName, handler] of Object.entries(on)) {
     if (typeof handler === 'string') {
-      result[eventName] = (...args: unknown[]) => callFunc(handler, ...args)
+      result[eventName] = wrapStringHandler(handler, callFunc)
     } else if (actionCtx && isActionDescriptor(handler)) {
-      const descriptor = handler
-      const ctx = actionCtx
-      result[eventName] = (...args: unknown[]) => {
-        void executeActionDescriptor(descriptor, ctx, args)
-      }
+      result[eventName] = wrapActionDescriptor(handler, actionCtx)
     } else if (Array.isArray(handler)) {
-      const items = handler as unknown[]
-      result[eventName] = items.map((item: unknown) => {
-        if (typeof item === 'string') {
-          return (...args: unknown[]) => callFunc(item, ...args)
-        }
-        if (actionCtx && isActionDescriptor(item)) {
-          const descriptor = item
-          const ctx = actionCtx
-          return (...args: unknown[]) => {
-            void executeActionDescriptor(descriptor, ctx, args)
-          }
-        }
-        return item
-      })
+      result[eventName] = collapseHandlerArray(handler, callFunc, actionCtx)
     } else {
       result[eventName] = handler
     }
@@ -67,11 +115,12 @@ function normalizeRuleEvents(
 /**
  * 将 props 中 on* 开头的值包装为闭包（就地修改）
  *
- * 支持两种值形式：
+ * 支持三种值形式：
  * - string → callFunc 闭包（脚本函数名）
- * - { action: "..." } → executeActionDescriptor 闭包（声明式动作）
+ * - { action: "...", cancelDefault?: boolean } → 声明式动作（async、可取消默认行为）
+ * - Array → 折叠为单函数（同 normalizeRuleEvents 数组逻辑）
  *
- * 适用于自定义组件（如 r-tree）通过 props 传递事件回调的场景。
+ * 适用于自定义组件（如 r-tree / r-table）通过 props 传递事件回调的场景。
  *
  * @param actionCtx 可选 — 传入时启用 action descriptor 支持
  */
@@ -83,13 +132,11 @@ function normalizeOnProps(
   for (const [key, value] of Object.entries(props)) {
     if (!key.startsWith('on')) continue
     if (typeof value === 'string') {
-      props[key] = (...args: unknown[]) => callFunc(value, ...args)
+      props[key] = wrapStringHandler(value, callFunc)
     } else if (actionCtx && isActionDescriptor(value)) {
-      const descriptor = value
-      const ctx = actionCtx
-      props[key] = (...args: unknown[]) => {
-        void executeActionDescriptor(descriptor, ctx, args)
-      }
+      props[key] = wrapActionDescriptor(value, actionCtx)
+    } else if (Array.isArray(value)) {
+      props[key] = collapseHandlerArray(value, callFunc, actionCtx)
     }
   }
 }

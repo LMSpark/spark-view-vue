@@ -24,6 +24,7 @@
 
 import type { IDataSet } from '@spark-view/spark-data'
 import type { IPageServiceCapability, PageMessageType } from '@spark-view/spark-utils'
+import type { DefaultBehaviorControl } from '../../internal/defaultBehaviorControl'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────
 
@@ -52,6 +53,16 @@ interface ActionDescriptorBase {
   action: string
   /** 链式：当前动作完成后执行下一个 */
   then?: ActionDescriptor
+  /**
+   * 取消组件默认行为
+   *
+   * 为 true 时，容器事件（row-click/selection-change 等）跳过默认的
+   * setCurrentRow / setSelectedRows 等同步操作；字段变更事件跳过默认的
+   * emit + syncValue。
+   *
+   * 数组内任一描述符设为 true，则整体取消默认行为。
+   */
+  cancelDefault?: boolean
 }
 
 /** 调用 pageFunctions 中的脚本函数（兼容 script.js 迁移期） */
@@ -187,6 +198,15 @@ export interface ActionExecutionContext {
   /** 调用 script.js 函数（兼容迁移期） */
   callFunc: (name: string, ...args: unknown[]) => unknown
 }
+
+/**
+ * Action 默认行为控制器
+ *
+ * 与容器/字段事件的控制对象保持同构：
+ * - `cancel = false` → 允许组件默认行为继续执行
+ * - `cancel = true`  → 阻止组件默认行为
+ */
+export type ActionExecutionControl = DefaultBehaviorControl
 
 /** 最小化路由接口，避免直接依赖 vue-router */
 export interface RouterLike {

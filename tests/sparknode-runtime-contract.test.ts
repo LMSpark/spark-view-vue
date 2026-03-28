@@ -4,6 +4,7 @@ import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
+import { getDockedChildren } from '../packages/spark-component/src/core/types'
 
 describe('SparkNode runtime contract', () => {
   function createTestPlugin() {
@@ -61,5 +62,31 @@ describe('SparkNode runtime contract', () => {
     })
 
     expect(wrapper.find('.sparknode-runtime-child').exists()).toBe(true)
+  })
+
+  it('classifies dock by direct children only and keeps deeper nodes inside first-level subtree', () => {
+    const children: SparkNode[] = [
+      {
+        type: 'el-card',
+        dock: 'editor',
+        children: [
+          { type: 'r-form' },
+          { type: 'builtin-action', dock: 'toolbar' },
+        ],
+      },
+      { type: 'builtin-action', dock: 'toolbar' },
+      { type: 'r-tree-node-summary' },
+    ]
+
+    const toolbar = getDockedChildren(children, 'toolbar')
+    const editor = getDockedChildren(children, 'editor')
+    const content = getDockedChildren(children)
+
+    expect(toolbar).toHaveLength(1)
+    expect(toolbar[0]?.type).toBe('builtin-action')
+    expect(editor).toHaveLength(1)
+    expect(editor[0]?.type).toBe('el-card')
+    expect(content).toHaveLength(1)
+    expect(content[0]?.type).toBe('r-tree-node-summary')
   })
 })

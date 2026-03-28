@@ -123,6 +123,125 @@ describe('RendererList and RendererSection container integration', () => {
     })).toThrow('props.itemActions 已废除')
   })
 
+  it('should expose r-table-aligned list api for current row and row mutations', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'ListApiDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const, isPrimaryKey: true },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }],
+        },
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererList as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-card': ElCardStub,
+        },
+      },
+    })
+
+    const api = wrapper.vm.$.exposed as {
+      getRows(): Array<Record<string, unknown>>
+      getCurrentRow(): Record<string, unknown> | null
+      getItemCount(): number
+      setCurrentRowById(id: number | null): boolean
+      appendRow(row: Record<string, unknown>): void
+      updateRowById(id: number, patch: Record<string, unknown>): boolean
+      deleteRowById(id: number): boolean
+      addRow(row: Record<string, unknown>): Promise<unknown>
+      editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
+      removeRow(id: number): Promise<unknown>
+    }
+
+    expect(api.getItemCount()).toBe(2)
+    expect(api.getCurrentRow()).toBeNull()
+
+    expect(api.setCurrentRowById(2)).toBe(true)
+    expect(api.getCurrentRow()?.['id']).toBe(2)
+
+    api.appendRow({ id: 3, name: 'Carol' })
+    await nextTick()
+    expect(api.getItemCount()).toBe(3)
+
+    expect(api.updateRowById(3, { name: 'Caroline' })).toBe(true)
+    await nextTick()
+    expect(api.getRows().find(row => row['id'] === 3)?.['name']).toBe('Caroline')
+
+    expect(api.deleteRowById(1)).toBe(true)
+    await nextTick()
+    expect(api.getRows().map(row => row['id'])).toEqual([2, 3])
+
+    await api.addRow({ id: 4, name: 'Dave' })
+    await nextTick()
+    expect(api.getRows().map(row => row['id'])).toEqual([2, 3, 4])
+
+    await api.editRowById(4, { name: 'David' })
+    await nextTick()
+    expect(api.getRows().find(row => row['id'] === 4)?.['name']).toBe('David')
+
+    await api.removeRow(4)
+    await nextTick()
+    expect(api.getRows().map(row => row['id'])).toEqual([2, 3])
+  })
+
+  it('should run list item click business handler before default current row sync and allow cancel', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'ListClickDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const, isPrimaryKey: true },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }],
+        },
+      },
+    })
+    const view = ds.getView('Users', 'default')!
+    const observed: string[] = []
+
+    const wrapper = mountWithPageDataSet(RendererList as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+        onItemClick: async (_row: unknown, _index: number, _event: Event, control: { cancel: boolean }) => {
+          observed.push(`item:${String(view.currentRow?.['id'] ?? 'null')}:${String(control.cancel)}`)
+          control.cancel = true
+        },
+      },
+      slots: {
+        default: ({ row }: Record<string, unknown>) => h('div', {
+          class: 'biz-list-item',
+          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
+        }, 'biz-list-item'),
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+          'el-card': ElCardStub,
+        },
+      },
+    })
+
+    await wrapper.find('.renderer-list-item-shell').trigger('click')
+    await nextTick()
+
+    expect(observed).toEqual(['item:null:false'])
+    expect(view.currentRow).toBeNull()
+  })
+
   it('should allow section header slot and default slot scopes to control collapse state', async () => {
     const wrapper = mount(RendererSection as any, {
       props: {

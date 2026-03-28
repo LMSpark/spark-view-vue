@@ -188,6 +188,9 @@ export function nodeOrder(node: SparkNode): number {
  *
  * 容器组件渲染流程：`getDockedChildren(children, 'toolbar')` → 按 order 升序 → 循环渲染。
  * 排序算法稳定：相同 order 保持原始数组顺序。
+ * 只检查当前容器的**直属一级 children**；不会递归扫描二级及以下节点。
+ * 二级及以下节点保留在其一级父节点子树内部，随一级父节点进入对应 dock。
+ * 若一级子节点本身又是容器，则它可以在自己的 children 上再次执行 dock 分流。
  *
  * @param children SparkNode 子节点数组或字符串文本子节点
  * @param dock 目标停靠区域（默认 ''）
@@ -281,6 +284,8 @@ export function nodeInputProps(node: SparkNode): Record<string, unknown> {
 export interface DockDescriptor {
   /** 自定义 CSS 类名 */
   class?: string
+  /** 区域宽度/基准宽度（自定义 dock 与侧向 dock 可复用） */
+  width?: string | number
 }
 
 /**

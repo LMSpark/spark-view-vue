@@ -99,7 +99,8 @@
                     },
                     {
                         "name": "parentId",
-                        "type": "string"
+                        "type": "string",
+                        "allowDBNull": true
                     },
                     {
                         "name": "title",
@@ -107,11 +108,13 @@
                     },
                     {
                         "name": "description",
-                        "type": "string"
+                        "type": "string",
+                        "allowDBNull": true
                     },
                     {
                         "name": "icon",
-                        "type": "string"
+                        "type": "string",
+                        "allowDBNull": true
                     },
                     {
                         "name": "nodeKind",
@@ -119,15 +122,18 @@
                     },
                     {
                         "name": "path",
-                        "type": "string"
+                        "type": "string",
+                        "allowDBNull": true
                     },
                     {
                         "name": "linkTarget",
-                        "type": "string"
+                        "type": "string",
+                        "allowDBNull": true
                     },
                     {
                         "name": "childPlacement",
-                        "type": "string"
+                        "type": "string",
+                        "allowDBNull": true
                     },
                     {
                         "name": "sortOrder",
@@ -135,7 +141,8 @@
                     },
                     {
                         "name": "dividerAfter",
-                        "type": "boolean"
+                        "type": "boolean",
+                        "allowDBNull": true
                     },
                     {
                         "name": "hidden",
@@ -147,12 +154,8 @@
                     },
                     {
                         "name": "refId",
-                        "type": "string"
-                    },
-                    {
-                        "name": "editorProfileKey",
                         "type": "string",
-                        "computeExpression": "if (nodeKind === 'system-directory' || nodeKind === 'module') return 'container'; if (nodeKind === 'system-page' || nodeKind === 'page' || nodeKind === 'sub-page') return 'page'; if (nodeKind === 'link') return 'link'; if (nodeKind === 'ref') return 'ref'; if (nodeKind === 'system-action') return 'action'; return 'page';"
+                        "allowDBNull": true
                     }
                 ],
                 "api": {

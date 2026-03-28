@@ -15,10 +15,6 @@ function getTreeApi() {
 	return $components?.getApi('treeEditor') || null
 }
 
-function getNodeEditorApi() {
-	return $components?.getApi('nodeEditorForm') || null
-}
-
 function waitForApi(getter, onReady, onTimeout) {
 	var retries = 30
 	var count = 0
@@ -307,14 +303,6 @@ function getCurrentNode() {
 	return getTreeView()?.currentRow || null
 }
 
-function slugifyTitle(title) {
-	return String(title || '')
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
-		.replace(/^-+|-+$/g, '')
-}
-
 async function reloadTreeFromServer() {
 	var view = getTreeView()
 	if (!view) return
@@ -382,154 +370,6 @@ async function focusCurrentNode() {
 	}
 	await treeApi.expandToNode(row.id)
 	pushActionLog('定位节点', String(row.title || row.id), 'success', '已展开到当前节点')
-}
-
-function showCurrentNodeInfo() {
-	var row = getCurrentNode()
-	if (!row) {
-		if ($page) $page.showMessage('请先选中一个节点', 'warning')
-		return
-	}
-	if ($page) {
-		$page.showMessage('当前节点 ' + String(row.title || '-') + ' | 类型 ' + String(row.nodeKind || '-') + ' | 路径 ' + String(row.path || '-'), 'info')
-	}
-}
-
-async function handleAddRootNode() {
-	var view = getTreeView()
-	if (!view) return
-	var title = await $page.showPrompt('请输入根节点标题', '新增根节点', { placeholder: '例如：新模块 / 新页面' })
-	if (title === null) return
-
-	var nodeTitle = String(title).trim()
-	if (!nodeTitle) return
-
-	var result = await view.addRow({
-		title: nodeTitle,
-		parentId: null,
-		nodeKind: 'module',
-		description: '通过 tree-demo 新增的根节点',
-		icon: 'Menu',
-		path: '/demo/' + slugifyTitle(nodeTitle),
-		linkTarget: 'self',
-		childPlacement: 'flat',
-		sortOrder: 100,
-		dividerAfter: false,
-		hidden: false,
-		disabled: false,
-		refId: '',
-	})
-	ensureCrudSuccess(result, '根节点新增失败')
-
-	pushActionLog('新增根节点', nodeTitle, 'success', '根节点已提交到数据视图')
-	if ($page) $page.showMessage('根节点已新增', 'success')
-}
-
-async function handleAddChildNode(row) {
-	var view = getTreeView()
-	var parentRow = row || getCurrentNode()
-	if (!view || !parentRow || parentRow.id == null) {
-		if ($page) $page.showMessage('请先选中父节点', 'warning')
-		return
-	}
-
-	var title = await $page.showPrompt('请输入子节点标题', '新增子节点', { placeholder: '例如：报表页面 / 详情页' })
-	if (title === null) return
-
-	var nodeTitle = String(title).trim()
-	if (!nodeTitle) return
-
-	var result = await view.addRow({
-		title: nodeTitle,
-		parentId: parentRow.id,
-		nodeKind: 'page',
-		description: '通过 tree-demo 新增的子节点',
-		icon: 'Document',
-		path: String(parentRow.path || '/demo') + '/' + slugifyTitle(nodeTitle),
-		linkTarget: 'self',
-		childPlacement: 'flat',
-		sortOrder: 100,
-		dividerAfter: false,
-		hidden: false,
-		disabled: false,
-		refId: '',
-	})
-	ensureCrudSuccess(result, '子节点新增失败')
-
-	pushActionLog('新增子节点', String(parentRow.title || parentRow.id), 'success', '子节点 ' + nodeTitle + ' 已提交')
-	if ($page) $page.showMessage('子节点已新增', 'success')
-}
-
-async function handleEditTreeNode(row) {
-	var view = getTreeView()
-	var currentRow = row || getCurrentNode()
-	if (!view || !currentRow || currentRow.id == null) {
-		if ($page) $page.showMessage('请先选中一个节点', 'warning')
-		return
-	}
-
-	var title = await $page.showPrompt('请输入新的节点标题', '修改节点标题', {
-		defaultValue: String(currentRow.title || ''),
-		placeholder: '请输入节点标题',
-	})
-	if (title === null) return
-
-	var nextTitle = String(title).trim()
-	if (!nextTitle) return
-
-	var result = await view.editRowById(currentRow.id, { title: nextTitle })
-	ensureCrudSuccess(result, '节点标题更新失败')
-	pushActionLog('修改节点标题', String(currentRow.id), 'success', '节点标题更新为 ' + nextTitle)
-	if ($page) $page.showMessage('节点标题已更新', 'success')
-}
-
-async function handleDeleteTreeNode(row) {
-	var view = getTreeView()
-	var currentRow = row || getCurrentNode()
-	if (!view || !currentRow || currentRow.id == null) {
-		if ($page) $page.showMessage('请先选中一个节点', 'warning')
-		return
-	}
-
-	var ok = await $page.showConfirm('确认删除节点“' + String(currentRow.title || currentRow.id) + '”吗？', '删除节点', { type: 'warning' })
-	if (!ok) return
-
-	var result = await view.removeRow(currentRow.id)
-	ensureCrudSuccess(result, '节点删除失败')
-	pushActionLog('删除节点', String(currentRow.title || currentRow.id), 'success', '节点已删除')
-	if ($page) $page.showMessage('节点已删除', 'success')
-}
-
-async function saveCurrentNode() {
-	var formApi = getNodeEditorApi()
-	var view = getTreeView()
-	var currentRow = getCurrentNode()
-	if (!view || !currentRow || currentRow.id == null) {
-		if ($page) $page.showMessage('请先选中一个节点', 'warning')
-		return
-	}
-
-	if (formApi && formApi.validate) {
-		var valid = await formApi.validate()
-		if (!valid) {
-			if ($page) $page.showMessage('请先修正表单校验错误', 'warning')
-			return
-		}
-	}
-
-	var payloadSource = formApi && formApi.getFormData ? formApi.getFormData() : currentRow
-	var payload = cloneJson(payloadSource)
-	var result = await view.editRowById(currentRow.id, payload)
-	ensureCrudSuccess(result, '当前节点保存失败')
-	pushActionLog('保存当前节点', String(payload.title || currentRow.id), 'success', '表单字段已提交到数据视图')
-	if ($page) $page.showMessage('当前节点已保存', 'success')
-}
-
-function clearActionLogs() {
-	var logView = getView('ActionLogs')
-	if (!logView) return
-	logView.replaceRows([])
-	pushActionLog('清空日志', 'ActionLogs', 'success', '日志已重置')
 }
 
 function __init__() {

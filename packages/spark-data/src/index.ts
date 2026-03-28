@@ -59,6 +59,9 @@ export type {
   SortDirection,
   SortField,
   TreeConfig,
+  TreePath,
+  NestedTreeNode,
+  NestedTreeSearchResult,
   AggregateType,
   AggregateColumnConfig,
 

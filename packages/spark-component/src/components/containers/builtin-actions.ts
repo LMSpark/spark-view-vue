@@ -33,6 +33,8 @@ const BUILTIN_ACTION_META = {
   'append-row': { label: '新增', buttonType: 'primary' },
   'prompt-append': { label: '新增', buttonType: 'primary' },
   'prompt-edit': { label: '编辑', buttonType: 'success' },
+  'submit-current-form': { label: '保存当前', buttonType: 'success' },
+  'clear-rows': { label: '清空', buttonType: 'danger', buttonPlain: true },
   'move-row': { label: '移动', buttonType: 'warning', buttonPlain: true },
   'move-current': { label: '移动当前', buttonType: 'warning', buttonPlain: true },
   'refresh': { label: '刷新' },
@@ -61,6 +63,11 @@ interface BuiltinActionContext {
   getPageService: () => IPageServiceCapability | null | undefined
   getLogger: () => LoggerApi
   hasRemoteListApi: (view: DataView) => boolean
+  getFormApi?: () => {
+    getCurrentRow(): IDataRow | null
+    getFormData(): Record<string, unknown>
+    validate?(): Promise<boolean>
+  } | null | undefined
 }
 
 // ── 纯函数：值解析辅助 ───────────────────────────────────────────────────
@@ -373,6 +380,25 @@ function resolvePatch(propsMap: Record<string, unknown>): Partial<IDataRow> {
   return resolved
 }
 
+function normalizeComparable(value: unknown): unknown {
+  if (value === '') return null
+  return value ?? null
+}
+
+function matchesRowCondition(row: IDataRow | null | undefined, condition: Record<string, unknown> | null): boolean {
+  if (!row || !condition) return false
+  for (const [field, expected] of Object.entries(condition)) {
+    if (normalizeComparable(row[field]) !== normalizeComparable(expected)) {
+      return false
+    }
+  }
+  return true
+}
+
+function resolveBuiltinTargetRow(view: DataView, scope: BuiltinActionScope | undefined): IDataRow | null {
+  return scope?.row ?? view.currentRow ?? null
+}
+
 function resolveRowLabel(row: IDataRow, idField: string): string {
   const candidates = ['orderNo', 'name', 'title', idField]
   for (const key of candidates) {
@@ -381,6 +407,28 @@ function resolveRowLabel(row: IDataRow, idField: string): string {
     if (typeof value === 'number') return String(value)
   }
   return '当前记录'
+}
+
+function resolveCreatedRow(result: IDataRow | CrudResult<IDataRow>): IDataRow | null {
+  if (isCrudResult(result)) {
+    return result.success && result.data ? result.data : null
+  }
+  return result
+}
+
+function setCurrentRowAfterCreate(
+  view: DataView,
+  createdRow: IDataRow | null,
+  idField: string,
+  propsMap: Record<string, unknown>,
+): void {
+  if (readBoolean(propsMap['setCurrentRowOnSuccess']) !== true || !createdRow) return
+  const id = resolveRowId(createdRow, idField)
+  if (id !== null) {
+    view.setCurrentRowById(id)
+    return
+  }
+  view.setCurrentRow(createdRow)
 }
 
 function formatRowMessage(row: IDataRow, propsMap: Record<string, unknown>): string {
@@ -425,11 +473,20 @@ export function isBuiltinActionDisabled(
   const actionName = getBuiltinActionName(action)
   if (!actionName || !view) return false
 
+  const disabledWhenRow = asRecord(propsMap['disabledWhenRow'])
+  if (matchesRowCondition(resolveBuiltinTargetRow(view, scope), disabledWhenRow)) {
+    return true
+  }
+
   switch (actionName) {
     case 'append-row':
     case 'prompt-append':
     case 'refresh':
       return false
+    case 'clear-rows':
+      return view.rows.length === 0
+    case 'submit-current-form':
+      return view.currentRow === null
     case 'move-row':
       return scope?.row === undefined
     case 'delete-row':
@@ -528,6 +585,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             notifyAction(propsMap, 'warning', getCrudErrorMessage(appendResult, resolveConfiguredText(propsMap, 'failureMessage', '新增失败')))
             return
           }
+          setCurrentRowAfterCreate(view, resolveCreatedRow(appendResult), idField, propsMap)
           notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
           return
         }
@@ -558,6 +616,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             notifyAction(propsMap, 'warning', getCrudErrorMessage(appendResult, resolveConfiguredText(propsMap, 'failureMessage', '新增失败')))
             return
           }
+          setCurrentRowAfterCreate(view, resolveCreatedRow(appendResult), idField, propsMap)
           notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
           return
         }
@@ -602,6 +661,48 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           )
           return
         }
+        case 'submit-current-form': {
+          const formApi = ctx.getFormApi?.()
+          if (!formApi) {
+            notifyAction(propsMap, 'warning', readString(propsMap['emptyMessage']) ?? '表单 API 未就绪')
+            return
+          }
+          const row = formApi.getCurrentRow() ?? view.currentRow
+          if (!row) {
+            notifyAction(propsMap, 'warning', '请先选择当前行')
+            return
+          }
+          const id = resolveRowId(row, idField)
+          if (id === null) {
+            notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
+            return
+          }
+          if (typeof formApi.validate === 'function') {
+            const valid = await formApi.validate()
+            if (!valid) {
+              notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'validateMessage', '请先修正表单校验错误'))
+              return
+            }
+          }
+          const draft = asRecord(formApi.getFormData())
+          if (!draft) {
+            notifyAction(propsMap, 'warning', '当前表单数据不可用')
+            return
+          }
+          const patchResult = await view.editRowById(id, draft)
+          if (isCrudSuccess(patchResult)) {
+            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '保存成功'))
+            return
+          }
+          notifyAction(
+            propsMap,
+            'warning',
+            isCrudResult(patchResult)
+              ? getCrudErrorMessage(patchResult, resolveConfiguredText(propsMap, 'failureMessage', '保存失败'))
+              : resolveConfiguredText(propsMap, 'failureMessage', '保存失败')
+          )
+          return
+        }
         case 'refresh': {
           if (!ctx.hasRemoteListApi(view)) {
             notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'emptyMessage', '当前数据为内联数据，无需刷新'))
@@ -609,6 +710,13 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           }
           await view.refresh()
           notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '刷新完成'))
+          return
+        }
+        case 'clear-rows': {
+          const allowed = await confirmAction(propsMap, '确认清空当前列表吗？', '清空确认')
+          if (!allowed) return
+          view.replaceRows([])
+          notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '已清空当前列表'))
           return
         }
         case 'move-row': {

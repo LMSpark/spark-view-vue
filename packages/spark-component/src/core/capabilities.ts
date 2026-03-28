@@ -26,11 +26,16 @@
  */
 
 import { defineCapability } from '@spark-view/spark-utils'
-import type { CrudResult, IDataSet, IDataSource, IDataRow } from '@spark-view/spark-data'
+import type { CrudResult, IDataSet, IDataSource, IDataRow, NestedTreeNode, NestedTreeSearchResult } from '@spark-view/spark-data'
 import type { IModuleContext } from '@spark-view/spark-utils'
 
 /** 字段渲染上下文类型 */
 export type FieldContext = 'table' | 'form' | 'detail' | 'tree' | 'list'
+
+export interface RendererTreePath {
+  pathIds: Array<string | number>
+  pathNodes?: IDataRow[]
+}
 
 /**
  * r-table 对外暴露的稳定 API（包装层）
@@ -45,6 +50,13 @@ export interface RendererTableApi {
   getCurrentRow(): IDataRow | null
   getSelectedRows(): IDataRow[]
   refresh(): Promise<void>
+  query(): Promise<void>
+  loadTreeNested(rootId?: string | number | null, limit?: number, depthLimit?: number): Promise<CrudResult<NestedTreeNode[]> | null>
+  loadTreeChildren(parentId: string | number | null, limit?: number): Promise<IDataRow[]>
+  loadTreePath(id: string | number): Promise<RendererTreePath | null>
+  expandToNode(key: string | number): Promise<void>
+  moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<IDataRow | null>
+  searchTreeNested(keyword: string, limit?: number): Promise<NestedTreeSearchResult[]>
   addRow(row: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow> | null>
   editRowById(id: string | number, patch: Partial<IDataRow>): Promise<boolean | CrudResult<IDataRow>>
   removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
@@ -78,10 +90,30 @@ export interface RendererTableApi {
 export interface RendererFormApi {
   /** 获取底层 DataView（IDataSource） */
   getDataSource(): IDataSource | null
+  /** 获取当前行 */
+  getCurrentRow(): IDataRow | null
   /** 获取当前表单数据（reactive mirror of currentRow） */
   getFormData(): Record<string, unknown>
   /** 获取底层 el-form 实例（escape hatch） */
   getNativeForm(): unknown
+  /** 刷新数据（API 数据源） */
+  refresh(): Promise<void>
+  /** 通过底层 DataView 新增行，遵循 autoCommit / dirty-tracking 语义 */
+  addRow(row: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow> | null>
+  /** 通过底层 DataView 编辑行，遵循 autoCommit / dirty-tracking 语义 */
+  editRowById(id: string | number, patch: Partial<IDataRow>): Promise<boolean | CrudResult<IDataRow>>
+  /** 通过底层 DataView 删除行，遵循 autoCommit / dirty-tracking 语义 */
+  removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
+  /** 本地追加一行 */
+  appendRow(row: IDataRow): void
+  /** 本地按主键更新一行 */
+  updateRowById(id: string | number, patch: Partial<IDataRow>): boolean
+  /** 本地按主键删除一行 */
+  deleteRowById(id: string | number): boolean
+  /** 设置当前行 */
+  setCurrentRow(row: IDataRow | null): void
+  /** 按主键设置当前行 */
+  setCurrentRowById(id: string | number | null): boolean
   /** 触发表单校验，返回是否通过 */
   validate(): Promise<boolean>
   /** 重置表单到初始值 */
@@ -102,6 +134,24 @@ export interface RendererFormApi {
 export interface RendererDetailApi {
   /** 获取底层 DataView（IDataSource） */
   getDataSource(): IDataSource | null
+  /** 刷新数据（API 数据源） */
+  refresh(): Promise<void>
+  /** 通过底层 DataView 新增行，遵循 autoCommit / dirty-tracking 语义 */
+  addRow(row: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow> | null>
+  /** 通过底层 DataView 编辑行，遵循 autoCommit / dirty-tracking 语义 */
+  editRowById(id: string | number, patch: Partial<IDataRow>): Promise<boolean | CrudResult<IDataRow>>
+  /** 通过底层 DataView 删除行，遵循 autoCommit / dirty-tracking 语义 */
+  removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
+  /** 本地追加一行 */
+  appendRow(row: IDataRow): void
+  /** 本地按主键更新一行 */
+  updateRowById(id: string | number, patch: Partial<IDataRow>): boolean
+  /** 本地按主键删除一行 */
+  deleteRowById(id: string | number): boolean
+  /** 设置当前行 */
+  setCurrentRow(row: IDataRow | null): void
+  /** 按主键设置当前行 */
+  setCurrentRowById(id: string | number | null): boolean
   /** 获取当前详情数据 */
   getDetailData(): Record<string, unknown>
   /** 获取当前行数据（便捷访问） */
@@ -171,10 +221,28 @@ export interface RendererListApi {
   getDataSource(): IDataSource | null
   /** 获取当前列表行数据 */
   getRows(): IDataRow[]
+  /** 获取当前行 */
+  getCurrentRow(): IDataRow | null
   /** 获取列表项数量 */
   getItemCount(): number
   /** 刷新列表数据（API 数据源） */
   refresh(): Promise<void>
+  /** 通过底层 DataView 新增行，遵循 autoCommit / dirty-tracking 语义 */
+  addRow(row: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow> | null>
+  /** 通过底层 DataView 编辑行，遵循 autoCommit / dirty-tracking 语义 */
+  editRowById(id: string | number, patch: Partial<IDataRow>): Promise<boolean | CrudResult<IDataRow>>
+  /** 通过底层 DataView 删除行，遵循 autoCommit / dirty-tracking 语义 */
+  removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
+  /** 本地追加一行 */
+  appendRow(row: IDataRow): void
+  /** 本地按主键更新一行 */
+  updateRowById(id: string | number, patch: Partial<IDataRow>): boolean
+  /** 本地按主键删除一行 */
+  deleteRowById(id: string | number): boolean
+  /** 设置当前行 */
+  setCurrentRow(row: IDataRow | null): void
+  /** 按主键设置当前行 */
+  setCurrentRowById(id: string | number | null): boolean
 }
 
 /**

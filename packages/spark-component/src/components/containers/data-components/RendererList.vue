@@ -27,7 +27,10 @@
             class="renderer-list-cell"
             :style="itemGridStyle"
           >
-            <div :class="['renderer-list-item-shell', `renderer-list-item-shell--${itemActionsPositionValue}`]">
+            <div
+              :class="['renderer-list-item-shell', `renderer-list-item-shell--${itemActionsPositionValue}`]"
+              @click="handleItemClick(row, index, $event)"
+            >
               <div v-if="showItemActionsLeftValue" :class="['renderer-list-item-actions', itemActionsClassValue]">
                 <SparkComponentRenderer
                   v-for="(action, actionIndex) in getScopedItemActions({ row, index })"
@@ -96,6 +99,14 @@ import { useContainerSlots } from '../layout/useContainerSlots'
 import { useContainerToolbar } from '../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../layout/useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../slotScopeFactories'
+import {
+  createCancelledCrudResult,
+  type AddRowHandler,
+  type EditRowHandler,
+  type RemoveRowHandler,
+  type RowClickHandler,
+  useEventDefaults,
+} from '../support/index.js'
 
 interface Props extends SparkNode {
   /** 数据绑定键 */
@@ -132,6 +143,10 @@ interface Props extends SparkNode {
   itemColSpan?: number
   /** 项跨行数 */
   itemRowSpan?: number
+  onItemClick?: RowClickHandler
+  onAddRow?: AddRowHandler
+  onEditRow?: EditRowHandler
+  onRemoveRow?: RemoveRowHandler
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -243,12 +258,26 @@ const {
 
 // ── r-list 包装 API ──────────────────────────────────────────────────────
 
+const { dispatch } = useEventDefaults({
+  'item-click': {
+    systemDefault: (row: unknown) => {
+      resolvedView.value?.setCurrentRow(row as IDataRow)
+    },
+  },
+  'add-row': {},
+  'edit-row': {},
+  'remove-row': {},
+}, props as Readonly<Record<string, unknown>>)
+
 const listApi: RendererListApi = {
   getDataSource() {
     return resolvedView.value ?? null
   },
   getRows() {
     return listRows.value
+  },
+  getCurrentRow() {
+    return resolvedView.value?.currentRow ?? null
   },
   getItemCount() {
     return listRows.value.length
@@ -257,6 +286,42 @@ const listApi: RendererListApi = {
     const view = resolvedView.value
     if (!view?.dataTable?.api?.list) return
     await view.refresh()
+  },
+  async addRow(row) {
+    const view = resolvedView.value
+    if (!view) return null
+    const { cancel } = await dispatch('add-row', row)
+    if (cancel) return createCancelledCrudResult('addRow cancelled by business handler')
+    return await view.addRow(row)
+  },
+  async editRowById(id, patch) {
+    const view = resolvedView.value
+    if (!view) return false
+    const { cancel } = await dispatch('edit-row', id, patch)
+    if (cancel) return createCancelledCrudResult('editRowById cancelled by business handler')
+    return await view.editRowById(id, patch)
+  },
+  async removeRow(id) {
+    const view = resolvedView.value
+    if (!view) return false
+    const { cancel } = await dispatch('remove-row', id)
+    if (cancel) return createCancelledCrudResult('removeRow cancelled by business handler')
+    return await view.removeRow(id)
+  },
+  appendRow(row) {
+    resolvedView.value?.appendRow(row)
+  },
+  updateRowById(id, patch) {
+    return resolvedView.value?.updateRowById(id, patch) ?? false
+  },
+  deleteRowById(id) {
+    return resolvedView.value?.deleteRowById(id) ?? false
+  },
+  setCurrentRow(row) {
+    resolvedView.value?.setCurrentRow(row ?? null)
+  },
+  setCurrentRowById(id) {
+    return resolvedView.value?.setCurrentRowById(id ?? null) ?? false
   },
 }
 
@@ -326,6 +391,10 @@ function getItemActionSlotScope(row: IDataRow, index: number) {
     row,
     index,
   })
+}
+
+async function handleItemClick(row: IDataRow, index: number, event: Event) {
+  await dispatch('item-click', row, index, event)
 }
 
 function getDefaultSlotScope() {

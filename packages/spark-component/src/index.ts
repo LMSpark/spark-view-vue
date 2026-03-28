@@ -38,6 +38,7 @@ export type {
   ComponentRegistry,
   LoggerApi
 } from './core/index.js'
+export type { DefaultBehaviorControl } from './internal/defaultBehaviorControl.js'
 
 // ── 6. DI Keys + SparkNode 结构常量 ──
 export {

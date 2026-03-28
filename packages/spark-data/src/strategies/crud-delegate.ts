@@ -191,7 +191,12 @@ export class CrudDelegate {
     if (!this.fireBefore('update', { id, ...data })) return this.cancelledResult('update')
 
     const cleanData = this.stripComputed(data)
-    const validationResult = this.validateRow(cleanData as IDataRow)
+    const originalRow = this.host.rows.find(row => this.host.getPkKey(row) === id)
+    const requestData = originalRow
+      ? this.stripComputed({ ...originalRow, ...cleanData })
+      : cleanData
+    const validationTarget = requestData
+    const validationResult = this.validateRow(validationTarget as IDataRow)
     if (validationResult && !validationResult.valid) {
       return this.validationFailedResult(validationResult.errors)
     }
@@ -199,7 +204,7 @@ export class CrudDelegate {
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
       const pk = serverPk ?? { [this.host.primaryKey]: id }
-      const result = await svc.update<IDataRow>(pk, cleanData, this.getCrudConfig())
+      const result = await svc.update<IDataRow>(pk, requestData, this.getCrudConfig())
       if (result.success && result.data) {
         this.host.updateRowById(id, result.data)
       }

@@ -12,7 +12,7 @@ import type {
   CrudResult, CrudOperationConfig,
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult, NestedTreeNode,
-  TreeConfig, AggregateColumnConfig,
+  TreeConfig, AggregateColumnConfig, CrudApi,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -298,6 +298,17 @@ export class DataView implements IDataSource {
   /** @internal 从数据对象中移除计算列字段，返回浅拷贝；无计算列时返回原对象。 */
   stripComputedColumns(data: Partial<IDataRow>): Partial<IDataRow> {
     return this._computedDelegate.strip(data)
+  }
+
+  private getCrudApiConfig(): CrudApi | undefined {
+    return this._dataTable?.api
+  }
+
+  private shouldDirectCommitCrud(operation: 'create' | 'update' | 'delete'): boolean {
+    if (this.autoCommit) return true
+    const api = this.getCrudApiConfig()
+    if (!api) return false
+    return api[operation] !== undefined
   }
 
   /** @internal DataSet 关系规范化完成后由 DataTable 调用——重编译计算列（含聚合 resolver）并重算 */
@@ -924,7 +935,7 @@ export class DataView implements IDataSource {
   async addRow(data: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow>> {
     this.checkDestroyed()
     const row = this._primaryKeyDelegate.ensurePrimaryKey(data)
-    if (this.autoCommit) {
+    if (this.shouldDirectCommitCrud('create')) {
       return this.crudDelegate.createRecord(row)
     }
     this.appendRow(row)
@@ -941,7 +952,7 @@ export class DataView implements IDataSource {
    */
   async removeRow(id: string | number): Promise<boolean | CrudResult<boolean>> {
     this.checkDestroyed()
-    if (this.autoCommit) {
+    if (this.shouldDirectCommitCrud('delete')) {
       return this.crudDelegate.deleteRecord(id)
     }
     const snapshot = this.rows.find(r => this.getPkKey(r) === id)
@@ -963,7 +974,7 @@ export class DataView implements IDataSource {
     data: Partial<IDataRow>,
   ): Promise<boolean | CrudResult<IDataRow>> {
     this.checkDestroyed()
-    if (this.autoCommit) {
+    if (this.shouldDirectCommitCrud('update')) {
       return this.crudDelegate.updateRecord(id, data)
     }
     // 先获取编辑前快照（updateRowById 会替换行对象，必须在之前取）

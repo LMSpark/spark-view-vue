@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  containerComposables,
   containerDataComponents,
   containerNonDataComponents,
   fieldDataComponents,
@@ -141,6 +142,7 @@ describe('spark-component export structure', () => {
           "useContainerToolbar",
         ],
         "fieldDataComponentComposables": [
+          "useControlledFieldChange",
           "useFieldActionMode",
           "useFieldContext",
           "useFieldOptions",
@@ -170,5 +172,14 @@ describe('spark-component export structure', () => {
     expect(containerNonDataUiComposables).toBe(containerNonDataComponentComposables)
     expect(fieldDataUiComposables).toBe(fieldDataComponentComposables)
     expect(fieldNonDataUiComposables).toBe(fieldNonDataComponentComposables)
+  })
+
+  it('exposes event support utilities from containerComposables', () => {
+    expect(Object.keys(containerComposables)).toEqual(expect.arrayContaining([
+      'useEventDefaults',
+      'runControlledInteraction',
+      'createInteractionControl',
+      'createCancelledCrudResult',
+    ]))
   })
 })
