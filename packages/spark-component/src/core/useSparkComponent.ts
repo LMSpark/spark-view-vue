@@ -12,7 +12,7 @@ import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, L
 import type { SparkCapabilityContext, SparkNode, ComponentRegistry } from './types.js'
 import { SPARK_REGISTRY_KEY, nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal/capability-context.js'
-import { CONTEXT_DATA, PAGE_COMPONENT_REGISTRY } from './capabilities.js'
+import { DATA_ROW, PAGE_COMPONENT_REGISTRY } from './capabilities.js'
 import type { PageComponentRegistry } from './capabilities.js'
 
 /* -------------------------------------------------------------------------- */
@@ -304,12 +304,12 @@ export function useSparkComponent(
 
   function sparkProvide(name: string | symbol, implementation?: unknown): void {
     rawSparkProvide(context, name, implementation)
-    // 当 LOGGER 或 APP_SERVICES 被更新时，使 logger 缓存失效
     const key = normalizeKey(name)
+    // 当 LOGGER 或 APP_SERVICES 被更新时，使 logger 缓存失效
     if (key === LOGGER || key === APP_SERVICES) {
       _loggerCache = null
     }
-    if (import.meta.env.DEV && key !== CONTEXT_DATA) {
+    if (import.meta.env.DEV && key !== DATA_ROW) {
       logger.debug(`[spark] provided: ${String(name)}`)
     }
   }
@@ -323,11 +323,12 @@ export function useSparkComponent(
   // ── 事件订阅追踪（防止内存泄漏） ──
 
   const _eventSubscriptions: Array<{ emitter: IEventEmitter; event: string; handler: (...args: unknown[]) => void }> = []
+  const consumeCapability = createSparkConsume(parentContext, context)
 
   // ── 能力消费 ──
 
   function sparkConsume(name: string | symbol): unknown {
-    const impl = createSparkConsume(parentContext, context)(name)
+    const impl = consumeCapability(name)
     if (impl !== null) return impl
     if (import.meta.env.DEV) {
       logger.debug(`[spark] capability not found (late-binding ok): ${String(name)}`)

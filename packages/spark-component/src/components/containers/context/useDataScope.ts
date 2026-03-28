@@ -3,7 +3,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import { toValue } from 'vue'
 import { useSparkComponent } from '../../internal'
 import type { SparkNode, UseSparkComponentReturn } from '../../internal'
-import { CONTEXT_DATA } from '../../internal'
+import { DATA_ROW } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 
 interface UseDataScopeOptions {
@@ -27,7 +27,7 @@ export function useDataScope(options: UseDataScopeOptions): UseDataScopeReturn {
 
   watch(
     () => toValue(data),
-    (d) => { sparkProvide(CONTEXT_DATA, d) },
+    (d) => { sparkProvide(DATA_ROW, d) },
     { immediate: true },
   )
 

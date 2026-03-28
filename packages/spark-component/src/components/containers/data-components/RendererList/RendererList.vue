@@ -89,7 +89,7 @@ import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
 import { getDockedChildren, nodeId, type SparkNode } from '../../../internal'
 import type { ContainerDocks } from '../../../../core/types'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE, FIELD_CONTEXT } from '../../../internal'
+import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
 import RendererListItemScope from '../RendererListItemScope.vue'
 import { useContainerActions } from '../../actions/useContainerActions'
@@ -208,8 +208,6 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererList',
 })
-
-sparkProvide(FIELD_CONTEXT, 'list')
 
 const listRows = computed<IDataRow[]>(() => resolvedView.value?.rows ?? [])
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))

@@ -8,12 +8,16 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
+import { Spark, PAGE_COMPONENT_REGISTRY } from '@spark-view/spark-component'
 import FieldContextRenderer from '../packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue'
 import { useFieldContext } from '../packages/spark-component/src/components/fields/context/useFieldContext'
+import { useResolvedFieldContext } from '../packages/spark-component/src/components/fields/context/useResolvedFieldContext'
+import { useSparkComponent } from '../packages/spark-component/src/core/useSparkComponent'
+import type { SparkNode } from '../packages/spark-component/src/core/types'
+import { useDataScope } from '../packages/spark-component/src/components/containers/context/useDataScope'
+import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import type { IDataRow } from '@spark-view/spark-data'
-import { SPARK_REGISTRY_KEY, Spark, useSparkComponent, FIELD_CONTEXT } from '@spark-view/spark-component'
-
-const { registry, rootContext } = Spark.createSystem()
+import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 // el-table-column stub：将所有 props/attrs 输出到 data-* 属性，便于断言
 const ElTableColumnStub = defineComponent({
@@ -51,31 +55,25 @@ const ElFormItemStub = defineComponent({
 const noop = () => false
 
 function mountFCR(overrides: Record<string, unknown> = {}) {
-  const Provider = defineComponent({
-    setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-table' }, { parentContext: rootContext })
-      sparkProvide(FIELD_CONTEXT, 'table')
-      return () => h(FieldContextRenderer, {
-        type: 'r-column-group',
-        displayLabel: 'ID',
-        fieldName: 'id',
-        width: 80,
-        mergedChildren: [],
-        isCurrentFieldHidden: false,
-        currentDisplayValue: '1',
-        isTableCellHidden: noop as (row: IDataRow) => boolean,
-        getTableCellDisplayValue: ((row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? '')) as (row: IDataRow) => string,
-        validationRules: [],
-        ...overrides,
-      })
+  return mountFieldInContext({
+    component: FieldContextRenderer,
+    type: 'r-column-group',
+    model: {},
+    fieldName: 'id',
+    parentType: 'r-table',
+    componentProps: {
+      displayLabel: 'ID',
+      fieldName: 'id',
+      width: 80,
+      mergedChildren: [],
+      isCurrentFieldHidden: false,
+      currentDisplayValue: '1',
+      isTableCellHidden: noop as (row: IDataRow) => boolean,
+      getTableCellDisplayValue: ((row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? '')) as (row: IDataRow) => string,
+      validationRules: [],
+      ...overrides,
     },
-  })
-
-  return mount(Provider, {
     global: {
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      },
       stubs: {
         'el-form-item': ElFormItemStub,
         'el-table-column': ElTableColumnStub,
@@ -169,24 +167,18 @@ describe('useFieldContext attrs 集成传递', () => {
   })
 
   function mountFieldLike(fieldAttrs: Record<string, unknown>) {
-    const Provider = defineComponent({
-      setup() {
-        const { sparkProvide } = useSparkComponent({ type: 'r-table' }, { parentContext: rootContext })
-        sparkProvide(FIELD_CONTEXT, 'table')
-        return () => h(FieldLikeStub, {
-          field: 'id',
-          label: 'ID',
-          width: 80,
-          ...fieldAttrs,
-        })
+    return mountFieldInContext({
+      component: FieldLikeStub,
+      type: 'r-text',
+      model: {},
+      fieldName: 'id',
+      parentType: 'r-table',
+      componentProps: {
+        label: 'ID',
+        width: 80,
+        ...fieldAttrs,
       },
-    })
-
-    return mount(Provider, {
       global: {
-        provide: {
-          [SPARK_REGISTRY_KEY as symbol]: registry,
-        },
         stubs: {
           'el-form-item': ElFormItemStub,
           'el-table-column': ElTableColumnStub,
@@ -226,5 +218,105 @@ describe('useFieldContext attrs 集成传递', () => {
     const span = wrapper.find('span.field-table-value')
     expect(span.exists()).toBe(true)
     expect(span.classes()).toContain('demo-value-center')
+  })
+})
+
+describe('字段宿主解析会考虑中间层', () => {
+  const HostContextProbe = defineComponent({
+    name: 'HostContextProbe',
+    setup() {
+      const resolvedContext = useResolvedFieldContext()
+      return () => h('div', { 'data-host-context': resolvedContext.value })
+    },
+  })
+
+  function createIntermediateBridge(intermediateType: string, next: object = HostContextProbe) {
+    return defineComponent({
+      name: `IntermediateBridge_${intermediateType}`,
+      setup() {
+        useSparkComponent({ type: intermediateType } as SparkNode)
+        return () => h(next as never)
+      },
+    })
+  }
+
+  it('会跳过 dock 化插入的结构层，继续向上找到真实宿主', () => {
+    const DockBridge = createIntermediateBridge('r-dock-slot')
+
+    const wrapper = mountFieldInContext({
+      component: DockBridge,
+      type: 'r-dock-slot',
+      model: {},
+      fieldName: 'id',
+      parentType: 'r-table',
+    })
+
+    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('r-table')
+  })
+
+  it('会将字段作用域中间层映射为对应宿主语义', () => {
+    const FieldScopeBridge = createIntermediateBridge('r-field-scope')
+
+    const wrapper = mountFieldInContext({
+      component: FieldScopeBridge,
+      type: 'r-field-scope',
+      model: {},
+      fieldName: 'id',
+      parentType: 'r-table',
+    })
+
+    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('r-form')
+  })
+
+  it('会跨越多层中间组件解析到最近宿主', () => {
+    const DataScopeBridge = createIntermediateBridge('r-data-scope')
+    const ListItemBridge = createIntermediateBridge('r-list-item', DataScopeBridge)
+
+    const wrapper = mountFieldInContext({
+      component: ListItemBridge,
+      type: 'r-list-item',
+      model: {},
+      fieldName: 'id',
+      parentType: 'r-list',
+    })
+
+    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('r-list')
+  })
+
+  it('字段宿主解析不能污染页面注册表中的真实组件 type', () => {
+    const registry = createPageComponentRegistry()
+    const plugin = Spark.createPlugin({ registry: Spark.createRegistry() })
+
+    const ScopeComp = defineComponent({
+      props: {
+        id: String,
+      },
+      setup(props) {
+        useDataScope({
+          type: 'r-field-scope',
+          nodeConfig: {
+            type: 'r-field-scope',
+            ...(props.id !== undefined ? { id: props.id } : {}),
+          },
+          data: computed(() => ({ id: 1 })),
+        })
+
+        return () => h('div', { class: 'scope-comp' }, 'scope')
+      },
+    })
+
+    const RootComp = defineComponent({
+      setup() {
+        const result = useSparkComponent({ type: 'root-comp' } as SparkNode)
+        result.sparkProvide(PAGE_COMPONENT_REGISTRY, registry)
+        return () => h(ScopeComp, { id: 'filter-scope' })
+      },
+    })
+
+    mount(RootComp, {
+      global: { plugins: [plugin] },
+    })
+
+    expect(registry.getInstance('filter-scope')?.type).toBe('r-field-scope')
   })
 })

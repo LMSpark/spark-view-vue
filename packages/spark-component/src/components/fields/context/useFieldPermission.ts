@@ -3,8 +3,7 @@ import { createPermissionChecker, FieldVisibility } from '@spark-view/spark-data
 import type { DataColumn } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { useSparkConsume, DATA_SOURCE } from '../../internal'
-import { CONTEXT_DATA } from '../../internal'
+import { useSparkConsume, DATA_SOURCE, DATA_ROW } from '../../internal'
 import { columnToFormRules } from '../columnFormRules'
 import type { FormItemRule } from '../columnFormRules'
 import { useResolvedFieldContext } from './useResolvedFieldContext'
@@ -30,7 +29,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const fieldName = computed(() => props.field ?? '')
   const displayLabel = computed(() => props.label ?? fieldName.value)
   const context = useResolvedFieldContext()
-  const contextData = sparkConsume(CONTEXT_DATA)
+  const contextData = sparkConsume(DATA_ROW)
   const pageService = sparkConsume(PAGE_SERVICE)
   const dataSource = sparkConsume(DATA_SOURCE)
 
@@ -46,8 +45,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   })
 
   const currentRow = computed<IDataRow | null>(() => {
-    if (contextData === null || typeof contextData !== 'object') return null
-    return contextData as IDataRow
+    return contextData
   })
 
   const fieldValue = computed<TValue>(() => {

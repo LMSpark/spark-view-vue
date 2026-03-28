@@ -18,19 +18,17 @@
  * ── Renderer 容器 → 字段上下文链 ──
  *   容器组件（r-table / r-form / r-detail）
  *     通过 useSparkComponent 建立祖先 context.type 链
- *     sparkProvide(CONTEXT_DATA, formModel) ← 可写响应式数据对象
+ *     sparkProvide(DATA_ROW, formModel) ← 当前作用域行数据（可写镜像）
  *       ↓
  *   字段组件（r-text / r-number …）
- *     通过 useSparkComponent(parentContext.type) 解析渲染语义
- *     sparkConsume(CONTEXT_DATA) ?? {}
+ *     沿祖先 context.type 链向上查找最近的字段宿主容器语义
+ *     （dock / scope 等中间层保持真实 type，不改写自身；字段侧统一通过宿主解析规则跳过或映射这些中间层）
+ *     sparkConsume(DATA_ROW) ?? {}
  */
 
 import { defineCapability } from '@spark-view/spark-utils'
-import type { IDataSet, IDataSource } from '@spark-view/spark-data'
+import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
 import type { IModuleContext } from '@spark-view/spark-utils'
-
-/** 字段渲染上下文类型 */
-export type FieldContext = 'table' | 'form' | 'detail' | 'tree' | 'list'
 
 /** 页面内组件实例快照 */
 export interface PageComponentInstanceEntry {
@@ -68,6 +66,18 @@ export interface ModuleContextCapability {
   subscribe(handler: (next: IModuleContext | null, prev: IModuleContext | null) => void): () => void
 }
 
+/**
+ * 页面 CSS 作用域注入能力
+ *
+ * 由 SparkPageRenderer 在初始化 useCssScope 后 sparkProvide；
+ * 插件、子渲染器或需要动态注入 CSS 的组件可 sparkConsume 后按需追加样式。
+ * 注入的 CSS 会被 pageId scoping 自动处理（与静态 style.css 一致）。
+ */
+export interface PageCssScopeCapability {
+  /** 注入/追加 CSS 到当前页面作用域 */
+  inject(css: string): void
+}
+
 // 将能力键合并到 CapabilityTypeMap，消费方按字符串名称即可得到精确类型，
 // 无需 import 能力符号对象。
 declare module '@spark-view/spark-utils' {
@@ -75,15 +85,13 @@ declare module '@spark-view/spark-utils' {
     /** 页面级 DataSet（PageRenderer sparkProvide） */
     'spark:capability:page-dataset': IDataSet
     /** 组件级 DataView / IDataSource（容器组件 sparkProvide） */
-    'spark:capability:data-source':  IDataSource
-    /** 容器向字段组件提供可写的响应式数据对象 */
-    'app:context-data': Record<string, unknown>
+    'spark:capability:data-source': IDataSource
+    /** 当前作用域行数据（语义直接对应 IDataRow） */
+    'spark:capability:data-row': IDataRow
     /** 页面级组件注册中心（整页实例与组件 API） */
     'app:page-component-registry': PageComponentRegistry
     /** 模块上下文能力（页面级） */
     'app:module-context': ModuleContextCapability
-    /** 字段渲染上下文（容器组件 sparkProvide，字段组件 sparkConsume） */
-    'spark:capability:field-context': FieldContext
     /** 页面 CSS 作用域注入能力（由 SparkPageRenderer sparkProvide，四文件 style.css 收口） */
     'spark:capability:css-scope': PageCssScopeCapability
   }
@@ -106,18 +114,10 @@ export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-da
 export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
 
 /**
- * 字段渲染上下文能力键
- *
- * 由容器组件（r-table / r-form / r-detail / r-tree / r-list）sparkProvide，
- * 字段组件（r-text / r-number …）通过 sparkConsume 获取当前渲染语义。
+ * 当前作用域行数据能力键
+ * 容器组件 sparkProvide 当前作用域行数据，字段组件 sparkConsume 后读写字段值
  */
-export const FIELD_CONTEXT = defineCapability<FieldContext>('spark:capability:field-context')
-
-/**
- * 字段数据上下文能力键
- * 容器组件 sparkProvide 响应式数据对象，字段组件 sparkConsume 后读写字段值
- */
-export const CONTEXT_DATA = defineCapability<Record<string, unknown>>('app:context-data')
+export const DATA_ROW = defineCapability<IDataRow>('spark:capability:data-row')
 
 /**
  * 页面级组件注册中心能力键
@@ -133,18 +133,6 @@ export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('
  * 由页面渲染器根节点 sparkProvide，下游组件可 sparkConsume 后读取当前上下文并订阅变化。
  */
 export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('app:module-context')
-
-/**
- * 页面 CSS 作用域注入能力
- *
- * 由 SparkPageRenderer 在初始化 useCssScope 后 sparkProvide；
- * 插件、子渲染器或需要动态注入 CSS 的组件可 sparkConsume 后按需追加样式。
- * 注入的 CSS 会被 pageId scoping 自动处理（与静态 style.css 一致）。
- */
-export interface PageCssScopeCapability {
-  /** 注入/追加 CSS 到当前页面作用域 */
-  inject(css: string): void
-}
 
 /**
  * 页面 CSS 作用域能力键

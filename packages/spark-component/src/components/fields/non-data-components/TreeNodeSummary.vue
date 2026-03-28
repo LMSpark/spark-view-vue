@@ -12,7 +12,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CONTEXT_DATA, useSparkComponent } from '../../internal'
+import type { IDataRow } from '@spark-view/spark-data'
+import { DATA_ROW, useSparkComponent } from '../../internal'
 import type { SparkNode } from '../../internal'
 
 interface Props extends SparkNode {
@@ -45,9 +46,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { sparkConsume } = useSparkComponent(props)
-const contextData = computed<Record<string, unknown>>(() => {
-  const raw = sparkConsume(CONTEXT_DATA)
-  return raw && typeof raw === 'object' ? raw as Record<string, unknown> : {}
+const contextData = computed<IDataRow>(() => {
+  const raw = sparkConsume(DATA_ROW)
+  return raw ?? {}
 })
 
 function readString(field: string): string {

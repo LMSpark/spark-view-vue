@@ -197,7 +197,6 @@ import type { ContainerDocks } from '../../../../core/types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
-import { FIELD_CONTEXT } from '../../../internal'
 import { MODULE_CONTEXT } from '../../../internal'
 import { createRendererTableZeroCode } from './zero-code'
 import { useRendererTableInput } from './input'
@@ -309,8 +308,6 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererTable',
 })
-
-sparkProvide(FIELD_CONTEXT, 'table')
 
 const {
   toolbarPositionValue,

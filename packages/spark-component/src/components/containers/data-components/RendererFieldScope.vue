@@ -1,7 +1,7 @@
 <!--
 /**
  * @skill (internal) field-scope
- * @description 字段作用域容器，提供 el-form 包裹和 CONTEXT_DATA 能力；字段语义由祖先 context.type 推断
+ * @description 字段作用域容器，提供 el-form 包裹和 DATA_ROW 能力；字段语义由祖先 context.type 推断
  */
 -->
 <template>
@@ -36,7 +36,6 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
-import { FIELD_CONTEXT } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useDataScope } from '../context/useDataScope'
@@ -78,7 +77,7 @@ const props = withDefaults(defineProps<Props>(), {
   inline: false,
   compact: false,
 })
-const { sparkProvide } = useDataScope({
+useDataScope({
   type: props.type,
   nodeConfig: {
     type: props.type,
@@ -86,7 +85,6 @@ const { sparkProvide } = useDataScope({
   },
   data: computed(() => props.model),
 })
-sparkProvide(FIELD_CONTEXT, 'form')
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: () => props.configs,

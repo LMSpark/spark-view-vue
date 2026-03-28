@@ -3,7 +3,7 @@
  * @skill r-detail
  * @description 只读详情容器，绑定 DataView.currentRow 展示当前行字段，支持 dock 分区工具栏，不支持编辑回写
  * @provides DATA_SOURCE
- * @provides CONTEXT_DATA
+ * @provides DATA_ROW
  * @context 通过当前组件 type='r-detail' 提供字段语义
  * @consumes PAGE_DATASET
  * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } } } }
@@ -113,7 +113,7 @@ const {
   gridColumns: props.gridColumns,
   gridGap: props.gridGap,
   gridAutoRows: props.gridAutoRows,
-}, 'detail')
+}, 'r-detail')
 
 // ── r-detail 包装 API ────────────────────────────────────────────────────
 

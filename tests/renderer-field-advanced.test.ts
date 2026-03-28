@@ -1,16 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { defineComponent, h, reactive } from 'vue'
-import { PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IPageServiceCapability } from '@spark-view/spark-utils'
 import {
-  Spark, SPARK_REGISTRY_KEY, useSparkComponent,
-  CONTEXT_DATA, FIELD_CONTEXT,
   FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,
   FieldFilePath, FieldImage, FieldEntityPicker, FieldUserPicker,
   FieldDeptPicker, FieldProductPicker, FieldDate, FieldNumber,
 } from '@spark-view/spark-component'
-
-const { registry, rootContext } = Spark.createSystem()
+import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 function createPageService(overrides?: Partial<IPageServiceCapability>): IPageServiceCapability {
   return {
@@ -56,27 +52,15 @@ function mountWithFieldContext(
   pageService?: IPageServiceCapability,
   componentProps?: Record<string, unknown>
 ) {
-  const Provider = defineComponent({
-    setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-field-scope' }, { parentContext: rootContext })
-      sparkProvide(CONTEXT_DATA, model)
-      sparkProvide(FIELD_CONTEXT, 'form')
-      if (pageService) {
-        sparkProvide(PAGE_SERVICE, pageService)
-      }
-      return () => h(component as never, {
-        type: resolveFieldType(component, componentProps),
-        field: 'content',
-        ...componentProps,
-      })
-    },
-  })
-
-  return mount(Provider, {
+  return mountFieldInContext({
+    component,
+    type: resolveFieldType(component, componentProps),
+    model,
+    fieldName: 'content',
+    pageService,
+    parentType: 'r-form',
+    ...(componentProps !== undefined ? { componentProps } : {}),
     global: {
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      },
       stubs: {
         'el-table-column': defineComponent({
           setup() {

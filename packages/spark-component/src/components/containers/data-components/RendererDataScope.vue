@@ -1,9 +1,9 @@
 <!--
 /**
  * @skill r-data-scope
- * @description 通用数据作用域块容器 —— 向子组件注入 CONTEXT_DATA，
+ * @description 通用数据作用域块容器 —— 向子组件注入 DATA_ROW，
  *              字段语义由祖先 context.type 推断，直接对 children 循环 SparkComponentRenderer。
- * @provides CONTEXT_DATA
+ * @provides DATA_ROW
  */
 -->
 <template>

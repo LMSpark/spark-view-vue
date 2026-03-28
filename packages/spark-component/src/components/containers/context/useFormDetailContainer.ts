@@ -4,7 +4,7 @@ import { getDockedChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
-import { CONTEXT_DATA, FIELD_CONTEXT } from '../../internal'
+import { DATA_ROW } from '../../internal'
 import type { ContainerDocks } from '../../../core/types'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../data/useContainerDataSource'
@@ -23,7 +23,7 @@ interface FormDetailContainerProps extends SparkNode {
 
 export function useFormDetailContainer(
   props: FormDetailContainerProps,
-  fieldContext: 'form' | 'detail',
+  containerType: 'r-form' | 'r-detail',
 ) {
   const effectiveDataKey = computed(() => props.dataKey)
   const configChildren = computed<SparkNode[]>(() => {
@@ -40,7 +40,7 @@ export function useFormDetailContainer(
     autoRows: computed(() => props.gridAutoRows ?? 'minmax(32px, auto)'),
   })
 
-  const logPrefix = fieldContext === 'form' ? 'RendererForm' : 'RendererDetail'
+  const logPrefix = containerType === 'r-form' ? 'RendererForm' : 'RendererDetail'
 
   const { sparkConsume, sparkProvide, logger, registerApi } = useSparkComponent(props)
   const pageDataSet = sparkConsume(PAGE_DATASET)
@@ -74,8 +74,7 @@ export function useFormDetailContainer(
     modelPermission,
   })
 
-  sparkProvide(CONTEXT_DATA, contextData)
-  sparkProvide(FIELD_CONTEXT, fieldContext)
+  sparkProvide(DATA_ROW, contextData)
 
   function getDefaultSlotScope() {
     return createCurrentRowSlotScope({

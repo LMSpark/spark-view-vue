@@ -56,13 +56,11 @@ export {
 export {
   PAGE_DATASET,
   DATA_SOURCE,
-  CONTEXT_DATA,
-  FIELD_CONTEXT,
+  DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
 } from './core/index.js'
 export type {
-  FieldContext,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,

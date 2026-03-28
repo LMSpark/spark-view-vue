@@ -1,4 +1,5 @@
 import { computed, watchEffect } from 'vue'
+import type { IDataRow } from '@spark-view/spark-data'
 
 interface ValueRef<T> {
   value: T
@@ -11,7 +12,7 @@ interface BoundBooleanColumn {
 
 interface UseSwitchNullValueOptions {
   boundColumn: ValueRef<BoundBooleanColumn | null | undefined>
-  contextData: Record<string, unknown> | null
+  contextData: IDataRow | null
   fieldName: ValueRef<string>
   syncValue: (value: boolean | null) => void
 }

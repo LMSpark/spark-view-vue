@@ -1,6 +1,6 @@
 <template>
-  <!-- table 上下文：el-table-column -->
-  <template v-if="resolvedContext === 'table'">
+  <!-- r-table 宿主：el-table-column -->
+  <template v-if="resolvedContext === 'r-table'">
     <!-- 分组列（多行表头） -->
     <el-table-column
       v-if="resolvedChildren.length > 0"
@@ -43,9 +43,9 @@
     </el-table-column>
   </template>
 
-  <!-- form 上下文：el-form-item（携带列级验证规则） -->
+  <!-- r-form 宿主：el-form-item（携带列级验证规则） -->
   <el-form-item
-    v-else-if="resolvedContext === 'form' && !resolvedCurrentFieldHidden"
+    v-else-if="resolvedContext === 'r-form' && !resolvedCurrentFieldHidden"
     :label="resolvedDisplayLabel"
     :prop="resolvedFieldName"
     :rules="resolvedValidationRules"
@@ -53,8 +53,8 @@
     <slot name="form" />
   </el-form-item>
 
-  <!-- tree 上下文：树节点文本 -->
-  <template v-else-if="resolvedContext === 'tree'">
+  <!-- r-tree 宿主：树节点文本 -->
+  <template v-else-if="resolvedContext === 'r-tree'">
     <template v-if="!resolvedCurrentFieldHidden">
       <slot name="tree">
         <span class="tree-node-text">{{ resolvedCurrentDisplayValue }}</span>
@@ -62,7 +62,7 @@
     </template>
   </template>
 
-  <!-- detail / 其他上下文：只读展示 -->
+  <!-- r-detail / r-list / 其他宿主：只读展示 -->
   <template v-else>
     <template v-if="!resolvedCurrentFieldHidden">
       <slot name="detail">

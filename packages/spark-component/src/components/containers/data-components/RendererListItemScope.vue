@@ -1,7 +1,7 @@
 <!--
 /**
  * @skill (internal) list-item-scope
- * @description r-list 列表项作用域组件，为每行数据提供 CONTEXT_DATA 能力；字段语义由祖先 context.type 推断
+ * @description r-list 列表项作用域组件，为每行数据提供 DATA_ROW 能力；字段语义由祖先 context.type 推断
  */
 -->
 <template>
@@ -43,7 +43,6 @@ import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
-import { FIELD_CONTEXT } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useDataScope } from '../context/useDataScope'
@@ -79,15 +78,14 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
-const { sparkProvide } = useDataScope({
+useDataScope({
   type: props.type,
   nodeConfig: {
     type: props.type,
     ...(props.id !== undefined ? { id: props.id } : {}),
   },
-  data: computed(() => props.row as Record<string, unknown>),
+  data: computed(() => props.row),
 })
-sparkProvide(FIELD_CONTEXT, 'list')
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: () => props.children,

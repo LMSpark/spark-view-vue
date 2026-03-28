@@ -1,13 +1,13 @@
 import { shallowReactive, watch } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { IDataSource } from '@spark-view/spark-data'
+import type { IDataRow, IDataSource } from '@spark-view/spark-data'
 
 interface UseContainerContextDataOptions {
   source: ComputedRef<IDataSource | null>
 }
 
 export function useContainerContextData(options: UseContainerContextDataOptions) {
-  const contextData = shallowReactive<Record<string, unknown>>({})
+  const contextData = shallowReactive<IDataRow>({})
 
   let _prevRow: unknown = Symbol('initial')
 
@@ -17,7 +17,7 @@ export function useContainerContextData(options: UseContainerContextDataOptions)
       if (row === _prevRow) return
       _prevRow = row
 
-      const incoming = row ?? {}
+      const incoming: IDataRow = row ?? {}
       const incomingKeys = new Set(Object.keys(incoming))
 
       for (const key of Object.keys(contextData)) {

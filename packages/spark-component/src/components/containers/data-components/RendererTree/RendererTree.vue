@@ -3,6 +3,7 @@
  * @skill r-tree
  * @description 树形数据容器，绑定 DataView 渲染嵌套树结构，支持 dock 分区工具栏、懒加载、节点点击、展开/折叠事件
  * @provides DATA_SOURCE
+ * @provides DATA_ROW
  * @consumes PAGE_DATASET
  * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, nodeKey?: string, lazy?: boolean } }
  * @example { "type": "r-tree", "dataKey": "departments@rows", "props": { "nodeKey": "id" } }
@@ -101,7 +102,7 @@ import { nodeId, type SparkNode } from '../../../internal'
 import type { ContainerDocks } from '../../../../core/types'
 import { type IDataRow, type DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
-import { CONTEXT_DATA, FIELD_CONTEXT } from '../../../internal'
+import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,
@@ -261,8 +262,7 @@ function shouldShowLegacyDelete(row: IDataRow): boolean {
     && row._perm?.allowDelete !== false
 }
 
-sparkProvide(CONTEXT_DATA, {} as Record<string, unknown>)
-sparkProvide(FIELD_CONTEXT, 'tree')
+sparkProvide(DATA_ROW, {} as IDataRow)
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────
 

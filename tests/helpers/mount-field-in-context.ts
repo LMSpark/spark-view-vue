@@ -2,30 +2,28 @@ import { mount } from '@vue/test-utils'
 import type { ComponentMountingOptions } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import {
-  CONTEXT_DATA,
+  DATA_ROW,
   DATA_SOURCE,
-  FIELD_CONTEXT,
   PAGE_DATASET,
   SPARK_REGISTRY_KEY,
   Spark,
   useSparkComponent,
 } from '@spark-view/spark-component'
 import type { SparkNode, SparkCapabilityContext, ComponentRegistry } from '@spark-view/spark-component'
-import type { IDataSet } from '@spark-view/spark-data'
+import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
 
 interface MountFieldInContextOptions {
   component: unknown
   type: string
-  model: Record<string, unknown>
+  model: IDataRow
   fieldName: string
   componentProps?: Record<string, unknown> | undefined
   global?: ComponentMountingOptions<unknown>['global'] | undefined
   pageDataSet?: IDataSet | undefined
   dataSource?: unknown
   pageService?: IPageServiceCapability | undefined
-  fieldContext?: 'form' | 'table' | 'detail' | 'tree' | undefined
   parentType?: string | undefined
 }
 
@@ -46,8 +44,7 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
   const Provider = defineComponent({
     setup() {
       const { sparkProvide } = useSparkComponent({ type: options.parentType ?? 'r-form' } as SparkNode, { parentContext: rootContext })
-      sparkProvide(CONTEXT_DATA, options.model)
-      sparkProvide(FIELD_CONTEXT, options.fieldContext ?? 'form')
+      sparkProvide(DATA_ROW, options.model)
 
       if (options.pageDataSet !== undefined) {
         sparkProvide(PAGE_DATASET, options.pageDataSet)
