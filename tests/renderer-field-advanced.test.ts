@@ -7,7 +7,7 @@ import {
   CONTEXT_DATA, FIELD_CONTEXT,
   FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,
   FieldFilePath, FieldImage, FieldEntityPicker, FieldUserPicker,
-  FieldDeptPicker, FieldProductPicker,
+  FieldDeptPicker, FieldProductPicker, FieldDate, FieldNumber,
 } from '@spark-view/spark-component'
 
 const { registry, rootContext } = Spark.createSystem()
@@ -28,6 +28,28 @@ function createPageService(overrides?: Partial<IPageServiceCapability>): IPageSe
   }
 }
 
+function resolveFieldType(component: object, componentProps?: Record<string, unknown>): string {
+  const explicitType = componentProps?.['type']
+  if (typeof explicitType === 'string' && explicitType.length > 0) {
+    return explicitType
+  }
+
+  if (component === FieldTextarea) return 'r-textarea'
+  if (component === FieldHtmlEditor) return 'r-html-editor'
+  if (component === FieldFileBrowser) return 'r-file-browser'
+  if (component === FieldUpload) return 'r-upload'
+  if (component === FieldFilePath) return 'r-file-path'
+  if (component === FieldImage) return 'r-image'
+  if (component === FieldEntityPicker) return 'r-entity-picker'
+  if (component === FieldUserPicker) return 'r-user-picker'
+  if (component === FieldDeptPicker) return 'r-dept-picker'
+  if (component === FieldProductPicker) return 'r-product-picker'
+  if (component === FieldDate) return 'r-date'
+  if (component === FieldNumber) return 'r-number'
+
+  return 'r-field-test'
+}
+
 function mountWithFieldContext(
   component: object,
   model: Record<string, unknown>,
@@ -42,7 +64,11 @@ function mountWithFieldContext(
       if (pageService) {
         sparkProvide(PAGE_SERVICE, pageService)
       }
-      return () => h(component as never, { field: 'content', ...componentProps })
+      return () => h(component as never, {
+        type: resolveFieldType(component, componentProps),
+        field: 'content',
+        ...componentProps,
+      })
     },
   })
 
@@ -85,6 +111,20 @@ function mountWithFieldContext(
             })
           },
         }),
+        'el-date-picker': defineComponent({
+          name: 'ElDatePicker',
+          props: ['modelValue', 'type', 'rangeSeparator', 'placeholder', 'startPlaceholder', 'endPlaceholder'],
+          emits: ['update:modelValue'],
+          setup(props, { emit }) {
+            return () => h('input', {
+              class: 'el-date-picker-stub',
+              'data-type': props.type,
+              'data-range-separator': props.rangeSeparator,
+              value: Array.isArray(props.modelValue) ? props.modelValue.join(',') : props.modelValue,
+              onInput: (event: Event) => emit('update:modelValue', (event.target as HTMLInputElement).value),
+            })
+          },
+        }),
         'el-button': defineComponent({
           props: ['disabled'],
           emits: ['click'],
@@ -120,6 +160,26 @@ describe('advanced renderer fields', () => {
     await wrapper.find('.toggle-source').trigger('click')
     await wrapper.find('textarea').setValue('<p><strong>new</strong></p>')
     expect(model['content']).toBe('<p><strong>new</strong></p>')
+  })
+
+  it('date field should switch to range mode when range filtering is enabled', () => {
+    const model = reactive<Record<string, unknown>>({ content: ['2026-01-01', '2026-01-31'] })
+    const wrapper = mountWithFieldContext(FieldDate, model, undefined, { filterMode: 'range' })
+
+    const picker = wrapper.findComponent({ name: 'ElDatePicker' })
+    expect(picker.props('type')).toBe('daterange')
+    expect(picker.props('rangeSeparator')).toBe('至')
+  })
+
+  it('number field should sync range input back into context data', async () => {
+    const model = reactive<Record<string, unknown>>({ content: [1, 5] })
+    const wrapper = mountWithFieldContext(FieldNumber, model, undefined, { filterMode: 'range' })
+
+    const inputs = wrapper.findAll('.el-input-number-stub')
+    await inputs[0]?.setValue('2')
+    await inputs[1]?.setValue('8')
+
+    expect(model['content']).toEqual([2, 8])
   })
 
   it('file browser should sync selected file names into context data', async () => {

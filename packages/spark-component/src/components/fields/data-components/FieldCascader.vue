@@ -18,8 +18,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SparkNode } from '../../internal'
-import { useOptionField } from '../options/useFieldOptions'
-import { useFieldContext } from '../context/useFieldContext'
+import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 type FieldPrimitive = string | number | boolean
@@ -73,15 +72,15 @@ const emit = defineEmits<{
   'update:modelValue': [value: CascaderValue]
 }>()
 
-const optionResult = useOptionField<CascaderValue>({
+const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<CascaderValue>({
   props,
-  type: 'r-cascader',
+  fieldType: 'r-cascader',
   fallbackValue: [],
   formatDisplay: (value, helpers) => helpers.formatCascaderValue(value),
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
-const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
+const { options, fieldValue, isCurrentFieldEditable } = optionResult
 
 const cascaderProps = computed(() => ({
   multiple: props.multiple,
@@ -89,8 +88,7 @@ const cascaderProps = computed(() => ({
   emitPath: props.emitPath,
 }))
 
-function handleChange(value: CascaderValue): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function handleChange(value: CascaderValue): Promise<void> {
+  await handleControlledChange(value)
 }
 </script>

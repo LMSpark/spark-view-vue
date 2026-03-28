@@ -10,7 +10,7 @@
           readonly
           :placeholder="placeholder"
         />
-        <el-button class="browse-action-button" :disabled="!hasBrowseCapability" @click="openFileDialog">{{ buttonText }}</el-button>
+        <el-button class="browse-action-button" :disabled="!hasBrowseCapabilityValue" @click="openFileDialog">{{ buttonText }}</el-button>
         <el-button v-if="showClearButton" class="clear-action-button" @click="clearValue">清空</el-button>
       </div>
     </template>
@@ -29,9 +29,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
+import { useFileBrowserFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -71,11 +71,12 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const permission = useFieldPermission<string>({
+const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string>({
   props,
-  type: 'r-file-browser',
+  fieldType: 'r-file-browser',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const {
@@ -85,41 +86,34 @@ const {
   currentRawStringValue,
   isCurrentFieldEditable,
   currentDisplayValue,
-  syncValue,
 } = permission
-
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
 const { hasBrowseCapability, browseFiles } = useFileFieldActions({
   pageService,
   isEditable: isCurrentFieldEditable,
 })
 
-const showClearButton = computed(() => props.clearable && isCurrentFieldEditable.value && currentRawStringValue.value.length > 0)
-
-function updateValue(value: string): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function updateValue(value: string): Promise<void> {
+  await handleControlledChange(value)
 }
 
-function openFileDialog(): void {
-  void browseFiles({
-    title: displayLabel.value,
-    accept: props.accept,
-    multiple: props.multiple,
-    currentValue: currentRawStringValue.value,
-  }).then((files) => {
-    if (!isCurrentFieldEditable.value) return
-    const nextValue = files.map(file => file.name).join(props.separator)
-    if (nextValue.length > 0) {
-      updateValue(nextValue)
-    }
-  })
-}
-
-function clearValue(): void {
-  updateValue('')
-}
+const {
+  canBrowse: hasBrowseCapabilityValue,
+  showClearButton,
+  openFileDialog,
+  clearValue,
+} = useFileBrowserFieldState({
+  displayLabel,
+  currentRawStringValue,
+  isCurrentFieldEditable,
+  hasBrowseCapability,
+  accept: computed(() => props.accept),
+  multiple: computed(() => props.multiple),
+  separator: computed(() => props.separator),
+  canClear: computed(() => props.clearable),
+  browseFiles,
+  updateValue,
+})
 </script>
 
 <style scoped>

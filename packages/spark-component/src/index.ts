@@ -63,22 +63,22 @@ export {
 } from './core/index.js'
 export type {
   FieldContext,
-  RendererTableApi,
-  RendererFormApi,
-  RendererDetailApi,
-  RendererTreeApi,
-  RendererListApi,
-  RendererDialogApi,
-  RendererDrawerApi,
-  RendererTabsApi,
-  RendererCollapseApi,
-  RendererStepsApi,
-  RendererSectionApi,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   ModuleContextCapability,
 } from './core/index.js'
+export type { RendererTableApi } from './components/containers/data-components/RendererTable/types.js'
+export type { RendererFormApi } from './components/containers/data-components/RendererForm/types.js'
+export type { RendererDetailApi } from './components/containers/data-components/RendererDetail/types.js'
+export type { RendererTreeApi } from './components/containers/data-components/RendererTree/types.js'
+export type { RendererListApi } from './components/containers/data-components/RendererList/types.js'
+export type { RendererDialogApi } from './components/containers/non-data-components/RendererDialog/types.js'
+export type { RendererDrawerApi } from './components/containers/non-data-components/RendererDrawer/types.js'
+export type { RendererTabsApi } from './components/containers/non-data-components/RendererTabs/types.js'
+export type { RendererCollapseApi } from './components/containers/non-data-components/RendererCollapse/types.js'
+export type { RendererStepsApi } from './components/containers/non-data-components/RendererSteps/types.js'
+export type { RendererSectionApi } from './components/containers/non-data-components/RendererSection/types.js'
 
 // ── 7. 页面渲染引擎 ──
 export {

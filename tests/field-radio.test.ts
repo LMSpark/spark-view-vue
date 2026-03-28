@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { Spark, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, FIELD_CONTEXT, FieldRadio } from '@spark-view/spark-component'
-
-const { registry, rootContext } = Spark.createSystem()
+import { FieldRadio } from '@spark-view/spark-component'
+import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 const ElFormItemStub = defineComponent({
   props: ['label', 'prop', 'rules'],
@@ -44,24 +42,13 @@ function mountFieldRadio(
   fieldName: string,
   componentProps?: Record<string, unknown>,
 ) {
-  const Provider = defineComponent({
-    setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
-      sparkProvide(CONTEXT_DATA, model)
-      sparkProvide(FIELD_CONTEXT, 'form')
-      return () => h(FieldRadio as never, {
-        type: 'r-radio',
-        field: fieldName,
-        ...componentProps,
-      })
-    },
-  })
-
-  return mount(Provider, {
+  return mountFieldInContext({
+    component: FieldRadio,
+    type: 'r-radio',
+    model,
+    fieldName,
+    componentProps,
     global: {
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      },
       stubs: {
         'el-form-item': ElFormItemStub,
         'el-radio-group': ElRadioGroupStub,

@@ -20,8 +20,7 @@
 
 <script setup lang="ts">
 import type { SparkNode } from '../../internal'
-import { useOptionField } from '../options/useFieldOptions'
-import { useFieldContext } from '../context/useFieldContext'
+import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 type FieldPrimitive = string | number | boolean
@@ -77,17 +76,16 @@ const emit = defineEmits<{
   'update:modelValue': [value: TreeSelectValue]
 }>()
 
-const optionResult = useOptionField<TreeSelectValue>({
+const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<TreeSelectValue>({
   props,
-  type: 'r-tree-select',
+  fieldType: 'r-tree-select',
   fallbackValue: '',
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
-const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
+const { options, fieldValue, isCurrentFieldEditable } = optionResult
 
-function handleChange(value: TreeSelectValue): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function handleChange(value: TreeSelectValue): Promise<void> {
+  await handleControlledChange(value)
 }
 </script>

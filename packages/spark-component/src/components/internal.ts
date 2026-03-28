@@ -61,19 +61,19 @@ export {
 } from '../core/index.js'
 export type {
   FieldContext,
-  RendererTableApi,
-  RendererFormApi,
-  RendererDetailApi,
-  RendererTreeApi,
-  RendererListApi,
-  RendererDialogApi,
-  RendererDrawerApi,
-  RendererTabsApi,
-  RendererCollapseApi,
-  RendererStepsApi,
-  RendererSectionApi,
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   ModuleContextCapability,
 } from '../core/index.js'
+export type { RendererTableApi } from './containers/data-components/RendererTable/types.js'
+export type { RendererFormApi } from './containers/data-components/RendererForm/types.js'
+export type { RendererDetailApi } from './containers/data-components/RendererDetail/types.js'
+export type { RendererTreeApi } from './containers/data-components/RendererTree/types.js'
+export type { RendererListApi } from './containers/data-components/RendererList/types.js'
+export type { RendererDialogApi } from './containers/non-data-components/RendererDialog/types.js'
+export type { RendererDrawerApi } from './containers/non-data-components/RendererDrawer/types.js'
+export type { RendererTabsApi } from './containers/non-data-components/RendererTabs/types.js'
+export type { RendererCollapseApi } from './containers/non-data-components/RendererCollapse/types.js'
+export type { RendererStepsApi } from './containers/non-data-components/RendererSteps/types.js'
+export type { RendererSectionApi } from './containers/non-data-components/RendererSection/types.js'

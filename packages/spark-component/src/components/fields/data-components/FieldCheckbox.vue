@@ -14,8 +14,7 @@
 
 <script setup lang="ts">
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -50,18 +49,17 @@ function formatCheckboxValue(value: unknown): string {
   return value ? props.checkedText : props.uncheckedText
 }
 
-const permission = useFieldPermission<boolean>({
+const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<boolean>({
   props,
-  type: 'r-checkbox',
+  fieldType: 'r-checkbox',
   fallbackValue: false,
   formatDisplay: formatCheckboxValue,
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
-const { fieldValue, isCurrentFieldEditable, displayLabel, syncValue } = permission
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
+const { fieldValue, isCurrentFieldEditable, displayLabel } = permission
 
-function handleChange(value: boolean): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function handleChange(value: boolean): Promise<void> {
+  await handleControlledChange(value)
 }
 </script>

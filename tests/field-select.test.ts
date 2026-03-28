@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { Spark, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, FIELD_CONTEXT, FieldSelect } from '@spark-view/spark-component'
-
-const { registry, rootContext } = Spark.createSystem()
+import { FieldSelect } from '@spark-view/spark-component'
+import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 // ── Element Plus stubs ────────────────────────────────────────────────────────
 
@@ -51,24 +49,13 @@ function mountFieldSelect(
   fieldName: string,
   componentProps?: Record<string, unknown>,
 ) {
-  const Provider = defineComponent({
-    setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
-      sparkProvide(CONTEXT_DATA, model)
-      sparkProvide(FIELD_CONTEXT, 'form')
-      return () => h(FieldSelect as never, {
-        type: 'r-select',
-        field: fieldName,
-        ...componentProps,
-      })
-    },
-  })
-
-  return mount(Provider, {
+  return mountFieldInContext({
+    component: FieldSelect,
+    type: 'r-select',
+    model,
+    fieldName,
+    componentProps,
     global: {
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      },
       stubs: {
         'el-form-item': ElFormItemStub,
         'el-select': ElSelectStub,
@@ -284,33 +271,8 @@ describe('FieldSelect 下拉组件', () => {
 
     it('从 config.props.options 获取选项', () => {
       const model = reactive({ department: undefined })
-      const Provider = defineComponent({
-        setup() {
-          const { sparkProvide } = useSparkComponent({ type: 'r-form' })
-          sparkProvide(CONTEXT_DATA, model)
-          sparkProvide(FIELD_CONTEXT, 'form')
-          return () => h(FieldSelect as never, {
-            type: 'r-select',
-            field: 'department',
-            options: departmentOptions,
-          })
-        },
-      })
-
-      const wrapper = mount(Provider, {
-        global: {
-          provide: {
-            [SPARK_REGISTRY_KEY as symbol]: registry,
-          },
-          stubs: {
-            'el-form-item': ElFormItemStub,
-            'el-select': ElSelectStub,
-            'el-option': ElOptionStub,
-            'el-table-column': defineComponent({
-              setup() { return () => h('div') },
-            }),
-          },
-        },
+      const wrapper = mountFieldSelect(model, 'department', {
+        options: departmentOptions,
       })
 
       expect(wrapper.findAll('.el-option-stub')).toHaveLength(4)

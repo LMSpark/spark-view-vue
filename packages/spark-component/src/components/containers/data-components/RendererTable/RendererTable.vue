@@ -189,38 +189,39 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, defineComponent, ref, useAttrs, useSlots, watch } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../../internal'
-import { nodeId, nodeInputProp, getDockedChildren, getSparkNodeChildren, nodeDock, DEFAULT_DOCK, type SparkNode, type RendererTableApi } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
-import { SparkData, type IDataRow, type DataView } from '@spark-view/spark-data'
+import { computed, defineComponent, ref, useAttrs, useSlots } from 'vue'
+import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
+import { nodeId, type SparkNode } from '../../../internal'
+import type { RendererTableApi } from './types'
+import type { ContainerDocks } from '../../../../core/types'
+import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
-import { FIELD_CONTEXT } from '../../internal'
-import { MODULE_CONTEXT } from '../../internal'
-import { useContainerActions } from '../actions/useContainerActions'
-import type { LateralActionPosition } from '../actions/useContainerActions'
-import { useContainerDataSource, useContainerDataSourceEffects } from '../data/useContainerDataSource'
-import { useContainerSlots } from '../layout/useContainerSlots'
-import { useContainerToolbar } from '../layout/useContainerToolbar'
-import type { ToolbarPosition } from '../layout/useContainerToolbar'
-import { createRowActionSlotScope } from '../slotScopeFactories'
-import { useModuleContext } from '../context/useModuleContext'
-import RendererFieldScope from './RendererFieldScope.vue'
-import { useTableFilters } from '../layout/useTableFilters'
+import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
+import { FIELD_CONTEXT } from '../../../internal'
+import { MODULE_CONTEXT } from '../../../internal'
+import { createRendererTableZeroCode } from './zero-code'
+import { useRendererTableInput } from './input'
+import { useRendererTableViewState } from './view-state'
+import { useContainerActions } from '../../actions/useContainerActions'
+import type { LateralActionPosition } from '../../actions/useContainerActions'
+import { useContainerDataSource, useContainerDataSourceEffects } from '../../data/useContainerDataSource'
+import { useContainerSlots } from '../../layout/useContainerSlots'
+import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import type { ToolbarPosition } from '../../layout/useContainerToolbar'
+import { createRowActionSlotScope } from '../../slotScopeFactories'
+import { useModuleContext } from '../../context/useModuleContext'
+import RendererFieldScope from '../RendererFieldScope.vue'
+import { useTableFilters } from '../../layout/useTableFilters'
 import {
-  createCancelledCrudResult,
   type AddRowHandler,
   type EditRowHandler,
   type RemoveRowHandler,
   type RowClickHandler,
   type RowSelectionHandler,
   type CurrentRowChangeHandler,
-  useEventDefaults,
-} from '../support/index.js'
+} from '../../support/index.js'
 import {
   isBuiltinAction,
-  isBuiltinActionDisabled as _isBuiltinActionDisabled,
   getBuiltinActionLabel,
   getBuiltinButtonType,
   getBuiltinButtonSize,
@@ -228,11 +229,7 @@ import {
   getBuiltinButtonText,
   getBuiltinButtonLink,
   getBuiltinButtonClass,
-  createBuiltinActionHandler,
-  getSelectedRows,
-} from '../builtin-actions'
-
-type RowActionsPosition = LateralActionPosition
+} from '../../builtin-actions'
 
 interface Props {
   /** 组件类型（运行时缺省回落为 r-table） */
@@ -255,12 +252,6 @@ interface Props {
   onRemoveRow?: RemoveRowHandler
 }
 
-interface TableTreeSeedNode extends Record<string, unknown> {
-  id: string | number
-  name: string
-  parentId?: string | number | null
-}
-
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-table',
   docks: () => ({}),
@@ -268,64 +259,25 @@ const props = withDefaults(defineProps<Props>(), {
 
 const attrs = useAttrs()
 const slots = useSlots()
-const baseTableAttrs = computed<Record<string, unknown>>(() => {
-  const { toolbar: _legacyToolbar, ...rest } = attrs as Record<string, unknown>
-  return rest
-})
-
-function readStringAttr(name: string): string | undefined {
-  const value = attrs[name]
-  return typeof value === 'string' && value.length > 0 ? value : undefined
-}
-
-function readBooleanAttr(name: string): boolean | undefined {
-  const value = attrs[name]
-  if (typeof value === 'boolean') return value
-  if (value === '') return true
-  if (value === 'true') return true
-  if (value === 'false') return false
-  return undefined
-}
-
-function readNumberAttr(name: string): number | undefined {
-  const value = attrs[name]
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  return undefined
-}
-
-function readNumberOrStringAttr(name: string): number | string | undefined {
-  const value = attrs[name]
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  if (typeof value === 'string' && value.length > 0) return value
-  return undefined
-}
-
-const legacyFilterColumnsValue = computed<string[]>(() => {
-  const value = attrs['filterColumns']
-  if (!Array.isArray(value)) return []
-  return value.filter((item): item is string => typeof item === 'string' && item.length > 0)
-})
-
-const legacyRowActionsValue = computed<SparkNode[]>(() => {
-  const value = attrs['rowActions']
-  return Array.isArray(value) ? value as SparkNode[] : []
-})
-
-const legacyRowActionsPositionValue = computed<RowActionsPosition | undefined>(() => {
-  const value = readStringAttr('rowActionsPosition')
-  return value === 'left' || value === 'right' ? value : undefined
-})
-
-const legacyRowActionsAlignValue = computed<'left' | 'center' | 'right' | undefined>(() => {
-  const value = readStringAttr('rowActionsAlign')
-  return value === 'left' || value === 'center' || value === 'right' ? value : undefined
-})
-
-const legacyRowActionsFixedValue = computed<boolean | 'left' | 'right' | undefined>(() => {
-  const value = attrs['rowActionsFixed']
-  if (typeof value === 'boolean') return value
-  if (value === 'left' || value === 'right') return value
-  return undefined
+const {
+  baseTableAttrs,
+  effectiveDataKey,
+  dockedToolbar,
+  dockedFilters,
+  dockedRowActions,
+  sparkChildren,
+  legacyFilterColumnsValue,
+  legacyRowActionsPositionValue,
+  legacyRowActionsAlignValue,
+  legacyRowActionsFixedValue,
+  readStringAttr,
+  readBooleanAttr,
+  readNumberAttr,
+  readNumberOrStringAttr,
+  assertNoLegacyTableStructures,
+} = useRendererTableInput({
+  props,
+  attrs: attrs as Readonly<Record<string, unknown>>,
 })
 
 const ElTableColumns = defineComponent({
@@ -333,30 +285,6 @@ const ElTableColumns = defineComponent({
   setup(_, { slots: componentSlots }) {
     return () => componentSlots['default']?.() ?? []
   },
-})
-
-// ── 输入解析 ──────────────────────────────────────────────────────────────
-
-const effectiveDataKey = computed(() => props.dataKey)
-const configChildren = computed<SparkNode[]>(() => {
-  const c = props.children
-  return Array.isArray(c) && c.length > 0 ? c : []
-})
-
-const dockedToolbar = computed(() =>
-  getDockedChildren(configChildren.value, 'toolbar')
-)
-
-const dockedFilters = computed(() =>
-  getDockedChildren(configChildren.value, 'filter')
-)
-
-const dockedRowActions = computed(() =>
-  getDockedChildren(configChildren.value, 'actions')
-)
-
-const sparkChildren = computed(() => {
-  return configChildren.value.filter(child => nodeDock(child) === DEFAULT_DOCK && isCollectedTableColumn(child))
 })
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
@@ -384,112 +312,6 @@ useContainerDataSourceEffects({
 
 sparkProvide(FIELD_CONTEXT, 'table')
 
-// ── 统一事件分发器 ────────────────────────────────────────────────────────
-
-const { dispatch } = useEventDefaults({
-  'current-change': {
-    systemDefault: (currentRow: unknown) => {
-      resolvedView.value?.selection.setCurrentRow((currentRow as IDataRow | null) ?? null)
-    },
-  },
-  'row-click': {
-    systemDefault: (row: unknown) => {
-      resolvedView.value?.selection.setCurrentRow(row as IDataRow)
-      nativeTableRef.value?.setCurrentRow?.(row as IDataRow)
-    },
-  },
-  'selection-change': {
-    systemDefault: (selection: unknown) => {
-      resolvedView.value?.selection.setSelectedRows(selection as IDataRow[])
-    },
-  },
-  'add-row': {},
-  'edit-row': {},
-  'remove-row': {},
-}, props as Readonly<Record<string, unknown>>)
-
-// ── 视图状态 ──────────────────────────────────────────────────────────────
-
-const tableRows = computed(() => resolvedView.value?.rows ?? [])
-
-function buildTreeTableRows(view: DataView | null | undefined, rows: IDataRow[]): IDataRow[] {
-  if (!view || rows.length === 0) return rows
-  if (rows.some(row => Array.isArray((row as Record<string, unknown> | undefined)?.['children']))) {
-    return rows
-  }
-
-  const treeConfig = view.treeConfig
-  if (!treeConfig) return rows
-
-  const idField = treeConfig.idField ?? view.primaryKey ?? 'id'
-  const parentIdField = treeConfig.parentIdField ?? 'parentId'
-  const textField = treeConfig.textField ?? 'label'
-
-  const seedNodes: TableTreeSeedNode[] = rows.flatMap(row => {
-    const record = row as Record<string, unknown>
-    const rawId = record[idField]
-    if (typeof rawId !== 'string' && typeof rawId !== 'number') {
-      return []
-    }
-
-    const rawParentId = record[parentIdField]
-    const parentId = typeof rawParentId === 'string' || typeof rawParentId === 'number'
-      ? rawParentId
-      : rawParentId == null
-        ? null
-        : String(rawParentId)
-
-    return [{
-      ...record,
-      id: rawId,
-      parentId,
-      name: typeof record[textField] === 'string'
-        ? record[textField] as string
-        : String(record[textField] ?? rawId),
-    }]
-  })
-
-  if (seedNodes.length === 0) return rows
-
-  return SparkData.createTreeManager({
-    idField,
-    parentIdField,
-    textField,
-    treeMode: 'nested',
-  }, seedNodes).buildNestedTree() as IDataRow[]
-}
-
-const tableRowKeyValue = computed(() =>
-  readStringAttr('rowKey')
-  ?? resolvedView.value?.primaryKey
-  ?? resolvedView.value?.treeConfig?.idField
-)
-
-const tableTreePropsValue = computed<Record<string, unknown> | undefined>(() => {
-  if (!resolvedView.value?.treeConfig) return undefined
-  return {
-    children: 'children',
-    hasChildren: 'hasChildren',
-  }
-})
-
-const tableAttrs = computed<Record<string, unknown>>(() => {
-  const result = { ...baseTableAttrs.value }
-  if (!resolvedView.value?.treeConfig) return result
-
-  if (result['rowKey'] === undefined && result['row-key'] === undefined && tableRowKeyValue.value) {
-    result['rowKey'] = tableRowKeyValue.value
-  }
-
-  if (result['treeProps'] === undefined && result['tree-props'] === undefined && tableTreePropsValue.value) {
-    result['treeProps'] = tableTreePropsValue.value
-  }
-
-  return result
-})
-
-// ── 工具栏 ────────────────────────────────────────────────────────────────
-
 const {
   toolbarPositionValue,
   toolbarClassValue,
@@ -501,8 +323,6 @@ const {
   toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission,
 })
-
-// ── 过滤区与表格数据 ──────────────────────────────────────────────────────
 
 const {
   filterModel,
@@ -527,180 +347,57 @@ const {
   logger,
 })
 
-const filterCollapsibleValue = computed(() => props.docks?.filter?.collapsible ?? readBooleanAttr('filterCollapsible') ?? false)
+const {
+  tableData,
+  tableAttrs,
+  filterCollapsibleValue,
+  filterAutoFitMinWidthValue,
+  filterItemSpanValue,
+  filtersCollapsed,
+  toggleFiltersCollapsed,
+} = useRendererTableViewState({
+  props,
+  baseTableAttrs,
+  resolvedView,
+  filteredRows,
+  readStringAttr,
+  readBooleanAttr,
+  readNumberAttr,
+})
 
-const filterDefaultCollapsedValue = computed(() => props.docks?.filter?.defaultCollapsed ?? readBooleanAttr('filterDefaultCollapsed') ?? false)
+// ── 视图状态 ──────────────────────────────────────────────────────────────
 
-const filterAutoFitMinWidthValue = computed(() => props.docks?.filter?.autoFitMinWidth ?? readStringAttr('filterAutoFitMinWidth') ?? '220px')
-
-const filterItemSpanValue = computed(() => props.docks?.filter?.itemSpan ?? readNumberAttr('filterItemSpan') ?? 1)
-
-const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
-
-watch(filterDefaultCollapsedValue, (value) => {
-  filtersCollapsed.value = value
-}, { immediate: true })
-
-const tableData = computed(() => buildTreeTableRows(
-  resolvedView.value,
-  filteredRows.value ?? tableRows.value,
-))
-
-// ── r-table 包装 API（脚本可用） ───────────────────────────────────────────
-
-interface NativeTableLike {
+const nativeTableRef = ref<{
   clearSelection?: () => void
   toggleRowSelection?: (row: IDataRow, selected?: boolean) => void
   setCurrentRow?: (row: IDataRow | null) => void
   doLayout?: () => void
-}
+} | null>(null)
 
-const nativeTableRef = ref<NativeTableLike | null>(null)
-
-function hasRemoteListApi(view: DataView | null | undefined): boolean {
-  return Boolean(view?.dataTable?.api?.list)
-}
-
-const tableApi: RendererTableApi = {
-  getDataSource() {
-    return resolvedView.value ?? null
-  },
-  getRows() {
-    return resolvedView.value?.rows ?? []
-  },
-  getCurrentRow() {
-    return resolvedView.value?.currentRow ?? null
-  },
-  getSelectedRows() {
-    return resolvedView.value ? getSelectedRows(resolvedView.value) : []
-  },
-  async refresh() {
-    const view = resolvedView.value
-    if (!view || !hasRemoteListApi(view)) return
-    await view.refresh()
-  },
-  async query() {
-    await handleFilterSearch()
-  },
-  async loadTreeNested(rootId, limit, depthLimit) {
-    const view = resolvedView.value as (DataView & {
-      loadTreeNested?: (rootId?: string | number | null, limit?: number, depthLimit?: number) => Promise<unknown>
-    }) | null
-    if (!view || typeof view.loadTreeNested !== 'function') return null
-    return await view.loadTreeNested(rootId, limit, depthLimit)
-  },
-  async loadTreeChildren(parentId, limit) {
-    const view = resolvedView.value as (DataView & {
-      loadTreeChildren?: (parentId: string | number | null, limit?: number) => Promise<IDataRow[]>
-    }) | null
-    if (!view || typeof view.loadTreeChildren !== 'function') return []
-    return await view.loadTreeChildren(parentId, limit)
-  },
-  async loadTreePath(id) {
-    const view = resolvedView.value as (DataView & {
-      loadTreePath?: (id: string | number) => Promise<unknown>
-    }) | null
-    if (!view || typeof view.loadTreePath !== 'function') return null
-    return await view.loadTreePath(id)
-  },
-  async expandToNode(key) {
-    const view = resolvedView.value as (DataView & {
-      expandTreeToNode?: (key: string | number) => Promise<void>
-    }) | null
-    if (!view || typeof view.expandTreeToNode !== 'function') return
-    await view.expandTreeToNode(key)
-    tableApi.setCurrentRowById(key)
-  },
-  async moveNode(nodeId, newParentId, index) {
-    const view = resolvedView.value as (DataView & {
-      moveTreeNode?: (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<IDataRow | null>
-    }) | null
-    if (!view || typeof view.moveTreeNode !== 'function') return null
-    return await view.moveTreeNode(nodeId, newParentId, index)
-  },
-  async searchTreeNested(keyword, limit) {
-    const view = resolvedView.value as (DataView & {
-      searchTreeNested?: (keyword: string, limit?: number) => Promise<unknown[]>
-    }) | null
-    if (!view || typeof view.searchTreeNested !== 'function') return []
-    return await view.searchTreeNested(keyword, limit)
-  },
-  async addRow(row) {
-    const view = resolvedView.value
-    if (!view) return null
-    const { cancel } = await dispatch('add-row', row)
-    if (cancel) return createCancelledCrudResult('addRow cancelled by business handler')
-    return await view.addRow(row)
-  },
-  async editRowById(id, patch) {
-    const view = resolvedView.value
-    if (!view) return false
-    const { cancel } = await dispatch('edit-row', id, patch)
-    if (cancel) return createCancelledCrudResult('editRowById cancelled by business handler')
-    return await view.editRowById(id, patch)
-  },
-  async removeRow(id) {
-    const view = resolvedView.value
-    if (!view) return false
-    const { cancel } = await dispatch('remove-row', id)
-    if (cancel) return createCancelledCrudResult('removeRow cancelled by business handler')
-    return await view.removeRow(id)
-  },
-  appendRow(row) {
-    resolvedView.value?.appendRow(row)
-  },
-  updateRowById(id, patch) {
-    return resolvedView.value?.updateRowById(id, patch) ?? false
-  },
-  deleteRowById(id) {
-    return resolvedView.value?.deleteRowById(id) ?? false
-  },
-  setCurrentRow(row) {
-    const targetRow = row ?? null
-    resolvedView.value?.selection.setCurrentRow(targetRow)
-    nativeTableRef.value?.setCurrentRow?.(targetRow)
-  },
-  setCurrentRowById(id) {
-    const view = resolvedView.value
-    if (!view) return false
-    const updated = view.selection.setCurrentRowById(id ?? null)
-    nativeTableRef.value?.setCurrentRow?.(view.currentRow ?? null)
-    return updated
-  },
-  setSelectedRows(rows) {
-    resolvedView.value?.selection.setSelectedRows(rows)
-  },
-  setSelectedRowsById(ids) {
-    return resolvedView.value?.selection.setSelectedRowsById(ids) ?? 0
-  },
-  clearSelectedRows() {
-    resolvedView.value?.selection.clearSelectedRows()
-  },
-  clearUiSelection() {
-    nativeTableRef.value?.clearSelection?.()
-  },
-  toggleUiRowSelection(row, selected = true) {
-    nativeTableRef.value?.toggleRowSelection?.(row, selected)
-  },
-  doLayout() {
-    nativeTableRef.value?.doLayout?.()
-  },
-  getNativeTable() {
-    return nativeTableRef.value
-  },
-  getFilterModel() {
-    return { ...filterModel }
-  },
-  resetFilters() {
-    resetFilters()
-  },
-  hasActiveFilters() {
-    return hasFilters.value
-  },
-  getActiveFilterCount() {
-    return activeFilterCount.value
-  },
-}
+const {
+  dispatch,
+  tableApi,
+  isBuiltinActionDisabled,
+  handleBuiltinToolbarAction,
+  handleBuiltinRowAction,
+}: {
+  dispatch: (eventName: string, ...args: unknown[]) => Promise<{ cancel: boolean }>
+  tableApi: RendererTableApi
+  isBuiltinActionDisabled: (action: SparkNode, scope?: { row?: IDataRow; index?: number }) => boolean
+  handleBuiltinToolbarAction: (action: SparkNode) => void
+  handleBuiltinRowAction: (action: SparkNode, row: IDataRow, index: number) => void
+} = createRendererTableZeroCode({
+  props,
+  resolvedView,
+  nativeTableRef,
+  pageService,
+  logger,
+  filterModel,
+  resetFilters,
+  hasFilters,
+  activeFilterCount,
+  handleFilterSearch,
+})
 
 registerApi(tableApi)
 
@@ -765,66 +462,6 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
 
 // ── 声明式内置动作（零脚本能力） ────────────────────────────────────────────
 
-function isBuiltinActionDisabled(action: SparkNode, scope?: { row?: IDataRow; index?: number }): boolean {
-  return _isBuiltinActionDisabled(action, resolvedView.value, scope)
-}
-
-const builtinHandler = createBuiltinActionHandler({
-  getView: () => resolvedView.value,
-  getPageService: () => pageService,
-  getLogger: () => logger,
-  hasRemoteListApi: (view) => hasRemoteListApi(view),
-})
-
-function handleBuiltinToolbarAction(action: SparkNode): void {
-  builtinHandler.handleToolbar(action)
-}
-
-function handleBuiltinRowAction(action: SparkNode, row: IDataRow, index: number): void {
-  builtinHandler.handleRow(action, row, index)
-}
-
-// ── 子节点分类 ────────────────────────────────────────────────────────────
-
-function isCollectedTableColumn(config: SparkNode): boolean {
-  const type = config.type
-  if (typeof type !== 'string' || type.length === 0) return false
-  if (/^Render[A-Z]/.test(type)) return false
-  if (type === 'el-table-column') return true
-  if (!type.startsWith('r-')) return false
-  const field = nodeInputProp(config, 'field')
-  if (typeof field === 'string' && field.length > 0) {
-    return true
-  }
-  // 分组列：无 field 但有子列（如 r-column-group）
-  const kids = getSparkNodeChildren(config.children)
-  if (kids.length > 0) return true
-  return false
-}
-
-function assertNoLegacyTableStructures(): void {
-  if (Array.isArray(attrs['toolbar']) && attrs['toolbar'].length > 0) {
-    throw new Error('[RendererTable] props.toolbar 已废除。请将工具栏节点移动到 children，并声明 dock: "toolbar"；位置与样式请改为 props.docks.toolbar。')
-  }
-
-  if (legacyFilterColumnsValue.value.length > 0) {
-    throw new Error('[RendererTable] props.filterColumns 已废除。请将筛选项移动到 children，并为每个筛选节点声明 dock: "filter"。')
-  }
-
-  if (legacyRowActionsValue.value.length > 0) {
-    throw new Error('[RendererTable] props.rowActions 已废除。请将行操作节点移动到 children，并声明 dock: "actions"。')
-  }
-
-  const legacyDefaultChildren = configChildren.value.filter(child =>
-    nodeDock(child) === DEFAULT_DOCK && !isCollectedTableColumn(child)
-  )
-
-  if (legacyDefaultChildren.length > 0) {
-    const childTypes = legacyDefaultChildren.map(child => child.type).join(', ')
-    throw new Error(`[RendererTable] r-table 默认区仅允许列节点。检测到未声明 dock 的非列表达式节点: ${childTypes}。请将工具栏/筛选/行操作节点分别移动到 dock: "toolbar" | "filter" | "actions"。`)
-  }
-}
-
 // ── 过滤操作 ──────────────────────────────────────────────────────────────
 
 async function handleFilterSearch(): Promise<void> {
@@ -837,11 +474,6 @@ async function handleFilterSearch(): Promise<void> {
 
 function handleFilterReset() {
   resetFilters()
-}
-
-function toggleFiltersCollapsed() {
-  if (!filterCollapsibleValue.value) return
-  filtersCollapsed.value = !filtersCollapsed.value
 }
 
 // ── 字段上下文与事件桥接 ──────────────────────────────────────────────────

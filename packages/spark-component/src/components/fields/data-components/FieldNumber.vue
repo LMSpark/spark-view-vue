@@ -35,8 +35,9 @@
 
 <script setup lang="ts">
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
+import { useNumberFieldState } from './composables/useNumberFieldState'
+import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -77,40 +78,29 @@ function formatNumberValue(value: unknown): string {
   return String(value)
 }
 
-const isRangeFilter =
-  props.filterMode === 'range'
-  || props.filterVariant === 'range'
-  || props.filterRange === true
+const isRangeFilter = useRangeFilterMode(props)
 
-const permission = useFieldPermission<number | [number | undefined, number | undefined]>({
+const { permission, fieldCtx } = useBasicFieldState<number | [number | undefined, number | undefined]>({
   props,
-  type: 'r-number',
+  fieldType: 'r-number',
   fallbackValue: 0,
   formatDisplay: formatNumberValue,
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
-const rangeStart = Array.isArray(fieldValue.value) ? fieldValue.value[0] : undefined
-const rangeEnd = Array.isArray(fieldValue.value) ? fieldValue.value[1] : undefined
-
-const handleChange = (val: number) => {
-  emit('update:modelValue', val)
-  syncValue(val)
-}
-
-const handleRangeStartChange = (val: number | undefined) => {
-  const next: [number | undefined, number | undefined] = [val, rangeEnd]
-  emit('update:modelValue', next)
-  syncValue(next)
-}
-
-const handleRangeEndChange = (val: number | undefined) => {
-  const next: [number | undefined, number | undefined] = [rangeStart, val]
-  emit('update:modelValue', next)
-  syncValue(next)
-}
+const {
+  rangeStart,
+  rangeEnd,
+  handleChange,
+  handleRangeStartChange,
+  handleRangeEndChange,
+} = useNumberFieldState({
+  fieldValue,
+  emitUpdate: value => emit('update:modelValue', value),
+  syncValue,
+})
 </script>
 
 <style scoped>

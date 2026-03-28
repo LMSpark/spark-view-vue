@@ -17,8 +17,7 @@
 
 <script setup lang="ts">
 import type { SparkNode } from '../../internal'
-import { useOptionField } from '../options/useFieldOptions'
-import { useFieldContext } from '../context/useFieldContext'
+import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 type TransferValue = Array<string | number>
@@ -62,17 +61,16 @@ const emit = defineEmits<{
   'update:modelValue': [value: TransferValue]
 }>()
 
-const optionResult = useOptionField<TransferValue>({
+const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<TransferValue>({
   props,
-  type: 'r-transfer',
+  fieldType: 'r-transfer',
   fallbackValue: [],
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
-const { transferData, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
+const { transferData, fieldValue, isCurrentFieldEditable } = optionResult
 
-function handleChange(value: TransferValue): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function handleChange(value: TransferValue): Promise<void> {
+  await handleControlledChange(value)
 }
 </script>

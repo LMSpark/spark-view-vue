@@ -85,28 +85,27 @@
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../../internal'
-import { getDockedChildren, nodeId, type SparkNode } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
+import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
+import { getDockedChildren, nodeId, type SparkNode } from '../../../internal'
+import type { ContainerDocks } from '../../../../core/types'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE, FIELD_CONTEXT } from '../../internal'
-import type { RendererListApi } from '../../internal'
-import RendererListItemScope from './RendererListItemScope.vue'
-import { useContainerActions } from '../actions/useContainerActions'
-import type { LateralActionPosition } from '../actions/useContainerActions'
-import { useContainerDataSource, useContainerDataSourceEffects } from '../data/useContainerDataSource'
-import { useContainerSlots } from '../layout/useContainerSlots'
-import { useContainerToolbar } from '../layout/useContainerToolbar'
-import type { ToolbarPosition } from '../layout/useContainerToolbar'
-import { createRowActionSlotScope, createToolbarSlotScope } from '../slotScopeFactories'
+import { PAGE_DATASET, DATA_SOURCE, FIELD_CONTEXT } from '../../../internal'
+import type { RendererListApi } from './types'
+import RendererListItemScope from '../RendererListItemScope.vue'
+import { useContainerActions } from '../../actions/useContainerActions'
+import type { LateralActionPosition } from '../../actions/useContainerActions'
+import { useContainerDataSource, useContainerDataSourceEffects } from '../../data/useContainerDataSource'
+import { useContainerSlots } from '../../layout/useContainerSlots'
+import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import type { ToolbarPosition } from '../../layout/useContainerToolbar'
+import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
+import { createRendererListZeroCode } from './zero-code'
 import {
-  createCancelledCrudResult,
   type AddRowHandler,
   type EditRowHandler,
   type RemoveRowHandler,
   type RowClickHandler,
-  useEventDefaults,
-} from '../support/index.js'
+} from '../../support/index.js'
 
 interface Props extends SparkNode {
   /** 数据绑定键 */
@@ -258,72 +257,17 @@ const {
 
 // ── r-list 包装 API ──────────────────────────────────────────────────────
 
-const { dispatch } = useEventDefaults({
-  'item-click': {
-    systemDefault: (row: unknown) => {
-      resolvedView.value?.setCurrentRow(row as IDataRow)
-    },
-  },
-  'add-row': {},
-  'edit-row': {},
-  'remove-row': {},
-}, props as Readonly<Record<string, unknown>>)
-
-const listApi: RendererListApi = {
-  getDataSource() {
-    return resolvedView.value ?? null
-  },
-  getRows() {
-    return listRows.value
-  },
-  getCurrentRow() {
-    return resolvedView.value?.currentRow ?? null
-  },
-  getItemCount() {
-    return listRows.value.length
-  },
-  async refresh() {
-    const view = resolvedView.value
-    if (!view?.dataTable?.api?.list) return
-    await view.refresh()
-  },
-  async addRow(row) {
-    const view = resolvedView.value
-    if (!view) return null
-    const { cancel } = await dispatch('add-row', row)
-    if (cancel) return createCancelledCrudResult('addRow cancelled by business handler')
-    return await view.addRow(row)
-  },
-  async editRowById(id, patch) {
-    const view = resolvedView.value
-    if (!view) return false
-    const { cancel } = await dispatch('edit-row', id, patch)
-    if (cancel) return createCancelledCrudResult('editRowById cancelled by business handler')
-    return await view.editRowById(id, patch)
-  },
-  async removeRow(id) {
-    const view = resolvedView.value
-    if (!view) return false
-    const { cancel } = await dispatch('remove-row', id)
-    if (cancel) return createCancelledCrudResult('removeRow cancelled by business handler')
-    return await view.removeRow(id)
-  },
-  appendRow(row) {
-    resolvedView.value?.appendRow(row)
-  },
-  updateRowById(id, patch) {
-    return resolvedView.value?.updateRowById(id, patch) ?? false
-  },
-  deleteRowById(id) {
-    return resolvedView.value?.deleteRowById(id) ?? false
-  },
-  setCurrentRow(row) {
-    resolvedView.value?.setCurrentRow(row ?? null)
-  },
-  setCurrentRowById(id) {
-    return resolvedView.value?.setCurrentRowById(id ?? null) ?? false
-  },
-}
+const {
+  dispatch,
+  listApi,
+}: {
+  dispatch: (eventName: string, ...args: unknown[]) => Promise<{ cancel: boolean }>
+  listApi: RendererListApi
+} = createRendererListZeroCode({
+  props,
+  resolvedView,
+  listRows,
+})
 
 registerApi(listApi)
 

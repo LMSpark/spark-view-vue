@@ -16,8 +16,7 @@
 
 <script setup lang="ts">
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -51,18 +50,17 @@ const emit = defineEmits<{
   'update:modelValue': [value: number]
 }>()
 
-const permission = useFieldPermission<number>({
+const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<number>({
   props,
-  type: 'r-slider',
+  fieldType: 'r-slider',
   fallbackValue: 0,
   formatDisplay: value => String(value ?? 0),
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
-const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
+const { fieldValue, isCurrentFieldEditable } = permission
 
-function handleChange(value: number): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function handleChange(value: number): Promise<void> {
+  await handleControlledChange(value)
 }
 </script>

@@ -39,9 +39,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
+import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -87,11 +87,12 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const permission = useFieldPermission<string>({
+const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string>({
   props,
-  type: 'r-image',
+  fieldType: 'r-image',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const {
@@ -102,64 +103,46 @@ const {
   isCurrentFieldEditable,
   currentDisplayValue,
   getRowRawStringValue,
-  syncValue,
 } = permission
-
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
 const { hasBrowseCapability, hasUploadCapability, primaryAction, browseFiles, uploadFiles } = useFileFieldActions({
   pageService,
   isEditable: isCurrentFieldEditable,
 })
 
-const canUpload = computed(() => hasUploadCapability.value && props.action.trim().length > 0 && props.action !== '#')
-const canPrimaryAction = computed(() => (primaryAction.value === 'upload' ? canUpload.value : hasBrowseCapability.value))
-const primaryActionText = computed(() => (primaryAction.value === 'upload' ? props.buttonText : props.readonlyButtonText))
-const showClearButton = computed(() => props.clearable && isCurrentFieldEditable.value && currentRawStringValue.value.length > 0)
-
 function showImage(value: string): boolean {
   return !!value && !value.includes('***')
 }
 
-function updateValue(value: string): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function updateValue(value: string): Promise<void> {
+  await handleControlledChange(value)
 }
 
-function handleBrowse(): void {
-  void browseFiles({
-    title: displayLabel.value,
-    accept: props.accept,
-    multiple: props.multiple,
-    currentValue: currentRawStringValue.value,
-  })
-}
-
-function handleUpload(): void {
-  void uploadFiles({
-    action: props.action,
-    accept: props.accept,
-    multiple: props.multiple,
-    fieldName: fieldName.value || 'file',
-    currentValue: currentRawStringValue.value,
-  }).then((files) => {
-    if (files.length === 0) return
-    const nextValue = files.map(file => file.url ?? file.name).join(props.separator)
-    updateValue(nextValue)
-  })
-}
-
-function handlePrimaryAction(): void {
-  if (primaryAction.value === 'browse') {
-    handleBrowse()
-    return
-  }
-  handleUpload()
-}
-
-function clearValue(): void {
-  updateValue('')
-}
+const {
+  canPrimaryAction,
+  primaryActionText,
+  showClearButton,
+  handlePrimaryAction,
+  clearValue,
+} = useUploadBrowseFieldState({
+  displayLabel,
+  fieldName,
+  currentRawStringValue,
+  isCurrentFieldEditable,
+  hasBrowseCapability,
+  hasUploadCapability,
+  primaryAction,
+  buttonText: computed(() => props.buttonText),
+  readonlyButtonText: computed(() => props.readonlyButtonText),
+  canClear: computed(() => props.clearable),
+  action: computed(() => props.action),
+  accept: computed(() => props.accept),
+  multiple: computed(() => props.multiple),
+  separator: computed(() => props.separator),
+  browseFiles,
+  uploadFiles,
+  updateValue,
+})
 </script>
 
 <style scoped>

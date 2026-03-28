@@ -42,19 +42,18 @@
 /**
  * RendererDetail - 详情展示容器组件
  */
-import { SparkComponentRenderer } from '../../internal'
+import { SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
-import { nodeId, type SparkNode } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
-import { useFormDetailContainer } from '../context/useFormDetailContainer'
-import type { RendererDetailApi } from '../../internal'
+import { nodeId, type SparkNode } from '../../../internal'
+import type { ContainerDocks } from '../../../../core/types'
+import { useFormDetailContainer } from '../../context/useFormDetailContainer'
+import type { RendererDetailApi } from './types'
+import { createRendererDetailZeroCode } from './zero-code'
 import {
-  createCancelledCrudResult,
   type AddRowHandler,
   type EditRowHandler,
   type RemoveRowHandler,
-  useEventDefaults,
-} from '../support/index.js'
+} from '../../support/index.js'
 
 interface Props extends SparkNode {
   /** 数据绑定键 */
@@ -118,67 +117,11 @@ const {
 
 // ── r-detail 包装 API ────────────────────────────────────────────────────
 
-const { dispatch } = useEventDefaults({
-  'add-row': {},
-  'edit-row': {},
-  'remove-row': {},
-}, props as Readonly<Record<string, unknown>>)
-
-const detailApi: RendererDetailApi = {
-  getDataSource() {
-    return resolvedView.value ?? null
-  },
-  async refresh() {
-    const view = resolvedView.value
-    if (!view?.dataTable?.api?.list) return
-    await view.refresh()
-  },
-  async addRow(row) {
-    const view = resolvedView.value
-    if (!view) return null
-    const { cancel } = await dispatch('add-row', row)
-    if (cancel) return createCancelledCrudResult('addRow cancelled by business handler')
-    return await view.addRow(row)
-  },
-  async editRowById(id, patch) {
-    const view = resolvedView.value
-    if (!view) return false
-    const { cancel } = await dispatch('edit-row', id, patch)
-    if (cancel) return createCancelledCrudResult('editRowById cancelled by business handler')
-    return await view.editRowById(id, patch)
-  },
-  async removeRow(id) {
-    const view = resolvedView.value
-    if (!view) return false
-    const { cancel } = await dispatch('remove-row', id)
-    if (cancel) return createCancelledCrudResult('removeRow cancelled by business handler')
-    return await view.removeRow(id)
-  },
-  appendRow(row) {
-    resolvedView.value?.appendRow(row)
-  },
-  updateRowById(id, patch) {
-    return resolvedView.value?.updateRowById(id, patch) ?? false
-  },
-  deleteRowById(id) {
-    return resolvedView.value?.deleteRowById(id) ?? false
-  },
-  setCurrentRow(row) {
-    resolvedView.value?.setCurrentRow(row ?? null)
-  },
-  setCurrentRowById(id) {
-    return resolvedView.value?.setCurrentRowById(id ?? null) ?? false
-  },
-  getDetailData() {
-    return detailData
-  },
-  getCurrentRow() {
-    return resolvedView.value?.currentRow ?? null
-  },
-  getFieldValue(field) {
-    return detailData[field]
-  },
-}
+const { detailApi }: { detailApi: RendererDetailApi } = createRendererDetailZeroCode({
+  props,
+  resolvedView,
+  detailData,
+})
 
 registerApi(detailApi)
 

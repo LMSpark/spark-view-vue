@@ -1,6 +1,6 @@
 import { computed, useAttrs } from 'vue'
 import type { ComputedRef } from 'vue'
-import { getSparkNodeChildren, type SparkNode } from '../../internal'
+import { getSparkNodeChildren, type SparkNode, type SparkNodeChildren } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../columnFormRules'
 
@@ -36,7 +36,7 @@ interface FieldPermissionForContext {
 }
 
 export function useFieldContext(
-  fieldProps: { type: string; width: number | undefined; children?: SparkNode[] | undefined },
+  fieldProps: { type: string; width: number | undefined; children?: SparkNodeChildren | undefined },
   permission: FieldPermissionForContext,
 ): ComputedRef<FieldContextProps> {
   const attrs = useAttrs()

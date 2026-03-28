@@ -43,13 +43,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useSparkComponent } from '../../internal'
-import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
-import { useContainerToolbar } from '../layout/useContainerToolbar'
-import RendererStepItem from './RendererStepItem.vue'
-import type { RendererStepsApi } from '../../internal'
+import { computed } from 'vue'
+import { useSparkComponent } from '../../../internal'
+import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import type { ContainerDocks } from '../../../../core/types'
+import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import RendererStepItem from '../RendererStepItem.vue'
+import type { RendererStepsApi } from './types'
+import { createRendererStepsZeroCode } from './zero-code'
+import { useDefaultedSelection } from '../state'
 
 interface Props extends SparkNode {
   /** 子节点（步骤配置） */
@@ -78,18 +80,11 @@ const stepConfigs = computed(() =>
 )
 const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 
-const activeStepName = ref<string | number | undefined>(props.modelValue)
-
-watch(() => props.modelValue, (value) => {
-  activeStepName.value = value
-}, { immediate: true })
-
-watch(stepConfigs, (steps) => {
-  if (activeStepName.value !== undefined) return
-  const firstStep = steps[0]
-  if (!firstStep) return
-  activeStepName.value = getStepName(firstStep, 0)
-}, { immediate: true })
+const activeStepName = useDefaultedSelection({
+  modelValue: computed(() => props.modelValue),
+  items: stepConfigs,
+  getValue: getStepName,
+})
 
 const {
   toolbarPositionValue,
@@ -132,49 +127,22 @@ function getStepComponentProps(step: SparkNode): Record<string, unknown> {
   }
 }
 
-function activateStep(index: number): void {
-  const step = stepConfigs.value[index]
-  if (!step) return
-  const nextValue = getStepName(step, index)
-  activeStepName.value = nextValue
-  emit('update:modelValue', nextValue)
-  props.onStepChange?.(nextValue, step, index)
-}
-
 // ── r-steps 包装 API ─────────────────────────────────────────────────────
 
-
-const stepsApi: RendererStepsApi = {
-  getActiveStep() {
-    return activeStepName.value
-  },
-  getActiveStepIndex() {
-    return activeStepIndex.value
-  },
-  setActiveStep(index) {
-    activateStep(index)
-  },
-  nextStep() {
-    const next = activeStepIndex.value + 1
-    if (next < stepConfigs.value.length) activateStep(next)
-  },
-  prevStep() {
-    const prev = activeStepIndex.value - 1
-    if (prev >= 0) activateStep(prev)
-  },
-  getStepCount() {
-    return stepConfigs.value.length
-  },
-  getStepNames() {
-    return stepConfigs.value.map((step, index) => getStepName(step, index))
-  },
-  isFirstStep() {
-    return activeStepIndex.value === 0
-  },
-  isLastStep() {
-    return activeStepIndex.value >= stepConfigs.value.length - 1
-  },
-}
+const {
+  stepsApi,
+  activateStep,
+}: {
+  stepsApi: RendererStepsApi
+  activateStep: (index: number) => void
+} = createRendererStepsZeroCode({
+  emit,
+  stepConfigs,
+  activeStepName,
+  activeStepIndex,
+  getStepName,
+  onStepChange: props.onStepChange,
+})
 
 registerApi(stepsApi)
 

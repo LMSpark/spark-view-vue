@@ -55,20 +55,18 @@
  * RendererForm - 表单容器组件
  */
 import { ref } from 'vue'
-import { SparkComponentRenderer } from '../../internal'
-import { nodeId, type SparkNode } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
-import { useFormDetailContainer } from '../context/useFormDetailContainer'
-import type { RendererFormApi } from '../../internal'
+import { SparkComponentRenderer } from '../../../internal'
+import { nodeId, type SparkNode } from '../../../internal'
+import type { ContainerDocks } from '../../../../core/types'
+import { useFormDetailContainer } from '../../context/useFormDetailContainer'
+import type { RendererFormApi } from './types'
+import { createRendererFormZeroCode } from './zero-code'
 import {
-  createCancelledCrudResult,
   type AddRowHandler,
   type EditRowHandler,
   type RemoveRowHandler,
-  useEventDefaults,
-} from '../support/index.js'
+} from '../../support/index.js'
 import {
-  createBuiltinActionHandler,
   getBuiltinActionLabel,
   getBuiltinButtonClass,
   getBuiltinButtonLink,
@@ -77,8 +75,7 @@ import {
   getBuiltinButtonText,
   getBuiltinButtonType,
   isBuiltinAction,
-  isBuiltinActionDisabled as _isBuiltinActionDisabled,
-} from '../builtin-actions'
+} from '../../builtin-actions'
 
 interface Props extends SparkNode {
   /** 数据绑定键，如 "Users@currentRow" */
@@ -134,114 +131,23 @@ const {
   gridAutoRows: props.gridAutoRows,
 }, 'form')
 
-// ── r-form 包装 API ──────────────────────────────────────────────────────
-
 const nativeFormRef = ref<unknown>(null)
-
-interface NativeFormLike {
-  validate?: () => Promise<boolean>
-  resetFields?: () => void
-  clearValidate?: () => void
-}
-
-const { dispatch } = useEventDefaults({
-  'add-row': {},
-  'edit-row': {},
-  'remove-row': {},
-}, props as Readonly<Record<string, unknown>>)
-
-const formApi: RendererFormApi = {
-  getDataSource() {
-    return resolvedView.value ?? null
-  },
-  getCurrentRow() {
-    return resolvedView.value?.currentRow ?? null
-  },
-  getFormData() {
-    return formModel
-  },
-  getNativeForm() {
-    return nativeFormRef.value
-  },
-  async refresh() {
-    const view = resolvedView.value
-    if (!view?.dataTable?.api?.list) return
-    await view.refresh()
-  },
-  async addRow(row) {
-    const view = resolvedView.value
-    if (!view) return null
-    const { cancel } = await dispatch('add-row', row)
-    if (cancel) return createCancelledCrudResult('addRow cancelled by business handler')
-    return await view.addRow(row)
-  },
-  async editRowById(id, patch) {
-    const view = resolvedView.value
-    if (!view) return false
-    const { cancel } = await dispatch('edit-row', id, patch)
-    if (cancel) return createCancelledCrudResult('editRowById cancelled by business handler')
-    return await view.editRowById(id, patch)
-  },
-  async removeRow(id) {
-    const view = resolvedView.value
-    if (!view) return false
-    const { cancel } = await dispatch('remove-row', id)
-    if (cancel) return createCancelledCrudResult('removeRow cancelled by business handler')
-    return await view.removeRow(id)
-  },
-  appendRow(row) {
-    resolvedView.value?.appendRow(row)
-  },
-  updateRowById(id, patch) {
-    return resolvedView.value?.updateRowById(id, patch) ?? false
-  },
-  deleteRowById(id) {
-    return resolvedView.value?.deleteRowById(id) ?? false
-  },
-  setCurrentRow(row) {
-    resolvedView.value?.setCurrentRow(row ?? null)
-  },
-  setCurrentRowById(id) {
-    return resolvedView.value?.setCurrentRowById(id ?? null) ?? false
-  },
-  async validate() {
-    const form = nativeFormRef.value as NativeFormLike
-    if (!form?.validate) return true
-    try {
-      return await form.validate()
-    } catch {
-      return false
-    }
-  },
-  resetFields() {
-    (nativeFormRef.value as NativeFormLike)?.resetFields?.()
-  },
-  clearValidate() {
-    (nativeFormRef.value as NativeFormLike)?.clearValidate?.()
-  },
-  getFieldValue(field) {
-    return formModel[field]
-  },
-  setFieldValue(field, value) {
-    formModel[field] = value
-  },
-}
-
-const builtinHandler = createBuiltinActionHandler({
-  getView: () => resolvedView.value,
-  getPageService: () => pageService,
-  getLogger: () => logger,
-  hasRemoteListApi: view => Boolean(view.dataTable?.api?.list),
-  getFormApi: () => formApi,
+const {
+  formApi,
+  isBuiltinActionDisabled,
+  handleBuiltinToolbarAction,
+}: {
+  formApi: RendererFormApi
+  isBuiltinActionDisabled: (action: SparkNode) => boolean
+  handleBuiltinToolbarAction: (action: SparkNode) => void
+} = createRendererFormZeroCode({
+  props,
+  resolvedView,
+  formModel,
+  nativeFormRef,
+  pageService,
+  logger,
 })
-
-function isBuiltinActionDisabled(action: SparkNode): boolean {
-  return _isBuiltinActionDisabled(action, resolvedView.value)
-}
-
-function handleBuiltinToolbarAction(action: SparkNode): void {
-  builtinHandler.handleToolbar(action)
-}
 
 registerApi(formApi)
 

@@ -30,8 +30,7 @@
 
 <script setup lang="ts">
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -67,18 +66,17 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const permission = useFieldPermission<string>({
+const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string>({
   props,
-  type: 'r-textarea',
+  fieldType: 'r-textarea',
   fallbackValue: '',
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
-const { fieldValue, isCurrentFieldEditable, currentDisplayValue, syncValue } = permission
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
+const { fieldValue, isCurrentFieldEditable, currentDisplayValue } = permission
 
-function handleChange(value: string): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function handleChange(value: string): Promise<void> {
+  await handleControlledChange(value)
 }
 </script>
 

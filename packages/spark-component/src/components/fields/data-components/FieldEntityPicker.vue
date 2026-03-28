@@ -19,9 +19,9 @@ import { computed } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../internal'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import { useFieldContext } from '../context/useFieldContext'
-import { useOptionField } from '../options/useFieldOptions'
 import { useSelectorFieldActions } from '../actions/useSelectorFieldActions'
+import { useEntityPickerState } from './composables/useEntityPickerState'
+import { useOptionFieldState } from './composables/useOptionFieldState'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
@@ -81,10 +81,11 @@ const emit = defineEmits<{
   'update:modelValue': [value: EntityPickerValue]
 }>()
 
-const optionResult = useOptionField<EntityPickerValue>({
+const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<EntityPickerValue>({
   props,
-  type: 'r-entity-picker',
+  fieldType: 'r-entity-picker',
   fallbackValue: '',
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const {
@@ -94,63 +95,41 @@ const {
   currentRawStringValue,
   isCurrentFieldEditable,
   currentDisplayValue,
-  syncValue,
 } = optionResult
-
-const fieldCtx = useFieldContext({
-  type: props.type,
-  width: props.width,
-  ...(props.children !== undefined ? { children: props.children } : {}),
-}, optionResult)
 
 const { hasSelectorCapability, primaryAction, selectEntities } = useSelectorFieldActions({
   pageService,
   isEditable: isCurrentFieldEditable,
 })
 
-const primaryActionText = computed(() => (primaryAction.value === 'select' ? props.buttonText : props.readonlyButtonText))
-const hasValue = computed(() => Array.isArray(currentRawValue.value)
-  ? currentRawValue.value.length > 0
-  : currentRawStringValue.value.trim().length > 0)
-const showClearButton = computed(() => props.clearable && isCurrentFieldEditable.value && hasValue.value)
-
-function updateValue(value: EntityPickerValue): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function updateValue(value: EntityPickerValue): Promise<void> {
+  await handleControlledChange(value)
 }
 
-function buildNextValue(values: PageSelectableValue[]): EntityPickerValue {
-  if (props.multiple) {
-    if (props.valueMode === 'array') return values
-    if (props.valueMode === 'auto' && Array.isArray(currentRawValue.value)) return values
-    return values.map(value => String(value)).join(props.separator)
-  }
-  return values[0] ?? ''
-}
-
-function openSelector(): void {
-  void selectEntities({
-    title: `${primaryActionText.value}${props.entityName}`,
-    entityName: props.entityName,
-    placeholder: props.placeholder,
-    multiple: props.multiple,
-    searchable: props.searchable,
-    currentValue: currentRawValue.value,
-    options: flatOptions.value.map(option => ({
-      label: option.label,
-      value: option.value,
-      ...(option.disabled === true ? { disabled: true } : {}),
-    })),
-  }).then((selected) => {
-    if (!isCurrentFieldEditable.value) return
-    const nextValues = selected.map(item => item.value)
-    updateValue(buildNextValue(nextValues))
-  })
-}
-
-function clearValue(): void {
-  updateValue(props.multiple && (props.valueMode === 'array' || (props.valueMode === 'auto' && Array.isArray(currentRawValue.value))) ? [] : '')
-}
+const {
+  primaryActionText,
+  showClearButton,
+  openSelector,
+  clearValue,
+} = useEntityPickerState({
+  buttonText: computed(() => props.buttonText),
+  readonlyButtonText: computed(() => props.readonlyButtonText),
+  clearable: computed(() => props.clearable),
+  multiple: computed(() => props.multiple),
+  searchable: computed(() => props.searchable),
+  separator: computed(() => props.separator),
+  valueMode: computed(() => props.valueMode),
+  entityName: computed(() => props.entityName),
+  placeholder: computed(() => props.placeholder),
+  flatOptions,
+  currentRawValue,
+  currentRawStringValue,
+  isCurrentFieldEditable,
+  hasSelectorCapability,
+  primaryAction,
+  selectEntities,
+  updateValue,
+})
 </script>
 
 <style scoped>

@@ -1,10 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { Spark, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, DATA_SOURCE, FIELD_CONTEXT, FieldSwitch } from '@spark-view/spark-component'
+import { FieldSwitch } from '@spark-view/spark-component'
 import type { DataColumn } from '@spark-view/spark-data'
-
-const { registry, rootContext } = Spark.createSystem()
+import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 const ElFormItemStub = defineComponent({
   props: ['label', 'prop', 'rules'],
@@ -30,27 +28,14 @@ function mountFieldSwitch(
   componentProps?: Record<string, unknown>,
   columns?: DataColumn[],
 ) {
-  const Provider = defineComponent({
-    setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
-      sparkProvide(CONTEXT_DATA, model)
-      if (columns) {
-        sparkProvide(DATA_SOURCE, { columns } as never)
-      }
-      sparkProvide(FIELD_CONTEXT, 'form')
-      return () => h(FieldSwitch as never, {
-        type: 'r-switch',
-        field: fieldName,
-        ...componentProps,
-      })
-    },
-  })
-
-  return mount(Provider, {
+  return mountFieldInContext({
+    component: FieldSwitch,
+    type: 'r-switch',
+    model,
+    fieldName,
+    componentProps,
+    ...(columns !== undefined ? { dataSource: { columns } } : {}),
     global: {
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      },
       stubs: {
         'el-form-item': ElFormItemStub,
         'el-switch': ElSwitchStub,

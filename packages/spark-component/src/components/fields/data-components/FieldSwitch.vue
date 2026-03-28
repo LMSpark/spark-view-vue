@@ -13,11 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue'
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
-import { useFieldContext } from '../context/useFieldContext'
-import { useControlledFieldChange } from './composables/useControlledFieldChange'
+import { useBasicFieldState } from './composables/useBasicFieldState'
+import { useSwitchNullValue } from './composables/useSwitchNullValue'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -49,38 +47,19 @@ function formatSwitchValue(value: unknown): string {
   return value ? props.activeText : props.inactiveText
 }
 
-const permission = useFieldPermission<boolean | null>({
+const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<boolean | null>({
   props,
-  type: 'r-switch',
+  fieldType: 'r-switch',
   fallbackValue: false,
   formatDisplay: formatSwitchValue,
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const { boundColumn, contextData, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
-const normalizedEmptyValue = computed<boolean | null>(() => {
-  const column = boundColumn.value
-  if (!column) return false
-  const colType = column.type.toLowerCase()
-  if (colType !== 'boolean' && colType !== 'bool') return false
-  return column.allowDBNull === true ? null : false
-})
-
-watchEffect(() => {
-  if (!fieldName.value || contextData === null || typeof contextData !== 'object') return
-  const column = boundColumn.value
-  if (!column) return
-  const colType = column.type.toLowerCase()
-  if (colType !== 'boolean' && colType !== 'bool') return
-  const raw = contextData[fieldName.value]
-  if (raw === '' || raw === undefined) {
-    syncValue(normalizedEmptyValue.value)
-  }
-})
-
-const { handleControlledChange } = useControlledFieldChange<boolean | null>({
-  getValue: () => fieldValue.value,
-  emitUpdate: value => emit('update:modelValue', value),
+useSwitchNullValue({
+  boundColumn,
+  contextData,
+  fieldName,
   syncValue,
 })
 

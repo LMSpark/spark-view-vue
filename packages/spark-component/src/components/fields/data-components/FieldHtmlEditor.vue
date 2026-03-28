@@ -48,11 +48,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
+import { ref } from 'vue'
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
+import { stripHtml, useHtmlEditorState } from './composables/useHtmlEditorState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -77,15 +76,12 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-function stripHtml(value: unknown): string {
-  return String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-}
-
-const permission = useFieldPermission<string>({
+const { permission, fieldCtx } = useBasicFieldState<string>({
   props,
-  type: 'r-html-editor',
+  fieldType: 'r-html-editor',
   fallbackValue: '',
   formatDisplay: stripHtml,
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const {
@@ -95,58 +91,24 @@ const {
   getRowRawValue,
 } = permission
 
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
-
 const editorRef = ref<HTMLElement | null>(null)
-const sourceMode = ref(false)
-const htmlValue = computed(() => String(fieldValue.value ?? ''))
-const plainValue = computed(() => stripHtml(htmlValue.value))
 
-function syncEditorSurface(): void {
-  if (sourceMode.value) return
-  if (editorRef.value && editorRef.value.innerHTML !== htmlValue.value) {
-    editorRef.value.innerHTML = htmlValue.value
-  }
-}
-
-function updateValue(value: string): void {
-  emit('update:modelValue', value)
-  syncValue(value)
-}
-
-function handleSourceChange(value: string): void {
-  updateValue(value)
-}
-
-function handleSurfaceInput(event: Event): void {
-  const target = event.target as HTMLElement
-  updateValue(target.innerHTML)
-}
-
-function applyCommand(command: string): void {
-  if (!editorRef.value || sourceMode.value || !isCurrentFieldEditable.value) return
-  editorRef.value.focus()
-  if (typeof document.execCommand === 'function') {
-    document.execCommand(command, false)
-    updateValue(editorRef.value.innerHTML)
-  }
-}
-
-function toggleSourceMode(): void {
-  sourceMode.value = !sourceMode.value
-  void nextTick(() => syncEditorSurface())
-}
-
-function getPlainTableValue(row: IDataRow): string {
-  return stripHtml(getRowRawValue(row))
-}
-
-watch(htmlValue, () => {
-  syncEditorSurface()
-})
-
-onMounted(() => {
-  syncEditorSurface()
+const {
+  sourceMode,
+  htmlValue,
+  plainValue,
+  handleSourceChange,
+  handleSurfaceInput,
+  applyCommand,
+  toggleSourceMode,
+  getPlainTableValue,
+} = useHtmlEditorState({
+  editorRef,
+  fieldValue,
+  isCurrentFieldEditable,
+  syncValue,
+  emitUpdate: value => emit('update:modelValue', value),
+  getRowRawValue,
 })
 </script>
 

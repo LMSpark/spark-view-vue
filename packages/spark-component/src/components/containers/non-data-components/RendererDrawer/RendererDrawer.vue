@@ -1,13 +1,13 @@
 <!--
 /**
- * @skill r-dialog
- * @description 对话框容器，支持 header/footer dock 动作区和 24 列 Grid 内容区
+ * @skill r-drawer
+ * @description 抽屉容器，支持 header/footer dock 动作区和 24 列 Grid 内容区
  * @input { props: { modelValue?: boolean, title?: string, docks?: { header?: { class?: string }, footer?: { class?: string } } } }
- * @example { "type": "r-dialog", "props": { "title": "编辑", "modelValue": true }, "children": [] }
+ * @example { "type": "r-drawer", "props": { "title": "详情", "modelValue": true }, "children": [] }
  */
 -->
 <template>
-  <el-dialog
+  <el-drawer
     v-bind="$attrs"
     :model-value="visibleValue"
     @update:model-value="handleModelUpdate"
@@ -17,12 +17,12 @@
     @closed="handleClosed"
   >
     <template v-if="hasHeader" #header>
-      <div :class="['renderer-dialog-header', headerClassValue]">
-        <div class="renderer-dialog-title">{{ resolvedTitle }}</div>
-        <div v-if="hasHeaderActions" :class="['renderer-dialog-header-actions', headerActionsClassValue]">
+      <div :class="['renderer-drawer-header', headerClassValue]">
+        <div class="renderer-drawer-title">{{ resolvedTitle }}</div>
+        <div v-if="hasHeaderActions" :class="['renderer-drawer-header-actions', headerActionsClassValue]">
           <SparkComponentRenderer
             v-for="(action, index) in headerActionConfigs"
-            :key="nodeId(action) ?? `r-dialog-header-${index}`"
+            :key="nodeId(action) ?? `r-drawer-header-${index}`"
             :config="action"
           />
           <slot name="header-actions" v-bind="getHeaderSlotScope()" />
@@ -30,12 +30,12 @@
       </div>
     </template>
 
-    <div :class="['renderer-dialog-body', bodyClass]" :style="gridStyle">
+    <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
       <template v-if="gridChildren.length">
         <div
           v-for="(child, index) in gridChildren"
-          :key="nodeId(child) ?? `r-dialog-child-${index}`"
-          class="renderer-dialog-grid-item"
+          :key="nodeId(child) ?? `r-drawer-child-${index}`"
+          class="renderer-drawer-grid-item"
           :style="getChildGridStyle(child)"
         >
           <SparkComponentRenderer :config="child" />
@@ -45,32 +45,33 @@
     </div>
 
     <template v-if="showFooter" #footer>
-      <div :class="['renderer-dialog-footer', footerClassValue]">
+      <div :class="['renderer-drawer-footer', footerClassValue]">
         <SparkComponentRenderer
           v-for="(action, index) in footerActionConfigs"
-          :key="nodeId(action) ?? `r-dialog-footer-${index}`"
+          :key="nodeId(action) ?? `r-drawer-footer-${index}`"
           :config="action"
         />
         <slot name="footer" v-bind="getFooterSlotScope()" />
       </div>
     </template>
-  </el-dialog>
+  </el-drawer>
 </template>
 
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../../internal'
-import { getDockedChildren, nodeId, type SparkNode } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
-import { useContainerGrid } from '../layout/useContainerGrid'
-import type { RendererDialogApi } from '../../internal'
+import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
+import { getDockedChildren, nodeId, type SparkNode } from '../../../internal'
+import type { ContainerDocks } from '../../../../core/types'
+import { useContainerGrid } from '../../layout/useContainerGrid'
+import type { RendererDrawerApi } from './types'
+import { createRendererDrawerZeroCode } from './zero-code'
 
 interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
   /** dock 布局配置 */
   docks?: ContainerDocks
-  /** 对话框标题 */
+  /** 抽屉标题 */
   title?: string
   /** 控制显隐（v-model） */
   modelValue?: boolean
@@ -93,7 +94,7 @@ interface Props extends SparkNode {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  type: 'r-dialog',
+  type: 'r-drawer',
   title: '',
   modelValue: false,
   bodyClass: '',
@@ -119,7 +120,7 @@ const headerClassValue = computed(() => props.docks?.header?.class ?? readString
 const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
 const footerClassValue = computed(() => props.docks?.footer?.class ?? readStringAttr('footerClass'))
 
-assertNoLegacyDialogStructures()
+assertNoLegacyDrawerStructures()
 
 const resolvedTitle = computed(() => props.title || '')
 const configChildren = computed(() => props.children ?? [])
@@ -137,57 +138,44 @@ const hasHeaderActions = computed(() => headerActionConfigs.value.length > 0 || 
 const hasHeader = computed(() => resolvedTitle.value.length > 0 || hasHeaderActions.value)
 const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots['footer'] !== undefined)
 
-function closeDialog(): void {
+function closeDrawer(): void {
   emit('update:modelValue', false)
 }
 
-// ── r-dialog 包装 API ────────────────────────────────────────────────────
+// ── r-drawer 包装 API ────────────────────────────────────────────────────
 
+const {
+  drawerApi,
+  handleModelUpdate,
+  handleOpen,
+  handleClose,
+  handleOpened,
+  handleClosed,
+}: {
+  drawerApi: RendererDrawerApi
+  handleModelUpdate: (value: boolean) => void
+  handleOpen: () => void
+  handleClose: () => void
+  handleOpened: () => void
+  handleClosed: () => void
+} = createRendererDrawerZeroCode({
+  emit,
+  visibleValue,
+  onOpen: props.onOpen,
+  onClose: props.onClose,
+  onOpened: props.onOpened,
+  onClosed: props.onClosed,
+})
 
-const dialogApi: RendererDialogApi = {
-  open() {
-    emit('update:modelValue', true)
-  },
-  close() {
-    emit('update:modelValue', false)
-  },
-  isVisible() {
-    return visibleValue.value
-  },
-  toggle() {
-    emit('update:modelValue', !visibleValue.value)
-  },
-}
+registerApi(drawerApi)
 
-registerApi(dialogApi)
-
-defineExpose(dialogApi)
-
-function handleModelUpdate(value: boolean): void {
-  emit('update:modelValue', value)
-}
-
-function handleOpen(): void {
-  props.onOpen?.()
-}
-
-function handleClose(): void {
-  props.onClose?.()
-}
-
-function handleOpened(): void {
-  props.onOpened?.()
-}
-
-function handleClosed(): void {
-  props.onClosed?.()
-}
+defineExpose(drawerApi)
 
 function getHeaderSlotScope() {
   return {
     title: resolvedTitle.value,
     visible: visibleValue.value,
-    close: closeDialog,
+    close: closeDrawer,
   }
 }
 
@@ -195,7 +183,7 @@ function getDefaultSlotScope() {
   return {
     title: resolvedTitle.value,
     visible: visibleValue.value,
-    close: closeDialog,
+    close: closeDrawer,
   }
 }
 
@@ -203,48 +191,48 @@ function getFooterSlotScope() {
   return {
     title: resolvedTitle.value,
     visible: visibleValue.value,
-    close: closeDialog,
+    close: closeDrawer,
   }
 }
 
-function assertNoLegacyDialogStructures(): void {
+function assertNoLegacyDrawerStructures(): void {
   if (Array.isArray(attrs['headerActions']) && attrs['headerActions'].length > 0) {
-    throw new Error('[RendererDialog] props.headerActions 已废除。请将头部动作节点移动到 children，并声明 dock: "header"。')
+    throw new Error('[RendererDrawer] props.headerActions 已废除。请将头部动作节点移动到 children，并声明 dock: "header"。')
   }
   if (Array.isArray(attrs['footerActions']) && attrs['footerActions'].length > 0) {
-    throw new Error('[RendererDialog] props.footerActions 已废除。请将底部动作节点移动到 children，并声明 dock: "footer"。')
+    throw new Error('[RendererDrawer] props.footerActions 已废除。请将底部动作节点移动到 children，并声明 dock: "footer"。')
   }
 }
 </script>
 
 <style scoped>
-.renderer-dialog-header {
+.renderer-drawer-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.renderer-dialog-title {
+.renderer-drawer-title {
   min-width: 0;
   font-size: 16px;
   font-weight: 600;
   color: #303133;
 }
 
-.renderer-dialog-header-actions,
-.renderer-dialog-footer {
+.renderer-drawer-header-actions,
+.renderer-drawer-footer {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
 
-.renderer-dialog-body {
+.renderer-drawer-body {
   width: 100%;
 }
 
-.renderer-dialog-grid-item {
+.renderer-drawer-grid-item {
   min-width: 0;
 }
 </style>

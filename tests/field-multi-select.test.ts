@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { defineComponent, h, reactive } from 'vue'
-import { Spark, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, FIELD_CONTEXT, FieldMultiSelect } from '@spark-view/spark-component'
-
-const { registry, rootContext } = Spark.createSystem()
+import { FieldMultiSelect } from '@spark-view/spark-component'
+import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 const ElFormItemStub = defineComponent({
   props: ['label', 'prop', 'rules'],
@@ -48,24 +46,13 @@ function mountFieldMultiSelect(
   fieldName: string,
   componentProps?: Record<string, unknown>,
 ) {
-  const Provider = defineComponent({
-    setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
-      sparkProvide(CONTEXT_DATA, model)
-      sparkProvide(FIELD_CONTEXT, 'form')
-      return () => h(FieldMultiSelect as never, {
-        type: 'r-multi-select',
-        field: fieldName,
-        ...componentProps,
-      })
-    },
-  })
-
-  return mount(Provider, {
+  return mountFieldInContext({
+    component: FieldMultiSelect,
+    type: 'r-multi-select',
+    model,
+    fieldName,
+    componentProps,
     global: {
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      },
       stubs: {
         'el-form-item': ElFormItemStub,
         'el-select': ElSelectStub,

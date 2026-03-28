@@ -17,8 +17,8 @@
 
 <script setup lang="ts">
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
+import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -54,23 +54,19 @@ function formatDateValue(value: unknown): string {
   return String(value)
 }
 
-const isRangeFilter =
-  props.filterMode === 'range'
-  || props.filterVariant === 'range'
-  || props.filterRange === true
+const isRangeFilter = useRangeFilterMode(props)
 
-const permission = useFieldPermission<string | Date | Array<string | Date>>({
+const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string | Date | Array<string | Date>>({
   props,
-  type: 'r-date',
+  fieldType: 'r-date',
   fallbackValue: '',
   formatDisplay: formatDateValue,
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
-const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
+const { fieldValue, isCurrentFieldEditable } = permission
 
-const handleChange = (val: string | Date | Array<string | Date>) => {
-  emit('update:modelValue', val)
-  syncValue(val)
+async function handleChange(value: string | Date | Array<string | Date>): Promise<void> {
+  await handleControlledChange(value)
 }
 </script>

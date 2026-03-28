@@ -18,6 +18,8 @@ import { COMPONENT_CATALOG } from '../packages/spark-ai/src/component-props-cata
 const ROOT = resolve('.')
 const FIELD_DIR = 'packages/spark-component/src/components/fields/data-components'
 const CONTAINER_DIR = 'packages/spark-component/src/components/containers/data-components'
+const TABLE_COMPONENT = `${CONTAINER_DIR}/RendererTable/RendererTable.vue`
+const TREE_COMPONENT = `${CONTAINER_DIR}/RendererTree/RendererTree.vue`
 
 const checker = getOrCreateChecker(resolve(ROOT, 'tsconfig.catalog.json'))
 const diffCatalog = Object.fromEntries(
@@ -53,8 +55,8 @@ describe('End-to-end: real component extraction (VCM)', () => {
   })
 
   it('extracts RendererTable.vue correctly', () => {
-    const absPath = resolve(ROOT, `${CONTAINER_DIR}/RendererTable.vue`)
-    const api = extractComponentApiVcm(checker, absPath, `${CONTAINER_DIR}/RendererTable.vue`, 'r-table')
+    const absPath = resolve(ROOT, TABLE_COMPONENT)
+    const api = extractComponentApiVcm(checker, absPath, TABLE_COMPONENT, 'r-table')
 
     expect(api).not.toBeNull()
     // RendererTable 公开 API 已收敛到 canonical docks 结构，旧的扁平 action/filter props 不应再暴露
@@ -70,8 +72,8 @@ describe('End-to-end: real component extraction (VCM)', () => {
   })
 
   it('extracts RendererTree.vue correctly', () => {
-    const absPath = resolve(ROOT, `${CONTAINER_DIR}/RendererTree.vue`)
-    const api = extractComponentApiVcm(checker, absPath, `${CONTAINER_DIR}/RendererTree.vue`, 'r-tree')
+    const absPath = resolve(ROOT, TREE_COMPONENT)
+    const api = extractComponentApiVcm(checker, absPath, TREE_COMPONENT, 'r-tree')
 
     expect(api).not.toBeNull()
 
@@ -104,8 +106,8 @@ describe('End-to-end: diff report with real catalog', () => {
     const components = [
       { skillType: 'r-text', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldText.vue`), relativePath: `${FIELD_DIR}/FieldText.vue` },
       { skillType: 'r-select', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldSelect.vue`), relativePath: `${FIELD_DIR}/FieldSelect.vue` },
-      { skillType: 'r-table', absolutePath: resolve(ROOT, `${CONTAINER_DIR}/RendererTable.vue`), relativePath: `${CONTAINER_DIR}/RendererTable.vue` },
-      { skillType: 'r-tree', absolutePath: resolve(ROOT, `${CONTAINER_DIR}/RendererTree.vue`), relativePath: `${CONTAINER_DIR}/RendererTree.vue` },
+      { skillType: 'r-table', absolutePath: resolve(ROOT, TABLE_COMPONENT), relativePath: TABLE_COMPONENT },
+      { skillType: 'r-tree', absolutePath: resolve(ROOT, TREE_COMPONENT), relativePath: TREE_COMPONENT },
     ]
 
     const apis = extractAllComponentApisVcm(checker, components)

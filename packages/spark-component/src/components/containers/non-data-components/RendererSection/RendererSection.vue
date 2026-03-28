@@ -89,12 +89,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useAttrs, useSlots, watch } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../../internal'
-import { getDockedChildren, nodeId, type SparkNode } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
-import { useContainerGrid } from '../layout/useContainerGrid'
-import type { RendererSectionApi } from '../../internal'
+import { computed, useAttrs, useSlots } from 'vue'
+import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
+import { getDockedChildren, nodeId, type SparkNode } from '../../../internal'
+import type { ContainerDocks } from '../../../../core/types'
+import { useContainerGrid } from '../../layout/useContainerGrid'
+import type { RendererSectionApi } from './types'
+import { createRendererSectionZeroCode } from './zero-code'
+import { useControlledValue } from '../state'
 
 interface Props extends SparkNode {
   /** 子节点 */
@@ -177,38 +179,20 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoRows: computed(() => props.gridAutoRows),
 })
 
-const collapsed = ref(props.defaultCollapsed)
+const collapsed = useControlledValue(computed(() => props.defaultCollapsed))
 const hasHeader = computed(() => Boolean(props.title || props.description))
 const hasHeaderRight = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined || props.collapsible)
 
-watch(() => props.defaultCollapsed, (value) => {
-  collapsed.value = value
-})
-
-function handleHeaderClick(): void {
-  if (!props.collapsible) return
-  collapsed.value = !collapsed.value
-}
-
-function toggleCollapsed(): void {
-  if (!props.collapsible) return
-  collapsed.value = !collapsed.value
-}
-
 // ── r-section 包装 API ───────────────────────────────────────────────────
 
-
-const sectionApi: RendererSectionApi = {
-  isCollapsed() {
-    return collapsed.value
-  },
-  setCollapsed(value) {
-    collapsed.value = value
-  },
-  toggle() {
-    collapsed.value = !collapsed.value
-  },
-}
+const { sectionApi, handleHeaderClick, toggleCollapsed }: {
+  sectionApi: RendererSectionApi
+  handleHeaderClick: () => void
+  toggleCollapsed: () => void
+} = createRendererSectionZeroCode({
+  collapsed,
+  collapsible: computed(() => props.collapsible),
+})
 
 registerApi(sectionApi)
 

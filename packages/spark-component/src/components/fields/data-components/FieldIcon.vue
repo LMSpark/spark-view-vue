@@ -49,8 +49,7 @@
 
 <script setup lang="ts">
 import type { SparkNode } from '../../internal'
-import { useOptionField } from '../options/useFieldOptions'
-import { useFieldContext } from '../context/useFieldContext'
+import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -92,10 +91,11 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const optionResult = useOptionField<string>({
+const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<string>({
   props,
-  type: 'r-icon',
+  fieldType: 'r-icon',
   fallbackValue: '',
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const {
@@ -105,19 +105,15 @@ const {
   isCurrentFieldEditable,
   currentDisplayValue,
   getRowRawStringValue,
-  syncValue,
 } = optionResult
-
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, optionResult)
 
 function iconClass(value: string): string {
   return props.classPrefix ? `${props.classPrefix}${value}` : value
 }
 
-function handleChange(value: string | number | boolean): void {
+async function handleChange(value: string | number | boolean): Promise<void> {
   const next = String(value ?? '')
-  emit('update:modelValue', next)
-  syncValue(next)
+  await handleControlledChange(next)
 }
 </script>
 

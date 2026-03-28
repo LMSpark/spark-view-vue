@@ -8,17 +8,17 @@
 import { Spark } from '../system/spark.js'
 
 // ── 容器组件（同步导入） ──
-import RendererTable from './containers/data-components/RendererTable.vue'
-import RendererForm from './containers/data-components/RendererForm.vue'
-import RendererDetail from './containers/data-components/RendererDetail.vue'
-import RendererTree from './containers/data-components/RendererTree.vue'
-import RendererList from './containers/data-components/RendererList.vue'
-import RendererTabs from './containers/non-data-components/RendererTabs.vue'
-import RendererCollapse from './containers/non-data-components/RendererCollapse.vue'
-import RendererDialog from './containers/non-data-components/RendererDialog.vue'
-import RendererDrawer from './containers/non-data-components/RendererDrawer.vue'
-import RendererSteps from './containers/non-data-components/RendererSteps.vue'
-import RendererSection from './containers/non-data-components/RendererSection.vue'
+import RendererTable from './containers/data-components/RendererTable/index.js'
+import RendererForm from './containers/data-components/RendererForm/index.js'
+import RendererDetail from './containers/data-components/RendererDetail/index.js'
+import RendererTree from './containers/data-components/RendererTree/index.js'
+import RendererList from './containers/data-components/RendererList/index.js'
+import RendererTabs from './containers/non-data-components/RendererTabs/index.js'
+import RendererCollapse from './containers/non-data-components/RendererCollapse/index.js'
+import RendererDialog from './containers/non-data-components/RendererDialog/index.js'
+import RendererDrawer from './containers/non-data-components/RendererDrawer/index.js'
+import RendererSteps from './containers/non-data-components/RendererSteps/index.js'
+import RendererSection from './containers/non-data-components/RendererSection/index.js'
 import RendererToolbar from './containers/non-data-components/RendererToolbar.vue'
 
 // ── 字段组件（同步导入） ──

@@ -96,8 +96,8 @@ app.use(Spark.createPlugin())
 // 批量注册（懒加载）
 const reg = Spark.createRegister(import.meta.glob('./src/components/**/*.vue'))
 reg.registerAll({
-  'r-table':   './packages/spark-component/src/components/containers/data-components/RendererTable.vue',
-  'r-form':    './packages/spark-component/src/components/containers/data-components/RendererForm.vue'
+  'r-table':   './packages/spark-component/src/components/containers/data-components/RendererTable/RendererTable.vue',
+  'r-form':    './packages/spark-component/src/components/containers/data-components/RendererForm/RendererForm.vue'
 })
 
 app.mount('#app')
@@ -111,7 +111,7 @@ import PageRenderer from './components/PageRenderer.vue'
 Spark.register('page-renderer', PageRenderer)
 
 // 懒加载（大组件，推荐）
-Spark.register('r-table', () => import('./packages/spark-component/src/components/containers/data-components/RendererTable.vue'))
+Spark.register('r-table', () => import('./packages/spark-component/src/components/containers/data-components/RendererTable/RendererTable.vue'))
 ```
 
 ---

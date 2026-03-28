@@ -41,13 +41,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useSparkComponent } from '../../internal'
-import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
-import { useContainerToolbar } from '../layout/useContainerToolbar'
-import RendererCollapseItem from './RendererCollapseItem.vue'
-import type { RendererCollapseApi } from '../../internal'
+import { computed } from 'vue'
+import { useSparkComponent } from '../../../internal'
+import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import type { ContainerDocks } from '../../../../core/types'
+import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import RendererCollapseItem from '../RendererCollapseItem.vue'
+import type { RendererCollapseApi } from './types'
+import { createRendererCollapseZeroCode } from './zero-code'
+import { useControlledValue } from '../state'
 
 type CollapseValue = string | number | Array<string | number>
 
@@ -78,11 +80,7 @@ const itemConfigs = computed(() =>
 )
 const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 
-const currentModelValue = ref<CollapseValue | undefined>(props.modelValue)
-
-watch(() => props.modelValue, (value) => {
-  currentModelValue.value = value
-}, { immediate: true })
+const currentModelValue = useControlledValue(computed(() => props.modelValue))
 
 const {
   toolbarPositionValue,
@@ -98,38 +96,21 @@ const {
 
 // ── r-collapse 包装 API ──────────────────────────────────────────────────
 
-
-const collapseApi: RendererCollapseApi = {
-  getExpandedItems() {
-    return currentModelValue.value
-  },
-  setExpandedItems(value) {
-    currentModelValue.value = value
-    emit('update:modelValue', value)
-  },
-  expandAll() {
-    const allNames = itemConfigs.value.map((item, index) => getItemName(item, index))
-    currentModelValue.value = allNames
-    emit('update:modelValue', allNames)
-  },
-  collapseAll() {
-    currentModelValue.value = []
-    emit('update:modelValue', [])
-  },
-  toggleItem(name) {
-    const current = Array.isArray(currentModelValue.value) ? currentModelValue.value : []
-    const next = current.includes(name)
-      ? current.filter(n => n !== name)
-      : [...current, name]
-    currentModelValue.value = next
-    emit('update:modelValue', next)
-  },
-  isItemExpanded(name) {
-    const current = currentModelValue.value
-    if (Array.isArray(current)) return current.includes(name)
-    return current === name
-  },
-}
+const {
+  collapseApi,
+  handleModelUpdate,
+  handleChange,
+}: {
+  collapseApi: RendererCollapseApi
+  handleModelUpdate: (value: CollapseValue) => void
+  handleChange: (value: CollapseValue) => void
+} = createRendererCollapseZeroCode({
+  emit,
+  currentModelValue,
+  itemConfigs,
+  getItemName,
+  onChange: props.onChange,
+})
 
 registerApi(collapseApi)
 
@@ -155,16 +136,6 @@ function getItemComponentProps(item: SparkNode): Record<string, unknown> {
     ...(item.children !== undefined ? { children: item.children } : {}),
     ...(item.props ?? {}),
   }
-}
-
-function handleModelUpdate(value: CollapseValue): void {
-  currentModelValue.value = value
-  emit('update:modelValue', value)
-}
-
-function handleChange(value: CollapseValue): void {
-  currentModelValue.value = value
-  props.onChange?.(value)
 }
 
 function getItemSlotScope(item: SparkNode, index: number) {

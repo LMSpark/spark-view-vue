@@ -29,9 +29,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SparkNode } from '../../internal'
-import { useFieldPermission } from '../context/useFieldPermission'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
-import { useFieldContext } from '../context/useFieldContext'
+import { useBasicFieldState } from './composables/useBasicFieldState'
+import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 
 interface Props extends SparkNode {
@@ -83,11 +83,12 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const permission = useFieldPermission<string>({
+const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string>({
   props,
-  type: 'r-upload',
+  fieldType: 'r-upload',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
+  emitUpdate: value => emit('update:modelValue', value),
 })
 
 const {
@@ -97,60 +98,42 @@ const {
   currentRawStringValue,
   isCurrentFieldEditable,
   currentDisplayValue,
-  syncValue,
 } = permission
-
-const fieldCtx = useFieldContext({ type: props.type, width: props.width }, permission)
 
 const { hasBrowseCapability, hasUploadCapability, primaryAction, browseFiles, uploadFiles } = useFileFieldActions({
   pageService,
   isEditable: isCurrentFieldEditable,
 })
 
-const canUpload = computed(() => hasUploadCapability.value && props.action.trim().length > 0 && props.action !== '#')
-const canPrimaryAction = computed(() => (primaryAction.value === 'upload' ? canUpload.value : hasBrowseCapability.value))
-const primaryActionText = computed(() => (primaryAction.value === 'upload' ? props.buttonText : props.readonlyButtonText))
-const showClearButton = computed(() => props.showFileList && isCurrentFieldEditable.value && currentRawStringValue.value.length > 0)
-
-function updateValue(value: string): void {
-  emit('update:modelValue', value)
-  syncValue(value)
+async function updateValue(value: string): Promise<void> {
+  await handleControlledChange(value)
 }
 
-function handleBrowse(): void {
-  void browseFiles({
-    title: displayLabel.value,
-    accept: props.accept,
-    multiple: props.limit > 1,
-    currentValue: currentRawStringValue.value,
-  })
-}
-
-function openUploadDialog(): void {
-  void uploadFiles({
-    action: props.action,
-    accept: props.accept,
-    multiple: props.limit > 1,
-    fieldName: fieldName.value || 'file',
-    currentValue: currentRawStringValue.value,
-  }).then((files) => {
-    if (files.length === 0) return
-    const nextValue = files.map(file => file.url ?? file.name).join(props.separator)
-    updateValue(nextValue)
-  })
-}
-
-function handlePrimaryAction(): void {
-  if (primaryAction.value === 'browse') {
-    handleBrowse()
-    return
-  }
-  openUploadDialog()
-}
-
-function handleRemove(): void {
-  updateValue('')
-}
+const {
+  canPrimaryAction,
+  primaryActionText,
+  showClearButton,
+  handlePrimaryAction,
+  clearValue: handleRemove,
+} = useUploadBrowseFieldState({
+  displayLabel,
+  fieldName,
+  currentRawStringValue,
+  isCurrentFieldEditable,
+  hasBrowseCapability,
+  hasUploadCapability,
+  primaryAction,
+  buttonText: computed(() => props.buttonText),
+  readonlyButtonText: computed(() => props.readonlyButtonText),
+  canClear: computed(() => props.showFileList),
+  action: computed(() => props.action),
+  accept: computed(() => props.accept),
+  multiple: computed(() => props.limit > 1),
+  separator: computed(() => props.separator),
+  browseFiles,
+  uploadFiles,
+  updateValue,
+})
 </script>
 
 <style scoped>

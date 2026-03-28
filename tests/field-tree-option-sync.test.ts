@@ -1,19 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { defineComponent, h, reactive } from 'vue'
+import { defineComponent, h, nextTick, reactive } from 'vue'
 import {
-  CONTEXT_DATA,
-  FIELD_CONTEXT,
   FieldCascader,
   FieldTreeSelect,
-  PAGE_DATASET,
-  SPARK_REGISTRY_KEY,
-  Spark,
-  useSparkComponent,
 } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
-
-const { registry, rootContext } = Spark.createSystem()
+import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 const ElFormItemStub = defineComponent({
   props: ['label', 'prop', 'rules'],
@@ -24,6 +16,7 @@ const ElFormItemStub = defineComponent({
 
 const ElTreeSelectStub = defineComponent({
   props: ['modelValue', 'data', 'disabled'],
+  emits: ['update:modelValue'],
   setup(props) {
     const rootNodes = Array.isArray(props.data) ? props.data : []
     const firstNode = rootNodes[0] as Record<string, unknown> | undefined
@@ -41,6 +34,7 @@ const ElTreeSelectStub = defineComponent({
 
 const ElCascaderStub = defineComponent({
   props: ['modelValue', 'options', 'props', 'disabled'],
+  emits: ['update:modelValue'],
   setup(componentProps) {
     const rootNodes = Array.isArray(componentProps.options) ? componentProps.options : []
     const firstNode = rootNodes[0] as Record<string, unknown> | undefined
@@ -94,27 +88,14 @@ function mountTreeOptionField(
 ) {
   const dataSet = createFlatTreeOptionDataSet()
   const model = reactive<Record<string, unknown>>({ [fieldName]: undefined })
-
-  const Provider = defineComponent({
-    setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
-      sparkProvide(PAGE_DATASET, dataSet)
-      sparkProvide(CONTEXT_DATA, model)
-      sparkProvide(FIELD_CONTEXT, 'form')
-
-      return () => h(component as never, {
-        type,
-        field: fieldName,
-        optionKey: 'Categories@rows',
-      })
-    },
-  })
-
-  return mount(Provider, {
+  const wrapper = mountFieldInContext({
+    component,
+    type,
+    model,
+    fieldName,
+    componentProps: { optionKey: 'Categories@rows' },
+    pageDataSet: dataSet,
     global: {
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      },
       stubs: {
         'el-form-item': ElFormItemStub,
         'el-tree-select': ElTreeSelectStub,
@@ -127,11 +108,13 @@ function mountTreeOptionField(
       },
     },
   })
+
+  return { wrapper, model }
 }
 
 describe('树选项字段同步 treeConfig 能力', () => {
   it('FieldTreeSelect 应从 flat rows + treeConfig 自动重建嵌套选项', () => {
-    const wrapper = mountTreeOptionField(FieldTreeSelect as never, 'r-tree-select', 'categoryId')
+    const { wrapper } = mountTreeOptionField(FieldTreeSelect as never, 'r-tree-select', 'categoryId')
     const treeSelect = wrapper.find('.el-tree-select-stub')
 
     expect(treeSelect.attributes('data-root-count')).toBe('2')
@@ -142,7 +125,7 @@ describe('树选项字段同步 treeConfig 能力', () => {
   })
 
   it('FieldCascader 应从 flat rows + treeConfig 自动重建嵌套选项', () => {
-    const wrapper = mountTreeOptionField(FieldCascader as never, 'r-cascader', 'categoryPath')
+    const { wrapper } = mountTreeOptionField(FieldCascader as never, 'r-cascader', 'categoryPath')
     const cascader = wrapper.find('.el-cascader-stub')
 
     expect(cascader.attributes('data-root-count')).toBe('2')
@@ -150,5 +133,25 @@ describe('树选项字段同步 treeConfig 能力', () => {
     expect(cascader.attributes('data-first-value')).toBe('root-a')
     expect(cascader.attributes('data-first-children-count')).toBe('1')
     expect(cascader.attributes('data-first-child-label')).toBe('子节点 A1')
+  })
+
+  it('FieldTreeSelect 选择后应继续同步写回 contextData', async () => {
+    const { wrapper, model } = mountTreeOptionField(FieldTreeSelect as never, 'r-tree-select', 'categoryId')
+    const treeSelect = wrapper.findComponent(ElTreeSelectStub)
+
+    treeSelect.vm.$emit('update:modelValue', 'child-a1')
+    await nextTick()
+
+    expect(model['categoryId']).toBe('child-a1')
+  })
+
+  it('FieldCascader 选择后应继续同步写回 contextData', async () => {
+    const { wrapper, model } = mountTreeOptionField(FieldCascader as never, 'r-cascader', 'categoryPath')
+    const cascader = wrapper.findComponent(ElCascaderStub)
+
+    cascader.vm.$emit('update:modelValue', ['root-a', 'child-a1'])
+    await nextTick()
+
+    expect(model['categoryPath']).toEqual(['root-a', 'child-a1'])
   })
 })

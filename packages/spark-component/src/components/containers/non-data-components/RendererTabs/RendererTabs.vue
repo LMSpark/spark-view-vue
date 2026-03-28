@@ -42,13 +42,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useSparkComponent } from '../../internal'
-import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../internal'
-import type { ContainerDocks } from '../../../core/types'
-import { useContainerToolbar } from '../layout/useContainerToolbar'
-import RendererTabPane from './RendererTabPane.vue'
-import type { RendererTabsApi } from '../../internal'
+import { computed } from 'vue'
+import { useSparkComponent } from '../../../internal'
+import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import type { ContainerDocks } from '../../../../core/types'
+import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import RendererTabPane from '../RendererTabPane.vue'
+import type { RendererTabsApi } from './types'
+import { createRendererTabsZeroCode } from './zero-code'
+import { useDefaultedSelection } from '../state'
 
 interface TabsClickEvent {
   paneName?: string | number
@@ -84,18 +86,11 @@ const paneConfigs = computed(() =>
 )
 const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
 
-const currentActiveName = ref<string | number | undefined>(props.modelValue)
-
-watch(() => props.modelValue, (value) => {
-  currentActiveName.value = value
-}, { immediate: true })
-
-watch(paneConfigs, (panes) => {
-  if (currentActiveName.value !== undefined) return
-  const firstPane = panes[0]
-  if (!firstPane) return
-  currentActiveName.value = getPaneName(firstPane, 0)
-}, { immediate: true })
+const currentActiveName = useDefaultedSelection({
+  modelValue: computed(() => props.modelValue),
+  items: paneConfigs,
+  getValue: getPaneName,
+})
 
 const {
   toolbarPositionValue,
@@ -111,22 +106,21 @@ const {
 
 // ── r-tabs 包装 API ──────────────────────────────────────────────────────
 
-
-const tabsApi: RendererTabsApi = {
-  getActiveTab() {
-    return currentActiveName.value
-  },
-  setActiveTab(name) {
-    currentActiveName.value = name
-    emit('update:modelValue', name)
-  },
-  getPaneNames() {
-    return paneConfigs.value.map((pane, index) => getPaneName(pane, index))
-  },
-  getPaneCount() {
-    return paneConfigs.value.length
-  },
-}
+const {
+  tabsApi,
+  handleModelUpdate,
+  handleTabChange,
+}: {
+  tabsApi: RendererTabsApi
+  handleModelUpdate: (value: string | number) => void
+  handleTabChange: (value: string | number) => void
+} = createRendererTabsZeroCode({
+  emit,
+  currentActiveName,
+  paneConfigs,
+  getPaneName,
+  onTabChange: props.onTabChange,
+})
 
 registerApi(tabsApi)
 
@@ -152,16 +146,6 @@ function getPaneComponentProps(pane: SparkNode): Record<string, unknown> {
     ...(pane.children !== undefined ? { children: pane.children } : {}),
     ...(pane.props ?? {}),
   }
-}
-
-function handleModelUpdate(value: string | number): void {
-  currentActiveName.value = value
-  emit('update:modelValue', value)
-}
-
-function handleTabChange(value: string | number): void {
-  currentActiveName.value = value
-  props.onTabChange?.(value)
 }
 
 function handleTabClick(pane: TabsClickEvent, event: Event): void {
