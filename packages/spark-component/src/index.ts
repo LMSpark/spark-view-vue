@@ -14,8 +14,8 @@ export type {
 } from './system/index.js'
 
 // ── 2. Core 层（基础 composable / 类型 / 能力键） ──
-export { useSparkComponent, useSparkConsume } from './core/index.js'
-export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions, SparkNodeInput } from './core/index.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent } from './core/index.js'
+export type { UseSparkComponentReturn, UseSparkPageComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions, SparkNodeInput } from './core/index.js'
 
 // ── 3. Vue 插件 + 注册表 ──
 export { createSparkPlugin, createComponentRegistry, getGlobalRegistry } from './system/index.js'

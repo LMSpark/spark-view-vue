@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useSparkComponent } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
 import { getDockedChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
@@ -42,7 +42,7 @@ export function useFormDetailContainer(
 
   const logPrefix = containerType === 'r-form' ? 'RendererForm' : 'RendererDetail'
 
-  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkComponent(props)
+  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
   const pageDataSet = sparkConsume(PAGE_DATASET)
   const pageService = sparkConsume(PAGE_SERVICE)
 

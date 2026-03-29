@@ -24,10 +24,10 @@ import type {
 } from './action-descriptor'
 
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { getViewFromRawKey } from '@spark-view/spark-data'
 import type { PageMessageType } from '@spark-view/spark-utils'
 import { extractActionExecutionControl } from './action-control'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../components/containers/support/crud-result-helpers.js'
+import { resolveViewFromDataKey } from '../../shared/data-key-resolver.js'
 
 // ── 视图查找辅助 ──────────────────────────────────────────────────────────
 
@@ -42,7 +42,7 @@ function resolveView(dataKey: string | undefined, ctx: ActionExecutionContext): 
   if (!ds) return null
 
   if (dataKey) {
-    return getViewFromRawKey(dataKey, ds) ?? null
+    return resolveViewFromDataKey(dataKey, ds)
   }
 
   // 无 dataKey: 取第一个表的 default 视图

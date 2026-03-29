@@ -1,11 +1,17 @@
 import type { SparkNode } from '../internal'
 import { nodeInputProp } from '../internal'
-import { createPermissionChecker } from '@spark-view/spark-data'
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
+import { isPermittedAction } from '@spark-view/spark-data'
 
 type RuntimeActionConfig = SparkNode & { display?: boolean }
 
-const permissionChecker = createPermissionChecker()
+function isModelScopedPermAction(action: string | undefined): boolean {
+  return action === 'create' || action === 'import' || action === 'export' || action === 'create-child'
+}
+
+function isRowScopedPermAction(action: string | undefined): boolean {
+  return action === 'edit' || action === 'delete' || action === 'create-child'
+}
 
 export function isActionDisplayed(action: SparkNode): boolean {
   return (action as RuntimeActionConfig).display !== false
@@ -13,34 +19,12 @@ export function isActionDisplayed(action: SparkNode): boolean {
 
 export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined): boolean {
   const permAction = nodeInputProp(action, 'permAction') as string | undefined
-  if (permAction === undefined) return true
-
-  switch (permAction) {
-    case 'create':
-    case 'create-child':
-      return permissionChecker.canCreate(modelPerm)
-    case 'import':
-      return permissionChecker.canImport(modelPerm)
-    case 'export':
-      return permissionChecker.canExport(modelPerm)
-    default:
-      return true
-  }
+  if (!isModelScopedPermAction(permAction)) return true
+  return isPermittedAction(permAction, modelPerm ? { modelPermission: modelPerm } : {})
 }
 
 export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined): boolean {
   const permAction = nodeInputProp(action, 'permAction') as string | undefined
-  if (!row) return true
-  if (permAction === undefined) return true
-
-  switch (permAction) {
-    case 'create-child':
-      return permissionChecker.canCreateChild(row)
-    case 'delete':
-      return permissionChecker.canDelete(row)
-    case 'edit':
-      return permissionChecker.canEdit(row)
-    default:
-      return true
-  }
+  if (!isRowScopedPermAction(permAction)) return true
+  return isPermittedAction(permAction, { row: row ?? null })
 }

@@ -17,6 +17,7 @@ describe('spark-component kernel barrels', () => {
     expect({
       core: sortedKeys(CoreApi).filter(key => [
         'useSparkComponent',
+        'useSparkPageComponent',
         'useSparkConsume',
         'PAGE_DATASET',
         'DATA_SOURCE',
@@ -35,6 +36,7 @@ describe('spark-component kernel barrels', () => {
           "SPARK_REGISTRY_KEY",
           "useSparkComponent",
           "useSparkConsume",
+          "useSparkPageComponent",
         ],
         "system": [
           "createComponentRegistry",

@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useSparkComponent } from '../../../internal'
+import { useSparkPageComponent } from '../../../internal'
 import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import RendererStepItem from '../RendererStepItem.vue'
@@ -72,7 +72,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const { registerApi } = useSparkComponent(props)
+const { registerApi } = useSparkPageComponent(props)
 
 const stepConfigs = computed(() =>
   getDockedChildren(props.children).filter(child => child.type === 'r-step')

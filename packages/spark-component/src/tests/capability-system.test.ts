@@ -4,14 +4,14 @@
  * 验证 SPARK 能力系统的核心功能：
  * - Symbol-based CapabilityKey 的 sparkProvide/sparkConsume 流程
  * - 能力符号与接口的配对使用
- * - useSparkComponent 返回值完整性（无 use 别名）
+ * - useSparkComponent / useSparkPageComponent 返回值边界清晰（无 use 别名）
  * - AppServicesCapability 结构验证
  */
 
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { Spark, useSparkComponent, useSparkConsume } from '@spark-view/spark-component'
+import { Spark, useSparkComponent, useSparkConsume, useSparkPageComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE, defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
@@ -46,7 +46,7 @@ describe('Capability system integration', () => {
       })
     })
 
-    it('returns all expected API methods', () => {
+    it('returns only the shared component API methods', () => {
       const { plugin } = createTestPlugin()
 
       const TestComp = defineComponent({
@@ -55,19 +55,12 @@ describe('Capability system integration', () => {
 
           // 核心状态
           expect(result.context).toBeDefined()
-          expect(result.parentContext).toBeDefined()
-          expect(result.parentType).toBe('spark-app')
           expect(result.isVisible).toBeDefined()
           expect(result.isDisabled).toBeDefined()
 
-          // 能力提供
+          // 能力提供 / 消费
           expect(typeof result.sparkProvide).toBe('function')
-          expect(typeof result.provideEvents).toBe('function')
-          expect(typeof result.getProvider).toBe('function')
-
-          // 能力消费
           expect(typeof result.sparkConsume).toBe('function')
-          expect(typeof result.consumeEvents).toBe('function')
 
           // 生命周期
           expect(typeof result.initialize).toBe('function')
@@ -75,8 +68,27 @@ describe('Capability system integration', () => {
 
           // 工具
           expect(typeof result.logger).toBe('object')
-          expect(typeof result.getComponent).toBe('function')
-          expect(typeof result.isComponentRegistered).toBe('function')
+          expect('registerApi' in result).toBe(false)
+
+          return () => h('div')
+        }
+      })
+
+      mount(TestComp, {
+        global: { plugins: [plugin] }
+      })
+    })
+
+    it('exposes page-only API registration through useSparkPageComponent', () => {
+      const { plugin } = createTestPlugin()
+
+      const TestComp = defineComponent({
+        setup() {
+          const result = useSparkPageComponent({ type: 'test-comp' } as SparkNode)
+
+          expect(typeof result.sparkProvide).toBe('function')
+          expect(typeof result.sparkConsume).toBe('function')
+          expect(typeof result.registerApi).toBe('function')
 
           return () => h('div')
         }

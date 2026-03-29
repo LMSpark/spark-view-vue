@@ -6,11 +6,11 @@
  * - 组件 logger 统一取页面层 APP_SERVICES.logger；不再支持通过局部 LOGGER 覆盖形成子树级日志分叉。
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
-import { computed, onMounted, onUnmounted, inject, getCurrentInstance, markRaw } from 'vue'
-import { sparkProvide as rawSparkProvide, normalizeKey, createEventEmitter, APP_SERVICES } from '@spark-view/spark-utils'
-import type { IEventEmitter, CapabilityKey, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
-import type { SparkCapabilityContext, SparkNode, ComponentRegistry } from './types.js'
-import { SPARK_REGISTRY_KEY, nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
+import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
+import { sparkProvide as rawSparkProvide, normalizeKey, APP_SERVICES } from '@spark-view/spark-utils'
+import type { CapabilityKey, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
+import type { SparkCapabilityContext, SparkNode } from './types.js'
+import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
 import {
   DATA_ROW,
@@ -18,23 +18,15 @@ import {
   consumeSparkCapability,
   createSparkCapabilityConsumer,
   createSparkCapabilityContext,
-  getSparkCapabilityProvider,
 } from './capabilities.js'
 import type { PageComponentRegistry, SparkCapabilityConsumer } from './capabilities.js'
 
-// 基础类型：约束当前文件内部的运行时实例、消费函数和事件解绑记录。
+// 基础类型：约束当前文件内部的运行时实例。
 type RuntimeInstance = ReturnType<typeof getCurrentInstance>
-type EventSubscription = {
-  emitter: IEventEmitter
-  event: string
-  handler: (...args: unknown[]) => void
-}
 
 // 对外返回类型：定义组件上下文 API 与轻量消费 API。
 export interface UseSparkComponentReturn {
   context: SparkCapabilityContext
-  parentContext: SparkCapabilityContext | null
-  parentType: string | null
   isVisible: { readonly value: boolean }
   isDisabled: { readonly value: boolean }
   sparkProvide: {
@@ -42,15 +34,13 @@ export interface UseSparkComponentReturn {
     <T>(name: CapabilityKey<T>, implementation: T): void
     (name: string | symbol, implementation?: unknown): void
   }
-  provideEvents: (name?: string | symbol) => IEventEmitter
-  getProvider: (name: string | symbol) => unknown
   sparkConsume: SparkCapabilityConsumer
-  consumeEvents: (name: string | symbol, handlers: Record<string, (...args: unknown[]) => void>) => IEventEmitter | null
   initialize: () => void
   destroy: () => void
   logger: LoggerApi
-  getComponent: (type: string) => unknown
-  isComponentRegistered: (type: string) => boolean
+}
+
+export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
   registerApi: (api: unknown) => void
 }
 
@@ -61,7 +51,6 @@ export interface UseSparkCapabilityReaderReturn {
 }
 
 export interface UseSparkComponentOptions {
-  registry?: ComponentRegistry
   parentContext?: SparkCapabilityContext
 }
 
@@ -214,10 +203,9 @@ export function useSparkComponent(
   // 基础上下文：读取当前实例、配置和父上下文，组装当前 Spark 上下文。
   const currentInstance = getCurrentInstance()
   const currentOwner = currentInstance as SparkRuntimeOwner | null
-  const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
   const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
   const contextId = nodeId(config) ?? `spark-${++_idCounter}`
-  const { parentContext, parentType } = resolveParentAccess(currentOwner, options?.parentContext)
+  const { parentContext } = resolveParentAccess(currentOwner, options?.parentContext)
   const context = createSparkCapabilityContext({ id: contextId, type: config.type }, parentContext)
 
   if (currentInstance !== null) {
@@ -245,14 +233,7 @@ export function useSparkComponent(
     }
   }
 
-  function provideEvents(name: string | symbol = 'events'): IEventEmitter {
-    const emitter = createEventEmitter()
-    rawSparkProvide(context, name, emitter)
-    return emitter
-  }
-
   // 能力消费：优先读取当前上下文，再按父链向上查找。
-  const eventSubscriptions: EventSubscription[] = []
   const consumeCapability = createSparkCapabilityConsumer(parentContext, context)
 
   function sparkConsume(name: string | symbol): unknown {
@@ -262,40 +243,6 @@ export function useSparkComponent(
       logger.debug(`[spark] capability not found (late-binding ok): ${String(name)}`)
     }
     return null
-  }
-
-  function consumeEvents(
-    name: string | symbol,
-    handlers: Record<string, (...args: unknown[]) => void>
-  ): IEventEmitter | null {
-    const emitter = consumeSparkCapability<IEventEmitter>(context, name)
-    if (emitter) {
-      for (const [event, handler] of Object.entries(handlers)) {
-        emitter.on(event, handler)
-        eventSubscriptions.push({ emitter, event, handler })
-      }
-      return emitter
-    }
-    if (import.meta.env.DEV) {
-      logger.debug(`[spark] event capability not found: ${String(name)}`)
-    }
-    return null
-  }
-
-  function getProvider(name: string | symbol): unknown {
-    return getSparkCapabilityProvider(context, name)
-  }
-
-  // 组件查询：从注册表读取组件定义与注册状态，不做实例化和额外包装。
-  function getComponent(type: string): unknown {
-    if (!registry) return undefined
-    const def = registry.get(type)
-    if (def?.component === undefined || def.component === null) return undefined
-    return typeof def.component === 'object' ? markRaw(def.component) : def.component
-  }
-
-  function isComponentRegistered(type: string): boolean {
-    return registry?.has(type) ?? false
   }
 
   // 生命周期：初始化时记录调试信息，销毁时统一回收事件、注册表和 owner 绑定。
@@ -313,11 +260,6 @@ export function useSparkComponent(
 
   const destroy = () => {
     initialized = false
-    for (const sub of eventSubscriptions) {
-      sub.emitter.off(sub.event, sub.handler)
-    }
-    eventSubscriptions.length = 0
-
     pageComponentRegistry?.unregisterInstance(context.id)
     context.capabilities.clear()
     if (currentInstance !== null) {
@@ -328,28 +270,32 @@ export function useSparkComponent(
   onMounted(initialize)
   onUnmounted(destroy)
 
-  // 页面 API 注册：供页面级查询和调试能力按 id/type 拿到组件 API。
-  function registerApi(api: unknown): void {
-    if (!pageComponentRegistry) return
-    pageComponentRegistry.registerApi({ id: context.id, type: context.type, api })
-  }
-
   return {
     context,
-    parentContext,
-    parentType,
     isVisible,
     isDisabled,
     sparkProvide,
-    provideEvents,
-    getProvider,
     sparkConsume,
-    consumeEvents,
     initialize,
     destroy,
     logger,
-    getComponent,
-    isComponentRegistered,
-    registerApi
+  }
+}
+
+export function useSparkPageComponent(
+  fallbackConfig?: SparkNodeInput,
+  options?: UseSparkComponentOptions,
+): UseSparkPageComponentReturn {
+  const component = useSparkComponent(fallbackConfig, options)
+
+  function registerApi(api: unknown): void {
+    const pageComponentRegistry = consumeSparkCapability<PageComponentRegistry>(component.context, PAGE_COMPONENT_REGISTRY)
+    if (!pageComponentRegistry) return
+    pageComponentRegistry.registerApi({ id: component.context.id, type: component.context.type, api })
+  }
+
+  return {
+    ...component,
+    registerApi,
   }
 }

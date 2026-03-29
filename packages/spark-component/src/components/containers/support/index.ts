@@ -28,6 +28,8 @@ export {
   getCrudErrorMessage,
 } from './crud-result-helpers.js'
 
+export { createCrudEventDefaults } from './crud-event-defaults.js'
+
 export type { BaseContainerApi } from './base-container-api.js'
 
 export { createBaseCrudMethods } from './base-crud-methods.js'

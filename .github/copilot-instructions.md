@@ -61,7 +61,7 @@ SPARK 的核心设计目标是**让业务需求尽量通过配置表达，最大
 - **减少配置噪音**：合理设定默认值，让最常见场景"零配置即可工作"
 - 任何让 `script.js` 变得更短、或把样板代码移入框架的 PR，都符合本项目长期方向
 
-- Component `type` 使用 **kebab-case**（如 `r-table`），通过 `Spark.register()` 注册（注册 API 详见 [Spark 命名空间 API](#spark-命名空间-api)）
+- Component `type` 使用 **kebab-case**（如 `r-table`），通过 `Spark.register()` 注册（注册 API 详见下方“Spark 命名空间 API”章节）
 - App 安装插件: `app.use(Spark.createPlugin())`，组件内使用 `useSparkComponent(config)` 获取 SPARK 上下文
 
 ### ❗ 单一 DataSet 框架（核心约束）
@@ -506,13 +506,13 @@ SPARK 采用 **统一后端验证** 架构，前端 **不做** 权限判定，�
 **核心流程**：
 1. 前端从服务端取数据时，响应中携带 **数据权限快照**（`IModelPermission` / `IInstancePermission`）+ **权限 Token**
 2. 前端将权限快照存储在 `IDataRow._perm`（行级）和 `IDataSource._modelPerm`（表级）
-3. `permission/` 模块根据权限快照自动计算字段可见性、可编辑性、脱敏规则，驱动 UI 渲染
+3. `permission/` 模块按**读/写双通道**解释权限快照：读通道 = `visible | masked | hidden`，写通道 = `editable | readonly`；若字段为脱敏态，显示值应直接使用服务端返回结果，前端不做二次脱敏
 4. 数据回写时将权限 Token 回传服务端，服务端验证 Token 有效性（防篡改）
 
 **模块组成**（`packages/spark-data/src/permission/`）：
-- `PermissionChecker` — 模型级 / 实例级 / 字段级权限检查 + 字段脱敏（手机/身份证/邮箱/银行卡）
-- `PermissionFilter` — 批量行过滤（可删除行/可编辑行/可见字段）+ 批量脱敏
-- `FieldRenderHelper` — 结合字段配置 + 权限快照计算渲染状态（visible/editable/masked）
+- `PermissionChecker` — 模型级 / 实例级 / 字段级权限检查 + 字段显示值透传
+- `PermissionFilter` — 批量行过滤（可删除行/可编辑行/可见字段）+ 隐藏字段移除
+- `FieldRenderHelper` — 结合字段配置 + 权限快照计算字段读态/写态（visible/masked/hidden + editable/readonly）
 
 **⚠️ 重要**：`permission/` 模块当前未被业务代码消费，但属于 **已规划的核心架构**，后续开发会接入。**禁止删除或标记为死代码**。
 
@@ -532,6 +532,13 @@ interface IModelPermission {      // 表级 — 存储在 dataSource._modelPerm
   permissionToken?: string
 }
 ```
+
+> **双通道特殊场景**：`(masked || hidden) && editable` 是合法组合，用于密码重置、敏感字段改值等场景。
+> 前端此时仍需渲染写入控件，但不能回显读通道值；`r-form` 宿主可编辑，`r-detail / r-list / r-tree / r-table` 仍按读通道决定是否展示。
+
+> **主键输出契约**：后端任何输出数据都会自动携带**全部真实主键列**。
+> 前端可以隐藏主键列的展示，但在身份识别、当前行切换、CRUD 回写、级联匹配等链路中必须假定这些真实主键字段始终存在；不要把主键列当普通展示字段随意裁剪。
+> **复合主键约定**：DataView 已统一实现复合主键方案，多列真实主键会自动收敛为 `_pk` 计算列，内部主键操作统一使用标量 `PkValue`；前端不要再自行拼接复合主键字符串，直接依赖 `view.primaryKey` / `row._pk` / 主键委托即可。
 
 > **字段命名说明**：`IInstancePermission` / `IModelPermission` 是包内正式类型（`allowDelete`/`allowCreate`）。
 > 实际 script.js 演示页中使用更直观的简化字段名（`canEdit`/`canDelete`/`canAdd`/`canImport`/`canExport`/`editableFields`）——
@@ -1026,8 +1033,8 @@ packages/
 │       ├── data-view.ts      # DataView（IDataSource 实现）
 │       ├── tree-manager.ts   # TreeManager
 │       └── permission/       # 权限渲染（⚠️ 已规划，禁止删除）
-│           ├── PermissionChecker.ts  # 行级/字段级权限检查 + 脱敏
-│           ├── PermissionFilter.ts   # 批量行过滤 + 批量脱敏
+│           ├── PermissionChecker.ts  # 行级/字段级权限检查 + 字段显示值透传
+│           ├── PermissionFilter.ts   # 批量行过滤 + 隐藏字段移除
 │           └── FieldRenderHelper.ts  # 字段渲染状态计算
 ├── spark-page-config/   # 页面配置加载器（ConfigLoader, SparkPageConfig）
 │   └── src/

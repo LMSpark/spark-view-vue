@@ -94,12 +94,12 @@
 /**
  * RendererTree - 树形容器组件
  *
- * 内部通过 useSparkComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey。
+ * 内部通过 useSparkPageComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey。
  */
 import { computed, ref } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
-import { type IDataRow, type DataView } from '@spark-view/spark-data'
+import { isPermittedAction, type IDataRow, type DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
@@ -195,7 +195,7 @@ const {
 } = useRendererTreeInput({ props })
 
 // 接入 SPARK 能力链
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(props)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 
@@ -251,14 +251,14 @@ const {
 function shouldShowLegacyAppend(row: IDataRow): boolean {
   return hasLegacyNodeActions.value
     && effectiveAllowAppend.value
-    && modelPermission.value?.allowCreate !== false
-    && row._perm?.allowCreateChild !== false
+    && isPermittedAction('create', modelPermission.value ? { modelPermission: modelPermission.value } : {})
+    && isPermittedAction('create-child', { row })
 }
 
 function shouldShowLegacyDelete(row: IDataRow): boolean {
   return hasLegacyNodeActions.value
     && effectiveAllowDelete.value
-    && row._perm?.allowDelete !== false
+    && isPermittedAction('delete', { row })
 }
 
 sparkProvide(DATA_ROW, {} as IDataRow)

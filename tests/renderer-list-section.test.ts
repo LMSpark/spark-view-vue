@@ -40,7 +40,10 @@ describe('RendererList and RendererSection container integration', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob', _perm: { allowDelete: false } }],
+          rows: [
+            { id: 1, name: 'Alice', _perm: { allowDelete: true } },
+            { id: 2, name: 'Bob', _perm: { allowDelete: false } },
+          ],
         },
       },
     })

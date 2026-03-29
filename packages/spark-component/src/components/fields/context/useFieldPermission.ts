@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { createPermissionChecker, FieldVisibility } from '@spark-view/spark-data'
+import { FieldVisibility, formatPermissionAwareFieldValue, resolveFieldPermissionState } from '@spark-view/spark-data'
 import type { DataColumn } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
@@ -23,7 +23,6 @@ interface UseFieldPermissionOptions<TValue> {
 
 export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TValue>) {
   const { props, fallbackValue, formatDisplay } = options
-  const permissionChecker = createPermissionChecker()
   const { sparkConsume } = useSparkConsume()
 
   const fieldName = computed(() => props.field ?? '')
@@ -48,44 +47,62 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     return contextData
   })
 
-  const fieldValue = computed<TValue>(() => {
+  const sourceFieldValue = computed<TValue>(() => {
     if (props.modelValue !== undefined) return props.modelValue
     if (contextData !== null && fieldName.value && fieldName.value in contextData) {
       return contextData[fieldName.value] as TValue
     }
     return fallbackValue
   })
-  const currentRawValue = computed(() => fieldValue.value)
-  const currentRawStringValue = computed(() => String(currentRawValue.value ?? ''))
+
+  const currentFieldState = computed(() =>
+    resolveFieldPermissionState(fieldName.value, currentRow.value)
+  )
+
+  const isCurrentFieldReadable = computed(() => {
+    return currentFieldState.value?.readable ?? true
+  })
 
   const isCurrentFieldHidden = computed(() => {
-    if (!fieldName.value || !currentRow.value) return false
-    return permissionChecker.getFieldVisibility(fieldName.value, currentRow.value) === FieldVisibility.Hidden
+    return currentFieldState.value?.visibility === FieldVisibility.Hidden
   })
 
   const isCurrentFieldEditable = computed(() => {
-    if (!fieldName.value || !currentRow.value) return true
-    if (!currentRow.value._perm?.editableFields) return true
-    return permissionChecker.isFieldEditable(fieldName.value, currentRow.value)
+    return currentFieldState.value?.editable ?? false
+  })
+
+  const shouldSuppressReadableValueInWritableForm = computed(() => {
+    if (context.value !== 'r-form') return false
+    const state = currentFieldState.value
+    if (!state?.editable) return false
+    return state.visibility !== FieldVisibility.Visible
+  })
+
+  const fieldValue = computed<TValue>(() => {
+    if (shouldSuppressReadableValueInWritableForm.value) return fallbackValue
+    return sourceFieldValue.value
+  })
+  const currentRawValue = computed(() => fieldValue.value)
+  const currentRawStringValue = computed(() => String(currentRawValue.value ?? ''))
+
+  const shouldRenderCurrentField = computed(() => {
+    const state = currentFieldState.value
+    if (!state) return true
+    if (context.value === 'r-form') return state.readable || state.editable
+    return state.readable
   })
 
   function formatValue(value: unknown): string {
     return formatDisplay ? formatDisplay(value) : String(value ?? '')
   }
 
-  function getMaskedOrFormattedValue(row: IDataRow | null, value: unknown): string {
-    if (!fieldName.value) return formatValue(value)
-    if (row && permissionChecker.getFieldVisibility(fieldName.value, row) === FieldVisibility.Masked) {
-      return permissionChecker.maskFieldValue(fieldName.value, value, row)
-    }
-    return formatValue(value)
-  }
-
-  const currentDisplayValue = computed(() => getMaskedOrFormattedValue(currentRow.value, fieldValue.value))
+  const currentDisplayValue = computed(() => {
+    if (shouldSuppressReadableValueInWritableForm.value) return ''
+    return formatPermissionAwareFieldValue(fieldName.value, sourceFieldValue.value, currentRow.value, formatValue)
+  })
 
   function isTableCellHidden(row: IDataRow): boolean {
-    if (!fieldName.value) return false
-    return permissionChecker.getFieldVisibility(fieldName.value, row) === FieldVisibility.Hidden
+    return resolveFieldPermissionState(fieldName.value, row)?.visibility === FieldVisibility.Hidden
   }
 
   function getRowRawValue(row: IDataRow): unknown {
@@ -99,7 +116,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
 
   function getTableCellDisplayValue(row: IDataRow): string {
     if (!fieldName.value) return formatValue(fallbackValue)
-    return getMaskedOrFormattedValue(row, getRowRawValue(row))
+    return formatPermissionAwareFieldValue(fieldName.value, getRowRawValue(row), row, formatValue)
   }
 
   function syncValue(value: TValue): void {
@@ -116,11 +133,13 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     contextData,
     pageService,
     currentRow,
+    isCurrentFieldReadable,
     fieldValue,
     currentRawValue,
     currentRawStringValue,
     isCurrentFieldHidden,
     isCurrentFieldEditable,
+    shouldRenderCurrentField,
     currentDisplayValue,
     isTableCellHidden,
     getRowRawValue,

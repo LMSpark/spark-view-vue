@@ -1,5 +1,5 @@
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { createBaseCrudMethods, useEventDefaults } from '../../support/index.js'
+import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
 import type { RendererListApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -10,16 +10,13 @@ interface RendererListZeroCodeOptions {
 }
 
 export function createRendererListZeroCode(options: RendererListZeroCodeOptions) {
-  const { dispatch } = useEventDefaults({
+  const { dispatch } = useEventDefaults(createCrudEventDefaults({
     'item-click': {
       systemDefault: (row: unknown) => {
         options.resolvedView.value?.setCurrentRow(row as IDataRow)
       },
     },
-    'add-row': {},
-    'edit-row': {},
-    'remove-row': {},
-  }, options.props)
+  }), options.props)
 
   const baseMethods = createBaseCrudMethods(options.resolvedView, dispatch)
 

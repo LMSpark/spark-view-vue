@@ -1,7 +1,8 @@
 /**
  * 权限检查器
  *
- * 提供模型级、实例级和字段级的权限验证，含内置脱敏规则
+ * 提供模型级、实例级和字段级的权限验证。
+ * 脱敏值由服务端直接返回，前端仅消费权限快照并呈现结果。
  */
 
 import type { IModelPermission, IDataRow } from '../types'
@@ -16,7 +17,7 @@ export class PermissionChecker {
    * @returns 是否允许创建
    */
   canCreate(modelPermission?: IModelPermission): boolean {
-    return modelPermission?.allowCreate !== false
+    return modelPermission?.allowCreate === true
   }
 
   /**
@@ -25,7 +26,7 @@ export class PermissionChecker {
    * @returns 是否允许导入
    */
   canImport(modelPermission?: IModelPermission): boolean {
-    return modelPermission?.allowImport !== false
+    return modelPermission?.allowImport === true
   }
 
   /**
@@ -34,7 +35,7 @@ export class PermissionChecker {
    * @returns 是否允许导出
    */
   canExport(modelPermission?: IModelPermission): boolean {
-    return modelPermission?.allowExport !== false
+    return modelPermission?.allowExport === true
   }
 
   // ===== 实例级权限 =====
@@ -45,7 +46,7 @@ export class PermissionChecker {
    * @returns 是否允许删除
    */
   canDelete(row: IDataRow): boolean {
-    return row._perm?.allowDelete !== false
+    return row._perm?.allowDelete === true
   }
 
   /**
@@ -54,7 +55,7 @@ export class PermissionChecker {
    * @returns 是否允许新增子记录
    */
   canCreateChild(row: IDataRow): boolean {
-    return row._perm?.allowCreateChild !== false
+    return row._perm?.allowCreateChild === true
   }
 
   /**
@@ -63,8 +64,7 @@ export class PermissionChecker {
    * @returns 是否允许编辑
    */
   canEdit(row: IDataRow): boolean {
-    if (!row._perm?.editableFields) return true
-    return row._perm.editableFields.length > 0
+    return (row._perm?.editableFields?.length ?? 0) > 0
   }
 
   // ===== 字段级权限 =====
@@ -103,54 +103,18 @@ export class PermissionChecker {
     return FieldVisibility.Visible
   }
 
-  // ===== 字段脱敏 =====
+  // ===== 字段显示 =====
 
   /**
-   * 对字段值进行脱敏处理
+   * 获取字段最终显示值。
+   * 当服务端将字段标记为 masked 时，返回值应当已经是服务端处理后的脱敏值。
    * @param field 字段名
    * @param value 字段值
    * @param row 数据行
-   * @returns 脱敏后的字符串
+   * @returns 可直接展示的字符串
    */
-  maskFieldValue(field: string, value: unknown, row: IDataRow): string {
-    if (this.getFieldVisibility(field, row) !== FieldVisibility.Masked) {
-      return String(value ?? '')
-    }
-    return this.defaultMaskRule(field, value)
-  }
-
-  /**
-   * 默认脱敏规则
-   * @param field 字段名
-   * @param value 字段值
-   * @returns 脱敏后的字符串
-   */
-  private defaultMaskRule(field: string, value: unknown): string {
-    if (value === null || value === undefined) return ''
-    const str = String(value)
-    const f = field.toLowerCase()
-
-    // 手机号：138****1234
-    if ((f.includes('phone') || f.includes('mobile')) && str.length === 11) {
-      return `${str.substring(0, 3)  }****${  str.substring(7)}`
-    }
-    // 身份证：330***********1234
-    if ((f.includes('idcard') || f.includes('idno')) && str.length === 18) {
-      return `${str.substring(0, 3)  }***********${  str.substring(14)}`
-    }
-    // 邮箱：abc***@example.com
-    if (f.includes('email')) {
-      const at = str.indexOf('@')
-      if (at > 3) return `${str.substring(0, 3)  }***${  str.substring(at)}`
-    }
-    // 银行卡：6222 **** **** 1234
-    if ((f.includes('bank') || f.includes('card')) && str.length >= 16) {
-      return `${str.substring(0, 4)  } **** **** ${  str.substring(str.length - 4)}`
-    }
-    // 默认
-    return str.length > 4
-      ? `${str.substring(0, 2)  }***${  str.substring(str.length - 2)}`
-      : '***'
+  getFieldDisplayValue(_field: string, value: unknown, _row: IDataRow): string {
+    return String(value ?? '')
   }
 }
 

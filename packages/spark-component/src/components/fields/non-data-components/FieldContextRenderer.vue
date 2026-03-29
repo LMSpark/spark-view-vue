@@ -45,7 +45,7 @@
 
   <!-- r-form 宿主：el-form-item（携带列级验证规则） -->
   <el-form-item
-    v-else-if="resolvedContext === 'r-form' && !resolvedCurrentFieldHidden"
+    v-else-if="resolvedContext === 'r-form' && resolvedShouldRenderCurrentField"
     :label="resolvedDisplayLabel"
     :prop="resolvedFieldName"
     :rules="resolvedValidationRules"
@@ -55,7 +55,7 @@
 
   <!-- r-tree 宿主：树节点文本 -->
   <template v-else-if="resolvedContext === 'r-tree'">
-    <template v-if="!resolvedCurrentFieldHidden">
+    <template v-if="resolvedShouldRenderCurrentField">
       <slot name="tree">
         <span class="tree-node-text">{{ resolvedCurrentDisplayValue }}</span>
       </slot>
@@ -64,7 +64,7 @@
 
   <!-- r-detail / r-list / 其他宿主：只读展示 -->
   <template v-else>
-    <template v-if="!resolvedCurrentFieldHidden">
+    <template v-if="resolvedShouldRenderCurrentField">
       <slot name="detail">
         <div class="field-display">
           <span :class="['field-label', detailTitleClassName]">{{ resolvedDisplayLabel }}：</span>
@@ -112,6 +112,8 @@ interface Props extends SparkNode {
   mergedChildren?: SparkNode[] | undefined
   /** 当前字段是否隐藏 */
   isCurrentFieldHidden?: boolean | undefined
+  /** 当前宿主下字段是否应渲染 */
+  shouldRenderCurrentField?: boolean | undefined
   /** 当前显示值 */
   currentDisplayValue?: string | undefined
   /** 表格行级隐藏判断 */
@@ -148,6 +150,7 @@ const resolvedChildren = computed<SparkNode[]>(() => {
   return getSparkNodeChildren(children)
 })
 const resolvedCurrentFieldHidden = computed(() => props.isCurrentFieldHidden ?? false)
+const resolvedShouldRenderCurrentField = computed(() => props.shouldRenderCurrentField ?? !resolvedCurrentFieldHidden.value)
 const resolvedCurrentDisplayValue = computed(() => props.currentDisplayValue ?? '')
 const resolvedValidationRules = computed<FormItemRule[]>(() => props.validationRules ?? [])
 

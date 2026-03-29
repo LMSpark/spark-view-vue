@@ -156,6 +156,7 @@ describe('useFieldContext attrs 集成传递', () => {
         fieldName: computed(() => props.field ?? 'id'),
         displayLabel: computed(() => props.label ?? 'ID'),
         isCurrentFieldHidden: computed(() => false),
+        shouldRenderCurrentField: computed(() => true),
         currentDisplayValue: computed(() => '1'),
         isTableCellHidden: () => false,
         getTableCellDisplayValue: (row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? ''),

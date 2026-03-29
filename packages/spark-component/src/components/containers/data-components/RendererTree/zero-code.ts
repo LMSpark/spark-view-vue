@@ -8,7 +8,7 @@ import {
 import type { SparkNode } from '../../../internal'
 import type { ValueRef } from '../../../shared-types.js'
 import { createBuiltinActionHandler, isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../builtin-actions'
-import { createCancelledCrudResult, useEventDefaults } from '../../support/index.js'
+import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
 import type { RendererTreeApi } from './types'
 
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
@@ -87,9 +87,6 @@ interface RendererTreeZeroCodeOptions {
   effectiveAllowDelete: ValueRef<boolean>
 }
 
-type AddRowResult = Awaited<ReturnType<RendererTreeApi['addRow']>>
-type EditRowResult = Awaited<ReturnType<RendererTreeApi['editRowById']>>
-type RemoveRowResult = Awaited<ReturnType<RendererTreeApi['removeRow']>>
 type MoveNodeResult = Awaited<ReturnType<RendererTreeApi['moveNode']>>
 
 interface TreePathLike {
@@ -98,9 +95,6 @@ interface TreePathLike {
 
 type LoadTreePathFn = (id: string | number) => Promise<TreePathLike>
 type MoveTreeNodeFn = (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<MoveNodeResult>
-type AddRowFn = (row: Partial<IDataRow>) => Promise<AddRowResult>
-type EditRowFn = (id: string | number, patch: Partial<IDataRow>) => Promise<EditRowResult>
-type RemoveRowFn = (id: string | number) => Promise<RemoveRowResult>
 
 export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions) {
   function getNodeKey(data: unknown): string | number | null {
@@ -120,16 +114,13 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     tree?.setCurrentKey?.(key)
   }
 
-  const { dispatch } = useEventDefaults({
-    'add-row': {},
-    'edit-row': {},
-    'remove-row': {},
-  }, options.props)
+  const { dispatch } = useEventDefaults(createCrudEventDefaults(), options.props)
+
+  const baseCrudMethods = createBaseCrudMethods(options.resolvedView, dispatch)
+  const { getDataSource, addRow, editRowById, removeRow } = baseCrudMethods
 
   const treeApi: RendererTreeApi = {
-    getDataSource() {
-      return options.resolvedView.value ?? null
-    },
+    getDataSource,
     getTreeData() {
       return options.treeData.value
     },
@@ -180,33 +171,9 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       if (!tree || typeof tree.setCheckedKeys !== 'function') return
       tree.setCheckedKeys(keys)
     },
-    async addRow(row) {
-      const view = options.resolvedView.value
-      if (!view) return null
-      const { cancel } = await dispatch('add-row', row)
-      if (cancel) return createCancelledCrudResult<IDataRow>('addRow cancelled by business handler') as AddRowResult
-      const addRow = view.addRow.bind(view) as unknown as AddRowFn
-      const resultUnknown: unknown = await addRow(row)
-      return resultUnknown as AddRowResult
-    },
-    async editRowById(id, patch) {
-      const view = options.resolvedView.value
-      if (!view) return false
-      const { cancel } = await dispatch('edit-row', id, patch)
-      if (cancel) return createCancelledCrudResult<IDataRow>('editRowById cancelled by business handler') as EditRowResult
-      const editRowById = view.editRowById.bind(view) as unknown as EditRowFn
-      const resultUnknown: unknown = await editRowById(id, patch)
-      return resultUnknown as EditRowResult
-    },
-    async removeRow(id) {
-      const view = options.resolvedView.value
-      if (!view) return false
-      const { cancel } = await dispatch('remove-row', id)
-      if (cancel) return createCancelledCrudResult<boolean>('removeRow cancelled by business handler') as RemoveRowResult
-      const removeRow = view.removeRow.bind(view) as unknown as RemoveRowFn
-      const resultUnknown: unknown = await removeRow(id)
-      return resultUnknown as RemoveRowResult
-    },
+    addRow,
+    editRowById,
+    removeRow,
     async moveNode(nodeId, newParentId, index) {
       const view = options.resolvedView.value
       if (!view) return null

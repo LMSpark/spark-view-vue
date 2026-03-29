@@ -1,5 +1,5 @@
 import type { DataView } from '@spark-view/spark-data'
-import { createBaseCrudMethods, useEventDefaults } from '../../support/index.js'
+import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
 import type { RendererDetailApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -10,11 +10,7 @@ interface RendererDetailZeroCodeOptions {
 }
 
 export function createRendererDetailZeroCode(options: RendererDetailZeroCodeOptions) {
-  const { dispatch } = useEventDefaults({
-    'add-row': {},
-    'edit-row': {},
-    'remove-row': {},
-  }, options.props)
+  const { dispatch } = useEventDefaults(createCrudEventDefaults(), options.props)
 
   const baseMethods = createBaseCrudMethods(options.resolvedView, dispatch)
 

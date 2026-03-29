@@ -12,6 +12,7 @@ function pickRootKeys(): string[] {
         'SparkComponentRenderer',
         'registerAllRenderers',
         'useSparkComponent',
+        'useSparkPageComponent',
         'useSparkConsume',
         'createSparkPlugin',
         'createComponentRegistry',
@@ -46,6 +47,7 @@ describe('spark-component root api', () => {
         "SparkComponentRenderer",
         "useSparkComponent",
         "useSparkConsume",
+        "useSparkPageComponent",
       ]
     `)
   })

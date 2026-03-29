@@ -93,10 +93,11 @@ export {
   PermissionFilter, createPermissionFilter, filterByPermission,
   FieldRenderHelper, createFieldRenderHelper,
   computeFieldState, computeFieldStates, filterVisibleFields,
+  isPermittedAction, resolveFieldPermissionState, formatPermissionAwareFieldValue,
 } from './permission'
 
 export type {
-  IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper,
+  IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper, PermissionActionContext,
 } from './permission'
 
 // ===== 列验证规则 =====

@@ -190,7 +190,7 @@
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
 import { computed, defineComponent, ref, useAttrs, useSlots } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import type { RendererTableApi } from './types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
@@ -287,7 +287,7 @@ const ElTableColumns = defineComponent({
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(props)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)

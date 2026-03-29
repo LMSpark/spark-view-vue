@@ -665,18 +665,19 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[]
+          rows: [{ id: 'node-1', label: '节点 1', _perm: { allowDelete: true, allowCreateChild: true } }] as IDataRow[]
         }
       }
     })
 
     const dv = ds.getView('Nodes', 'default')!
+    ;(dv as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: true }
     const appendNativeSpy = vi.fn()
     const removeNativeSpy = vi.fn()
     const ActionTreeStub = defineComponent({
       emits: ['node-click', 'node-expand', 'node-collapse'],
       setup(_, { slots, expose }) {
-        const treeData = { id: 'node-1', label: '节点 1' }
+        const treeData = { id: 'node-1', label: '节点 1', _perm: { allowDelete: true, allowCreateChild: true } }
         const treeNode = { level: 1, expanded: false }
         const treeComponent = { stub: true }
         expose({
@@ -2181,7 +2182,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
   it('should hide toolbar actions by model permission and row actions by instance permission', async () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const permissionView = permissionDataSet.getView('Users', 'default')!
-    ;(permissionView as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: false }
+    ;(permissionView as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: false, allowExport: true }
 
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
@@ -2231,7 +2232,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
     const dv = ds.getView('Nodes', 'default')!
     // Inject _modelPerm on the DataView
-    ;(dv as any)._modelPerm = { allowImport: false, allowCreate: false }
+    ;(dv as any)._modelPerm = { allowImport: false, allowCreate: false, allowExport: true }
 
     const wrapper = await mountRendererTreeWithView(dv, {
       children: [
@@ -2258,6 +2259,15 @@ describe('RendererTable - DataView as single data intermediary', () => {
   })
 
   it('should execute builtin tree append action with scope-row inheritance', async () => {
+    const AllowedCreateChildTreeStub = defineComponent({
+      setup(_, { slots }) {
+        return () => h('div', { class: 'el-tree-stub allowed-create-child' }, slots['default']?.({
+          node: { level: 1 },
+          data: { id: 'node-1', label: '节点 1', _perm: { allowCreateChild: true } },
+        }))
+      }
+    })
+
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS-Tree-Builtin-Append',
       tables: {
@@ -2274,6 +2284,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const dv = ds.getView('Nodes', 'default')!
+    ;(dv as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: true }
     const wrapper = await mountRendererTreeWithView(dv, {
       children: [
         {
@@ -2293,7 +2304,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     }, {
       global: {
         stubs: {
-          'el-tree': ElTreeStub,
+          'el-tree': AllowedCreateChildTreeStub,
           'el-button': ElButtonStub,
           SparkComponentRenderer: SparkActionStub,
         }

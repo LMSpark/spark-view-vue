@@ -15,7 +15,6 @@ export interface IFieldRenderConfig {
   field: string
   visible?: boolean
   editable?: boolean
-  maskRule?: (value: unknown) => string
   label?: string
   width?: number | string
 }
@@ -24,6 +23,7 @@ export interface IFieldRenderConfig {
 export interface IFieldRenderState {
   field: string
   visibility: FieldVisibility
+  readable: boolean
   editable: boolean
   displayValue: string | undefined
   shouldRender: boolean
@@ -51,16 +51,19 @@ export class FieldRenderHelper implements IFieldRenderHelper {
   computeFieldState(config: IFieldRenderConfig, row: IDataRow, checker: PermissionChecker): IFieldRenderState {
     const { field } = config
     const visibility = checker.getFieldVisibility(field, row)
-    const editable = checker.isFieldEditable(field, row) && (config.editable !== false)
-    const shouldRender = visibility !== FieldVisibility.Hidden && (config.visible !== false)
+    const readable = visibility !== FieldVisibility.Hidden && (config.visible !== false)
+    const editable = checker.canEdit(row)
+      && checker.isFieldEditable(field, row)
+      && (config.editable !== false)
+    const shouldRender = readable
 
     let displayValue: string | undefined
-    if (shouldRender) {
+    if (readable) {
       const value = row[field]
       displayValue = value !== undefined && value !== null ? String(value) : ''
     }
 
-    return { field, visibility, editable, displayValue, shouldRender }
+    return { field, visibility, readable, editable, displayValue, shouldRender }
   }
 
   /**

@@ -1,7 +1,7 @@
 /**
  * 权限过滤器
  *
- * 批量过滤行、字段，应用脱敏处理
+ * 批量过滤行、字段，并保留服务端已经处理好的显示值
  */
 
 import type { IDataRow } from '../types'
@@ -68,32 +68,32 @@ export class PermissionFilter {
     return allFields.filter(field => this.checker.isFieldVisible(field, row))
   }
 
-  // ===== 脱敏处理 =====
+  // ===== 字段显示数据处理 =====
 
   /**
-   * 应用字段脱敏
+   * 生成前端可消费的字段数据。
+   * hidden 字段会被移除；masked 字段保留服务端返回值，不做前端二次脱敏。
    * @param row 数据行
-   * @returns 脱敏后的数据行
+   * @returns 可直接消费的数据行
    */
-  applyFieldMasking(row: IDataRow): IDataRow {
-    const masked: IDataRow = {}
+  filterDisplayableFields(row: IDataRow): IDataRow {
+    const filtered: IDataRow = {}
     for (const [field, value] of Object.entries(row)) {
-      if (field.startsWith('_')) { masked[field] = value; continue }
+      if (field.startsWith('_')) { filtered[field] = value; continue }
       const vis = this.checker.getFieldVisibility(field, row)
       if (vis === FieldVisibility.Hidden) continue
-      else if (vis === FieldVisibility.Masked) masked[field] = this.checker.maskFieldValue(field, value, row)
-      else masked[field] = value
+      filtered[field] = value
     }
-    return masked
+    return filtered
   }
 
   /**
-   * 批量应用脱敏处理
+   * 批量生成前端可消费的字段数据
    * @param rows 数据行数组
-   * @returns 脱敏后的数据行数组
+   * @returns 可直接消费的数据行数组
    */
-  applyMaskingToDataSet(rows: IDataRow[]): IDataRow[] {
-    return rows.map(row => this.applyFieldMasking(row))
+  filterDisplayableFieldsInDataSet(rows: IDataRow[]): IDataRow[] {
+    return rows.map(row => this.filterDisplayableFields(row))
   }
 }
 
@@ -116,6 +116,6 @@ export function createPermissionFilter(): PermissionFilter {
 export const filterByPermission = {
   deletableRows: (rows: IDataRow[]) => createPermissionFilter().filterDeletableRows(rows),
   editableRows: (rows: IDataRow[]) => createPermissionFilter().filterEditableRows(rows),
-  applyMasking: (row: IDataRow) => createPermissionFilter().applyFieldMasking(row),
-  applyMaskingToAll: (rows: IDataRow[]) => createPermissionFilter().applyMaskingToDataSet(rows)
+  displayableFields: (row: IDataRow) => createPermissionFilter().filterDisplayableFields(row),
+  displayableFieldsInRows: (rows: IDataRow[]) => createPermissionFilter().filterDisplayableFieldsInDataSet(rows)
 }

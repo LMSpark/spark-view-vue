@@ -1,18 +1,18 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import { SparkData, getViewFromRawKey, type DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, useSparkConsume } from '../../internal'
+import { resolveViewFromDataKey } from '../../../shared/data-key-resolver.js'
 import { useFieldPermission } from '../context/useFieldPermission'
 import type { FieldPermissionProps } from '../context/useFieldPermission'
+import { buildOptionSourceFromView } from './option-source.js'
+import {
+  flattenOptions,
+  normalizeMultiValue,
+  normalizeOption,
+  type FieldOption,
+} from './option-normalization.js'
 
-type FieldOptionValue = string | number | boolean
-
-export interface FieldOption {
-  label: string
-  value: FieldOptionValue
-  disabled?: boolean
-  children?: FieldOption[]
-}
+export type { FieldOption } from './option-normalization.js'
 
 interface FieldTransferOption {
   key: string | number
@@ -44,123 +44,6 @@ interface UseOptionFieldOptions<TValue> {
   formatDisplay?: (value: unknown, helpers: UseFieldOptionsReturn) => string
 }
 
-interface TreeOptionSeedNode extends Record<string, unknown> {
-  id: string | number
-  name: string
-  parentId?: string | number | null
-}
-
-function normalizeOption(
-  raw: unknown,
-  labelField: string,
-  valueField: string,
-  childrenField: string,
-): FieldOption | null {
-  if (raw === null || raw === undefined) return null
-  if (typeof raw === 'string' || typeof raw === 'number' || typeof raw === 'boolean') {
-    return { label: String(raw), value: raw }
-  }
-  if (typeof raw !== 'object') return null
-
-  const record = raw as Record<string, unknown>
-  const label = record[labelField] ?? record['label'] ?? record['text'] ?? record['name'] ?? record[valueField] ?? record['value']
-  const value = record[valueField] ?? record['value'] ?? record['id'] ?? record['code'] ?? label
-  if (label === undefined || value === undefined) return null
-
-  const rawChildren = record[childrenField] ?? record['children'] ?? record['items'] ?? record['nodes']
-  const children = Array.isArray(rawChildren)
-    ? rawChildren
-      .map(item => normalizeOption(item, labelField, valueField, childrenField))
-      .filter((item): item is FieldOption => item !== null)
-    : []
-
-  const option: FieldOption = {
-    label: String(label),
-    value: value as FieldOptionValue,
-    disabled: record['disabled'] === true,
-  }
-
-  if (children.length > 0) {
-    option.children = children
-  }
-
-  return option
-}
-
-function normalizeMultiValue(value: unknown): FieldOptionValue[] {
-  if (Array.isArray(value)) return value as FieldOptionValue[]
-  if (typeof value === 'string') {
-    if (!value.trim()) return []
-    return value.split(',').map(item => item.trim())
-  }
-  if (value === null || value === undefined || value === '') return []
-  return [value as FieldOptionValue]
-}
-
-function flattenOptions(source: FieldOption[]): FieldOption[] {
-  const result: FieldOption[] = []
-  for (const option of source) {
-    result.push(option)
-    if (option.children && option.children.length > 0) {
-      result.push(...flattenOptions(option.children))
-    }
-  }
-  return result
-}
-
-function buildOptionSourceFromView(
-  view: DataView,
-  labelField: string,
-  childrenField: string,
-): unknown[] {
-  const rows = view.rows
-  if (rows.some(row => Array.isArray((row as Record<string, unknown> | undefined)?.[childrenField]))) {
-    return rows
-  }
-
-  const treeConfig = view.treeConfig
-  if (!treeConfig) return rows
-
-  const idField = treeConfig.idField ?? view.primaryKey
-  const parentIdField = treeConfig.parentIdField ?? 'parentId'
-  const textField = treeConfig.textField ?? labelField
-
-  const seedNodes: TreeOptionSeedNode[] = rows.flatMap(row => {
-    const record = row as Record<string, unknown>
-    const rawId = record[idField]
-    if (typeof rawId !== 'string' && typeof rawId !== 'number') {
-      return []
-    }
-
-    const rawParentId = record[parentIdField]
-    const parentId = typeof rawParentId === 'string' || typeof rawParentId === 'number'
-      ? rawParentId
-      : rawParentId === null || rawParentId === undefined
-        ? null
-        : String(rawParentId)
-
-    const rawText = record[textField]
-
-    return [{
-      ...record,
-      id: rawId,
-      parentId,
-      name: typeof rawText === 'string'
-        ? rawText
-        : String(rawText ?? rawId),
-    }]
-  })
-
-  if (seedNodes.length === 0) return rows
-
-  return SparkData.createTreeManager({
-    idField,
-    parentIdField,
-    textField,
-    treeMode: 'nested',
-  }, seedNodes).buildNestedTree()
-}
-
 export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn {
   const resolvedOptionKey = computed(() => props.optionKey)
   const { sparkConsume } = useSparkConsume()
@@ -168,8 +51,7 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
 
   const optionKeyView = computed(() => {
     const key = resolvedOptionKey.value
-    if (!key || !pageDataSet) return null
-    return getViewFromRawKey(key, pageDataSet) ?? null
+    return resolveViewFromDataKey(key, pageDataSet)
   })
 
   const optionLabelField = computed(() =>

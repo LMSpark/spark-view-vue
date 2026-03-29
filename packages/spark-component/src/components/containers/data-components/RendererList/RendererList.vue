@@ -85,7 +85,7 @@
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getDockedChildren, nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
@@ -192,7 +192,7 @@ const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'
 const dockedItemActions = computed(() => getDockedChildren(props.children, 'actions'))
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkComponent(props)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({

@@ -2,7 +2,7 @@ import type { DataView } from '@spark-view/spark-data'
 import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
 import { createBuiltinActionHandler, isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../builtin-actions'
-import { createBaseCrudMethods, useEventDefaults } from '../../support/index.js'
+import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
 import type { RendererFormApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -22,11 +22,7 @@ interface RendererFormZeroCodeOptions {
 }
 
 export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions) {
-  const { dispatch } = useEventDefaults({
-    'add-row': {},
-    'edit-row': {},
-    'remove-row': {},
-  }, options.props)
+  const { dispatch } = useEventDefaults(createCrudEventDefaults(), options.props)
 
   const baseMethods = createBaseCrudMethods(options.resolvedView, dispatch)
 

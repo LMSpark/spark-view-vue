@@ -9,6 +9,7 @@ interface FieldContextStateLike {
   fieldName: ComputedRef<string>
   displayLabel: ComputedRef<string>
   isCurrentFieldHidden: ComputedRef<boolean>
+  shouldRenderCurrentField: ComputedRef<boolean>
   currentDisplayValue: ComputedRef<string>
   isTableCellHidden: (row: IDataRow) => boolean
   getTableCellDisplayValue: (row: IDataRow) => string

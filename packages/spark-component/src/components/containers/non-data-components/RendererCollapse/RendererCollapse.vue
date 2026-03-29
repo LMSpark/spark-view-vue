@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useSparkComponent } from '../../../internal'
+import { useSparkPageComponent } from '../../../internal'
 import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import RendererCollapseItem from '../RendererCollapseItem.vue'
@@ -72,7 +72,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: CollapseValue]
 }>()
 
-const { registerApi } = useSparkComponent(props)
+const { registerApi } = useSparkPageComponent(props)
 
 const itemConfigs = computed(() =>
   getDockedChildren(props.children).filter(child => child.type === 'r-collapse-item')

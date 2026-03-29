@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getDockedChildren, nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererDialogApi } from './types'
@@ -108,7 +108,7 @@ const emit = defineEmits<{
 
 const attrs = useAttrs()
 const slots = useSlots()
-const { registerApi } = useSparkComponent(props)
+const { registerApi } = useSparkPageComponent(props)
 
 function readStringAttr(name: string): string {
   const value = attrs[name]

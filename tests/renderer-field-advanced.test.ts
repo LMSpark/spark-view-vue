@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { defineComponent, h, reactive } from 'vue'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
 import {
+  FieldText,
   FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,
   FieldFilePath, FieldImage, FieldEntityPicker, FieldUserPicker,
   FieldDeptPicker, FieldProductPicker, FieldDate, FieldNumber,
@@ -50,7 +51,8 @@ function mountWithFieldContext(
   component: object,
   model: Record<string, unknown>,
   pageService?: IPageServiceCapability,
-  componentProps?: Record<string, unknown>
+  componentProps?: Record<string, unknown>,
+  options?: { parentType?: string }
 ) {
   return mountFieldInContext({
     component,
@@ -58,7 +60,7 @@ function mountWithFieldContext(
     model,
     fieldName: 'content',
     pageService,
-    parentType: 'r-form',
+    parentType: options?.parentType ?? 'r-form',
     ...(componentProps !== undefined ? { componentProps } : {}),
     global: {
       stubs: {
@@ -128,9 +130,16 @@ function mountWithFieldContext(
   })
 }
 
+function createEditableFieldModel(content: unknown): Record<string, unknown> {
+  return reactive<Record<string, unknown>>({
+    content,
+    _perm: { editableFields: ['content'] },
+  })
+}
+
 describe('advanced renderer fields', () => {
   it('textarea should sync multiline value into context data', async () => {
-    const model = reactive<Record<string, unknown>>({ content: 'line1' })
+    const model = createEditableFieldModel('line1')
     const wrapper = mountWithFieldContext(FieldTextarea, model)
 
     await wrapper.find('textarea').setValue('line1\nline2')
@@ -138,7 +147,7 @@ describe('advanced renderer fields', () => {
   })
 
   it('html editor should sync source html into context data', async () => {
-    const model = reactive<Record<string, unknown>>({ content: '<p>old</p>' })
+    const model = createEditableFieldModel('<p>old</p>')
     const wrapper = mountWithFieldContext(FieldHtmlEditor, model)
 
     await wrapper.find('.toggle-source').trigger('click')
@@ -156,7 +165,7 @@ describe('advanced renderer fields', () => {
   })
 
   it('number field should sync range input back into context data', async () => {
-    const model = reactive<Record<string, unknown>>({ content: [1, 5] })
+    const model = createEditableFieldModel([1, 5])
     const wrapper = mountWithFieldContext(FieldNumber, model, undefined, { filterMode: 'range' })
 
     const inputs = wrapper.findAll('.el-input-number-stub')
@@ -167,7 +176,7 @@ describe('advanced renderer fields', () => {
   })
 
   it('file browser should sync selected file names into context data', async () => {
-    const model = reactive<Record<string, unknown>>({ content: '' })
+    const model = createEditableFieldModel('')
     const wrapper = mountWithFieldContext(FieldFileBrowser, model, createPageService({
       browseFiles: async () => [
         { name: 'alpha.txt', size: 1, type: 'text/plain', lastModified: 1, file: new File(['a'], 'alpha.txt') },
@@ -202,7 +211,7 @@ describe('advanced renderer fields', () => {
   })
 
   it('upload field should upload when editable and switch to browse when readonly', async () => {
-    const editableModel = reactive<Record<string, unknown>>({ content: '' })
+    const editableModel = createEditableFieldModel('')
     let uploadCalls = 0
     let browseCalls = 0
     const pageService = createPageService({
@@ -273,7 +282,7 @@ describe('advanced renderer fields', () => {
       },
     })
 
-    const editableModel = reactive<Record<string, unknown>>({ content: '' })
+    const editableModel = createEditableFieldModel('')
     const editableWrapper = mountWithFieldContext(FieldFilePath, editableModel, pageService, { action: '/api/upload' })
     expect(editableWrapper.find('.primary-action-button').text()).toBe('上传')
     await editableWrapper.find('.primary-action-button').trigger('click')
@@ -319,7 +328,7 @@ describe('advanced renderer fields', () => {
       },
     })
 
-    const editableModel = reactive<Record<string, unknown>>({ content: '' })
+    const editableModel = createEditableFieldModel('')
     const editableWrapper = mountWithFieldContext(FieldImage, editableModel, pageService, { action: '/api/upload-image' })
     await editableWrapper.find('.primary-action-button').trigger('click')
     expect(uploadCalls).toBe(1)
@@ -350,7 +359,85 @@ describe('advanced renderer fields', () => {
     expect(wrapper.text()).not.toContain('/files/secret.txt')
   })
 
-  it('image field should allow masked preview when backend returns mosaicked image', () => {
+  it('textarea should remain rendered when the field is visible but empty', () => {
+    const model = reactive<Record<string, unknown>>({
+      content: '',
+      _perm: { editableFields: [] },
+    })
+
+    const wrapper = mountWithFieldContext(FieldTextarea, model, createPageService())
+
+    expect(wrapper.find('.el-form-item-stub').exists()).toBe(true)
+    expect(wrapper.find('textarea').exists()).toBe(true)
+    expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('')
+  })
+
+  it('textarea should hide when hidden permission is explicit even if there is no field value', () => {
+    const model = reactive<Record<string, unknown>>({
+      _perm: { hiddenFields: ['content'] },
+    })
+
+    const wrapper = mountWithFieldContext(FieldTextarea, model as Record<string, unknown>, createPageService())
+
+    expect(wrapper.find('.el-form-item-stub').exists()).toBe(false)
+  })
+
+  it('detail field should remove the whole block together with caption when hidden', () => {
+    const model = reactive<Record<string, unknown>>({
+      content: 'secret value',
+      _perm: { hiddenFields: ['content'] },
+    })
+
+    const wrapper = mountWithFieldContext(FieldText, model, createPageService(), {
+      label: '内容',
+    }, {
+      parentType: 'r-detail',
+    })
+
+    expect(wrapper.find('.field-display').exists()).toBe(false)
+    expect(wrapper.find('.field-label').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('内容')
+    expect(wrapper.text()).not.toContain('secret value')
+  })
+
+  it('form field should stay writable without leaking hidden read-channel value', () => {
+    const model = reactive<Record<string, unknown>>({
+      content: 'secret value',
+      _perm: {
+        hiddenFields: ['content'],
+        editableFields: ['content'],
+      },
+    })
+
+    const wrapper = mountWithFieldContext(FieldText, model, createPageService(), {
+      label: '密码',
+    })
+
+    expect(wrapper.find('.el-form-item-stub').exists()).toBe(true)
+    expect(wrapper.find('input').exists()).toBe(true)
+    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('')
+    expect(wrapper.text()).not.toContain('secret value')
+  })
+
+  it('form field should not reuse backend masked text as editable input value', () => {
+    const model = reactive<Record<string, unknown>>({
+      content: '138****1234',
+      _perm: {
+        maskedFields: ['content'],
+        editableFields: ['content'],
+      },
+    })
+
+    const wrapper = mountWithFieldContext(FieldText, model, createPageService(), {
+      label: '手机号',
+    })
+
+    expect(wrapper.find('.el-form-item-stub').exists()).toBe(true)
+    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('')
+    expect(wrapper.text()).not.toContain('138****1234')
+  })
+
+  it('image field should use backend-provided masked image value directly', () => {
     const maskedModel = reactive<Record<string, unknown>>({
       content: '/img/mosaic-secret.png',
       _perm: { maskedFields: ['content'] },
@@ -360,11 +447,11 @@ describe('advanced renderer fields', () => {
 
     expect(wrapper.find('.image-preview').exists()).toBe(true)
     expect(wrapper.find('.image-preview').attributes('src')).toBe('/img/mosaic-secret.png')
-    expect((wrapper.find('input').element as HTMLInputElement).value).toContain('***')
+    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('/img/mosaic-secret.png')
   })
 
   it('entity picker should sync selected entity values into context data', async () => {
-    const model = reactive<Record<string, unknown>>({ content: '' })
+    const model = createEditableFieldModel('')
     const wrapper = mountWithFieldContext(FieldEntityPicker, model, createPageService({
       selectEntities: async () => [
         { label: '张三', value: 'user-1' },
@@ -410,7 +497,7 @@ describe('advanced renderer fields', () => {
   })
 
   it('user picker should use people-specific defaults and sync selected value', async () => {
-    const model = reactive<Record<string, unknown>>({ content: '' })
+    const model = createEditableFieldModel('')
     const wrapper = mountWithFieldContext(FieldUserPicker, model, createPageService({
       selectEntities: async () => [{ label: '张三', value: 'user-1' }],
     }), {
@@ -439,7 +526,7 @@ describe('advanced renderer fields', () => {
   })
 
   it('product picker should support multi-select array mode', async () => {
-    const model = reactive<Record<string, unknown>>({ content: [] as string[] })
+    const model = createEditableFieldModel([] as string[])
     const wrapper = mountWithFieldContext(FieldProductPicker, model, createPageService({
       selectEntities: async () => [
         { label: '商品A', value: 'sku-1' },

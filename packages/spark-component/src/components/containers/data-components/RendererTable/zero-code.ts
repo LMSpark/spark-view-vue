@@ -2,7 +2,7 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
 import { createBuiltinActionHandler, getSelectedRows, isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../builtin-actions'
-import { createBaseCrudMethods, useEventDefaults } from '../../support/index.js'
+import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
 import type { RendererTableApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -96,7 +96,7 @@ function hasRemoteListApi(view: DataView | null | undefined): boolean {
 }
 
 export function createRendererTableZeroCode(options: RendererTableZeroCodeOptions) {
-  const { dispatch } = useEventDefaults({
+  const { dispatch } = useEventDefaults(createCrudEventDefaults({
     'current-change': {
       systemDefault: (currentRow: unknown) => {
         options.resolvedView.value?.selection.setCurrentRow((currentRow as IDataRow | null) ?? null)
@@ -113,10 +113,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
         options.resolvedView.value?.selection.setSelectedRows(selection as IDataRow[])
       },
     },
-    'add-row': {},
-    'edit-row': {},
-    'remove-row': {},
-  }, options.props)
+  }), options.props)
 
   const baseMethods = createBaseCrudMethods(options.resolvedView, dispatch)
 

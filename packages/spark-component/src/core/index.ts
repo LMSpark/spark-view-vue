@@ -7,9 +7,10 @@
  * - capability keys
  */
 
-export { useSparkComponent, useSparkConsume } from './useSparkComponent.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent } from './useSparkComponent.js'
 export type {
   UseSparkComponentReturn,
+  UseSparkPageComponentReturn,
   UseSparkCapabilityReaderReturn,
   UseSparkComponentOptions,
   SparkNodeInput,

@@ -19,6 +19,7 @@ interface FieldContextProps {
   valueClassName?: string
   mergedChildren: SparkNode[]
   isCurrentFieldHidden: boolean
+  shouldRenderCurrentField: boolean
   currentDisplayValue: string
   isTableCellHidden: (row: IDataRow) => boolean
   getTableCellDisplayValue: (row: IDataRow) => string
@@ -29,6 +30,7 @@ interface FieldPermissionForContext {
   fieldName: ComputedRef<string>
   displayLabel: ComputedRef<string>
   isCurrentFieldHidden: ComputedRef<boolean>
+  shouldRenderCurrentField: ComputedRef<boolean>
   currentDisplayValue: ComputedRef<string>
   isTableCellHidden: (row: IDataRow) => boolean
   getTableCellDisplayValue: (row: IDataRow) => string
@@ -84,6 +86,7 @@ export function useFieldContext(
       ...(valueClassName !== undefined && { valueClassName }),
       mergedChildren: mergedChildren.value,
       isCurrentFieldHidden: permission.isCurrentFieldHidden.value,
+      shouldRenderCurrentField: permission.shouldRenderCurrentField.value,
       currentDisplayValue: permission.currentDisplayValue.value,
       isTableCellHidden: permission.isTableCellHidden,
       getTableCellDisplayValue: permission.getTableCellDisplayValue,
