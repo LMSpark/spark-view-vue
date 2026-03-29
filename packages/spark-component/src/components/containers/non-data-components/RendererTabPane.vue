@@ -14,24 +14,25 @@
     :closable="paneClosable"
   >
     <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
-      <template v-if="paneChildren.length">
-        <div
-          v-for="(child, childIndex) in paneChildren"
-          :key="nodeId(child) ?? `r-tab-pane-child-${childIndex}`"
-          class="renderer-tabs-pane-grid-item"
-          :style="getPaneChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-      </template>
-      <slot v-else />
+      <SparkChildrenBridge :spark-children="paneChildren" :parent-context="context">
+        <template #spark="{ child, index }">
+          <div
+            :key="nodeId(child) ?? `r-tab-pane-child-${index}`"
+            class="renderer-tabs-pane-grid-item"
+            :style="getPaneChildGridStyle(child)"
+          >
+            <SparkComponentRenderer :config="child" />
+          </div>
+        </template>
+        <slot />
+      </SparkChildrenBridge>
     </div>
   </el-tab-pane>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { SparkComponentRenderer, useSparkComponent } from '../../internal'
+import { SparkChildrenBridge, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
@@ -58,7 +59,7 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'r-tab-pane',
 })
 
-useSparkComponent(props)
+const { context } = useSparkComponent(props)
 
 const {
   contentChildren: paneChildren,

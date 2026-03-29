@@ -78,7 +78,7 @@
         @row-click="handleRowClick"
         @selection-change="handleSelectionChange"
       >
-        <el-table-columns>
+        <SparkTableColumns>
           <!-- 行操作列（左） -->
           <el-table-column
             v-if="showRowActionsLeftValue"
@@ -102,15 +102,15 @@
           </el-table-column>
 
           <!-- 主数据列 -->
-          <template v-if="sparkChildren.length">
-            <SparkComponentRenderer
-              v-for="(child, i) in sparkChildren"
-              :key="nodeId(child) ?? `r-table-child-${i}`"
-              :config="child"
-            />
-          </template>
-          <!-- Template 驱动 —— 保留 <slot> 向后兼容 -->
-          <slot v-else />
+          <SparkChildrenBridge :spark-children="sparkChildren" :parent-context="context">
+            <template #spark="{ child, index }">
+              <SparkComponentRenderer
+                :key="nodeId(child) ?? `r-table-child-${index}`"
+                :config="child"
+              />
+            </template>
+            <slot />
+          </SparkChildrenBridge>
 
           <!-- 行操作列（右） -->
           <el-table-column
@@ -133,7 +133,7 @@
               </div>
             </template>
           </el-table-column>
-        </el-table-columns>
+        </SparkTableColumns>
       </el-table>
     </div>
   </div>
@@ -147,8 +147,8 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, defineComponent, ref, useAttrs, useSlots } from 'vue'
-import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
+import { computed, ref, useAttrs, useSlots } from 'vue'
+import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer, SparkTableColumns } from '../../../internal'
 import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import type { RendererTableApi } from './types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
@@ -230,16 +230,9 @@ const {
   attrs: attrs as Readonly<Record<string, unknown>>,
 })
 
-const ElTableColumns = defineComponent({
-  name: 'ElTableColumns',
-  setup(_, { slots: componentSlots }) {
-    return () => componentSlots['default']?.() ?? []
-  },
-})
-
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+const { context, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)

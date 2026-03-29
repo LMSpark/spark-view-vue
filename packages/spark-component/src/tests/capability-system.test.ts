@@ -123,6 +123,30 @@ describe('Capability system integration', () => {
       })
     })
 
+    it('exposes parent context and type through useSparkComponent', () => {
+      const { plugin } = createTestPlugin()
+
+      const ChildComp = defineComponent({
+        setup() {
+          const result = useSparkComponent({ type: 'child-comp' } as SparkNode)
+          expect(result.parentContext).toBeDefined()
+          expect(result.parentType).toBe('parent-comp')
+          return () => h('span')
+        }
+      })
+
+      const ParentComp = defineComponent({
+        setup() {
+          useSparkComponent({ type: 'parent-comp' } as SparkNode)
+          return () => h(ChildComp)
+        }
+      })
+
+      mount(ParentComp, {
+        global: { plugins: [plugin] }
+      })
+    })
+
     it('reads runtime vnode inputs for id, visible and disabled without parent passing child config', () => {
       const { plugin } = createTestPlugin()
       const registry = createPageComponentRegistry()

@@ -47,6 +47,32 @@
       </div>
     </header>
 
+    <section class="demo-showcase">
+      <p class="demo-showcase__eyebrow">Live Demo</p>
+      <h2 class="section-title">平台可直达的两个 Demo 页</h2>
+      <p class="section-desc demo-showcase__desc">
+        一个验证原始 r-table 的模板字段桥接，一个对照原始 r-form 的配置式与模板式 children。
+      </p>
+      <div class="demo-showcase__grid">
+        <article
+          v-for="demo in platformDemos"
+          :key="demo.path"
+          class="demo-showcase__card"
+        >
+          <div class="demo-showcase__card-head">
+            <span class="demo-showcase__badge">{{ demo.badge }}</span>
+            <span class="demo-showcase__path">{{ demo.path }}</span>
+          </div>
+          <h3>{{ demo.title }}</h3>
+          <p>{{ demo.description }}</p>
+          <ul class="demo-showcase__points">
+            <li v-for="point in demo.points" :key="point">{{ point }}</li>
+          </ul>
+          <router-link :to="demo.path" class="demo-showcase__link">打开 Demo</router-link>
+        </article>
+      </div>
+    </section>
+
     <!-- ── 范式对比 ── -->
     <section class="paradigm">
       <h2 class="section-title">两种范式的根本分野</h2>
@@ -463,6 +489,31 @@ import NavIcon from '@/components/NavIcon.vue'
 
 const year = new Date().getFullYear()
 
+const platformDemos = [
+  {
+    path: '/demo/custom-r-table',
+    badge: 'RendererTable',
+    title: '原始 r-table Template Bridge Demo',
+    description: '直接打开原始 RendererTable 页面，验证 slot 中的 r-text 和 r-number 已经按表格列语义落下去。',
+    points: [
+      '不再额外包一层自定义表格宿主',
+      '页面层只负责提供 PAGE_DATASET',
+      '字段桥接点就在 RendererTable 内部',
+    ],
+  },
+  {
+    path: '/demo/r-form-compare',
+    badge: 'RendererForm',
+    title: '原始 r-form Compare Demo',
+    description: '同一份 currentRow 数据，同时展示 SparkNode 配置式 children 和 Vue 模板式 slot children。',
+    points: [
+      '两边底层都是原始 RendererForm',
+      '切 currentRow 时两边同步变化',
+      '适合直接看配置式与模板式边界',
+    ],
+  },
+] as const
+
 function setRegisterTab() {
   sessionStorage.setItem('spark_login_tab', 'register-tenant')
 }
@@ -489,6 +540,116 @@ function setRegisterTab() {
   font-size: 16px;
   color: #606266;
   margin: 0 0 60px;
+}
+
+/* ── Demo 展示 ── */
+.demo-showcase {
+  padding: 100px 48px;
+  background: linear-gradient(180deg, #f6f1e8 0%, #f4f8fb 100%);
+}
+
+.demo-showcase__eyebrow {
+  margin: 0 0 10px;
+  text-align: center;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.demo-showcase__desc {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.demo-showcase__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.demo-showcase__card {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 32%),
+    rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
+}
+
+.demo-showcase__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.demo-showcase__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1);
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.demo-showcase__path {
+  color: #64748b;
+  font-size: 13px;
+  font-family: Consolas, 'Courier New', monospace;
+}
+
+.demo-showcase__card h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 24px;
+}
+
+.demo-showcase__card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.demo-showcase__points {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.demo-showcase__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 132px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.demo-showcase__link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+  background: #111827;
 }
 
 /* ── Hero ── */
@@ -1430,6 +1591,14 @@ html.dark .home-footer {
     height: 1px;
   }
 
+  .demo-showcase {
+    padding: 60px 24px;
+  }
+
+  .demo-showcase__grid {
+    grid-template-columns: 1fr;
+  }
+
   .paradigm {
     padding: 60px 24px;
   }
@@ -1515,6 +1684,10 @@ html.dark .home-footer {
 }
 
 @media (max-width: 480px) {
+  .demo-showcase {
+    padding: 60px 16px;
+  }
+
   .files-grid {
     grid-template-columns: 1fr;
   }

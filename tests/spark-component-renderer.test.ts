@@ -620,3 +620,64 @@ test('SparkComponentRenderer fallback can expand node snapshot for unknown compo
   expect(panel.text()).toContain('测试节点')
   expect(panel.text()).toContain('unknown-node-1')
 })
+
+test('SparkComponentRenderer falls back when registry component parentTypes do not match current parent chain', () => {
+  const HostLockedCard = defineComponent({
+    name: 'HostLockedCard',
+    setup() {
+      return () => h('div', { class: 'host-locked-card' }, 'host-locked')
+    }
+  })
+
+  registry.register('host-locked-card', HostLockedCard, { parentTypes: ['r-table'] })
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: { type: 'host-locked-card' },
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.host-locked-card').exists()).toBe(false)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(true)
+  expect(wrapper.text()).toContain('父组件类型不匹配')
+  expect(wrapper.text()).toContain('r-table')
+})
+
+test('SparkComponentRenderer renders registry component when parentTypes match current parent chain', () => {
+  const HostLockedCard = defineComponent({
+    name: 'HostLockedCardMatched',
+    setup() {
+      return () => h('div', { class: 'host-locked-card-matched' }, 'host-locked')
+    }
+  })
+
+  registry.register('host-locked-card-matched', HostLockedCard, { parentTypes: ['r-table'] })
+
+  const tableContext = {
+    id: 'spark-table-host',
+    type: 'r-table',
+    capabilities: new Map(),
+    parent: rootContext,
+  }
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: { type: 'host-locked-card-matched' },
+      parentContext: tableContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.host-locked-card-matched').exists()).toBe(true)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
+})

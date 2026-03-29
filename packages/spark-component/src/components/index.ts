@@ -5,6 +5,9 @@
  */
 
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
+export { default as SparkChildrenBridge } from './support/SparkChildrenBridge.js'
+export { default as SparkTableColumns } from './support/SparkTableColumns.js'
+export { default as ElTableColumns } from './support/SparkTableColumns.js'
 
 // ── 容器组件 ──────────────────────────────────────────────────────────────────
 export { default as RendererTable } from './containers/data-components/RendererTable/index.js'

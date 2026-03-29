@@ -21,16 +21,23 @@
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="$attrs">
         <div v-if="gridChildren.length" class="renderer-form-grid" :style="gridStyle">
-          <div
-            v-for="(child, i) in gridChildren"
-            :key="nodeId(child) ?? `r-form-child-${i}`"
-            class="renderer-form-grid-item"
-            :style="getChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
-          </div>
+          <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context">
+            <template #spark="{ child, index }">
+              <div
+                :key="nodeId(child) ?? `r-form-child-${index}`"
+                class="renderer-form-grid-item"
+                :style="getChildGridStyle(child)"
+              >
+                <SparkComponentRenderer :config="child" />
+              </div>
+            </template>
+          </SparkChildrenBridge>
         </div>
-        <slot v-else v-bind="getDefaultSlotScope()" />
+        <SparkChildrenBridge v-else :parent-context="context" :slot-scope="getDefaultSlotScope()">
+          <template #default="slotScope">
+            <slot v-bind="slotScope" />
+          </template>
+        </SparkChildrenBridge>
       </el-form>
     </div>
   </div>
@@ -41,7 +48,7 @@
  * RendererForm - 表单容器组件
  */
 import { ref } from 'vue'
-import { SparkComponentRenderer } from '../../../internal'
+import { SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { RendererFormApi } from './types'
@@ -88,6 +95,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const {
   registerApi,
+  context,
   logger,
   pageService,
   resolvedView,

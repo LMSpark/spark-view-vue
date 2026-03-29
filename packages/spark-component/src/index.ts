@@ -14,8 +14,18 @@ export type {
 } from './system/index.js'
 
 // ── 2. Core 层（基础 composable / 类型 / 能力键） ──
-export { useSparkComponent, useSparkConsume, useSparkPageComponent } from './core/index.js'
-export type { UseSparkComponentReturn, UseSparkPageComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions, SparkNodeInput } from './core/index.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHost, useSparkHostScope, resolveSparkHost, resolveSparkHostType } from './core/index.js'
+export type {
+  UseSparkComponentReturn,
+  UseSparkPageComponentReturn,
+  UseSparkCapabilityReaderReturn,
+  UseSparkComponentOptions,
+  SparkNodeInput,
+  SparkHostResolverOptions,
+  ResolvedSparkHost,
+  UseSparkHostReturn,
+  UseSparkHostScopeReturn,
+} from './core/index.js'
 
 // ── 3. Vue 插件 + 注册表 ──
 export { createSparkPlugin, createComponentRegistry, getGlobalRegistry } from './system/index.js'
@@ -87,7 +97,10 @@ export {
   SparkPageRenderer,
 } from './page/index.js'
 export {
+  SparkChildrenBridge,
+  ElTableColumns,
   SparkComponentRenderer,
+  SparkTableColumns,
 } from './components/index.js'
 export * as componentComposables from './components/composables.js'
 export * as containerComposables from './components/containers/composables.js'

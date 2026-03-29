@@ -23,16 +23,23 @@
     <div class="renderer-detail-main">
       <div class="renderer-detail" v-bind="$attrs" :style="detailAlignStyle">
         <div v-if="gridChildren.length" class="renderer-detail-grid" :style="gridStyle">
-          <div
-            v-for="(child, i) in gridChildren"
-            :key="nodeId(child) ?? `r-detail-child-${i}`"
-            class="renderer-detail-grid-item"
-            :style="getChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
-          </div>
+          <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context">
+            <template #spark="{ child, index }">
+              <div
+                :key="nodeId(child) ?? `r-detail-child-${index}`"
+                class="renderer-detail-grid-item"
+                :style="getChildGridStyle(child)"
+              >
+                <SparkComponentRenderer :config="child" />
+              </div>
+            </template>
+          </SparkChildrenBridge>
         </div>
-        <slot v-else v-bind="getDefaultSlotScope()" />
+        <SparkChildrenBridge v-else :parent-context="context" :slot-scope="getDefaultSlotScope()">
+          <template #default="slotScope">
+            <slot v-bind="slotScope" />
+          </template>
+        </SparkChildrenBridge>
       </div>
     </div>
   </div>
@@ -42,7 +49,7 @@
 /**
  * RendererDetail - 详情展示容器组件
  */
-import { SparkComponentRenderer } from '../../../internal'
+import { SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
 import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
@@ -94,6 +101,7 @@ const detailAlignStyle = computed<StyleValue>(() => ({
 
 const {
   registerApi,
+  context,
   resolvedView,
   gridChildren,
   gridStyle,

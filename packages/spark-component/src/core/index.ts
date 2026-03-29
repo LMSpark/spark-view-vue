@@ -8,6 +8,7 @@
  */
 
 export { useSparkComponent, useSparkConsume, useSparkPageComponent } from './useSparkComponent.js'
+export { useSparkHost, useSparkHostScope, resolveSparkHost, resolveSparkHostType } from './useSparkHost.js'
 export type {
   UseSparkComponentReturn,
   UseSparkPageComponentReturn,
@@ -15,6 +16,12 @@ export type {
   UseSparkComponentOptions,
   SparkNodeInput,
 } from './useSparkComponent.js'
+export type {
+  SparkHostResolverOptions,
+  ResolvedSparkHost,
+  UseSparkHostReturn,
+  UseSparkHostScopeReturn,
+} from './useSparkHost.js'
 
 export type {
   CapabilityName,

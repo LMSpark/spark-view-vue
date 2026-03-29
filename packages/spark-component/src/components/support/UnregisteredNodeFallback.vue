@@ -2,7 +2,7 @@
   <div class="spark-component-renderer spark-component-unregistered">
     <div class="unregistered-header">
       <div class="unregistered-warning">
-        <strong>⚠️ 未注册的组件类型:</strong>
+        <strong>⚠️ {{ title }}:</strong>
         <span class="unregistered-type">{{ node.type }}</span>
       </div>
 
@@ -14,7 +14,9 @@
       >{{ detailsVisible ? '收起属性' : '查看全部属性' }}</button>
     </div>
 
-    <div v-if="detailsVisible" class="unregistered-details-panel" role="dialog" aria-label="未注册组件属性详情">
+    <div v-if="description" class="unregistered-description">{{ description }}</div>
+
+    <div v-if="detailsVisible" class="unregistered-details-panel" role="dialog" :aria-label="detailsAriaLabel">
       <div class="unregistered-details-title">节点快照</div>
       <pre class="unregistered-details-code">{{ nodeSnapshot }}</pre>
     </div>
@@ -35,11 +37,20 @@ const props = defineProps({
     type: Object as PropType<SparkNode>,
     required: true,
   },
+  title: {
+    type: String,
+    default: '未注册的组件类型',
+  },
+  description: {
+    type: String,
+    default: '',
+  },
 })
 
 const slots = useSlots()
 const detailsVisible = ref(false)
 const hasDefaultSlot = computed(() => typeof slots['default'] === 'function')
+const detailsAriaLabel = computed(() => `${props.title}详情`)
 
 function createSnapshotReplacer() {
   const seen = new WeakSet<object>()
@@ -105,6 +116,12 @@ function toggleDetails(): void {
   color: #9a3412;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.unregistered-description {
+  color: #7c2d12;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .unregistered-type {

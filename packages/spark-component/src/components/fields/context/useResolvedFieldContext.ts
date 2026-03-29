@@ -1,6 +1,4 @@
-import { computed } from 'vue'
-import type { SparkCapabilityContext } from '../../internal'
-import { useSparkConsume } from '../../internal'
+import { useSparkHost } from '../../internal'
 
 type FieldHostType = 'r-table' | 'r-form' | 'r-detail' | 'r-tree' | 'r-list'
 
@@ -23,24 +21,16 @@ function normalizeFieldHostType(type: string | null): FieldHostType | null {
   return FIELD_HOST_ALIASES[type] ?? null
 }
 
-function resolveFieldHostType(parentType: string | null, parentContext: SparkCapabilityContext | null): FieldHostType {
-  let currentType: string | null = parentType
-  let currentContext = parentContext?.parent ?? null
+export function useResolvedFieldContext() {
+  const { hostType } = useSparkHost<FieldHostType>({
+    hostTypes: Array.from(FIELD_HOST_TYPES),
+    aliases: FIELD_HOST_ALIASES,
+    fallbackType: 'r-detail',
+  })
 
-  while (currentType !== null) {
-    const normalizedType = normalizeFieldHostType(currentType)
-    if (normalizedType !== null) return normalizedType
-
-    const nextType = typeof currentContext?.type === 'string' ? currentContext.type : null
-    currentType = nextType
-    currentContext = currentContext?.parent ?? null
-  }
-
-  return 'r-detail'
+  return hostType
 }
 
-export function useResolvedFieldContext() {
-  const { parentContext, parentType } = useSparkConsume()
-
-  return computed(() => resolveFieldHostType(parentType, parentContext))
+export function resolveFieldHostType(type: string | null): FieldHostType | null {
+  return type === null ? null : normalizeFieldHostType(type)
 }

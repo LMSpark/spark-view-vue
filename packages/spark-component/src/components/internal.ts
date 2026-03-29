@@ -8,11 +8,23 @@
  */
 
 // ── Composable ──
-export { useSparkComponent, useSparkConsume, useSparkPageComponent } from '../core/index.js'
-export type { UseSparkComponentReturn, UseSparkPageComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions } from '../core/index.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHost, useSparkHostScope, resolveSparkHost, resolveSparkHostType } from '../core/index.js'
+export type {
+  UseSparkComponentReturn,
+  UseSparkPageComponentReturn,
+  UseSparkCapabilityReaderReturn,
+  UseSparkComponentOptions,
+  SparkHostResolverOptions,
+  ResolvedSparkHost,
+  UseSparkHostReturn,
+  UseSparkHostScopeReturn,
+} from '../core/index.js'
 
 // ── 递归渲染器 ──
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
+export { default as SparkChildrenBridge } from './support/SparkChildrenBridge.js'
+export { default as SparkSlotContextBridge } from './support/SparkSlotContextBridge.js'
+export { default as SparkTableColumns } from './support/SparkTableColumns.js'
 
 // ── 核心类型 ──
 export type {

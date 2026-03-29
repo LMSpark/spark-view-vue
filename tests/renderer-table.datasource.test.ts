@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { RendererTable } from '@spark-view/spark-component'
+import { RendererTable, FieldText } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
@@ -158,6 +158,41 @@ const ElButtonStub = defineComponent({
       disabled: props.disabled,
       onClick: (event: Event) => emit('click', event),
     }, slots['default']?.())
+  },
+})
+
+const ElFormItemStub = defineComponent({
+  props: {
+    label: String,
+    prop: String,
+  },
+  setup(props, { slots }) {
+    return () => h('div', {
+      class: 'el-form-item-stub',
+      'data-label': props.label ?? '',
+      'data-prop': props.prop ?? '',
+    }, slots['default']?.())
+  },
+})
+
+const ElInputStub = defineComponent({
+  props: {
+    modelValue: {
+      type: String,
+      default: '',
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['update:modelValue'],
+  setup(props) {
+    return () => h('input', {
+      class: 'el-input-stub',
+      value: props.modelValue,
+      disabled: props.disabled,
+    })
   },
 })
 
@@ -463,6 +498,54 @@ describe('RendererTable - DataView as single data intermediary', () => {
       warnSpy.mockRestore()
     }
   }
+
+  it('should allow direct Vue children to render R columns inside RendererTable slot', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'TableDirectVueDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }],
+        },
+      },
+    })
+
+    const DirectTableColumns = defineComponent({
+      name: 'DirectTableColumns',
+      setup() {
+        return () => h(FieldText as any, {
+          type: 'r-text',
+          field: 'name',
+          label: '姓名',
+        })
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@rows',
+      },
+      slots: {
+        default: () => h(DirectTableColumns),
+      },
+      global: {
+        stubs: {
+          'el-form-item': ElFormItemStub,
+          'el-input': ElInputStub,
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.el-table-column-stub[data-label="姓名"]').exists()).toBe(true)
+    expect(wrapper.find('.field-display').exists()).toBe(false)
+  })
 
   it('should fail fast when migrated containers still use legacy root toolbar config', () => {
     withSilencedConsoleWarn(() => {

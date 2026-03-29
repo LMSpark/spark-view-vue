@@ -16,23 +16,24 @@
   />
 
   <div v-else :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
-    <template v-if="stepChildren.length">
-      <div
-        v-for="(child, childIndex) in stepChildren"
-        :key="nodeId(child) ?? `r-step-child-${childIndex}`"
-        class="renderer-steps-content-grid-item"
-        :style="getStepChildGridStyle(child)"
-      >
-        <SparkComponentRenderer :config="child" />
-      </div>
-    </template>
-    <slot v-else />
+    <SparkChildrenBridge :spark-children="stepChildren" :parent-context="context">
+      <template #spark="{ child, index }">
+        <div
+          :key="nodeId(child) ?? `r-step-child-${index}`"
+          class="renderer-steps-content-grid-item"
+          :style="getStepChildGridStyle(child)"
+        >
+          <SparkComponentRenderer :config="child" />
+        </div>
+      </template>
+      <slot />
+    </SparkChildrenBridge>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { SparkComponentRenderer, useSparkComponent } from '../../internal'
+import { SparkChildrenBridge, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
@@ -62,7 +63,7 @@ const emit = defineEmits<{
   activate: [index: number]
 }>()
 
-useSparkComponent(props)
+const { context } = useSparkComponent(props)
 
 const {
   contentChildren: stepChildren,

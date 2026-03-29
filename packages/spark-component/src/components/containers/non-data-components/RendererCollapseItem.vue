@@ -12,24 +12,25 @@
     :disabled="itemDisabled"
   >
     <div :class="['renderer-collapse-item-body', itemBodyClass]" :style="itemGridStyle">
-      <template v-if="itemChildren.length">
-        <div
-          v-for="(child, childIndex) in itemChildren"
-          :key="nodeId(child) ?? `r-collapse-item-child-${childIndex}`"
-          class="renderer-collapse-item-grid-item"
-          :style="getItemChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-      </template>
-      <slot v-else />
+      <SparkChildrenBridge :spark-children="itemChildren" :parent-context="context">
+        <template #spark="{ child, index }">
+          <div
+            :key="nodeId(child) ?? `r-collapse-item-child-${index}`"
+            class="renderer-collapse-item-grid-item"
+            :style="getItemChildGridStyle(child)"
+          >
+            <SparkComponentRenderer :config="child" />
+          </div>
+        </template>
+        <slot />
+      </SparkChildrenBridge>
     </div>
   </el-collapse-item>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { SparkComponentRenderer, useSparkComponent } from '../../internal'
+import { SparkChildrenBridge, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
@@ -53,7 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'r-collapse-item',
 })
 
-useSparkComponent(props)
+const { context } = useSparkComponent(props)
 
 const {
   contentChildren: itemChildren,

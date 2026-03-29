@@ -25,6 +25,8 @@
   <UnregisteredNodeFallback
     v-else-if="shouldRenderUnregisteredFallback"
     :node="effectiveNode"
+    :title="fallbackTitle"
+    :description="fallbackDescription"
   >
     <!-- 未注册时仍递归渲染子组件，父能力上下文由框架内部传递 -->
     <RecursiveChildrenBlock :children="renderableChildren" />
@@ -74,6 +76,7 @@ import {
 import type { PropType } from 'vue'
 import type { IDataRow, IDataSource } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
+import { resolveSparkHost } from '../core/useSparkHost.js'
 import {
   SPARK_REGISTRY_KEY,
   nodeId,
@@ -118,6 +121,11 @@ type RecursiveChildrenList = RenderableChild[]
 type NodeRuntimeProps = Record<string, unknown>
 type RenderBranch = 'hidden' | 'registry' | 'external' | 'fallback'
 type ParentCapabilityContext = SparkCapabilityContext | null
+type ParentTypeConstraintState = {
+  matched: boolean
+  expectedTypes: string[]
+  actualTypes: string[]
+}
 type ScopedRuntimeInput = {
   rawProps: NodeRuntimeProps
   parentContext: ParentCapabilityContext
@@ -267,6 +275,55 @@ function declaresProp(component: unknown, propName: string): boolean {
 function resolveChildrenMode(meta: NodeRuntimeProps | undefined): ComponentChildrenMode {
   const value = meta?.['childrenMode']
   return value === 'prop' || value === 'slot' ? value : 'auto'
+}
+
+function readParentTypeConstraints(meta: NodeRuntimeProps | undefined): string[] {
+  const rawValue = meta?.['parentTypes'] ?? meta?.['hostTypes']
+  if (typeof rawValue === 'string') {
+    return rawValue.length > 0 ? [rawValue] : []
+  }
+
+  if (!Array.isArray(rawValue)) return []
+
+  return rawValue.filter((value): value is string => typeof value === 'string' && value.length > 0)
+}
+
+function collectParentTypeChain(parentContext: ParentCapabilityContext): string[] {
+  const chain: string[] = []
+  let currentContext = parentContext
+
+  while (currentContext !== null) {
+    if (typeof currentContext.type === 'string' && currentContext.type.length > 0) {
+      chain.push(currentContext.type)
+    }
+    currentContext = currentContext.parent ?? null
+  }
+
+  return chain
+}
+
+function resolveParentTypeConstraintState(
+  meta: NodeRuntimeProps | undefined,
+  parentContext: ParentCapabilityContext,
+): ParentTypeConstraintState {
+  const expectedTypes = readParentTypeConstraints(meta)
+  if (expectedTypes.length === 0) {
+    return {
+      matched: true,
+      expectedTypes: [],
+      actualTypes: [],
+    }
+  }
+
+  const resolvedHost = resolveSparkHost(parentContext?.type ?? null, parentContext, {
+    hostTypes: expectedTypes,
+  })
+
+  return {
+    matched: resolvedHost.hostType !== null,
+    expectedTypes,
+    actualTypes: collectParentTypeChain(parentContext),
+  }
 }
 
 // ── 基础工具：渲染时作用域数据解析 ─────────────────────────────────────────
@@ -509,9 +566,14 @@ const registryDefinition = computed(() => {
   return type !== null ? (registry?.get(type) ?? null) : null
 })
 
+const registryParentTypeState = computed<ParentTypeConstraintState>(() => {
+  return resolveParentTypeConstraintState(registryDefinition.value?.meta, parentCapabilityContext.value)
+})
+
 const registryComponent = computed(() => {
   const definition = registryDefinition.value
   if (!definition) return null
+  if (!registryParentTypeState.value.matched) return null
   return definition.component ? markRaw(definition.component as object) : null
 })
 
@@ -552,6 +614,20 @@ const renderBranch = computed<RenderBranch>(() => {
 const shouldRenderRegistryComponent = computed(() => renderBranch.value === 'registry')
 const shouldRenderExternalComponent = computed(() => renderBranch.value === 'external')
 const shouldRenderUnregisteredFallback = computed(() => renderBranch.value === 'fallback')
+
+const fallbackTitle = computed(() => {
+  return registryDefinition.value !== null && !registryParentTypeState.value.matched
+    ? '父组件类型不匹配'
+    : '未注册的组件类型'
+})
+
+const fallbackDescription = computed(() => {
+  if (registryDefinition.value === null || registryParentTypeState.value.matched) return ''
+
+  const expected = registryParentTypeState.value.expectedTypes.join(' / ')
+  const actual = registryParentTypeState.value.actualTypes.join(' / ')
+  return `期望父链类型: ${expected}；当前父链类型: ${actual || '无'}`
+})
 
 // ── 子节点策略：哪些 child 继续递归，哪些 child 透传给目标组件 ──────────────
 

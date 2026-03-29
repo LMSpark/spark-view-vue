@@ -46,6 +46,8 @@ export const VUE_PAGE_MAP: Record<string, VuePageEntry> = {
   '/':                { title: '平台首页',    icon: 'HomeFilled',   scope: 'platform', source: 'src/views/platform/HomePage.vue',              load: () => import('../views/platform/HomePage.vue') },
   '/login':           { title: '登录',        icon: 'Key',          scope: 'platform', source: 'src/views/platform/LoginView.vue',             load: () => import('../views/platform/LoginView.vue'), description: '用户登录页面', hidden: true },
   '/about':           { title: '关于',        icon: 'InfoFilled',   scope: 'platform', source: 'src/views/platform/About.vue',                 load: () => import('../views/platform/About.vue') },
+  '/demo/custom-r-table': { title: 'r-table Demo', icon: 'Grid', scope: 'platform', source: 'src/views/app/CustomRTableDemo.vue', load: () => import('../views/app/CustomRTableDemo.vue'), description: '原始 RendererTable 与模板字段桥接演示', hidden: true },
+  '/demo/r-form-compare': { title: 'r-form Demo', icon: 'Tickets', scope: 'platform', source: 'src/views/app/RFormCompareDemo.vue', load: () => import('../views/app/RFormCompareDemo.vue'), description: '原始 RendererForm 配置式与模板式对照演示', hidden: true },
   // ── tenant: 租户级页面 ──
   '/settings':        { title: '设置',        icon: 'Setting',      scope: 'tenant',   source: 'src/views/tenant/Settings.vue',                load: () => import('../views/tenant/Settings.vue') },
   '/tenant-config':   { title: '租户配置',    icon: 'OfficeBuilding', scope: 'tenant', source: 'src/views/tenant/TenantConfig.vue',             load: () => import('../views/tenant/TenantConfig.vue') },

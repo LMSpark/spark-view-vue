@@ -8,32 +8,34 @@
   <div :class="itemClass" :style="itemStyle">
     <el-card v-if="useCard" :shadow="cardShadow" class="renderer-list-card">
       <div class="renderer-list-item-body" :style="itemBodyStyle">
-        <template v-if="gridChildren.length">
+        <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context">
+          <template #spark="{ child, index }">
+            <div
+              :key="nodeId(child) ?? `r-list-item-child-${index}`"
+              class="renderer-list-grid-item"
+              :style="getChildGridStyle(child)"
+            >
+              <SparkComponentRenderer :config="child" />
+            </div>
+          </template>
+          <slot />
+        </SparkChildrenBridge>
+      </div>
+    </el-card>
+
+    <div v-else class="renderer-list-item-body" :style="itemBodyStyle">
+      <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context">
+        <template #spark="{ child, index }">
           <div
-            v-for="(child, i) in gridChildren"
-            :key="nodeId(child) ?? `r-list-item-child-${i}`"
+            :key="nodeId(child) ?? `r-list-item-child-${index}`"
             class="renderer-list-grid-item"
             :style="getChildGridStyle(child)"
           >
             <SparkComponentRenderer :config="child" />
           </div>
         </template>
-        <slot v-else />
-      </div>
-    </el-card>
-
-    <div v-else class="renderer-list-item-body" :style="itemBodyStyle">
-      <template v-if="gridChildren.length">
-        <div
-          v-for="(child, i) in gridChildren"
-          :key="nodeId(child) ?? `r-list-item-child-${i}`"
-          class="renderer-list-grid-item"
-          :style="getChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-      </template>
-      <slot v-else />
+        <slot />
+      </SparkChildrenBridge>
     </div>
   </div>
 </template>
@@ -41,7 +43,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
-import { SparkComponentRenderer } from '../../internal'
+import { SparkChildrenBridge, SparkComponentRenderer } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
@@ -78,7 +80,7 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
-useDataScope({
+const { context } = useDataScope({
   type: props.type,
   nodeConfig: {
     type: props.type,

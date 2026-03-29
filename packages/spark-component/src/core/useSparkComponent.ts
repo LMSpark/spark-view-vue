@@ -27,6 +27,8 @@ type RuntimeInstance = ReturnType<typeof getCurrentInstance>
 // 对外返回类型：定义组件上下文 API 与轻量消费 API。
 export interface UseSparkComponentReturn {
   context: SparkCapabilityContext
+  parentContext: SparkCapabilityContext | null
+  parentType: string | null
   isVisible: { readonly value: boolean }
   isDisabled: { readonly value: boolean }
   sparkProvide: {
@@ -205,7 +207,7 @@ export function useSparkComponent(
   const currentOwner = currentInstance as SparkRuntimeOwner | null
   const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
   const contextId = nodeId(config) ?? `spark-${++_idCounter}`
-  const { parentContext } = resolveParentAccess(currentOwner, options?.parentContext)
+  const { parentContext, parentType } = resolveParentAccess(currentOwner, options?.parentContext)
   const context = createSparkCapabilityContext({ id: contextId, type: config.type }, parentContext)
 
   if (currentInstance !== null) {
@@ -272,6 +274,8 @@ export function useSparkComponent(
 
   return {
     context,
+    parentContext,
+    parentType,
     isVisible,
     isDisabled,
     sparkProvide,

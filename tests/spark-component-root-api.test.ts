@@ -9,10 +9,15 @@ function pickRootKeys(): string[] {
       if (key.endsWith('Support')) return true
       return [
         'Spark',
+        'ElTableColumns',
+        'SparkChildrenBridge',
         'SparkComponentRenderer',
+        'SparkTableColumns',
         'registerAllRenderers',
         'permission',
         'useSparkComponent',
+        'useSparkHost',
+        'useSparkHostScope',
         'useSparkPageComponent',
         'useSparkConsume',
         'createSparkPlugin',
@@ -36,6 +41,7 @@ describe('spark-component root api', () => {
         "containerNonDataComponents",
         "createComponentRegistry",
         "createSparkPlugin",
+        "ElTableColumns",
         "fieldComposables",
         "fieldDataComponentComposables",
         "fieldDataComponents",
@@ -46,9 +52,13 @@ describe('spark-component root api', () => {
         "permission",
         "registerAllRenderers",
         "Spark",
+        "SparkChildrenBridge",
         "SparkComponentRenderer",
+        "SparkTableColumns",
         "useSparkComponent",
         "useSparkConsume",
+        "useSparkHost",
+        "useSparkHostScope",
         "useSparkPageComponent",
       ]
     `)

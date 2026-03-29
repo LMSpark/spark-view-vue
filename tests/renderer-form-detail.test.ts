@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
-import { RendererForm, RendererDetail } from '@spark-view/spark-component'
+import { RendererForm, RendererDetail, FieldText } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 
@@ -22,6 +22,41 @@ const SparkActionStub = defineComponent({
 const ElFormStub = defineComponent({
   setup(_, { slots }) {
     return () => h('div', { class: 'el-form-stub' }, slots['default']?.())
+  },
+})
+
+const ElFormItemStub = defineComponent({
+  props: {
+    label: String,
+    prop: String,
+  },
+  setup(props, { slots }) {
+    return () => h('div', {
+      class: 'el-form-item-stub',
+      'data-label': props.label ?? '',
+      'data-prop': props.prop ?? '',
+    }, slots['default']?.())
+  },
+})
+
+const ElInputStub = defineComponent({
+  props: {
+    modelValue: {
+      type: String,
+      default: '',
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['update:modelValue'],
+  setup(props) {
+    return () => h('input', {
+      class: 'el-input-stub',
+      value: props.modelValue,
+      disabled: props.disabled,
+    })
   },
 })
 
@@ -66,6 +101,56 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     expect(wrapper.find('.spark-action-stub[data-type="form-toolbar-action"]').exists()).toBe(true)
     expect(wrapper.find('.biz-form-template').attributes('data-name')).toBe('Alice')
+  })
+
+  it('should allow direct Vue children to render R fields inside RendererForm slot', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'FormDirectVueDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }],
+        },
+      },
+    })
+    const formView = ds.getView('Users', 'default')!
+    formView.selection.setCurrentRow(formView.rows[0] ?? null)
+
+    const DirectFormFields = defineComponent({
+      name: 'DirectFormFields',
+      setup() {
+        return () => h(FieldText as any, {
+          type: 'r-text',
+          field: 'name',
+          label: '姓名',
+        })
+      },
+    })
+
+    const wrapper = mountWithPageDataSet(RendererForm as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
+      },
+      slots: {
+        default: () => h(DirectFormFields),
+      },
+      global: {
+        stubs: {
+          'el-form': ElFormStub,
+          'el-form-item': ElFormItemStub,
+          'el-input': ElInputStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.el-form-item-stub[data-prop="name"]').exists()).toBe(true)
+    expect(wrapper.find('.el-form-item-stub').attributes('data-label')).toBe('姓名')
+    expect(wrapper.find('.field-display').exists()).toBe(false)
   })
 
   it('should render docked detail toolbar children and default slot scopes', () => {
