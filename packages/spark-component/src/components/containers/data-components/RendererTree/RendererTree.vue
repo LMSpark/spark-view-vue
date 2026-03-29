@@ -13,21 +13,7 @@
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
       <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
-        <el-button
-          v-if="isBuiltinAction(action)"
-          :type="getBuiltinButtonType(action)"
-          :size="getBuiltinButtonSize(action)"
-          :plain="getBuiltinButtonPlain(action)"
-          :text="getBuiltinButtonText(action)"
-          :link="getBuiltinButtonLink(action)"
-          :disabled="isBuiltinToolbarActionDisabled(action)"
-          :class="getBuiltinButtonClass(action)"
-          @click="handleBuiltinToolbarAction(action)"
-        >{{ getBuiltinActionLabel(action) }}</el-button>
-        <SparkComponentRenderer
-          v-else
-          :config="action"
-        />
+        <SparkComponentRenderer :config="resolveToolbarActionConfig(action)" />
       </template>
     </div>
 
@@ -57,24 +43,11 @@
               </slot>
               <span v-if="hasNodeActions" class="tree-node-actions">
                 <template v-for="(action, index) in getScopedNodeActions({ row: ((slotProps?.data as IDataRow) ?? {}), index: 0 })" :key="nodeId(action) ?? `r-tree-node-action-${index}`">
-                  <el-button
-                    v-if="isBuiltinAction(action)"
-                    :type="getBuiltinButtonType(action)"
-                    :size="getBuiltinButtonSize(action)"
-                    :plain="getBuiltinButtonPlain(action)"
-                    :text="getBuiltinButtonText(action)"
-                    :link="getBuiltinButtonLink(action)"
-                    :disabled="isBuiltinNodeActionDisabled(action, ((slotProps?.data as IDataRow) ?? {}), 0)"
-                    :class="getBuiltinButtonClass(action)"
-                    @click="handleBuiltinNodeAction(action, ((slotProps?.data as IDataRow) ?? {}), 0)"
-                  >{{ getBuiltinActionLabel(action) }}</el-button>
-                  <SparkComponentRenderer
-                    v-else
-                    :config="action"
-                  />
+                  <SparkComponentRenderer :config="resolveNodeActionConfig(action, ((slotProps?.data as IDataRow) ?? {}), 0)" />
                 </template>
-                <el-button v-if="shouldShowLegacyAppend((slotProps?.data as IDataRow) ?? {})" type="primary" size="small" link @click.stop="handleAppendNode(slotProps?.data)">添加</el-button>
-                <el-button v-if="shouldShowLegacyDelete((slotProps?.data as IDataRow) ?? {})" type="danger" size="small" link @click.stop="handleDeleteNode(slotProps?.data)">删除</el-button>
+                <template v-for="(action, index) in getLegacyNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))" :key="nodeId(action) ?? `r-tree-legacy-node-action-${index}`">
+                  <SparkComponentRenderer :config="action" />
+                </template>
               </span>
             </span>
           </template>
@@ -99,7 +72,8 @@
 import { computed, ref } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
-import { isPermittedAction, type IDataRow, type DataView } from '@spark-view/spark-data'
+import type { IDataRow, DataView } from '@spark-view/spark-data'
+import { isPermittedAction } from '../../../../permission/index.js'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
@@ -116,14 +90,8 @@ import { useRendererTreeViewState } from './view-state'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useContainerActions } from '../../actions/useContainerActions'
 import {
+  bindActionClick,
   isBuiltinAction,
-  getBuiltinActionLabel,
-  getBuiltinButtonType,
-  getBuiltinButtonSize,
-  getBuiltinButtonPlain,
-  getBuiltinButtonText,
-  getBuiltinButtonLink,
-  getBuiltinButtonClass,
 } from '../../builtin-actions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../data/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
@@ -227,6 +195,7 @@ const {
   toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
   toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission,
+  dataSource: computed(() => resolvedView.value),
 })
 
 const {
@@ -236,6 +205,7 @@ const {
   actionPosition: computed(() => 'right'),
   actionClass: computed(() => props.docks?.actions?.class),
   modelPermission,
+  dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({
     row,
     listenerArgs: [row, index],
@@ -277,8 +247,6 @@ const {
   handleNodeDrop,
   handleAppendNode,
   handleDeleteNode,
-  isBuiltinNodeActionDisabled,
-  isBuiltinToolbarActionDisabled,
   handleBuiltinToolbarAction,
   handleBuiltinNodeAction,
 }: {
@@ -291,8 +259,6 @@ const {
   handleNodeDrop: (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => Promise<void>
   handleAppendNode: (data: unknown) => Promise<void>
   handleDeleteNode: (data: unknown) => Promise<void>
-  isBuiltinNodeActionDisabled: (action: SparkNode, row: IDataRow, index: number) => boolean
-  isBuiltinToolbarActionDisabled: (action: SparkNode) => boolean
   handleBuiltinToolbarAction: (action: SparkNode) => void
   handleBuiltinNodeAction: (action: SparkNode, row: IDataRow, index: number) => void
 } = createRendererTreeZeroCode({
@@ -326,6 +292,60 @@ const {
 registerApi(treeApi)
 
 defineExpose(treeApi)
+
+function resolveToolbarActionConfig(action: SparkNode): SparkNode {
+  return isBuiltinAction(action)
+    ? bindActionClick(action, () => handleBuiltinToolbarAction(action))
+    : action
+}
+
+function resolveNodeActionConfig(action: SparkNode, row: IDataRow, index: number): SparkNode {
+  return isBuiltinAction(action)
+    ? bindActionClick(action, () => handleBuiltinNodeAction(action, row, index))
+    : action
+}
+
+function getLegacyNodeActionConfigs(row: IDataRow): SparkNode[] {
+  const actions: SparkNode[] = []
+
+  if (shouldShowLegacyAppend(row)) {
+    actions.push({
+      type: 'el-button',
+      props: {
+        type: 'primary',
+        size: 'small',
+        link: true,
+        on: {
+          click: (event?: Event) => {
+            event?.stopPropagation?.()
+            void handleAppendNode(row)
+          },
+        },
+      },
+      children: ['添加'],
+    })
+  }
+
+  if (shouldShowLegacyDelete(row)) {
+    actions.push({
+      type: 'el-button',
+      props: {
+        type: 'danger',
+        size: 'small',
+        link: true,
+        on: {
+          click: (event?: Event) => {
+            event?.stopPropagation?.()
+            void handleDeleteNode(row)
+          },
+        },
+      },
+      children: ['删除'],
+    })
+  }
+
+  return actions
+}
 
 // 事件处理器与零代码动作由 createRendererTreeZeroCode 收口
 </script>

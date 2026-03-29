@@ -1,8 +1,10 @@
 import { computed } from 'vue'
 import type { ComputedRef, Slots } from 'vue'
 import type { SparkNode } from '../../internal'
-import type { IModelPermission } from '@spark-view/spark-data'
+import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
 import { isActionDisplayed, isModelActionAllowed } from '../action-permission'
+import { isBuiltinAction } from '../builtin-actions'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 
 export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 
@@ -11,6 +13,7 @@ interface UseContainerToolbarOptions {
   toolbarPosition: ComputedRef<ToolbarPosition | undefined>
   toolbarClass: ComputedRef<string | undefined>
   modelPermission: ComputedRef<IModelPermission | undefined>
+  dataSource?: ComputedRef<IDataSource | null | undefined>
   slots?: Slots
 }
 
@@ -26,7 +29,37 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
   )
 
   const visibleToolbarConfigs = computed(() =>
-    toolbarConfigs.value.filter(action => isActionDisplayed(action) && isModelActionAllowed(action, options.modelPermission.value))
+    toolbarConfigs.value
+      .map(action => {
+        const patched = isBuiltinAction(action)
+          ? (() => {
+              const dataSource = options.dataSource?.value ?? null
+              const state = resolveNodeBeforeRender(action, {
+                row: dataSource?.currentRow ?? null,
+                data: dataSource?.currentRow ?? null,
+                dataSource,
+                modelPermission: options.modelPermission.value,
+                parentType: null,
+              }, (message, error) => {
+                if (!import.meta.env.DEV) return
+                console.warn(`[useContainerToolbar] ${message}`, error)
+              })
+
+              if (!state.visible) return null
+
+              return mergeNodeBeforeRenderProps(action, state.propsPatch, {
+                mirrorDisabledToButtonDisabled: true,
+              })
+            })()
+          : action
+
+        if (patched === null) return null
+
+        return isActionDisplayed(patched) && isModelActionAllowed(patched, options.modelPermission.value)
+          ? patched
+          : null
+      })
+      .filter((action): action is SparkNode => action !== null)
   )
 
   const hasToolbar = computed(() => visibleToolbarConfigs.value.length > 0)

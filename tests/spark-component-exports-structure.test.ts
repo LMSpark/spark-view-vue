@@ -11,6 +11,7 @@ import {
   fieldNonDataComponentComposables,
   containerDataComponentSupport,
   fieldDataComponentSupport,
+  permission,
 } from '../packages/spark-component/src/index'
 
 function sortedKeys(record: object): string[] {
@@ -162,5 +163,26 @@ describe('spark-component export structure', () => {
       'createInteractionControl',
       'createCancelledCrudResult',
     ]))
+  })
+
+  it('exposes stable permission utilities from spark-component', () => {
+    expect(sortedKeys(permission)).toMatchInlineSnapshot(`
+      [
+        "checkPermission",
+        "computeFieldState",
+        "computeFieldStates",
+        "createFieldRenderHelper",
+        "createPermissionChecker",
+        "createPermissionFilter",
+        "FieldRenderHelper",
+        "filterByPermission",
+        "filterVisibleFields",
+        "formatPermissionAwareFieldValue",
+        "isPermittedAction",
+        "PermissionChecker",
+        "PermissionFilter",
+        "resolveFieldPermissionState",
+      ]
+    `)
   })
 })

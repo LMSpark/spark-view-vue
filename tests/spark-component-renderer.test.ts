@@ -146,6 +146,79 @@ test('SparkComponentRenderer passes config props into Vue global Render* compone
   expect(wrapper.find('.render-row-action').text()).toBe('王晓明')
 })
 
+test('SparkComponentRenderer applies onBeforeRender to Vue global third-party components', () => {
+  const VendorButton = defineComponent({
+    name: 'VendorButton',
+    inheritAttrs: false,
+    setup(_, { attrs, slots }) {
+      return () => h('button', {
+        class: 'vendor-button-before-render',
+        disabled: attrs['disabled'] === true,
+        'data-disabled': String(attrs['disabled'] === true),
+      }, slots['default']?.())
+    }
+  })
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'VendorButton',
+        props: {
+          onBeforeRender: () => ({ disabled: true }),
+        },
+        children: ['保存'],
+      },
+      parentContext: rootContext,
+    },
+    global: {
+      components: {
+        VendorButton,
+      },
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  const button = wrapper.find('.vendor-button-before-render')
+  expect(button.exists()).toBe(true)
+  expect(button.attributes('data-disabled')).toBe('true')
+  expect(button.text()).toContain('保存')
+})
+
+test('SparkComponentRenderer can hide Vue global third-party components through onBeforeRender', () => {
+  const VendorButton = defineComponent({
+    name: 'VendorButton',
+    setup(_, { slots }) {
+      return () => h('button', { class: 'vendor-button-hidden-target' }, slots['default']?.())
+    }
+  })
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'VendorButton',
+        props: {
+          onBeforeRender: () => false,
+        },
+        children: ['隐藏'],
+      },
+      parentContext: rootContext,
+    },
+    global: {
+      components: {
+        VendorButton,
+      },
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.vendor-button-hidden-target').exists()).toBe(false)
+  expect(wrapper.text()).not.toContain('隐藏')
+})
+
 test('SparkComponentRenderer only forwards config.props to registered components', () => {
   const RootFieldReader = defineComponent({
     props: {
@@ -188,6 +261,142 @@ test('SparkComponentRenderer only forwards config.props to registered components
   expect(reader.attributes('data-label')).toBe('props 标签')
   expect(reader.attributes('data-status')).toBe('active')
   expect(reader.attributes('data-gap')).toBe('18')
+})
+
+test('SparkComponentRenderer does not forward empty children prop to registered components', () => {
+  const AttrReader = defineComponent({
+    inheritAttrs: false,
+    setup(_, { attrs }) {
+      return () => h('div', {
+        class: 'registered-attr-reader',
+        'data-has-children': String('children' in attrs),
+      }, 'attr')
+    }
+  })
+
+  registry.register('registered-attr-reader', AttrReader)
+
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'registered-attr-reader',
+      } as unknown as Record<string, unknown>,
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.registered-attr-reader').attributes('data-has-children')).toBe('false')
+})
+
+test('SparkComponentRenderer auto mode forwards children prop to registered components that declare it', () => {
+  const PropReader = defineComponent({
+    props: {
+      children: {
+        type: Array,
+        default: () => [],
+      },
+    },
+    setup(componentProps) {
+      return () => h('div', {
+        class: 'registered-prop-reader',
+        'data-children-count': String(componentProps.children.length),
+      }, 'prop-reader')
+    }
+  })
+
+  registry.register('registered-prop-reader', PropReader)
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'registered-prop-reader',
+        children: ['prop-content'],
+      },
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.registered-prop-reader').exists()).toBe(true)
+  expect(wrapper.find('.registered-prop-reader').attributes('data-children-count')).toBe('1')
+  expect(wrapper.text()).not.toContain('prop-content')
+})
+
+test('SparkComponentRenderer renders registered components without children prop through unified slot path', () => {
+  const SlotReader = defineComponent({
+    inheritAttrs: false,
+    setup(_, { slots }) {
+      return () => h('section', { class: 'registered-slot-reader' }, slots['default']?.())
+    }
+  })
+
+  registry.register('registered-slot-reader', SlotReader)
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'registered-slot-reader',
+        children: ['slot-content'],
+      },
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.registered-slot-reader').exists()).toBe(true)
+  expect(wrapper.text()).toContain('slot-content')
+})
+
+test('SparkComponentRenderer allows registry meta.childrenMode to force slot rendering', () => {
+  const HybridReader = defineComponent({
+    props: {
+      children: {
+        type: Array,
+        default: () => [],
+      },
+    },
+    setup(componentProps, { slots }) {
+      return () => h('div', {
+        class: 'registered-hybrid-reader',
+        'data-prop-children-count': String(componentProps.children.length),
+      }, slots['default']?.())
+    }
+  })
+
+  registry.register('registered-hybrid-reader', HybridReader, { childrenMode: 'slot' })
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'registered-hybrid-reader',
+        children: ['slot-forced-content'],
+      },
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  const reader = wrapper.find('.registered-hybrid-reader')
+  expect(reader.exists()).toBe(true)
+  expect(reader.attributes('data-prop-children-count')).toBe('0')
+  expect(wrapper.text()).toContain('slot-forced-content')
 })
 
 test('SparkComponentRenderer ignores root-level non-struct fields for registered components', () => {
@@ -252,6 +461,27 @@ test('SparkComponentRenderer renders unregistered native tags with recursive chi
   expect(wrapper.find('.native-wrapper').exists()).toBe(true)
   expect(wrapper.text()).toContain('hello')
   expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
+})
+
+test('SparkComponentRenderer preserves numeric literal children in unified slot rendering', () => {
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'div',
+        props: { class: 'native-wrapper-number' },
+        children: [123],
+      } as unknown as Record<string, unknown>,
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  expect(wrapper.find('.native-wrapper-number').exists()).toBe(true)
+  expect(wrapper.text()).toContain('123')
 })
 
 test('SparkComponentRenderer does not forward $-prefixed scoped props to native elements', () => {

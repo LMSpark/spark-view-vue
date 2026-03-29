@@ -52,7 +52,8 @@ import { useControlledValue } from '../state'
 
 type CollapseValue = string | number | Array<string | number>
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: string
   /** 子节点（折叠项配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */

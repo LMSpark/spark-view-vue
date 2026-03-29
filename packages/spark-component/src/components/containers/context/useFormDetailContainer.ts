@@ -72,6 +72,7 @@ export function useFormDetailContainer(
     toolbarPosition: computed(() => props.docks?.toolbar?.position),
     toolbarClass: computed(() => props.docks?.toolbar?.class),
     modelPermission,
+    dataSource: computed(() => resolvedView.value),
   })
 
   sparkProvide(DATA_ROW, contextData)

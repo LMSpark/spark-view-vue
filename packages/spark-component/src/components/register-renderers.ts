@@ -20,6 +20,7 @@ import RendererDrawer from './containers/non-data-components/RendererDrawer/inde
 import RendererSteps from './containers/non-data-components/RendererSteps/index.js'
 import RendererSection from './containers/non-data-components/RendererSection/index.js'
 import RendererToolbar from './containers/non-data-components/RendererToolbar.vue'
+import BuiltinActionButton from './containers/BuiltinActionButton.vue'
 
 // ── 字段组件（同步导入） ──
 import FieldText from './fields/data-components/FieldText.vue'
@@ -67,6 +68,7 @@ export function registerAllRenderers(): void {
   Spark.register('r-block', RendererSection)
   Spark.register('r-toolbar', RendererToolbar)
   Spark.register('r-menu', RendererToolbar)
+  Spark.register('builtin-action', BuiltinActionButton)
 
   // ── 字段组件：同步注册（el-table 要求列组件同步就绪） ──
   Spark.register('r-text', FieldText)

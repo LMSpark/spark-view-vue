@@ -6,6 +6,40 @@ import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
 import { mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 
+function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
+  const props = config['props']
+  return props !== null && props !== undefined && typeof props === 'object' && !Array.isArray(props)
+    ? props as Record<string, unknown>
+    : {}
+}
+
+function readConfigOnMap(config: Record<string, unknown>): Record<string, unknown> | undefined {
+  const propsMap = readConfigProps(config)
+  const onMap = propsMap['on']
+  if (onMap !== null && onMap !== undefined && typeof onMap === 'object' && !Array.isArray(onMap)) {
+    return onMap as Record<string, unknown>
+  }
+
+  const legacyOn = config['on']
+  return legacyOn !== null && legacyOn !== undefined && typeof legacyOn === 'object' && !Array.isArray(legacyOn)
+    ? legacyOn as Record<string, unknown>
+    : undefined
+}
+
+function readConfigActionText(config: Record<string, unknown>): string {
+  const propsMap = readConfigProps(config)
+  const label = propsMap['label']
+  if (typeof label === 'string' && label.length > 0) return label
+
+  const children = config['children']
+  if (Array.isArray(children)) {
+    const firstText = children.find((item): item is string => typeof item === 'string' && item.length > 0)
+    if (firstText !== undefined) return firstText
+  }
+
+  return String(config['type'] ?? '')
+}
+
 const SparkActionStub = defineComponent({
   props: {
     config: {
@@ -14,18 +48,26 @@ const SparkActionStub = defineComponent({
     },
   },
   setup(props) {
-    return () => h('button', {
-      class: 'spark-action-stub',
-      'data-type': (props.config as Record<string, unknown>)['type'] as string,
-      'data-row-id': String((((props.config as Record<string, unknown>)['props'] as Record<string, unknown> | undefined)?.['row'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
-      'data-row-index': String((((props.config as Record<string, unknown>)['props'] as Record<string, unknown> | undefined)?.['rowIndex'] as number | undefined) ?? ''),
-      'data-node-id': String((((props.config as Record<string, unknown>)['props'] as Record<string, unknown> | undefined)?.['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
-      onClick: () => {
-        const onMap = (props.config as Record<string, unknown>)['on'] as Record<string, unknown> | undefined
-        const click = onMap?.['click']
-        if (typeof click === 'function') click('evt')
-      },
-    }, (props.config as Record<string, unknown>)['type'] as string)
+    return () => {
+      const config = props.config as Record<string, unknown>
+      const propsMap = readConfigProps(config)
+      const onMap = readConfigOnMap(config)
+      const click = onMap?.['click']
+      const type = String(config['type'] ?? '')
+      const isButtonLike = type === 'builtin-action' || type === 'el-button'
+
+      return h('button', {
+        class: isButtonLike ? 'el-button-stub' : 'spark-action-stub',
+        'data-type': type,
+        'data-row-id': String((propsMap['row'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
+        'data-row-index': String((propsMap['rowIndex'] as number | undefined) ?? ''),
+        'data-node-id': String((propsMap['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
+        disabled: propsMap['disabled'] === true || propsMap['buttonDisabled'] === true,
+        onClick: () => {
+          if (typeof click === 'function') click('evt')
+        },
+      }, readConfigActionText(config))
+    }
   }
 })
 
@@ -199,16 +241,21 @@ const SparkColumnRendererStub = defineComponent({
         })
       }
       // 非列组件回退为 action stub（toolbar / row-actions 等）
-      const onMap = config['on'] as Record<string, unknown> | undefined
+      const propsMap = readConfigProps(config)
+      const onMap = readConfigOnMap(config)
       const click = onMap?.['click']
+      const typeLabel = readConfigActionText(config)
+      const actionType = String(config['type'] ?? '')
+      const isButtonLike = actionType === 'builtin-action' || actionType === 'el-button'
       return h('button', {
-        class: 'spark-action-stub',
-        'data-type': type,
-        'data-row-id': String((((config['props'] as Record<string, unknown> | undefined)?.['row'] as Record<string, unknown> | undefined)?.['id'] ?? '')),
-        'data-row-index': String((((config['props'] as Record<string, unknown> | undefined)?.['rowIndex'] as number | undefined) ?? '')),
-        'data-node-id': String((((config['props'] as Record<string, unknown> | undefined)?.['data'] as Record<string, unknown> | undefined)?.['id'] ?? '')),
+        class: isButtonLike ? 'el-button-stub' : 'spark-action-stub',
+        'data-type': actionType,
+        'data-row-id': String((propsMap['row'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
+        'data-row-index': String((propsMap['rowIndex'] as number | undefined) ?? ''),
+        'data-node-id': String((propsMap['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
+        disabled: propsMap['disabled'] === true || propsMap['buttonDisabled'] === true,
         onClick: () => { if (typeof click === 'function') click('evt') },
-      }, type)
+      }, typeLabel)
     }
   }
 })
@@ -2322,6 +2369,63 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(dv.rows[1]?.['label']).toBe('新增节点')
     expect(dv.rows[1]?.['parentId']).toBe('node-1')
     expect(dv.currentRow?.['label']).toBe('新增节点')
+  })
+
+  it('should apply onBeforeRender to builtin toolbar and row actions through SparkComponentRenderer', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Before-Render',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+        },
+      },
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const wrapper = mountRendererTableWithView(dv, {
+      children: [
+        {
+          type: 'builtin-action',
+          dock: 'toolbar',
+          props: {
+            builtinAction: 'append-row',
+            label: '隐藏工具栏动作',
+            onBeforeRender: () => false,
+          },
+        },
+        {
+          type: 'builtin-action',
+          dock: 'actions',
+          props: {
+            builtinAction: 'delete-row',
+            label: '禁用行动作',
+            onBeforeRender: ({ row }: { row?: IDataRow | null }) => ({ disabled: row !== null && row !== undefined }),
+          },
+        },
+      ],
+    }, {
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    await flushPromises()
+    await nextTick()
+
+    const buttons = wrapper.findAll('.el-button-stub')
+    expect(buttons).toHaveLength(1)
+    expect(buttons[0]?.text()).toBe('禁用行动作')
+    expect((buttons[0]?.element as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('should reuse column configs as filter items and filter inline rows locally', async () => {

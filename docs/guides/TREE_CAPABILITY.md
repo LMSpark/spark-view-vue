@@ -342,56 +342,21 @@ RendererTree 仍兼容旧式：
 
 ---
 
-## 7. 权限模型
+## 7. 权限接入
 
-树能力已经接入模型级和行级权限。
+树能力直接复用统一权限体系，完整权限模型、字段语义、默认值与动作判定统一以 [PERMISSION_SYSTEM.md](../architecture/PERMISSION_SYSTEM.md) 为准，本文件不再重复定义 `IModelPermission` / `IInstancePermission`。
 
-### 7.1 模型级权限
+树场景只补充树专属落点：
 
-字段位于 dataSource._modelPerm：
-
-```ts
-interface IModelPermission {
-  allowCreate?: boolean
-  allowImport?: boolean
-  allowExport?: boolean
-}
-```
-
-### 7.2 行级权限
-
-字段位于 row._perm：
-
-```ts
-interface IInstancePermission {
-  allowCreateChild?: boolean
-  allowDelete?: boolean
-  editableFields?: string[]
-  hiddenFields?: string[]
-  maskedFields?: string[]
-}
-```
-
-### 7.3 树场景实际生效规则
-
-当前已对齐的权限动作：
-
-- create-child
-- delete
-- edit
-
-判定规则：
-
-- 模型级 create-child 复用 canCreate(modelPerm)
-- 行级 create-child 使用 canCreateChild(row)
-- 行级 delete 使用 canDelete(row)
-- 行级 edit 使用 canEdit(row)
+- `create-child`：节点级新增子节点动作，复用统一动作权限链
+- `delete`：节点级删除动作，复用统一动作权限链
+- `edit`：节点级编辑入口，语义仍由统一权限体系推导
 
 结果：
 
-- 节点级“新增子节点”可以被 allowCreateChild 精确控制。
-- 树上删除动作可以被行权限直接收口。
-- 动作显示和禁用不需要页面脚本自己判断。
+- 节点级新增子节点可以被统一权限体系收口
+- 树上删除和编辑动作不需要页面脚本自行判断
+- `dock=actions` / `builtinAction` 与其他容器保持同一套权限口径
 
 ---
 
@@ -660,7 +625,7 @@ npx vitest run tests/renderer-table.datasource.test.ts --reporter verbose
 
 ### 误区 5：新增子节点只看 allowCreate
 
-不够。树场景已经补充 allowCreateChild，应该优先使用它控制节点级创建权限。
+不够。树场景的节点级创建走统一动作权限链，具体字段与默认值统一以 [PERMISSION_SYSTEM.md](../architecture/PERMISSION_SYSTEM.md) 为准。
 
 ---
 
@@ -673,7 +638,7 @@ SPARK 的树能力已经不再是“demo + script.js 拼接”，而是具备以
 3. TreeManager 负责树缓存与本地算法。
 4. RendererTree 负责零代码树 UI。
 5. builtinAction 负责树动作收口。
-6. allowCreateChild 等权限字段已经打通。
+6. 树节点动作已经接入统一权限体系。
 7. 后端导航 CRUD / path / subtree / search / move 已成体系。
 
 如果后续继续扩展树能力，优先顺序建议是：

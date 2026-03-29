@@ -697,71 +697,18 @@ AI 应自动根据页面类型推断布局策略：
 
 #### 阶段 ⑥ 权限配置（AI Permission Designer）
 
-**目标**：AI 根据角色定义自动生成权限矩阵配置。
+**目标**：AI 生成或调整模块级 `permission-config` 工件。
 
-**当前状态**：`spark-data/permission/` 已有 PermissionChecker/PermissionFilter/FieldRenderHelper 完整基础设施，但无 AI 生成入口。
-
-**新增配置类型**：`permission-config.json`
-```jsonc
-{
-  "roles": {
-    "admin": {
-      "label": "系统管理员",
-      "description": "拥有所有权限"
-    },
-    "sales": {
-      "label": "销售人员",
-      "description": "管理客户和订单"
-    },
-    "viewer": {
-      "label": "只读查看者",
-      "description": "仅查看数据，不可编辑"
-    }
-  },
-  "permissions": {
-    "Customer": {
-      "admin":  { "allowCreate": true, "allowImport": true, "allowExport": true },
-      "sales":  { "allowCreate": true, "allowImport": false, "allowExport": true },
-      "viewer": { "allowCreate": false, "allowImport": false, "allowExport": false }
-    }
-  },
-  "fieldPermissions": {
-    "Customer": {
-      "sales": {
-        "editableFields": ["name", "phone", "email", "level", "address"],
-        "hiddenFields": ["internalNote", "creditLimit"],
-        "maskedFields": ["phone:phone", "email:email"]
-      },
-      "viewer": {
-        "editableFields": [],
-        "hiddenFields": ["internalNote", "creditLimit", "profit"],
-        "maskedFields": ["phone:phone", "email:email", "idCard:idcard"]
-      }
-    }
-  },
-  "rowPermissions": {
-    "Customer": {
-      "sales": {
-        "filter": { "field": "salesId", "op": "==", "value": "{currentUser.id}" },
-        "allowDelete": false
-      }
-    }
-  }
-}
-```
-
-**AI 生成策略**：
-- 从 `app-blueprint.json` 的 roles 推断权限等级
-- 管理员自动获得全部权限
-- 只读角色自动禁用所有写操作
-- 敏感字段（phone/email/idCard）自动推断脱敏规则
-- 行级权限从业务语义推断（如"销售只看自己的客户"）
+**收口规则**：
+- 本文件只保留“何时生成 `permission-config`”这一生命周期信息，不再重复定义权限模型、字段清单、默认值或脱敏规则。
+- 具体权限语义、默认值与主键契约统一以 [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md) 为准。
+- AI 侧输出必须与 [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md) 对齐，禁止在系统提示词或方案文档里再维护第二套权限 JSON 样例。
 
 **实现路径**：
-- `permission-config.json` 由 AI 在阶段 ① 蓝图确认后生成
-- 后端 API 返回数据时，根据当前用户角色 + `permission-config.json` 注入 `_perm` / `_modelPerm`
-- 前端 `PermissionChecker` / `FieldRenderHelper` 自动驱动 UI 渲染
-- 在 `system-prompt.txt` 中增加权限配置输出规范
+- `permission-config.json` 由 AI 在阶段 ① 蓝图确认后生成或在后续迭代中调整
+- 后端 API 读取 `permission-config.json` 并向响应注入 `_perm` / `_modelPerm`
+- 前端按统一权限体系渲染，不在本文件内重复解释
+- `system-prompt.txt` 仅声明“输出需遵循 [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md)”
 
 ---
 
@@ -1176,9 +1123,7 @@ AI 分析:
 
 AI 分析:
   - scope: shared-config（仅权限配置）
-  - permission-config.json → viewer 角色增加 customer-list 读权限
-  - viewer.hiddenFields → 移除 customer-list（从隐藏变为可见）
-  - viewer.maskedFields → 增加 phone（手机号脱敏）
+  - permission-config.json → 调整 viewer 角色的权限快照定义（具体语义以 PERMISSION_SYSTEM.md 为准）
   - 无 UI/数据/导航变更
 ```
 

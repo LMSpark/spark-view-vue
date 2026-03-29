@@ -52,7 +52,8 @@ import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: string
   /** 子节点（步骤配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */

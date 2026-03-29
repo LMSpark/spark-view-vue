@@ -1258,78 +1258,14 @@ public SseEmitter generateModule(
 
 #### C2.1 权限 Prompt（layer-6-permission.txt）
 
-```text
-# Layer 6：权限配置生成规范
+本阶段只负责生成模块级 `permission-config` 工件，不在本文件重复定义权限模型、字段语义或默认值。
 
-你正在为 SPARK 配置平台生成**权限矩阵**（permission-config.json）。
+具体权限语义、默认值与主键契约统一以 [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md) 为准。
 
-## 输入上下文
+`layer-6-permission.txt` 只需要满足两点：
 
-你会收到：
-- `app-blueprint.json`（包含 roles 定义）
-- `db-schema.json`（包含实体字段列表）
-
-## 输出格式
-
-```json
-{
-  "files": {
-    "permission-config.json": "{ ... 权限配置 JSON ... }"
-  },
-  "explanation": "权限设计说明"
-}
-```
-
-## permission-config.json 结构规范
-
-```json
-{
-  "roles": {
-    "roleId": { "label": "角色中文名", "description": "角色描述", "level": 1 }
-  },
-  "permissions": {
-    "EntityName": {
-      "roleId": {
-        "allowCreate": true,
-        "allowImport": false,
-        "allowExport": true
-      }
-    }
-  },
-  "fieldPermissions": {
-    "EntityName": {
-      "roleId": {
-        "editableFields": ["field1", "field2"],
-        "hiddenFields": ["internalNote"],
-        "maskedFields": ["phone:phone", "email:email"]
-      }
-    }
-  },
-  "rowPermissions": {
-    "EntityName": {
-      "roleId": {
-        "filter": { "field": "ownerId", "op": "==", "value": "{currentUser.id}" },
-        "allowDelete": false
-      }
-    }
-  }
-}
-```
-
-## 生成原则
-
-1. **角色层级**：admin (level=0) > 业务角色 (level=1-3) > viewer (level=99)
-2. **admin 全权限**：admin 角色自动获得所有操作权限，不列出字段限制
-3. **viewer 只读**：viewer 角色所有 allowCreate=false / editableFields=[]
-4. **脱敏推断**：
-   - 字段名包含 phone → mask:"phone"（如 138****1234）
-   - 字段名包含 email → mask:"email"（如 u***@example.com）
-   - 字段名包含 idCard → mask:"idcard"（如 110***********1234）
-5. **行级权限推断**：
-   - 角色描述中含"自己的"→ filter by currentUser
-   - 角色描述中含"部门"→ filter by departmentId
-6. **最小权限原则**：默认 deny，仅显式声明的权限为 allow
-```
+1. 生成可持久化、可审查的模块级 `permission-config` 文件。
+2. 其输出字段和说明必须与 [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md) 保持一致，禁止在 Prompt 内维护第二套权限规则。
 
 #### C2.2 权限 UI 编辑器
 

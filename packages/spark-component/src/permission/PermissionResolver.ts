@@ -1,4 +1,4 @@
-import type { IDataRow, IModelPermission } from '../types'
+import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 import { createFieldRenderHelper } from './FieldRenderHelper'
 import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
 import { createPermissionChecker } from './PermissionChecker'

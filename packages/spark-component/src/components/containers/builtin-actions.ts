@@ -11,9 +11,10 @@
  */
 
 import type { SparkNode } from '../internal'
-import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'
+import type { CrudResult, IDataRow, DataView, IDataSource } from '@spark-view/spark-data'
 import type { PageMessageType, IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from './support/crud-result-helpers.js'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../support/beforeRender.js'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────
 
@@ -57,6 +58,8 @@ interface BuiltinActionScope {
   row?: IDataRow
   index?: number
 }
+
+type ActionClickHandler = (...args: unknown[]) => void
 
 /** 执行上下文：由容器组件在运行时提供 */
 interface BuiltinActionContext {
@@ -123,6 +126,65 @@ function readMessageType(value: unknown): PageMessageType {
 
 function getActionProps(action: SparkNode): Record<string, unknown> {
   return asRecord(action.props) ?? {}
+}
+
+function callActionClick(handler: unknown, args: unknown[]): void {
+  if (typeof handler === 'function') {
+    ;(handler as ActionClickHandler)(...args)
+    return
+  }
+
+  if (!Array.isArray(handler)) return
+
+  for (const item of handler) {
+    if (typeof item === 'function') {
+      ;(item as ActionClickHandler)(...args)
+    }
+  }
+}
+
+export function bindActionClick(action: SparkNode, handler: ActionClickHandler): SparkNode {
+  const propsMap = getActionProps(action)
+  const onMap = asRecord(propsMap['on'])
+  const currentClick = onMap?.['click']
+
+  return {
+    ...action,
+    props: {
+      ...propsMap,
+      on: {
+        ...(onMap ?? {}),
+        click: (...args: unknown[]) => {
+          handler(...args)
+          callActionClick(currentClick, args)
+        },
+      },
+    },
+  }
+}
+
+function resolveBuiltinBeforeRenderAction(
+  action: SparkNode,
+  view: DataView | null | undefined,
+  scope?: BuiltinActionScope,
+): SparkNode {
+  const currentRow = scope?.row ?? view?.currentRow ?? null
+  const dataSource = (view ?? null) as IDataSource | null
+  const state = resolveNodeBeforeRender(action, {
+    row: currentRow,
+    data: currentRow,
+    index: scope?.index,
+    dataSource,
+    modelPermission: dataSource?._modelPerm,
+    parentType: null,
+  }, (message, error) => {
+    if (!import.meta.env.DEV) return
+    console.warn(`[builtin-actions] ${message}`, error)
+  })
+
+  return mergeNodeBeforeRenderProps(action, state.propsPatch, {
+    mirrorDisabledToButtonDisabled: true,
+  })
 }
 
 function hasOwnProp(record: Record<string, unknown>, key: string): boolean {
@@ -453,10 +515,11 @@ export function isBuiltinActionDisabled(
   view: DataView | null | undefined,
   scope?: BuiltinActionScope,
 ): boolean {
-  const propsMap = getActionProps(action)
-  if (readBoolean(propsMap['buttonDisabled']) === true) return true
+  const resolvedAction = resolveBuiltinBeforeRenderAction(action, view, scope)
+  const propsMap = getActionProps(resolvedAction)
+  if (readBoolean(propsMap['buttonDisabled']) === true || readBoolean(propsMap['disabled']) === true) return true
 
-  const actionName = getBuiltinActionName(action)
+  const actionName = getBuiltinActionName(resolvedAction)
   if (!actionName || !view) return false
 
   const disabledWhenRow = asRecord(propsMap['disabledWhenRow'])

@@ -639,15 +639,11 @@ r-text / r-select / r-number / ...（字段组件）
 | `detail` | el-descriptions-item | `contextData[fieldName]` (只读) |
 | `tree` | 树节点内嵌 | `scope.row[fieldName]` |
 
-### 6.3 权限自动渲染
+### 6.3 权限接入
 
-字段组件通过 `useFieldPermission` 从 `row._perm` 快照自动推断：
+字段组件会接入统一权限体系，但本文件不再重复定义权限语义。
 
-| 权限字段 | 效果 |
-|----------|------|
-| `_perm.hiddenFields` 包含当前字段 | 字段不显示 |
-| `_perm.editableFields` 不包含当前字段 | 字段只读/禁用 |
-| `_perm.maskedFields` 包含当前字段 | 值脱敏显示 |
+完整的权限模型、默认值、读写双通道、动作判定与宿主渲染差异，统一以 [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md) 为准。
 
 ---
 
@@ -1429,7 +1425,7 @@ interface BehaviorConfig {
 >
 > r-* 字段组件在 `r-table` 内通过 `FIELD_CONTEXT='table'` 自动渲染为 `el-table-column`，同时获得：
 > - **统一语义**：`meta.data.name` 绑定字段，`props.label` 显示标签，与 r-form / r-detail 完全一致
-> - **权限感知**：`_perm.hiddenFields` / `editableFields` 自动控制列可见性与可编辑性
+> - **权限感知**：表格字段权限统一遵循 [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md)，此处不再展开
 > - **跨上下文复用**：同一个 `r-text` 节点放入 r-table=列、r-form=输入框、r-detail=只读展示
 
 #### 示例 A：数据表格（r-table）

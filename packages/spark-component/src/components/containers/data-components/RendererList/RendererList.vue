@@ -106,7 +106,8 @@ import {
   type RowClickHandler,
 } from '../../support/index.js'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: string
   /** 数据绑定键 */
   dataKey?: string
   /** 子节点（列表项内容配置） */
@@ -221,6 +222,7 @@ const {
   toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
   toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission,
+  dataSource: computed(() => resolvedView.value),
 })
 
 const {
@@ -234,6 +236,7 @@ const {
   actionPosition: computed(() => props.docks?.actions?.position as LateralActionPosition | undefined ?? legacyItemActionsPositionValue.value ?? 'right'),
   actionClass: computed(() => props.docks?.actions?.class ?? readStringAttr('itemActionsClass') ?? ''),
   modelPermission,
+  dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({
     row,
     listenerArgs: [row, index],

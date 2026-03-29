@@ -1,58 +1,36 @@
 <template>
   <!-- 已注册：SparkNode 运行时输入 + 事件处理器 → 统一作为 Vue Props 传递 -->
   <component
-    v-if="registryComponent"
+    v-if="shouldRenderRegistryComponent"
+    v-bind="registryComponentProps"
     :is="registryComponent"
-    v-bind="componentProps"
-  />
+  >
+    <template v-if="shouldRenderRegistryChildrenViaSlot" #default>
+      <RecursiveChildrenBlock :children="renderableChildren" />
+    </template>
+  </component>
 
   <!-- 非 registry 组件（Vue 全局组件 / 原生标签）：统一走 attrs + slot children -->
   <component
-    v-else-if="externalComponent && renderableChildren.length === 0"
+    v-else-if="shouldRenderExternalComponent"
     :is="externalComponent"
-    v-bind="externalForwardedProps"
-  />
-
-  <component
-    v-else-if="externalComponent"
-    :is="externalComponent"
-    v-bind="externalForwardedProps"
+    v-bind="externalComponentProps"
   >
-    <template
-      v-for="(child, index) in renderableChildren"
-      :key="nodeKey(child, index)"
-    >
-      <SparkComponentRenderer
-        v-if="isSparkNode(child)"
-        :config="child"
-      />
-      <template v-else>
-        {{ child }}
-      </template>
+    <template v-if="hasRenderableChildren">
+      <RecursiveChildrenBlock :children="renderableChildren" />
     </template>
   </component>
 
   <!-- 未注册：降级渲染，继续递归子组件树，不中断渲染 -->
   <div
-    v-else
+    v-else-if="shouldRenderUnregisteredFallback"
     class="spark-component-renderer spark-component-unregistered"
   >
     <div class="unregistered-warning">
-      <strong>⚠️ 未注册的组件类型:</strong> {{ normalizedConfig.type }}
+      <strong>⚠️ 未注册的组件类型:</strong> {{ normalizedNode.type }}
     </div>
     <!-- 未注册时仍递归渲染子组件，父能力上下文由框架内部传递 -->
-    <template
-      v-for="(child, index) in renderableChildren"
-      :key="nodeKey(child, index)"
-    >
-      <SparkComponentRenderer
-        v-if="isSparkNode(child)"
-        :config="child"
-      />
-      <template v-else>
-        {{ child }}
-      </template>
-    </template>
+    <RecursiveChildrenBlock :children="renderableChildren" />
   </div>
 </template>
 
@@ -84,15 +62,43 @@
  * <SparkComponentRenderer :config="config" :parent-context="rootContext" />
  * ```
  */
-import { computed, getCurrentInstance, inject, markRaw, onUnmounted, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, nodeId, nodeDock, DEFAULT_DOCK, isSparkNode, normalizeSparkNode } from '../core/types.js'
-import type { SparkNode, SparkNodeChildren, SparkCapabilityContext, ComponentRegistry } from '../core/types.js'
-import { bindCapabilityContextOwner, unbindCapabilityContextOwner } from '../internal/capability-context.js'
+import {
+  cloneVNode,
+  computed,
+  createTextVNode,
+  defineComponent,
+  getCurrentInstance,
+  h,
+  inject,
+  markRaw,
+  onUnmounted,
+  resolveDynamicComponent,
+} from 'vue'
+import type { PropType } from 'vue'
+import type { IDataRow, IDataSource } from '@spark-view/spark-data'
+import {
+  SPARK_REGISTRY_KEY,
+  nodeId,
+  nodeDock,
+  DEFAULT_DOCK,
+  isSparkNode,
+  normalizeSparkNode,
+} from '../core/types.js'
+import type { SparkNode, SparkNodeChildren, SparkCapabilityContext, ComponentRegistry, ComponentChildrenMode } from '../core/types.js'
+import { DATA_ROW, DATA_SOURCE, consumeSparkCapability } from '../core/capabilities.js'
+import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
+import type { BeforeRenderContext } from './support/beforeRender.js'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from './support/beforeRender.js'
 
-// h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
-// layout/dock/order 只服务于容器布局，不透传到组件 props / DOM
-const FILTERED_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span', 'on', 'dock', 'order'])
+// ── 常量与局部类型：渲染器内部约束、运行时局部类型 ───────────────────────────
+
+// h() 模型下，以下字段属于渲染器/布局层语义，不直接透传到业务组件。
+const FILTERED_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span', 'on', 'onBeforeRender', 'dock', 'order'])
+
+// 原生标签不应该收到这些运行时作用域字段，否则会污染 DOM attrs。
 const NATIVE_ONLY_FILTERED_PROP_KEYS = new Set(['row', 'rowIndex', 'data', 'dataSource', 'modelPermission', 'model'])
+
+// 允许直接降级为原生标签渲染的白名单。
 const NATIVE_RENDERABLE_TAGS = new Set([
   'div', 'span', 'p', 'a', 'img',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -108,8 +114,63 @@ const NATIVE_RENDERABLE_TAGS = new Set([
   'canvas',
   'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
 ])
-type RenderableChild = SparkNode | string | number
 
+type RenderableChild = SparkNode | string | number
+type RecursiveChildrenList = RenderableChild[]
+type NodeRuntimeProps = Record<string, unknown>
+type RenderBranch = 'hidden' | 'registry' | 'external' | 'fallback'
+type ParentCapabilityContext = SparkCapabilityContext | null
+type ScopedRuntimeInput = {
+  rawProps: NodeRuntimeProps
+  parentContext: ParentCapabilityContext
+}
+type ResolvedBeforeRenderContext = Omit<BeforeRenderContext, 'id' | 'type' | 'props' | 'children'>
+
+// Vue 组件 props 声明有两种常见形态：数组或对象。
+type DeclaredProps = NodeRuntimeProps | string[]
+
+interface VueComponentLike {
+  props?: DeclaredProps
+  __vccOpts?: {
+    props?: DeclaredProps
+  }
+}
+
+// 复用空对象常量，避免多个 computed 在“无 props”场景反复制造新引用。
+const EMPTY_RUNTIME_PROPS = Object.freeze({}) as NodeRuntimeProps
+
+// ── 渲染器输入：外部只传节点本体与可选父上下文 ───────────────────────────────
+
+interface RendererProps {
+  /**
+   * 被渲染的节点本体。
+   *
+   * 这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，
+   * 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级兼容合并。
+   */
+  config: SparkNode
+  /**
+   * 显式父上下文（可选）。
+   *
+   * 仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。
+   * 普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。
+   */
+  parentContext?: SparkCapabilityContext
+}
+
+const rendererProps = defineProps<RendererProps>()
+const currentInstance = getCurrentInstance()
+const currentOwner = currentInstance as SparkRuntimeOwner | null
+// 保存当前渲染器组件类型，供本地递归块继续回到同一个渲染入口。
+const currentRendererComponent = currentInstance?.type ?? null
+
+// ── 基础工具：子节点归一与递归渲染 ───────────────────────────────────────────
+
+/**
+ * children 归一：
+ * 1. 只保留默认停靠位的 SparkNode，避免已被父容器消费的 dock 子节点再次进入默认渲染流。
+ * 2. 保留字符串/数字字面量，供统一 slot / fallback 路径直接渲染成文本节点。
+ */
 function normalizeRenderableChildren(children: SparkNodeChildren | undefined): RenderableChild[] {
   if (!Array.isArray(children) || children.length === 0) return []
 
@@ -121,7 +182,7 @@ function normalizeRenderableChildren(children: SparkNodeChildren | undefined): R
       }
       continue
     }
-    if (typeof child === 'string') {
+    if (typeof child === 'string' || typeof child === 'number') {
       normalized.push(child)
     }
   }
@@ -133,77 +194,339 @@ function nodeKey(child: RenderableChild, index: number): string {
   return nodeId(child) ?? `child-${index}`
 }
 
-// ── Props ─────────────────────────────────────────────────────────────────────
+function renderRecursiveChild(child: RenderableChild, index: number) {
+  const key = nodeKey(child, index)
+  if (!isSparkNode(child)) {
+    return cloneVNode(createTextVNode(String(child)), { key })
+  }
 
-interface Props {
-  /** 组件配置（type + props + children） */
-  config: SparkNode
-  /**
-   * 显式父上下文（可选）
-   * 仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。
-   * 普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。
-   */
-  parentContext?: SparkCapabilityContext
+  // 理论上 currentRendererComponent 总是存在；这里保守兜底，避免异常环境下抛错。
+  if (currentRendererComponent === null) {
+    return null
+  }
+  return h(currentRendererComponent, { key, config: child })
 }
 
-const props = defineProps<Props>()
-const normalizedConfig = computed<SparkNode>(() => normalizeSparkNode(props.config, 'unknown'))
-const currentInstance = getCurrentInstance()
+/**
+ * 递归 child 渲染块：
+ * - 把模板里重复的 SparkNode / 文本子节点渲染逻辑集中到一处。
+ * - SparkNode 子节点会重新交回 SparkComponentRenderer 处理，确保注册表解析、beforeRender、权限逻辑继续生效。
+ * - 文本子节点输出为 text vnode，保持“无额外包裹标签”的渲染结果。
+ */
+const RecursiveChildrenBlock = defineComponent({
+  name: 'RecursiveChildrenBlock',
+  props: {
+    children: {
+      type: Array as PropType<RecursiveChildrenList>,
+      required: true,
+    },
+  },
+  setup(props) {
+    // 本地小组件本身不持有业务上下文，只负责把子节点重新路由回渲染器入口。
+    return () => props.children.map(renderRecursiveChild)
+  },
+})
 
-// ── 根节点 / 测试场景：为后代组件挂载一个显式父上下文锚点 ──────────────────
-if (props.parentContext !== undefined && currentInstance !== null) {
-  bindCapabilityContextOwner(currentInstance, props.parentContext)
-  onUnmounted(() => {
-    unbindCapabilityContextOwner(currentInstance)
-  })
+// ── 基础工具：组件声明识别与 registry 协商 ─────────────────────────────────
+
+/**
+ * 读取组件 props 声明。
+ *
+ * 兼容两种来源：
+ * 1. 普通组件对象直接暴露的 props
+ * 2. SFC 编译产物挂在 __vccOpts 上的原始 props
+ *
+ * 该函数只用于判断组件是否显式声明某个 prop，不参与真实 props 合并。
+ */
+function readDeclaredProps(component: unknown): DeclaredProps | null {
+  if (component === null || component === undefined) return null
+  if (typeof component !== 'object' && typeof component !== 'function') return null
+
+  // 兼容两种来源：普通组件选项对象，或 SFC 编译产物挂在 __vccOpts 上的原始选项。
+  const normalizedComponent = component as VueComponentLike
+  return normalizedComponent.props ?? normalizedComponent.__vccOpts?.props ?? null
 }
 
-// ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────
-const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
+// 渲染器内部统一的诊断输出入口，避免 beforeRender / 未注册分支各自散落 console.warn。
+function warnRendererIssue(message: string, error?: unknown): void {
+  if (!import.meta.env.DEV) return
+  if (error === undefined) {
+    console.warn(`[SparkComponentRenderer] ${message}`)
+    return
+  }
+  console.warn(`[SparkComponentRenderer] ${message}`, error)
+}
 
+// 判断目标组件是否显式声明某个 prop，用于 children prop / slot 协商。
+function declaresProp(component: unknown, propName: string): boolean {
+  const declaredProps = readDeclaredProps(component)
+  if (declaredProps === null) return false
+  if (Array.isArray(declaredProps)) return declaredProps.includes(propName)
+  return propName in declaredProps
+}
+
+// registry 元信息允许显式指定 children 协商模式；未指定时回退到自动探测。
+function resolveChildrenMode(meta: NodeRuntimeProps | undefined): ComponentChildrenMode {
+  const value = meta?.['childrenMode']
+  return value === 'prop' || value === 'slot' ? value : 'auto'
+}
+
+// ── 基础工具：渲染时作用域数据解析 ─────────────────────────────────────────
+
+// 从 unknown 中识别行对象；只接受对象，不接受数组或原始值。
+function asDataRow(value: unknown): IDataRow | null {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+    ? value as IDataRow
+    : null
+}
+
+// 从 unknown 中识别 IDataSource；供 beforeRender、字段作用域和权限快照读取复用。
+function asDataSource(value: unknown): IDataSource | null {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+    ? value as IDataSource
+    : null
+}
+
+// 行索引既可能来自 rowIndex，也可能来自部分旧作用域兼容保留的 $index。
+function resolveScopedRowIndex(rawProps: NodeRuntimeProps): number | undefined {
+  if (typeof rawProps['rowIndex'] === 'number') return rawProps['rowIndex']
+  return typeof rawProps['$index'] === 'number' ? rawProps['$index'] : undefined
+}
+
+// dataSource 优先取节点显式注入，其次沿父能力链回溯 DATA_SOURCE。
+function resolveScopedDataSource({ rawProps, parentContext }: ScopedRuntimeInput): IDataSource | null {
+  return asDataSource(rawProps['dataSource'])
+    ?? consumeSparkCapability<IDataSource>(parentContext, DATA_SOURCE)
+}
+
+// row 优先取节点局部作用域，其次退回 data，再次沿父能力链回溯 DATA_ROW。
+function resolveScopedRow({ rawProps, parentContext }: ScopedRuntimeInput): IDataRow | null {
+  return asDataRow(rawProps['row'])
+    ?? asDataRow(rawProps['data'])
+    ?? consumeSparkCapability<IDataRow>(parentContext, DATA_ROW)
+}
+
+/**
+ * 构造 beforeRender 所需的上下文快照。
+ *
+ * 这里把作用域数据解析集中到一个 helper 里，避免 computed 主体里既做状态流转又做上下文拼装。
+ */
+function buildBeforeRenderContext({ rawProps, parentContext }: ScopedRuntimeInput): ResolvedBeforeRenderContext {
+  const dataSource = resolveScopedDataSource({ rawProps, parentContext })
+  const row = resolveScopedRow({ rawProps, parentContext })
+
+  return {
+    row,
+    data: rawProps['data'] ?? row,
+    index: resolveScopedRowIndex(rawProps),
+    dataSource,
+    modelPermission: dataSource?._modelPerm,
+    parentType: parentContext?.type ?? null,
+  }
+}
+
+// ── 基础工具：props 透传与事件映射 ──────────────────────────────────────────
+
+/**
+ * 把 SparkNode.props 转成真正要下发给目标组件的 props：
+ * - 过滤渲染器内部保留键
+ * - 把 on.xxx 映射成 Vue listener props
+ * - 保留 fast-path，尽量复用原始对象引用
+ */
+function buildNodeForwardedProps(rawProps: NodeRuntimeProps): NodeRuntimeProps {
+  const onMap = rawProps['on']
+  const hasEvents = isNonEmptyRecord(onMap)
+
+  // fast-path：叶子节点通常无事件且无框架保留键，直接复用原引用即可。
+  if (!hasEvents && !hasFilteredKeys(rawProps)) return rawProps
+
+  const filteredProps = filterForwardableProps(rawProps)
+  if (!hasEvents) return filteredProps
+
+  return {
+    ...filteredProps,
+    ...buildForwardedEventProps(onMap),
+  }
+}
+
+// 已注册组件额外收到的结构字段，只在 registry 分支透传。
+function buildRegistryStructuralProps(
+  node: SparkNode,
+  consumesChildrenProp: boolean,
+): NodeRuntimeProps {
+  const structuralProps: NodeRuntimeProps = {
+    type: node.type,
+  }
+
+  if (node.id !== undefined) {
+    structuralProps['id'] = node.id
+  }
+
+  if (consumesChildrenProp && Array.isArray(node.children) && node.children.length > 0) {
+    structuralProps['children'] = node.children
+  }
+
+  return structuralProps
+}
+
+// 外部组件与原生标签共用一套入口，原生标签会额外过滤掉不该落到 DOM 的作用域字段。
+function buildExternalComponentProps(
+  rawProps: NodeRuntimeProps,
+  isNativeTag: boolean,
+): NodeRuntimeProps {
+  return isNativeTag ? filterNativeDomProps(rawProps) : rawProps
+}
+
+// 原生标签只允许白名单，避免任意字符串都被当作 DOM tag 透传出去。
 function isNativeRenderableType(type: string): boolean {
   return NATIVE_RENDERABLE_TAGS.has(type)
 }
 
+// 除 registry 外，再尝试从当前 Vue 应用上下文解析全局组件。
 function resolveFromVueContext(type: string): unknown {
   const resolved = resolveDynamicComponent(type)
   return typeof resolved === 'string' ? null : resolved
 }
 
-const configType = computed(() => {
-  const type = normalizedConfig.value.type
+// props 透传辅助：过滤框架保留键，并把事件映射为 Vue listener props。
+
+// 判断 props 中是否存在任何渲染器保留字段，用于 fast-path 复用原始对象。
+function hasFilteredKeys(obj: NodeRuntimeProps): boolean {
+  for (const key of Object.keys(obj)) {
+    if (FILTERED_PROP_KEYS.has(key) || key.startsWith('$')) return true
+  }
+  return false
+}
+
+// 仅把“非空对象”视为事件 map，避免把 null / 原始值误判成可展开对象。
+function isNonEmptyRecord(value: unknown): value is NodeRuntimeProps {
+  return value !== null
+    && value !== undefined
+    && typeof value === 'object'
+    && Object.keys(value as NodeRuntimeProps).length > 0
+}
+
+const _listenerNameCache = new Map<string, string>()
+
+// 把脚本事件名转换为 Vue listener prop 名，例如 click -> onClick、row-click -> onRowClick。
+function toListenerPropName(eventName: string): string {
+  let cached = _listenerNameCache.get(eventName)
+  if (cached !== undefined) return cached
+
+  const normalized = eventName.replace(/[:\-]([a-zA-Z])/g, (_, char: string) => char.toUpperCase())
+  cached = `on${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`
+  _listenerNameCache.set(eventName, cached)
+  return cached
+}
+
+// 统一把 on.xxx 映射成真正的 Vue listener props 对象。
+function buildForwardedEventProps(eventMap: NodeRuntimeProps): NodeRuntimeProps {
+  return Object.fromEntries(
+    Object.entries(eventMap).map(([eventName, handler]) => [toListenerPropName(eventName), handler])
+  )
+}
+
+// 过滤渲染器保留字段，得到可以直接透传给组件的业务 props。
+function filterForwardableProps(rawProps: NodeRuntimeProps): NodeRuntimeProps {
+  return Object.fromEntries(
+    Object.entries(rawProps).filter(([key]) => !FILTERED_PROP_KEYS.has(key) && !key.startsWith('$'))
+  )
+}
+
+// 原生 DOM 分支进一步过滤掉运行时作用域字段，避免污染真实 DOM attrs。
+function filterNativeDomProps(rawProps: NodeRuntimeProps): NodeRuntimeProps {
+  return Object.fromEntries(
+    Object.entries(rawProps).filter(([key]) => !NATIVE_ONLY_FILTERED_PROP_KEYS.has(key))
+  )
+}
+
+// ── 渲染器运行时锚点：父能力上下文与注册表入口 ──────────────────────────────
+
+// 根节点 / 测试场景：显式把父能力上下文锚到当前 renderer 实例上。
+if (rendererProps.parentContext !== undefined && currentInstance !== null) {
+  bindCapabilityContextOwner(currentInstance, rendererProps.parentContext)
+  onUnmounted(() => {
+    unbindCapabilityContextOwner(currentInstance)
+  })
+}
+
+// 渲染器只直接消费注册表，不创建自己的业务能力上下文。
+const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
+
+// ── SparkNode 处理管线：输入节点 → beforeRender → 生效节点 ───────────────────
+
+// 归一化后的输入节点：补默认 type / children / dock / order。
+const normalizedNode = computed<SparkNode>(() => normalizeSparkNode(rendererProps.config, 'unknown'))
+
+// 归一化节点 props：供 beforeRender 上下文构造使用。
+const normalizedNodeProps = computed<NodeRuntimeProps>(() => normalizedNode.value.props ?? EMPTY_RUNTIME_PROPS)
+
+// 通过运行时实例锚点表解析父能力上下文，不走 Vue provide/inject。
+const parentCapabilityContext = computed(() =>
+  resolveParentCapabilityContext(currentOwner, rendererProps.parentContext)
+)
+
+/**
+ * beforeRender 状态：
+ * - 只针对当前节点执行一次
+ * - 产出 visible 与 propsPatch
+ * - 所有后续分支都基于这份结果继续工作
+ */
+const beforeRenderState = computed(() => {
+  const node = normalizedNode.value
+  const parentContext = parentCapabilityContext.value
+
+  return resolveNodeBeforeRender(
+    node,
+    buildBeforeRenderContext({
+      rawProps: normalizedNodeProps.value,
+      parentContext,
+    }),
+    warnRendererIssue,
+  )
+})
+
+// 生效节点：把 beforeRender 的 patch 合并回 SparkNode，后续解析都基于它。
+const effectiveNode = computed<SparkNode>(() =>
+  mergeNodeBeforeRenderProps(normalizedNode.value, beforeRenderState.value.propsPatch)
+)
+
+// 生效节点 props：供最终 props 透传与外部/native 分支共用。
+const effectiveNodeProps = computed<NodeRuntimeProps>(() => effectiveNode.value.props ?? EMPTY_RUNTIME_PROPS)
+
+// 当前节点是否应该继续进入组件解析分支；后续 registry/external/fallback 都以它为前置条件。
+const shouldRenderNode = computed(() => beforeRenderState.value.visible)
+
+// ── 组件解析：registry 组件 / 全局组件 / 原生标签 / 未注册降级 ────────────────
+
+// 当前节点 type 最终来源于 beforeRender 合并后的 effectiveNode。
+const resolvedNodeType = computed(() => {
+  const type = effectiveNode.value.type
   return typeof type === 'string' && type.length > 0 ? type : null
 })
 
-const nativeRenderableTag = computed(() => {
-  const type = configType.value
-  return type !== null && isNativeRenderableType(type) ? type : null
-})
-
-const renderableChildren = computed<RenderableChild[]>(() => {
-  return normalizeRenderableChildren(normalizedConfig.value.children)
-})
-
-// ── 组件解析 ──────────────────────────────────────────────────────────────────
-
+// 先看 registry；renderer 的第一职责是把 SparkNode.type 解析成真实组件。
 const registryDefinition = computed(() => {
-  const type = configType.value
+  const type = resolvedNodeType.value
   return type !== null ? (registry?.get(type) ?? null) : null
 })
 
 const registryComponent = computed(() => {
-  const def = registryDefinition.value
-  if (def) {
-    return def.component ? markRaw(def.component as object) : null
-  }
+  const definition = registryDefinition.value
+  if (!definition) return null
+  return definition.component ? markRaw(definition.component as object) : null
+})
 
-  return null
+// registry 没命中时，再尝试 Vue 全局组件 / 原生标签；都失败则进入 fallback。
+const nativeRenderableTag = computed(() => {
+  const type = resolvedNodeType.value
+  return type !== null && isNativeRenderableType(type) ? type : null
 })
 
 const externalComponent = computed(() => {
   if (registryDefinition.value !== null) return null
 
-  const type = configType.value
+  const type = resolvedNodeType.value
   if (type === null) return null
 
   const appComponent = resolveFromVueContext(type)
@@ -215,58 +538,64 @@ const externalComponent = computed(() => {
     return nativeRenderableTag.value
   }
 
-  if (import.meta.env.DEV) {
-    console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${type}`)
-  }
+  warnRendererIssue(`未注册的组件类型: ${type}`)
   return null
 })
 
-function hasFilteredKeys(obj: Record<string, unknown>): boolean {
-  for (const key of Object.keys(obj)) {
-    if (FILTERED_PROP_KEYS.has(key) || key.startsWith('$')) return true
-  }
-  return false
-}
+// ── 渲染分支：统一收敛成单一分支枚举 ────────────────────────────────────────
 
-const _listenerNameCache = new Map<string, string>()
-function toListenerPropName(eventName: string): string {
-  let cached = _listenerNameCache.get(eventName)
-  if (cached !== undefined) return cached
-  const normalized = eventName.replace(/[:\-]([a-zA-Z])/g, (_, char: string) => char.toUpperCase())
-  cached = `on${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`
-  _listenerNameCache.set(eventName, cached)
-  return cached
-}
+// 分支集中判定，模板只消费语义明确的 shouldRenderXxx，而不是再拼复杂条件。
+const renderBranch = computed<RenderBranch>(() => {
+  if (!shouldRenderNode.value) return 'hidden'
+  if (registryComponent.value !== null) return 'registry'
+  if (externalComponent.value !== null) return 'external'
+  return 'fallback'
+})
+const shouldRenderRegistryComponent = computed(() => renderBranch.value === 'registry')
+const shouldRenderExternalComponent = computed(() => renderBranch.value === 'external')
+const shouldRenderUnregisteredFallback = computed(() => renderBranch.value === 'fallback')
 
-const forwardedProps = computed(() => {
-  const config = normalizedConfig.value
-  const rawProps = config.props ?? {}
-  // 属性是唯一真相：渲染器只消费 config.props，不再兼容根级输入合并。
-  const onMap = rawProps['on']
+// ── 子节点策略：哪些 child 继续递归，哪些 child 透传给目标组件 ──────────────
 
-  // fast-path: 叶子组件大多无事件绑定且无 layout/framework key，直接返回原引用
-  const hasEvents = onMap !== null && onMap !== undefined && typeof onMap === 'object' && Object.keys(onMap as Record<string, unknown>).length > 0
-  if (!hasEvents && !hasFilteredKeys(rawProps)) return rawProps
+// 先把当前节点的 children 归一成 renderer 可消费的字面量 / SparkNode 列表。
+const renderableChildren = computed<RenderableChild[]>(() =>
+  normalizeRenderableChildren(effectiveNode.value.children)
+)
 
-  // slow-path: 过滤 layout/framework keys + 合并事件 props
-  const eventProps = hasEvents
-    ? Object.fromEntries(
-        Object.entries(onMap as Record<string, unknown>).map(([eventName, handler]) => [toListenerPropName(eventName), handler])
-      )
-    : undefined
+// 模板里是否需要继续挂 RecursiveChildrenBlock。
+const hasRenderableChildren = computed(() => renderableChildren.value.length > 0)
 
-  const filteredProps = Object.fromEntries(
-    Object.entries(rawProps).filter(([key]) => !FILTERED_PROP_KEYS.has(key) && !key.startsWith('$'))
-  )
+// childrenMode 是 registry 对 renderer 的显式协议，优先级高于组件 props 声明推断。
+const registryChildrenMode = computed<ComponentChildrenMode>(() =>
+  resolveChildrenMode(registryDefinition.value?.meta)
+)
 
-  return eventProps ? { ...filteredProps, ...eventProps } : filteredProps
+// registry 组件到底是吃 children prop，还是走默认 slot。
+const registryConsumesChildrenProp = computed(() => {
+  const component = registryComponent.value
+  if (registryChildrenMode.value === 'prop') return true
+  if (registryChildrenMode.value === 'slot') return false
+  return component !== null && declaresProp(component, 'children')
 })
 
-const externalForwardedProps = computed(() => {
-  if (nativeRenderableTag.value === null) return forwardedProps.value
+// 只有 registry 组件才需要决定“children 走 prop 还是走 slot”。
+const shouldRenderRegistryChildrenViaSlot = computed(() => {
+  return renderBranch.value === 'registry'
+    && hasRenderableChildren.value
+    && !registryConsumesChildrenProp.value
+})
 
-  return Object.fromEntries(
-    Object.entries(forwardedProps.value).filter(([key]) => !NATIVE_ONLY_FILTERED_PROP_KEYS.has(key))
+// ── props 透传：SparkNode.props → 目标组件运行时 props ───────────────────────
+
+// 所有组件共享的基础 props：从 SparkNode.props 过滤并规范化后得到。
+const nodeForwardedProps = computed(() => buildNodeForwardedProps(effectiveNodeProps.value))
+
+// 外部组件 / 原生标签实际收到的 props。
+// 其中原生标签还要再过滤一层，避免运行时作用域字段落到 DOM attrs 上。
+const externalComponentProps = computed(() => {
+  return buildExternalComponentProps(
+    nodeForwardedProps.value,
+    nativeRenderableTag.value !== null,
   )
 })
 
@@ -282,16 +611,13 @@ const externalForwardedProps = computed(() => {
  *
  * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
  */
-const componentProps = computed(() => {
-  const base = forwardedProps.value
-  const config = props.config
-  // 仅对 registry 组件透传 children prop；
-  // 全局组件（如 Element Plus）不接收该 prop，透传会污染到底层 DOM。
-  if (registryDefinition.value === null) return base
-  const extra: Record<string, unknown> = {}
-  extra['type'] = config.type
-  if (config.id !== undefined) extra['id'] = config.id
-  if (config.children !== undefined) extra['children'] = config.children
-  return Object.keys(extra).length > 0 ? { ...base, ...extra } : base
+const registryComponentProps = computed(() => {
+  // 非 registry 分支不会消费结构字段，直接返回基础透传 props。
+  if (renderBranch.value !== 'registry') return nodeForwardedProps.value
+
+  return {
+    ...nodeForwardedProps.value,
+    ...buildRegistryStructuralProps(effectiveNode.value, registryConsumesChildrenProp.value),
+  }
 })
 </script>

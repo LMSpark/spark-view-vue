@@ -14,21 +14,7 @@
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-form-toolbar', toolbarClassValue]">
       <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
-        <el-button
-          v-if="isBuiltinAction(action)"
-          :type="getBuiltinButtonType(action)"
-          :size="getBuiltinButtonSize(action)"
-          :plain="getBuiltinButtonPlain(action)"
-          :text="getBuiltinButtonText(action)"
-          :link="getBuiltinButtonLink(action)"
-          :disabled="isBuiltinActionDisabled(action)"
-          :class="getBuiltinButtonClass(action)"
-          @click="handleBuiltinToolbarAction(action)"
-        >{{ getBuiltinActionLabel(action) }}</el-button>
-        <SparkComponentRenderer
-          v-else
-          :config="action"
-        />
+        <SparkComponentRenderer :config="resolveToolbarActionConfig(action)" />
       </template>
     </div>
 
@@ -66,17 +52,12 @@ import {
   type RemoveRowHandler,
 } from '../../support/index.js'
 import {
-  getBuiltinActionLabel,
-  getBuiltinButtonClass,
-  getBuiltinButtonLink,
-  getBuiltinButtonPlain,
-  getBuiltinButtonSize,
-  getBuiltinButtonText,
-  getBuiltinButtonType,
+  bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: string
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
   /** 子节点列表 */
@@ -133,11 +114,9 @@ const {
 const nativeFormRef = ref<unknown>(null)
 const {
   formApi,
-  isBuiltinActionDisabled,
   handleBuiltinToolbarAction,
 }: {
   formApi: RendererFormApi
-  isBuiltinActionDisabled: (action: SparkNode) => boolean
   handleBuiltinToolbarAction: (action: SparkNode) => void
 } = createRendererFormZeroCode({
   props,
@@ -151,6 +130,12 @@ const {
 registerApi(formApi)
 
 defineExpose(formApi)
+
+function resolveToolbarActionConfig(action: SparkNode): SparkNode {
+  return isBuiltinAction(action)
+    ? bindActionClick(action, () => handleBuiltinToolbarAction(action))
+    : action
+}
 </script>
 
 <style scoped>

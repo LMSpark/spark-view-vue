@@ -1,19 +1,22 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { SparkNode } from '../../internal'
-import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
+import type { IDataRow, IDataSource, IModelPermission } from '@spark-view/spark-data'
 import { isActionDisplayed, isModelActionAllowed, isRowActionAllowed } from '../action-permission'
+import { isBuiltinAction } from '../builtin-actions'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 
 export type LateralActionPosition = 'left' | 'right'
 type ListenerMap = Record<string, unknown>
 type ListenerHandler = (...args: unknown[]) => unknown
-type ScopedSparkNode = SparkNode & { on?: ListenerMap }
+type ScopedSparkNode = SparkNode
 
 interface UseContainerActionsOptions<TScope> {
   actionConfigs: ComputedRef<SparkNode[] | undefined>
   actionPosition: ComputedRef<LateralActionPosition | undefined>
   actionClass: ComputedRef<string | undefined>
   modelPermission: ComputedRef<IModelPermission | undefined>
+  dataSource?: ComputedRef<IDataSource | null | undefined>
   resolveScope: (scope: TScope) => {
     row: IDataRow | undefined
     listenerArgs: unknown[]
@@ -47,29 +50,67 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
 
   function getScopedActionConfigs(scope: TScope): ScopedSparkNode[] {
     const resolved = options.resolveScope(scope)
-    return rawActionConfigs.value
-      .filter(action =>
-        isActionDisplayed(action)
-        && isModelActionAllowed(action, options.modelPermission.value)
-        && isRowActionAllowed(action, resolved.row)
-      )
+    const dataSource = options.dataSource?.value ?? null
+    const scopedActions: Array<ScopedSparkNode | null> = rawActionConfigs.value
       .map(action => {
-        const withListeners = action as ScopedSparkNode
-        const wrappedOn = withListeners.on
+        const patchedAction = isBuiltinAction(action)
+          ? (() => {
+              const state = resolveNodeBeforeRender(action, {
+                row: resolved.row ?? null,
+                data: resolved.scopedProps['data'] ?? resolved.row ?? null,
+                index: typeof resolved.scopedProps['rowIndex'] === 'number'
+                  ? resolved.scopedProps['rowIndex']
+                  : (typeof resolved.scopedProps['$index'] === 'number' ? resolved.scopedProps['$index'] : undefined),
+                dataSource,
+                modelPermission: options.modelPermission.value,
+                parentType: null,
+              }, (message, error) => {
+                if (!import.meta.env.DEV) return
+                console.warn(`[useContainerActions] ${message}`, error)
+              })
+
+              if (!state.visible) return null
+
+              return mergeNodeBeforeRenderProps(action, state.propsPatch, {
+                mirrorDisabledToButtonDisabled: true,
+              })
+            })()
+          : action
+
+        if (patchedAction === null) return null
+
+        if (!(isActionDisplayed(patchedAction)
+          && isModelActionAllowed(patchedAction, options.modelPermission.value)
+          && isRowActionAllowed(patchedAction, resolved.row))) {
+          return null
+        }
+
+        const currentOn = patchedAction.props?.['on']
+        const legacyOn = (patchedAction as SparkNode & { on?: unknown }).on
+        const listenerSource = currentOn ?? legacyOn
+        const listenerMap = listenerSource !== null && listenerSource !== undefined && typeof listenerSource === 'object' && !Array.isArray(listenerSource)
+          ? listenerSource as ListenerMap
+          : undefined
+
+        const wrappedOn = listenerMap
           ? Object.fromEntries(
-            Object.entries(withListeners.on).map(([eventName, handler]) => [eventName, wrapScopedHandler(handler, resolved.listenerArgs)])
+            Object.entries(listenerMap).map(([eventName, handler]) => [eventName, wrapScopedHandler(handler, resolved.listenerArgs)])
           )
           : undefined
 
-        return {
-          ...action,
+        const scopedAction: ScopedSparkNode = {
+          ...patchedAction,
           props: {
-            ...(action.props ?? {}),
+            ...(patchedAction.props ?? {}),
             ...resolved.scopedProps,
+            ...(wrappedOn ? { on: wrappedOn } : {}),
           },
-          ...(wrappedOn ? { on: wrappedOn } : {}),
         }
+
+        return scopedAction
       })
+
+    return scopedActions.filter((action): action is ScopedSparkNode => action !== null)
   }
 
   return {

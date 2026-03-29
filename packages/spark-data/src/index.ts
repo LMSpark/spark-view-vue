@@ -86,20 +86,6 @@ export {
   ComponentLevel,
 } from './types'
 
-// ===== 权限渲染模块 =====
-
-export {
-  PermissionChecker, createPermissionChecker, checkPermission,
-  PermissionFilter, createPermissionFilter, filterByPermission,
-  FieldRenderHelper, createFieldRenderHelper,
-  computeFieldState, computeFieldStates, filterVisibleFields,
-  isPermittedAction, resolveFieldPermissionState, formatPermissionAwareFieldValue,
-} from './permission'
-
-export type {
-  IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper, PermissionActionContext,
-} from './permission'
-
 // ===== 列验证规则 =====
 
 export { extractColumnRules, isColumnRequired } from './column-validation'

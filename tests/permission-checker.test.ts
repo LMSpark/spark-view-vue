@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { createPermissionChecker } from '../packages/spark-data/src/permission/PermissionChecker'
+import { permission } from '../packages/spark-component/src/index'
 import type { IDataRow } from '../packages/spark-data/src/types'
+
+const { createPermissionChecker } = permission
 
 describe('PermissionChecker', () => {
   it('defaults rows without editableFields permission data to readonly', () => {

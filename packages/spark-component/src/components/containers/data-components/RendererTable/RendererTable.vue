@@ -13,21 +13,7 @@
     <!-- 工具栏 -->
     <div v-if="showToolbar" :class="['renderer-table-toolbar', toolbarClassValue]">
       <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-table-toolbar-${index}`">
-        <el-button
-          v-if="isBuiltinAction(action)"
-          :type="getBuiltinButtonType(action)"
-          :size="getBuiltinButtonSize(action)"
-          :plain="getBuiltinButtonPlain(action)"
-          :text="getBuiltinButtonText(action)"
-          :link="getBuiltinButtonLink(action)"
-          :disabled="isBuiltinActionDisabled(action)"
-          :class="getBuiltinButtonClass(action)"
-          @click="handleBuiltinToolbarAction(action)"
-        >{{ getBuiltinActionLabel(action) }}</el-button>
-        <SparkComponentRenderer
-          v-else
-          :config="action"
-        />
+        <SparkComponentRenderer :config="resolveToolbarActionConfig(action)" />
       </template>
     </div>
 
@@ -105,21 +91,7 @@
             <template #default="{ row, $index }">
               <div :class="['renderer-table-row-actions', rowActionsClassValue]">
                 <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="nodeId(action) ?? `r-table-row-action-left-${index}`">
-                  <el-button
-                    v-if="isBuiltinAction(action)"
-                    :type="getBuiltinButtonType(action)"
-                    :size="getBuiltinButtonSize(action)"
-                    :plain="getBuiltinButtonPlain(action)"
-                    :text="getBuiltinButtonText(action)"
-                    :link="getBuiltinButtonLink(action)"
-                    :disabled="isBuiltinActionDisabled(action, { row, index: $index })"
-                    :class="getBuiltinButtonClass(action)"
-                    @click="handleBuiltinRowAction(action, row, $index)"
-                  >{{ getBuiltinActionLabel(action) }}</el-button>
-                  <SparkComponentRenderer
-                    v-else
-                    :config="action"
-                  />
+                  <SparkComponentRenderer :config="resolveRowActionConfig(action, row, $index)" />
                 </template>
                 <slot
                   name="row-actions"
@@ -152,21 +124,7 @@
             <template #default="{ row, $index }">
               <div :class="['renderer-table-row-actions', rowActionsClassValue]">
                 <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="nodeId(action) ?? `r-table-row-action-right-${index}`">
-                  <el-button
-                    v-if="isBuiltinAction(action)"
-                    :type="getBuiltinButtonType(action)"
-                    :size="getBuiltinButtonSize(action)"
-                    :plain="getBuiltinButtonPlain(action)"
-                    :text="getBuiltinButtonText(action)"
-                    :link="getBuiltinButtonLink(action)"
-                    :disabled="isBuiltinActionDisabled(action, { row, index: $index })"
-                    :class="getBuiltinButtonClass(action)"
-                    @click="handleBuiltinRowAction(action, row, $index)"
-                  >{{ getBuiltinActionLabel(action) }}</el-button>
-                  <SparkComponentRenderer
-                    v-else
-                    :config="action"
-                  />
+                  <SparkComponentRenderer :config="resolveRowActionConfig(action, row, $index)" />
                 </template>
                 <slot
                   name="row-actions"
@@ -219,14 +177,8 @@ import {
   type CurrentRowChangeHandler,
 } from '../../support/index.js'
 import {
+  bindActionClick,
   isBuiltinAction,
-  getBuiltinActionLabel,
-  getBuiltinButtonType,
-  getBuiltinButtonSize,
-  getBuiltinButtonPlain,
-  getBuiltinButtonText,
-  getBuiltinButtonLink,
-  getBuiltinButtonClass,
 } from '../../builtin-actions'
 
 interface Props {
@@ -318,6 +270,7 @@ const {
   toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
   toolbarClass: computed(() => props.docks?.toolbar?.class),
   modelPermission,
+  dataSource: computed(() => resolvedView.value),
 })
 
 const {
@@ -373,13 +326,11 @@ const nativeTableRef = ref<{
 const {
   dispatch,
   tableApi,
-  isBuiltinActionDisabled,
   handleBuiltinToolbarAction,
   handleBuiltinRowAction,
 }: {
   dispatch: (eventName: string, ...args: unknown[]) => Promise<{ cancel: boolean }>
   tableApi: RendererTableApi
-  isBuiltinActionDisabled: (action: SparkNode, scope?: { row?: IDataRow; index?: number }) => boolean
   handleBuiltinToolbarAction: (action: SparkNode) => void
   handleBuiltinRowAction: (action: SparkNode, row: IDataRow, index: number) => void
 } = createRendererTableZeroCode({
@@ -414,6 +365,7 @@ const {
   actionPosition: computed(() => props.docks?.actions?.position as LateralActionPosition | undefined ?? legacyRowActionsPositionValue.value ?? 'right'),
   actionClass: computed(() => props.docks?.actions?.class ?? readStringAttr('rowActionsClass') ?? ''),
   modelPermission,
+  dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({
     row,
     listenerArgs: [row, index],
@@ -454,6 +406,18 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
       moduleContext: moduleContext.value,
     },
   })
+}
+
+function resolveToolbarActionConfig(action: SparkNode): SparkNode {
+  return isBuiltinAction(action)
+    ? bindActionClick(action, () => handleBuiltinToolbarAction(action))
+    : action
+}
+
+function resolveRowActionConfig(action: SparkNode, row: IDataRow, index: number): SparkNode {
+  return isBuiltinAction(action)
+    ? bindActionClick(action, () => handleBuiltinRowAction(action, row, index))
+    : action
 }
 
 // ── 声明式内置动作（零脚本能力） ────────────────────────────────────────────

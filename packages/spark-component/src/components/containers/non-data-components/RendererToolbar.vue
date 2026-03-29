@@ -55,7 +55,8 @@ type InlineAlign = 'start' | 'center' | 'end' | 'stretch'
  */
 type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: string
   /**
    * 子节点列表。
    *

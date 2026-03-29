@@ -37,6 +37,15 @@ export interface ComponentDefinition {
  */
 export type ComponentDataKeyBehavior = 'self-resolve' | 'injected' | 'none'
 
+/**
+ * 组件 children 传输策略（Registry meta.childrenMode）
+ *
+ * - `auto`：渲染器按组件声明自动判断；声明了 `children` prop 则走 prop，否则走默认 slot
+ * - `prop`：强制将 SparkNode.children 作为 `children` prop 传给组件
+ * - `slot`：强制将 SparkNode.children 作为默认 slot 递归渲染
+ */
+export type ComponentChildrenMode = 'auto' | 'prop' | 'slot'
+
 // ============================================================================
 // 能力上下文（核心）
 // ============================================================================
@@ -82,14 +91,16 @@ export type SparkCapabilityContext = ICapabilityContext
  * }
  * ```
  */
-export type SparkNodeChildren = SparkNode[] | string[]
+export type SparkTextChild = string | number
+
+export type SparkNodeChildren = Array<SparkNode | SparkTextChild>
 
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
   /** 组件属性（所有组件可见的数据均通过 props 传递） */
   props?: Record<string, unknown>
-  /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串文本子节点数组 */
+  /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组 */
   children?: SparkNodeChildren
   /**
    * 节点唯一标识

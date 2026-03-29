@@ -65,7 +65,8 @@ import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: string
   /** 子节点 */
   children?: SparkNode[]
   /** dock 布局配置 */

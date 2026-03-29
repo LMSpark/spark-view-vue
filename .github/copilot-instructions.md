@@ -501,155 +501,7 @@ dataSet.on('loadSuccess', ({ tableName }) => {
 
 ## 权限架构（统一后端验证 + 前端权限渲染）🔐
 
-SPARK 采用 **统一后端验证** 架构，前端 **不做** 权限判定，仅负责根据服务端下发的权限数据自动渲染 UI。
-
-**核心流程**：
-1. 前端从服务端取数据时，响应中携带 **数据权限快照**（`IModelPermission` / `IInstancePermission`）+ **权限 Token**
-2. 前端将权限快照存储在 `IDataRow._perm`（行级）和 `IDataSource._modelPerm`（表级）
-3. `permission/` 模块按**读/写双通道**解释权限快照：读通道 = `visible | masked | hidden`，写通道 = `editable | readonly`；若字段为脱敏态，显示值应直接使用服务端返回结果，前端不做二次脱敏
-4. 数据回写时将权限 Token 回传服务端，服务端验证 Token 有效性（防篡改）
-
-**模块组成**（`packages/spark-data/src/permission/`）：
-- `PermissionChecker` — 模型级 / 实例级 / 字段级权限检查 + 字段显示值透传
-- `PermissionFilter` — 批量行过滤（可删除行/可编辑行/可见字段）+ 隐藏字段移除
-- `FieldRenderHelper` — 结合字段配置 + 权限快照计算字段读态/写态（visible/masked/hidden + editable/readonly）
-
-**⚠️ 重要**：`permission/` 模块当前未被业务代码消费，但属于 **已规划的核心架构**，后续开发会接入。**禁止删除或标记为死代码**。
-
-```typescript
-// 权限类型定义见 types.ts
-interface IInstancePermission {   // 行级 — 存储在 row._perm
-  allowDelete?: boolean
-  editableFields?: string[]
-  hiddenFields?: string[]
-  maskedFields?: string[]
-  permissionToken?: string        // 回传服务端校验
-}
-interface IModelPermission {      // 表级 — 存储在 dataSource._modelPerm
-  allowCreate?: boolean
-  allowImport?: boolean
-  allowExport?: boolean
-  permissionToken?: string
-}
-```
-
-> **双通道特殊场景**：`(masked || hidden) && editable` 是合法组合，用于密码重置、敏感字段改值等场景。
-> 前端此时仍需渲染写入控件，但不能回显读通道值；`r-form` 宿主可编辑，`r-detail / r-list / r-tree / r-table` 仍按读通道决定是否展示。
-
-> **主键输出契约**：后端任何输出数据都会自动携带**全部真实主键列**。
-> 前端可以隐藏主键列的展示，但在身份识别、当前行切换、CRUD 回写、级联匹配等链路中必须假定这些真实主键字段始终存在；不要把主键列当普通展示字段随意裁剪。
-> **复合主键约定**：DataView 已统一实现复合主键方案，多列真实主键会自动收敛为 `_pk` 计算列，内部主键操作统一使用标量 `PkValue`；前端不要再自行拼接复合主键字符串，直接依赖 `view.primaryKey` / `row._pk` / 主键委托即可。
-
-> **字段命名说明**：`IInstancePermission` / `IModelPermission` 是包内正式类型（`allowDelete`/`allowCreate`）。
-> 实际 script.js 演示页中使用更直观的简化字段名（`canEdit`/`canDelete`/`canAdd`/`canImport`/`canExport`/`editableFields`）——
-> 两者都合法，后端团队自行约定字段名即可，框架不强制要求。
-
-### 「改权限不改代码」实践模式（script.js）🎭
-
-**核心原则**：Render* 渲染函数是「固定框架代码」——权限数据变了，UI 自动变；前端代码一行不动。
-所有权限判断通过读取 `row._perm` / `_pageState.modelPerm` 完成，**永远不** 根据用户 ID 或角色字符串做 `if/switch` 判断。
-
-**参考实现**：`public/pages-config/permission-render/`（页面路由 `/permission-render`）
-
-**标准脚本结构**：
-
-```javascript
-// _pageState：仅存储后端返回的权限数据 + UI 状态
-let _pageState = {
-  currentUser: 'user1',
-  tableData:   [],
-  modelPerm:   null,          // 对应 _modelPerm（模型级权限快照）
-}
-
-// handleSwitchUser：切换角色 = 模拟后端返回不同 _perm 数据，通过 DataView 驱动 UI 更新
-function handleSwitchUser(userId) {
-  var resp = MOCK_RESPONSES[userId]
-  if (!resp) return
-  _pageState.currentUser = userId
-  _pageState.tableData   = resp.rows        // rows 内每行携带 _perm
-  _pageState.modelPerm   = resp._modelPerm
-  // 通过 DOM 直写或 DataView.replaceRows() 更新 UI
-}
-
-// RenderAddButton：从 _modelPerm.canAdd 读取模型级权限
-function RenderAddButton() {
-  var canAdd = (_pageState.modelPerm || {}).canAdd || false
-  return h('button', {
-    disabled: !canAdd,
-    onClick: canAdd ? handleAdd : null,
-    style: 'color:' + (canAdd ? '#fff' : '#c0c4cc') + ';...',
-  }, '＋ 新增')
-}
-
-// RenderTable：从 row._perm 读取行级权限，按钮状态自动响应
-function RenderTable() {
-  return h('tbody', _pageState.tableData.map(function(row) {
-    return h('tr', [
-      // ... 数据列 ...
-      h('td', [
-        actionBtn(row._perm.canEdit,   '#409eff', '编辑', function() { handleEdit(row) }),
-        actionBtn(row._perm.canDelete, '#f56c6c', '删除', function() { handleDelete(row) }),
-      ])
-    ])
-  }))
-}
-
-// RenderPermSnapshot（调试/演示用）：实时可视化后端下发的权限快照
-// 真实项目不必展示，但对理解权限架构很有帮助
-function RenderPermSnapshot() {
-  var mp = _pageState.modelPerm
-  if (!mp) return h('div', '切换角色后显示')
-  // ... 展示 _modelPerm 标签 + 每行 _perm 标签 ...
-}
-```
-
-**绑定到 rule.json 的惯用写法**（双栏布局）：
-
-```jsonc
-// rule.json
-{
-  "type": "div",
-  "style": { "display": "flex", "gap": "16px" },
-  "children": [
-    // 左栏：权限快照（调试/演示）
-    {
-      "type": "el-card",
-      "style": { "width": "280px", "flexShrink": "0" },
-      "children": [{ "type": "RenderPermSnapshot" }]
-    },
-    // 右栏：业务 UI（代码固定，由 _perm 驱动）
-    {
-      "type": "div",
-      "style": { "flex": "1" },
-      "children": [
-        { "type": "RenderAddButton" },
-        { "type": "RenderTable" }
-      ]
-    }
-  ]
-}
-```
-
-**⚠️ 角色切换组件推荐用 Render* 函数**
-
-标准做法是用 Render* 函数内嵌原生 `<input type="radio">`，从 `_pageState.currentUser` 读取 `checked` 状态：
-
-```javascript
-function RenderUserSwitch() {
-  var current = _pageState.currentUser
-  return h('div', roles.map(function(r) {
-    return h('label', [
-      h('input', {
-        type: 'radio', name: 'role-switch', value: r.value,
-        checked: current === r.value,
-        onChange: function() { handleSwitchUser(r.value) },
-        style: 'display:none;',   // 隐藏原生控件，用父 label 样式模拟卡片
-      }),
-      h('span', r.label),
-    ])
-  }))
-}
-```
+权限体系的唯一正式说明文档是 [docs/architecture/PERMISSION_SYSTEM.md](../docs/architecture/PERMISSION_SYSTEM.md)。如涉及权限相关实现、Prompt、示例页、测试或文档，先以该文档为准，再改代码；本提示词不再维护第二套权限说明。
 
 ## 能力体系 🔧
 
@@ -1008,6 +860,7 @@ packages/
 │       └── error-handler.ts # setupErrorHandler, createErrorBoundary
 ├── spark-component/     # 组件系统（Spark 命名空间、能力系统）
 │   └── src/
+│       ├── permission/     # 权限渲染 API（PermissionChecker / Resolver / Filter / FieldRenderHelper）
 │       ├── spark.ts          # Spark 命名空间（唯一入口）
 │       ├── capabilities.ts    # PAGE_DATASET, DATA_SOURCE 等能力键与类型
 │       ├── types.ts          # SparkNode, SparkCapabilityContext, ComponentRegistry
@@ -1032,10 +885,7 @@ packages/
 │       ├── data-table.ts     # DataTable
 │       ├── data-view.ts      # DataView（IDataSource 实现）
 │       ├── tree-manager.ts   # TreeManager
-│       └── permission/       # 权限渲染（⚠️ 已规划，禁止删除）
-│           ├── PermissionChecker.ts  # 行级/字段级权限检查 + 字段显示值透传
-│           ├── PermissionFilter.ts   # 批量行过滤 + 隐藏字段移除
-│           └── FieldRenderHelper.ts  # 字段渲染状态计算
+│       └── permission/       # 权限快照类型与权限令牌集成（数据模型）
 ├── spark-page-config/   # 页面配置加载器（ConfigLoader, SparkPageConfig）
 │   └── src/
 │       ├── namespace.ts          # SparkPageConfig 命名空间

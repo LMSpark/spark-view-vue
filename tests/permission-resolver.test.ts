@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
   FieldVisibility,
-  formatPermissionAwareFieldValue,
-  isPermittedAction,
-  resolveFieldPermissionState,
   type IDataRow,
   type IModelPermission,
 } from '@spark-view/spark-data'
+import { permission } from '../packages/spark-component/src/index'
+
+const {
+  formatPermissionAwareFieldValue,
+  isPermittedAction,
+  resolveFieldPermissionState,
+} = permission
 
 describe('PermissionResolver', () => {
   it('unifies model and row action permission decisions', () => {

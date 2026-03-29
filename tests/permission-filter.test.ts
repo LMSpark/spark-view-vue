@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { createPermissionFilter, type IDataRow } from '@spark-view/spark-data'
+import type { IDataRow } from '@spark-view/spark-data'
+import { permission } from '../packages/spark-component/src/index'
+
+const { createPermissionFilter } = permission
 
 describe('PermissionFilter', () => {
   it('keeps backend-masked values and removes hidden fields', () => {

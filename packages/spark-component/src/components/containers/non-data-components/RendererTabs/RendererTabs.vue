@@ -56,7 +56,8 @@ interface TabsClickEvent {
   [key: string]: unknown
 }
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: string
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
   /** 停靠区域显示配置 */

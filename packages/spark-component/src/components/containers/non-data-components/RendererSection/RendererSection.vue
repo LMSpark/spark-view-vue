@@ -97,7 +97,8 @@ import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useControlledValue } from '../state'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: string
   /** 子节点 */
   children?: SparkNode[]
   /** dock 布局配置 */

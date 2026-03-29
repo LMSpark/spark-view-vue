@@ -1,7 +1,7 @@
 import type { SparkNode } from '../internal'
 import { nodeInputProp } from '../internal'
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
-import { isPermittedAction } from '@spark-view/spark-data'
+import { isPermittedAction } from '../../permission/index.js'
 
 type RuntimeActionConfig = SparkNode & { display?: boolean }
 

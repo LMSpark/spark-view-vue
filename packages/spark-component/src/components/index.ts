@@ -19,6 +19,7 @@ export { default as RendererDrawer } from './containers/non-data-components/Rend
 export { default as RendererSteps } from './containers/non-data-components/RendererSteps/index.js'
 export { default as RendererSection } from './containers/non-data-components/RendererSection/index.js'
 export { default as RendererToolbar } from './containers/non-data-components/RendererToolbar.vue'
+export { default as BuiltinActionButton } from './containers/BuiltinActionButton.vue'
 export { default as RendererFieldScope } from './containers/data-components/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/data-components/RendererListItemScope.vue'
 
