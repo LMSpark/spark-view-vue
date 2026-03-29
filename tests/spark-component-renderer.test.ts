@@ -590,3 +590,33 @@ test('SparkComponentRenderer keeps warning fallback for unknown non-native compo
 
   expect(wrapper.find('.spark-component-unregistered').exists()).toBe(true)
 })
+
+test('SparkComponentRenderer fallback can expand node snapshot for unknown component types', async () => {
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'unknown-widget',
+        id: 'unknown-node-1',
+        props: {
+          title: '测试节点',
+          visible: true,
+        },
+        children: [],
+      },
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+      }
+    }
+  })
+
+  await wrapper.find('.unregistered-details-button').trigger('click')
+
+  const panel = wrapper.find('.unregistered-details-panel')
+  expect(panel.exists()).toBe(true)
+  expect(panel.text()).toContain('unknown-widget')
+  expect(panel.text()).toContain('测试节点')
+  expect(panel.text()).toContain('unknown-node-1')
+})

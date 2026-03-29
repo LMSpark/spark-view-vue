@@ -21,17 +21,14 @@
     </template>
   </component>
 
-  <!-- 未注册：降级渲染，继续递归子组件树，不中断渲染 -->
-  <div
+  <!-- 未注册：降级渲染卡片负责提示外观与属性面板，子组件树仍继续递归 -->
+  <UnregisteredNodeFallback
     v-else-if="shouldRenderUnregisteredFallback"
-    class="spark-component-renderer spark-component-unregistered"
+    :node="effectiveNode"
   >
-    <div class="unregistered-warning">
-      <strong>⚠️ 未注册的组件类型:</strong> {{ normalizedNode.type }}
-    </div>
     <!-- 未注册时仍递归渲染子组件，父能力上下文由框架内部传递 -->
     <RecursiveChildrenBlock :children="renderableChildren" />
-  </div>
+  </UnregisteredNodeFallback>
 </template>
 
 <script setup lang="ts">
@@ -76,6 +73,7 @@ import {
 } from 'vue'
 import type { PropType } from 'vue'
 import type { IDataRow, IDataSource } from '@spark-view/spark-data'
+import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
 import {
   SPARK_REGISTRY_KEY,
   nodeId,
