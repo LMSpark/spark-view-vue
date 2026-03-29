@@ -1,8 +1,5 @@
 import { shallowRef, watch, type ShallowRef } from 'vue'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../shared-types.js'
 
 export function useControlledValue<T>(source: ValueRef<T>): ShallowRef<T> {
   const state = shallowRef<T>(source.value)

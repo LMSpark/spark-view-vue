@@ -13,8 +13,6 @@
 
 优先入口：
 
-1. `composables.ts`
-2. 需要细分时使用 `fieldContextComposables`、`fieldOptionComposables`、`fieldActionComposables`
-3. 查 Vue 组件时优先看 `fieldDataComponents` 和 `fieldNonDataComponents`
-4. 查和 Vue 分组对齐的组合函数时优先看 `data-components/composables/` 和 `non-data-components/composables/`
-5. 只想记短名字时可用 `fieldDataUi`、`fieldNonDataUi`、`fieldDataUiComposables`、`fieldNonDataUiComposables`
+1. `composables.ts`（聚合全部字段层 composable）
+2. 查 Vue 组件时优先看 `fieldDataComponents` 和 `fieldNonDataComponents`
+3. 查与 Vue 分组对齐的组合函数时优先看 `fieldDataComponentComposables` 和 `fieldNonDataComponentComposables`

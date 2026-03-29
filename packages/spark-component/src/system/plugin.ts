@@ -3,16 +3,16 @@
  *
  * 职责：
  * - 创建并注入 Registry
- * - 创建根上下文（sparkParentContext）
- * - 极简，只做 DI
+ * - 创建根 Spark 能力上下文
+ * - 将根上下文绑定到 app runtime，而不是通过 Vue provide 传递
  */
 
 import type { App, Plugin } from 'vue'
 import { shallowReactive } from 'vue'
 import { SPARK_REGISTRY_KEY } from '../core/types.js'
-import type { SparkCapabilityContext, ComponentRegistry } from '../core/types.js'
-import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal/capability-context.js'
-import type { CapabilityName } from '@spark-view/spark-utils'
+import type { ComponentRegistry } from '../core/types.js'
+import { createSparkCapabilityContext } from '../core/capabilities.js'
+import { bindAppRootCapabilityContext } from '../internal/capability-context.js'
 import { getGlobalRegistry } from './registry.js'
 import { DataView } from '@spark-view/spark-data'
 
@@ -31,15 +31,11 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
       DataView.wrapInstance = (dv) => shallowReactive(dv) as DataView
 
       // 创建应用级根能力上下文
-      const rootContext: SparkCapabilityContext = {
-        id: 'spark-root',
-        type: 'spark-app',
-        capabilities: new Map<CapabilityName, unknown>()
-      }
+      const rootContext = createSparkCapabilityContext({ id: 'spark-root', type: 'spark-app' })
 
-      // 注入到 Vue DI（使用类型安全的 InjectionKey）
+      // Registry 仍通过 Vue DI 注入；SparkContext 自己通过 runtime 锚点表建树。
       app.provide(SPARK_REGISTRY_KEY, registry)
-      app.provide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, rootContext)
+      bindAppRootCapabilityContext(app, rootContext)
     }
   }
 }

@@ -1,8 +1,5 @@
 import type { RendererSectionApi } from './types'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 interface RendererSectionZeroCodeOptions {
   collapsed: ValueRef<boolean>

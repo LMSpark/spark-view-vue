@@ -2,10 +2,11 @@ import { nextTick } from 'vue'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 import {
-  createDefaultBehaviorControl,
-  type DefaultBehaviorControl,
-} from '../../../../internal/defaultBehaviorControl'
+  createCancellableControl,
+  type CancellableControl,
+} from '../../../internal'
 import type { SparkNode } from '../../../internal'
+import type { ValueRef } from '../../../shared-types.js'
 import { createBuiltinActionHandler, isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../builtin-actions'
 import { createCancelledCrudResult, useEventDefaults } from '../../support/index.js'
 import type { RendererTreeApi } from './types'
@@ -51,7 +52,7 @@ export interface NativeTreeNodeLike {
   data?: Record<string, unknown>
 }
 
-export type TreeEventControl = DefaultBehaviorControl
+export type TreeEventControl = CancellableControl
 
 export type TreeEventHandler = (
   data: TreeNode,
@@ -64,10 +65,6 @@ export type TreeNodeActionHandler = (
   data: TreeNode,
   control: TreeEventControl,
 ) => void | Promise<void>
-
-interface ValueRef<T> {
-  value: T
-}
 
 interface RendererTreeBehaviorProps extends Readonly<Record<string, unknown>> {
   onNodeClick?: TreeEventHandler | undefined
@@ -284,7 +281,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   }
 
   function createTreeEventControl(): TreeEventControl {
-    return createDefaultBehaviorControl()
+    return createCancellableControl()
   }
 
   async function runTreeEvent(

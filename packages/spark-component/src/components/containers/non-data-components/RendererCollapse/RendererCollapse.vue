@@ -43,8 +43,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkComponent } from '../../../internal'
-import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import type { ContainerDocks } from '../../../../core/types'
+import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import RendererCollapseItem from '../RendererCollapseItem.vue'
 import type { RendererCollapseApi } from './types'

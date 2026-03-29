@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { getDockedChildren, type SparkNode } from '../../../internal'
-import type { ContainerDocks } from '../../../../core/types'
+import type { ContainerDocks } from '../../../internal'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 
 interface RendererTreeInputProps {

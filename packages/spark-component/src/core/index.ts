@@ -46,5 +46,19 @@ export {
   getSparkNodeChildren,
 } from './types.js'
 
-export * from './capabilities.js'
-export type * from './capabilities.js'
+export {
+  PAGE_DATASET,
+  DATA_SOURCE,
+  DATA_ROW,
+  PAGE_COMPONENT_REGISTRY,
+  MODULE_CONTEXT,
+  CSS_SCOPE,
+} from './capabilities.js'
+
+export type {
+  PageComponentInstanceEntry,
+  PageComponentApiEntry,
+  PageComponentRegistry,
+  ModuleContextCapability,
+  PageCssScopeCapability,
+} from './capabilities.js'

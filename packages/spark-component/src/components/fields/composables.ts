@@ -7,14 +7,7 @@
  * - actions: 文件、选择器等字段交互动作
  */
 
-export * as fieldContextComposables from './context/index.js'
-export * as fieldOptionComposables from './options/index.js'
-export * as fieldActionComposables from './actions/index.js'
-export * as fieldDataComponentComposables from './data-components/composables/index.js'
-export * as fieldNonDataComponentComposables from './non-data-components/composables/index.js'
-export * as fieldDataComponentSupport from './data-components/support/index.js'
-export * as fieldDataUiComposables from './data-components/composables/index.js'
-export * as fieldNonDataUiComposables from './non-data-components/composables/index.js'
+
 
 // ── 上下文 / 权限 ───────────────────────────────────────────────────────────
 export { useResolvedFieldContext } from './context/index.js'

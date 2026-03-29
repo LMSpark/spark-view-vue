@@ -68,8 +68,8 @@
  * 设计要点：
  * - **不创建自己的 ComponentContext**：渲染器是透明的路由层，不加入能力链
  * - 直接 inject(SPARK_REGISTRY_KEY) 获取注册表，不经过 useSparkComponent
- * - 父能力上下文通过框架内部私有 DI 传递，不对外暴露公共 key
- * - 根节点 / 测试场景通过 parentContext prop 显式注入初始父上下文
+ * - 父能力上下文通过运行时实例锚点表发现，不依赖 Vue provide/inject
+ * - 根节点 / 测试场景通过 parentContext prop 显式挂载初始父上下文
  *
  * 上下文链对比：
  *   旧：rootContext → rendererContext → businessContext  ← 多一层噪声
@@ -84,10 +84,10 @@
  * <SparkComponentRenderer :config="config" :parent-context="rootContext" />
  * ```
  */
-import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
+import { computed, getCurrentInstance, inject, markRaw, onUnmounted, resolveDynamicComponent } from 'vue'
 import { SPARK_REGISTRY_KEY, nodeId, nodeDock, DEFAULT_DOCK, isSparkNode, normalizeSparkNode } from '../core/types.js'
 import type { SparkNode, SparkNodeChildren, SparkCapabilityContext, ComponentRegistry } from '../core/types.js'
-import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal/capability-context.js'
+import { bindCapabilityContextOwner, unbindCapabilityContextOwner } from '../internal/capability-context.js'
 
 // h() 模型：on 由渲染器拦截转为 onXxx 事件 props，不直接透传
 // layout/dock/order 只服务于容器布局，不透传到组件 props / DOM
@@ -140,18 +140,22 @@ interface Props {
   config: SparkNode
   /**
    * 显式父上下文（可选）
-   * 仅用于根节点 / 测试场景：将其注入 DI 链，子业务组件 inject 时自动获取。
-   * 普通递归渲染无需传递，子组件继承已有的 DI 链。
+   * 仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。
+   * 普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。
    */
   parentContext?: SparkCapabilityContext
 }
 
 const props = defineProps<Props>()
 const normalizedConfig = computed<SparkNode>(() => normalizeSparkNode(props.config, 'unknown'))
+const currentInstance = getCurrentInstance()
 
-// ── 根节点 / 测试场景：覆盖框架内部父能力上下文 ─────────────────────────────
-if (props.parentContext !== undefined) {
-  vueProvide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, props.parentContext)
+// ── 根节点 / 测试场景：为后代组件挂载一个显式父上下文锚点 ──────────────────
+if (props.parentContext !== undefined && currentInstance !== null) {
+  bindCapabilityContextOwner(currentInstance, props.parentContext)
+  onUnmounted(() => {
+    unbindCapabilityContextOwner(currentInstance)
+  })
 }
 
 // ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────

@@ -27,7 +27,7 @@
 
 import { isActionDescriptor, executeActionDescriptor } from '../actions'
 import type { ActionExecutionContext, ActionDescriptor, ActionExecutionOptions } from '../actions'
-import { extractActionExecutionControl } from '../actions/action-control'
+import { extractActionExecutionControl } from '../actions'
 
 /** 沙箱函数调用签名 */
 type CallFunc = (functionName: string, ...args: unknown[]) => unknown

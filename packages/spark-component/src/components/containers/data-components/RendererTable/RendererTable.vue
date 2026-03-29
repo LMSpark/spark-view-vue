@@ -191,9 +191,8 @@
  */
 import { computed, defineComponent, ref, useAttrs, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
-import { nodeId, type SparkNode } from '../../../internal'
+import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import type { RendererTableApi } from './types'
-import type { ContainerDocks } from '../../../../core/types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'

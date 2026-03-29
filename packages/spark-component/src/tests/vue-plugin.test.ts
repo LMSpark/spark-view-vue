@@ -9,6 +9,7 @@ function createFakeApp() {
     provide(key: any, value: unknown) { provided[key] = value },
     use(_p: any) {},
     config: { globalProperties: {} as any },
+    _context: {},
     _provided: provided
   } as any
 }

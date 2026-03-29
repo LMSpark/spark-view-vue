@@ -1,8 +1,5 @@
 import { computed } from 'vue'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 type NumberFieldValue = number | [number | undefined, number | undefined]
 

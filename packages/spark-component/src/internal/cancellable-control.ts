@@ -1,12 +1,12 @@
-export interface DefaultBehaviorControl {
+export interface CancellableControl {
   cancel: boolean
 }
 
-export function createDefaultBehaviorControl(): DefaultBehaviorControl {
+export function createCancellableControl(): CancellableControl {
   return { cancel: false }
 }
 
-export function isDefaultBehaviorControl(value: unknown): value is DefaultBehaviorControl {
+export function isCancellableControl(value: unknown): value is CancellableControl {
   return value !== null
     && value !== undefined
     && typeof value === 'object'

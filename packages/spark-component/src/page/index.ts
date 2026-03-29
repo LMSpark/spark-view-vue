@@ -7,12 +7,6 @@
 export { default as SparkPageRenderer } from './renderer/SparkPageRenderer.vue'
 export { usePageDataSet } from './renderer/usePageDataSet.js'
 
-export * as pageContextFiles from './context/index.js'
-export * as pageServiceFiles from './services/index.js'
-export * as pageSandboxFiles from './sandbox/index.js'
-export * as pageActionFiles from './actions/index.js'
-export * as pageBindingFiles from './binding/index.js'
-
 export type {
   UsePageDataSetOptions,
   UsePageDataSetReturn,

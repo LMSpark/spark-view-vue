@@ -1,8 +1,5 @@
 import type { RendererDialogApi } from './types'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 type DialogEmit = (event: 'update:modelValue', value: boolean) => void
 

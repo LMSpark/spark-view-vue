@@ -1,8 +1,5 @@
 import type { RendererDrawerApi } from './types'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 type DrawerEmit = (event: 'update:modelValue', value: boolean) => void
 

@@ -45,8 +45,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkComponent } from '../../../internal'
-import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
-import type { ContainerDocks } from '../../../../core/types'
+import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import RendererStepItem from '../RendererStepItem.vue'
 import type { RendererStepsApi } from './types'

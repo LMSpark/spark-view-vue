@@ -24,7 +24,7 @@
 
 import type { IDataSet } from '@spark-view/spark-data'
 import type { IPageServiceCapability, PageMessageType } from '@spark-view/spark-utils'
-import type { DefaultBehaviorControl } from '../../internal/defaultBehaviorControl'
+import type { CancellableControl } from '../../internal/cancellable-control'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────
 
@@ -206,7 +206,7 @@ export interface ActionExecutionContext {
  * - `cancel = false` → 允许组件默认行为继续执行
  * - `cancel = true`  → 阻止组件默认行为
  */
-export type ActionExecutionControl = DefaultBehaviorControl
+export type ActionExecutionControl = CancellableControl
 
 /** 最小化路由接口，避免直接依赖 vue-router */
 export interface RouterLike {

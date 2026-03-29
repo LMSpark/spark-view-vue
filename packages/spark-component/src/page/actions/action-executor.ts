@@ -23,10 +23,11 @@ import type {
   OpenAction,
 } from './action-descriptor'
 
-import type { CrudResult, DataView, IDataRow } from '@spark-view/spark-data'
+import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { getViewFromRawKey } from '@spark-view/spark-data'
 import type { PageMessageType } from '@spark-view/spark-utils'
 import { extractActionExecutionControl } from './action-control'
+import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../components/containers/support/crud-result-helpers.js'
 
 // ── 视图查找辅助 ──────────────────────────────────────────────────────────
 
@@ -76,21 +77,6 @@ function interpolatePath(template: string, row: IDataRow | null): string {
     const val = row[key]
     return val !== null && val !== undefined ? String(val) : ''
   })
-}
-
-function isCrudResult<T>(value: unknown): value is CrudResult<T> {
-  return value !== null
-    && typeof value === 'object'
-    && 'success' in value
-    && typeof (value as { success?: unknown }).success === 'boolean'
-}
-
-function isCrudSuccess<T>(value: boolean | IDataRow | CrudResult<T>): boolean {
-  return isCrudResult(value) ? value.success : value !== false
-}
-
-function getCrudErrorMessage<T>(value: CrudResult<T>, fallback: string): string {
-  return value.message ?? value.error?.message ?? fallback
 }
 
 // ── 执行引擎 ──────────────────────────────────────────────────────────────

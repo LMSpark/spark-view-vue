@@ -14,8 +14,6 @@
 
 优先入口：
 
-1. `composables.ts`
-2. 需要细分时使用 `containerActionComposables`、`containerContextComposables`、`containerDataComposables`、`containerLayoutComposables`
-3. 查 Vue 组件时优先看 `containerDataComponents` 和 `containerNonDataComponents`
-4. 查和 Vue 分组对齐的组合函数时优先看 `data-components/composables/` 和 `non-data-components/composables/`
-5. 只想记短名字时可用 `containerDataUi`、`containerNonDataUi`、`containerDataUiComposables`、`containerNonDataUiComposables`
+1. `composables.ts`（聚合全部容器层 composable）
+2. 查 Vue 组件时优先看 `containerDataComponents` 和 `containerNonDataComponents`
+3. 查与 Vue 分组对齐的组合函数时优先看 `containerDataComponentComposables` 和 `containerNonDataComponentComposables`

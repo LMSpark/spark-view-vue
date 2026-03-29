@@ -2,14 +2,11 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
 import { createBuiltinActionHandler, getSelectedRows, isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../builtin-actions'
-import { createCancelledCrudResult, useEventDefaults } from '../../support/index.js'
+import { createBaseCrudMethods, useEventDefaults } from '../../support/index.js'
 import type { RendererTableApi } from './types'
+import type { ValueRef } from '../../../shared-types.js'
 
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
-
-interface ValueRef<T> {
-  value: T
-}
 
 interface NativeTableLike {
   clearSelection?: () => void
@@ -36,17 +33,11 @@ type LoadTreeChildrenResult = Awaited<ReturnType<RendererTableApi['loadTreeChild
 type LoadTreePathResult = Awaited<ReturnType<RendererTableApi['loadTreePath']>>
 type MoveNodeResult = Awaited<ReturnType<RendererTableApi['moveNode']>>
 type SearchTreeNestedResult = Awaited<ReturnType<RendererTableApi['searchTreeNested']>>
-type AddRowResult = Awaited<ReturnType<RendererTableApi['addRow']>>
-type EditRowResult = Awaited<ReturnType<RendererTableApi['editRowById']>>
-type RemoveRowResult = Awaited<ReturnType<RendererTableApi['removeRow']>>
 
 type LoadTreeNestedFn = (rootId?: string | number | null, limit?: number, depthLimit?: number) => Promise<NonNullable<LoadTreeNestedResult>>
 type LoadTreePathFn = (id: string | number) => Promise<NonNullable<LoadTreePathResult>>
 type MoveNodeFn = (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<NonNullable<MoveNodeResult>>
 type SearchTreeNestedFn = (keyword: string, limit?: number) => Promise<unknown[]>
-type AddRowFn = (row: Partial<IDataRow>) => Promise<AddRowResult>
-type EditRowFn = (id: string | number, patch: Partial<IDataRow>) => Promise<EditRowResult>
-type RemoveRowFn = (id: string | number) => Promise<RemoveRowResult>
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -127,23 +118,15 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
     'remove-row': {},
   }, options.props)
 
+  const baseMethods = createBaseCrudMethods(options.resolvedView, dispatch)
+
   const tableApi: RendererTableApi = {
-    getDataSource() {
-      return options.resolvedView.value ?? null
-    },
+    ...baseMethods,
     getRows() {
       return options.resolvedView.value?.rows ?? []
     },
-    getCurrentRow() {
-      return options.resolvedView.value?.currentRow ?? null
-    },
     getSelectedRows() {
       return options.resolvedView.value ? getSelectedRows(options.resolvedView.value) : []
-    },
-    async refresh() {
-      const view = options.resolvedView.value
-      if (!view || !hasRemoteListApi(view)) return
-      await view.refresh()
     },
     async query() {
       await options.handleFilterSearch()
@@ -191,42 +174,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       if (!Array.isArray(resultUnknown)) return []
       return sanitizeTreePayload(resultUnknown as SearchTreeNestedResult, view)
     },
-    async addRow(row) {
-      const view = options.resolvedView.value
-      if (!view) return null
-      const { cancel } = await dispatch('add-row', row)
-      if (cancel) return createCancelledCrudResult<IDataRow>('addRow cancelled by business handler') as AddRowResult
-      const addRow = view.addRow.bind(view) as unknown as AddRowFn
-      const resultUnknown: unknown = await addRow(row)
-      return resultUnknown as AddRowResult
-    },
-    async editRowById(id, patch) {
-      const view = options.resolvedView.value
-      if (!view) return false
-      const { cancel } = await dispatch('edit-row', id, patch)
-      if (cancel) return createCancelledCrudResult<IDataRow>('editRowById cancelled by business handler') as EditRowResult
-      const editRowById = view.editRowById.bind(view) as unknown as EditRowFn
-      const resultUnknown: unknown = await editRowById(id, patch)
-      return resultUnknown as EditRowResult
-    },
-    async removeRow(id) {
-      const view = options.resolvedView.value
-      if (!view) return false
-      const { cancel } = await dispatch('remove-row', id)
-      if (cancel) return createCancelledCrudResult<boolean>('removeRow cancelled by business handler') as RemoveRowResult
-      const removeRow = view.removeRow.bind(view) as unknown as RemoveRowFn
-      const resultUnknown: unknown = await removeRow(id)
-      return resultUnknown as RemoveRowResult
-    },
-    appendRow(row) {
-      options.resolvedView.value?.appendRow(row)
-    },
-    updateRowById(id, patch) {
-      return options.resolvedView.value?.updateRowById(id, patch) ?? false
-    },
-    deleteRowById(id) {
-      return options.resolvedView.value?.deleteRowById(id) ?? false
-    },
+    // Override: Table uses selection.setCurrentRow + nativeTableRef sync
     setCurrentRow(row) {
       const targetRow = row ?? null
       options.resolvedView.value?.selection.setCurrentRow(targetRow)

@@ -501,15 +501,14 @@ A: 使用动态导入进行代码分割，避免一次性加载所有组件。
 加入我们的社区，分享你的经验和建议！
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
-import { LOGGER } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-utils'
 
 const { provide, consume, logger } = useSparkComponent({
   type: 'my-grid'
 })
 
-// 提供能力（推荐使用 defineCapability 定义类型安全的能力键）
-sparkProvide(LOGGER, myCustomLogger)  // LOGGER 加 SPARK 能力键
-// logger 已由 useSparkComponent 自动解析，无需手动 sparkConsume
+// 应用层统一提供 APP_SERVICES.logger，组件侧只消费 logger
+provide(APP_SERVICES, { router, logger: pageLogger })
 </script>
 ```
 

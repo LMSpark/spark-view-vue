@@ -3,7 +3,7 @@
  */
 
 import { ref, onUnmounted } from 'vue'
-import { scopeCSS, removeScopedStyle } from '../sandbox/scopeCSS'
+import { scopeCSS, removeScopedStyle } from './scopeCSS'
 
 interface UseCssScopeOptions {
   enableScope?: boolean

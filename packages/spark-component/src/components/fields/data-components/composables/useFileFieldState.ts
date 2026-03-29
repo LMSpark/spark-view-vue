@@ -1,9 +1,6 @@
 import { computed } from 'vue'
 import type { IPageSelectedFile, IPageUploadedFile } from '@spark-view/spark-utils'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 interface UploadBrowseFieldStateOptions {
   displayLabel: ValueRef<string>

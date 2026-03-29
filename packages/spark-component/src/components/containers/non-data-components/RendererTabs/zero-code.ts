@@ -1,9 +1,6 @@
 import type { SparkNode } from '../../../internal'
 import type { RendererTabsApi } from './types'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 type TabsEmit = (event: 'update:modelValue', value: string | number) => void
 

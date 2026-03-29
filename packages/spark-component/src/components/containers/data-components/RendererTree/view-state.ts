@@ -1,15 +1,12 @@
 import { computed, nextTick, watch } from 'vue'
 import { SparkData, type DataView } from '@spark-view/spark-data'
 import type { TreeNode, NativeTreeLike, NativeTreeNodeLike } from './zero-code'
+import type { ValueRef } from '../../../shared-types.js'
 
 interface TreeManagerSeedNode extends Record<string, unknown> {
   id: string | number
   name: string
   parentId?: string | number | null
-}
-
-interface ValueRef<T> {
-  value: T
 }
 
 interface RendererTreeViewStateProps {

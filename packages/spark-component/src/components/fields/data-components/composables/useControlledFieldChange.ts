@@ -1,8 +1,8 @@
 import { useAttrs } from 'vue'
 import { useEventDefaults } from '../../../containers/support/index.js'
-import type { DefaultBehaviorControl } from '../../../../internal/defaultBehaviorControl'
+import type { CancellableControl } from '../../../internal'
 
-export type FieldChangeControl = DefaultBehaviorControl
+export type FieldChangeControl = CancellableControl
 
 interface UseControlledFieldChangeOptions<TValue> {
   getValue: () => TValue

@@ -98,8 +98,7 @@
  */
 import { computed, ref } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
-import { nodeId, type SparkNode } from '../../../internal'
-import type { ContainerDocks } from '../../../../core/types'
+import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { type IDataRow, type DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import { DATA_ROW } from '../../../internal'

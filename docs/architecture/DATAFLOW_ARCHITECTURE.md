@@ -38,12 +38,12 @@ app.mount('#app')
 
 `SparkPlugin.install()` 只做两件事（见 `packages/spark-component/src/plugin.ts`）：
 
-| 操作 | 注入键 | 内容 |
-|------|--------|------|
-| `app.provide(SPARK_REGISTRY_KEY, registry)` | Symbol | 组件注册表（全局单例）|
-| `app.provide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, rootContext)` | Symbol | 根能力上下文（内部 DI）|
+| 操作 | 机制 | 内容 |
+|------|------|------|
+| `app.provide(SPARK_REGISTRY_KEY, registry)` | Vue DI | 组件注册表（全局单例）|
+| `bindAppRootCapabilityContext(app, rootContext)` | 运行时锚点表 | 根能力上下文（WeakMap 绑定到 app._context）|
 
-> **注意**：`SparkPlugin` 不提供任何业务能力（如路由、logger）。这些由应用层的 `PageRenderer` 填充。
+> **注意**：`SparkPlugin` 不提供任何业务能力（如路由、logger）。根上下文通过运行时实例锚点表（非 Vue provide/inject）向子组件传递。这些由应用层的 `PageRenderer` 填充。
 
 ---
 
@@ -225,30 +225,24 @@ r-row 或 r-cell context
 | 键 | 定义包 | 类型 | 提供者 | 消费者 |
 |---|---|---|---|---|
 | `APP_SERVICES` | `spark-utils` | `IAppServicesCapability` | PageRenderer | 任意业务组件 |
-| `LOGGER` | `spark-utils` | `LoggerApi` | 自定义父组件 | `useSparkComponent`（自动）|
 | `PAGE_SERVICE` | `spark-utils` | `IPageServiceCapability` | — | — |
 | `PAGE_DATASET` | `spark-component` | `IDataSet` | PageRenderer | 表容器 |
 | `DATA_SOURCE` | `spark-component` | `IDataSource` | 表容器 | 行/单元格 |
 
-> `LOGGER` 的优先级由 `useSparkComponent` 内部处理：  
-> `sparkConsume(ctx, LOGGER)` → `sparkConsume(ctx, APP_SERVICES).logger` → `fallback console`
+> `useSparkComponent` 返回的 `logger` 统一来自页面层 `APP_SERVICES.logger`；未提供时回退到 `console`。
 
 ---
 
 ## 8. Logger 体系
 
 ```typescript
-import { LOGGER, APP_SERVICES } from '@spark-view/spark-utils'
-
-// 覆盖子树 logger（如需自定义日志行为）
-const { sparkProvide } = useSparkComponent(props.config)
-sparkProvide(LOGGER, myCustomLogger)
+import { APP_SERVICES } from '@spark-view/spark-utils'
 
 // 应用层统一 logger（PageRenderer 已自动注入）
 sparkProvide(APP_SERVICES, { logger: appLogger, router })
 ```
 
-每个组件调用 `logger.info()` 时，`useSparkComponent` 内部的代理会自动解析优先级最高的可用 logger，无需手动消费。
+每个组件调用 `logger.info()` 时，`useSparkComponent` 内部的代理只解析页面层 `APP_SERVICES.logger`，无需手动消费。
 
 ---
 

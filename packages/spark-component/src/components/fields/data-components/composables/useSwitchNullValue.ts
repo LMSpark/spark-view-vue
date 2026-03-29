@@ -1,9 +1,6 @@
 import { computed, watchEffect } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 interface BoundBooleanColumn {
   type: string

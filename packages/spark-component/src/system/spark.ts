@@ -12,11 +12,11 @@
  */
 
 import { defineAsyncComponent } from 'vue'
-import type { CapabilityName } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry.js'
 import { createSparkPlugin } from './plugin.js'
 import type { SparkCapabilityContext, ComponentRegistry, SparkNode } from '../core/types.js'
 import { nodeId, nodeDock, nodeOrder, getDockedChildren, DEFAULT_DOCK, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode } from '../core/types.js'
+import { createSparkCapabilityContext } from '../core/capabilities.js'
 
 /* -------------------------------------------------------------------------- */
 
@@ -150,24 +150,17 @@ export const Spark = {
     const registry = createComponentRegistry()
     let _testCounter = 0
 
-    const rootContext: SparkCapabilityContext = {
-      id: 'test-root',
-      type: 'spark-test-root',
-      capabilities: new Map<CapabilityName, unknown>()
-    }
+    const rootContext = createSparkCapabilityContext({ id: 'test-root', type: 'spark-test-root' })
 
     return {
       registry,
       rootContext,
       createContext(config: Partial<SparkCapabilityContext> & { type: string }, parent?: SparkCapabilityContext): SparkCapabilityContext {
         const parentCtx = parent ?? rootContext
-        const ctx: SparkCapabilityContext = {
+        return createSparkCapabilityContext({
           id: config.id ?? `test-${++_testCounter}`,
           type: config.type,
-          parent: parentCtx,
-          capabilities: new Map<CapabilityName, unknown>()
-        }
-        return ctx
+        }, parentCtx)
       }
     }
   },

@@ -36,8 +36,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { SparkComponentRenderer, getDockedChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
-import type { ContainerDocks, DockDescriptor } from '../../../core/types'
+import { SparkComponentRenderer, getDockedChildren, nodeId, useSparkComponent, type SparkNode, type ContainerDocks, type DockDescriptor } from '../../internal'
 
 /**
  * 横向容器对齐方式。

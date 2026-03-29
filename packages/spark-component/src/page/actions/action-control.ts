@@ -1,7 +1,7 @@
 import {
-  isDefaultBehaviorControl,
-  type DefaultBehaviorControl,
-} from '../../internal/defaultBehaviorControl'
+  isCancellableControl,
+  type CancellableControl,
+} from '../../internal/cancellable-control'
 
 /**
  * 从事件参数中提取默认行为控制器。
@@ -11,10 +11,10 @@ import {
  */
 export function extractActionExecutionControl(
   eventArgs?: readonly unknown[],
-): DefaultBehaviorControl | undefined {
+): CancellableControl | undefined {
   if (!Array.isArray(eventArgs) || eventArgs.length === 0) return undefined
   const last: unknown = eventArgs[eventArgs.length - 1]
-  if (isDefaultBehaviorControl(last)) {
+  if (isCancellableControl(last)) {
     return last
   }
   return undefined

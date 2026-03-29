@@ -7,15 +7,7 @@
  * 3. 不改变现有深路径导入，先补清晰的层级结构
  */
 
-export * as containerActionComposables from './actions/index.js'
-export * as containerContextComposables from './context/index.js'
-export * as containerDataComposables from './data/index.js'
-export * as containerLayoutComposables from './layout/index.js'
-export * as containerDataComponentComposables from './data-components/composables/index.js'
-export * as containerNonDataComponentComposables from './non-data-components/composables/index.js'
-export * as containerDataComponentSupport from './data-components/support/index.js'
-export * as containerDataUiComposables from './data-components/composables/index.js'
-export * as containerNonDataUiComposables from './non-data-components/composables/index.js'
+
 
 // ── 数据源 / 上下文编排 ─────────────────────────────────────────────────────
 export {

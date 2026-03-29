@@ -1,9 +1,6 @@
 import type { SparkNode } from '../../../internal'
 import type { RendererStepsApi } from './types'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 type StepsEmit = (event: 'update:modelValue', value: string | number) => void
 

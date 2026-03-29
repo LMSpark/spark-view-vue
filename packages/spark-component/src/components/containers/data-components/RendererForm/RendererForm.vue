@@ -56,8 +56,7 @@
  */
 import { ref } from 'vue'
 import { SparkComponentRenderer } from '../../../internal'
-import { nodeId, type SparkNode } from '../../../internal'
-import type { ContainerDocks } from '../../../../core/types'
+import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'

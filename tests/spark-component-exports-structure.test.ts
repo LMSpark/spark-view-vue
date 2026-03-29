@@ -11,14 +11,6 @@ import {
   fieldNonDataComponentComposables,
   containerDataComponentSupport,
   fieldDataComponentSupport,
-  containerDataUi,
-  containerNonDataUi,
-  fieldDataUi,
-  fieldNonDataUi,
-  containerDataUiComposables,
-  containerNonDataUiComposables,
-  fieldDataUiComposables,
-  fieldNonDataUiComposables,
 } from '../packages/spark-component/src/index'
 
 function sortedKeys(record: object): string[] {
@@ -161,17 +153,6 @@ describe('spark-component export structure', () => {
         ],
       }
     `)
-  })
-
-  it('keeps short alias namespaces aligned with canonical exports', () => {
-    expect(containerDataUi).toBe(containerDataComponents)
-    expect(containerNonDataUi).toBe(containerNonDataComponents)
-    expect(fieldDataUi).toBe(fieldDataComponents)
-    expect(fieldNonDataUi).toBe(fieldNonDataComponents)
-    expect(containerDataUiComposables).toBe(containerDataComponentComposables)
-    expect(containerNonDataUiComposables).toBe(containerNonDataComponentComposables)
-    expect(fieldDataUiComposables).toBe(fieldDataComponentComposables)
-    expect(fieldNonDataUiComposables).toBe(fieldNonDataComponentComposables)
   })
 
   it('exposes event support utilities from containerComposables', () => {

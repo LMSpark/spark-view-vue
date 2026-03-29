@@ -1,8 +1,7 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { SparkData, getViewFromRawKey, type DataView } from '@spark-view/spark-data'
-import { PAGE_DATASET } from '../../../core/capabilities.js'
-import { useSparkConsume } from '../../internal'
+import { PAGE_DATASET, useSparkConsume } from '../../internal'
 import { useFieldPermission } from '../context/useFieldPermission'
 import type { FieldPermissionProps } from '../context/useFieldPermission'
 

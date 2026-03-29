@@ -457,10 +457,9 @@ onUnmounted(() => gridEvents?.off('rowClick', onRowClick))
 
 ## 8. 日志与调试
 
-`useSparkComponent` 返回的 `logger` 自动按以下优先级解析：
-1. 最近祖先 `sparkProvide(LOGGER, impl)` 覆盖
-2. `APP_SERVICES.logger`（应用层统一提供）
-3. Fallback console
+`useSparkComponent` 返回的 `logger` 统一按以下方式解析：
+1. 页面层 `APP_SERVICES.logger`（应用层统一提供）
+2. Fallback console
 
 ```typescript
 const { logger } = useSparkComponent(props.config)
@@ -471,16 +470,13 @@ logger.warn('数据源未连接，降级展示空状态')
 logger.error('请求失败', { error })
 ```
 
-### 自定义 Logger（子树覆盖）
+### 页面层 Logger（推荐）
 
 ```typescript
-import { LOGGER } from '@spark-view/spark-utils'
-import { createLogger } from '@spark-view/spark-app'
+import { APP_SERVICES } from '@spark-view/spark-utils'
 
-const { sparkProvide } = useSparkComponent(props.config)
-
-// 提供后，所有子孙组件的 logger 将使用此实现
-sparkProvide(LOGGER, createLogger({ prefix: '[MySection]', level: 'warn' }))
+// 由页面根节点统一提供，组件内只消费 logger，不再做子树级覆盖
+sparkProvide(APP_SERVICES, { router, logger: pageLogger })
 ```
 
 ---

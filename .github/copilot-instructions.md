@@ -130,16 +130,15 @@ const {
   consumeEvents,    // (name, handlers) => IEventEmitter | null — 消费并绑定事件
   initialize,       // () => void — onMounted 自动调用
   destroy,          // () => void — onUnmounted 自动调用（清理 children + capabilities）
-  logger,           // LoggerApi — 带优先级的日志代理（见下方说明）
+  logger,           // LoggerApi — 页面层日志代理（见下方说明）
   getComponent,     // (type) => unknown — 从注册表获取组件（markRaw 包装）
   isComponentRegistered, // (type) => boolean
 } = useSparkComponent(props.config)
 ```
 
-**logger 优先级**（无需手动 consume，代理自动解析）：
-1. `LOGGER` 能力键（最近祖先 `provide(LOGGER, impl)`）
-2. `APP_SERVICES.logger`（应用层统一提供）
-3. fallback console
+**logger 解析**（无需手动 consume，代理自动解析）：
+1. `APP_SERVICES.logger`（页面 / 应用层统一提供）
+2. fallback console
 
 ## Spark 命名空间 API
 
@@ -652,7 +651,7 @@ function RenderUserSwitch() {
 | 机制 | 实现 | 用途 |
 |------|------|------|
 | **SPARK 能力系统** | `ctx.capabilities` Map + `lookup()` 走 parent 链 | 所有业务能力 |
-| **Vue DI（仅基础设施）** | `app.provide()` / `inject()` | 仅 `SPARK_REGISTRY_KEY`（注册表）+ `SPARK_PARENT_CONTEXT_KEY`（根上下文） |
+| **Vue DI（仅基础设施）** | `app.provide()` / `inject()` | 仅 `SPARK_REGISTRY_KEY`（注册表） |
 
 **重要**：`useSparkComponent` 的 `provide()` / `consume()` 是 **SPARK 能力系统**，不是 Vue 的 `provide/inject`。
 
@@ -698,7 +697,7 @@ interface IDataSource {
 ```
 SparkPlugin.install()
   rootContext.capabilities = Map(空)         ← 应用层通过 APP_SERVICES 填充
-  Vue DI: SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY
+  Vue DI: SPARK_REGISTRY_KEY
     ↓
 PageRenderer
   provide(APP_SERVICES, { router, logger })   ← SPARK 能力，不是 Vue DI
@@ -1135,9 +1134,6 @@ const { consume, provide, logger } = useSparkComponent(props.config)
 const services = consume(APP_SERVICES)
 services?.router?.push('/home')
 // logger 自动感知 APP_SERVICES.logger，无需手动 consume
-
-// 覆盖当前子树的 logger
-provide(LOGGER, myCustomLogger)
 ```
 
 ### spark-data（数据空间）
@@ -1742,7 +1738,7 @@ Step 5: taskkill /PID /T /F                → 关闭 Java
 ## Performance notes ⚡
 - **`spark-data` 无框架依赖**——DataView 通过 `DataView.wrapInstance` 静态钩子让框架层注入包装（SparkPlugin 中设为 `shallowReactive()`，仅追踪顶层属性）
 - `useSparkComponent` 使用 `shallowReactive`（顶层响应式）+ `markRaw(capabilities)`、`markRaw(children)`，大幅减少 Vue 响应系统开销
-- logger 解析带缓存（`_loggerCache`），`provide(LOGGER/APP_SERVICES, ...)` 时自动失效
+- logger 统一解析页面层 `APP_SERVICES.logger`，缺失时回退到 console
 - 组件 ID 使用全局单调计数器（`spark-${++_idCounter}`），比 `Date.now()+random` 更快且 SSR 友好
 - `getAll()` 直接返回内部 Map 引用（`ReadonlyMap`）：O(1)，无拷贝
 - `SparkComponentRenderer` 不再调用 `useSparkComponent()`，直接 `inject(SPARK_REGISTRY_KEY)`，消除渲染器中间 context 节点（上下文链：`root → business`，而非 `root → renderer → business`）

@@ -44,8 +44,7 @@
  */
 import { SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
-import { nodeId, type SparkNode } from '../../../internal'
-import type { ContainerDocks } from '../../../../core/types'
+import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'

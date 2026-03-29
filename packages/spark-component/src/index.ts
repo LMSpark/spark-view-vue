@@ -21,7 +21,7 @@ export type { UseSparkComponentReturn, UseSparkCapabilityReaderReturn, UseSparkC
 export { createSparkPlugin, createComponentRegistry, getGlobalRegistry } from './system/index.js'
 export type { SparkPluginOptions } from './system/index.js'
 
-// ── 5. 核心类型 ──
+// ── 4. 核心类型 ──
 export type {
   CapabilityName,
   SparkCapabilityContext,
@@ -38,9 +38,9 @@ export type {
   ComponentRegistry,
   LoggerApi
 } from './core/index.js'
-export type { DefaultBehaviorControl } from './internal/defaultBehaviorControl.js'
+export type { CancellableControl } from './internal/cancellable-control.js'
 
-// ── 6. DI Keys + SparkNode 结构常量 ──
+// ── 5. DI Keys + SparkNode 结构常量 ──
 export {
   SPARK_REGISTRY_KEY,
   SPARK_NODE_STRUCT_KEYS,
@@ -52,7 +52,7 @@ export {
   getDockedChildren,
 } from './core/index.js'
 
-// ── 6b. 数据 + Renderer 能力键 ──
+// ── 6. 数据 + Renderer 能力键 ──
 export {
   PAGE_DATASET,
   DATA_SOURCE,
@@ -92,27 +92,12 @@ export * as containerNonDataComponents from './components/containers/non-data-co
 export * as containerDataComponentComposables from './components/containers/data-components/composables/index.js'
 export * as containerNonDataComponentComposables from './components/containers/non-data-components/composables/index.js'
 export * as containerDataComponentSupport from './components/containers/data-components/support/index.js'
-export * as containerDataUi from './components/containers/data-components/index.js'
-export * as containerNonDataUi from './components/containers/non-data-components/index.js'
-export * as containerDataUiComposables from './components/containers/data-components/composables/index.js'
-export * as containerNonDataUiComposables from './components/containers/non-data-components/composables/index.js'
-export * as containerActionComposables from './components/containers/actions/index.js'
-export * as containerContextComposables from './components/containers/context/index.js'
-export * as containerDataComposables from './components/containers/data/index.js'
-export * as containerLayoutComposables from './components/containers/layout/index.js'
 export * as fieldComposables from './components/fields/composables.js'
 export * as fieldDataComponents from './components/fields/data-components/index.js'
 export * as fieldNonDataComponents from './components/fields/non-data-components/index.js'
 export * as fieldDataComponentComposables from './components/fields/data-components/composables/index.js'
 export * as fieldNonDataComponentComposables from './components/fields/non-data-components/composables/index.js'
 export * as fieldDataComponentSupport from './components/fields/data-components/support/index.js'
-export * as fieldDataUi from './components/fields/data-components/index.js'
-export * as fieldNonDataUi from './components/fields/non-data-components/index.js'
-export * as fieldDataUiComposables from './components/fields/data-components/composables/index.js'
-export * as fieldNonDataUiComposables from './components/fields/non-data-components/composables/index.js'
-export * as fieldContextComposables from './components/fields/context/index.js'
-export * as fieldOptionComposables from './components/fields/options/index.js'
-export * as fieldActionComposables from './components/fields/actions/index.js'
 
 export type {
   UsePageDataSetOptions,
@@ -125,7 +110,7 @@ export type {
   PageRendererProps,
 } from './page/index.js'
 
-// ── 8. 内置 Renderer 容器 + 字段组件 ──
+// ── 8. 内置 Renderer 容器 + 字段组件（注册） ──
 export {
   // 容器
   RendererTable,

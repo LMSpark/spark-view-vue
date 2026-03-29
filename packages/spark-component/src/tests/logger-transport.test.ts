@@ -1,10 +1,23 @@
 ﻿import { describe, it, expect } from 'vitest'
-import type { SparkCapabilityContext, LoggerApi } from '@spark-view/spark-component'
+import { APP_SERVICES, type IAppServicesCapability, type LoggerApi } from '@spark-view/spark-utils'
+import type { SparkCapabilityContext } from '@spark-view/spark-component'
 
-describe('file transport (replaced by custom provider test)', () => {
-  it('uses context-level logger provider', () => {
+function createAppServices(logger: LoggerApi): IAppServicesCapability {
+  return {
+    router: {
+      push: async () => undefined,
+      replace: async () => undefined,
+      back: () => undefined,
+      currentRoute: undefined,
+    },
+    logger,
+  }
+}
+
+describe('page logger transport payload', () => {
+  it('passes structured payload through APP_SERVICES.logger', () => {
     let written = ''
-    const loggerImpl = {
+    const loggerImpl: LoggerApi = {
       info: (..._args: unknown[]) => { written += JSON.stringify(_args) },
       debug: (..._args: unknown[]) => {},
       warn: (..._args: unknown[]) => {},
@@ -14,11 +27,11 @@ describe('file transport (replaced by custom provider test)', () => {
     const ctx: SparkCapabilityContext = {
       id: 'ctx-transport',
       type: 'test',
-      capabilities: new Map([['logger', loggerImpl]])
+      capabilities: new Map([[APP_SERVICES, createAppServices(loggerImpl)]])
     }
 
-    const logger = ctx.capabilities.get('logger') as LoggerApi
-    logger.info('hello', { a: 1 })
+    const appServices = ctx.capabilities.get(APP_SERVICES) as IAppServicesCapability
+    appServices.logger.info('hello', { a: 1 })
 
     expect(written).toContain('hello')
   })

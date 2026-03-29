@@ -1,10 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { SparkData, type DataView, type IDataRow } from '@spark-view/spark-data'
-import type { ContainerDocks } from '../../../../core/types'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ContainerDocks } from '../../../internal'
+import type { ValueRef } from '../../../shared-types.js'
 
 interface RendererTableViewStateProps {
   docks?: ContainerDocks

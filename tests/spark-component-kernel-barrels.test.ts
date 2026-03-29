@@ -49,11 +49,11 @@ describe('spark-component kernel barrels', () => {
   it('keeps internal convenience barrel grouped by domain', () => {
     expect(sortedKeys(InternalApi)).toMatchInlineSnapshot(`
       [
-        "componentFiles",
-        "coreFiles",
-        "INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY",
-        "pageFiles",
-        "systemFiles",
+        "bindAppRootCapabilityContext",
+        "bindCapabilityContextOwner",
+        "resolveParentCapabilityContext",
+        "unbindAppRootCapabilityContext",
+        "unbindCapabilityContextOwner",
       ]
     `)
   })

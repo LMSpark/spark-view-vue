@@ -17,7 +17,11 @@ describe('spark-component public only root api', () => {
       'pageSandboxFiles',
       'pageActionFiles',
       'pageBindingFiles',
-      'INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY',
+      'bindAppRootCapabilityContext',
+      'unbindAppRootCapabilityContext',
+      'bindCapabilityContextOwner',
+      'unbindCapabilityContextOwner',
+      'resolveParentCapabilityContext',
     ]
 
     for (const key of forbiddenKeys) {
@@ -40,8 +44,8 @@ describe('spark-component public only root api', () => {
     }
   })
 
-  it('does expose shared default behavior control type from public root', () => {
+  it('does expose shared cancellable control type from public root', () => {
     const source = readFileSync(ROOT_INDEX_FILE, 'utf8')
-    expect(source).toContain('DefaultBehaviorControl')
+    expect(source).toContain('CancellableControl')
   })
 })

@@ -10,7 +10,7 @@ import type { InjectionKey } from 'vue'
 import type { ICapabilityContext } from '@spark-view/spark-utils'
 
 // 能力名称类型（从 spark-utils 重新导出）
-export type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
+export type { CapabilityName } from '@spark-view/spark-utils'
 
 // ============================================================================
 // 组件定义（注册表使用）

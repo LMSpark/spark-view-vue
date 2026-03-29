@@ -21,3 +21,13 @@ export type {
   EventDefaultDeclaration,
   EventDispatcher,
 } from './useEventDefaults.js'
+
+export {
+  isCrudResult,
+  isCrudSuccess,
+  getCrudErrorMessage,
+} from './crud-result-helpers.js'
+
+export type { BaseContainerApi } from './base-container-api.js'
+
+export { createBaseCrudMethods } from './base-crud-methods.js'

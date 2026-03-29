@@ -13,6 +13,7 @@
 import type { SparkNode } from '../internal'
 import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'
 import type { PageMessageType, IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
+import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from './support/crud-result-helpers.js'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────
 
@@ -133,21 +134,6 @@ function resolveConfiguredText(record: Record<string, unknown>, key: string, fal
   const raw = record[key]
   if (typeof raw === 'string') return raw.trim()
   return ''
-}
-
-function isCrudResult<T>(value: unknown): value is CrudResult<T> {
-  return value !== null
-    && typeof value === 'object'
-    && 'success' in value
-    && typeof (value as { success?: unknown }).success === 'boolean'
-}
-
-function isCrudSuccess<T>(value: boolean | IDataRow | CrudResult<T>): boolean {
-  return isCrudResult(value) ? value.success : value !== false
-}
-
-function getCrudErrorMessage<T>(value: CrudResult<T>, fallback: string): string {
-  return value.message ?? value.error?.message ?? fallback
 }
 
 // ── 动作名校验 ────────────────────────────────────────────────────────────

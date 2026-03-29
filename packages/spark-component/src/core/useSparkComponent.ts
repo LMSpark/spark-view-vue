@@ -1,100 +1,63 @@
 /**
- * useSparkComponent - SPARK 组件核心 Composable
- *
- * 提供组件上下文管理、能力系统（sparkProvide/sparkConsume）、事件系统和生命周期控制。
- *
- * @module composables/useSparkComponent
+ * 文件概述：
+ * - 统一封装 Spark 组件的上下文创建、能力提供/消费、事件订阅与生命周期清理。
+ * - 将 Vue 当前实例的运行时输入归一化为 SparkNode，并接入 Spark 自己的上下文树。
+ * - 能力上下文的创建、消费和本地 provider 读取统一收口于 capabilities.ts，本文件只负责 Vue 运行时桥接。
+ * - 组件 logger 统一取页面层 APP_SERVICES.logger；不再支持通过局部 LOGGER 覆盖形成子树级日志分叉。
+ * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
-
-import { computed, onMounted, onUnmounted, inject, provide as vueProvide, getCurrentInstance, markRaw } from 'vue'
-import { sparkProvide as rawSparkProvide, sparkConsume as rawSparkConsume, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
-import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
+import { computed, onMounted, onUnmounted, inject, getCurrentInstance, markRaw } from 'vue'
+import { sparkProvide as rawSparkProvide, normalizeKey, createEventEmitter, APP_SERVICES } from '@spark-view/spark-utils'
+import type { IEventEmitter, CapabilityKey, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode, ComponentRegistry } from './types.js'
 import { SPARK_REGISTRY_KEY, nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
-import { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from '../internal/capability-context.js'
-import { DATA_ROW, PAGE_COMPONENT_REGISTRY } from './capabilities.js'
-import type { PageComponentRegistry } from './capabilities.js'
+import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
+import {
+  DATA_ROW,
+  PAGE_COMPONENT_REGISTRY,
+  consumeSparkCapability,
+  createSparkCapabilityConsumer,
+  createSparkCapabilityContext,
+  getSparkCapabilityProvider,
+} from './capabilities.js'
+import type { PageComponentRegistry, SparkCapabilityConsumer } from './capabilities.js'
 
-/* -------------------------------------------------------------------------- */
+// 基础类型：约束当前文件内部的运行时实例、消费函数和事件解绑记录。
+type RuntimeInstance = ReturnType<typeof getCurrentInstance>
+type EventSubscription = {
+  emitter: IEventEmitter
+  event: string
+  handler: (...args: unknown[]) => void
+}
 
-/** useSparkComponent 返回值接口 */
+// 对外返回类型：定义组件上下文 API 与轻量消费 API。
 export interface UseSparkComponentReturn {
-  /** 纯能力上下文 */
   context: SparkCapabilityContext
-  /** 父能力上下文；子组件应优先通过该字段获取父级，而非直接读取 context.parent */
   parentContext: SparkCapabilityContext | null
-  /** 父组件类型；无父级时为 null */
   parentType: string | null
-  /** 可见性（基于 config.visible，默认 true） */
   isVisible: { readonly value: boolean }
-  /** 禁用状态（基于 config.disabled，默认 false） */
   isDisabled: { readonly value: boolean }
-
-  /**
-   * 提供能力实现。
-   *
-   * 重载顺序（TypeScript 按最具体优先匹配）：
-   * 1. `CapabilityTypeMap` 字符串键 → 对应类型（declaration merging 可扩展）
-   * 2. `CapabilityKey<T>` 符号键 → 类型推断
-   * 3. 任意 string | symbol → unknown（fallback）
-   */
   sparkProvide: {
     <K extends keyof CapabilityTypeMap>(name: K, implementation: CapabilityTypeMap[K]): void
     <T>(name: CapabilityKey<T>, implementation: T): void
     (name: string | symbol, implementation?: unknown): void
   }
-  /** 提供事件能力，返回 EventEmitter */
   provideEvents: (name?: string | symbol) => IEventEmitter
-  /** 获取当前 context 的本地能力（不向父级查找） */
   getProvider: (name: string | symbol) => unknown
-
-  /**
-   * 消费能力（沿 parent 链向上查找，未找到返回 null）。
-   *
-   * 重载顺序：
-   * 1. `CapabilityTypeMap` 字符串键 → 对应类型 | null（无需 import 符号对象）
-   * 2. `CapabilityKey<T>` 符号键 → T | null
-   * 3. 任意 string | symbol → unknown（fallback）
-   *
-   * @example
-   * // 按字符串名称消费，类型来自 CapabilityTypeMap declaration merging
-  * const svc = sparkConsume('spark:capability:app-services')
-   * // svc: IAppServicesCapability | null
-   */
-  sparkConsume: {
-    <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
-    <T>(name: CapabilityKey<T>): T | null
-    (name: string | symbol): unknown
-  }
-  /** 消费事件能力并批量绑定处理器 */
+  sparkConsume: SparkCapabilityConsumer
   consumeEvents: (name: string | symbol, handlers: Record<string, (...args: unknown[]) => void>) => IEventEmitter | null
-
-  /** 初始化（onMounted 自动调用） */
   initialize: () => void
-  /** 清理（onUnmounted 自动调用） */
   destroy: () => void
-
-  /** 日志器（带 type 前缀） */
   logger: LoggerApi
-  /** 从注册表获取组件（markRaw 包装） */
   getComponent: (type: string) => unknown
-  /** 检查组件是否已注册 */
   isComponentRegistered: (type: string) => boolean
-  /** 向 PageComponentRegistry 注册组件 API（cleanup 由 destroy 自动处理） */
   registerApi: (api: unknown) => void
 }
 
-/** 轻量能力消费结果 */
 export interface UseSparkCapabilityReaderReturn {
-  /** 最近父级能力上下文 */
   parentContext: SparkCapabilityContext | null
-  /** 最近父级的组件类型 */
   parentType: string | null
-  sparkConsume: {
-    <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
-    <T>(name: CapabilityKey<T>): T | null
-    (name: string | symbol): unknown
-  }
+  sparkConsume: SparkCapabilityConsumer
 }
 
 export interface UseSparkComponentOptions {
@@ -102,13 +65,6 @@ export interface UseSparkComponentOptions {
   parentContext?: SparkCapabilityContext
 }
 
-/**
- * useSparkComponent 入参类型 — 兼容 Vue 组件 props 和手动构造的 SparkNode。
- *
- * Vue 的 `defineProps` / `withDefaults` 会将未传入的 optional 字段解析为 `undefined`，
- * 在 `exactOptionalPropertyTypes: true` 下 `SparkNode`（optional ≠ undefined）无法直接接收。
- * 本类型在 SparkNode 基础上允许 optional 字段为 `undefined`，并开放额外键（组件自有 props）。
- */
 export type SparkNodeInput = {
   type: string
   props?: Record<string, unknown> | undefined
@@ -118,17 +74,19 @@ export type SparkNodeInput = {
   order?: number | undefined
 }
 
-/* -------------------------------------------------------------------------- */
-
-/**
- * SPARK 组件核心 Composable
- *
- * 每个 SPARK 组件在 setup 中调用一次，获得上下文、能力管理和生命周期控制。
- */
-
-/** 全局单调递增 ID 计数器，替代 Date.now()+random（更快、确定、SSR 友好） */
+// 运行时常量：本地组件 id 计数器与开发态日志兜底实现。
 let _idCounter = 0
 
+const DEV_FALLBACK_LOGGER: LoggerApi = {
+  debug: () => undefined,
+  info: import.meta.env.DEV ? (...args: unknown[]) => console.info(...args) : () => undefined,
+  warn: import.meta.env.DEV ? (...args: unknown[]) => console.warn(...args) : () => undefined,
+  error: import.meta.env.DEV ? (...args: unknown[]) => console.error(...args) : () => undefined,
+}
+
+// ===== 配置归一化 =====
+
+// 配置读取：过滤 Vue vnode 的内部字段，只保留需要合入 SparkNode 的运行时属性。
 function isVueListenerProp(key: string): boolean {
   return /^on[A-Z]/.test(key) || key === 'on'
 }
@@ -141,7 +99,7 @@ function isVueInternalVNodeProp(key: string): boolean {
     || key.startsWith('onVnode')
 }
 
-function readRuntimeVNodeProps(instance: ReturnType<typeof getCurrentInstance>): Record<string, unknown> {
+function readRuntimeVNodeProps(instance: RuntimeInstance): Record<string, unknown> {
   const rawProps = instance?.vnode.props
   if (!rawProps || typeof rawProps !== 'object') return {}
 
@@ -153,7 +111,7 @@ function readRuntimeVNodeProps(instance: ReturnType<typeof getCurrentInstance>):
   return runtimeProps
 }
 
-function buildEffectiveConfig(instance: ReturnType<typeof getCurrentInstance>, fallbackConfig?: SparkNodeInput): SparkNode {
+function buildEffectiveConfig(instance: RuntimeInstance, fallbackConfig?: SparkNodeInput): SparkNode {
   const runtimeProps = readRuntimeVNodeProps(instance)
   const base = fallbackConfig === undefined
     ? ({ type: 'unknown' } as SparkNode & Record<string, unknown>)
@@ -173,38 +131,79 @@ function buildEffectiveConfig(instance: ReturnType<typeof getCurrentInstance>, f
   return normalizeSparkNode(base, 'unknown')
 }
 
-function resolveParentAccess(overrideParentContext?: SparkCapabilityContext): Omit<UseSparkCapabilityReaderReturn, 'sparkConsume'> {
-  const parentContext = inject(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, null)
-  const resolvedParentContext = overrideParentContext ?? parentContext
+function readConfigProp(instance: RuntimeInstance, fallbackConfig: SparkNodeInput | undefined, propName: string): unknown {
+  return nodeInputProp(buildEffectiveConfig(instance, fallbackConfig), propName)
+}
+
+// ===== 上下文与能力辅助 =====
+
+// 上下文解析：能力消费只依赖 Spark 自己的上下文树，不依赖 Vue provide/inject 传父链。
+function resolveParentAccess(
+  currentOwner: SparkRuntimeOwner | null,
+  overrideParentContext?: SparkCapabilityContext,
+): Omit<UseSparkCapabilityReaderReturn, 'sparkConsume'> {
+  const resolvedParentContext = resolveParentCapabilityContext(currentOwner, overrideParentContext)
   return {
     parentContext: resolvedParentContext,
     parentType: resolvedParentContext?.type ?? null,
   }
 }
 
-function createSparkConsume(
-  parentContext: SparkCapabilityContext | null,
-  fallbackContext?: SparkCapabilityContext,
-): UseSparkCapabilityReaderReturn['sparkConsume'] {
-  return ((name: string | symbol): unknown => {
-    const lookupContext = fallbackContext ?? parentContext
-    if (!lookupContext) return null
-    const impl = rawSparkConsume(lookupContext, name)
-    return impl !== undefined ? impl : null
-  }) as UseSparkCapabilityReaderReturn['sparkConsume']
+function registerPageComponentInstance(
+  registry: PageComponentRegistry | null | undefined,
+  context: SparkCapabilityContext,
+  props?: Record<string, unknown>,
+): void {
+  if (!registry) return
+
+  const instanceEntry = props === undefined || Object.keys(props).length === 0
+    ? { id: context.id, type: context.type }
+    : { id: context.id, type: context.type, props }
+
+  registry.registerInstance(instanceEntry)
 }
+
+// ===== 日志辅助 =====
+
+function isLoggerApi(value: unknown): value is LoggerApi {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  const candidate = value as Partial<LoggerApi>
+  return typeof candidate.debug === 'function'
+    && typeof candidate.info === 'function'
+    && typeof candidate.warn === 'function'
+    && typeof candidate.error === 'function'
+}
+
+// 日志解析：统一取页面层 APP_SERVICES.logger，缺失时回退到开发日志。
+function createPageLoggerProxy(context: SparkCapabilityContext): LoggerApi {
+  const resolveLogger = (): LoggerApi => {
+    const appServices = consumeSparkCapability<IAppServicesCapability>(context, APP_SERVICES)
+    return isLoggerApi(appServices?.logger) ? appServices.logger : DEV_FALLBACK_LOGGER
+  }
+
+  return {
+    debug: (...args: unknown[]) => resolveLogger().debug(...args),
+    info: (...args: unknown[]) => resolveLogger().info(...args),
+    warn: (...args: unknown[]) => resolveLogger().warn(...args),
+    error: (...args: unknown[]) => resolveLogger().error(...args),
+  }
+}
+
+// ===== 对外入口 =====
 
 /**
  * 轻量能力消费 — 仅沿 parent 链查找能力，不创建自身上下文。
- *
- * 适用于只需读取祖先能力的工具 composable（useFieldOptions、useResolvedFieldContext 等）。
  */
 export function useSparkConsume(): UseSparkCapabilityReaderReturn {
-  const { parentContext, parentType } = resolveParentAccess()
+  const currentOwner = getCurrentInstance() as SparkRuntimeOwner | null
+  const { parentContext, parentType } = resolveParentAccess(currentOwner)
   return {
     parentContext,
     parentType,
-    sparkConsume: createSparkConsume(parentContext),
+    sparkConsume: createSparkCapabilityConsumer(parentContext),
   }
 }
 
@@ -212,103 +211,35 @@ export function useSparkComponent(
   fallbackConfig?: SparkNodeInput,
   options?: UseSparkComponentOptions
 ): UseSparkComponentReturn {
-
-  // ── 依赖注入 ──
-
-  const { parentContext, parentType } = resolveParentAccess(options?.parentContext)
-
-  const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
+  // 基础上下文：读取当前实例、配置和父上下文，组装当前 Spark 上下文。
   const currentInstance = getCurrentInstance()
-
-  // 组件配置来自 fallbackConfig 参数（调用方在 setup 中传入，如 { type: 'r-table' }）。
-  // SparkComponentRenderer 通过 v-bind="componentProps" 传递 SparkNode.props（含 id），
-  // ID 已在绑定阶段（bindSparkRuleEvents）按组件类型自动分配并去重。
+  const currentOwner = currentInstance as SparkRuntimeOwner | null
+  const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
   const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
-  const resolvedType = config.type
+  const contextId = nodeId(config) ?? `spark-${++_idCounter}`
+  const { parentContext, parentType } = resolveParentAccess(currentOwner, options?.parentContext)
+  const context = createSparkCapabilityContext({ id: contextId, type: config.type }, parentContext)
 
-  const resolvedId = nodeId(config) ?? `spark-${++_idCounter}`
-
-  // ── 上下文创建 ──
-  // 纯能力上下文不再进入 Vue 响应系统，仅保留能力链遍历所需字段。
-
-  const context: SparkCapabilityContext = {
-    id: resolvedId,
-    type: resolvedType,
-    capabilities: new Map<CapabilityName, unknown>(),
-  }
-  if (parentContext !== null) {
-    context.parent = parentContext
+  if (currentInstance !== null) {
+    bindCapabilityContextOwner(currentInstance as object, context)
   }
 
-  // 向子组件提供当前 context（能力链 parent 发现的基础设施）
-  vueProvide(INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY, context)
+  // 页面注册：让页面级注册表可以按 id/type 找到当前组件实例。
+  const pageComponentRegistry = consumeSparkCapability<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
+  registerPageComponentInstance(pageComponentRegistry, context, config.props)
 
-  // ── 页面级实例登记（可选） ──
-  const pageComponentRegistry = rawSparkConsume<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
-  if (pageComponentRegistry) {
-    const componentProps = config.props ?? {}
-    const instanceEntry = Object.keys(componentProps).length === 0
-      ? { id: context.id, type: context.type }
-      : { id: context.id, type: context.type, props: componentProps }
-    pageComponentRegistry.registerInstance(instanceEntry)
+  // 可视状态：统一从归一化后的配置读取 visible 和 disabled。
+  const logger = createPageLoggerProxy(context)
+  const readNormalizedConfigProp = (propName: string): unknown => {
+    return readConfigProp(currentInstance, fallbackConfig, propName)
   }
+  const isVisible = computed(() => readNormalizedConfigProp('visible') !== false)
+  const isDisabled = computed(() => readNormalizedConfigProp('disabled') === true)
 
-  // ── Logger（从能力链查找，带一次性缓存） ──
-  //
-  // 缓存策略：首次成功 sparkConsume 后缓存结果，避免每次日志调用都遍历 parent 链。
-  // 失效时机：调用 sparkProvide(LOGGER, ...) 或 sparkProvide(APP_SERVICES, ...) 时主动置 null。
-  // Late-binding 边界：父组件在 onMounted 中 sparkProvide(LOGGER) 时，
-  // 若本组件的 sparkProvide() 未被触发则缓存不失效（已被这个父 sparkProvide 填充的子组件不受影响）。
-  // 对于典型使用场景（setup 期间提供能力）此策略覆盖 100%；极端晚绑定下退化为重查一次。
-
-  const fallbackLogger: LoggerApi = {
-    debug: () => undefined,
-    info: import.meta.env.DEV ? (...args: unknown[]) => console.info(...args) : () => undefined,
-    warn: import.meta.env.DEV ? (...args: unknown[]) => console.warn(...args) : () => undefined,
-    error: import.meta.env.DEV ? (...args: unknown[]) => console.error(...args) : () => undefined,
-  }
-
-  let _loggerCache: LoggerApi | null = null
-
-  const resolveLogger = (): LoggerApi => {
-    if (_loggerCache !== null) return _loggerCache
-    // 1. 优先查找 LOGGER 能力键（最近祖先覆盖，实现组件子树级日志替换）
-    const loggerImpl = rawSparkConsume<LoggerApi>(context, LOGGER)
-    if (loggerImpl && typeof loggerImpl === 'object' && 'info' in loggerImpl) {
-      _loggerCache = loggerImpl
-      return loggerImpl
-    }
-    // 2. 次选 APP_SERVICES.logger（应用层统一提供）
-    const appServices = rawSparkConsume<IAppServicesCapability>(context, APP_SERVICES)
-    if (appServices?.logger) {
-      _loggerCache = appServices.logger
-      return appServices.logger
-    }
-    // fallback 不缓存：保留重查机会（等待父级 sparkProvide）
-    return fallbackLogger
-  }
-
-  const logger: LoggerApi = {
-    debug: (...args: unknown[]) => resolveLogger().debug(...args),
-    info:  (...args: unknown[]) => resolveLogger().info(...args),
-    warn:  (...args: unknown[]) => resolveLogger().warn(...args),
-    error: (...args: unknown[]) => resolveLogger().error(...args)
-  }
-
-  // ── 计算属性 ──
-
-  const isVisible = computed(() => nodeInputProp(buildEffectiveConfig(currentInstance, fallbackConfig), 'visible') !== false)
-  const isDisabled = computed(() => nodeInputProp(buildEffectiveConfig(currentInstance, fallbackConfig), 'disabled') === true)
-
-  // ── 能力提供 ──
-
+  // 能力提供：向当前上下文写入能力。
   function sparkProvide(name: string | symbol, implementation?: unknown): void {
     rawSparkProvide(context, name, implementation)
     const key = normalizeKey(name)
-    // 当 LOGGER 或 APP_SERVICES 被更新时，使 logger 缓存失效
-    if (key === LOGGER || key === APP_SERVICES) {
-      _loggerCache = null
-    }
     if (import.meta.env.DEV && key !== DATA_ROW) {
       logger.debug(`[spark] provided: ${String(name)}`)
     }
@@ -320,12 +251,9 @@ export function useSparkComponent(
     return emitter
   }
 
-  // ── 事件订阅追踪（防止内存泄漏） ──
-
-  const _eventSubscriptions: Array<{ emitter: IEventEmitter; event: string; handler: (...args: unknown[]) => void }> = []
-  const consumeCapability = createSparkConsume(parentContext, context)
-
-  // ── 能力消费 ──
+  // 能力消费：优先读取当前上下文，再按父链向上查找。
+  const eventSubscriptions: EventSubscription[] = []
+  const consumeCapability = createSparkCapabilityConsumer(parentContext, context)
 
   function sparkConsume(name: string | symbol): unknown {
     const impl = consumeCapability(name)
@@ -340,11 +268,11 @@ export function useSparkComponent(
     name: string | symbol,
     handlers: Record<string, (...args: unknown[]) => void>
   ): IEventEmitter | null {
-    const emitter = rawSparkConsume<IEventEmitter>(context, name)
+    const emitter = consumeSparkCapability<IEventEmitter>(context, name)
     if (emitter) {
       for (const [event, handler] of Object.entries(handlers)) {
         emitter.on(event, handler)
-        _eventSubscriptions.push({ emitter, event, handler })
+        eventSubscriptions.push({ emitter, event, handler })
       }
       return emitter
     }
@@ -354,14 +282,11 @@ export function useSparkComponent(
     return null
   }
 
-  // ── 能力查找 ──
-
   function getProvider(name: string | symbol): unknown {
-    return context.capabilities.get(normalizeKey(name))
+    return getSparkCapabilityProvider(context, name)
   }
 
-  // ── 注册表访问 ──
-
+  // 组件查询：从注册表读取组件定义与注册状态，不做实例化和额外包装。
   function getComponent(type: string): unknown {
     if (!registry) return undefined
     const def = registry.get(type)
@@ -373,14 +298,13 @@ export function useSparkComponent(
     return registry?.has(type) ?? false
   }
 
-  // ── 生命周期 ──
-
-  let _initialized = false
+  // 生命周期：初始化时记录调试信息，销毁时统一回收事件、注册表和 owner 绑定。
+  let initialized = false
   const instanceUid = currentInstance?.uid
 
   const initialize = () => {
-    if (_initialized) return
-    _initialized = true
+    if (initialized) return
+    initialized = true
     if (import.meta.env.DEV) {
       const uidSuffix = instanceUid === undefined ? '' : `#uid:${instanceUid}`
       logger.debug(`[spark] init: ${context.type} (${context.id})${uidSuffix}`)
@@ -388,32 +312,31 @@ export function useSparkComponent(
   }
 
   const destroy = () => {
-    _initialized = false
-    // 清理所有通过 consumeEvents 注册的事件监听（防止内存泄漏）
-    for (const sub of _eventSubscriptions) {
+    initialized = false
+    for (const sub of eventSubscriptions) {
       sub.emitter.off(sub.event, sub.handler)
     }
-    _eventSubscriptions.length = 0
+    eventSubscriptions.length = 0
 
     pageComponentRegistry?.unregisterInstance(context.id)
     context.capabilities.clear()
+    if (currentInstance !== null) {
+      unbindCapabilityContextOwner(currentInstance as object)
+    }
   }
 
-  onMounted(() => initialize())
-  onUnmounted(() => destroy())
+  onMounted(initialize)
+  onUnmounted(destroy)
 
-  // ── API 注册 ──
-
+  // 页面 API 注册：供页面级查询和调试能力按 id/type 拿到组件 API。
   function registerApi(api: unknown): void {
     if (!pageComponentRegistry) return
     pageComponentRegistry.registerApi({ id: context.id, type: context.type, api })
   }
 
-  // ── 返回值 ──
-
   return {
     context,
-    parentContext: parentContext ?? null,
+    parentContext,
     parentType,
     isVisible,
     isDisabled,

@@ -1,11 +1,8 @@
 import type { SparkNode } from '../../../internal'
 import type { RendererCollapseApi } from './types'
+import type { ValueRef } from '../../../shared-types.js'
 
 type CollapseValue = string | number | Array<string | number>
-
-interface ValueRef<T> {
-  value: T
-}
 
 type CollapseEmit = (event: 'update:modelValue', value: CollapseValue) => void
 

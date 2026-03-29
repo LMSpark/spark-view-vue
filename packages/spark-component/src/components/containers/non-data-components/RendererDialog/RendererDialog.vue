@@ -60,8 +60,7 @@
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../../../internal'
-import { getDockedChildren, nodeId, type SparkNode } from '../../../internal'
-import type { ContainerDocks } from '../../../../core/types'
+import { getDockedChildren, nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererDialogApi } from './types'
 import { createRendererDialogZeroCode } from './zero-code'

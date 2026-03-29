@@ -10,10 +10,8 @@
 
 1. 先看 `composables.ts`
 2. 再看 `containerComposables` / `fieldComposables`
-3. 需要更细粒度时，进入 `containerActionComposables`、`containerLayoutComposables`、`fieldContextComposables`、`fieldActionComposables` 等子命名空间
-4. 查 Vue 组件时，优先使用 `containerDataComponents`、`containerNonDataComponents`、`fieldDataComponents`、`fieldNonDataComponents`
-5. 查与 Vue 分组对齐的组合函数时，优先使用 `containerDataComponentComposables`、`containerNonDataComponentComposables`、`fieldDataComponentComposables`、`fieldNonDataComponentComposables`
-6. 若只想记短名字，可用别名：`containerDataUi`、`containerNonDataUi`、`fieldDataUi`、`fieldNonDataUi`，以及对应的 `*UiComposables`
+3. 需要细粒度组合函数时，使用 `containerDataComponentComposables`、`containerNonDataComponentComposables`、`fieldDataComponentComposables`、`fieldNonDataComponentComposables`
+4. 查 Vue 组件时，使用 `containerDataComponents`、`containerNonDataComponents`、`fieldDataComponents`、`fieldNonDataComponents`
 
 命名约定：
 

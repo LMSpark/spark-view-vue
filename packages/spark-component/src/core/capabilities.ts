@@ -26,9 +26,17 @@
  *     sparkConsume(DATA_ROW) ?? {}
  */
 
-import { defineCapability } from '@spark-view/spark-utils'
+import { defineCapability, normalizeKey, sparkConsume as rawSparkConsume } from '@spark-view/spark-utils'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
-import type { IModuleContext } from '@spark-view/spark-utils'
+import type { CapabilityKey, CapabilityName, CapabilityTypeMap, IModuleContext } from '@spark-view/spark-utils'
+import type { SparkCapabilityContext } from './types.js'
+
+/** 能力消费函数签名：统一返回 null，避免 undefined 向上游扩散。 */
+export type SparkCapabilityConsumer = {
+  <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
+  <T>(name: CapabilityKey<T>): T | null
+  (name: string | symbol): unknown
+}
 
 /** 页面内组件实例快照 */
 export interface PageComponentInstanceEntry {
@@ -76,6 +84,60 @@ export interface ModuleContextCapability {
 export interface PageCssScopeCapability {
   /** 注入/追加 CSS 到当前页面作用域 */
   inject(css: string): void
+}
+
+/**
+ * 创建最小能力上下文。
+ *
+ * 这里只负责 Spark 能力系统最小壳体：id / type / parent / capabilities。
+ */
+export function createSparkCapabilityContext(
+  config: { id: string; type: string },
+  parentContext?: SparkCapabilityContext | null,
+): SparkCapabilityContext {
+  const context: SparkCapabilityContext = {
+    id: config.id,
+    type: config.type,
+    capabilities: new Map<CapabilityName, unknown>(),
+  }
+
+  if (parentContext !== undefined && parentContext !== null) {
+    context.parent = parentContext
+  }
+
+  return context
+}
+
+/** 统一消费能力：未命中时返回 null，而不是 undefined。 */
+export function consumeSparkCapability<T>(
+  context: SparkCapabilityContext | null | undefined,
+  name: string | symbol,
+): T | null {
+  if (!context) {
+    return null
+  }
+
+  const implementation = rawSparkConsume<T>(context, name)
+  return implementation ?? null
+}
+
+/** 创建能力消费器：优先从 fallbackContext 开始查找，否则从 parentContext 开始。 */
+export function createSparkCapabilityConsumer(
+  parentContext: SparkCapabilityContext | null,
+  fallbackContext?: SparkCapabilityContext,
+): SparkCapabilityConsumer {
+  return ((name: string | symbol): unknown => {
+    const lookupContext = fallbackContext ?? parentContext
+    return consumeSparkCapability(lookupContext, name)
+  }) as SparkCapabilityConsumer
+}
+
+/** 直接读取当前上下文本地 provider，不沿 parent 链查找。 */
+export function getSparkCapabilityProvider(
+  context: SparkCapabilityContext,
+  name: string | symbol,
+): unknown {
+  return context.capabilities.get(normalizeKey(name))
 }
 
 // 将能力键合并到 CapabilityTypeMap，消费方按字符串名称即可得到精确类型，

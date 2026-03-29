@@ -1,10 +1,7 @@
 import { computed } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import type { FieldOption } from '../../options/index.js'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 

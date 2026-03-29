@@ -1,10 +1,7 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { Ref } from 'vue'
-
-interface ValueRef<T> {
-  value: T
-}
+import type { ValueRef } from '../../../shared-types.js'
 
 interface UseHtmlEditorStateOptions {
   editorRef: Ref<HTMLElement | null>

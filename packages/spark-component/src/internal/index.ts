@@ -1,12 +1,14 @@
 /**
- * spark-component 内部便利入口。
+ * spark-component 内部基础设施入口。
  *
- * 仅供包内实现与重构期定位使用；
- * 公共消费方优先使用根入口 `src/index.ts`。
+ * 仅导出 capability-context 锚点操作（WeakMap 绑定/解绑/查找），
+ * 组件层消费通过 `components/internal.ts` 桥接 core 层符号。
  */
 
-export * as coreFiles from '../core/index.js'
-export * as systemFiles from '../system/index.js'
-export * as pageFiles from '../page/index.js'
-export * as componentFiles from '../components/internal.js'
-export { INTERNAL_PARENT_CAPABILITY_CONTEXT_KEY } from './capability-context.js'
+export {
+	bindAppRootCapabilityContext,
+	unbindAppRootCapabilityContext,
+	bindCapabilityContextOwner,
+	unbindCapabilityContextOwner,
+	resolveParentCapabilityContext,
+} from './capability-context.js'

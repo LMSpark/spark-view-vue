@@ -1,17 +1,17 @@
 import type { CrudResult, IDataRow } from '@spark-view/spark-data'
 import {
-  createDefaultBehaviorControl,
-  type DefaultBehaviorControl,
-} from '../../../internal/defaultBehaviorControl'
+  createCancellableControl,
+  type CancellableControl,
+} from '../../internal'
 
-export type InteractionControl = DefaultBehaviorControl
+export type InteractionControl = CancellableControl
 
 export type CancelableHandler<TArgs extends unknown[]> = (
   ...args: [...TArgs, InteractionControl]
 ) => void | Promise<void>
 
 export function createInteractionControl(): InteractionControl {
-  return createDefaultBehaviorControl()
+  return createCancellableControl()
 }
 
 export async function runControlledInteraction<TArgs extends unknown[]>(
