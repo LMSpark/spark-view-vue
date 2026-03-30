@@ -1,27 +1,15 @@
 <template>
   <div v-if="shouldWrapGrid" class="spark-child-grid-item" :style="wrapperStyle">
-    <SparkComponentRenderer :config="node">
-      <template v-if="shouldForwardTemplateSlot" #default>
-        <slot />
-      </template>
-    </SparkComponentRenderer>
+    <SparkComponentRenderer :config="node" />
   </div>
 
-  <SparkComponentRenderer v-else :config="node">
-    <template v-if="shouldForwardTemplateSlot" #default>
-      <slot />
-    </template>
-  </SparkComponentRenderer>
+  <SparkComponentRenderer v-else :config="node" />
 </template>
 
 <script setup lang="ts">
-import { computed, getCurrentInstance, inject, useAttrs, useSlots } from 'vue'
+import { computed, getCurrentInstance, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
-import {
-  SPARK_REGISTRY_KEY,
-  type ComponentRegistry,
-  type SparkNode,
-} from '../../core/types.js'
+import type { SparkNode } from '../../core/types.js'
 import SparkComponentRenderer from '../SparkComponentRenderer.vue'
 import {
   bindSparkChildType,
@@ -30,7 +18,6 @@ import {
   hasLegacyChildrenInput,
   normalizeSpan,
   resolveNodeId,
-  shouldCompileTemplateChildren,
   warnIgnoredChildrenInput,
 } from './SparkChild.shared.js'
 
@@ -55,14 +42,8 @@ const slots = useSlots()
 
 bindSparkChildType(getCurrentInstance()?.type ?? null)
 
-const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
-const shouldCompileChildren = computed(() => shouldCompileTemplateChildren(registry, props.type))
-const shouldForwardTemplateSlot = computed(() => slots['default'] !== undefined && !shouldCompileChildren.value)
-
 const nestedChildren = computed(() => {
-  return shouldCompileChildren.value
-    ? collectTemplateChildren(slots['default']?.())
-    : []
+  return collectTemplateChildren(slots['default']?.())
 })
 
 const node = computed<SparkNode>(() => {

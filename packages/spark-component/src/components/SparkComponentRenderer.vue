@@ -6,8 +6,7 @@
     :is="registryComponent"
   >
     <template v-if="shouldRenderRegistryDefaultSlot" #default>
-      <RecursiveChildrenBlock v-if="shouldRenderRegistryChildrenViaSlot" :children="renderableChildren" />
-      <slot />
+      <RecursiveChildrenBlock :children="renderableChildren" />
     </template>
   </component>
 
@@ -18,8 +17,7 @@
     v-bind="externalComponentProps"
   >
     <template v-if="shouldRenderExternalDefaultSlot">
-      <RecursiveChildrenBlock v-if="hasRenderableChildren" :children="renderableChildren" />
-      <slot />
+      <RecursiveChildrenBlock :children="renderableChildren" />
     </template>
   </component>
 
@@ -32,7 +30,6 @@
   >
     <!-- 未注册时仍递归渲染子组件，父能力上下文由框架内部传递 -->
     <RecursiveChildrenBlock v-if="hasRenderableChildren" :children="renderableChildren" />
-    <slot />
   </UnregisteredNodeFallback>
 </template>
 
@@ -75,7 +72,6 @@ import {
   markRaw,
   onUnmounted,
   resolveDynamicComponent,
-  useSlots,
 } from 'vue'
 import type { PropType } from 'vue'
 import type { IDataRow, IDataSource } from '@spark-view/spark-data'
@@ -169,7 +165,6 @@ interface RendererProps {
 }
 
 const rendererProps = defineProps<RendererProps>()
-const rendererSlots = useSlots()
 const currentInstance = getCurrentInstance()
 const currentOwner = currentInstance as SparkRuntimeOwner | null
 // 保存当前渲染器组件类型，供本地递归块继续回到同一个渲染入口。
@@ -664,17 +659,13 @@ const shouldRenderRegistryChildrenViaSlot = computed(() => {
     && !registryConsumesChildrenProp.value
 })
 
-const hasForwardedDefaultSlot = computed(() => rendererSlots['default'] !== undefined)
-
 const shouldRenderRegistryDefaultSlot = computed(() => {
-  return renderBranch.value === 'registry'
-    && !registryConsumesChildrenProp.value
-    && (hasRenderableChildren.value || hasForwardedDefaultSlot.value)
+  return shouldRenderRegistryChildrenViaSlot.value
 })
 
 const shouldRenderExternalDefaultSlot = computed(() => {
   return renderBranch.value === 'external'
-    && (hasRenderableChildren.value || hasForwardedDefaultSlot.value)
+    && hasRenderableChildren.value
 })
 
 // ── props 透传：SparkNode.props → 目标组件运行时 props ───────────────────────

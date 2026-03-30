@@ -331,7 +331,62 @@ describe('SparkChild', () => {
     expect(button.text()).toBe('提交')
   })
 
-  it('renders nested SparkChild through direct template slot path for slot-mode components', () => {
+  it('compiles default slot content into SparkNode children even for slot-rendered components', () => {
+    const ConfigCaptureRenderer = defineComponent({
+      name: 'SparkChildSlotConfigCaptureRenderer',
+      props: {
+        config: {
+          type: Object as PropType<SparkNode>,
+          required: true,
+        },
+      },
+      setup(componentProps) {
+        return () => h('div', {
+          class: 'spark-child-slot-config-capture',
+          'data-config': JSON.stringify(componentProps.config),
+        }, 'capture')
+      },
+    })
+
+    const wrapper = mount(SparkChild as unknown as DefineComponent, {
+      props: {
+        type: 'slot-only-node',
+      },
+      slots: {
+        default: () => [
+          '提交',
+          h(SparkChild as unknown as DefineComponent, {
+            type: 'slot-child-node',
+            id: 'slot-child-id',
+          }),
+        ],
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: ConfigCaptureRenderer,
+          'spark-component-renderer': ConfigCaptureRenderer,
+        },
+      },
+    })
+
+    const capture = wrapper.find('.spark-child-slot-config-capture')
+    expect(capture.exists()).toBe(true)
+
+    const serializedConfig = capture.attributes('data-config')
+    expect(serializedConfig).toBeTruthy()
+    const config = JSON.parse(serializedConfig ?? '{}') as SparkNode
+    const firstChild = Array.isArray(config.children) ? config.children[0] : undefined
+    const secondChild = Array.isArray(config.children) ? config.children[1] : undefined
+
+    expect(Array.isArray(config.children)).toBe(true)
+    expect(firstChild).toBe('提交')
+    expect(secondChild).toEqual(expect.objectContaining({
+      type: 'slot-child-node',
+      id: 'slot-child-id',
+    }))
+  })
+
+  it('renders nested SparkChild through compiled children path for slot-mode components', () => {
     const { registry } = Spark.createSystem()
 
     const SlotContainer = defineComponent({
