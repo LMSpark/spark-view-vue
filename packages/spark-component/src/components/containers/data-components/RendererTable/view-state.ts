@@ -1,14 +1,9 @@
 import { computed, ref, watch } from 'vue'
 import { SparkData, type DataView, type IDataRow } from '@spark-view/spark-data'
-import type { ContainerDocks } from '../../../internal'
 import type { ValueRef } from '../../../shared-types.js'
 
-interface RendererTableViewStateProps {
-  docks?: ContainerDocks
-}
-
 interface RendererTableViewStateOptions {
-  props: RendererTableViewStateProps
+  getDockProp: <T = unknown>(type: string, propName: string) => T | undefined
   baseTableAttrs: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
   filteredRows: ValueRef<IDataRow[] | undefined>
@@ -58,10 +53,10 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     return result
   })
 
-  const filterCollapsibleValue = computed(() => options.props.docks?.filter?.collapsible ?? options.readBooleanAttr('filterCollapsible') ?? false)
-  const filterDefaultCollapsedValue = computed(() => options.props.docks?.filter?.defaultCollapsed ?? options.readBooleanAttr('filterDefaultCollapsed') ?? false)
-  const filterAutoFitMinWidthValue = computed(() => options.props.docks?.filter?.autoFitMinWidth ?? options.readStringAttr('filterAutoFitMinWidth') ?? '220px')
-  const filterItemSpanValue = computed(() => options.props.docks?.filter?.itemSpan ?? options.readNumberAttr('filterItemSpan') ?? 1)
+  const filterCollapsibleValue = computed(() => options.getDockProp<boolean>('r-filter', 'collapsible') ?? options.readBooleanAttr('filterCollapsible') ?? false)
+  const filterDefaultCollapsedValue = computed(() => options.getDockProp<boolean>('r-filter', 'defaultCollapsed') ?? options.readBooleanAttr('filterDefaultCollapsed') ?? false)
+  const filterAutoFitMinWidthValue = computed(() => options.getDockProp<string>('r-filter', 'autoFitMinWidth') ?? options.readStringAttr('filterAutoFitMinWidth') ?? '220px')
+  const filterItemSpanValue = computed(() => options.getDockProp<number>('r-filter', 'itemSpan') ?? options.readNumberAttr('filterItemSpan') ?? 1)
 
   const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
 

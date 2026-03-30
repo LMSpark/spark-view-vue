@@ -29,11 +29,6 @@
             "type": "r-table",
             "dataKey": "Users@rows",
             "props": {
-              "docks": {
-                "toolbar": {
-                  "position": "top"
-                }
-              },
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
@@ -44,37 +39,42 @@
             },
             "children": [
               {
-                "type": "el-button",
-                "dock": "toolbar",
-                "order": 1,
+                "type": "r-toolbar",
                 "props": {
-                  "builtinAction": "append-row",
-                  "label": "✚ 新增",
-                  "type": "primary",
-                  "size": "small"
-                }
-              },
-              {
-                "type": "el-button",
-                "dock": "toolbar",
-                "order": 2,
-                "props": {
-                  "builtinAction": "delete-selected",
-                  "label": "✖ 删除勾选",
-                  "type": "danger",
-                  "size": "small",
-                  "plain": true
-                }
-              },
-              {
-                "type": "el-button",
-                "dock": "toolbar",
-                "order": 3,
-                "props": {
-                  "builtinAction": "refresh",
-                  "label": "↻ 刷新",
-                  "size": "small"
-                }
+                  "position": "top"
+                },
+                "children": [
+                  {
+                    "type": "el-button",
+                    "order": 1,
+                    "props": {
+                      "builtinAction": "append-row",
+                      "label": "✚ 新增",
+                      "type": "primary",
+                      "size": "small"
+                    }
+                  },
+                  {
+                    "type": "el-button",
+                    "order": 2,
+                    "props": {
+                      "builtinAction": "delete-selected",
+                      "label": "✖ 删除勾选",
+                      "type": "danger",
+                      "size": "small",
+                      "plain": true
+                    }
+                  },
+                  {
+                    "type": "el-button",
+                    "order": 3,
+                    "props": {
+                      "builtinAction": "refresh",
+                      "label": "↻ 刷新",
+                      "size": "small"
+                    }
+                  }
+                ]
               },
               {
                 "type": "r-text",
@@ -173,42 +173,43 @@
                 }
               },
               {
-                "type": "el-button",
-                "dock": "actions",
-                "order": 1,
-                "props": {
-                  "builtinAction": "message-row",
-                  "type": "primary",
-                  "size": "small",
-                  "link": true
-                }
-              },
-              {
-                "type": "el-button",
-                "dock": "actions",
-                "order": 2,
-                "props": {
-                  "builtinAction": "prompt-edit",
-                  "type": "warning",
-                  "size": "small",
-                  "link": true
-                }
-              },
-              {
-                "type": "RenderStatusAction",
-                "dock": "actions",
-                "order": 3
-              },
-              {
-                "type": "el-button",
-                "dock": "actions",
-                "order": 4,
-                "props": {
-                  "builtinAction": "delete-row",
-                  "type": "danger",
-                  "size": "small",
-                  "link": true
-                }
+                "type": "r-actions",
+                "children": [
+                  {
+                    "type": "el-button",
+                    "order": 1,
+                    "props": {
+                      "builtinAction": "message-row",
+                      "type": "primary",
+                      "size": "small",
+                      "link": true
+                    }
+                  },
+                  {
+                    "type": "el-button",
+                    "order": 2,
+                    "props": {
+                      "builtinAction": "prompt-edit",
+                      "type": "warning",
+                      "size": "small",
+                      "link": true
+                    }
+                  },
+                  {
+                    "type": "RenderStatusAction",
+                    "order": 3
+                  },
+                  {
+                    "type": "el-button",
+                    "order": 4,
+                    "props": {
+                      "builtinAction": "delete-row",
+                      "type": "danger",
+                      "size": "small",
+                      "link": true
+                    }
+                  }
+                ]
               }
             ]
           }

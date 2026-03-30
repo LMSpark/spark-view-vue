@@ -59,12 +59,11 @@ describe('End-to-end: real component extraction (VCM)', () => {
     const api = extractComponentApiVcm(checker, absPath, TABLE_COMPONENT, 'r-table')
 
     expect(api).not.toBeNull()
-    // RendererTable 公开 API 已收敛到 canonical docks 结构，旧的扁平 action/filter props 不应再暴露
-    expect(api!.props.length).toBeGreaterThanOrEqual(6)
+    // RendererTable 公开 API 已收敛到 dock-as-children 模型，旧的扁平 action/filter/docks props 不应再暴露
+    expect(api!.props.length).toBeGreaterThanOrEqual(5)
 
-    const docks = api!.props.find(p => p.name === 'docks')
-    expect(docks).toBeDefined()
     const propNames = api!.props.map(p => p.name)
+    expect(propNames).not.toContain('docks')
     expect(propNames).not.toContain('filterColumns')
     expect(propNames).not.toContain('rowActions')
     expect(propNames).not.toContain('rowActionsPosition')

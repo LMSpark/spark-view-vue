@@ -67,7 +67,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
       props: {
         onTabChange,
         children: [
-          { type: 'tabs-toolbar-action', dock: 'toolbar' },
+          { type: 'r-toolbar', children: [{ type: 'tabs-toolbar-action' }] },
           {
             type: 'r-tab-pane',
             props: { label: '基本信息', name: 'base', gridGap: 16 },
@@ -162,7 +162,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
       props: {
         onChange,
         children: [
-          { type: 'collapse-toolbar-action', dock: 'toolbar' },
+          { type: 'r-toolbar', children: [{ type: 'collapse-toolbar-action' }] },
           {
             type: 'r-collapse-item',
             props: { title: '分组一', name: 'one', gridGap: 12 },

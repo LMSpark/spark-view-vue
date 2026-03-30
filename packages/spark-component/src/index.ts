@@ -41,13 +41,7 @@ export type {
   SparkCapabilityContext,
   SparkNode,
   SparkNodeChildren,
-  // Dock 描述符（新模型）
-  DockDescriptor,
-  DockToolbar,
-  DockActions,
   DockFilterItem,
-  DockFilter,
-  ContainerDocks,
   ComponentDefinition,
   ComponentRegistry,
   LoggerApi
@@ -58,12 +52,8 @@ export type { CancellableControl } from './internal/cancellable-control.js'
 export {
   SPARK_REGISTRY_KEY,
   SPARK_NODE_STRUCT_KEYS,
-  DEFAULT_DOCK,
   normalizeSparkNode,
   nodeId,
-  nodeDock,
-  nodeOrder,
-  getDockedChildren,
 } from './core/index.js'
 
 // ── 6. 数据 + Renderer 能力键 ──
@@ -100,8 +90,13 @@ export {
   SparkChild,
   SparkChildrenBridge,
   ElTableColumns,
+  ElButton,
+  RNumber,
+  RTable,
+  RText,
   SparkComponentRenderer,
   SparkTableColumns,
+  createTemplateDsl,
 } from './components/index.js'
 export * as componentComposables from './components/composables.js'
 export * as containerComposables from './components/containers/composables.js'

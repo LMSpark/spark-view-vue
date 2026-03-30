@@ -11,6 +11,11 @@ import {
 let sparkChildType: unknown = null
 
 export const SPARK_CHILD_VNODE_MARKER = '__sparkChildVNodeMarker__'
+export const SPARK_TEMPLATE_NODE_DESCRIPTOR = '__sparkTemplateNodeDescriptor__'
+
+export interface SparkTemplateNodeDescriptor {
+  nodeType?: string
+}
 
 const TEMPLATE_STRUCTURAL_KEYS = new Set<string>([
   ...SPARK_NODE_STRUCT_KEYS,
@@ -19,11 +24,19 @@ const TEMPLATE_STRUCTURAL_KEYS = new Set<string>([
   'ref',
 ])
 
+const TEMPLATE_FIXED_TYPE_STRUCTURAL_KEYS = new Set<string>([
+  ...SPARK_NODE_STRUCT_KEYS,
+  'nodeId',
+  'key',
+  'ref',
+])
+
+TEMPLATE_FIXED_TYPE_STRUCTURAL_KEYS.delete('type')
+
 const warnedUnsupportedVNodeTypes = new Set<string>()
 const warnedNodeIdConflicts = new Set<string>()
 const warnedIgnoredChildrenInputs = new Set<string>()
 
-type DefaultSlotFn = () => unknown
 type DeclaredProps = Record<string, unknown> | string[]
 
 interface VueComponentLike {
@@ -35,7 +48,7 @@ interface VueComponentLike {
 
 export function bindSparkChildType(type: unknown): void {
   if (type !== null && type !== undefined) {
-    markSparkChildType(type)
+    markSparkTemplateNodeComponent(type)
     sparkChildType = type
   }
 }
@@ -46,6 +59,13 @@ function markSparkChildType(type: unknown): void {
   ;(type as Record<string, unknown>)[SPARK_CHILD_VNODE_MARKER] = true
 }
 
+export function markSparkTemplateNodeComponent(type: unknown, descriptor: SparkTemplateNodeDescriptor = {}): void {
+  markSparkChildType(type)
+  if (type === null || type === undefined) return
+  if (typeof type !== 'object' && typeof type !== 'function') return
+  ;(type as Record<string, unknown>)[SPARK_TEMPLATE_NODE_DESCRIPTOR] = descriptor
+}
+
 function isMarkedSparkChildType(type: unknown): boolean {
   if (type === null || type === undefined) return false
   if (typeof type !== 'object' && typeof type !== 'function') return false
@@ -54,6 +74,15 @@ function isMarkedSparkChildType(type: unknown): boolean {
 
 function isSparkChildVNodeType(type: unknown): boolean {
   return type === sparkChildType || isMarkedSparkChildType(type)
+}
+
+function readTemplateNodeDescriptor(type: unknown): SparkTemplateNodeDescriptor | null {
+  if (!isSparkChildVNodeType(type)) return null
+  if (type === null || type === undefined) return null
+  if (typeof type !== 'object' && typeof type !== 'function') return null
+  const descriptor = (type as Record<string, unknown>)[SPARK_TEMPLATE_NODE_DESCRIPTOR]
+  if (descriptor === null || descriptor === undefined || typeof descriptor !== 'object') return {}
+  return descriptor as SparkTemplateNodeDescriptor
 }
 
 function isMeaningfulText(value: string): boolean {
@@ -149,9 +178,16 @@ export function shouldCompileTemplateChildren(registry: ComponentRegistry | unde
   return declaresProp(definition.component, 'children')
 }
 
-export function collectBusinessProps(attrs: Record<string, unknown>): Record<string, unknown> {
+export function collectBusinessProps(
+  attrs: Record<string, unknown>,
+  options?: { fixedNodeType?: boolean }
+): Record<string, unknown> {
+  const structuralKeys = options?.fixedNodeType === true
+    ? TEMPLATE_FIXED_TYPE_STRUCTURAL_KEYS
+    : TEMPLATE_STRUCTURAL_KEYS
+
   return Object.fromEntries(
-    Object.entries(attrs).filter(([key]) => !TEMPLATE_STRUCTURAL_KEYS.has(key))
+    Object.entries(attrs).filter(([key]) => !structuralKeys.has(key))
   )
 }
 
@@ -161,6 +197,74 @@ export function hasLegacyChildrenInput(value: unknown): boolean {
   if (typeof value === 'number') return true
   if (Array.isArray(value)) return value.length > 0
   return true
+}
+
+/**
+ * Collect template slot children.
+ *
+ * - `#default` slot → main content children
+ * - Named slots (e.g. `#toolbar`, `#actions`) → dock SparkNode children
+ *   `{ type: 'r-{slotName}', children: [...slotContent] }` appended to the array.
+ *   Container components extract docks from children via `useDockExtraction`.
+ */
+export function collectTemplateSlotChildren(slotMap: Record<string, unknown>): SparkNodeChildren {
+  const children: SparkNodeChildren = []
+
+  for (const [slotName, slotValue] of Object.entries(slotMap)) {
+    if (slotName.startsWith('_')) continue
+    if (typeof slotValue !== 'function') continue
+
+    const collected = collectTemplateChildren((slotValue as () => unknown)())
+    if (collected.length === 0) continue
+
+    if (slotName === 'default') {
+      children.push(...collected)
+      continue
+    }
+
+    // Named slot → dock SparkNode child
+    children.push({ type: `r-${slotName}`, children: collected })
+  }
+
+  return children
+}
+
+function resolveNodeType(raw: Record<string, unknown>, descriptor: SparkTemplateNodeDescriptor | null): string {
+  if (typeof descriptor?.nodeType === 'string' && descriptor.nodeType.length > 0) {
+    return descriptor.nodeType
+  }
+  return typeof raw['type'] === 'string' ? raw['type'] : ''
+}
+
+export function buildTemplateNode(
+  raw: Record<string, unknown>,
+  options: {
+    descriptor?: SparkTemplateNodeDescriptor | null
+    scope: string
+    slotChildren?: SparkNodeChildren
+  }
+): SparkNode {
+  const descriptor = options.descriptor ?? null
+  const type = resolveNodeType(raw, descriptor)
+  const node: SparkNode = { type }
+
+  const businessProps = collectBusinessProps(raw, {
+    fixedNodeType: typeof descriptor?.nodeType === 'string' && descriptor.nodeType.length > 0,
+  })
+
+  if (Object.keys(businessProps).length > 0) node.props = businessProps
+
+  const resolvedId = resolveNodeId(raw, options.scope)
+  if (resolvedId !== undefined) node.id = resolvedId
+
+  const nestedChildren = options.slotChildren ?? []
+  if (nestedChildren.length > 0) {
+    node.children = nestedChildren
+  } else if (hasLegacyChildrenInput(raw['children'])) {
+    warnIgnoredChildrenInput('props', node.type)
+  }
+
+  return node
 }
 
 export function collectTemplateChildren(input: unknown): SparkNodeChildren {
@@ -210,24 +314,13 @@ export function collectTemplateChildren(input: unknown): SparkNodeChildren {
 
 function vnodeToSparkNode(vn: VNode): SparkNode {
   const raw = (vn.props ?? {}) as Record<string, unknown>
-  const node: SparkNode = { type: String(raw['type'] ?? '') }
-
-  const businessProps = collectBusinessProps(raw)
-  if (Object.keys(businessProps).length > 0) node.props = businessProps
-
-  const resolvedId = resolveNodeId(raw, `vnode:${node.type}`)
-  if (resolvedId !== undefined) node.id = resolvedId
-  if (typeof raw['dock'] === 'string') node.dock = raw['dock']
-  if (typeof raw['order'] === 'number') node.order = raw['order']
-
-  const nested = extractChildSparkNodes(vn)
-  if (nested.length > 0) {
-    node.children = nested
-  } else if (hasLegacyChildrenInput(raw['children'])) {
-    warnIgnoredChildrenInput('vnode', node.type)
-  }
-
-  return node
+  const descriptor = readTemplateNodeDescriptor(vn.type)
+  const type = resolveNodeType(raw, descriptor)
+  return buildTemplateNode(raw, {
+    descriptor,
+    scope: `vnode:${type}`,
+    slotChildren: extractChildSparkNodes(vn),
+  })
 }
 
 function extractChildSparkNodes(vn: VNode): SparkNodeChildren {
@@ -235,11 +328,7 @@ function extractChildSparkNodes(vn: VNode): SparkNodeChildren {
   if (children === null || children === undefined || typeof children === 'string') return []
   if (Array.isArray(children)) return collectTemplateChildren(children)
 
-  const slotFn = (children as Record<string, unknown>)['default']
-  if (typeof slotFn === 'function') {
-    return collectTemplateChildren((slotFn as DefaultSlotFn)())
-  }
-  return []
+  return collectTemplateSlotChildren(children as Record<string, unknown>)
 }
 
 export function normalizeSpan(v: unknown): number | undefined {

@@ -13,12 +13,9 @@ import type { SparkNode } from '../../core/types.js'
 import SparkComponentRenderer from '../SparkComponentRenderer.vue'
 import {
   bindSparkChildType,
-  collectBusinessProps,
-  collectTemplateChildren,
-  hasLegacyChildrenInput,
+  buildTemplateNode,
+  collectTemplateSlotChildren,
   normalizeSpan,
-  resolveNodeId,
-  warnIgnoredChildrenInput,
 } from './SparkChild.shared.js'
 
 defineOptions({
@@ -43,26 +40,25 @@ const slots = useSlots()
 bindSparkChildType(getCurrentInstance()?.type ?? null)
 
 const nestedChildren = computed(() => {
-  return collectTemplateChildren(slots['default']?.())
+  return collectTemplateSlotChildren(slots as unknown as Record<string, unknown>)
 })
 
 const node = computed<SparkNode>(() => {
-  if (hasLegacyChildrenInput(attrs['children'])) {
-    warnIgnoredChildrenInput('props', props.type)
+  const rawNode = {
+    ...attrs,
+    type: props.type,
+    ...(props.id !== undefined ? { id: props.id } : {}),
+    ...(props.nodeId !== undefined ? { nodeId: props.nodeId } : {}),
+    ...(props.dock !== undefined ? { dock: props.dock } : {}),
+    ...(props.order !== undefined ? { order: props.order } : {}),
+    ...(props.colSpan !== undefined ? { colSpan: props.colSpan } : {}),
+    ...(props.rowSpan !== undefined ? { rowSpan: props.rowSpan } : {}),
   }
 
-  const businessProps = collectBusinessProps(attrs)
-  if (props.colSpan !== undefined) businessProps['colSpan'] = props.colSpan
-  if (props.rowSpan !== undefined) businessProps['rowSpan'] = props.rowSpan
-
-  const nextNode: SparkNode = { type: props.type, props: businessProps }
-  const resolvedId = resolveNodeId({ id: props.id, nodeId: props.nodeId }, `props:${props.type}`)
-  if (resolvedId !== undefined) nextNode.id = resolvedId
-  if (props.dock !== undefined) nextNode.dock = props.dock
-  if (props.order !== undefined) nextNode.order = props.order
-  if (nestedChildren.value.length > 0) nextNode.children = nestedChildren.value
-
-  return nextNode
+  return buildTemplateNode(rawNode, {
+    scope: `props:${props.type}`,
+    slotChildren: nestedChildren.value,
+  })
 })
 
 const wrapperStyle = computed<CSSProperties | undefined>(() => {

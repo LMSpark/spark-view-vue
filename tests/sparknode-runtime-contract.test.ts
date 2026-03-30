@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { defineComponent, h } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
-import { getDockedChildren } from '../packages/spark-component/src/core/types'
+import { useDockExtraction, TREE_DOCK_TYPES } from '../packages/spark-component/src/components/containers/docks/dock-extraction'
 
 describe('SparkNode runtime contract', () => {
   function createTestPlugin() {
@@ -64,29 +64,32 @@ describe('SparkNode runtime contract', () => {
     expect(wrapper.find('.sparknode-runtime-child').exists()).toBe(true)
   })
 
-  it('classifies dock by direct children only and keeps deeper nodes inside first-level subtree', () => {
+  it('classifies dock by type-based extraction and keeps non-dock content separate', () => {
     const children: SparkNode[] = [
       {
-        type: 'el-card',
-        dock: 'editor',
+        type: 'r-editor',
         children: [
           { type: 'r-form' },
-          { type: 'builtin-action', dock: 'toolbar' },
         ],
       },
-      { type: 'builtin-action', dock: 'toolbar' },
+      { type: 'r-toolbar', children: [{ type: 'builtin-action' }] },
       { type: 'r-tree-node-summary' },
     ]
 
-    const toolbar = getDockedChildren(children, 'toolbar')
-    const editor = getDockedChildren(children, 'editor')
-    const content = getDockedChildren(children)
+    const { contentChildren, getDockChildren } = useDockExtraction(
+      computed(() => children),
+      TREE_DOCK_TYPES,
+    )
+
+    const toolbar = getDockChildren('r-toolbar')
+    const editor = getDockChildren('r-editor')
+    const content = contentChildren.value
 
     expect(toolbar).toHaveLength(1)
     expect(toolbar[0]?.type).toBe('builtin-action')
     expect(editor).toHaveLength(1)
-    expect(editor[0]?.type).toBe('el-card')
+    expect(editor[0]?.type).toBe('r-form')
     expect(content).toHaveLength(1)
-    expect(content[0]?.type).toBe('r-tree-node-summary')
+    expect(typeof content[0] === 'object' && content[0] !== null && 'type' in content[0] ? content[0].type : '').toBe('r-tree-node-summary')
   })
 })

@@ -149,7 +149,7 @@
  */
 import { computed, ref, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer, SparkTableColumns } from '../../../internal'
-import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
+import { nodeId, type SparkNode } from '../../../internal'
 import type { RendererTableApi } from './types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
@@ -190,10 +190,8 @@ interface Props {
   id?: string
   /** DataKey 格式：tableName@field */
   dataKey?: string
-  /** 子节点列表 */
+  /** 子节点列表（列节点 + dock 节点） */
   children?: SparkNode[]
-  /** 停靠区域显示配置 */
-  docks?: ContainerDocks
   onRowClick?: RowClickHandler
   onSelectionChange?: RowSelectionHandler
   onCurrentChange?: CurrentRowChangeHandler
@@ -204,7 +202,6 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-table',
-  docks: () => ({}),
 })
 
 const attrs = useAttrs()
@@ -216,6 +213,7 @@ const {
   dockedFilters,
   dockedRowActions,
   sparkChildren,
+  getDockProp,
   legacyFilterColumnsValue,
   legacyRowActionsPositionValue,
   legacyRowActionsAlignValue,
@@ -260,8 +258,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => dockedToolbar.value),
-  toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.docks?.toolbar?.class),
+  toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
+  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -282,10 +280,10 @@ const {
   filterChildren: computed(() => dockedFilters.value),
   dataView: resolvedView,
   filterColumns: computed(() => legacyFilterColumnsValue.value),
-  filterClass: computed(() => props.docks?.filter?.class ?? readStringAttr('filterClass') ?? ''),
-  filterGridColumns: computed(() => props.docks?.filter?.gridColumns ?? readNumberAttr('filterGridColumns') ?? 24),
-  filterGridGap: computed(() => props.docks?.filter?.gridGap ?? readNumberOrStringAttr('filterGridGap') ?? 12),
-  filterGridAutoRows: computed(() => props.docks?.filter?.gridAutoRows ?? readStringAttr('filterGridAutoRows') ?? 'minmax(32px, auto)'),
+  filterClass: computed(() => getDockProp<string>('r-filter', 'class') ?? readStringAttr('filterClass') ?? ''),
+  filterGridColumns: computed(() => getDockProp<number>('r-filter', 'gridColumns') ?? readNumberAttr('filterGridColumns') ?? 24),
+  filterGridGap: computed(() => getDockProp<number | string>('r-filter', 'gridGap') ?? readNumberOrStringAttr('filterGridGap') ?? 12),
+  filterGridAutoRows: computed(() => getDockProp<string>('r-filter', 'gridAutoRows') ?? readStringAttr('filterGridAutoRows') ?? 'minmax(32px, auto)'),
   logger,
 })
 
@@ -298,7 +296,7 @@ const {
   filtersCollapsed,
   toggleFiltersCollapsed,
 } = useRendererTableViewState({
-  props,
+  getDockProp,
   baseTableAttrs,
   resolvedView,
   filteredRows,
@@ -355,8 +353,8 @@ const {
   actionConfigs: computed(() => {
     return [...dockedRowActions.value]
   }),
-  actionPosition: computed(() => props.docks?.actions?.position as LateralActionPosition | undefined ?? legacyRowActionsPositionValue.value ?? 'right'),
-  actionClass: computed(() => props.docks?.actions?.class ?? readStringAttr('rowActionsClass') ?? ''),
+  actionPosition: computed(() => getDockProp<LateralActionPosition>('r-actions', 'position') ?? legacyRowActionsPositionValue.value ?? 'right'),
+  actionClass: computed(() => getDockProp<string>('r-actions', 'class') ?? readStringAttr('rowActionsClass') ?? ''),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({
@@ -377,14 +375,14 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
-const rowActionsLabelValue = computed(() => props.docks?.actions?.label ?? readStringAttr('rowActionsLabel') ?? '操作')
+const rowActionsLabelValue = computed(() => getDockProp<string>('r-actions', 'label') ?? readStringAttr('rowActionsLabel') ?? '操作')
 
-const rowActionsWidthValue = computed(() => props.docks?.actions?.width ?? readNumberOrStringAttr('rowActionsWidth') ?? 160)
+const rowActionsWidthValue = computed(() => getDockProp<number | string>('r-actions', 'width') ?? readNumberOrStringAttr('rowActionsWidth') ?? 160)
 
-const rowActionsAlignValue = computed(() => props.docks?.actions?.align ?? legacyRowActionsAlignValue.value ?? 'left')
+const rowActionsAlignValue = computed(() => getDockProp<'left' | 'center' | 'right'>('r-actions', 'align') ?? legacyRowActionsAlignValue.value ?? 'left')
 
 const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
-  const fixed = props.docks?.actions?.fixed ?? legacyRowActionsFixedValue.value
+  const fixed = getDockProp<boolean | 'left' | 'right'>('r-actions', 'fixed') ?? legacyRowActionsFixedValue.value
   if (fixed !== undefined) return fixed
   return rowActionsPositionValue.value
 })

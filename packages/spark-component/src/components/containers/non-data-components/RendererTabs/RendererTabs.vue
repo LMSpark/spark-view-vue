@@ -44,8 +44,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../../internal'
-import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode, type ContainerDocks } from '../../../internal'
-import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
+import { useDockExtraction, NAVIGATION_DOCK_TYPES } from '../../docks/dock-extraction'
 import RendererTabPane from '../RendererTabPane.vue'
 import type { RendererTabsApi } from './types'
 import { createRendererTabsZeroCode } from './zero-code'
@@ -60,8 +61,6 @@ interface Props extends Omit<SparkNode, 'type'> {
   type?: string
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
-  /** 停靠区域显示配置 */
-  docks?: ContainerDocks
   /** 当前激活标签页 */
   modelValue?: string | number
   /** 标签页切换回调 */
@@ -72,7 +71,6 @@ interface Props extends Omit<SparkNode, 'type'> {
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-tabs',
-  docks: () => ({}),
 })
 
 const emit = defineEmits<{
@@ -81,10 +79,15 @@ const emit = defineEmits<{
 
 const { registerApi } = useSparkPageComponent(props)
 
-const paneConfigs = computed(() =>
-  getDockedChildren(props.children).filter(child => child.type === 'r-tab-pane')
+const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
+  computed(() => props.children),
+  NAVIGATION_DOCK_TYPES,
 )
-const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
+
+const paneConfigs = computed(() =>
+  getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-tab-pane')
+)
+const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
 
 const currentActiveName = useDefaultedSelection({
   modelValue: computed(() => props.modelValue),
@@ -99,8 +102,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => dockedToolbar.value),
-  toolbarPosition: computed(() => props.docks?.toolbar?.position),
-  toolbarClass: computed(() => props.docks?.toolbar?.class),
+    toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
+  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
   modelPermission: computed(() => undefined),
 })
 

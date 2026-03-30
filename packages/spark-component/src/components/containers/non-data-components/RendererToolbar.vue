@@ -36,7 +36,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { SparkComponentRenderer, getDockedChildren, nodeId, useSparkComponent, type SparkNode, type ContainerDocks, type DockDescriptor } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
+import { useDockExtraction, TOOLBAR_DOCK_TYPES } from '../docks/dock-extraction'
 
 /**
  * 横向容器对齐方式。
@@ -62,17 +63,10 @@ interface Props extends Omit<SparkNode, 'type'> {
    *
    * 规则：
    * - 未声明 dock → 进入 default 主区
-   * - dock === tailDock → 进入尾区
+   * - 声明了 tail dock prop → 进入尾区
    * - 其他 dock 当前不参与渲染（后续若扩展多区容器，可在此模型上继续分层）
    */
   children?: SparkNode[]
-  /**
-   * dock 显示描述符。
-   *
-   * 这里只读取区域级 class，用于给 default/tail 区域挂样式钩子；
-   * 不在第一版里引入更多位置/交互语义，避免重新把结构做重。
-   */
-  docks?: ContainerDocks
   /** 单个子项之间的间距（同一区域内部） */
   gap?: number | string
   /** 主区与尾区之间的间距（区域级） */
@@ -81,31 +75,31 @@ interface Props extends Omit<SparkNode, 'type'> {
   align?: InlineAlign
   /** 主区内部子项的主轴分布方式 */
   justify?: InlineJustify
-  /** 尾区使用的 dock 名称，默认 tail，保留未来自定义命名空间能力 */
-  tailDock?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-toolbar',
   children: () => [],
-  docks: () => ({}),
   gap: 8,
   zoneGap: 12,
   align: 'center',
   justify: 'start',
-  tailDock: 'tail',
 })
 // 注册当前业务组件上下文。
 // 这里不额外 provide 新能力，只是保持容器节点进入 SPARK 组件树，
 // 让后续若扩展 API / 调试能力时不需要改调用方式。
 useSparkComponent(props)
 
-// 主区：所有未声明 dock 的子节点。
-const startChildren = computed(() => getDockedChildren(props.children))
+const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
+  computed(() => props.children),
+  TOOLBAR_DOCK_TYPES,
+)
 
-// 尾区：所有 dock === tailDock 的子节点。
-// 第一版先只做双区模型，覆盖 toolbar / menu / header-actions / row-actions strip 这类场景。
-const endChildren = computed(() => getDockedChildren(props.children, props.tailDock))
+// 主区：所有未声明 dock 的子节点。
+const startChildren = computed(() => getSparkNodeChildren(contentChildren.value))
+
+// 尾区：来自 tail dock 的 children。
+const endChildren = computed(() => getDockChildren('r-tail'))
 
 function normalizeSize(value: number | string): string {
   return typeof value === 'number' ? `${value}px` : value
@@ -125,10 +119,9 @@ function justifyToCss(value: InlineJustify): string {
 }
 
 // 读取某个 dock 区域的 class。
-// 设计上 dock 负责“去哪渲染”，descriptor 负责“这个区域长什么样”，两者职责拆开。
 function dockClass(name: string): string {
-  const descriptor = props.docks?.[name] as DockDescriptor | undefined
-  return descriptor?.class ?? ''
+  if (name === 'tail') return getDockProp<string>('r-tail', 'class') ?? ''
+  return ''
 }
 
 const rootClasses = computed(() => [
@@ -147,7 +140,7 @@ const startClasses = computed(() => [
 const endClasses = computed(() => [
   'renderer-toolbar-lane',
   'renderer-toolbar-lane--end',
-  dockClass(props.tailDock),
+  dockClass('tail'),
 ])
 
 // 根容器用两列 grid，而不是继续做一层 flex 语义：

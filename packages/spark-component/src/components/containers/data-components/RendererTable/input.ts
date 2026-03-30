@@ -1,5 +1,6 @@
 import { computed } from 'vue'
-import { DEFAULT_DOCK, getDockedChildren, getSparkNodeChildren, nodeDock, nodeInputProp, type SparkNode } from '../../../internal'
+import { getSparkNodeChildren, nodeInputProp, type SparkNode } from '../../../internal'
+import { useDockExtraction, TABLE_DOCK_TYPES } from '../../docks/dock-extraction'
 import type { LateralActionPosition } from '../../actions/useContainerActions'
 
 interface RendererTableInputProps {
@@ -41,16 +42,10 @@ export function useRendererTableInput(options: RendererTableInputOptions) {
   }
 
   const baseTableAttrs = computed<Record<string, unknown>>(() => {
-    const { toolbar: _legacyToolbar, ...rest } = options.attrs
-    return rest
+    return { ...options.attrs }
   })
 
   const effectiveDataKey = computed(() => options.props.dataKey)
-
-  const configChildren = computed<SparkNode[]>(() => {
-    const children = options.props.children
-    return Array.isArray(children) && children.length > 0 ? children : []
-  })
 
   const legacyFilterColumnsValue = computed<string[]>(() => {
     const value = options.attrs['filterColumns']
@@ -80,45 +75,47 @@ export function useRendererTableInput(options: RendererTableInputOptions) {
     return undefined
   })
 
-  const dockedToolbar = computed(() => getDockedChildren(configChildren.value, 'toolbar'))
-  const dockedFilters = computed(() => getDockedChildren(configChildren.value, 'filter'))
-  const dockedRowActions = computed(() => getDockedChildren(configChildren.value, 'actions'))
+  const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
+    computed(() => options.props.children),
+    TABLE_DOCK_TYPES,
+  )
 
-  const sparkChildren = computed(() => {
-    return configChildren.value.filter(child => nodeDock(child) === DEFAULT_DOCK && isCollectedTableColumn(child))
+  const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
+  const dockedFilters = computed(() => getDockChildren('r-filter'))
+  const dockedRowActions = computed(() => getDockChildren('r-actions'))
+
+  const sparkChildren = computed<SparkNode[]>(() => {
+    const nodes: SparkNode[] = []
+    for (const child of contentChildren.value) {
+      if (typeof child === 'string' || typeof child === 'number') continue
+      if (isCollectedTableColumn(child)) nodes.push(child)
+    }
+    return nodes
   })
 
   function assertNoLegacyTableStructures(): void {
     if (Array.isArray(options.attrs['toolbar']) && options.attrs['toolbar'].length > 0) {
-      throw new Error('[RendererTable] props.toolbar 已废除。请将工具栏节点移动到 children，并声明 dock: "toolbar"；位置与样式请改为 props.docks.toolbar。')
+      throw new Error('[RendererTable] props.toolbar 已废除旧数组格式。请使用 dock 子节点 { type: "r-toolbar", children: [...] } 格式。')
     }
 
     if (legacyFilterColumnsValue.value.length > 0) {
-      throw new Error('[RendererTable] props.filterColumns 已废除。请将筛选项移动到 children，并为每个筛选节点声明 dock: "filter"。')
+      throw new Error('[RendererTable] props.filterColumns 已废除。请使用 dock 子节点 { type: "r-filter", children: [...] } 格式。')
     }
 
     if (legacyRowActionsValue.value.length > 0) {
-      throw new Error('[RendererTable] props.rowActions 已废除。请将行操作节点移动到 children，并声明 dock: "actions"。')
-    }
-
-    const legacyDefaultChildren = configChildren.value.filter(child =>
-      nodeDock(child) === DEFAULT_DOCK && !isCollectedTableColumn(child)
-    )
-
-    if (legacyDefaultChildren.length > 0) {
-      const childTypes = legacyDefaultChildren.map(child => child.type).join(', ')
-      throw new Error(`[RendererTable] r-table 默认区仅允许列节点。检测到未声明 dock 的非列表达式节点: ${childTypes}。请将工具栏/筛选/行操作节点分别移动到 dock: "toolbar" | "filter" | "actions"。`)
+      throw new Error('[RendererTable] props.rowActions 已废除。请使用 dock 子节点 { type: "r-actions", children: [...] } 格式。')
     }
   }
 
   return {
     baseTableAttrs,
     effectiveDataKey,
-    configChildren,
+    contentChildren,
     dockedToolbar,
     dockedFilters,
     dockedRowActions,
     sparkChildren,
+    getDockProp,
     legacyFilterColumnsValue,
     legacyRowActionsPositionValue,
     legacyRowActionsAlignValue,

@@ -6,7 +6,7 @@
  * @provides DATA_ROW
  * @context 通过当前组件 type='r-form' 提供字段语义
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } } } }
+ * @input { dataKey: string, props: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } } }
  * @example { "type": "r-form", "dataKey": "Users@currentRow", "children": [] }
  */
 -->
@@ -47,7 +47,7 @@
  */
 import { ref } from 'vue'
 import { SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
-import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
+import { nodeId, type SparkNode } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
@@ -67,8 +67,6 @@ interface Props extends Omit<SparkNode, 'type'> {
   dataKey?: string
   /** 子节点列表 */
   children?: SparkNode[]
-  /** 停靠区域显示配置 */
-  docks?: ContainerDocks
   /** 表单标签宽度 */
   labelWidth?: string
   /** CSS Grid 列数 */
@@ -85,7 +83,6 @@ interface Props extends Omit<SparkNode, 'type'> {
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-form',
   labelWidth: '100px',
-  docks: () => ({}),
   gridColumns: 24,
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
@@ -111,7 +108,6 @@ const {
   ...(props.id !== undefined ? { id: props.id } : {}),
   ...(props.children !== undefined ? { children: props.children } : {}),
   dataKey: props.dataKey,
-  docks: props.docks,
   gridColumns: props.gridColumns,
   gridGap: props.gridGap,
   gridAutoRows: props.gridAutoRows,

@@ -45,8 +45,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../../internal'
-import { getDockedChildren, getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode, type ContainerDocks } from '../../../internal'
-import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
+import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
+import { useDockExtraction, NAVIGATION_DOCK_TYPES } from '../../docks/dock-extraction'
 import RendererStepItem from '../RendererStepItem.vue'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
@@ -56,8 +57,6 @@ interface Props extends Omit<SparkNode, 'type'> {
   type?: string
   /** 子节点（步骤配置） */
   children?: SparkNode[]
-  /** 停靠区域显示配置 */
-  docks?: ContainerDocks
   /** 当前步骤 */
   modelValue?: string | number
   /** 步骤切换回调 */
@@ -66,7 +65,6 @@ interface Props extends Omit<SparkNode, 'type'> {
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-steps',
-  docks: () => ({}),
 })
 
 const emit = defineEmits<{
@@ -75,10 +73,15 @@ const emit = defineEmits<{
 
 const { registerApi } = useSparkPageComponent(props)
 
-const stepConfigs = computed(() =>
-  getDockedChildren(props.children).filter(child => child.type === 'r-step')
+const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
+  computed(() => props.children),
+  NAVIGATION_DOCK_TYPES,
 )
-const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
+
+const stepConfigs = computed(() =>
+  getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-step')
+)
+const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
 
 const activeStepName = useDefaultedSelection({
   modelValue: computed(() => props.modelValue),
@@ -93,8 +96,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => dockedToolbar.value),
-  toolbarPosition: computed(() => props.docks?.toolbar?.position),
-  toolbarClass: computed(() => props.docks?.toolbar?.class),
+    toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
+  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
   modelPermission: computed(() => undefined),
 })
 

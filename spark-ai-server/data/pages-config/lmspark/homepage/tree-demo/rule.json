@@ -1,473 +1,479 @@
 [
-    {
-        "type": "div",
-        "class": "nav-editor-page",
+  {
+    "type": "div",
+    "class": "nav-editor-page",
+    "children": [
+      {
+        "type": "el-card",
+        "class": "nav-editor-toolbar-card",
+        "props": {
+          "shadow": "never"
+        },
         "children": [
-            {
-                "type": "el-card",
-                "class": "nav-editor-toolbar-card",
+          {
+            "type": "div",
+            "class": "nav-editor-panel__head",
+            "children": [
+              {
+                "type": "h3",
+                "children": [
+                  "节点检索"
+                ]
+              },
+              {
+                "type": "p",
+                "children": [
+                  "按关键词、节点类型和子项布局缩小树范围；重置会重新拉取远端快照。"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "r-form",
+            "dataKey": "EditorFilters@currentRow",
+            "props": {
+              "gridColumns": 24,
+              "gridGap": 12,
+              "labelWidth": "88px"
+            },
+            "children": [
+              {
+                "type": "r-toolbar",
                 "props": {
-                    "shadow": "never"
+                  "position": "top",
+                  "class": "nav-editor-toolbar__actions"
                 },
                 "children": [
-                    {
-                        "type": "div",
-                        "class": "nav-editor-panel__head",
-                        "children": [
-                            {
-                                "type": "h3",
-                                "children": [
-                                    "节点检索"
-                                ]
-                            },
-                            {
-                                "type": "p",
-                                "children": [
-                                    "按关键词、节点类型和子项布局缩小树范围；重置会重新拉取远端快照。"
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "type": "r-form",
-                        "dataKey": "EditorFilters@currentRow",
+                  {
+                    "type": "button",
+                    "children": [
+                      "应用筛选"
+                    ],
+                    "on": {
+                      "click": "applyTreeFilters"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "children": [
+                      "重置筛选"
+                    ],
+                    "on": {
+                      "click": "resetTreeFilters"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "children": [
+                      "定位当前节点"
+                    ],
+                    "on": {
+                      "click": "focusCurrentNode"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "r-text",
+                "field": "searchKeyword",
+                "props": {
+                  "label": "关键词",
+                  "placeholder": "标题 / 路径 / 描述",
+                  "colSpan": 10
+                }
+              },
+              {
+                "type": "r-select",
+                "field": "nodeKindFilter",
+                "props": {
+                  "label": "节点类型",
+                  "optionKey": "NodeKindFilterOptions@rows",
+                  "optionLabelField": "label",
+                  "optionValueField": "value",
+                  "colSpan": 7
+                }
+              },
+              {
+                "type": "r-select",
+                "field": "placementFilter",
+                "props": {
+                  "label": "子项布局",
+                  "optionKey": "PlacementFilterOptions@rows",
+                  "optionLabelField": "label",
+                  "optionValueField": "value",
+                  "colSpan": 7
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-card",
+        "class": "nav-editor-panel nav-editor-panel--tree",
+        "props": {
+          "shadow": "never"
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "nav-editor-panel__head",
+            "children": [
+              {
+                "type": "h3",
+                "children": [
+                  "节点树"
+                ]
+              },
+              {
+                "type": "p",
+                "children": [
+                  "左侧负责树结构浏览、拖拽、增删，右侧直接编辑当前节点属性。"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "nav-editor-tree-shell",
+            "children": [
+              {
+                "type": "r-tree",
+                "id": "treeEditor",
+                "dataKey": "NavigationNodes@rows",
+                "props": {
+                  "node-key": "id",
+                  "highlight-current": true,
+                  "default-expand-all": true,
+                  "expand-on-click-node": false,
+                  "draggable": true
+                },
+                "children": [
+                  {
+                    "type": "r-toolbar",
+                    "children": [
+                      {
+                        "type": "builtin-action",
                         "props": {
-                            "docks": {
-                                "toolbar": {
-                                    "position": "top",
-                                    "class": "nav-editor-toolbar__actions"
-                                }
-                            },
-                            "gridColumns": 24,
-                            "gridGap": 12,
-                            "labelWidth": "88px"
+                          "builtinAction": "append-row",
+                          "label": "新增根节点",
+                          "setCurrentRowOnSuccess": true,
+                          "appendPayload": {
+                            "title": "未命名根节点",
+                            "parentId": null,
+                            "nodeKind": "module",
+                            "description": "通过 tree-demo 新增的根节点",
+                            "icon": "Menu",
+                            "path": "",
+                            "linkTarget": "self",
+                            "childPlacement": "flat",
+                            "sortOrder": 100,
+                            "dividerAfter": null,
+                            "hidden": false,
+                            "disabled": false,
+                            "refId": ""
+                          },
+                          "successMessage": "根节点已创建，请在右侧继续编辑",
+                          "failureMessage": "根节点新增失败"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "children": [
+                          "刷新导航树"
+                        ],
+                        "on": {
+                          "click": "reloadTreeFromServer"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "children": [
+                          "展开当前节点"
+                        ],
+                        "on": {
+                          "click": "focusCurrentNode"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "r-tree-node-summary",
+                    "props": {
+                      "nameField": "title",
+                      "typeField": "nodeKind",
+                      "metaField": "path",
+                      "extraField": "childPlacement",
+                      "showType": true,
+                      "showMeta": true,
+                      "showExtra": true,
+                      "showStatus": false,
+                      "showOwner": false
+                    }
+                  },
+                  {
+                    "type": "r-actions",
+                    "children": [
+                      {
+                        "type": "builtin-action",
+                        "props": {
+                          "builtinAction": "append-row",
+                          "label": "新增",
+                          "setCurrentRowOnSuccess": true,
+                          "inheritFieldMap": {
+                            "parentId": "id"
+                          },
+                          "appendPayload": {
+                            "title": "未命名子节点",
+                            "nodeKind": "page",
+                            "description": "通过 tree-demo 新增的子节点",
+                            "icon": "Document",
+                            "path": "",
+                            "linkTarget": "self",
+                            "childPlacement": "flat",
+                            "sortOrder": 100,
+                            "dividerAfter": null,
+                            "hidden": false,
+                            "disabled": false,
+                            "refId": ""
+                          },
+                          "successMessage": "子节点已创建，请在右侧继续编辑",
+                          "failureMessage": "子节点新增失败"
+                        }
+                      },
+                      {
+                        "type": "builtin-action",
+                        "props": {
+                          "builtinAction": "prompt-edit",
+                          "label": "改标题",
+                          "field": "title",
+                          "promptTitle": "修改节点标题",
+                          "promptMessage": "请输入新的节点标题",
+                          "placeholder": "请输入节点标题",
+                          "successMessage": "节点标题已更新",
+                          "failureMessage": "节点标题更新失败"
+                        }
+                      },
+                      {
+                        "type": "builtin-action",
+                        "props": {
+                          "builtinAction": "delete-row",
+                          "label": "删除",
+                          "confirmTitle": "删除节点",
+                          "confirmMessage": "确认删除 {title} 吗？",
+                          "successMessage": "节点已删除",
+                          "failureMessage": "节点删除失败",
+                          "disabledWhenRow": {
+                            "nodeKind": "system-directory",
+                            "parentId": null
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "r-editor",
+                    "props": {
+                      "position": "right",
+                      "class": "nav-editor-tree__editor",
+                      "width": 600
+                    },
+                    "children": [
+                      {
+                        "type": "el-card",
+                        "class": "nav-editor-panel",
+                        "props": {
+                          "shadow": "never",
+                          "header": "节点属性"
                         },
                         "children": [
-                            {
-                                "type": "button",
-                                "dock": "toolbar",
-                                "children": [
-                                    "应用筛选"
-                                ],
-                                "on": {
-                                    "click": "applyTreeFilters"
-                                }
+                          {
+                            "type": "r-form",
+                            "id": "nodeEditorForm",
+                            "dataKey": "NavigationNodes@currentRow",
+                            "props": {
+                              "gridColumns": 24,
+                              "gridGap": 18,
+                              "labelWidth": "108px"
                             },
-                            {
-                                "type": "button",
-                                "dock": "toolbar",
-                                "children": [
-                                    "重置筛选"
-                                ],
-                                "on": {
-                                    "click": "resetTreeFilters"
-                                }
-                            },
-                            {
-                                "type": "button",
-                                "dock": "toolbar",
-                                "children": [
-                                    "定位当前节点"
-                                ],
-                                "on": {
-                                    "click": "focusCurrentNode"
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "field": "searchKeyword",
+                            "children": [
+                              {
+                                "type": "r-toolbar",
                                 "props": {
-                                    "label": "关键词",
-                                    "placeholder": "标题 / 路径 / 描述",
-                                    "colSpan": 10
-                                }
-                            },
-                            {
-                                "type": "r-select",
-                                "field": "nodeKindFilter",
-                                "props": {
-                                    "label": "节点类型",
-                                    "optionKey": "NodeKindFilterOptions@rows",
-                                    "optionLabelField": "label",
-                                    "optionValueField": "value",
-                                    "colSpan": 7
-                                }
-                            },
-                            {
-                                "type": "r-select",
-                                "field": "placementFilter",
-                                "props": {
-                                    "label": "子项布局",
-                                    "optionKey": "PlacementFilterOptions@rows",
-                                    "optionLabelField": "label",
-                                    "optionValueField": "value",
-                                    "colSpan": 7
-                                }
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "el-card",
-                "class": "nav-editor-panel nav-editor-panel--tree",
-                "props": {
-                    "shadow": "never"
-                },
-                "children": [
-                    {
-                        "type": "div",
-                        "class": "nav-editor-panel__head",
-                        "children": [
-                            {
-                                "type": "h3",
-                                "children": [
-                                    "节点树"
-                                ]
-                            },
-                            {
-                                "type": "p",
-                                "children": [
-                                    "左侧负责树结构浏览、拖拽、增删，右侧直接编辑当前节点属性。"
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "type": "div",
-                        "class": "nav-editor-tree-shell",
-                        "children": [
-                            {
-                                "type": "r-tree",
-                                "id": "treeEditor",
-                                "dataKey": "NavigationNodes@rows",
-                                "props": {
-                                    "node-key": "id",
-                                    "highlight-current": true,
-                                    "default-expand-all": true,
-                                    "expand-on-click-node": false,
-                                    "draggable": true,
-                                    "docks": {
-                                        "editor": {
-                                            "position": "right",
-                                            "class": "nav-editor-tree__editor",
-                                            "width": 600
-                                        }
-                                    }
+                                  "position": "top",
+                                  "class": "nav-editor-toolbar__actions"
                                 },
                                 "children": [
-                                    {
-                                        "type": "builtin-action",
-                                        "dock": "toolbar",
-                                        "props": {
-                                            "builtinAction": "append-row",
-                                            "label": "新增根节点",
-                                            "setCurrentRowOnSuccess": true,
-                                            "appendPayload": {
-                                                "title": "未命名根节点",
-                                                "parentId": null,
-                                                "nodeKind": "module",
-                                                "description": "通过 tree-demo 新增的根节点",
-                                                "icon": "Menu",
-                                                "path": "",
-                                                "linkTarget": "self",
-                                                "childPlacement": "flat",
-                                                "sortOrder": 100,
-                                                "dividerAfter": null,
-                                                "hidden": false,
-                                                "disabled": false,
-                                                "refId": ""
-                                            },
-                                            "successMessage": "根节点已创建，请在右侧继续编辑",
-                                            "failureMessage": "根节点新增失败"
-                                        }
-                                    },
-                                    {
-                                        "type": "button",
-                                        "dock": "toolbar",
-                                        "children": [
-                                            "刷新导航树"
-                                        ],
-                                        "on": {
-                                            "click": "reloadTreeFromServer"
-                                        }
-                                    },
-                                    {
-                                        "type": "button",
-                                        "dock": "toolbar",
-                                        "children": [
-                                            "展开当前节点"
-                                        ],
-                                        "on": {
-                                            "click": "focusCurrentNode"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-tree-node-summary",
-                                        "props": {
-                                            "nameField": "title",
-                                            "typeField": "nodeKind",
-                                            "metaField": "path",
-                                            "extraField": "childPlacement",
-                                            "showType": true,
-                                            "showMeta": true,
-                                            "showExtra": true,
-                                            "showStatus": false,
-                                            "showOwner": false
-                                        }
-                                    },
-                                    {
-                                        "type": "builtin-action",
-                                        "dock": "actions",
-                                        "props": {
-                                            "builtinAction": "append-row",
-                                            "label": "新增",
-                                            "setCurrentRowOnSuccess": true,
-                                            "inheritFieldMap": {
-                                                "parentId": "id"
-                                            },
-                                            "appendPayload": {
-                                                "title": "未命名子节点",
-                                                "nodeKind": "page",
-                                                "description": "通过 tree-demo 新增的子节点",
-                                                "icon": "Document",
-                                                "path": "",
-                                                "linkTarget": "self",
-                                                "childPlacement": "flat",
-                                                "sortOrder": 100,
-                                                "dividerAfter": null,
-                                                "hidden": false,
-                                                "disabled": false,
-                                                "refId": ""
-                                            },
-                                            "successMessage": "子节点已创建，请在右侧继续编辑",
-                                            "failureMessage": "子节点新增失败"
-                                        }
-                                    },
-                                    {
-                                        "type": "builtin-action",
-                                        "dock": "actions",
-                                        "props": {
-                                            "builtinAction": "prompt-edit",
-                                            "label": "改标题",
-                                            "field": "title",
-                                            "promptTitle": "修改节点标题",
-                                            "promptMessage": "请输入新的节点标题",
-                                            "placeholder": "请输入节点标题",
-                                            "successMessage": "节点标题已更新",
-                                            "failureMessage": "节点标题更新失败"
-                                        }
-                                    },
-                                    {
-                                        "type": "builtin-action",
-                                        "dock": "actions",
-                                        "props": {
-                                            "builtinAction": "delete-row",
-                                            "label": "删除",
-                                            "confirmTitle": "删除节点",
-                                            "confirmMessage": "确认删除 {title} 吗？",
-                                            "successMessage": "节点已删除",
-                                            "failureMessage": "节点删除失败",
-                                            "disabledWhenRow": {
-                                                "nodeKind": "system-directory",
-                                                "parentId": null
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "type": "el-card",
-                                        "dock": "editor",
-                                        "class": "nav-editor-panel",
-                                        "props": {
-                                            "shadow": "never",
-                                            "header": "节点属性"
-                                        },
-                                        "children": [
-                                            {
-                                                "type": "r-form",
-                                                "id": "nodeEditorForm",
-                                                "dataKey": "NavigationNodes@currentRow",
-                                                "props": {
-                                                    "docks": {
-                                                        "toolbar": {
-                                                            "position": "top",
-                                                            "class": "nav-editor-toolbar__actions"
-                                                        }
-                                                    },
-                                                    "gridColumns": 24,
-                                                    "gridGap": 18,
-                                                    "labelWidth": "108px"
-                                                },
-                                                "children": [
-                                                    {
-                                                        "type": "builtin-action",
-                                                        "dock": "toolbar",
-                                                        "props": {
-                                                            "builtinAction": "submit-current-form",
-                                                            "label": "保存当前节点",
-                                                            "successMessage": "当前节点已保存",
-                                                            "failureMessage": "当前节点保存失败",
-                                                            "validateMessage": "请先修正表单校验错误",
-                                                            "disabledWhenRow": {
-                                                                "nodeKind": "system-directory",
-                                                                "parentId": null
-                                                            }
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "button",
-                                                        "dock": "toolbar",
-                                                        "children": [
-                                                            "重新拉取树"
-                                                        ],
-                                                        "on": {
-                                                            "click": "reloadTreeFromServer"
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "builtin-action",
-                                                        "dock": "toolbar",
-                                                        "props": {
-                                                            "builtinAction": "message-current",
-                                                            "label": "查看当前节点",
-                                                            "messageType": "info",
-                                                            "message": "当前节点 {title} | 类型 {nodeKind} | 路径 {path}",
-                                                            "emptyMessage": "请先选中一个节点"
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-text",
-                                                        "field": "title",
-                                                        "props": {
-                                                            "label": "标题",
-                                                            "colSpan": 24
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-text",
-                                                        "field": "id",
-                                                        "props": {
-                                                            "label": "节点 ID",
-                                                            "colSpan": 12
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-text",
-                                                        "field": "parentId",
-                                                        "props": {
-                                                            "label": "父节点 ID",
-                                                            "colSpan": 12
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-text",
-                                                        "field": "icon",
-                                                        "props": {
-                                                            "label": "图标",
-                                                            "colSpan": 12
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-number",
-                                                        "field": "sortOrder",
-                                                        "props": {
-                                                            "label": "排序",
-                                                            "colSpan": 12
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-radio",
-                                                        "field": "nodeKind",
-                                                        "props": {
-                                                            "label": "节点类型",
-                                                            "buttonStyle": true,
-                                                            "optionKey": "NodeKindOptions@rows",
-                                                            "optionLabelField": "label",
-                                                            "optionValueField": "value",
-                                                            "colSpan": 24
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-text",
-                                                        "field": "path",
-                                                        "props": {
-                                                            "label": "路径 / URL",
-                                                            "colSpan": 24
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-select",
-                                                        "field": "linkTarget",
-                                                        "props": {
-                                                            "label": "链接打开方式",
-                                                            "optionKey": "LinkTargetOptions@rows",
-                                                            "optionLabelField": "label",
-                                                            "optionValueField": "value",
-                                                            "colSpan": 12
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-select",
-                                                        "field": "childPlacement",
-                                                        "props": {
-                                                            "label": "子项布局",
-                                                            "optionKey": "ChildPlacementOptions@rows",
-                                                            "optionLabelField": "label",
-                                                            "optionValueField": "value",
-                                                            "colSpan": 12
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-switch",
-                                                        "field": "dividerAfter",
-                                                        "props": {
-                                                            "label": "后置分隔线",
-                                                            "colSpan": 8
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-switch",
-                                                        "field": "hidden",
-                                                        "props": {
-                                                            "label": "隐藏",
-                                                            "colSpan": 8
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-switch",
-                                                        "field": "disabled",
-                                                        "props": {
-                                                            "label": "禁用",
-                                                            "colSpan": 8
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-text",
-                                                        "field": "refId",
-                                                        "props": {
-                                                            "label": "引用节点 ID",
-                                                            "colSpan": 24
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-textarea",
-                                                        "field": "description",
-                                                        "props": {
-                                                            "label": "描述",
-                                                            "rows": 4,
-                                                            "colSpan": 24
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
+                                  {
+                                    "type": "builtin-action",
+                                    "props": {
+                                      "builtinAction": "submit-current-form",
+                                      "label": "保存当前节点",
+                                      "successMessage": "当前节点已保存",
+                                      "failureMessage": "当前节点保存失败",
+                                      "validateMessage": "请先修正表单校验错误",
+                                      "disabledWhenRow": {
+                                        "nodeKind": "system-directory",
+                                        "parentId": null
+                                      }
                                     }
+                                  },
+                                  {
+                                    "type": "button",
+                                    "children": [
+                                      "重新拉取树"
+                                    ],
+                                    "on": {
+                                      "click": "reloadTreeFromServer"
+                                    }
+                                  },
+                                  {
+                                    "type": "builtin-action",
+                                    "props": {
+                                      "builtinAction": "message-current",
+                                      "label": "查看当前节点",
+                                      "messageType": "info",
+                                      "message": "当前节点 {title} | 类型 {nodeKind} | 路径 {path}",
+                                      "emptyMessage": "请先选中一个节点"
+                                    }
+                                  }
                                 ]
-                            }
+                              },
+                              {
+                                "type": "r-text",
+                                "field": "title",
+                                "props": {
+                                  "label": "标题",
+                                  "colSpan": 24
+                                }
+                              },
+                              {
+                                "type": "r-text",
+                                "field": "id",
+                                "props": {
+                                  "label": "节点 ID",
+                                  "colSpan": 12
+                                }
+                              },
+                              {
+                                "type": "r-text",
+                                "field": "parentId",
+                                "props": {
+                                  "label": "父节点 ID",
+                                  "colSpan": 12
+                                }
+                              },
+                              {
+                                "type": "r-text",
+                                "field": "icon",
+                                "props": {
+                                  "label": "图标",
+                                  "colSpan": 12
+                                }
+                              },
+                              {
+                                "type": "r-number",
+                                "field": "sortOrder",
+                                "props": {
+                                  "label": "排序",
+                                  "colSpan": 12
+                                }
+                              },
+                              {
+                                "type": "r-radio",
+                                "field": "nodeKind",
+                                "props": {
+                                  "label": "节点类型",
+                                  "buttonStyle": true,
+                                  "optionKey": "NodeKindOptions@rows",
+                                  "optionLabelField": "label",
+                                  "optionValueField": "value",
+                                  "colSpan": 24
+                                }
+                              },
+                              {
+                                "type": "r-text",
+                                "field": "path",
+                                "props": {
+                                  "label": "路径 / URL",
+                                  "colSpan": 24
+                                }
+                              },
+                              {
+                                "type": "r-select",
+                                "field": "linkTarget",
+                                "props": {
+                                  "label": "链接打开方式",
+                                  "optionKey": "LinkTargetOptions@rows",
+                                  "optionLabelField": "label",
+                                  "optionValueField": "value",
+                                  "colSpan": 12
+                                }
+                              },
+                              {
+                                "type": "r-select",
+                                "field": "childPlacement",
+                                "props": {
+                                  "label": "子项布局",
+                                  "optionKey": "ChildPlacementOptions@rows",
+                                  "optionLabelField": "label",
+                                  "optionValueField": "value",
+                                  "colSpan": 12
+                                }
+                              },
+                              {
+                                "type": "r-switch",
+                                "field": "dividerAfter",
+                                "props": {
+                                  "label": "后置分隔线",
+                                  "colSpan": 8
+                                }
+                              },
+                              {
+                                "type": "r-switch",
+                                "field": "hidden",
+                                "props": {
+                                  "label": "隐藏",
+                                  "colSpan": 8
+                                }
+                              },
+                              {
+                                "type": "r-switch",
+                                "field": "disabled",
+                                "props": {
+                                  "label": "禁用",
+                                  "colSpan": 8
+                                }
+                              },
+                              {
+                                "type": "r-text",
+                                "field": "refId",
+                                "props": {
+                                  "label": "引用节点 ID",
+                                  "colSpan": 24
+                                }
+                              },
+                              {
+                                "type": "r-textarea",
+                                "field": "description",
+                                "props": {
+                                  "label": "描述",
+                                  "rows": 4,
+                                  "colSpan": 24
+                                }
+                              }
+                            ]
+                          }
                         ]
-                    }
+                      }
+                    ]
+                  }
                 ]
-            }
+              }
+            ]
+          }
         ]
-    }
+      }
+    ]
+  }
 ]

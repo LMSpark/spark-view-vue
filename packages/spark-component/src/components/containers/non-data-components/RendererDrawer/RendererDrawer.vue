@@ -63,8 +63,9 @@
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
-import { getDockedChildren, nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
+import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
+import { useDockExtraction, OVERLAY_DOCK_TYPES } from '../../docks/dock-extraction'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
 
@@ -72,8 +73,6 @@ interface Props extends Omit<SparkNode, 'type'> {
   type?: string
   /** 子节点 */
   children?: SparkNode[]
-  /** dock 布局配置 */
-  docks?: ContainerDocks
   /** 抽屉标题 */
   title?: string
   /** 控制显隐（v-model） */
@@ -114,23 +113,27 @@ const attrs = useAttrs()
 const slots = useSlots()
 const { context, registerApi } = useSparkPageComponent(props)
 
+const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
+  computed(() => props.children),
+  OVERLAY_DOCK_TYPES,
+)
+
 function readStringAttr(name: string): string {
   const value = attrs[name]
   return typeof value === 'string' ? value : ''
 }
 
-const headerClassValue = computed(() => props.docks?.header?.class ?? readStringAttr('headerClass'))
+const headerClassValue = computed(() => getDockProp<string>('r-header', 'class') ?? readStringAttr('headerClass'))
 const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
-const footerClassValue = computed(() => props.docks?.footer?.class ?? readStringAttr('footerClass'))
+const footerClassValue = computed(() => getDockProp<string>('r-footer', 'class') ?? readStringAttr('footerClass'))
 
 assertNoLegacyDrawerStructures()
 
 const resolvedTitle = computed(() => props.title || '')
-const configChildren = computed(() => props.children ?? [])
-const headerActionConfigs = computed(() => getDockedChildren(configChildren.value, 'header'))
-const footerActionConfigs = computed(() => getDockedChildren(configChildren.value, 'footer'))
+const headerActionConfigs = computed(() => getDockChildren('r-header'))
+const footerActionConfigs = computed(() => getDockChildren('r-footer'))
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: computed(() => getDockedChildren(configChildren.value)),
+  children: computed(() => getSparkNodeChildren(contentChildren.value)),
   columns: computed(() => props.gridColumns),
   gap: computed(() => props.gridGap),
   autoRows: computed(() => props.gridAutoRows),

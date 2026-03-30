@@ -22,6 +22,14 @@ import RendererSection from './containers/non-data-components/RendererSection/in
 import RendererToolbar from './containers/non-data-components/RendererToolbar.vue'
 import BuiltinActionButton from './containers/BuiltinActionButton.vue'
 
+// ── Dock 组件（同步导入） ──
+import DockActions from './containers/docks/DockActions.vue'
+import DockFilter from './containers/docks/DockFilter.vue'
+import DockEditor from './containers/docks/DockEditor.vue'
+import DockHeader from './containers/docks/DockHeader.vue'
+import DockFooter from './containers/docks/DockFooter.vue'
+import DockTail from './containers/docks/DockTail.vue'
+
 // ── 字段组件（同步导入） ──
 import FieldText from './fields/data-components/FieldText.vue'
 import FieldTextarea from './fields/data-components/FieldTextarea.vue'
@@ -69,6 +77,14 @@ export function registerAllRenderers(): void {
   Spark.register('r-toolbar', RendererToolbar)
   Spark.register('r-menu', RendererToolbar)
   Spark.register('builtin-action', BuiltinActionButton)
+
+  // ── Dock 组件：容器内由容器提取、独立使用正常渲染 ──
+  Spark.register('r-actions', DockActions)
+  Spark.register('r-filter', DockFilter)
+  Spark.register('r-editor', DockEditor)
+  Spark.register('r-header', DockHeader)
+  Spark.register('r-footer', DockFooter)
+  Spark.register('r-tail', DockTail)
 
   // ── 字段组件：同步注册（el-table 要求列组件同步就绪） ──
   Spark.register('r-text', FieldText)

@@ -50,11 +50,6 @@
                 "type": "r-table",
                 "dataKey": "DemoData@rows",
                 "props": {
-                  "docks": {
-                    "toolbar": {
-                      "position": "top"
-                    }
-                  },
                   "border": true,
                   "stripe": true,
                   "highlightCurrentRow": true,
@@ -65,8 +60,15 @@
                 },
                 "children": [
                   {
-                    "type": "RenderTableToolbar",
-                    "dock": "toolbar"
+                    "type": "r-toolbar",
+                    "props": {
+                      "position": "top"
+                    },
+                    "children": [
+                      {
+                        "type": "RenderTableToolbar"
+                      }
+                    ]
                   },
                   {
                     "type": "r-text",
@@ -154,8 +156,12 @@
                     }
                   },
                   {
-                    "type": "RenderRowActions",
-                    "dock": "actions"
+                    "type": "r-actions",
+                    "children": [
+                      {
+                        "type": "RenderRowActions"
+                      }
+                    ]
                   }
                 ]
               }

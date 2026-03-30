@@ -33,10 +33,8 @@ export type {
   SparkNodeChildren,
   SparkCapabilityContext,
   LoggerApi,
-  ContainerDocks,
-  DockDescriptor,
 } from '../core/index.js'
-export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, DEFAULT_DOCK, normalizeSparkNode, nodeDock, nodeOrder, getDockedChildren, isSparkNode, getSparkNodeChildren } from '../core/index.js'
+export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode, isSparkNode, getSparkNodeChildren } from '../core/index.js'
 
 // ── 能力键 ──
 export {

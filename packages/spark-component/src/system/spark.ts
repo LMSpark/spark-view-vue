@@ -15,7 +15,7 @@ import { defineAsyncComponent } from 'vue'
 import { createComponentRegistry, getGlobalRegistry } from './registry.js'
 import { createSparkPlugin } from './plugin.js'
 import type { SparkCapabilityContext, ComponentRegistry, SparkNode } from '../core/types.js'
-import { nodeId, nodeDock, nodeOrder, getDockedChildren, DEFAULT_DOCK, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode } from '../core/types.js'
+import { nodeId, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode } from '../core/types.js'
 import { createSparkCapabilityContext } from '../core/capabilities.js'
 
 /* -------------------------------------------------------------------------- */
@@ -167,13 +167,10 @@ export const Spark = {
 
   // ── SparkNode 工具方法 ────────────────────────────────────────────────────
 
-  /** SparkNode 结构键集合（type/props/children/id/dock/order） */
+  /** SparkNode 结构键集合（type/props/children/id） */
   STRUCT_KEYS: SPARK_NODE_STRUCT_KEYS,
 
-  /** 默认停靠区域名 */
-  DEFAULT_DOCK,
-
-  /** 归一化节点结构语义（type/dock/order/children） */
+  /** 归一化节点结构语义（type/children） */
   normalizeNode(node: SparkNode, fallbackType?: string): SparkNode {
     return normalizeSparkNode(node, fallbackType)
   },
@@ -186,35 +183,4 @@ export const Spark = {
   nodeId(node: SparkNode): string | undefined {
     return nodeId(node)
   },
-
-  /**
-   * 读取节点 dock（缺省 / 'default' → ''）
-   *
-   * @example Spark.nodeDock(child) === 'toolbar'
-   */
-  nodeDock(node: SparkNode): string {
-    return nodeDock(node)
-  },
-
-  /**
-   * 读取节点 order（缺省 → 0）
-   */
-  nodeOrder(node: SparkNode): number {
-    return nodeOrder(node)
-  },
-
-  /**
-   * 按 dock 过滤 + order 排序子节点
-   *
-   * 容器组件渲染时调用：
-   * ```ts
-    * const columns = Spark.getDockedChildren(props.children)           // dock=''
-   * const toolbar = Spark.getDockedChildren(props.children, 'toolbar')
-   * const actions = Spark.getDockedChildren(props.children, 'actions')
-   * ```
-   */
-  getDockedChildren(children: SparkNode[] | undefined, dock?: string): SparkNode[] {
-    return getDockedChildren(children, dock)
-  }
 }
-

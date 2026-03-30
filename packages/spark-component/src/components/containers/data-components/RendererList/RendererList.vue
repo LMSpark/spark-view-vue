@@ -4,7 +4,7 @@
  * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件，支持 dock 分区工具栏与项操作区
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string }, actions?: { position?: 'left'|'right', class?: string } }, columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string } }
+ * @input { dataKey: string, props: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string }, actions?: { position?: 'left'|'right', class?: string }, columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string } }
  * @example { "type": "r-list", "dataKey": "Users@rows", "children": [{ "type": "r-text", "name": "name" }] }
  */
 -->
@@ -86,7 +86,7 @@
 import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { getDockedChildren, nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
+import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
@@ -99,6 +99,7 @@ import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
 import { createRendererListZeroCode } from './zero-code'
+import { useDockExtraction, LIST_DOCK_TYPES } from '../../docks/dock-extraction'
 import {
   type AddRowHandler,
   type EditRowHandler,
@@ -112,8 +113,6 @@ interface Props extends Omit<SparkNode, 'type'> {
   dataKey?: string
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
-  /** 停靠区域显示配置 */
-  docks?: ContainerDocks
   /** 列数 */
   columns?: number
   /** 列表项间距 */
@@ -150,7 +149,6 @@ interface Props extends Omit<SparkNode, 'type'> {
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-list',
-  docks: () => ({}),
   columns: 1,
   gap: 0,
   minItemWidth: '',
@@ -185,12 +183,17 @@ const legacyItemActionsValue = computed<SparkNode[]>(() => {
 
 assertNoLegacyListStructures()
 
+const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
+  computed(() => props.children),
+  LIST_DOCK_TYPES,
+)
+
 const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
-  return getDockedChildren(props.children)
+  return getSparkNodeChildren(contentChildren.value)
 })
-const dockedToolbar = computed(() => getDockedChildren(props.children, 'toolbar'))
-const dockedItemActions = computed(() => getDockedChildren(props.children, 'actions'))
+const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
+const dockedItemActions = computed(() => getDockChildren('r-actions'))
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
@@ -219,8 +222,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => dockedToolbar.value),
-  toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.docks?.toolbar?.class),
+  toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
+  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -233,8 +236,8 @@ const {
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => dockedItemActions.value),
-  actionPosition: computed(() => props.docks?.actions?.position as LateralActionPosition | undefined ?? legacyItemActionsPositionValue.value ?? 'right'),
-  actionClass: computed(() => props.docks?.actions?.class ?? readStringAttr('itemActionsClass') ?? ''),
+  actionPosition: computed(() => getDockProp<LateralActionPosition>('r-actions', 'position') ?? legacyItemActionsPositionValue.value ?? 'right'),
+  actionClass: computed(() => getDockProp<string>('r-actions', 'class') ?? readStringAttr('itemActionsClass') ?? ''),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

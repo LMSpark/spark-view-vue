@@ -78,14 +78,12 @@ import type { IDataRow, IDataSource } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
 import { resolveSparkHost } from '../core/useSparkHost.js'
 import {
-  SPARK_REGISTRY_KEY,
   nodeId,
-  nodeDock,
-  DEFAULT_DOCK,
   isSparkNode,
   normalizeSparkNode,
 } from '../core/types.js'
 import type { SparkNode, SparkNodeChildren, SparkCapabilityContext, ComponentRegistry, ComponentChildrenMode } from '../core/types.js'
+import { SPARK_REGISTRY_KEY } from '../system/keys.js'
 import { DATA_ROW, DATA_SOURCE, consumeSparkCapability } from '../core/capabilities.js'
 import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
 import type { BeforeRenderContext } from './support/beforeRender.js'
@@ -174,7 +172,7 @@ const currentRendererComponent = currentInstance?.type ?? null
 
 /**
  * children 归一：
- * 1. 只保留默认停靠位的 SparkNode，避免已被父容器消费的 dock 子节点再次进入默认渲染流。
+ * 1. 保留 SparkNode 子节点（dock area 子节点已通过 dock props 由父容器消费，不再进入默认流）。
  * 2. 保留字符串/数字字面量，供统一 slot / fallback 路径直接渲染成文本节点。
  */
 function normalizeRenderableChildren(children: SparkNodeChildren | undefined): RenderableChild[] {
@@ -183,9 +181,7 @@ function normalizeRenderableChildren(children: SparkNodeChildren | undefined): R
   const normalized: RenderableChild[] = []
   for (const child of children) {
     if (isSparkNode(child)) {
-      if (nodeDock(child) === DEFAULT_DOCK) {
-        normalized.push(child)
-      }
+      normalized.push(child)
       continue
     }
     if (typeof child === 'string' || typeof child === 'number') {
@@ -689,8 +685,8 @@ const externalComponentProps = computed(() => {
  *   - 业务输入 → config.props
  *   - 结构输入 → type / id / children
  *
- * `dock/order` 属于父容器布局元数据（父容器通过 getDockedChildren 在渲染前已消费），
- * 不应透传到业务组件——否则会继续作为 fallthrough attrs 污染到根子组件。
+ * dock area 配置已作为组件直接 props（如 toolbar / actions）传递，
+ * 不再通过子节点 dock 属性路由。
  *
  * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
  */

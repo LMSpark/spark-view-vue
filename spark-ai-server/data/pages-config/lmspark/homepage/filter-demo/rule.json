@@ -105,65 +105,66 @@
             }
           },
           {
-            "type": "r-text",
-            "dock": "filter",
-            "field": "name",
-            "props": {
-              "label": "姓名"
-            }
-          },
-          {
-            "type": "r-select",
-            "dock": "filter",
-            "field": "department",
-            "props": {
-              "label": "部门",
-              "options": [
-                {
-                  "label": "技术部",
-                  "value": "技术部"
-                },
-                {
-                  "label": "产品部",
-                  "value": "产品部"
-                },
-                {
-                  "label": "设计部",
-                  "value": "设计部"
-                },
-                {
-                  "label": "市场部",
-                  "value": "市场部"
+            "type": "r-filter",
+            "children": [
+              {
+                "type": "r-text",
+                "field": "name",
+                "props": {
+                  "label": "姓名"
                 }
-              ]
-            }
-          },
-          {
-            "type": "r-multi-select",
-            "dock": "filter",
-            "field": "status",
-            "props": {
-              "label": "状态",
-              "options": [
-                {
-                  "label": "在职",
-                  "value": "在职"
-                },
-                {
-                  "label": "离职",
-                  "value": "离职"
+              },
+              {
+                "type": "r-select",
+                "field": "department",
+                "props": {
+                  "label": "部门",
+                  "options": [
+                    {
+                      "label": "技术部",
+                      "value": "技术部"
+                    },
+                    {
+                      "label": "产品部",
+                      "value": "产品部"
+                    },
+                    {
+                      "label": "设计部",
+                      "value": "设计部"
+                    },
+                    {
+                      "label": "市场部",
+                      "value": "市场部"
+                    }
+                  ]
                 }
-              ]
-            }
-          },
-          {
-            "type": "r-number",
-            "dock": "filter",
-            "field": "salary",
-            "props": {
-              "label": "薪资",
-              "filterMode": "range"
-            }
+              },
+              {
+                "type": "r-multi-select",
+                "field": "status",
+                "props": {
+                  "label": "状态",
+                  "options": [
+                    {
+                      "label": "在职",
+                      "value": "在职"
+                    },
+                    {
+                      "label": "离职",
+                      "value": "离职"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-number",
+                "field": "salary",
+                "props": {
+                  "label": "薪资",
+                  "filterMode": "range"
+                }
+              }
+            ]
           }
         ]
       }

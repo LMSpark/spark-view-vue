@@ -5,7 +5,7 @@
  * @provides DATA_SOURCE
  * @provides DATA_ROW
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, nodeKey?: string, lazy?: boolean } }
+ * @input { dataKey: string, props: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string }, nodeKey?: string, lazy?: boolean } }
  * @example { "type": "r-tree", "dataKey": "departments@rows", "props": { "nodeKey": "id" } }
  */
 -->
@@ -71,7 +71,7 @@
  */
 import { computed, ref } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
+import { nodeId, type SparkNode } from '../../../internal'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { isPermittedAction } from '../../../../permission/index.js'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
@@ -122,8 +122,6 @@ interface Props {
   expandLevel?: number
   /** 子节点（树节点内容配置） */
   children?: SparkNode[]
-  /** 停靠区域显示配置 */
-  docks?: ContainerDocks
   /** 允许追加子节点（自动生成追加按钮） */
   allowAppend?: boolean
   /** 允许删除节点（自动生成删除按钮） */
@@ -160,6 +158,7 @@ const {
   editorClassValue,
   editorStyleValue,
   showEditor,
+  getDockProp,
 } = useRendererTreeInput({ props })
 
 // 接入 SPARK 能力链
@@ -192,8 +191,8 @@ const {
   toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => dockedToolbar.value),
-  toolbarPosition: computed(() => props.docks?.toolbar?.position as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.docks?.toolbar?.class),
+  toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
+  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -203,7 +202,7 @@ const {
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => [...dockedNodeActions.value]),
   actionPosition: computed(() => 'right'),
-  actionClass: computed(() => props.docks?.actions?.class),
+  actionClass: computed(() => getDockProp<string>('r-actions', 'class')),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

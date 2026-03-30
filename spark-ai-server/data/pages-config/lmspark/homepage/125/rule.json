@@ -86,8 +86,12 @@
             }
           },
           {
-            "type": "RenderRowActions",
-            "dock": "actions"
+            "type": "r-actions",
+            "children": [
+              {
+                "type": "RenderRowActions"
+              }
+            ]
           }
         ]
       }

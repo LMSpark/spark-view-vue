@@ -1,21 +1,20 @@
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
-import { getDockedChildren, type SparkNode } from '../../internal'
+import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { DATA_ROW } from '../../internal'
-import type { ContainerDocks } from '../../internal'
+import { useDockExtraction, FORM_DOCK_TYPES } from '../docks/dock-extraction'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../data/useContainerDataSource'
 import { useContainerContextData } from './useContainerContextData'
-import { useContainerToolbar } from '../layout/useContainerToolbar'
+import { useContainerToolbar, type ToolbarPosition } from '../layout/useContainerToolbar'
 import { createCurrentRowSlotScope } from '../slotScopeFactories'
 
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
   children?: SparkNode[]
-  docks?: ContainerDocks
   gridColumns: number | undefined
   gridGap: number | string | undefined
   gridAutoRows: string | undefined
@@ -26,15 +25,16 @@ export function useFormDetailContainer(
   containerType: 'r-form' | 'r-detail',
 ) {
   const effectiveDataKey = computed(() => props.dataKey)
-  const configChildren = computed<SparkNode[]>(() => {
-    const c = props.children
-    return Array.isArray(c) && c.length > 0 ? c : []
-  })
 
-  const dockedToolbar = computed(() => getDockedChildren(configChildren.value, 'toolbar'))
+  const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
+    computed(() => props.children),
+    FORM_DOCK_TYPES,
+  )
+
+  const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
 
   const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-    children: computed(() => getDockedChildren(configChildren.value)),
+    children: computed(() => getSparkNodeChildren(contentChildren.value)),
     columns: computed(() => props.gridColumns ?? 24),
     gap: computed(() => props.gridGap ?? 0),
     autoRows: computed(() => props.gridAutoRows ?? 'minmax(32px, auto)'),
@@ -69,8 +69,8 @@ export function useFormDetailContainer(
     showToolbar,
   } = useContainerToolbar({
     toolbar: computed(() => dockedToolbar.value),
-    toolbarPosition: computed(() => props.docks?.toolbar?.position),
-    toolbarClass: computed(() => props.docks?.toolbar?.class),
+    toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
+    toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
     modelPermission,
     dataSource: computed(() => resolvedView.value),
   })

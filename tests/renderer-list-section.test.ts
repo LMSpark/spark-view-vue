@@ -54,12 +54,11 @@ describe('RendererList and RendererSection container integration', () => {
       dataSet: ds,
       props: {
         dataKey: 'Users@rows',
-        docks: { toolbar: { position: 'bottom' }, actions: { position: 'left' } },
         gridGap: 12,
         itemColSpan: 12,
         children: [
-          { type: 'list-toolbar-action', dock: 'toolbar' },
-          { type: 'list-item-delete', dock: 'actions', props: { permAction: 'delete' } },
+          { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'list-toolbar-action' }] },
+          { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }] },
         ],
       },
       slots: {
@@ -252,7 +251,7 @@ describe('RendererList and RendererSection container integration', () => {
         description: 'desc',
         collapsible: true,
         defaultCollapsed: true,
-        children: [{ type: 'section-header-action', dock: 'header' }],
+        children: [{ type: 'r-header', children: [{ type: 'section-header-action' }] }],
       },
       slots: {
         'header-actions': ({ collapsed, toggleCollapsed }: Record<string, unknown>) => h('button', {

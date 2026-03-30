@@ -83,7 +83,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       dataSet: ds,
       props: {
         dataKey: 'Users@currentRow',
-        children: [{ type: 'form-toolbar-action', dock: 'toolbar' }],
+        children: [{ type: 'r-toolbar', children: [{ type: 'form-toolbar-action' }] }],
       },
       slots: {
         default: ({ model }: Record<string, unknown>) => h('div', {
@@ -175,7 +175,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       dataSet: ds,
       props: {
         dataKey: 'Users@currentRow',
-        children: [{ type: 'detail-toolbar-action', dock: 'toolbar' }],
+        children: [{ type: 'r-toolbar', children: [{ type: 'detail-toolbar-action' }] }],
       },
       slots: {
         default: ({ row }: Record<string, unknown>) => h('div', {

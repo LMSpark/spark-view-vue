@@ -28,7 +28,7 @@ describe('RendererToolbar integration', () => {
         children: [
           { type: 'action-a' },
           { type: 'action-b' },
-          { type: 'action-tail', dock: 'tail' },
+          { type: 'r-tail', children: [{ type: 'action-tail' }] },
         ],
       },
       global: {
@@ -58,16 +58,12 @@ describe('RendererToolbar integration', () => {
     expect(endItems[0]?.attributes('data-type')).toBe('action-tail')
   })
 
-  it('should apply dock-specific classes from docks prop', () => {
+  it('should apply dock-specific classes from dock node props', () => {
     const wrapper = mount(RendererToolbar as any, {
       props: {
-        docks: {
-          default: { class: 'toolbar-main-zone' },
-          tail: { class: 'toolbar-tail-zone' },
-        },
         children: [
           { type: 'main-action' },
-          { type: 'tail-action', dock: 'tail' },
+          { type: 'r-tail', props: { class: 'toolbar-tail-zone' }, children: [{ type: 'tail-action' }] },
         ],
       },
       global: {
@@ -77,7 +73,6 @@ describe('RendererToolbar integration', () => {
       },
     })
 
-    expect(wrapper.find('.renderer-toolbar-lane--start').classes()).toContain('toolbar-main-zone')
     expect(wrapper.find('.renderer-toolbar-lane--end').classes()).toContain('toolbar-tail-zone')
   })
 })

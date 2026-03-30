@@ -77,8 +77,8 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
         modelValue: true,
         gridGap: 12,
         children: [
-          { type: 'dialog-header-action', dock: 'header' },
-          { type: 'dialog-footer-action', dock: 'footer' },
+          { type: 'r-header', children: [{ type: 'dialog-header-action' }] },
+          { type: 'r-footer', children: [{ type: 'dialog-footer-action' }] },
           { type: 'child-a', props: { colSpan: 8 } },
           { type: 'child-b', props: { colSpan: 16 } },
         ],
@@ -164,7 +164,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
       props: {
         onStepChange,
         children: [
-          { type: 'steps-toolbar-action', dock: 'toolbar' },
+          { type: 'r-toolbar', children: [{ type: 'steps-toolbar-action' }] },
           {
             type: 'r-step',
             props: { title: '步骤一', name: 'step1', gridGap: 16 },

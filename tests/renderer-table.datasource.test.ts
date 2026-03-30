@@ -1468,10 +1468,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
       dataSet: toolbarDataSet,
       props: {
         dataKey: 'Users@rows',
-        docks: { toolbar: { position: 'bottom' }, actions: { position: 'left' } },
         children: [
-          { type: 'toolbar-button', dock: 'toolbar' },
-          { type: 'row-button', dock: 'actions', on: { click: rowActionSpy } },
+          { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'toolbar-button' }] },
+          { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'row-button', on: { click: rowActionSpy } }] },
         ],
       },
       global: {
@@ -1524,23 +1523,26 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'append-row',
-            label: '新增',
-            appendPayload: { id: 2, name: 'Bob' },
-            successMessage: '',
-          },
-        },
-        {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'refresh',
-            label: '刷新',
-            successMessage: '',
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'append-row',
+                label: '新增',
+                appendPayload: { id: 2, name: 'Bob' },
+                successMessage: '',
+              },
+            },
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'refresh',
+                label: '刷新',
+                successMessage: '',
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -1595,13 +1597,17 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'refresh',
-            label: '刷新',
-            silent: true,
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'refresh',
+                label: '刷新',
+                silent: true,
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -1647,14 +1653,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'append-row',
-            label: '新增',
-            appendPayload: { id: 2, name: 'Bob' },
-            successMessage: '',
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'append-row',
+                label: '新增',
+                appendPayload: { id: 2, name: 'Bob' },
+                successMessage: '',
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -1702,14 +1712,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'actions',
-          props: {
-            builtinAction: 'delete-row',
-            label: '删除',
-            successMessage: '',
-            confirmMessage: '',
-          },
+          type: 'r-actions',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'delete-row',
+                label: '删除',
+                successMessage: '',
+                confirmMessage: '',
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -1754,14 +1768,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'delete-selected',
-            label: '删除勾选',
-            successMessage: '',
-            confirmMessage: '',
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'delete-selected',
+                label: '删除勾选',
+                successMessage: '',
+                confirmMessage: '',
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -1803,14 +1821,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'append-row',
-            label: '新增静默',
-            appendPayload: { id: 2, name: 'Bob' },
-            silent: true,
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'append-row',
+                label: '新增静默',
+                appendPayload: { id: 2, name: 'Bob' },
+                silent: true,
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -1859,13 +1881,17 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'refresh',
-            label: '刷新',
-            errorMessage: '刷新失败',
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'refresh',
+                label: '刷新',
+                errorMessage: '刷新失败',
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -1914,15 +1940,19 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'delete-selected',
-            label: '删除勾选',
-            idField: 'uid',
-            confirmMessage: '',
-            failureMessage: '没有可删除记录',
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'delete-selected',
+                label: '删除勾选',
+                idField: 'uid',
+                confirmMessage: '',
+                failureMessage: '没有可删除记录',
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -1955,9 +1985,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mount(RendererTree as any, {
       props: {
         data: [{ id: 'node-1', label: '节点 1' }],
-        docks: { toolbar: { position: 'right' } },
         children: [
-          { type: 'tree-toolbar', dock: 'toolbar' },
+          { type: 'r-toolbar', props: { position: 'right' }, children: [{ type: 'tree-toolbar' }] },
           { type: 'node-button', on: { click: nodeActionSpy } },
         ],
       },
@@ -2001,13 +2030,17 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = await mountRendererTreeWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'refresh',
-            label: '刷新导航树',
-            successMessage: '',
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'refresh',
+                label: '刷新导航树',
+                successMessage: '',
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -2035,8 +2068,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       dataSet: slotDataSet,
       props: {
         dataKey: 'Users@rows',
-        docks: { actions: { position: 'right' } },
-        children: [{ type: 'biz-toolbar', dock: 'toolbar' }],
+        children: [{ type: 'r-toolbar', children: [{ type: 'biz-toolbar' }] }],
       },
       slots: {
         'row-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
@@ -2072,7 +2104,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         props: {
           dataKey: 'Users@rows',
           toolbar: [{ type: 'legacy-toolbar-button' }],
-          children: [{ type: 'toolbar-button', dock: 'toolbar' }],
+          children: [{ type: 'r-toolbar', children: [{ type: 'toolbar-button' }] }],
         },
         global: {
           components: {
@@ -2109,23 +2141,24 @@ describe('RendererTable - DataView as single data intermediary', () => {
       })).toThrow('props.rowActions 已废除')
     })
 
-    withSilencedConsoleWarn(() => {
-      const failFastDataSet = createInlineDataSet('Users', [{ id: 1 }])
-      expect(() => mountWithPageDataSet(RendererTable as any, {
-        dataSet: failFastDataSet,
-        props: {
-          dataKey: 'Users@rows',
-          children: [{ type: 'RenderRowActions' }],
-        },
-        global: {
-          stubs: {
-            'el-table': ElTableStub,
-            'el-table-column': ElTableColumnStub,
-            SparkComponentRenderer: SparkColumnRendererStub,
-          }
+    // 在新 dock-as-children 模型中，非列节点在默认区被静默过滤（不渲染也不报错）
+    const silentFilterDataSet = createInlineDataSet('Users', [{ id: 1 }])
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: silentFilterDataSet,
+      props: {
+        dataKey: 'Users@rows',
+        children: [{ type: 'RenderRowActions' }],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
         }
-      })).toThrow('默认区仅允许列节点')
+      }
     })
+    // RenderRowActions 不是列节点，应被静默过滤
+    expect(wrapper.findAll('.el-table-column-stub')).toHaveLength(0)
   })
 
   it('should render primitive field configs as direct table columns', () => {
@@ -2251,7 +2284,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
     const dv = ds.getView('Nodes', 'default')!
     const wrapper = await mountRendererTreeWithView(dv, {
-      children: [{ type: 'biz-tree-toolbar', dock: 'toolbar' }],
+      children: [{ type: 'r-toolbar', children: [{ type: 'biz-tree-toolbar' }] }],
     }, {
       slots: {
         default: ({ data }: Record<string, unknown>) => h('span', {
@@ -2284,15 +2317,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
     const dv = ds.getView('Nodes', 'default')!
     const wrapper = await mountRendererTreeWithView(dv, {
-      docks: {
-        editor: {
-          position: 'right',
-          class: 'tree-editor-panel',
-        },
-      },
       children: [
         { type: 'tree-node-content' },
-        { type: 'tree-editor-template', dock: 'editor' },
+        { type: 'r-editor', props: { position: 'right', class: 'tree-editor-panel' }, children: [{ type: 'tree-editor-template' }] },
       ],
     }, {
       global: {
@@ -2319,10 +2346,14 @@ describe('RendererTable - DataView as single data intermediary', () => {
       props: {
         dataKey: 'Users@rows',
         children: [
-          { type: 'create-button', dock: 'toolbar', props: { permAction: 'create' } },
-          { type: 'export-button', dock: 'toolbar', props: { permAction: 'export' } },
-          { type: 'delete-row', dock: 'actions', props: { permAction: 'delete' } },
-          { type: 'plain-row', dock: 'actions' },
+          { type: 'r-toolbar', children: [
+            { type: 'create-button', props: { permAction: 'create' } },
+            { type: 'export-button', props: { permAction: 'export' } },
+          ] },
+          { type: 'r-actions', children: [
+            { type: 'delete-row', props: { permAction: 'delete' } },
+            { type: 'plain-row' },
+          ] },
         ],
       },
       global: {
@@ -2366,11 +2397,15 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const wrapper = await mountRendererTreeWithView(dv, {
       children: [
-        { type: 'import-tree', dock: 'toolbar', props: { permAction: 'import' } },
-        { type: 'export-tree', dock: 'toolbar', props: { permAction: 'export' } },
-        { type: 'create-child-node', dock: 'actions', props: { permAction: 'create-child' } },
-        { type: 'delete-node', dock: 'actions', props: { permAction: 'delete' } },
-        { type: 'plain-node', dock: 'actions' },
+        { type: 'r-toolbar', children: [
+          { type: 'import-tree', props: { permAction: 'import' } },
+          { type: 'export-tree', props: { permAction: 'export' } },
+        ] },
+        { type: 'r-actions', children: [
+          { type: 'create-child-node', props: { permAction: 'create-child' } },
+          { type: 'delete-node', props: { permAction: 'delete' } },
+          { type: 'plain-node' },
+        ] },
       ],
     }, {
       global: {
@@ -2418,17 +2453,21 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = await mountRendererTreeWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'actions',
-          props: {
-            builtinAction: 'append-row',
-            permAction: 'create-child',
-            label: '新增子节点',
-            setCurrentRowOnSuccess: true,
-            appendPayload: { label: '新增节点' },
-            inheritFieldMap: { parentId: 'id' },
-            successMessage: '',
-          },
+          type: 'r-actions',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'append-row',
+                permAction: 'create-child',
+                label: '新增子节点',
+                setCurrentRowOnSuccess: true,
+                appendPayload: { label: '新增节点' },
+                inheritFieldMap: { parentId: 'id' },
+                successMessage: '',
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -2473,22 +2512,30 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         {
-          type: 'builtin-action',
-          dock: 'toolbar',
-          props: {
-            builtinAction: 'append-row',
-            label: '隐藏工具栏动作',
-            onBeforeRender: () => false,
-          },
+          type: 'r-toolbar',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'append-row',
+                label: '隐藏工具栏动作',
+                onBeforeRender: () => false,
+              },
+            },
+          ],
         },
         {
-          type: 'builtin-action',
-          dock: 'actions',
-          props: {
-            builtinAction: 'delete-row',
-            label: '禁用行动作',
-            onBeforeRender: ({ row }: { row?: IDataRow | null }) => ({ disabled: row !== null && row !== undefined }),
-          },
+          type: 'r-actions',
+          children: [
+            {
+              type: 'builtin-action',
+              props: {
+                builtinAction: 'delete-row',
+                label: '禁用行动作',
+                onBeforeRender: ({ row }: { row?: IDataRow | null }) => ({ disabled: row !== null && row !== undefined }),
+              },
+            },
+          ],
         },
       ],
     }, {
@@ -2532,7 +2579,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       children: [
         { type: 'r-text', props: { field: 'name', label: '姓名' } },
         { type: 'r-number', props: { field: 'age', label: '年龄' } },
-        { type: 'r-text', dock: 'filter', props: { field: 'name', label: '姓名' } },
+        { type: 'r-filter', children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }] },
       ],
     }, {
       global: {
@@ -2581,7 +2628,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv, {
       children: [
         { type: 'r-text', props: { field: 'name', label: '姓名' } },
-        { type: 'r-text', dock: 'filter', props: { field: 'name', label: '姓名' } },
+        { type: 'r-filter', children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }] },
       ],
     }, {
       global: {
@@ -2627,7 +2674,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const wrapper = mountRendererTableWithView(dv, {
       children: [
-        { type: 'r-text', dock: 'filter', props: { field: 'name', label: '姓名' } },
+        { type: 'r-filter', children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }] },
       ],
     }, {
       global: {
@@ -2672,8 +2719,10 @@ describe('RendererTable - DataView as single data intermediary', () => {
       children: [
         { type: 'r-number', props: { field: 'score', label: '分数', filterMode: 'range' } },
         { type: 'r-multi-select', props: { field: 'status', label: '状态' } },
-        { type: 'r-number', dock: 'filter', props: { field: 'score', label: '分数', filterMode: 'range' } },
-        { type: 'r-multi-select', dock: 'filter', props: { field: 'status', label: '状态' } },
+        { type: 'r-filter', children: [
+          { type: 'r-number', props: { field: 'score', label: '分数', filterMode: 'range' } },
+          { type: 'r-multi-select', props: { field: 'status', label: '状态' } },
+        ] },
       ],
     }, {
       global: {
@@ -2715,7 +2764,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       filterDefaultCollapsed: true,
       children: [
         { type: 'r-text', props: { field: 'name', label: '姓名' } },
-        { type: 'r-text', dock: 'filter', props: { field: 'name', label: '姓名' } },
+        { type: 'r-filter', children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }] },
       ],
     }, {
       global: {

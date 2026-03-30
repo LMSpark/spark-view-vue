@@ -16,3 +16,4 @@ export { createSparkPlugin } from './plugin.js'
 export type { SparkPluginOptions } from './plugin.js'
 
 export { createComponentRegistry, getGlobalRegistry } from './registry.js'
+

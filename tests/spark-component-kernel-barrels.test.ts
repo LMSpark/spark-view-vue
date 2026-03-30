@@ -23,14 +23,12 @@ describe('spark-component kernel barrels', () => {
         'DATA_SOURCE',
         'SPARK_REGISTRY_KEY',
         'SPARK_NODE_STRUCT_KEYS',
-        'DEFAULT_DOCK',
       ].includes(key)),
       system: sortedKeys(SystemApi),
     }).toMatchInlineSnapshot(`
       {
         "core": [
           "DATA_SOURCE",
-          "DEFAULT_DOCK",
           "PAGE_DATASET",
           "SPARK_NODE_STRUCT_KEYS",
           "SPARK_REGISTRY_KEY",

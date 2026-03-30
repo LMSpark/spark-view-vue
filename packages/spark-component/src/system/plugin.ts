@@ -9,11 +9,11 @@
 
 import type { App, Plugin } from 'vue'
 import { shallowReactive } from 'vue'
-import { SPARK_REGISTRY_KEY } from '../core/types.js'
 import type { ComponentRegistry } from '../core/types.js'
 import { createSparkCapabilityContext } from '../core/capabilities.js'
 import { bindAppRootCapabilityContext } from '../internal/capability-context.js'
 import { getGlobalRegistry } from './registry.js'
+import { SPARK_REGISTRY_KEY } from './keys.js'
 import { DataView } from '@spark-view/spark-data'
 
 export interface SparkPluginOptions {

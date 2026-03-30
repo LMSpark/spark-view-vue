@@ -39,17 +39,19 @@
             "props": {
               "border": true,
               "stripe": true,
-              "highlightCurrentRow": true,
-              "docks": {
-                "toolbar": {
-                  "position": "top"
-                }
-              }
+              "highlightCurrentRow": true
             },
             "children": [
               {
-                "type": "RenderSearchBar",
-                "dock": "toolbar"
+                "type": "r-toolbar",
+                "props": {
+                  "position": "top"
+                },
+                "children": [
+                  {
+                    "type": "RenderSearchBar"
+                  }
+                ]
               },
               {
                 "type": "r-text",

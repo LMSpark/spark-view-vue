@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-27T18:23:43.207Z
- * 条目数量：84
+ * 生成时间：2026-03-30T04:56:35.386Z
+ * 条目数量：95
  */
 import type { ComponentCatalog } from './catalog-types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-27T18:23:43.201Z",
-  "componentCount": 84,
+  "buildTime": "2026-03-30T04:56:35.381Z",
+  "componentCount": 95,
   "registry": {
     "containers": [
       "r-block",
@@ -137,13 +137,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "DataKey 格式：tableName@field"
-        },
-        {
-          "name": "docks",
-          "type": "ContainerDocks",
-          "required": false,
-          "default": "{}",
-          "description": "停靠区域显示配置"
         }
       ],
       "rootFields": [
@@ -169,17 +162,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。",
       "props": [
         {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-form\""
+        },
+        {
           "name": "dataKey",
           "type": "string",
           "required": false,
           "description": "数据绑定键，如 \"Users@currentRow\""
-        },
-        {
-          "name": "docks",
-          "type": "ContainerDocks",
-          "required": false,
-          "default": "{}",
-          "description": "停靠区域显示配置"
         },
         {
           "name": "labelWidth",
@@ -210,13 +202,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "栅格行高"
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-form\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -227,18 +212,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "rootFields": [
@@ -289,17 +262,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。",
       "props": [
         {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-detail\""
+        },
+        {
           "name": "dataKey",
           "type": "string",
           "required": false,
           "description": "数据绑定键"
-        },
-        {
-          "name": "docks",
-          "type": "ContainerDocks",
-          "required": false,
-          "default": "{}",
-          "description": "停靠区域显示配置"
         },
         {
           "name": "gridColumns",
@@ -337,13 +309,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "值对齐"
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-detail\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -354,18 +319,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "rootFields": [
@@ -460,12 +413,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "初始化自动展开到指定层级（根节点为第 1 层）"
         },
         {
-          "name": "docks",
-          "type": "ContainerDocks",
-          "required": false,
-          "description": "停靠区域显示配置"
-        },
-        {
           "name": "allowAppend",
           "type": "boolean",
           "required": false,
@@ -536,17 +483,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。",
       "props": [
         {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-list\""
+        },
+        {
           "name": "dataKey",
           "type": "string",
           "required": false,
           "description": "数据绑定键"
-        },
-        {
-          "name": "docks",
-          "type": "ContainerDocks",
-          "required": false,
-          "default": "{}",
-          "description": "停靠区域显示配置"
         },
         {
           "name": "columns",
@@ -646,13 +592,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "项跨行数"
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-list\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -663,18 +602,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "rootFields": [
@@ -785,24 +712,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。",
       "props": [
         {
-          "name": "docks",
-          "type": "ContainerDocks",
+          "name": "type",
+          "type": "string",
           "required": false,
-          "default": "{}",
-          "description": "停靠区域显示配置"
+          "default": "\"r-tabs\""
         },
         {
           "name": "modelValue",
           "type": "string | number",
           "required": false,
           "description": "当前激活标签页"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-tabs\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -815,18 +734,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -884,24 +791,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。",
       "props": [
         {
-          "name": "docks",
-          "type": "ContainerDocks",
+          "name": "type",
+          "type": "string",
           "required": false,
-          "default": "{}",
-          "description": "停靠区域显示配置"
+          "default": "\"r-collapse\""
         },
         {
           "name": "modelValue",
           "type": "CollapseValue",
           "required": false,
           "description": "当前展开的面板"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-collapse\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -914,18 +813,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -979,24 +866,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。",
       "props": [
         {
-          "name": "docks",
-          "type": "ContainerDocks",
+          "name": "type",
+          "type": "string",
           "required": false,
-          "default": "{}",
-          "description": "停靠区域显示配置"
+          "default": "\"r-steps\""
         },
         {
           "name": "modelValue",
           "type": "string | number",
           "required": false,
           "description": "当前步骤"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-steps\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -1009,18 +888,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -1073,10 +940,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。",
       "props": [
         {
-          "name": "docks",
-          "type": "ContainerDocks",
+          "name": "type",
+          "type": "string",
           "required": false,
-          "description": "dock 布局配置"
+          "default": "\"r-dialog\""
         },
         {
           "name": "title",
@@ -1121,13 +988,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "栅格行高"
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-dialog\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -1138,18 +998,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -1242,10 +1090,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。",
       "props": [
         {
-          "name": "docks",
-          "type": "ContainerDocks",
+          "name": "type",
+          "type": "string",
           "required": false,
-          "description": "dock 布局配置"
+          "default": "\"r-drawer\""
         },
         {
           "name": "title",
@@ -1290,13 +1138,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "栅格行高"
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-drawer\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -1307,18 +1148,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -1391,10 +1220,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。",
       "props": [
         {
-          "name": "docks",
-          "type": "ContainerDocks",
+          "name": "type",
+          "type": "string",
           "required": false,
-          "description": "dock 布局配置"
+          "default": "\"r-section\""
         },
         {
           "name": "title",
@@ -1509,13 +1338,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "栅格行高"
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-section\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -1526,18 +1348,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "rootFields": [
@@ -1669,11 +1479,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。",
       "props": [
         {
-          "name": "modelValue",
-          "type": "EntityPickerValue",
-          "required": false
-        },
-        {
           "name": "name",
           "type": "string",
           "required": false
@@ -1684,13 +1489,23 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
-          "name": "field",
+          "name": "modelValue",
+          "type": "EntityPickerValue",
+          "required": false
+        },
+        {
+          "name": "placeholder",
           "type": "string",
           "required": false
         },
         {
           "name": "width",
           "type": "number",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
           "required": false
         },
         {
@@ -1710,11 +1525,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "optionValueField",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
           "type": "string",
           "required": false
         },
@@ -1796,11 +1606,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。",
       "props": [
         {
-          "name": "modelValue",
-          "type": "EntityPickerValue",
-          "required": false
-        },
-        {
           "name": "name",
           "type": "string",
           "required": false
@@ -1811,13 +1616,23 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
-          "name": "field",
+          "name": "modelValue",
+          "type": "EntityPickerValue",
+          "required": false
+        },
+        {
+          "name": "placeholder",
           "type": "string",
           "required": false
         },
         {
           "name": "width",
           "type": "number",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
           "required": false
         },
         {
@@ -1837,11 +1652,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "optionValueField",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
           "type": "string",
           "required": false
         },
@@ -1923,11 +1733,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。",
       "props": [
         {
-          "name": "modelValue",
-          "type": "EntityPickerValue",
-          "required": false
-        },
-        {
           "name": "name",
           "type": "string",
           "required": false
@@ -1938,13 +1743,23 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false
         },
         {
-          "name": "field",
+          "name": "modelValue",
+          "type": "EntityPickerValue",
+          "required": false
+        },
+        {
+          "name": "placeholder",
           "type": "string",
           "required": false
         },
         {
           "name": "width",
           "type": "number",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
           "required": false
         },
         {
@@ -1964,11 +1779,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "optionValueField",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
           "type": "string",
           "required": false
         },
@@ -2050,11 +1860,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。",
       "props": [
         {
-          "name": "docks",
-          "type": "ContainerDocks",
+          "name": "type",
+          "type": "string",
           "required": false,
-          "default": "{}",
-          "description": "dock 显示描述符。\r\n\r\n这里只读取区域级 class，用于给 default/tail 区域挂样式钩子；\r\n不在第一版里引入更多位置/交互语义，避免重新把结构做重。"
+          "default": "\"r-toolbar\""
         },
         {
           "name": "gap",
@@ -2085,20 +1894,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "主区内部子项的主轴分布方式"
         },
         {
-          "name": "tailDock",
-          "type": "string",
-          "required": false,
-          "default": "\"tail\"",
-          "description": "尾区使用的 dock 名称，默认 tail，保留未来自定义命名空间能力"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-toolbar\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -2109,18 +1904,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ]
     },
@@ -2477,18 +2260,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2630,18 +2401,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2768,18 +2527,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2891,18 +2638,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -2964,18 +2699,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3015,7 +2738,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "modelValue",
-          "type": "boolean",
+          "type": "boolean | null",
           "required": false,
           "description": "双向绑定值"
         },
@@ -3051,29 +2774,18 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: boolean]",
+          "type": "[value: boolean | null]",
           "schema": [
             {
               "kind": "enum",
-              "type": "boolean",
+              "type": "boolean | null",
               "variants": [
+                "null",
                 "false",
                 "true"
               ]
@@ -3161,18 +2873,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3279,18 +2979,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3376,18 +3064,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3480,18 +3156,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3599,18 +3263,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3748,18 +3400,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -3895,18 +3535,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4020,18 +3648,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4101,18 +3717,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4230,18 +3834,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4345,18 +3937,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4506,18 +4086,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4610,18 +4178,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4694,18 +4250,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4799,18 +4343,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -4911,18 +4443,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -5066,18 +4586,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ],
       "emits": [
@@ -5565,8 +5073,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@945": {
-                        "name": "__@toPrimitive@945",
+                      "__@toPrimitive@934": {
+                        "name": "__@toPrimitive@934",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -5722,10 +5230,22 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。",
       "props": []
     },
+    "rform-compare-demo": {
+      "type": "rform-compare-demo",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。",
+      "props": []
+    },
     "dashboard": {
       "type": "dashboard",
       "category": "feature",
       "description": "SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。",
+      "props": []
+    },
+    "custom-rtable-demo": {
+      "type": "custom-rtable-demo",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。",
       "props": []
     },
     "capability-demo": {
@@ -5971,7 +5491,68 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "parentContext",
           "type": "ICapabilityContext",
           "required": false,
-          "description": "显式父上下文（可选）\r\n仅用于根节点 / 测试场景：将其注入 DI 链，子业务组件 inject 时自动获取。\r\n普通递归渲染无需传递，子组件继承已有的 DI 链。"
+          "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"
+        }
+      ]
+    },
+    "unregistered-node-fallback": {
+      "type": "unregistered-node-fallback",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "default": "\"\\u672A\\u6CE8\\u518C\\u7684\\u7EC4\\u4EF6\\u7C7B\\u578B\""
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "default": "\"\""
+        }
+      ]
+    },
+    "spark-child": {
+      "type": "spark-child",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "nodeId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "dock",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "order",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "colSpan",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "rowSpan",
+          "type": "string | number",
+          "required": false
         }
       ]
     },
@@ -6064,18 +5645,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
-        },
-        {
-          "name": "order",
-          "type": "number",
-          "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
         }
       ]
     },
@@ -6155,6 +5724,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "boolean | undefined",
           "required": false,
           "description": "当前字段是否隐藏"
+        },
+        {
+          "name": "shouldRenderCurrentField",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "当前宿主下字段是否应渲染"
         },
         {
           "name": "currentDisplayValue",
@@ -6245,18 +5820,651 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "string",
           "required": false,
           "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "builtin-action-button": {
+      "type": "builtin-action-button",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。",
+      "props": [
+        {
+          "name": "builtinAction",
+          "type": "string",
+          "required": false
         },
         {
-          "name": "dock",
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "buttonType",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "buttonSize",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "buttonPlain",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "buttonText",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "buttonLink",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "buttonClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "buttonDisabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "disabledWhenRow",
+          "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "row",
+          "type": "IDataRow",
+          "required": false
+        },
+        {
+          "name": "rowIndex",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "data",
+          "type": "unknown",
+          "required": false
+        },
+        {
+          "name": "dataSource",
+          "type": "unknown",
+          "required": false
+        },
+        {
+          "name": "type",
           "type": "string",
           "required": false,
-          "description": "停靠区域 — 子节点在父容器中的渲染目标区域\r\n\r\n容器组件按 dock 值过滤 children，分区渲染：\r\n - `''`（省略时默认）— 主内容区（列 / 表单字段 / 详情字段）\r\n- `'toolbar'` — 顶部工具栏\r\n- `'actions'` — 行操作列\r\n- `'filter'`  — 筛选区\r\n- `'header'`  — 头部区域\r\n- `'footer'`  — 底部区域\r\n- 自定义字符串 — 容器自行扩展\r\n\r\n 兼容：历史 `'default'` 会在运行时归一化为默认区域。"
+          "default": "\"builtin-action\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "order",
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "click",
+          "type": "[event: MouseEvent]",
+          "schema": [
+            {
+              "kind": "object",
+              "type": "MouseEvent",
+              "properties": {
+                "altKey": {
+                  "name": "altKey",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`MouseEvent.altKey`** read-only property is a boolean value that indicates whether the <kbd>alt</kbd> key was pressed or not when a given mouse event occurs.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/altKey)",
+                  "schema": {
+                    "kind": "enum",
+                    "type": "boolean",
+                    "variants": [
+                      "false",
+                      "true"
+                    ]
+                  }
+                },
+                "button": {
+                  "name": "button",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`MouseEvent.button`** read-only property indicates which button was pressed or released on the mouse to trigger the event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/button)"
+                },
+                "buttons": {
+                  "name": "buttons",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`MouseEvent.buttons`** read-only property indicates which buttons are pressed on the mouse (or other input device) when a mouse event is triggered.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/buttons)"
+                },
+                "clientX": {
+                  "name": "clientX",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`clientX`** read-only property of the MouseEvent interface provides the horizontal coordinate within the application's viewport at which the event occurred (as opposed to the coordinate within the page).\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/clientX)"
+                },
+                "clientY": {
+                  "name": "clientY",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`clientY`** read-only property of the MouseEvent interface provides the vertical coordinate within the application's viewport at which the event occurred (as opposed to the coordinate within the page).\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/clientY)"
+                },
+                "ctrlKey": {
+                  "name": "ctrlKey",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`MouseEvent.ctrlKey`** read-only property is a boolean value that indicates whether the <kbd>ctrl</kbd> key was pressed or not when a given mouse event occurs.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/ctrlKey)"
+                },
+                "layerX": {
+                  "name": "layerX",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`MouseEvent.layerX`** read-only property returns the horizontal coordinate of the event relative to the current layer.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/layerX)"
+                },
+                "layerY": {
+                  "name": "layerY",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`MouseEvent.layerY`** read-only property returns the vertical coordinate of the event relative to the current layer.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/layerY)"
+                },
+                "metaKey": {
+                  "name": "metaKey",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`MouseEvent.metaKey`** read-only property is a boolean value that indicates whether the <kbd>meta</kbd> key was pressed or not when a given mouse event occurs.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/metaKey)"
+                },
+                "movementX": {
+                  "name": "movementX",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`movementX`** read-only property of the MouseEvent interface provides the difference in the X coordinate of the mouse pointer between the given event and the previous Element/mousemove_event event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/movementX)"
+                },
+                "movementY": {
+                  "name": "movementY",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`movementY`** read-only property of the MouseEvent interface provides the difference in the Y coordinate of the mouse pointer between the given event and the previous Element/mousemove_event event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/movementY)"
+                },
+                "offsetX": {
+                  "name": "offsetX",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`offsetX`** read-only property of the MouseEvent interface provides the offset in the X coordinate of the mouse pointer between that event and the padding edge of the target node.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/offsetX)"
+                },
+                "offsetY": {
+                  "name": "offsetY",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`offsetY`** read-only property of the MouseEvent interface provides the offset in the Y coordinate of the mouse pointer between that event and the padding edge of the target node.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/offsetY)"
+                },
+                "pageX": {
+                  "name": "pageX",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`pageX`** read-only property of the MouseEvent interface returns the X (horizontal) coordinate (in pixels) at which the mouse was clicked, relative to the left edge of the entire document.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/pageX)"
+                },
+                "pageY": {
+                  "name": "pageY",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`pageY`** read-only property of the MouseEvent interface returns the Y (vertical) coordinate (in pixels) at which the mouse was clicked, relative to the top edge of the entire document.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/pageY)"
+                },
+                "relatedTarget": {
+                  "name": "relatedTarget",
+                  "type": "EventTarget | null",
+                  "required": true,
+                  "description": "The **`MouseEvent.relatedTarget`** read-only property is the secondary target for the mouse event, if there is one.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/relatedTarget)",
+                  "schema": {
+                    "kind": "enum",
+                    "type": "EventTarget | null",
+                    "variants": [
+                      "null",
+                      "EventTarget"
+                    ]
+                  }
+                },
+                "screenX": {
+                  "name": "screenX",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`screenX`** read-only property of the MouseEvent interface provides the horizontal coordinate (offset) of the mouse pointer in screen coordinates.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/screenX)"
+                },
+                "screenY": {
+                  "name": "screenY",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`screenY`** read-only property of the MouseEvent interface provides the vertical coordinate (offset) of the mouse pointer in screen coordinates.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/screenY)"
+                },
+                "shiftKey": {
+                  "name": "shiftKey",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`MouseEvent.shiftKey`** read-only property is a boolean value that indicates whether the <kbd>shift</kbd> key was pressed or not when a given mouse event occurs.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/shiftKey)"
+                },
+                "x": {
+                  "name": "x",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`MouseEvent.x`** property is an alias for the MouseEvent.clientX property.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/x)"
+                },
+                "y": {
+                  "name": "y",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`MouseEvent.y`** property is an alias for the MouseEvent.clientY property.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/y)"
+                },
+                "getModifierState": {
+                  "name": "getModifierState",
+                  "type": "(keyArg: string) => boolean",
+                  "required": true,
+                  "description": "The **`MouseEvent.getModifierState()`** method returns the current state of the specified modifier key: `true` if the modifier is active (i.e., the modifier key is pressed or locked), otherwise, `false`.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/getModifierState)"
+                },
+                "initMouseEvent": {
+                  "name": "initMouseEvent",
+                  "type": "(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, viewArg: Window, detailArg: number, screenXArg: number, screenYArg: number, clientXArg: number, clientYArg: number, ctrlKeyArg: boolean, altKeyArg: boolean, shiftKeyArg: boolean, metaKeyArg: boolean, buttonArg: number, relatedTargetArg: EventTarget | null) => void",
+                  "required": true,
+                  "description": "The **`MouseEvent.initMouseEvent()`** method initializes the value of a mouse event once it's been created (normally using the Document.createEvent() method)."
+                },
+                "detail": {
+                  "name": "detail",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`UIEvent.detail`** read-only property, when non-zero, provides the current (or next, depending on the event) click count.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/UIEvent/detail)"
+                },
+                "view": {
+                  "name": "view",
+                  "type": "Window | null",
+                  "required": true,
+                  "description": "The **`UIEvent.view`** read-only property returns the is the Window object the event happened in.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/UIEvent/view)",
+                  "schema": {
+                    "kind": "enum",
+                    "type": "Window | null",
+                    "variants": [
+                      "null",
+                      "Window"
+                    ]
+                  }
+                },
+                "which": {
+                  "name": "which",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`UIEvent.which`** read-only property of the UIEvent interface returns a number that indicates which button was pressed on the mouse, or the numeric `keyCode` or the character code (`charCode`) of the key pressed on the keyboard."
+                },
+                "initUIEvent": {
+                  "name": "initUIEvent",
+                  "type": "(typeArg: string, bubblesArg?: boolean | undefined, cancelableArg?: boolean | undefined, viewArg?: Window | null | undefined, detailArg?: number | undefined) => void",
+                  "required": true,
+                  "description": "The **`UIEvent.initUIEvent()`** method initializes a UI event once it's been created."
+                },
+                "bubbles": {
+                  "name": "bubbles",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`bubbles`** read-only property of the Event interface indicates whether the event bubbles up through the DOM tree or not.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/bubbles)"
+                },
+                "cancelBubble": {
+                  "name": "cancelBubble",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`cancelBubble`** property of the Event interface is deprecated."
+                },
+                "cancelable": {
+                  "name": "cancelable",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`cancelable`** read-only property of the Event interface indicates whether the event can be canceled, and therefore prevented as if the event never happened.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/cancelable)"
+                },
+                "composed": {
+                  "name": "composed",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The read-only **`composed`** property of the or not the event will propagate across the shadow DOM boundary into the standard DOM.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/composed)"
+                },
+                "currentTarget": {
+                  "name": "currentTarget",
+                  "type": "EventTarget | null",
+                  "required": true,
+                  "description": "The **`currentTarget`** read-only property of the Event interface identifies the element to which the event handler has been attached.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/currentTarget)"
+                },
+                "defaultPrevented": {
+                  "name": "defaultPrevented",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`defaultPrevented`** read-only property of the Event interface returns a boolean value indicating whether or not the call to Event.preventDefault() canceled the event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/defaultPrevented)"
+                },
+                "eventPhase": {
+                  "name": "eventPhase",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`eventPhase`** read-only property of the being evaluated.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/eventPhase)"
+                },
+                "isTrusted": {
+                  "name": "isTrusted",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The **`isTrusted`** read-only property of the when the event was generated by the user agent (including via user actions and programmatic methods such as HTMLElement.focus()), and `false` when the event was dispatched via The only exception is the `click` event, which initializes the `isTrusted` property to `false` in user agents.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/isTrusted)"
+                },
+                "returnValue": {
+                  "name": "returnValue",
+                  "type": "boolean",
+                  "required": true,
+                  "description": "The Event property **`returnValue`** indicates whether the default action for this event has been prevented or not."
+                },
+                "srcElement": {
+                  "name": "srcElement",
+                  "type": "EventTarget | null",
+                  "required": true,
+                  "description": "The deprecated **`Event.srcElement`** is an alias for the Event.target property."
+                },
+                "target": {
+                  "name": "target",
+                  "type": "EventTarget | null",
+                  "required": true,
+                  "description": "The read-only **`target`** property of the dispatched.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/target)"
+                },
+                "timeStamp": {
+                  "name": "timeStamp",
+                  "type": "number",
+                  "required": true,
+                  "description": "The **`timeStamp`** read-only property of the Event interface returns the time (in milliseconds) at which the event was created.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/timeStamp)"
+                },
+                "type": {
+                  "name": "type",
+                  "type": "string",
+                  "required": true,
+                  "description": "The **`type`** read-only property of the Event interface returns a string containing the event's type.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/type)"
+                },
+                "composedPath": {
+                  "name": "composedPath",
+                  "type": "() => EventTarget[]",
+                  "required": true,
+                  "description": "The **`composedPath()`** method of the Event interface returns the event's path which is an array of the objects on which listeners will be invoked.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/composedPath)"
+                },
+                "initEvent": {
+                  "name": "initEvent",
+                  "type": "(type: string, bubbles?: boolean | undefined, cancelable?: boolean | undefined) => void",
+                  "required": true,
+                  "description": "The **`Event.initEvent()`** method is used to initialize the value of an event created using Document.createEvent()."
+                },
+                "preventDefault": {
+                  "name": "preventDefault",
+                  "type": "() => void",
+                  "required": true,
+                  "description": "The **`preventDefault()`** method of the Event interface tells the user agent that if the event does not get explicitly handled, its default action should not be taken as it normally would be.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/preventDefault)"
+                },
+                "stopImmediatePropagation": {
+                  "name": "stopImmediatePropagation",
+                  "type": "() => void",
+                  "required": true,
+                  "description": "The **`stopImmediatePropagation()`** method of the If several listeners are attached to the same element for the same event type, they are called in the order in which they were added.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/stopImmediatePropagation)"
+                },
+                "stopPropagation": {
+                  "name": "stopPropagation",
+                  "type": "() => void",
+                  "required": true,
+                  "description": "The **`stopPropagation()`** method of the Event interface prevents further propagation of the current event in the capturing and bubbling phases.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/stopPropagation)"
+                },
+                "NONE": {
+                  "name": "NONE",
+                  "type": "0",
+                  "required": true
+                },
+                "CAPTURING_PHASE": {
+                  "name": "CAPTURING_PHASE",
+                  "type": "1",
+                  "required": true
+                },
+                "AT_TARGET": {
+                  "name": "AT_TARGET",
+                  "type": "2",
+                  "required": true
+                },
+                "BUBBLING_PHASE": {
+                  "name": "BUBBLING_PHASE",
+                  "type": "3",
+                  "required": true
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "dock-tail": {
+      "type": "dock-tail",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tail\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "尾区宽度"
+        }
+      ]
+    },
+    "dock-header": {
+      "type": "dock-header",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-header\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "区域宽度"
+        }
+      ]
+    },
+    "dock-footer": {
+      "type": "dock-footer",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-footer\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "区域宽度"
+        }
+      ]
+    },
+    "dock-filter": {
+      "type": "dock-filter",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-filter\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "columns",
+          "type": "(string | DockFilterItem)[]",
+          "required": false,
+          "description": "筛选列"
+        },
+        {
+          "name": "collapsible",
+          "type": "boolean",
+          "required": false,
+          "description": "是否可折叠"
+        },
+        {
+          "name": "defaultCollapsed",
+          "type": "boolean",
+          "required": false,
+          "description": "默认折叠"
+        },
+        {
+          "name": "autoFitMinWidth",
+          "type": "string",
+          "required": false,
+          "description": "自适应最小宽度"
+        },
+        {
+          "name": "itemSpan",
           "type": "number",
           "required": false,
-          "description": "排序权重 — 同一 dock 区域内的渲染顺序\r\n\r\n升序排列（值越小越靠前），相同 order 按原始数组顺序保持稳定。"
+          "description": "单项跨列数"
+        },
+        {
+          "name": "gridColumns",
+          "type": "number",
+          "required": false,
+          "description": "网格列数"
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number",
+          "required": false,
+          "description": "网格间距"
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string",
+          "required": false,
+          "description": "网格行高"
+        }
+      ]
+    },
+    "dock-editor": {
+      "type": "dock-editor",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-editor\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+          "required": false,
+          "description": "编辑区位置"
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "编辑区宽度"
+        }
+      ]
+    },
+    "dock-actions": {
+      "type": "dock-actions",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-actions\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "\"left\" | \"right\"",
+          "required": false,
+          "description": "操作列位置"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "列标题"
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "列宽"
+        },
+        {
+          "name": "align",
+          "type": "\"center\" | \"left\" | \"right\"",
+          "required": false,
+          "description": "对齐方式"
+        },
+        {
+          "name": "fixed",
+          "type": "boolean | \"left\" | \"right\"",
+          "required": false,
+          "description": "固定列"
         }
       ]
     },
