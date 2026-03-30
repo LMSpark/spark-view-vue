@@ -27,12 +27,29 @@
       </div>
 
       <div class="editor-area" v-loading="!state.fileLoaded.value">
+        <SparkJsonEditor
+          v-if="isJsonFile(activeFile)"
+          :model-value="state.editFiles[activeFile] ?? ''"
+          class="code-input code-input--json"
+          height="100%"
+          mode="text"
+          @update:model-value="handleActiveFileChange"
+        />
+        <SparkCodeEditor
+          v-else-if="isCodeFile(activeFile)"
+          :model-value="state.editFiles[activeFile] ?? ''"
+          :language="resolveCodeLanguage(activeFile)"
+          class="code-input code-input--code"
+          height="100%"
+          @update:model-value="handleActiveFileChange"
+        />
         <el-input
-          v-model="state.editFiles[activeFile]"
+          v-else
+          :model-value="state.editFiles[activeFile]"
           type="textarea"
           :autosize="{ minRows: 30, maxRows: 60 }"
           class="code-input"
-          @input="state.fileDirty[activeFile] = true"
+          @update:model-value="handleActiveFileChange"
         />
       </div>
     </template>
@@ -42,11 +59,29 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { SparkCodeEditor, SparkJsonEditor } from '@spark-view/spark-component'
 import { PAGE_FILE_NAMES } from './useDevState'
 import type { DevState } from './useDevState'
 
 const props = defineProps<{ state: DevState }>()
 const activeFile = ref<string>('rule.json')
+
+function isJsonFile(name: string): boolean {
+  return name.endsWith('.json')
+}
+
+function isCodeFile(name: string): boolean {
+  return name.endsWith('.js') || name.endsWith('.css')
+}
+
+function resolveCodeLanguage(name: string): 'javascript' | 'css' {
+  return name.endsWith('.css') ? 'css' : 'javascript'
+}
+
+function handleActiveFileChange(value: string) {
+  props.state.editFiles[activeFile.value] = value
+  props.state.fileDirty[activeFile.value] = true
+}
 
 function fileIcon(name: string) {
   if (name.endsWith('.json')) return '📐'
@@ -103,8 +138,24 @@ function refreshFiles() {
 
 .editor-area {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: auto;
   padding: 8px;
+}
+
+.code-input {
+  flex: 1;
+  min-height: 0;
+}
+
+.code-input--json {
+  min-height: 0;
+}
+
+.code-input--code {
+  min-height: 0;
 }
 
 .code-input :deep(textarea) {

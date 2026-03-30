@@ -1,0 +1,276 @@
+<template>
+  <div class="spark-code-editor" :style="rootStyle">
+    <div v-if="initError" class="spark-code-editor__notice">
+      {{ initError }}
+    </div>
+    <textarea
+      v-if="initError"
+      :value="modelValue"
+      class="spark-code-editor__fallback"
+      :readonly="readOnly"
+      spellcheck="false"
+      @input="handleFallbackInput"
+    />
+    <div v-else ref="containerRef" class="spark-code-editor__surface"></div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import type { Extension } from '@codemirror/state'
+import type { EditorView } from '@codemirror/view'
+
+type SparkCodeLanguage = 'javascript' | 'css'
+
+interface Props {
+  modelValue?: string
+  language?: SparkCodeLanguage
+  readOnly?: boolean
+  height?: number | string
+  tabSize?: number
+  lineWrapping?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: '',
+  language: 'javascript',
+  readOnly: false,
+  height: 360,
+  tabSize: 2,
+  lineWrapping: false,
+})
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
+
+const containerRef = ref<HTMLDivElement | null>(null)
+const editorRef = shallowRef<EditorView | null>(null)
+const initError = ref<string | null>(null)
+const lastSyncedValue = ref(props.modelValue)
+
+const rootStyle = computed(() => ({
+  height: typeof props.height === 'number' ? `${props.height}px` : props.height,
+}))
+
+function createEditorTheme(EditorViewCtor: typeof import('@codemirror/view').EditorView): Extension {
+  return EditorViewCtor.theme({
+    '&': {
+      height: '100%',
+      border: '1px solid var(--el-border-color)',
+      borderRadius: '6px',
+      backgroundColor: 'var(--el-fill-color-blank)',
+      color: 'var(--el-text-color-primary)',
+      fontSize: '13px',
+    },
+    '&.cm-focused': {
+      outline: '1px solid var(--el-color-primary)',
+      outlineOffset: '0',
+      borderColor: 'var(--el-color-primary)',
+    },
+    '.cm-scroller': {
+      overflow: 'auto',
+      fontFamily: "'Cascadia Code', 'Fira Code', 'Consolas', monospace",
+      lineHeight: '1.6',
+    },
+    '.cm-content': {
+      padding: '12px 0',
+      caretColor: 'var(--el-color-primary)',
+    },
+    '.cm-line': {
+      padding: '0 12px',
+    },
+    '.cm-gutters': {
+      backgroundColor: 'var(--el-fill-color-light)',
+      color: 'var(--el-text-color-secondary)',
+      border: 'none',
+      borderRight: '1px solid var(--el-border-color-lighter)',
+    },
+    '.cm-activeLine': {
+      backgroundColor: 'var(--el-fill-color-light)',
+    },
+    '.cm-activeLineGutter': {
+      backgroundColor: 'transparent',
+    },
+    '.cm-selectionBackground, ::selection': {
+      backgroundColor: 'rgba(64, 158, 255, 0.24)',
+    },
+    '.cm-cursor, .cm-dropCursor': {
+      borderLeftColor: 'var(--el-color-primary)',
+    },
+    '.cm-panels': {
+      backgroundColor: 'var(--el-fill-color-light)',
+      color: 'var(--el-text-color-primary)',
+    },
+    '.cm-searchMatch': {
+      backgroundColor: 'rgba(230, 162, 60, 0.18)',
+      outline: '1px solid rgba(230, 162, 60, 0.38)',
+    },
+    '.cm-searchMatch.cm-searchMatch-selected': {
+      backgroundColor: 'rgba(64, 158, 255, 0.2)',
+    },
+  })
+}
+
+function resolveLanguageExtension(
+  javascript: typeof import('@codemirror/lang-javascript').javascript,
+  css: typeof import('@codemirror/lang-css').css,
+): Extension {
+  return props.language === 'css' ? css() : javascript()
+}
+
+async function mountEditor(): Promise<void> {
+  if (!containerRef.value || typeof window === 'undefined') return
+
+  const host = containerRef.value
+  editorRef.value?.destroy()
+  editorRef.value = null
+
+  try {
+    const [
+      { basicSetup },
+      { EditorState },
+      { EditorView, keymap },
+      { syntaxHighlighting, defaultHighlightStyle },
+      { javascript },
+      { css },
+      { indentWithTab },
+    ] = await Promise.all([
+      import('codemirror'),
+      import('@codemirror/state'),
+      import('@codemirror/view'),
+      import('@codemirror/language'),
+      import('@codemirror/lang-javascript'),
+      import('@codemirror/lang-css'),
+      import('@codemirror/commands'),
+    ])
+
+    const extensions: Extension[] = [
+      basicSetup,
+      keymap.of([indentWithTab]),
+      syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+      EditorState.tabSize.of(props.tabSize),
+      EditorState.readOnly.of(props.readOnly),
+      EditorView.editable.of(!props.readOnly),
+      createEditorTheme(EditorView),
+      resolveLanguageExtension(javascript, css),
+      EditorView.updateListener.of((update) => {
+        if (!update.docChanged) return
+        const nextValue = update.state.doc.toString()
+        lastSyncedValue.value = nextValue
+        if (nextValue !== props.modelValue) {
+          emit('update:modelValue', nextValue)
+        }
+      }),
+    ]
+
+    if (props.lineWrapping) {
+      extensions.push(EditorView.lineWrapping)
+    }
+
+    editorRef.value = new EditorView({
+      state: EditorState.create({
+        doc: props.modelValue,
+        extensions,
+      }),
+      parent: host,
+    })
+
+    lastSyncedValue.value = props.modelValue
+    initError.value = null
+  } catch (error) {
+    initError.value = error instanceof Error
+      ? `代码编辑器初始化失败: ${error.message}`
+      : `代码编辑器初始化失败: ${String(error)}`
+  }
+}
+
+function handleFallbackInput(event: Event): void {
+  const target = event.target as HTMLTextAreaElement
+  lastSyncedValue.value = target.value
+  emit('update:modelValue', target.value)
+}
+
+watch(() => props.modelValue, (value) => {
+  if (value === lastSyncedValue.value) return
+  lastSyncedValue.value = value
+  const editor = editorRef.value
+  if (!editor) return
+  const currentValue = editor.state.doc.toString()
+  if (currentValue === value) return
+  editor.dispatch({
+    changes: {
+      from: 0,
+      to: editor.state.doc.length,
+      insert: value,
+    },
+  })
+})
+
+watch(
+  () => [props.language, props.readOnly, props.tabSize, props.lineWrapping] as const,
+  () => {
+    if (!editorRef.value) return
+    void mountEditor()
+  },
+)
+
+onMounted(() => {
+  void mountEditor()
+})
+
+onBeforeUnmount(() => {
+    editorRef.value?.destroy()
+    editorRef.value = null
+  })
+</script>
+
+<style scoped>
+.spark-code-editor {
+  width: 100%;
+  min-width: 0;
+}
+
+.spark-code-editor__notice {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--el-color-warning-light-7);
+  border-radius: 6px;
+  background: var(--el-color-warning-light-9);
+  color: var(--el-color-warning-dark-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.spark-code-editor__surface {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.spark-code-editor__surface :deep(.cm-editor) {
+  height: 100%;
+}
+
+.spark-code-editor__fallback {
+  display: block;
+  width: 100%;
+  height: calc(100% - 40px);
+  min-height: 220px;
+  padding: 12px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 6px;
+  background: var(--el-fill-color-blank);
+  color: var(--el-text-color-primary);
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.spark-code-editor__fallback:focus {
+  outline: none;
+  border-color: var(--el-color-primary);
+}
+</style>

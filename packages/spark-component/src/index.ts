@@ -111,6 +111,8 @@ export {
   RText,
   RToolbar,
   RTree,
+  SparkCodeEditor,
+  SparkJsonEditor,
   SparkComponentRenderer,
   SparkTableColumns,
   createTemplateDsl,

@@ -75,12 +75,29 @@
                       <el-button size="small" @click="refreshFiles"><NavIcon name="Refresh" :size="14" /></el-button>
                     </div>
                   </div>
+                  <SparkJsonEditor
+                    v-if="isJsonFile(fname)"
+                    :model-value="state.editFiles[fname] ?? ''"
+                    class="code-input code-input--json"
+                    height="100%"
+                    mode="text"
+                    @update:model-value="handleFileValueChange(fname, $event)"
+                  />
+                  <SparkCodeEditor
+                    v-else-if="isCodeFile(fname)"
+                    :model-value="state.editFiles[fname] ?? ''"
+                    :language="resolveCodeLanguage(fname)"
+                    class="code-input code-input--code"
+                    height="100%"
+                    @update:model-value="handleFileValueChange(fname, $event)"
+                  />
                   <el-input
+                    v-else
                     v-model="state.editFiles[fname]"
                     type="textarea"
                     :autosize="{ minRows: 28, maxRows: 60 }"
                     class="code-input"
-                    @input="state.fileDirty[fname] = true"
+                    @input="handleFileValueChange(fname, state.editFiles[fname] ?? '')"
                   />
                 </div>
               </el-tab-pane>
@@ -174,12 +191,11 @@
 
     <!-- ═══ JSON 预览对话框 ═══ -->
     <el-dialog v-model="showPreview" title="导航配置 JSON" width="720px" top="5vh">
-      <el-input
+      <SparkJsonEditor
         :model-value="state.previewJson.value"
-        type="textarea"
-        :rows="30"
-        readonly
-        style="font-family: monospace; font-size: 13px"
+        height="560px"
+        mode="text"
+        read-only
       />
       <template #footer>
         <el-button @click="copyJson"><NavIcon name="List" :size="14" /> 复制</el-button>
@@ -194,6 +210,7 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { SparkCodeEditor, SparkJsonEditor } from '@spark-view/spark-component'
 import { useDevState, PAGE_FILE_NAMES } from './useDevState'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
@@ -226,6 +243,23 @@ function fileIcon(name: string) {
   if (name === 'script.js') return 'Lightning'
   if (name === 'style.css') return 'Brush'
   return 'Document'
+}
+
+function isJsonFile(name: string): boolean {
+  return name.endsWith('.json')
+}
+
+function isCodeFile(name: string): boolean {
+  return name.endsWith('.js') || name.endsWith('.css')
+}
+
+function resolveCodeLanguage(name: string): 'javascript' | 'css' {
+  return name.endsWith('.css') ? 'css' : 'javascript'
+}
+
+function handleFileValueChange(name: string, value: string): void {
+  state.editFiles[name] = value
+  state.fileDirty[name] = true
 }
 
 // JSON 预览
@@ -492,6 +526,7 @@ onMounted(() => { void state.initialize() })
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 0;
 }
 .inline-file-toolbar {
   display: flex;
@@ -513,6 +548,19 @@ onMounted(() => { void state.initialize() })
   display: flex;
   gap: 6px;
 }
+.code-input {
+  flex: 1;
+  min-height: 0;
+}
+
+.code-input--json {
+  min-height: 0;
+}
+
+.code-input--code {
+  min-height: 0;
+}
+
 .code-input :deep(textarea) {
   font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   font-size: 13px;

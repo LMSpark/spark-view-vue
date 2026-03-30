@@ -11,7 +11,24 @@
     </div>
     <el-tabs v-model="activeFile" type="card" class="pce-tabs">
       <el-tab-pane v-for="fname in FILE_NAMES" :key="fname" :label="fname" :name="fname">
+        <SparkJsonEditor
+          v-if="isJsonFile(fname)"
+          :model-value="files[fname] ?? ''"
+          class="pce-json-editor"
+          height="420px"
+          mode="text"
+          @update:model-value="handleFileValueChange(fname, $event)"
+        />
+        <SparkCodeEditor
+          v-else-if="isCodeFile(fname)"
+          :model-value="files[fname] ?? ''"
+          :language="resolveCodeLanguage(fname)"
+          class="pce-code-editor"
+          height="420px"
+          @update:model-value="handleFileValueChange(fname, $event)"
+        />
         <textarea
+          v-else
           :value="files[fname]"
           class="pce-textarea"
           spellcheck="false"
@@ -25,6 +42,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { SparkCodeEditor, SparkJsonEditor } from '@spark-view/spark-component'
 
 import { getPageApi } from '@/services/api-paths'
 import { http } from '@/services/http'
@@ -47,10 +65,26 @@ const saving = ref(false)
 
 const hasChanges = computed(() => Object.values(dirty).some(Boolean))
 
+function isJsonFile(fname: string): boolean {
+  return fname.endsWith('.json')
+}
+
+function isCodeFile(fname: string): boolean {
+  return fname.endsWith('.js') || fname.endsWith('.css')
+}
+
+function resolveCodeLanguage(fname: string): 'javascript' | 'css' {
+  return fname.endsWith('.css') ? 'css' : 'javascript'
+}
+
+function handleFileValueChange(fname: string, value: string) {
+  files[fname] = value
+  dirty[fname] = true
+}
+
 function handleFileInput(fname: string, event: Event) {
   const target = event.target as HTMLTextAreaElement
-  files[fname] = target.value
-  dirty[fname] = true
+  handleFileValueChange(fname, target.value)
 }
 
 async function loadFiles() {
@@ -119,6 +153,14 @@ watch(() => props.pageId, () => {
 
 .pce-tabs :deep(.el-tabs__content) {
   padding: 0;
+}
+
+.pce-json-editor {
+  min-height: 420px;
+}
+
+.pce-code-editor {
+  min-height: 420px;
 }
 
 .pce-textarea {

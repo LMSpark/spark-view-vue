@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-30T09:01:44.983Z
- * 条目数量：95
+ * 生成时间：2026-03-30T15:48:39.322Z
+ * 条目数量：97
  */
 import type { ComponentCatalog } from './catalog-types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-30T09:01:44.979Z",
-  "componentCount": 95,
+  "buildTime": "2026-03-30T15:48:39.318Z",
+  "componentCount": 97,
   "registry": {
     "containers": [
       "r-block",
@@ -114,29 +114,35 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。",
       "props": [
         {
+          "name": "dataKey",
+          "type": "string",
+          "required": false,
+          "description": "DataKey 格式：tableName@field"
+        },
+        {
+          "name": "actions",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化行动作 dock"
+        },
+        {
           "name": "type",
           "type": "string",
           "required": false,
           "default": "\"r-table\"",
-          "description": "组件类型（运行时缺省回落为 r-table）"
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性透传占位（兼容 SparkNode 结构）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
         },
         {
           "name": "id",
           "type": "string",
           "required": false,
-          "description": "节点唯一标识"
-        },
-        {
-          "name": "dataKey",
-          "type": "string",
-          "required": false,
-          "description": "DataKey 格式：tableName@field"
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         }
       ],
       "rootFields": [
@@ -161,12 +167,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。",
       "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-form\""
-        },
         {
           "name": "dataKey",
           "type": "string",
@@ -200,6 +200,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-form\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -262,12 +269,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-detail\""
-        },
-        {
           "name": "dataKey",
           "type": "string",
           "required": false,
@@ -307,6 +308,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"left\"",
           "description": "值对齐"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-detail\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -364,29 +372,22 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-tree\"",
-          "description": "组件类型（运行时缺省回落为 r-tree）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性透传占位（兼容 SparkNode 结构）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识"
-        },
-        {
           "name": "dataKey",
           "type": "string",
           "required": false,
           "description": "数据绑定键，如 \"TreeData@rows\""
+        },
+        {
+          "name": "actions",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化节点动作 dock"
+        },
+        {
+          "name": "editor",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化编辑区 dock"
         },
         {
           "name": "nodeKey",
@@ -423,6 +424,25 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "boolean",
           "required": false,
           "description": "允许删除节点（自动生成删除按钮）"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tree\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         }
       ],
       "rootFields": [
@@ -483,16 +503,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-list\""
-        },
-        {
           "name": "dataKey",
           "type": "string",
           "required": false,
           "description": "数据绑定键"
+        },
+        {
+          "name": "actions",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化列表项动作 dock"
         },
         {
           "name": "columns",
@@ -590,6 +610,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "1",
           "description": "项跨行数"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-list\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -712,16 +739,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-tabs\""
-        },
-        {
           "name": "modelValue",
           "type": "string | number",
           "required": false,
           "description": "当前激活标签页"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tabs\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -791,16 +819,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-collapse\""
-        },
-        {
           "name": "modelValue",
           "type": "CollapseValue",
           "required": false,
           "description": "当前展开的面板"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-collapse\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -866,16 +895,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-steps\""
-        },
-        {
           "name": "modelValue",
           "type": "string | number",
           "required": false,
           "description": "当前步骤"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-steps\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -940,10 +970,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
+          "name": "header",
+          "type": "unknown",
           "required": false,
-          "default": "\"r-dialog\""
+          "description": "结构化头部 dock"
+        },
+        {
+          "name": "footer",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化底部 dock"
         },
         {
           "name": "title",
@@ -986,6 +1022,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-dialog\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -1090,10 +1133,16 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
+          "name": "header",
+          "type": "unknown",
           "required": false,
-          "default": "\"r-drawer\""
+          "description": "结构化头部 dock"
+        },
+        {
+          "name": "footer",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化底部 dock"
         },
         {
           "name": "title",
@@ -1136,6 +1185,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-drawer\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -1220,10 +1276,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
+          "name": "header",
+          "type": "unknown",
           "required": false,
-          "default": "\"r-section\""
+          "description": "结构化头部 dock"
         },
         {
           "name": "title",
@@ -1336,6 +1392,13 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-section\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -1860,38 +1923,41 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "string",
+          "name": "tail",
+          "type": "unknown",
           "required": false,
-          "default": "\"r-toolbar\""
+          "description": "结构化尾区 dock"
         },
         {
           "name": "gap",
           "type": "string | number",
           "required": false,
-          "default": "8",
           "description": "单个子项之间的间距（同一区域内部）"
         },
         {
           "name": "zoneGap",
           "type": "string | number",
           "required": false,
-          "default": "12",
           "description": "主区与尾区之间的间距（区域级）"
         },
         {
           "name": "align",
           "type": "InlineAlign",
           "required": false,
-          "default": "\"center\"",
           "description": "区域内部子项的交叉轴对齐"
         },
         {
           "name": "justify",
           "type": "InlineJustify",
           "required": false,
-          "default": "\"start\"",
           "description": "主区内部子项的主轴分布方式"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-toolbar\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "props",
@@ -5073,8 +5139,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@934": {
-                        "name": "__@toPrimitive@934",
+                      "__@toPrimitive@940": {
+                        "name": "__@toPrimitive@940",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -5228,6 +5294,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "type": "about",
       "category": "feature",
       "description": "SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。",
+      "props": []
+    },
+    "template-dsl-demo": {
+      "type": "template-dsl-demo",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。",
       "props": []
     },
     "rform-compare-demo": {
@@ -5514,6 +5586,84 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
+    "spark-json-editor": {
+      "type": "spark-json-editor",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。",
+      "props": [
+        {
+          "name": "modelValue",
+          "type": "string",
+          "required": false,
+          "default": "\"\""
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "height",
+          "type": "string | number",
+          "required": false,
+          "default": "360"
+        },
+        {
+          "name": "mode",
+          "type": "SparkJsonEditorMode",
+          "required": false,
+          "default": "\"text\""
+        },
+        {
+          "name": "indentation",
+          "type": "string | number",
+          "required": false,
+          "default": "2"
+        },
+        {
+          "name": "tabSize",
+          "type": "number",
+          "required": false,
+          "default": "2"
+        },
+        {
+          "name": "mainMenuBar",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "navigationBar",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "statusBar",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "askToFormat",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: string]",
+          "schema": []
+        }
+      ],
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
+    },
     "spark-child": {
       "type": "spark-child",
       "category": "feature",
@@ -5532,16 +5682,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "nodeId",
           "type": "string",
-          "required": false
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "order",
-          "type": "number",
           "required": false
         },
         {

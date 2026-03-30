@@ -32,9 +32,17 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.10.3",
+    "@codemirror/lang-css": "^6.3.1",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/language": "^6.12.3",
+    "@codemirror/state": "^6.6.0",
+    "@codemirror/view": "^6.40.0",
     "@spark-view/spark-data": "workspace:*",
     "@spark-view/spark-page-config": "workspace:*",
-    "@spark-view/spark-utils": "workspace:*"
+    "@spark-view/spark-utils": "workspace:*",
+    "codemirror": "^6.0.2",
+    "vanilla-jsoneditor": "^3.12.0"
   },
   "peerDependencies": {
     "element-plus": ">=2.0.0",
