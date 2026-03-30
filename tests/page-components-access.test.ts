@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ref } from 'vue'
 import { buildPageContext } from '../packages/spark-component/src/page/context/buildPageContext'
+import { compileFunctions } from '../packages/spark-component/src/page/sandbox/createSandbox'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
 
@@ -50,5 +51,54 @@ describe('PageContext $components (ID-first)', () => {
     // 兼容别名
     expect(context.$components.getInstance('orders-table')?.id).toBe('orders-table')
     expect(context.$components.listInstances('r-table')).toHaveLength(1)
+  })
+
+  it('should expose permission helpers to page scripts', () => {
+    const context = buildPageContext({
+      getDataSet: () => null,
+      pageRoute: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
+      pageContainer: ref<HTMLElement | null>(null),
+      pageService: mockPageService as unknown as IPageServiceCapability,
+    })
+
+    expect(context.permission.isPermittedAction('create', {
+      modelPermission: { allowCreate: true },
+    })).toBe(true)
+
+    const state = context.permission.resolveFieldPermissionState('name', {
+      id: 1,
+      name: 'Alice',
+      _perm: { editableFields: ['name'] },
+    })
+    expect(state?.editable).toBe(true)
+  })
+
+  it('should allow compiled scripts to call injected permission helpers', () => {
+    const context = buildPageContext({
+      getDataSet: () => null,
+      pageRoute: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
+      pageContainer: ref<HTMLElement | null>(null),
+      pageService: mockPageService as unknown as IPageServiceCapability,
+    })
+
+    const fns = compileFunctions(`
+      function canCreate() {
+        return permission.isPermittedAction('create', {
+          modelPermission: { allowCreate: true }
+        })
+      }
+
+      function canEditField() {
+        var state = permission.resolveFieldPermissionState('name', {
+          id: 1,
+          name: 'Alice',
+          _perm: { editableFields: ['name'] }
+        })
+        return state ? state.editable : false
+      }
+    `, context)
+
+    expect(fns['canCreate']!()).toBe(true)
+    expect(fns['canEditField']!()).toBe(true)
   })
 })

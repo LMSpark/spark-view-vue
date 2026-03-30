@@ -9,10 +9,10 @@
       {
         "type": "el-alert",
         "props": {
-          "title": "改权限不改代码 —— 后端下发 _perm 快照，前端零判断，UI 自动响应",
+          "title": "改权限不改代码 —— 业务返回 _perm 快照，前端零代码消费结果",
           "type": "success",
           "closable": false,
-          "description": "切换角色 = 模拟后端返回不同权限数据。左侧实时展示后端下发的权限快照，右侧是固定不变的渲染代码自动驱动的 UI。"
+          "description": "切换角色 = 模拟业务脚本收到不同返回值。左侧实时展示写入 DataSet 的权限结果，右侧由 r-table / r-form 内置权限链零代码消费这些结果。"
         },
         "style": {
           "marginBottom": "16px"
@@ -114,14 +114,165 @@
                       "letterSpacing": "0.5px"
                     },
                     "children": [
-                      "▼ 前端渲染（代码固定不动，_perm 驱动）"
+                      "▼ 业务返回值 -> 前端零代码权限渲染"
                     ]
                   },
                   {
-                    "type": "RenderAddButton"
+                    "type": "div",
+                    "style": {
+                      "fontSize": "12px",
+                      "color": "#909399",
+                      "marginBottom": "12px",
+                      "lineHeight": "1.6"
+                    },
+                    "children": [
+                      "script.js 只负责把业务返回值写进 DataSet；表格动作再通过 permAction 自动过滤，当前行表单再通过 editableFields / hiddenFields 自动控制。"
+                    ]
                   },
                   {
-                    "type": "RenderTable"
+                    "type": "r-table",
+                    "dataKey": "PermissionUsers@rows",
+                    "props": {
+                      "border": true,
+                      "stripe": true,
+                      "highlightCurrentRow": true,
+                      "rowActionsWidth": 180,
+                      "rowActionsFixed": "right",
+                      "rowActionsLabel": "零代码动作"
+                    },
+                    "children": [
+                      {
+                        "type": "r-toolbar",
+                        "props": {
+                          "position": "top"
+                        },
+                        "children": [
+                          {
+                            "type": "builtin-action",
+                            "props": {
+                              "builtinAction": "append-row",
+                              "label": "新增",
+                              "buttonType": "primary",
+                              "buttonSize": "small",
+                              "permAction": "create"
+                            }
+                          },
+                          {
+                            "type": "builtin-action",
+                            "props": {
+                              "builtinAction": "refresh",
+                              "label": "刷新",
+                              "buttonSize": "small"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "r-text",
+                        "field": "id",
+                        "props": {
+                          "label": "ID",
+                          "width": 70
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "field": "name",
+                        "props": {
+                          "label": "姓名",
+                          "width": 120
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "field": "email",
+                        "props": {
+                          "label": "邮箱",
+                          "minWidth": 200
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "field": "department",
+                        "props": {
+                          "label": "部门",
+                          "width": 120
+                        }
+                      },
+                      {
+                        "type": "r-actions",
+                        "children": [
+                          {
+                            "type": "builtin-action",
+                            "props": {
+                              "builtinAction": "prompt-edit",
+                              "label": "编辑",
+                              "buttonType": "warning",
+                              "buttonSize": "small",
+                              "buttonLink": true,
+                              "permAction": "edit"
+                            }
+                          },
+                          {
+                            "type": "builtin-action",
+                            "props": {
+                              "builtinAction": "delete-row",
+                              "label": "删除",
+                              "buttonType": "danger",
+                              "buttonSize": "small",
+                              "buttonLink": true,
+                              "confirmTitle": "删除确认",
+                              "confirmMessage": "确认删除当前记录吗？",
+                              "permAction": "delete"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "style": {
+                      "fontSize": "12px",
+                      "fontWeight": "600",
+                      "color": "#909399",
+                      "marginTop": "16px",
+                      "marginBottom": "10px",
+                      "letterSpacing": "0.5px"
+                    },
+                    "children": [
+                      "▼ 当前行零代码表单（自动吃 editableFields / hiddenFields）"
+                    ]
+                  },
+                  {
+                    "type": "r-form",
+                    "dataKey": "PermissionUsers@currentRow",
+                    "props": {
+                      "labelWidth": "72px"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "field": "name",
+                        "props": {
+                          "label": "姓名"
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "field": "email",
+                        "props": {
+                          "label": "邮箱"
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "field": "department",
+                        "props": {
+                          "label": "部门"
+                        }
+                      }
+                    ]
                   }
                 ]
               }

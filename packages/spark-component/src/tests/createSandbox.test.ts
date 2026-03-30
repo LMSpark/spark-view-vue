@@ -14,6 +14,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { compileFunctions } from '../page/sandbox/createSandbox'
 import type { PageContext } from '../page/context/types'
+import * as permissionApi from '../permission/index'
 
 /** 创建最小化的 PageContext mock */
 function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
@@ -40,6 +41,7 @@ function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
       showLoading: vi.fn(),
       navigate: vi.fn(),
     },
+    permission: permissionApi as PageContext['permission'],
     SparkData: {} as PageContext['SparkData'],
     h: vi.fn() as unknown as PageContext['h'],
     ...overrides,
@@ -134,6 +136,29 @@ describe('createSandbox — compileFunctions', () => {
     expect(fns['getDataSet']!()).toBeNull()
     expect(fns['callPage']!()).toBe(true)
     expect(ctx.$page.showMessage).toHaveBeenCalledWith('hi', 'info')
+  })
+
+  it('函数应能访问注入的 permission API', () => {
+    const ctx = createMockContext()
+    const script = `
+      function canCreate() {
+        return permission.isPermittedAction('create', {
+          modelPermission: { allowCreate: true }
+        })
+      }
+
+      function canEditField() {
+        var state = permission.resolveFieldPermissionState('name', {
+          id: 1,
+          name: 'Alice',
+          _perm: { editableFields: ['name'] }
+        })
+        return state ? state.editable : false
+      }
+    `
+    const fns = compileFunctions(script, ctx)
+    expect(fns['canCreate']!()).toBe(true)
+    expect(fns['canEditField']!()).toBe(true)
   })
 
   it('应支持通过 $components 使用 ID 寻址访问组件实例与 API', () => {

@@ -12,7 +12,6 @@ SPARK 的权限体系**目标模型**是“后端统一验证，前端按快照�
 2. 字段权限按读写双通道解释：读通道只管能不能看、怎么看；写通道只管能不能改。
 3. 脱敏值由后端直接返回，前端不再做手机号、身份证、邮箱等本地二次脱敏。
 4. 缺少权限快照时默认收紧，而不是默认放行。
-5. 后端输出数据时会自动携带全部真实主键列；前端可以隐藏主键展示，但不能破坏身份识别与回写链路。
 
 当前接入状态（2026-03-29）：
 
@@ -191,148 +190,19 @@ enum FieldVisibility {
 
 ## 5. 模块职责拆分
 
-### 5.1 `PermissionChecker`
+权限相关实现主要集中在下表：
 
-文件：`packages/spark-component/src/permission/PermissionChecker.ts`
+| 模块 | 位置 | 作用 | 关键点 |
+|------|------|------|--------|
+| `PermissionChecker` | `packages/spark-component/src/permission/PermissionChecker.ts` | 最基础的模型级、行级、字段级判断 | `create/import/export` 需要显式 `true`；`edit` 由 `editableFields` 推导；`hiddenFields` 优先于 `maskedFields` |
+| `FieldRenderHelper` | `packages/spark-component/src/permission/FieldRenderHelper.ts` | 计算字段级 `IFieldRenderState` | 把字段状态整理为 `readable / editable / visibility / shouldRender` |
+| `PermissionResolver` | `packages/spark-component/src/permission/PermissionResolver.ts` | 对外统一入口 | 暴露 `isPermittedAction()`、`resolveFieldPermissionState()`、`formatPermissionAwareFieldValue()` |
+| `PermissionFilter` | `packages/spark-component/src/permission/PermissionFilter.ts` | 展示层批量过滤 | `hidden` 字段移除、`masked` 原样保留；它不是安全边界 |
+| `useFieldPermission` | `packages/spark-component/src/components/fields/context/useFieldPermission.ts` | 把权限结果桥接到字段组件 | `r-form` 下 `readable || editable` 即可渲染；`editable + masked/hidden` 时清空初始值 |
+| `FieldContextRenderer` | `packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue` | 按宿主落地渲染 | `r-form`、`r-table`、`r-detail`、`r-list`、`r-tree` 的可见策略在这里分流 |
+| `action-permission` | `packages/spark-component/src/components/containers/action-permission.ts` | 容器动作过滤 | `create/import/export` 走模型级，`edit/delete` 走行级，`create-child` 语义上涉及双层 |
 
-职责：
-
-1. 提供最基础的模型级、行级、字段级权限判断。
-2. 只做“判断”，不关心宿主如何渲染。
-3. `getFieldDisplayValue()` 只透传服务端已经处理好的值，不做本地脱敏。
-
-当前关键规则：
-
-| 方法 | 规则 |
-|------|------|
-| `canCreate()` | `allowCreate === true` 才允许 |
-| `canImport()` | `allowImport === true` 才允许 |
-| `canExport()` | `allowExport === true` 才允许 |
-| `canDelete()` | `allowDelete === true` 才允许 |
-| `canCreateChild()` | `allowCreateChild === true` 才允许 |
-| `canEdit()` | 由字段权限推导；`editableFields.length > 0` 才允许 |
-| `isFieldEditable()` | 字段名必须在 `editableFields` 中 |
-| `getFieldVisibility()` | `hiddenFields` 优先于 `maskedFields` |
-
-### 5.2 `FieldRenderHelper`
-
-文件：`packages/spark-component/src/permission/FieldRenderHelper.ts`
-
-职责：
-
-1. 基于字段配置和权限快照计算字段状态。
-2. 把“读通道”和“写通道”整理成统一的 `IFieldRenderState`。
-
-核心产物：
-
-```ts
-interface IFieldRenderState {
-  field: string
-  visibility: FieldVisibility
-  readable: boolean
-  editable: boolean
-  displayValue: string | undefined
-  shouldRender: boolean
-}
-```
-
-说明：
-
-1. `readable` 表示字段在读通道下是否允许显示。
-2. `editable` 表示字段在写通道下是否允许编辑。
-3. `shouldRender` 当前只表示“默认读通道下可展示”，真正的宿主差异由上层组件决定。
-
-### 5.3 `PermissionResolver`
-
-文件：`packages/spark-component/src/permission/PermissionResolver.ts`
-
-职责：
-
-1. 统一动作权限判断入口：`isPermittedAction()`。
-2. 统一字段权限状态入口：`resolveFieldPermissionState()`。
-3. 统一字段显示值入口：`formatPermissionAwareFieldValue()`。
-
-这是权限体系里最重要的“聚合层”，上层组件与容器不需要自己重新拼一遍权限规则。
-
-### 5.4 `PermissionFilter`
-
-文件：`packages/spark-component/src/permission/PermissionFilter.ts`
-
-职责：
-
-1. 批量筛选可删除行、可编辑行。
-2. 按展示需求过滤字段。
-
-当前 `filterDisplayableFields()` 的规则是：
-
-1. `_` 前缀元字段保留。
-2. `hidden` 字段移除。
-3. `masked` 字段保留服务端原样返回值。
-
-**注意**：它是“展示层过滤工具”，不是安全边界，也不是回写前的数据清洗器。
-
-### 5.5 `useFieldPermission`
-
-文件：`packages/spark-component/src/components/fields/context/useFieldPermission.ts`
-
-职责：
-
-1. 把组件层权限模块的结果桥接到字段组件。
-2. 根据宿主类型决定字段在当前上下文下是否应渲染。
-3. 处理表单场景下“可编辑但不可回显”的特殊逻辑。
-
-关键逻辑：
-
-1. `shouldRenderCurrentField`
-   - `r-form`：`state.readable || state.editable`
-   - 其他宿主：`state.readable`
-2. `shouldSuppressReadableValueInWritableForm`
-   - 当宿主是 `r-form`
-   - 且字段 `editable === true`
-   - 且 `visibility !== visible`
-   - 则表单控件初始值强制清空，不回显读通道值
-
-这正是密码修改、敏感字段变更场景的关键实现。
-
-### 5.6 `FieldContextRenderer`
-
-文件：`packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue`
-
-职责：
-
-1. 根据宿主类型统一承载字段渲染。
-2. 使用 `shouldRenderCurrentField` 区分不同宿主的可见策略。
-
-宿主行为：
-
-| 宿主 | 渲染规则 |
-|------|----------|
-| `r-table` | 按单元格读通道决定是否显示值 |
-| `r-form` | 只要 readable 或 editable 即渲染控件 |
-| `r-tree` | 按读通道决定是否显示节点文本 |
-| `r-detail` / `r-list` | 按读通道决定是否显示整个展示块 |
-
-这也是“隐藏字段时，detail/block 场景要连 caption 一起移除”的落点。
-
-### 5.7 `action-permission`
-
-文件：`packages/spark-component/src/components/containers/action-permission.ts`
-
-职责：
-
-1. 统一容器动作的权限判定。
-2. 明确区分模型级动作和行级动作，避免误把一个动作同时要求两层权限。
-
-当前分工：
-
-| 动作 | 权限层级 |
-|------|----------|
-| `create` | 模型级 |
-| `import` | 模型级 |
-| `export` | 模型级 |
-| `edit` | 行级，但由 `editableFields` 推导 |
-| `delete` | 行级 |
-| `create-child` | 同时涉及模型级和行级 |
+关系可以概括为：`PermissionChecker` 提供基础判断，`PermissionResolver` / `PermissionFilter` 提供统一入口，`useFieldPermission`、`FieldContextRenderer`、`action-permission` 把结果落到具体 UI。
 
 ---
 
@@ -351,108 +221,423 @@ interface IFieldRenderState {
   -> FieldContextRenderer / 容器动作区按宿主规则渲染 UI
 ```
 
-### 6.2 字段权限链路
+### 6.2 零代码字段权限链路
+
+当数据行携带 `_perm`（`editableFields` / `hiddenFields` / `maskedFields`）时，内置字段组件（`r-text`、`r-number`、`r-select` 等）**自动**根据权限快照控制可见/可编辑/脱敏，无需在 `script.js` 或 `onBeforeRender` 中写任何判断代码。
+
+完整自动流程：
 
 ```text
-row._perm + field
-  -> PermissionChecker.getFieldVisibility()
-  -> FieldRenderHelper.computeFieldState()
-  -> PermissionResolver.resolveFieldPermissionState()
-  -> useFieldPermission
-  -> FieldContextRenderer
-  -> 具体字段组件 / detail block / table cell
+后端/业务脚本写入 row._perm
+  ↓
+DataView（IDataSource）持有行数据
+  ↓
+容器组件（r-table / r-form / r-detail）provide(DATA_SOURCE, dataView)
+  ↓
+字段组件 consume(DATA_SOURCE) → 取到当前行 currentRow
+  ↓
+useFieldPermission（自动调用链）
+  ├─ PermissionChecker.getFieldVisibility(field, row)
+  │    → hiddenFields 命中 → Hidden
+  │    → maskedFields 命中 → Masked
+  │    → 否则 → Visible
+  ├─ PermissionChecker.isFieldEditable(field, row)
+  │    → editableFields 包含 field → true
+  │    → 否则 → false（默认收紧）
+  └─ 综合判定：
+       shouldRenderCurrentField
+         r-form: readable || editable（密码修改场景可渲染）
+         其他宿主: readable
+       fieldValue
+         r-form 且 editable 且 masked/hidden: 清空初始值（不回显脱敏值）
+  ↓
+FieldContextRenderer / 具体字段组件按宿主规则渲染
 ```
 
-### 6.3 动作权限链路
+**零代码配置示例**：
+
+只要 `pagedata.json` 中的数据行包含 `_perm`，rule.json 中的 `r-form` / `r-table` 字段组件就自动生效：
+
+```jsonc
+// pagedata.json（或业务脚本写入 DataView 的数据）
+{
+  "id": 1, "name": "张三", "phone": "138****1234", "department": "销售部",
+  "_perm": {
+    "editableFields": ["name", "phone"],   // name、phone 可编辑
+    "hiddenFields": ["department"],         // department 隐藏
+    "maskedFields": ["phone"]              // phone 脱敏展示
+  }
+}
+```
+
+```jsonc
+// rule.json — 无需任何权限判断代码
+{
+  "type": "r-form", "dataKey": "Users@currentRow",
+  "children": [
+    { "type": "r-text", "field": "name",       "props": { "label": "姓名" } },
+    { "type": "r-text", "field": "phone",      "props": { "label": "手机" } },
+    { "type": "r-text", "field": "department", "props": { "label": "部门" } }
+  ]
+}
+```
+
+效果：
+- `name` → 可见 + 可编辑
+- `phone` → 脱敏展示（`r-table`/`r-detail` 中显示 `138****1234`）；`r-form` 中可编辑，但初始值清空
+- `department` → `r-form` 中不渲染；`r-table` 中单元格内容不显示
+
+### 6.3 零代码动作权限链路（permAction）
+
+除了字段权限，**动作权限**（新增/删除/编辑/导入/导出）也有完整的零代码链。核心机制是 `permAction` 属性。
+
+#### 6.3.1 `permAction` 声明式权限过滤
+
+在 `rule.json` 中为 `builtin-action` 节点声明 `permAction`，容器自动根据 `_modelPerm` / `row._perm` 决定动作的显示/隐藏：
+
+```jsonc
+// rule.json
+{
+  "type": "r-table", "dataKey": "Users@rows",
+  "children": [
+    // ── 工具栏：模型级动作 ──
+    {
+      "type": "r-toolbar", "props": { "position": "top" },
+      "children": [
+        {
+          "type": "builtin-action",
+          "props": {
+            "builtinAction": "append-row", "label": "新增",
+            "permAction": "create"          // ← _modelPerm.allowCreate 控制
+          }
+        }
+      ]
+    },
+    // ── 行操作：行级动作 ──
+    {
+      "type": "r-actions",
+      "children": [
+        {
+          "type": "builtin-action",
+          "props": {
+            "builtinAction": "prompt-edit", "label": "编辑",
+            "permAction": "edit"            // ← row._perm.editableFields 控制
+          }
+        },
+        {
+          "type": "builtin-action",
+          "props": {
+            "builtinAction": "delete-row", "label": "删除",
+            "permAction": "delete"          // ← row._perm.allowDelete 控制
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**不写 `permAction` 时**，动作不受权限过滤，始终显示（如 `refresh` 按钮无需权限控制）。
+
+#### 6.3.2 容器权限管道完整流程
+
+容器组件（`r-table` / `r-form` / `r-tree`）内部通过 `useContainerActions` 对每个动作节点执行以下管道：
 
 ```text
-_modelPerm / row._perm + permAction
-  -> PermissionResolver.isPermittedAction()
-  -> action-permission.ts
-  -> 容器 toolbar / row actions / tree node actions
+动作节点（SparkNode）
+  ↓
+① 仅 builtin-action：resolveNodeBeforeRender()
+   │ 执行 onBeforeRender 回调（若有），可返回 visible/disabled 补丁
+   │ 返回不可见 → 直接过滤，后续步骤跳过
+   ↓
+② isActionDisplayed(action)
+   │ 检查 action.display !== false
+   ↓
+③ isModelActionAllowed(action, modelPerm)
+   │ 读取 permAction → 属于模型级（create/import/export/create-child）？
+   │ → isPermittedAction(permAction, { modelPermission }) 检查
+   │ → 非模型级动作直接通过
+   ↓
+④ isRowActionAllowed(action, row)
+   │ 读取 permAction → 属于行级（edit/delete/create-child）？
+   │ → isPermittedAction(permAction, { row }) 检查
+   │ → 非行级动作直接通过
+   ↓
+⑤ 通过全部检查 → 注入 scoped props（row/index）→ 渲染动作按钮
 ```
 
-### 6.4 当前 HTTP / API 契约（2026-03-30）
+**关键细节**：
 
-当前仓库里与权限直接相关的 HTTP 约定只有两类：
+1. `onBeforeRender` 回调**仅对 `builtin-action` 类型节点执行**，非内置动作跳过步骤 ①。
+2. `create-child` **同时属于模型级和行级**，步骤 ③④ 都会检查。
+3. `modelPermission` 来源于 `useContainerDataSource` 中 `resolvedDataSource._modelPerm`。
 
-1. 认证接口返回用户身份上下文。
-2. 前端 CRUD 层在发起写请求时可把权限 token 透传到请求头。
+#### 6.3.3 `permAction` 可用值与分派规则
 
-这两类约定都**不是**独立的“权限查询服务”，需要和 `_perm` / `_modelPerm` 的行内快照区分开。
+| `permAction` 值 | 权限层级 | 检查逻辑 | 所需快照 |
+|------------------|----------|----------|----------|
+| `"create"` | 模型级 | `_modelPerm.allowCreate === true` | `_modelPerm` |
+| `"import"` | 模型级 | `_modelPerm.allowImport === true` | `_modelPerm` |
+| `"export"` | 模型级 | `_modelPerm.allowExport === true` | `_modelPerm` |
+| `"edit"` | 行级 | `row._perm.editableFields.length > 0` | `row._perm` |
+| `"delete"` | 行级 | `row._perm.allowDelete === true` | `row._perm` |
+| `"create-child"` | 双层 | `canCreate(modelPerm) AND canCreateChild(row)` | 两者 |
+| 其他字符串 | — | 不过滤，始终通过 | — |
+| 不写 / `undefined` | — | 不过滤，始终通过 | — |
 
-#### 6.4.1 认证接口
+**`isPermittedAction` 的 context 语义**：
 
-当前 `spark-ai-server` 已落地的相关认证接口：
-
-| Method | Path | 作用 | 当前返回的权限相关信息 |
-|--------|------|------|------------------------|
-| `POST` | `/api/auth/login` | 登录并签发 JWT | 返回 `token`、`user`、`tenantId`、`defaultProjectId`；不返回字段/动作权限快照 |
-| `POST` | `/api/auth/register` | 租户内注册用户 | 同上 |
-| `POST` | `/api/auth/register-tenant` | 注册新租户和管理员 | 同上 |
-| `GET` | `/api/auth/me` | 读取当前登录用户 | 返回 `userId`、`username`、`displayName`、`email`、`roles[]`、`tenantId`；不返回 `_perm` / `_modelPerm` |
-
-要点：
-
-1. `/api/auth/me` 目前只提供“用户是谁、属于哪个租户、拥有哪些角色”这类身份上下文。
-2. 它**不是**字段级/行级权限快照接口，不能替代数据响应中的 `_perm` / `_modelPerm`。
-3. 当前仓库中也没有 `/api/permissions/**` 这类独立权限 Controller。
-
-#### 6.4.2 前端 CRUD 请求头约定
-
-前端 `CrudService` 已经内置了权限 token 透传逻辑，定义位于：
-
-1. `packages/spark-data/src/types.ts`
-2. `packages/spark-data/src/crud-service.ts`
-
-当前约定如下：
-
-| 来源 | 读取字段 | 发送到请求头 |
-|------|----------|--------------|
-| 模型级权限快照 | `modelPermission.permissionToken` | `X-Permission-Token` |
-| 行级权限快照 | `instancePermission.permissionToken` | `X-Instance-Permission-Token` |
-
-典型调用语义：
+`isPermittedAction(action, context)` 使用 `Object.prototype.hasOwnProperty` 检测 context 对象是否拥有 `modelPermission` / `row` 属性。这意味着：
 
 ```ts
-await crudService.update(row, {
-  modelPermission: dataSource._modelPerm,
-  instancePermission: row._perm,
-})
+// context 没有 modelPermission 属性 → 模型级检查跳过（默认 true）
+isPermittedAction('create-child', { row })
+
+// context 拥有 modelPermission 属性，值为 undefined → 进入 canCreate(undefined) → false
+isPermittedAction('create-child', { modelPermission: undefined, row })
 ```
 
-对应请求头：
+容器管道中 `isModelActionAllowed` 只传 `{ modelPermission }`，`isRowActionAllowed` 只传 `{ row }`，各自只验证自己负责的层级。
 
-```http
-X-Permission-Token: <model-token>
-X-Instance-Permission-Token: <instance-token>
+### 6.4 渲染前属性拦截：`onBeforeRender`
+
+`onBeforeRender` 的落点很直接：**显隐、禁用等控制本质上都是组件 `props` 的值**。在 SparkComponentRenderer 渲染任意 SparkNode 之前，`onBeforeRender` 根据运行时上下文（包括后端返回的权限数据）计算这些 `props`，再把结果合并回节点。
+
+它的本质是：**后端返回权限快照 → 前端在 `onBeforeRender` 中调用 permission API 做同步计算 → 直接设置 `props.visible`、`props.disabled` 等值控制渲染结果**。
+
+适用于所有组件类型：数据容器、按钮、布局组件（`el-card`、`el-tabs`、`div`）、字段组件、第三方组件——只要经 `SparkComponentRenderer` 渲染的 SparkNode 均可声明。
+
+#### 6.4.1 两条执行路径
+
+| 路径 | 执行者 | 适用范围 | 额外行为 |
+|------|--------|---------|----------|
+| **通用路径** | `SparkComponentRenderer` | **所有** SparkNode | 计算 `propsPatch`，把 `visible` / `disabled` 等字段合入节点 props |
+| **容器增强路径** | `useContainerActions` | 仅 `builtin-action` 节点 | 逐行作用域解析 + `disabled` 自动镜像为 `buttonDisabled` |
+
+- **通用路径**：每个 SparkNode 渲染时，SparkComponentRenderer 内部以 `computed` 调用 `resolveNodeBeforeRender()`，无条件执行。`onBeforeRender` 自身不会透传到目标组件（已列入 `FILTERED_PROP_KEYS`）。
+- **容器增强路径**：数据容器（r-table / r-tree）在组装行操作列表时，额外对 `builtin-action` 执行一次 `resolveNodeBeforeRender()`，注入当前行的 `row` / `index` / `dataSource` / `modelPermission`。
+
+> **两条路径不冲突**：对 `builtin-action`，容器增强路径先执行（步骤 ①），之后再走 `permAction` 三重检查（步骤 ②③④）。通用路径在 SparkComponentRenderer 层面另外执行一次，但已通过 `$beforeRenderResolved` 幂等标记避免重复执行。
+
+#### 6.4.2 适用场景
+
+`onBeforeRender` 不只是"permAction 不够用时的补充"，它本质上就是一个**运行时 props 计算器**：
+
+| 场景 | 示例 |
+|------|------|
+| **布局组件权限控制** | 整个 `el-card` / `el-tabs-pane` 根据权限快照隐藏 |
+| **按钮业务条件禁用** | 订单状态为"已完成"时禁用"编辑"按钮 |
+| **第三方字段组件桥接** | 非内置字段组件需手动读取 `_perm` 设置 `disabled` |
+
+**与零代码链的关系**：
+
+- 数据容器标准按钮（`builtin-action` + `permAction`）→ 零代码自动过滤，**无需** `onBeforeRender`
+- 内置字段组件（`r-text`、`r-number` 等）→ 零代码自动消费 `_perm`，**无需** `onBeforeRender`
+- 以上覆盖不了的场景 → 用 `onBeforeRender` 读取后端权限数据，直接设置 `props.visible` / `props.disabled` 等属性值
+
+#### 6.4.3 `permission` API 获取方式
+
+TypeScript 中直接 import；`script.js` 沙箱中已直接注入 `permission` 命名空间，无需 import。
+
+`onBeforeRender` 最常用的只有下面几组 API：
+
+| API | 用途 |
+|-----|------|
+| `isPermittedAction(action, { modelPermission?, row? })` | 统一动作权限判断 |
+| `checkPermission.canCreate(modelPerm)` | 模型级新建判断 |
+| `checkPermission.canDelete(row)` | 行级删除判断 |
+| `checkPermission.canEdit(row)` | 行级编辑判断 |
+| `checkPermission.isFieldVisible(field, row)` | 字段是否可见 |
+| `checkPermission.isFieldEditable(field, row)` | 字段是否可编辑 |
+| `resolveFieldPermissionState(field, row)` | 一次拿到字段的 readable / editable / visibility |
+
+示例：
+
+```javascript
+return {
+  visible: permission.checkPermission.canCreate(ctx.modelPermission),
+  disabled: !permission.checkPermission.canEdit(ctx.row ?? null)
+}
 ```
 
-同时，前端在上传数据前会主动移除权限快照字段：
+`canImport` / `canExport` 可直接用 `isPermittedAction('import', { modelPermission })`、`isPermittedAction('export', { modelPermission })`。
 
-1. `_perm` 不会直接进入请求体。
-2. `_modelPerm` 不会直接进入请求体。
-3. 真正回传给后端用于校验的是上面的 permission token 请求头。
+#### 6.4.4 运行约束
 
-这意味着：
+定义于 `packages/spark-component/src/components/support/beforeRender.ts`。
 
-1. 权限快照是“响应内联数据”。
-2. 权限 token 是“请求附带凭证”。
-3. 两者职责不同，不能混成单一字段。
+1. handler 写在 `node.props.onBeforeRender` 上。
+2. **必须同步返回**；`Promise` / `async` 会被忽略并警告。
+3. `rule.json` 中写字符串函数名，`normalizeOnProps()` 自动包装为对 `script.js` 同名函数的调用。
+4. 对所有组件类型生效（通用路径）；在容器动作管道中，`builtin-action` 额外走增强路径。
 
-#### 6.4.3 当前后端接入现状
+`BeforeRenderContext` 可用字段：
 
-结合当前仓库实现，必须明确以下事实：
+| 字段 | 类型 | 含义 |
+|------|------|------|
+| `id` | `string \| undefined` | 当前节点 id |
+| `type` | `string` | 当前节点类型 |
+| `props` | `Record<string, unknown>` | 当前节点业务 props（已去掉 `onBeforeRender` 自身） |
+| `children` | `SparkNodeChildren` | 当前节点 children |
+| `row` | `IDataRow \| null` | 当前行作用域（通用路径来自父能力链，增强路径来自容器逐行作用域） |
+| `data` | `unknown` | 作用域数据，优先取 `scopedProps['data']`，否则退回 `row` |
+| `index` | `number` | 行索引或作用域索引 |
+| `dataSource` | `IDataSource \| null` | 当前节点可见的数据源（DataView） |
+| `modelPermission` | `IModelPermission \| undefined` | `dataSource._modelPerm` |
+| `parentType` | `string \| null` | 父容器类型 |
 
-1. `spark-ai-server` 目前没有统一读取 `X-Permission-Token` / `X-Instance-Permission-Token` 的 Controller 逻辑。
-2. 当前也没有已经落地的通用“数据 CRUD + 权限快照”后端接口实现；权限 token 透传是前端侧已预留的 HTTP 合约。
-3. 因此本文档中的 `_perm` / `_modelPerm` 更多描述的是**目标响应契约**与前端消费模型，而不是 `spark-ai-server` 已经全量提供的能力。
+#### 6.4.5 返回值语义
 
-落地建议：
+| 返回值 | 实际行为 |
+|--------|----------|
+| `false` | 节点不渲染（写入 `{ visible: false }` 到 propsPatch） |
+| `true` | 节点渲染（写入 `{ visible: true }` 到 propsPatch） |
+| 对象 | 直接当作 props 补丁；其中 `visible`（或备选 `display`）控制显隐，`disabled` 等字段按普通 props 合并 |
 
-1. 后端如果要接入权限体系，应在列表/详情响应中直接内联 `_modelPerm` / `_perm`。
-2. 后端如果要校验写操作，应消费 `X-Permission-Token` / `X-Instance-Permission-Token`，而不是要求前端把 `_perm` 原样回传。
-3. `X-Tenant-Id` / `X-Project-Id` 是租户/项目上下文头，和权限 token 头不是一回事，不能混用。
+**注意**：返回 `true` 会显式写入 `{ visible: true }`——若节点原本 `visible: false`，返回 `true` 会覆盖为可见。
+
+返回对象时，可以把它理解为“本次渲染前要覆写到节点上的 props”。例如返回 `{ visible: false }` 表示隐藏，返回 `{ disabled: true }` 表示禁用，返回 `{ visible: true, disabled: true }` 表示显示但禁用。
+
+#### 6.4.6 示例：字段分组容器根据字段权限控制显隐
+
+多个字段放在同一个布局容器（`div` / `el-card` / `el-col`）中，当容器内所有字段都不可见时，整个容器应隐藏：
+
+```json
+{
+  "type": "el-card",
+  "props": {
+    "header": "财务信息",
+    "onBeforeRender": "resolveFinanceBlockVisible"
+  },
+  "children": [
+    { "type": "r-number", "props": { "field": "salary", "label": "薪资" } },
+    { "type": "r-number", "props": { "field": "bonus", "label": "奖金" } },
+    { "type": "r-text",   "props": { "field": "bankAccount", "label": "银行账号" } }
+  ]
+}
+```
+
+```javascript
+// 容器内字段列表——与 rule.json children 保持一致
+const _financeFields = ['salary', 'bonus', 'bankAccount']
+
+function resolveFinanceBlockVisible(ctx) {
+  if (!ctx.row) return { visible: true }  // 无行数据时默认显示（等待数据加载）
+
+  // 只要有任一字段对当前行可见，容器就显示
+  const anyVisible = _financeFields.some(f =>
+    permission.checkPermission.isFieldVisible(f, ctx.row)
+  )
+  return { visible: anyVisible }
+}
+```
+
+> **关键点**：这里控制的是容器自己的 `props.visible`。当返回 `{ visible: false }` 时，整个容器及其子树都不渲染。子字段组件（`r-number` / `r-text`）自身仍有 `useFieldPermission` 零代码机制——即使容器可见，各字段仍按各自 `_perm` 独立控制编辑/脱敏/隐藏。两层互不冲突：容器层做"整组显隐"，字段层做"单字段精控"。
+
+更简单的场景——整个管理面板只对有创建权限的用户可见：
+
+```json
+{
+  "type": "el-card",
+  "props": {
+    "header": "高级管理",
+    "onBeforeRender": "resolveAdminPanelVisible"
+  },
+  "children": [...]
+}
+```
+
+```javascript
+function resolveAdminPanelVisible(ctx) {
+  return {
+    visible: permission.checkPermission.canCreate(ctx.modelPermission)
+  }
+}
+```
+
+#### 6.4.7 示例：按钮根据业务条件禁用
+
+`permAction: "delete"` 只检查 `row._perm.allowDelete`。如果需要附加业务条件（如"订单状态为已完成时不允许删除"），则叠加 `onBeforeRender`：
+
+```json
+{
+  "type": "builtin-action",
+  "props": {
+    "builtinAction": "delete-row",
+    "label": "删除",
+    "permAction": "delete",
+    "onBeforeRender": "resolveDeleteState"
+  }
+}
+```
+
+```javascript
+function resolveDeleteState(ctx) {
+  // permAction 已处理 _perm.allowDelete；此处只写业务条件
+  return {
+    disabled: ctx.row?.status === 'completed'
+  }
+}
+```
+
+> **`permAction` 和 `onBeforeRender` 可以共存**。`permAction` 负责权限过滤，`onBeforeRender` 负责把业务计算结果写回动作节点的 `props`。容器管道先执行 `onBeforeRender`（步骤 ①），再执行 `permAction` 检查（步骤 ③④）。两者是 AND 关系——任一拒绝则动作不可用。
+
+#### 6.4.8 示例：第三方组件字段权限桥接
+
+内置字段组件已自动走 `useFieldPermission`，无需手写。但第三方或自定义包装组件需手动桥接：
+
+```json
+{
+  "type": "VendorField",
+  "props": {
+    "field": "phone",
+    "onBeforeRender": "resolvePhoneFieldState"
+  }
+}
+```
+
+```javascript
+function resolvePhoneFieldState(ctx) {
+  const field = typeof ctx.props?.field === 'string' ? ctx.props.field : ''
+  if (!field) return { visible: true }
+
+  const state = permission.resolveFieldPermissionState(field, ctx.row ?? null)
+  if (!state) return { visible: true }
+  if (!state.readable && !state.editable) return { visible: false }
+
+  return {
+    visible: true,
+    disabled: !state.editable
+  }
+}
+```
+
+#### 6.4.9 原则
+
+1. 权限是后端控制、前端渲染——`onBeforeRender` 读取后端已产出的 `_perm` / `_modelPerm`，通过 API 计算后直接回写节点 `props`，不做另一套权限系统。
+2. 不应该发 HTTP 请求，不应该依赖异步结果。
+3. 数据容器标准按钮已有零代码 `permAction`，内置字段组件已有零代码 `useFieldPermission`——覆盖范围内无需写 `onBeforeRender`。
+4. 超出零代码覆盖的场景（布局隐显、业务条件禁用、第三方组件桥接）才需要 `onBeforeRender`。
+
+### 6.5 相关 HTTP 约定
+
+与权限直接相关的 HTTP 约定只有两条：
+
+1. 身份接口只提供“当前用户是谁”的上下文，不等于字段或动作权限快照。
+2. 前端发起写请求时，可把权限 token 透传到请求头。
+
+当前 `CrudService` 的约定是：
+
+| 来源 | 请求头 |
+|------|--------|
+| `modelPermission.permissionToken` | `X-Permission-Token` |
+| `instancePermission.permissionToken` | `X-Instance-Permission-Token` |
+
+边界要点：
+
+1. `_perm` / `_modelPerm` 应留在响应数据里供前端渲染，不应原样回写到请求体。
+2. 请求侧真正用于校验的是 permission token 请求头。
+3. 当前仓库里后端尚未统一落地这套校验链，因此这里描述的是前端消费约定与目标接口契约。
 
 ---
 
@@ -538,41 +723,7 @@ detail/list 只看读通道：
 
 ---
 
-## 9. 主键契约与权限体系的关系
-
-权限体系虽然关注展示和编辑，但仍必须遵守主键契约。
-
-### 9.1 后端输出契约
-
-后端任何输出记录都会自动带回全部真实主键列。
-
-前端必须假定：
-
-1. 真实主键列始终存在。
-2. 即便主键字段不展示，也不能在身份识别、当前行切换、CRUD 回写、级联匹配等链路中裁掉。
-
-### 9.2 DataView 的复合主键方案
-
-复合主键已经由 DataView 统一解决：
-
-1. 多列真实主键自动合成为 `row._pk`。
-2. 内部主键操作统一使用标量 `PkValue`。
-3. 前端不要自行拼接复合主键字符串。
-
-应该依赖：
-
-1. `view.primaryKey`
-2. `row._pk`
-3. 主键委托 / DataView 主键能力
-
-不应该做：
-
-1. 自己在组件里用 `tenantId + '_' + itemId` 拼主键。
-2. 把真实主键字段当成普通展示字段过滤掉后，再尝试做更新或删除。
-
----
-
-## 10. 当前测试覆盖
+## 9. 当前测试覆盖
 
 权限体系的核心行为已有回归测试锁定：
 
@@ -593,9 +744,9 @@ detail/list 只看读通道：
 
 ---
 
-## 11. 常见误区与禁止事项
+## 10. 常见误区与禁止事项
 
-### 11.1 不要在前端重新实现脱敏规则
+### 10.1 不要在前端重新实现脱敏规则
 
 错误：
 
@@ -607,7 +758,7 @@ detail/list 只看读通道：
 1. 服务端直接返回已脱敏值。
 2. 前端只按 `maskedFields` 决定这是“脱敏展示态”。
 
-### 11.2 不要把 hidden 理解成“绝对不渲染任何宿主”
+### 10.2 不要把 hidden 理解成“绝对不渲染任何宿主”
 
 错误理解：
 
@@ -618,52 +769,36 @@ detail/list 只看读通道：
 1. `hidden` 只代表读通道不可见。
 2. 如果同时 `editable`，`r-form` 仍可渲染写入控件。
 
-### 11.3 不要把权限过滤器当成安全边界
+### 10.3 不要把权限过滤器当成安全边界
 
 `PermissionFilter` 是前端展示层辅助工具，不是安全审计边界。
 
 真正的安全边界仍然在服务端。
 
-### 11.4 不要自行拼装复合主键
-
-复合主键已经由 DataView 统一归一为 `_pk`。
-
-如果前端再次自己拼一套主键：
-
-1. 容易与服务端真实主键字段脱节。
-2. 容易和 DataView 当前行、删除、更新、级联链路冲突。
-
 ---
 
-## 12. 相关源码入口
-
-数据层：
+## 11. 相关源码入口
 
 1. `packages/spark-data/src/types.ts`
 2. `packages/spark-data/src/crud-service.ts`
-
-组件层：
-
-1. `packages/spark-component/src/permission/PermissionChecker.ts`
-2. `packages/spark-component/src/permission/PermissionResolver.ts`
-3. `packages/spark-component/src/permission/FieldRenderHelper.ts`
-4. `packages/spark-component/src/permission/PermissionFilter.ts`
-5. `packages/spark-component/src/components/fields/context/useFieldPermission.ts`
-6. `packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue`
-7. `packages/spark-component/src/components/containers/action-permission.ts`
-
-测试：
-
-1. `tests/permission-checker.test.ts`
-2. `tests/permission-resolver.test.ts`
-3. `tests/permission-filter.test.ts`
-4. `tests/renderer-field-advanced.test.ts`
-5. `tests/renderer-table.datasource.test.ts`
+3. `packages/spark-component/src/permission/PermissionChecker.ts`
+4. `packages/spark-component/src/permission/PermissionResolver.ts`
+5. `packages/spark-component/src/permission/FieldRenderHelper.ts`
+6. `packages/spark-component/src/permission/PermissionFilter.ts`
+7. `packages/spark-component/src/components/fields/context/useFieldPermission.ts`
+8. `packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue`
+9. `packages/spark-component/src/components/containers/action-permission.ts`
+10. `packages/spark-component/src/components/support/beforeRender.ts`
+11. `tests/permission-checker.test.ts`
+12. `tests/permission-resolver.test.ts`
+13. `tests/permission-filter.test.ts`
+14. `tests/renderer-field-advanced.test.ts`
+15. `tests/renderer-table.datasource.test.ts`
 
 ---
 
-## 13. 一句话总结
+## 12. 一句话总结
 
 SPARK 当前权限体系的本质是：
 
-**服务端给出权限快照与最终展示值，前端按读写双通道把这些结果稳定映射到字段、动作和宿主渲染上；主键身份语义继续由 DataView 统一维护。**
+**服务端给出权限快照与最终展示值，前端按读写双通道把这些结果稳定映射到字段、动作和宿主渲染上。**

@@ -272,6 +272,7 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 | `$dataSet` | `IDataSet \| null` | **页面级 DataSet**（数据唯一入口） |
 | `$refreshData` | `(key?) => Promise<void>` | 刷新数据（可选指定表名） |
 | `$page` | `IPageServiceCapability` | ✅ **推荐** UI 消息、确认、输入、导航、加载遮罩、弹层、文件浏览、文件上传（框架无关） |
+| `permission` | 权限 helper 命名空间 | `isPermittedAction`、`resolveFieldPermissionState`、`formatPermissionAwareFieldValue` 等 |
 | `SparkData` | SparkData 命名空间 | `createTreeManager` 等工具 |
 | `h` | Vue `h` 函数 | 渲染函数专用（`Render*` 函数内使用） |
 
@@ -315,6 +316,7 @@ loading = false → 渲染器开始挂载
 - `$dataSet`：DataSet 已初始化，可订阅事件、操作数据
 - `$route`：路由参数可用
 - `$page`：UI 服务可用
+- `permission`：权限 helper 可用，可直接做动作/字段权限判断
 
 **典型用法**：
 ```javascript

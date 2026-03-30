@@ -19,6 +19,8 @@
  * ⚠️ **禁止将此文件改名为 `script-api.ts`**（见 copilot-instructions 规划节）
  */
 
+import type { FieldVisibility, IDataRow, IModelPermission } from '@spark-view/spark-data'
+
 // ==================== 路由快照 ====================
 
 /**
@@ -66,6 +68,7 @@ export interface IPageRoute {
  *
  * **渲染层附加（非核心契约，实现层注入）**：
  * - `$dataSet` — DataSet 实例（由渲染层以具体类型注入，不在此契约层定义）
+ * - `permission` — 权限 helper 命名空间（字段/动作权限判断）
  * - `SparkData` — SPARK 数据工具命名空间（在 IScriptContext 外单独注入）
  * - `h` — Vue 渲染函数（仅供 Render* 渲染函数，非业务逻辑）
  *
@@ -121,6 +124,14 @@ export interface IScriptContext {
    * 为保持此文件对 capability 系统无依赖，此处使用结构等价的内联类型。
    */
   $page: IPageServiceInScript
+
+  /**
+   * 权限 helper 命名空间。
+   *
+   * 由渲染层注入，结构上对齐组件层公开的 `permission` API，
+   * 可用于动作权限判断、字段权限状态解析与字段显示格式化。
+   */
+  permission: IPermissionApiInScript
 
   /**
    * 脚本日志接口（已桥接到框架 Logger 传输链）。
@@ -186,6 +197,75 @@ export interface IPageServiceInScript {
   showLoading(show: boolean, text?: string): void
   /** 路由导航 */
   navigate(path: string, params?: Record<string, unknown>): void
+}
+
+export interface IPermissionActionContextInScript {
+  modelPermission?: IModelPermission
+  row?: IDataRow | null
+}
+
+export interface IFieldRenderConfigInScript {
+  field: string
+  visible?: boolean
+  editable?: boolean
+  label?: string
+  width?: number | string
+}
+
+export interface IFieldRenderStateInScript {
+  field: string
+  visibility: FieldVisibility
+  readable: boolean
+  editable: boolean
+  displayValue: string | undefined
+  shouldRender: boolean
+}
+
+export interface IPermissionCheckerInScript {
+  canCreate(modelPermission?: IModelPermission): boolean
+  canImport(modelPermission?: IModelPermission): boolean
+  canExport(modelPermission?: IModelPermission): boolean
+  canDelete(row: IDataRow): boolean
+  canCreateChild(row: IDataRow): boolean
+  canEdit(row: IDataRow): boolean
+  isFieldVisible(field: string, row: IDataRow): boolean
+  isFieldEditable(field: string, row: IDataRow): boolean
+  getFieldVisibility(field: string, row: IDataRow): FieldVisibility
+  getFieldDisplayValue(field: string, value: unknown, row: IDataRow): string
+}
+
+export interface IPermissionFilterInScript {
+  filterDeletableRows(rows: IDataRow[]): IDataRow[]
+  filterEditableRows(rows: IDataRow[]): IDataRow[]
+  filterFields(row: IDataRow): Record<string, unknown>
+  getEditableFields(row: IDataRow, allFields: string[]): string[]
+  getVisibleFields(row: IDataRow, allFields: string[]): string[]
+  filterDisplayableFields(row: IDataRow): IDataRow
+  filterDisplayableFieldsInDataSet(rows: IDataRow[]): IDataRow[]
+}
+
+export interface IFieldRenderHelperInScript {
+  computeFieldState(config: IFieldRenderConfigInScript, row: IDataRow, checker: IPermissionCheckerInScript): IFieldRenderStateInScript
+  computeFieldStates(configs: IFieldRenderConfigInScript[], row: IDataRow, checker: IPermissionCheckerInScript): IFieldRenderStateInScript[]
+  filterVisibleFields(configs: IFieldRenderConfigInScript[], row: IDataRow, checker: IPermissionCheckerInScript): IFieldRenderConfigInScript[]
+}
+
+export interface IPermissionApiInScript {
+  isPermittedAction(action: string | undefined, context: IPermissionActionContextInScript): boolean
+  resolveFieldPermissionState(
+    field: string | undefined,
+    row: IDataRow | null | undefined,
+    config?: Omit<IFieldRenderConfigInScript, 'field'>,
+  ): IFieldRenderStateInScript | null
+  formatPermissionAwareFieldValue(
+    field: string | undefined,
+    value: unknown,
+    row: IDataRow | null | undefined,
+    formatDisplay?: (value: unknown) => string,
+  ): string
+  createPermissionChecker(): IPermissionCheckerInScript
+  createPermissionFilter(): IPermissionFilterInScript
+  createFieldRenderHelper(): IFieldRenderHelperInScript
 }
 
 /** 页面内组件实例快照（脚本可读） */
