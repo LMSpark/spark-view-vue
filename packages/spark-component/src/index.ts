@@ -97,6 +97,7 @@ export {
   SparkPageRenderer,
 } from './page/index.js'
 export {
+  SparkChild,
   SparkChildrenBridge,
   ElTableColumns,
   SparkComponentRenderer,

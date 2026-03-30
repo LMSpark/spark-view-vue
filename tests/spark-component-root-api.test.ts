@@ -10,6 +10,7 @@ function pickRootKeys(): string[] {
       return [
         'Spark',
         'ElTableColumns',
+        'SparkChild',
         'SparkChildrenBridge',
         'SparkComponentRenderer',
         'SparkTableColumns',
@@ -52,6 +53,7 @@ describe('spark-component root api', () => {
         "permission",
         "registerAllRenderers",
         "Spark",
+        "SparkChild",
         "SparkChildrenBridge",
         "SparkComponentRenderer",
         "SparkTableColumns",

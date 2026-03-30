@@ -7,7 +7,7 @@
 <template>
   <div :class="itemClass" :style="itemStyle">
     <el-card v-if="useCard" :shadow="cardShadow" class="renderer-list-card">
-      <div class="renderer-list-item-body" :style="itemBodyStyle">
+      <div class="renderer-list-item-body" :style="gridStyle">
         <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context">
           <template #spark="{ child, index }">
             <div
@@ -23,7 +23,7 @@
       </div>
     </el-card>
 
-    <div v-else class="renderer-list-item-body" :style="itemBodyStyle">
+    <div v-else class="renderer-list-item-body" :style="gridStyle">
       <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context">
         <template #spark="{ child, index }">
           <div
@@ -95,10 +95,6 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   gap: () => props.gridGap,
   autoRows: () => props.gridAutoRows,
 })
-
-const itemBodyStyle = computed(() =>
-  gridChildren.value.length > 0 ? gridStyle.value : undefined
-)
 </script>
 
 <style scoped>

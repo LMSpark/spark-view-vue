@@ -31,17 +31,20 @@
     </template>
 
     <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
-      <template v-if="gridChildren.length">
-        <div
-          v-for="(child, index) in gridChildren"
-          :key="nodeId(child) ?? `r-drawer-child-${index}`"
-          class="renderer-drawer-grid-item"
-          :style="getChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-      </template>
-      <slot v-else v-bind="getDefaultSlotScope()" />
+      <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
+        <template #spark="{ child, index }">
+          <div
+            :key="nodeId(child) ?? `r-drawer-child-${index}`"
+            class="renderer-drawer-grid-item"
+            :style="getChildGridStyle(child)"
+          >
+            <SparkComponentRenderer :config="child" />
+          </div>
+        </template>
+        <template #default="slotScope">
+          <slot v-bind="slotScope" />
+        </template>
+      </SparkChildrenBridge>
     </div>
 
     <template v-if="showFooter" #footer>
@@ -59,7 +62,7 @@
 
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
-import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
+import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
 import { getDockedChildren, nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererDrawerApi } from './types'
@@ -109,7 +112,7 @@ const emit = defineEmits<{
 
 const attrs = useAttrs()
 const slots = useSlots()
-const { registerApi } = useSparkPageComponent(props)
+const { context, registerApi } = useSparkPageComponent(props)
 
 function readStringAttr(name: string): string {
   const value = attrs[name]

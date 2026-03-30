@@ -36,15 +36,20 @@
     </template>
 
     <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
-      <div
-        v-for="(child, i) in gridChildren"
-        :key="nodeId(child) ?? `r-section-child-${i}`"
-        class="renderer-section-grid-item"
-        :style="getChildGridStyle(child)"
-      >
-        <SparkComponentRenderer :config="child" />
-      </div>
-      <slot v-if="!gridChildren.length" v-bind="getDefaultSlotScope()" />
+      <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
+        <template #spark="{ child, index }">
+          <div
+            :key="nodeId(child) ?? `r-section-child-${index}`"
+            class="renderer-section-grid-item"
+            :style="getChildGridStyle(child)"
+          >
+            <SparkComponentRenderer :config="child" />
+          </div>
+        </template>
+        <template #default="slotScope">
+          <slot v-bind="slotScope" />
+        </template>
+      </SparkChildrenBridge>
     </div>
   </el-card>
 
@@ -75,22 +80,27 @@
     </div>
 
     <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
-      <div
-        v-for="(child, i) in gridChildren"
-        :key="nodeId(child) ?? `r-section-child-${i}`"
-        class="renderer-section-grid-item"
-        :style="getChildGridStyle(child)"
-      >
-        <SparkComponentRenderer :config="child" />
-      </div>
-      <slot v-if="!gridChildren.length" v-bind="getDefaultSlotScope()" />
+      <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
+        <template #spark="{ child, index }">
+          <div
+            :key="nodeId(child) ?? `r-section-child-${index}`"
+            class="renderer-section-grid-item"
+            :style="getChildGridStyle(child)"
+          >
+            <SparkComponentRenderer :config="child" />
+          </div>
+        </template>
+        <template #default="slotScope">
+          <slot v-bind="slotScope" />
+        </template>
+      </SparkChildrenBridge>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
-import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
+import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
 import { getDockedChildren, nodeId, type SparkNode, type ContainerDocks } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererSectionApi } from './types'
@@ -158,7 +168,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const attrs = useAttrs()
 const slots = useSlots()
-const { registerApi } = useSparkPageComponent(props)
+const { context, registerApi } = useSparkPageComponent(props)
 
 function readStringAttr(name: string): string {
   const value = attrs[name]

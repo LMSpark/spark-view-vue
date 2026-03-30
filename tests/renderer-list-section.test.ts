@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
-import { RendererList, RendererSection } from '@spark-view/spark-component'
+import { RendererList, RendererSection, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 
@@ -351,5 +351,54 @@ describe('RendererList and RendererSection container integration', () => {
     expect(gridItems[0]?.attributes('style')).toContain('grid-column: span 7 / span 7;')
     expect(gridItems[0]?.attributes('style')).toContain('grid-row: span 2 / span 2;')
     expect(gridItems[1]?.attributes('style')).toContain('grid-column: span 17 / span 17;')
+  })
+})
+
+describe('RendererSection direct Vue children bridge', () => {
+  const ContextProbe = defineComponent({
+    name: 'ContextProbe',
+    setup() {
+      const { parentType } = useSparkComponent({ type: 'probe-field' })
+      return () => h('div', {
+        class: 'context-probe',
+        'data-parent-type': parentType ?? '',
+      }, 'probe')
+    },
+  })
+
+  it('should propagate r-section parent context to direct Vue slot children', () => {
+    const plugin = Spark.createPlugin()
+    const wrapper = mount(RendererSection as any, {
+      props: { title: '分区' },
+      slots: {
+        default: () => h(ContextProbe),
+      },
+      global: {
+        plugins: [plugin],
+        stubs: {
+          'el-card': ElCardStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.context-probe').attributes('data-parent-type')).toBe('r-section')
+  })
+
+  it('should propagate r-section parent context in card mode', () => {
+    const plugin = Spark.createPlugin()
+    const wrapper = mount(RendererSection as any, {
+      props: { title: '卡片分区', useCard: true },
+      slots: {
+        default: () => h(ContextProbe),
+      },
+      global: {
+        plugins: [plugin],
+        stubs: {
+          'el-card': ElCardStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.context-probe').attributes('data-parent-type')).toBe('r-section')
   })
 })

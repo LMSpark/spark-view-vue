@@ -20,8 +20,8 @@
 
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="$attrs">
-        <div v-if="gridChildren.length" class="renderer-form-grid" :style="gridStyle">
-          <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context">
+        <div class="renderer-form-grid" :style="gridStyle">
+          <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
             <template #spark="{ child, index }">
               <div
                 :key="nodeId(child) ?? `r-form-child-${index}`"
@@ -31,13 +31,11 @@
                 <SparkComponentRenderer :config="child" />
               </div>
             </template>
+            <template #default="slotScope">
+              <slot v-bind="slotScope" />
+            </template>
           </SparkChildrenBridge>
         </div>
-        <SparkChildrenBridge v-else :parent-context="context" :slot-scope="getDefaultSlotScope()">
-          <template #default="slotScope">
-            <slot v-bind="slotScope" />
-          </template>
-        </SparkChildrenBridge>
       </el-form>
     </div>
   </div>

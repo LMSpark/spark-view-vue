@@ -22,8 +22,8 @@
 
     <div class="renderer-detail-main">
       <div class="renderer-detail" v-bind="$attrs" :style="detailAlignStyle">
-        <div v-if="gridChildren.length" class="renderer-detail-grid" :style="gridStyle">
-          <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context">
+        <div class="renderer-detail-grid" :style="gridStyle">
+          <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
             <template #spark="{ child, index }">
               <div
                 :key="nodeId(child) ?? `r-detail-child-${index}`"
@@ -33,13 +33,11 @@
                 <SparkComponentRenderer :config="child" />
               </div>
             </template>
+            <template #default="slotScope">
+              <slot v-bind="slotScope" />
+            </template>
           </SparkChildrenBridge>
         </div>
-        <SparkChildrenBridge v-else :parent-context="context" :slot-scope="getDefaultSlotScope()">
-          <template #default="slotScope">
-            <slot v-bind="slotScope" />
-          </template>
-        </SparkChildrenBridge>
       </div>
     </div>
   </div>

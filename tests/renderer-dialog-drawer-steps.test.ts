@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { RendererDialog, RendererDrawer, RendererSteps } from '@spark-view/spark-component'
+import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
 
 const SparkActionStub = defineComponent({
   props: {
@@ -236,5 +236,55 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
     expect(onStepChange).toHaveBeenCalledWith('root-step-2', expect.objectContaining({ type: 'r-step' }), 1)
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['root-step-2'])
+  })
+})
+
+describe('Direct Vue children bridge (dialog / drawer)', () => {
+  const ContextProbe = defineComponent({
+    name: 'ContextProbe',
+    setup() {
+      const { parentType } = useSparkComponent({ type: 'probe-field' })
+      return () => h('div', {
+        class: 'context-probe',
+        'data-parent-type': parentType ?? '',
+      }, 'probe')
+    },
+  })
+
+  function mountWithSpark(component: any, options: Record<string, unknown>) {
+    const plugin = Spark.createPlugin()
+    return mount(component, {
+      ...options,
+      global: {
+        plugins: [plugin],
+        stubs: {
+          'el-dialog': ElDialogStub,
+          'el-drawer': ElDrawerStub,
+        },
+        ...(options['global'] as Record<string, unknown> | undefined),
+      },
+    })
+  }
+
+  it('should propagate r-dialog parent context to direct Vue slot children', () => {
+    const wrapper = mountWithSpark(RendererDialog, {
+      props: { title: '对话框', modelValue: true },
+      slots: {
+        default: () => h(ContextProbe),
+      },
+    })
+
+    expect(wrapper.find('.context-probe').attributes('data-parent-type')).toBe('r-dialog')
+  })
+
+  it('should propagate r-drawer parent context to direct Vue slot children', () => {
+    const wrapper = mountWithSpark(RendererDrawer, {
+      props: { title: '抽屉', modelValue: true },
+      slots: {
+        default: () => h(ContextProbe),
+      },
+    })
+
+    expect(wrapper.find('.context-probe').attributes('data-parent-type')).toBe('r-drawer')
   })
 })
