@@ -17,7 +17,7 @@ SPARK 的权限体系**目标模型**是“后端统一验证，前端按快照�
 当前接入状态（2026-03-29）：
 
 1. 前端字段权限与动作权限的解析/渲染链已经存在，并已被 `spark-component` 消费。
-2. `packages/spark-data` 中已经存在一组前端数据层权限 API，例如 `PermissionChecker`、`PermissionFilter`、`PermissionResolver`；它们是 TypeScript 库接口，不是后端 HTTP 服务。
+2. 权限渲染与解析 API 现已集中在 `packages/spark-component/src/permission/`；`spark-data` 只保留权限快照类型、权限字段常量和 CRUD 请求期的 token 透传能力。
 3. 后端**尚未统一继承**这套权限体系，当前不存在一个已落地的独立“权限服务 API”，也未在通用业务响应里系统性注入 `_perm` / `_modelPerm`。
 4. 因此当前运行效果取决于具体数据源是否显式提供权限快照；demo/mock 页可以演示完整权限渲染，但不能等同于后端已经全量接入。
 
@@ -371,6 +371,88 @@ _modelPerm / row._perm + permAction
   -> action-permission.ts
   -> 容器 toolbar / row actions / tree node actions
 ```
+
+### 6.4 当前 HTTP / API 契约（2026-03-30）
+
+当前仓库里与权限直接相关的 HTTP 约定只有两类：
+
+1. 认证接口返回用户身份上下文。
+2. 前端 CRUD 层在发起写请求时可把权限 token 透传到请求头。
+
+这两类约定都**不是**独立的“权限查询服务”，需要和 `_perm` / `_modelPerm` 的行内快照区分开。
+
+#### 6.4.1 认证接口
+
+当前 `spark-ai-server` 已落地的相关认证接口：
+
+| Method | Path | 作用 | 当前返回的权限相关信息 |
+|--------|------|------|------------------------|
+| `POST` | `/api/auth/login` | 登录并签发 JWT | 返回 `token`、`user`、`tenantId`、`defaultProjectId`；不返回字段/动作权限快照 |
+| `POST` | `/api/auth/register` | 租户内注册用户 | 同上 |
+| `POST` | `/api/auth/register-tenant` | 注册新租户和管理员 | 同上 |
+| `GET` | `/api/auth/me` | 读取当前登录用户 | 返回 `userId`、`username`、`displayName`、`email`、`roles[]`、`tenantId`；不返回 `_perm` / `_modelPerm` |
+
+要点：
+
+1. `/api/auth/me` 目前只提供“用户是谁、属于哪个租户、拥有哪些角色”这类身份上下文。
+2. 它**不是**字段级/行级权限快照接口，不能替代数据响应中的 `_perm` / `_modelPerm`。
+3. 当前仓库中也没有 `/api/permissions/**` 这类独立权限 Controller。
+
+#### 6.4.2 前端 CRUD 请求头约定
+
+前端 `CrudService` 已经内置了权限 token 透传逻辑，定义位于：
+
+1. `packages/spark-data/src/types.ts`
+2. `packages/spark-data/src/crud-service.ts`
+
+当前约定如下：
+
+| 来源 | 读取字段 | 发送到请求头 |
+|------|----------|--------------|
+| 模型级权限快照 | `modelPermission.permissionToken` | `X-Permission-Token` |
+| 行级权限快照 | `instancePermission.permissionToken` | `X-Instance-Permission-Token` |
+
+典型调用语义：
+
+```ts
+await crudService.update(row, {
+  modelPermission: dataSource._modelPerm,
+  instancePermission: row._perm,
+})
+```
+
+对应请求头：
+
+```http
+X-Permission-Token: <model-token>
+X-Instance-Permission-Token: <instance-token>
+```
+
+同时，前端在上传数据前会主动移除权限快照字段：
+
+1. `_perm` 不会直接进入请求体。
+2. `_modelPerm` 不会直接进入请求体。
+3. 真正回传给后端用于校验的是上面的 permission token 请求头。
+
+这意味着：
+
+1. 权限快照是“响应内联数据”。
+2. 权限 token 是“请求附带凭证”。
+3. 两者职责不同，不能混成单一字段。
+
+#### 6.4.3 当前后端接入现状
+
+结合当前仓库实现，必须明确以下事实：
+
+1. `spark-ai-server` 目前没有统一读取 `X-Permission-Token` / `X-Instance-Permission-Token` 的 Controller 逻辑。
+2. 当前也没有已经落地的通用“数据 CRUD + 权限快照”后端接口实现；权限 token 透传是前端侧已预留的 HTTP 合约。
+3. 因此本文档中的 `_perm` / `_modelPerm` 更多描述的是**目标响应契约**与前端消费模型，而不是 `spark-ai-server` 已经全量提供的能力。
+
+落地建议：
+
+1. 后端如果要接入权限体系，应在列表/详情响应中直接内联 `_modelPerm` / `_perm`。
+2. 后端如果要校验写操作，应消费 `X-Permission-Token` / `X-Instance-Permission-Token`，而不是要求前端把 `_perm` 原样回传。
+3. `X-Tenant-Id` / `X-Project-Id` 是租户/项目上下文头，和权限 token 头不是一回事，不能混用。
 
 ---
 

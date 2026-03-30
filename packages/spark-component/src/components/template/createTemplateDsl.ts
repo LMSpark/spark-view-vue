@@ -4,7 +4,7 @@ import type { SparkNode } from '../../core/types.js'
 import SparkComponentRenderer from '../SparkComponentRenderer.vue'
 import {
   buildTemplateNode,
-  collectTemplateSlotChildren,
+  collectTemplateSlotBindings,
   markSparkTemplateNodeComponent,
 } from '../support/SparkChild.shared.js'
 
@@ -12,8 +12,8 @@ import {
  * Factory: creates a template DSL component for a given container nodeType.
  *
  * The resulting component:
- * - Uses named slots (`#toolbar`, `#default`, `#actions`, …) → mapped to `dock` assignments
- * - All attrs become `SparkNode.props` (structural keys like `id`/`dock`/`order` go to the node root)
+ * - Uses named slots (`#toolbar`, `#default`, `#actions`, …) → mapped to structured dock props like `props.toolbar`
+ * - All attrs become `SparkNode.props`; `id` stays on the node root; legacy `dock` / `order` attrs are ignored
  * - Is marked as a `SparkTemplateNodeComponent` (nestable inside other DSL / SparkChild contexts)
  * - Renders through `SparkComponentRenderer`
  *
@@ -29,7 +29,7 @@ export function createTemplateDsl(nodeType: string, displayName?: string): Compo
     inheritAttrs: false,
     setup(_props, { attrs, slots }) {
       const node = computed<SparkNode>(() => {
-        const children = collectTemplateSlotChildren(
+        const slotBindings = collectTemplateSlotBindings(
           slots as unknown as Record<string, unknown>,
         )
         return buildTemplateNode(
@@ -37,7 +37,8 @@ export function createTemplateDsl(nodeType: string, displayName?: string): Compo
           {
             descriptor: { nodeType },
             scope: `template:${nodeType}`,
-            slotChildren: children,
+            slotChildren: slotBindings.defaultChildren,
+            slotProps: slotBindings.namedSlotNodes,
           },
         )
       })

@@ -6,6 +6,9 @@ import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 interface RendererTreeInputProps {
   dataKey?: string | undefined
   children?: SparkNode[] | undefined
+  toolbar?: unknown
+  actions?: unknown
+  editor?: unknown
   allowAppend?: boolean | undefined
   allowDelete?: boolean | undefined
 }
@@ -23,6 +26,7 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
     computed(() => options.props.children),
     TREE_DOCK_TYPES,
+    { propSource: computed(() => options.props) },
   )
 
   const nodeContentChildren = computed<SparkNode[]>(() => {

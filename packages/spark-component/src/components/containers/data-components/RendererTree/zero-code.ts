@@ -87,15 +87,6 @@ interface RendererTreeZeroCodeOptions {
   effectiveAllowDelete: ValueRef<boolean>
 }
 
-type MoveNodeResult = Awaited<ReturnType<RendererTreeApi['moveNode']>>
-
-interface TreePathLike {
-  pathIds: Array<string | number>
-}
-
-type LoadTreePathFn = (id: string | number) => Promise<TreePathLike>
-type MoveTreeNodeFn = (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<MoveNodeResult>
-
 export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions) {
   function getNodeKey(data: unknown): string | number | null {
     const node = data as Record<string, unknown> | null | undefined
@@ -139,8 +130,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       const view = options.resolvedView.value
       if (!view) return
 
-      const loadTreePath = view.loadTreePath.bind(view) as unknown as LoadTreePathFn
-      const path = await loadTreePath(key)
+      const path = await view.loadTreePath(key)
       await view.expandTreeToNode(key)
       await nextTick()
 
@@ -174,13 +164,10 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     addRow,
     editRowById,
     removeRow,
-    async moveNode(nodeId, newParentId, index) {
+    moveNode(nodeId, newParentId, index) {
       const view = options.resolvedView.value
-      if (!view) return null
-      const moveTreeNode = ((nextNodeId: string | number, nextParentId: string | number | null, nextIndex?: number) =>
-        view.moveTreeNode(nextNodeId, nextParentId, nextIndex)) as unknown as MoveTreeNodeFn
-      const resultUnknown: unknown = await moveTreeNode(nodeId, newParentId, index)
-      return resultUnknown as MoveNodeResult
+      if (!view) return Promise.resolve(null)
+      return view.moveTreeNode(nodeId, newParentId, index)
     },
     appendNode(parentKey, nodeData) {
       const tree = options.nativeTreeRef.value as NativeTreeLike | null
@@ -324,7 +311,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     }
 
     const moveTreeNode = ((nextNodeId: string | number, nextParentId: string | number | null, nextIndex?: number) =>
-      view.moveTreeNode(nextNodeId, nextParentId, nextIndex)) as unknown as MoveTreeNodeFn
+      view.moveTreeNode(nextNodeId, nextParentId, nextIndex))
     await moveTreeNode(draggedKey, newParentId, -1)
   }
 

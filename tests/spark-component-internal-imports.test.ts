@@ -45,4 +45,23 @@ describe('spark-component internal imports', () => {
 
     expect(offenders).toEqual([])
   })
+
+  it('keeps local SparkComponentRenderer imports for SFC templates that reference it', () => {
+    const offenders: string[] = []
+    const sparkRendererImportPattern = /import\s*\{[^}]*SparkComponentRenderer[^}]*\}\s*from\s*['"][^'"]*internal['"]/s
+
+    for (const filePath of collectFiles(SRC_ROOT)) {
+      if (!filePath.endsWith('.vue')) continue
+      const relPath = relative(SRC_ROOT, filePath).replaceAll('\\', '/')
+      if (!relPath.startsWith('components/containers/')) continue
+      const content = readFileSync(filePath, 'utf8')
+
+      if (!content.includes('<SparkComponentRenderer')) continue
+      if (sparkRendererImportPattern.test(content)) continue
+
+      offenders.push(relPath)
+    }
+
+    expect(offenders).toEqual([])
+  })
 })

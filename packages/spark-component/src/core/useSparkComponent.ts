@@ -61,8 +61,6 @@ export type SparkNodeInput = {
   props?: Record<string, unknown> | undefined
   children?: SparkNode['children'] | undefined
   id?: string | undefined
-  dock?: string | undefined
-  order?: number | undefined
 }
 
 // 运行时常量：本地组件 id 计数器与开发态日志兜底实现。

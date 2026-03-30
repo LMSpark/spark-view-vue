@@ -103,15 +103,15 @@ import {
   type RemoveRowHandler,
 } from '../../support/index.js'
 
-interface Props {
-  /** 组件类型（运行时缺省回落为 r-tree） */
-  type?: string
-  /** 组件属性透传占位（兼容 SparkNode 结构） */
-  props?: Record<string, unknown>
-  /** 节点唯一标识 */
-  id?: string
+interface Props extends SparkNode {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
+  /** 结构化工具栏 dock */
+  toolbar?: unknown
+  /** 结构化节点动作 dock */
+  actions?: unknown
+  /** 结构化编辑区 dock */
+  editor?: unknown
   /** 节点主键字段名，默认取 treeConfig.idField */
   nodeKey?: string
   /** 当前选中节点 ID */

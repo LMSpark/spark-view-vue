@@ -1,9 +1,9 @@
 <!--
 /**
  * @skill r-toolbar
- * @description 通用横向条带容器。以 children + dock 模型工作：未声明 dock 的子节点进入 default 主区，dock='tail' 的子节点进入尾区；r-menu 先复用同实现。
+ * @description 通用横向条带容器。以 wrapper 子节点模型工作：默认 children 进入主区，`r-tail` 子节点进入尾区；r-menu 先复用同实现。
  * @input { props: { gap?: number|string, zoneGap?: number|string, align?: 'start'|'center'|'end'|'stretch' } }
- * @example { "type": "r-toolbar", "children": [{ "type": "builtin-action" }, { "type": "r-text", "dock": "tail" }] }
+ * @example { "type": "r-toolbar", "children": [{ "type": "builtin-action" }, { "type": "r-tail", "children": [{ "type": "builtin-action" }] }] }
  */
 -->
 <template>
@@ -36,37 +36,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 import { useDockExtraction, TOOLBAR_DOCK_TYPES } from '../docks/dock-extraction'
 
-/**
- * 横向容器对齐方式。
- *
- * 这里不是业务语义，而是纯布局参数：父容器通过它决定一条横向 lane 内
- * 子节点在交叉轴上的对齐方式。保持独立定义，后续若扩到纵向容器/矩阵容器，
- * 可复用同一套枚举。
- */
 type InlineAlign = 'start' | 'center' | 'end' | 'stretch'
-
-/**
- * 横向容器主轴分布方式。
- *
- * 当前容器内部只有两类 lane：主区与尾区。主区支持 start/center/end/space-between，
- * 尾区固定向右收束，不暴露额外复杂语义，先保持最小可用内核。
- */
 type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: string
-  /**
-   * 子节点列表。
-   *
-   * 规则：
-   * - 未声明 dock → 进入 default 主区
-   * - 声明了 tail dock prop → 进入尾区
-   * - 其他 dock 当前不参与渲染（后续若扩展多区容器，可在此模型上继续分层）
-   */
+interface Props extends SparkNode {
   children?: SparkNode[]
+  /** 结构化尾区 dock */
+  tail?: unknown
   /** 单个子项之间的间距（同一区域内部） */
   gap?: number | string
   /** 主区与尾区之间的间距（区域级） */
@@ -79,20 +58,19 @@ interface Props extends Omit<SparkNode, 'type'> {
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-toolbar',
-  children: () => [],
-  gap: 8,
-  zoneGap: 12,
-  align: 'center',
-  justify: 'start',
 })
-// 注册当前业务组件上下文。
-// 这里不额外 provide 新能力，只是保持容器节点进入 SPARK 组件树，
-// 让后续若扩展 API / 调试能力时不需要改调用方式。
-useSparkComponent(props)
+
+useSparkPageComponent(props)
+
+const gap = computed<number | string>(() => props.gap ?? 8)
+const zoneGap = computed<number | string>(() => props.zoneGap ?? 12)
+const align = computed<InlineAlign>(() => props.align ?? 'center')
+const justify = computed<InlineJustify>(() => props.justify ?? 'start')
 
 const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
   computed(() => props.children),
   TOOLBAR_DOCK_TYPES,
+  { propSource: computed(() => props) },
 )
 
 // 主区：所有未声明 dock 的子节点。
@@ -150,19 +128,19 @@ const endClasses = computed(() => [
 const rootStyle = computed<Record<string, string>>(() => ({
   display: 'grid',
   gridTemplateColumns: endChildren.value.length > 0 ? 'minmax(0, 1fr) auto' : 'minmax(0, 1fr)',
-  columnGap: normalizeSize(props.zoneGap),
-  alignItems: alignToCss(props.align),
+  columnGap: normalizeSize(zoneGap.value),
+  alignItems: alignToCss(align.value),
 }))
 
-// 单个 lane 内仍然使用 grid-auto-flow: column，避免把“横向容器”继续拆成另一种独立语义。
+// 单个 lane 内仍然使用 grid-auto-flow: column，避免把"横向容器"继续拆成另一种独立语义。
 // 从实现层看，它就是一个单行矩阵流。
 const laneStyle = computed<Record<string, string>>(() => ({
   display: 'grid',
   gridAutoFlow: 'column',
   gridAutoColumns: 'max-content',
-  gap: normalizeSize(props.gap),
-  alignItems: alignToCss(props.align),
-  justifyContent: justifyToCss(props.justify),
+  gap: normalizeSize(gap.value),
+  alignItems: alignToCss(align.value),
+  justifyContent: justifyToCss(justify.value),
 }))
 
 // 尾区固定向右收束：即使主区 justify 改变，也不影响尾区作为 secondary zone 的行为。

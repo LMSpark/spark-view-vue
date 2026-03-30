@@ -1,7 +1,7 @@
 /**
  * Action Descriptor — 声明式行为描述符
  *
- * rule.json 中的 `on` 事件 / toolbar / rowActions 均可使用 action descriptor，
+ * rule.json 中的 `on` 事件 / dock wrapper 子节点（如 `r-toolbar` / `r-actions`）均可使用 action descriptor，
  * 替代 script.js 中的函数调用，实现 **配置驱动、零脚本** 的交互逻辑。
  *
  * @example
@@ -12,11 +12,16 @@
  * // rule.json — confirm → chain
  * { "on": { "click": { "action": "confirm", "message": "确认删除？", "onConfirm": { "action": "delete-current" } } } }
  *
- * // docked toolbar — prompt → append
+ * // r-toolbar wrapper — prompt → append
  * {
- *   "props": { "docks": { "toolbar": { "position": "top" } } },
  *   "children": [
- *     { "type": "action", "dock": "toolbar", "props": { "builtinAction": "prompt-append", "promptMessage": "请输入名称", "field": "name" } }
+ *     {
+ *       "type": "r-toolbar",
+ *       "props": { "position": "top" },
+ *       "children": [
+ *         { "type": "action", "props": { "builtinAction": "prompt-append", "promptMessage": "请输入名称", "field": "name" } }
+ *       ]
+ *     }
  *   ]
  * }
  * ```

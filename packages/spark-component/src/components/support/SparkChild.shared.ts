@@ -31,6 +31,8 @@ const TEMPLATE_FIXED_TYPE_STRUCTURAL_KEYS = new Set<string>([
   'ref',
 ])
 
+const TEMPLATE_IGNORED_KEYS = new Set<string>(['dock', 'order'])
+
 TEMPLATE_FIXED_TYPE_STRUCTURAL_KEYS.delete('type')
 
 const warnedUnsupportedVNodeTypes = new Set<string>()
@@ -187,7 +189,7 @@ export function collectBusinessProps(
     : TEMPLATE_STRUCTURAL_KEYS
 
   return Object.fromEntries(
-    Object.entries(attrs).filter(([key]) => !structuralKeys.has(key))
+    Object.entries(attrs).filter(([key]) => !structuralKeys.has(key) && !TEMPLATE_IGNORED_KEYS.has(key))
   )
 }
 
@@ -199,16 +201,28 @@ export function hasLegacyChildrenInput(value: unknown): boolean {
   return true
 }
 
+export interface TemplateSlotBindingResult {
+  defaultChildren: SparkNodeChildren
+  namedSlotNodes: Record<string, SparkNode>
+}
+
+function buildNamedSlotDockNode(slotName: string, children: SparkNodeChildren): SparkNode {
+  return {
+    type: `r-${slotName}`,
+    children,
+  }
+}
+
 /**
- * Collect template slot children.
+ * Collect template slot bindings.
  *
  * - `#default` slot → main content children
- * - Named slots (e.g. `#toolbar`, `#actions`) → dock SparkNode children
- *   `{ type: 'r-{slotName}', children: [...slotContent] }` appended to the array.
- *   Container components extract docks from children via `useDockExtraction`.
+ * - Named slots (e.g. `#toolbar`, `#actions`) → structured dock props
+ *   `{ toolbar: { type: 'r-toolbar', children: [...] } }`
  */
-export function collectTemplateSlotChildren(slotMap: Record<string, unknown>): SparkNodeChildren {
-  const children: SparkNodeChildren = []
+export function collectTemplateSlotBindings(slotMap: Record<string, unknown>): TemplateSlotBindingResult {
+  const defaultChildren: SparkNodeChildren = []
+  const namedSlotNodes: Record<string, SparkNode> = {}
 
   for (const [slotName, slotValue] of Object.entries(slotMap)) {
     if (slotName.startsWith('_')) continue
@@ -218,15 +232,33 @@ export function collectTemplateSlotChildren(slotMap: Record<string, unknown>): S
     if (collected.length === 0) continue
 
     if (slotName === 'default') {
-      children.push(...collected)
+      defaultChildren.push(...collected)
       continue
     }
 
-    // Named slot → dock SparkNode child
-    children.push({ type: `r-${slotName}`, children: collected })
+    namedSlotNodes[slotName] = buildNamedSlotDockNode(slotName, collected)
   }
 
-  return children
+  return {
+    defaultChildren,
+    namedSlotNodes,
+  }
+}
+
+/**
+ * Collect template slot children.
+ *
+ * - `#default` slot → main content children
+ * - Named slots (e.g. `#toolbar`, `#actions`) → wrapper SparkNode children
+ *   `{ type: 'r-{slotName}', children: [...slotContent] }` appended to the array.
+ *   Container components extract docks from children via `useDockExtraction`.
+ */
+export function collectTemplateSlotChildren(slotMap: Record<string, unknown>): SparkNodeChildren {
+  const { defaultChildren, namedSlotNodes } = collectTemplateSlotBindings(slotMap)
+  return [
+    ...defaultChildren,
+    ...Object.values(namedSlotNodes),
+  ]
 }
 
 function resolveNodeType(raw: Record<string, unknown>, descriptor: SparkTemplateNodeDescriptor | null): string {
@@ -242,6 +274,7 @@ export function buildTemplateNode(
     descriptor?: SparkTemplateNodeDescriptor | null
     scope: string
     slotChildren?: SparkNodeChildren
+    slotProps?: Record<string, unknown>
   }
 ): SparkNode {
   const descriptor = options.descriptor ?? null
@@ -252,7 +285,12 @@ export function buildTemplateNode(
     fixedNodeType: typeof descriptor?.nodeType === 'string' && descriptor.nodeType.length > 0,
   })
 
-  if (Object.keys(businessProps).length > 0) node.props = businessProps
+  const mergedProps = {
+    ...businessProps,
+    ...(options.slotProps ?? {}),
+  }
+
+  if (Object.keys(mergedProps).length > 0) node.props = mergedProps
 
   const resolvedId = resolveNodeId(raw, options.scope)
   if (resolvedId !== undefined) node.id = resolvedId

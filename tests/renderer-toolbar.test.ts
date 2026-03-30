@@ -75,4 +75,27 @@ describe('RendererToolbar integration', () => {
 
     expect(wrapper.find('.renderer-toolbar-lane--end').classes()).toContain('toolbar-tail-zone')
   })
+
+  it('should render structured tail dock prop without requiring wrapper child input', () => {
+    const wrapper = mount(RendererToolbar as any, {
+      props: {
+        children: [
+          { type: 'main-action' },
+        ],
+        tail: {
+          type: 'r-tail',
+          props: { class: 'toolbar-tail-prop-zone' },
+          children: [{ type: 'tail-action-from-prop' }],
+        },
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.renderer-toolbar-lane--end').classes()).toContain('toolbar-tail-prop-zone')
+    expect(wrapper.find('.spark-action-stub[data-type="tail-action-from-prop"]').exists()).toBe(true)
+  })
 })

@@ -71,9 +71,7 @@
             },
             "style": {
               "width": "200px"
-            },
-            "field": "searchInput",
-            "value": ""
+            }
           },
           {
             "type": "el-button",

@@ -1,10 +1,10 @@
 <!--
 /**
  * @skill r-table
- * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据；除列区外，其它结构统一通过 children + dock 分区（toolbar / filter / actions）组织，显示参数写入 props.docks
+ * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据；除列区外，其它结构统一通过 wrapper 子节点（r-toolbar / r-filter / r-actions）组织，显示参数写入各 wrapper 的 props
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @input { dataKey: string, children?: [{ dock?: 'default'|'toolbar'|'filter'|'actions' }], props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string }, filter?: { collapsible?: boolean, defaultCollapsed?: boolean, class?: string }, actions?: { position?: 'left'|'right', label?: string, width?: string|number, align?: 'left'|'center'|'right', fixed?: boolean|'left'|'right', class?: string } }, border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
+ * @input { dataKey: string, children?: [{ type: 'r-toolbar'|'r-filter'|'r-actions'|'el-table-column'|'r-*', props?: Record<string, unknown>, children?: SparkNode[] }], props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
  * @example { "type": "r-table", "dataKey": "Orders@rows", "props": { "border": true, "highlightCurrentRow": true } }
  */
 -->
@@ -181,15 +181,15 @@ import {
   isBuiltinAction,
 } from '../../builtin-actions'
 
-interface Props {
-  /** 组件类型（运行时缺省回落为 r-table） */
-  type?: string
-  /** 组件属性透传占位（兼容 SparkNode 结构） */
-  props?: Record<string, unknown>
-  /** 节点唯一标识 */
-  id?: string
+interface Props extends SparkNode {
   /** DataKey 格式：tableName@field */
   dataKey?: string
+  /** 结构化工具栏 dock */
+  toolbar?: unknown
+  /** 结构化筛选 dock */
+  filter?: unknown
+  /** 结构化行动作 dock */
+  actions?: unknown
   /** 子节点列表（列节点 + dock 节点） */
   children?: SparkNode[]
   onRowClick?: RowClickHandler
@@ -214,7 +214,6 @@ const {
   dockedRowActions,
   sparkChildren,
   getDockProp,
-  legacyFilterColumnsValue,
   legacyRowActionsPositionValue,
   legacyRowActionsAlignValue,
   legacyRowActionsFixedValue,
@@ -276,10 +275,8 @@ const {
   activeFilterCount,
   resetFilters,
 } = useTableFilters({
-  children: sparkChildren,
   filterChildren: computed(() => dockedFilters.value),
   dataView: resolvedView,
-  filterColumns: computed(() => legacyFilterColumnsValue.value),
   filterClass: computed(() => getDockProp<string>('r-filter', 'class') ?? readStringAttr('filterClass') ?? ''),
   filterGridColumns: computed(() => getDockProp<number>('r-filter', 'gridColumns') ?? readNumberAttr('filterGridColumns') ?? 24),
   filterGridGap: computed(() => getDockProp<number | string>('r-filter', 'gridGap') ?? readNumberOrStringAttr('filterGridGap') ?? 12),

@@ -99,15 +99,27 @@
                     "type": "span",
                     "children": [
                       "当前用户: "
-                    ],
-                    "dataKey": "currentUser.label"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "id": "current-user-label",
+                    "children": [
+                      "--"
+                    ]
                   },
                   {
                     "type": "span",
                     "children": [
                       " | 订单数: "
-                    ],
-                    "dataKey": "currentUser.orderCount"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "id": "current-user-order-count",
+                    "children": [
+                      "0"
+                    ]
                   }
                 ]
               }
@@ -188,8 +200,14 @@
                     "type": "span",
                     "children": [
                       "已选订单数: "
-                    ],
-                    "dataKey": "selectedOrdersCount"
+                    ]
+                  },
+                  {
+                    "type": "span",
+                    "id": "selected-orders-count",
+                    "children": [
+                      "0"
+                    ]
                   }
                 ]
               }

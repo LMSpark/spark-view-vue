@@ -456,6 +456,7 @@ async function startApp() {
         // platformPaths 从 VUE_PAGE_MAP scope='platform' 自动派生，消除硬编码
         router.beforeEach((to) => {
           const platformHomePath = preAuthNavTree.homePath ?? '/'
+          const isPlatformUtilityPath = platformPaths.has(to.path) && to.path !== platformHomePath && to.path !== '/login'
           if (!isAuthenticated()) {
             // 未登录：停留在平台域（平台首页/登录页/平台公开页）
             if (to.path.startsWith('/t/')) return platformHomePath
@@ -465,7 +466,8 @@ async function startApp() {
           const tenantId = u?.tenantId ?? 'default'
           const projectId = u?.defaultProjectId ?? 'homepage'
           const scopePrefix = `/t/${tenantId}/${projectId}`
-          // 已登录：进入租户主应用首页（平台域统一收口到首页）
+          // 已登录：默认进入租户主应用首页；但保留 about / hidden demos 这类平台静态工具页的直达访问。
+          if (isPlatformUtilityPath) return undefined
           if (!to.path.startsWith('/t/')) return `${scopePrefix}${getNavHomePath()}`
 
           // 租户路径：验证 URL 中的 tenantId/projectId 与当前用户一致

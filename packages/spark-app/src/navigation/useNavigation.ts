@@ -421,6 +421,33 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
       }
     }
 
+    const normalizedInputPath = normalizePath(path)
+    const exactSystemRoute = router
+      .getRoutes()
+      .find((routeRecord) =>
+        routeRecord.meta['type'] === 'system-page' &&
+        normalizePath(routeRecord.path) === normalizedInputPath
+      )
+
+    if (exactSystemRoute?.name !== undefined) {
+      const tenantId = route.params['tenantId']
+      const projectId = route.params['projectId']
+      const params: Record<string, string> = {}
+      if (exactSystemRoute.path.startsWith('/t/')) {
+        if (typeof tenantId === 'string' && tenantId) {
+          params['tenantId'] = tenantId
+        }
+        if (typeof projectId === 'string' && projectId) {
+          params['projectId'] = projectId
+        }
+      }
+      void router.push({
+        name: exactSystemRoute.name,
+        ...(Object.keys(params).length > 0 ? { params } : {}),
+      })
+      return
+    }
+
     const targetPath = addTenantPrefix(path)
     const targetComparablePath = normalizeComparablePath(targetPath)
 

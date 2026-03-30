@@ -103,6 +103,40 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     expect(wrapper.find('.biz-form-template').attributes('data-name')).toBe('Alice')
   })
 
+  it('should render structured form toolbar dock prop', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'FormDockPropDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }],
+        },
+      },
+    })
+    const formView = ds.getView('Users', 'default')!
+    formView.selection.setCurrentRow(formView.rows[0] ?? null)
+
+    const wrapper = mountWithPageDataSet(RendererForm as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
+        toolbar: { type: 'r-toolbar', children: [{ type: 'form-toolbar-prop-action' }] },
+      },
+      global: {
+        stubs: {
+          'el-form': ElFormStub,
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.spark-action-stub[data-type="form-toolbar-prop-action"]').exists()).toBe(true)
+  })
+
   it('should allow direct Vue children to render R fields inside RendererForm slot', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'FormDirectVueDS',
@@ -192,6 +226,39 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     expect(wrapper.find('.spark-action-stub[data-type="detail-toolbar-action"]').exists()).toBe(true)
     expect(wrapper.find('.biz-detail-template').attributes('data-title')).toBe('Detail Row')
+  })
+
+  it('should render structured detail toolbar dock prop', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'DetailDockPropDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'title', type: 'string' as const },
+          ],
+          rows: [{ id: 2, title: 'Detail Row' }],
+        },
+      },
+    })
+    const detailView = ds.getView('Users', 'default')!
+    detailView.selection.setCurrentRow(detailView.rows[0] ?? null)
+
+    const wrapper = mountWithPageDataSet(RendererDetail as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
+        toolbar: { type: 'r-toolbar', children: [{ type: 'detail-toolbar-prop-action' }] },
+      },
+      global: {
+        stubs: {
+          SparkComponentRenderer: SparkActionStub,
+        },
+      },
+    })
+
+    expect(wrapper.find('.spark-action-stub[data-type="detail-toolbar-prop-action"]').exists()).toBe(true)
   })
 
   it('should expose form CRUD api aligned with tree/table containers', async () => {

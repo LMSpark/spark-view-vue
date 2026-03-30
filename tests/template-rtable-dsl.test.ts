@@ -173,7 +173,7 @@ describe('Template DSL — Production', () => {
   })
 
   // ════════════════════════════════════════════════════════════════════════════
-  // Section 3: Structural fields (id / dock / order)
+  // Section 3: Structural fields and ignored legacy inputs
   // ════════════════════════════════════════════════════════════════════════════
 
   describe('structural fields', () => {
@@ -191,7 +191,7 @@ describe('Template DSL — Production', () => {
       expect(capture.get().attrs).not.toHaveProperty('id')
     })
 
-    it('order preserved on child SparkNodes', () => {
+    it('legacy order attr is ignored on child SparkNodes', () => {
       const { registry } = Spark.createSystem()
       const capture = createCapture()
       registry.register('r-table', capture.component)
@@ -210,13 +210,13 @@ describe('Template DSL — Production', () => {
         (c): c is SparkNode => typeof c === 'object' && c !== null,
       )
       expect(children).toHaveLength(2)
-      expect(children[0]!.props?.['order']).toBe(2)
       expect(children[0]!.props?.['field']).toBe('b')
-      expect(children[1]!.props?.['order']).toBe(1)
+      expect(children[0]!.props).not.toHaveProperty('order')
       expect(children[1]!.props?.['field']).toBe('a')
+      expect(children[1]!.props).not.toHaveProperty('order')
     })
 
-    it('named slot wraps children as dock node (dock attr in props is passthrough)', () => {
+    it('named slot compiles to structured dock prop and ignores legacy dock attrs on inner nodes', () => {
       const { registry } = Spark.createSystem()
       const capture = createCapture()
       registry.register('r-table', capture.component)
@@ -231,16 +231,12 @@ describe('Template DSL — Production', () => {
         },
       })
 
-      const children = capture.get().children.filter(
-        (c): c is SparkNode => typeof c === 'object' && c !== null,
-      )
-      // Named slot 'toolbar' wraps content as { type: 'r-toolbar', children: [...] }
-      expect(children).toHaveLength(1)
-      expect(children[0]!.type).toBe('r-toolbar')
-      // The inner child keeps dock as a business prop
-      expect(children[0]!.children).toHaveLength(1)
-      const inner = children[0]!.children![0] as SparkNode
-      expect(inner.props?.['dock']).toBe('actions')
+      const toolbar = capture.get().attrs['toolbar'] as SparkNode | undefined
+      expect(toolbar).toBeDefined()
+      expect(toolbar?.type).toBe('r-toolbar')
+      expect(toolbar?.children).toHaveLength(1)
+      const inner = toolbar!.children![0] as SparkNode
+      expect(inner.props).not.toHaveProperty('dock')
       expect(inner.props?.['builtinAction']).toBe('save')
     })
 
@@ -382,7 +378,7 @@ describe('Template DSL — Production', () => {
   // ════════════════════════════════════════════════════════════════════════════
 
   describe('named slots → dock mapping', () => {
-    it('compiles toolbar/default/actions slots into dock wrapper + content children', () => {
+    it('compiles toolbar/default/actions slots into dock props + content children', () => {
       const { registry } = Spark.createSystem()
       const capture = createCapture()
       registry.register('r-table', capture.component)
@@ -406,23 +402,23 @@ describe('Template DSL — Production', () => {
       const all = capture.get().children.filter(
         (c): c is SparkNode => typeof c === 'object' && c !== null,
       )
+      const toolbar = capture.get().attrs['toolbar'] as SparkNode | undefined
+      const actions = capture.get().attrs['actions'] as SparkNode | undefined
 
-      // Named slots produce wrapper nodes; default slot produces direct children
-      const toolbarWrapper = all.find(c => c.type === 'r-toolbar')
-      const actionsWrapper = all.find(c => c.type === 'r-actions')
-      const content = all.filter(c => c.type !== 'r-toolbar' && c.type !== 'r-actions')
+      // Named slots produce structured dock props; default slot produces direct children
+      const content = all
 
-      expect(toolbarWrapper).toBeDefined()
-      expect((toolbarWrapper!.children![0] as SparkNode).type).toBe('builtin-action')
+      expect(toolbar?.type).toBe('r-toolbar')
+      expect((toolbar!.children![0] as SparkNode).type).toBe('builtin-action')
 
       expect(content).toHaveLength(2)
       expect(content.map(c => c.type)).toEqual(['r-text', 'r-number'])
 
-      expect(actionsWrapper).toBeDefined()
-      expect((actionsWrapper!.children![0] as SparkNode).type).toBe('builtin-action')
+      expect(actions?.type).toBe('r-actions')
+      expect((actions!.children![0] as SparkNode).type).toBe('builtin-action')
     })
 
-    it('custom named slot maps to wrapper node with r- prefix', () => {
+    it('custom named slot maps to structured dock prop with r- prefix', () => {
       const { registry } = Spark.createSystem()
       const capture = createCapture()
       registry.register('r-table', capture.component)
@@ -439,9 +435,11 @@ describe('Template DSL — Production', () => {
       const children = capture.get().children.filter(
         (c): c is SparkNode => typeof c === 'object' && c !== null,
       )
-      expect(children).toHaveLength(1)
-      expect(children[0]!.type).toBe('r-footer')
-      expect((children[0]!.children![0] as SparkNode).props?.['field']).toBe('summary')
+      const footer = capture.get().attrs['footer'] as SparkNode | undefined
+
+      expect(children).toHaveLength(0)
+      expect(footer?.type).toBe('r-footer')
+      expect((footer!.children![0] as SparkNode).props?.['field']).toBe('summary')
     })
 
     it('empty slot produces no children', () => {
@@ -530,15 +528,19 @@ describe('Template DSL — Production', () => {
 
   describe('config parity proof', () => {
     it('DSL produces equivalent SparkNode to config JSON', () => {
-      // New model: named slots produce dock wrapper nodes
+      // New model: named slots produce structured dock props
       // {
       //   "type": "r-table",
       //   "id": "orders-grid",
-      //   "props": { "dataKey": "Orders@rows", "border": true, "highlightCurrentRow": true },
+      //   "props": {
+      //     "dataKey": "Orders@rows",
+      //     "border": true,
+      //     "highlightCurrentRow": true,
+      //     "toolbar": { "type": "r-toolbar", "children": [{ "type": "r-text", "props": { "field": "search" } }] },
+      //     "actions": { "type": "r-actions", "children": [{ "type": "builtin-action", "props": { "builtinAction": "delete-row" } }] }
+      //   },
       //   "children": [
-      //     { "type": "r-toolbar", "children": [{ "type": "r-text", "props": { "field": "search" } }] },
       //     { "type": "r-number", "props": { "field": "amount" } },
-      //     { "type": "r-actions", "children": [{ "type": "builtin-action", "props": { "builtinAction": "delete-row" } }] }
       //   ]
       // }
 
@@ -576,26 +578,29 @@ describe('Template DSL — Production', () => {
       expect(r.attrs['dataKey']).toBe('Orders@rows')
       expect(r.attrs['border']).toBe(true)
       expect(r.attrs['highlightCurrentRow']).toBe(true)
+      const toolbar = r.attrs['toolbar'] as SparkNode | undefined
+      const actions = r.attrs['actions'] as SparkNode | undefined
+
+      expect(toolbar?.type).toBe('r-toolbar')
+      expect(actions?.type).toBe('r-actions')
 
       // Children structure
       const all = r.children.filter(
         (c): c is SparkNode => typeof c === 'object' && c !== null,
       )
-      expect(all).toHaveLength(3)
+      expect(all).toHaveLength(1)
 
-      // Toolbar wrapper node
-      expect(all[0]!.type).toBe('r-toolbar')
-      const toolbarInner = all[0]!.children![0] as SparkNode
+      // Toolbar dock prop
+      const toolbarInner = toolbar!.children![0] as SparkNode
       expect(toolbarInner.type).toBe('r-text')
       expect(toolbarInner.props?.['field']).toBe('search')
 
       // Default child (direct)
-      expect(all[1]!.type).toBe('r-number')
-      expect(all[1]!.props?.['field']).toBe('amount')
+      expect(all[0]!.type).toBe('r-number')
+      expect(all[0]!.props?.['field']).toBe('amount')
 
-      // Actions wrapper node
-      expect(all[2]!.type).toBe('r-actions')
-      const actionsInner = all[2]!.children![0] as SparkNode
+      // Actions dock prop
+      const actionsInner = actions!.children![0] as SparkNode
       expect(actionsInner.type).toBe('builtin-action')
       expect(actionsInner.props?.['builtinAction']).toBe('delete-row')
     })

@@ -45,7 +45,7 @@
                 },
                 "children": [
                   {
-                    "type": "el-button",
+                    "type": "builtin-action",
                     "order": 1,
                     "props": {
                       "builtinAction": "append-row",
@@ -55,7 +55,7 @@
                     }
                   },
                   {
-                    "type": "el-button",
+                    "type": "builtin-action",
                     "order": 2,
                     "props": {
                       "builtinAction": "delete-selected",
@@ -66,7 +66,7 @@
                     }
                   },
                   {
-                    "type": "el-button",
+                    "type": "builtin-action",
                     "order": 3,
                     "props": {
                       "builtinAction": "refresh",
@@ -176,7 +176,7 @@
                 "type": "r-actions",
                 "children": [
                   {
-                    "type": "el-button",
+                    "type": "builtin-action",
                     "order": 1,
                     "props": {
                       "builtinAction": "message-row",
@@ -186,7 +186,7 @@
                     }
                   },
                   {
-                    "type": "el-button",
+                    "type": "builtin-action",
                     "order": 2,
                     "props": {
                       "builtinAction": "prompt-edit",
@@ -200,7 +200,7 @@
                     "order": 3
                   },
                   {
-                    "type": "el-button",
+                    "type": "builtin-action",
                     "order": 4,
                     "props": {
                       "builtinAction": "delete-row",

@@ -14,7 +14,7 @@ export type {
 } from './system/index.js'
 
 // ── 2. Core 层（基础 composable / 类型 / 能力键） ──
-export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHost, useSparkHostScope, resolveSparkHost, resolveSparkHostType } from './core/index.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHost, useSparkHostScope, resolveSparkHost } from './core/index.js'
 export type {
   UseSparkComponentReturn,
   UseSparkPageComponentReturn,
@@ -54,6 +54,10 @@ export {
   SPARK_NODE_STRUCT_KEYS,
   normalizeSparkNode,
   nodeId,
+  nodeInputProp,
+  nodeInputProps,
+  isSparkNode,
+  getSparkNodeChildren,
 } from './core/index.js'
 
 // ── 6. 数据 + Renderer 能力键 ──
@@ -63,12 +67,14 @@ export {
   DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
+  CSS_SCOPE,
 } from './core/index.js'
 export type {
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   ModuleContextCapability,
+  PageCssScopeCapability,
 } from './core/index.js'
 export type { RendererTableApi } from './components/containers/data-components/RendererTable/types.js'
 export type { RendererFormApi } from './components/containers/data-components/RendererForm/types.js'
@@ -91,9 +97,20 @@ export {
   SparkChildrenBridge,
   ElTableColumns,
   ElButton,
+  RCollapse,
+  RDetail,
+  RDialog,
+  RDrawer,
+  RForm,
+  RList,
   RNumber,
+  RSection,
+  RSteps,
   RTable,
+  RTabs,
   RText,
+  RToolbar,
+  RTree,
   SparkComponentRenderer,
   SparkTableColumns,
   createTemplateDsl,
@@ -112,6 +129,9 @@ export * as fieldDataComponentComposables from './components/fields/data-compone
 export * as fieldNonDataComponentComposables from './components/fields/non-data-components/composables/index.js'
 export * as fieldDataComponentSupport from './components/fields/data-components/support/index.js'
 
+export {
+  usePageDataSet,
+} from './page/index.js'
 export type {
   UsePageDataSetOptions,
   UsePageDataSetReturn,

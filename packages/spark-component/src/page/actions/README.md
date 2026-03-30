@@ -10,7 +10,7 @@
 适用场景：
 
 1. `rule.json` 中的 `on` 事件
-2. 容器 `toolbar` / `rowActions`
+2. 容器 dock wrapper 子节点（如 `r-toolbar` / `r-actions` / `r-header` / `r-footer`）
 3. 用配置代替脚本函数的零代码交互
 
 统一语义：

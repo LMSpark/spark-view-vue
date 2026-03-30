@@ -66,14 +66,6 @@ export function resolveSparkHost<T extends string = string>(
   }
 }
 
-export function resolveSparkHostType<T extends string = string>(
-  parentType: string | null,
-  parentContext: SparkCapabilityContext | null,
-  options: SparkHostResolverOptions<T> = {},
-): T | null {
-  return resolveSparkHost(parentType, parentContext, options).hostType
-}
-
 export function useSparkHost<T extends string = string>(
   options: SparkHostResolverOptions<T> = {},
 ): UseSparkHostReturn<T> {

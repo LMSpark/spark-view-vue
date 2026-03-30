@@ -9,32 +9,32 @@
         ]
       },
       {
-        "type": "div",
-        "class": "content-section",
+        "type": "r-form",
+        "dataKey": "settings@currentRow",
         "style": {
           "marginTop": "20px"
         },
         "children": [
           {
-            "type": "input",
+            "type": "r-text",
             "field": "siteName",
-            "title": "站点名称",
-            "dataKey": "settings.siteName",
-            "value": ""
+            "props": {
+              "label": "站点名称"
+            }
           },
           {
-            "type": "input",
+            "type": "r-text",
             "field": "siteUrl",
-            "title": "站点URL",
-            "dataKey": "settings.siteUrl",
-            "value": ""
+            "props": {
+              "label": "站点URL"
+            }
           },
           {
-            "type": "switch",
+            "type": "r-switch",
             "field": "maintenance",
-            "title": "维护模式",
-            "dataKey": "settings.maintenance",
-            "value": false
+            "props": {
+              "label": "维护模式"
+            }
           }
         ]
       }

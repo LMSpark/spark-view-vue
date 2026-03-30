@@ -234,6 +234,12 @@ export class DynamicRouter {
   async registerRoutes(): Promise<void> {
     routerLogger.info('开始注册动态路由')
 
+    // 平台级静态页面（about / hidden demos 等）始终保留，
+    // 避免登录后 refreshRoutes() 仅保留远程导航树时把这些本地路由冲掉。
+    if (this._preAuthNavTree) {
+      this.registerRoutesFromNav(this._preAuthNavTree.children, true)
+    }
+
     if (this._loadNavigation && this._isAuthenticated()) {
       try {
         await this.loadAndRegisterFromNav()
@@ -251,10 +257,9 @@ export class DynamicRouter {
         }
       }
     } else if (this._preAuthNavTree) {
-      // 未登录状态：使用本地预认证导航树（平台级路由，不加租户前缀）
+      // 未登录状态：平台级路由已在上方注册；此处仅设置导航树上下文。
       this._navTree = this._preAuthNavTree
       this._navRouteMap = new WeakMap()
-      this.registerRoutesFromNav(this._preAuthNavTree.children, true)
       routerLogger.info('预认证导航树路由注册完成', { nodeCount: this._preAuthNavTree.children.length })
     }
 

@@ -100,7 +100,7 @@
 - 非结构字段(dataKey/id/on/name/field/class/style 等)写根级或 props 内皆可
 - r-tree/r-form/r-detail/r-table 用 dataKey 绑定数据
 - r-form/r-detail 子组件用 name 绑定行字段，props 含 label/colSpan
-- r-tree dock 系统: children 中 dock="toolbar"/"actions" 放工具栏/操作按钮
+- 结构区统一用包装节点：r-toolbar / r-filter / r-actions / r-header / r-footer / r-tail
 - on 事件值为 script.js 函数名字符串
 - el-table-column width 是字符串，r-* width 是数字
 - r-form gridColumns 默认 24，字段 colSpan 控制占比
@@ -197,7 +197,7 @@ $dataSet, $page, $route, $query, $queryAll, $el, $refreshData, SparkData, h
 | el-table-column width | 字符串 `"80"` | 数字 `80` |
 | r-* 字段 width | 数字 `120` | 字符串 `"120"` |
 | 事件绑定值 | 函数名字符串 `"handleClick"` | 内联函数 |
-| dock 声明 | 在子节点根级 `"dock": "toolbar"` | 在 props 内 |
+| 结构区声明 | `"type": "r-toolbar"` / `"r-filter"` / `"r-actions"` | 用 `"dock": "toolbar"` 等旧写法 |
 
 ### script.js
 

@@ -4,6 +4,24 @@
 let _pageState = { currentUser: null, selectedOrdersCount: 0 }
 
 /**
+ * DOM 直写：更新用户信息 badge
+ */
+function _flushUserInfoDOM() {
+  const labelEl = $query('#current-user-label')
+  const countEl = $query('#current-user-order-count')
+  if (labelEl) labelEl.textContent = _pageState.currentUser?.label ?? '--'
+  if (countEl) countEl.textContent = String(_pageState.currentUser?.orderCount ?? 0)
+}
+
+/**
+ * DOM 直写：更新已选订单数 badge
+ */
+function _flushSelectedOrdersDOM() {
+  const el = $query('#selected-orders-count')
+  if (el) el.textContent = String(_pageState.selectedOrdersCount)
+}
+
+/**
  * 初始化 DataSet - __init__ 生命周期
  */
 function __init__() {
@@ -74,8 +92,9 @@ function handleUserSelect(row) {
   // 清空级联状态
   _pageState.selectedOrdersCount = 0
   
-  // 内核会自动通知订阅者更新 UI
-  // 重新渲染会导致 el-table 复选框状态丢失
+  // DOM 直写更新 info-badge
+  _flushUserInfoDOM()
+  _flushSelectedOrdersDOM()
   
   console.log(`📋 用户 ${row.name} 的订单数:`, ordersTable?.rows?.length)
 }
@@ -91,7 +110,8 @@ function handleOrderSelect(selection) {
   // 这里只更新 UI 统计信息（不触发重绑）
   _pageState.selectedOrdersCount = selection.length
   
-  // ❤ 重新渲染会导致 el-table 复选框状态丢失
+  // DOM 直写更新 info-badge
+  _flushSelectedOrdersDOM()
 }
 
 /**

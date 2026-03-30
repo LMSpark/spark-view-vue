@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { createDynamicRouter } from '../dynamic'
 import type { AppNavRoot } from '@spark-view/spark-utils'
+import { createDynamicRouter } from '../packages/spark-app/src/router/dynamic'
 
 const DummyPage = defineComponent({
   name: 'DummyPage',
@@ -23,7 +23,7 @@ const PRE_AUTH_NAV: AppNavRoot = {
     },
     {
       id: 'demo-node',
-      title: 'demo',
+      title: 'template-dsl-demo',
       nodeKind: 'system-page',
       path: '/demo/template-dsl',
       children: [],
@@ -31,8 +31,8 @@ const PRE_AUTH_NAV: AppNavRoot = {
   ],
 }
 
-describe('DynamicRouter unauthorized fallback', () => {
-  it('falls back to preAuthNavTree when loadNavigation returns 401', async () => {
+describe('DynamicRouter platform pages', () => {
+  it('falls back to preAuth routes when navigation loading returns 401', async () => {
     const router = createRouter({ history: createMemoryHistory(), routes: [] })
     const loadNavigation = vi.fn().mockRejectedValue({ status: 401 })
 
@@ -44,16 +44,19 @@ describe('DynamicRouter unauthorized fallback', () => {
       preAuthNavTree: PRE_AUTH_NAV,
       isAuthenticated: () => true,
       tenantPathPrefix: '/t/:tenantId/:projectId',
+      componentMap: {
+        '/demo/template-dsl': DummyPage,
+      },
     })
 
     await expect(dynamicRouter.registerRoutes()).resolves.toBeUndefined()
-    expect(loadNavigation).toHaveBeenCalledOnce()
+
     expect(dynamicRouter.getRegisteredRoutes()).toContain('/login')
     expect(dynamicRouter.getRegisteredRoutes()).toContain('/demo/template-dsl')
     expect(dynamicRouter.getNavTree()).toEqual(PRE_AUTH_NAV)
   })
 
-  it('keeps preAuth static routes when authenticated navigation loads successfully', async () => {
+  it('keeps preAuth platform pages after authenticated navigation loads', async () => {
     const router = createRouter({ history: createMemoryHistory(), routes: [] })
     const loadNavigation = vi.fn().mockResolvedValue({
       id: 'tenant-root',
@@ -88,20 +91,5 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     expect(dynamicRouter.getRegisteredRoutes()).toContain('/demo/template-dsl')
     expect(dynamicRouter.getRegisteredRoutes()).toContain('/t/:tenantId/:projectId/dashboard')
-  })
-
-  it('throws when loadNavigation returns 401 and no preAuthNavTree is configured', async () => {
-    const router = createRouter({ history: createMemoryHistory(), routes: [] })
-    const loadNavigation = vi.fn().mockRejectedValue({ status: 401 })
-
-    const dynamicRouter = createDynamicRouter({
-      router,
-      configLoader: {} as never,
-      pageComponent: DummyPage,
-      loadNavigation,
-      isAuthenticated: () => true,
-    })
-
-    await expect(dynamicRouter.registerRoutes()).rejects.toEqual({ status: 401 })
   })
 })

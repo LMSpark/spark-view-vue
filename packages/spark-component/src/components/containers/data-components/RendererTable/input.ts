@@ -6,6 +6,9 @@ import type { LateralActionPosition } from '../../actions/useContainerActions'
 interface RendererTableInputProps {
   dataKey?: string | undefined
   children?: SparkNode[] | undefined
+  toolbar?: unknown
+  filter?: unknown
+  actions?: unknown
 }
 
 interface RendererTableInputOptions {
@@ -47,12 +50,6 @@ export function useRendererTableInput(options: RendererTableInputOptions) {
 
   const effectiveDataKey = computed(() => options.props.dataKey)
 
-  const legacyFilterColumnsValue = computed<string[]>(() => {
-    const value = options.attrs['filterColumns']
-    if (!Array.isArray(value)) return []
-    return value.filter((item): item is string => typeof item === 'string' && item.length > 0)
-  })
-
   const legacyRowActionsValue = computed<SparkNode[]>(() => {
     const value = options.attrs['rowActions']
     return Array.isArray(value) ? value as SparkNode[] : []
@@ -78,6 +75,7 @@ export function useRendererTableInput(options: RendererTableInputOptions) {
   const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
     computed(() => options.props.children),
     TABLE_DOCK_TYPES,
+    { propSource: computed(() => options.props) },
   )
 
   const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
@@ -94,11 +92,12 @@ export function useRendererTableInput(options: RendererTableInputOptions) {
   })
 
   function assertNoLegacyTableStructures(): void {
-    if (Array.isArray(options.attrs['toolbar']) && options.attrs['toolbar'].length > 0) {
+    const toolbarValue = options.props.toolbar ?? options.attrs['toolbar']
+    if (Array.isArray(toolbarValue) && toolbarValue.length > 0) {
       throw new Error('[RendererTable] props.toolbar 已废除旧数组格式。请使用 dock 子节点 { type: "r-toolbar", children: [...] } 格式。')
     }
 
-    if (legacyFilterColumnsValue.value.length > 0) {
+    if (Array.isArray(options.attrs['filterColumns']) && options.attrs['filterColumns'].length > 0) {
       throw new Error('[RendererTable] props.filterColumns 已废除。请使用 dock 子节点 { type: "r-filter", children: [...] } 格式。')
     }
 
@@ -116,7 +115,6 @@ export function useRendererTableInput(options: RendererTableInputOptions) {
     dockedRowActions,
     sparkChildren,
     getDockProp,
-    legacyFilterColumnsValue,
     legacyRowActionsPositionValue,
     legacyRowActionsAlignValue,
     legacyRowActionsFixedValue,

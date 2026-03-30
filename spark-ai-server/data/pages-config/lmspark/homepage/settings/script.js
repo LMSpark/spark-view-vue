@@ -1,23 +1,23 @@
 ﻿// 系统设置页面脚本
 // 沙箱注入的全局变量: 
-// - $route, $el, $query, $queryAll, $dataSet, $refreshData, $page
+// - $route, $el, $query, $queryAll, $dataSet, $refreshData, $page, SparkData, h
 
-// 页面初始化
-console.log('⚙️ 系统设置页面已加载');
-console.log('📦 DataSet:', $dataSet);
+function __init__() {
+  // 设置表只有一行，自动选中以驱动 r-form 显示
+  const view = $dataSet?.getView('settings', 'default')
+  if (view && view.rows.length > 0) {
+    view.setCurrentRow(view.rows[0])
+  }
+}
 
-// 示例：定义函数供页面使用
 function saveSettings() {
-    $page.showMessage('💾 保存设置', 'success');
-    console.log('保存设置');
+  $page.showMessage('💾 保存设置', 'success')
 }
 
 function resetSettings() {
-    $page.showMessage('🔄 重置设置', 'info');
-    console.log('重置设置');
+  $page.showMessage('🔄 重置设置', 'info')
 }
 
 function exportConfig() {
-    $page.showMessage('📤 导出配置', 'info');
-    console.log('导出配置');
+  $page.showMessage('📤 导出配置', 'info')
 }

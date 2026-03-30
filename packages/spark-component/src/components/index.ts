@@ -5,6 +5,7 @@
  */
 
 import { markSparkTemplateNodeComponent } from './support/SparkChild.shared.js'
+import { createTemplateDsl } from './template/createTemplateDsl.js'
 import RendererTable from './containers/data-components/RendererTable/index.js'
 
 // ── 字段组件导入（用于 DSL 标记 + 别名导出）──────────────────────────────────
@@ -77,7 +78,7 @@ export { default as SparkTableColumns } from './support/SparkTableColumns.js'
 export { default as ElTableColumns } from './support/SparkTableColumns.js'
 
 // ── 模板 DSL ──────────────────────────────────────────────────────────────────
-export { createTemplateDsl } from './template/createTemplateDsl.js'
+export { createTemplateDsl }
 export { default as RTable } from './template/RTable.js'
 export {
   RForm, RDetail, RTree, RList,
@@ -85,35 +86,37 @@ export {
 } from './template/dsl-components.js'
 
 // ── DSL 字段别名（R-前缀快捷名）──────────────────────────────────────────────
-export { BuiltinActionButton as ElButton }
-export { FieldText as RText }
-export { FieldTextarea as RTextarea }
-export { FieldHtmlEditor as RHtmlEditor }
-export { FieldNumber as RNumber }
-export { FieldDate as RDate }
-export { FieldSelect as RSelect }
-export { FieldMultiSelect as RMultiSelect }
-export { FieldRadio as RRadio }
-export { FieldCheckbox as RCheckbox }
-export { FieldCheckboxGroup as RCheckboxGroup }
-export { FieldSwitch as RSwitch }
-export { FieldSlider as RSlider }
-export { FieldRate as RRate }
-export { FieldColor as RColor }
-export { FieldIcon as RIcon }
-export { FieldImage as RImage }
-export { FieldFilePath as RFilePath }
-export { FieldFileBrowser as RFileBrowser }
-export { FieldUpload as RUpload }
-export { FieldEntityPicker as REntityPicker }
-export { FieldUserPicker as RUserPicker }
-export { FieldDeptPicker as RDeptPicker }
-export { FieldProductPicker as RProductPicker }
-export { FieldCascader as RCascader }
-export { FieldTreeSelect as RTreeSelect }
-export { FieldTransfer as RTransfer }
-export { FieldContextRenderer as RColumnGroup }
-export { FieldTreeNodeSummary as RTreeNodeSummary }
+// 这些导出面向模板 authoring，统一返回固定 nodeType 的 DSL 包装组件；
+// 真实渲染组件仍通过 Field* / BuiltinActionButton 暴露。
+export const ElButton = createTemplateDsl('builtin-action', 'SparkDslBuiltinActionButton')
+export const RText = createTemplateDsl('r-text', 'RText')
+export const RTextarea = createTemplateDsl('r-textarea', 'RTextarea')
+export const RHtmlEditor = createTemplateDsl('r-html-editor', 'RHtmlEditor')
+export const RNumber = createTemplateDsl('r-number', 'RNumber')
+export const RDate = createTemplateDsl('r-date', 'RDate')
+export const RSelect = createTemplateDsl('r-select', 'RSelect')
+export const RMultiSelect = createTemplateDsl('r-multi-select', 'RMultiSelect')
+export const RRadio = createTemplateDsl('r-radio', 'RRadio')
+export const RCheckbox = createTemplateDsl('r-checkbox', 'RCheckbox')
+export const RCheckboxGroup = createTemplateDsl('r-checkbox-group', 'RCheckboxGroup')
+export const RSwitch = createTemplateDsl('r-switch', 'RSwitch')
+export const RSlider = createTemplateDsl('r-slider', 'RSlider')
+export const RRate = createTemplateDsl('r-rate', 'RRate')
+export const RColor = createTemplateDsl('r-color', 'RColor')
+export const RIcon = createTemplateDsl('r-icon', 'RIcon')
+export const RImage = createTemplateDsl('r-image', 'RImage')
+export const RFilePath = createTemplateDsl('r-file-path', 'RFilePath')
+export const RFileBrowser = createTemplateDsl('r-file-browser', 'RFileBrowser')
+export const RUpload = createTemplateDsl('r-upload', 'RUpload')
+export const REntityPicker = createTemplateDsl('r-entity-picker', 'REntityPicker')
+export const RUserPicker = createTemplateDsl('r-user-picker', 'RUserPicker')
+export const RDeptPicker = createTemplateDsl('r-dept-picker', 'RDeptPicker')
+export const RProductPicker = createTemplateDsl('r-product-picker', 'RProductPicker')
+export const RCascader = createTemplateDsl('r-cascader', 'RCascader')
+export const RTreeSelect = createTemplateDsl('r-tree-select', 'RTreeSelect')
+export const RTransfer = createTemplateDsl('r-transfer', 'RTransfer')
+export const RColumnGroup = createTemplateDsl('r-column-group', 'RColumnGroup')
+export const RTreeNodeSummary = createTemplateDsl('r-tree-node-summary', 'RTreeNodeSummary')
 
 // ── 容器 Renderer 组件 ───────────────────────────────────────────────────────
 export { RendererTable }

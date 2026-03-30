@@ -59,10 +59,11 @@ import {
   type RemoveRowHandler,
 } from '../../support/index.js'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: string
+interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
+  /** 结构化工具栏 dock */
+  toolbar?: unknown
   /** 子节点列表 */
   children?: SparkNode[]
   /** CSS Grid 列数 */
@@ -110,6 +111,7 @@ const {
 } = useFormDetailContainer({
   type: props.type,
   ...(props.id !== undefined ? { id: props.id } : {}),
+  ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
   ...(props.children !== undefined ? { children: props.children } : {}),
   dataKey: props.dataKey,
   gridColumns: props.gridColumns,

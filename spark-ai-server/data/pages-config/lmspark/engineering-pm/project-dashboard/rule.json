@@ -62,8 +62,8 @@
                 "type": "el-statistic",
                 "props": {
                   "title": "按期完成率",
-                  "value": "80%",
-                  "suffix": ""
+                  "value": 80,
+                  "suffix": "%"
                 }
               }
             ]

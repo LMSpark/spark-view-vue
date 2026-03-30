@@ -1,8 +1,8 @@
 <!--
 /**
  * @skill r-tabs
- * @description 标签页容器，内部使用 r-tab-pane 定义面板；支持 dock 分区工具栏，每个面板内容默认采用 24 列 CSS Grid
- * @input { props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, modelValue?: string|number } }
+ * @description 标签页容器，内部使用 r-tab-pane 定义面板；支持 `r-toolbar` wrapper 工具栏，每个面板内容默认采用 24 列 CSS Grid
+ * @input { props: { modelValue?: string|number }, children?: [{ type: 'r-toolbar'|'r-tab-pane', props?: Record<string, unknown>, children?: SparkNode[] }] }
  * @example { "type": "r-tabs", "children": [{ "type": "r-tab-pane", "props": { "label": "基本信息", "name": "base" }, "children": [] }] }
  */
 -->
@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useSparkPageComponent } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
 import { useDockExtraction, NAVIGATION_DOCK_TYPES } from '../../docks/dock-extraction'
@@ -57,10 +57,11 @@ interface TabsClickEvent {
   [key: string]: unknown
 }
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: string
+interface Props extends SparkNode {
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
+  /** 结构化工具栏 dock */
+  toolbar?: unknown
   /** 当前激活标签页 */
   modelValue?: string | number
   /** 标签页切换回调 */
@@ -82,6 +83,7 @@ const { registerApi } = useSparkPageComponent(props)
 const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
   computed(() => props.children),
   NAVIGATION_DOCK_TYPES,
+  { propSource: computed(() => props) },
 )
 
 const paneConfigs = computed(() =>

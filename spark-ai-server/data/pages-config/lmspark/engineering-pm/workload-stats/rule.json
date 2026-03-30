@@ -108,8 +108,8 @@
                 "type": "el-statistic",
                 "props": {
                   "title": "利用率",
-                  "value": "85%",
-                  "suffix": ""
+                  "value": 85,
+                  "suffix": "%"
                 }
               }
             ]

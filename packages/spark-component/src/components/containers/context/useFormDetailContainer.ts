@@ -15,6 +15,7 @@ import { createCurrentRowSlotScope } from '../slotScopeFactories'
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
   children?: SparkNode[]
+  toolbar?: unknown
   gridColumns: number | undefined
   gridGap: number | string | undefined
   gridAutoRows: string | undefined
@@ -29,6 +30,7 @@ export function useFormDetailContainer(
   const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
     computed(() => props.children),
     FORM_DOCK_TYPES,
+    { propSource: computed(() => props) },
   )
 
   const dockedToolbar = computed(() => getDockChildren('r-toolbar'))

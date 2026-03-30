@@ -107,10 +107,13 @@ import {
   type RowClickHandler,
 } from '../../support/index.js'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: string
+interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
+  /** 结构化工具栏 dock */
+  toolbar?: unknown
+  /** 结构化列表项动作 dock */
+  actions?: unknown
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
   /** 列数 */
@@ -186,6 +189,7 @@ assertNoLegacyListStructures()
 const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
   computed(() => props.children),
   LIST_DOCK_TYPES,
+  { propSource: computed(() => props) },
 )
 
 const effectiveDataKey = computed(() => props.dataKey)

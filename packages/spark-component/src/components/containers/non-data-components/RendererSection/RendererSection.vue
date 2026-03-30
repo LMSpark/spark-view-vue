@@ -108,10 +108,11 @@ import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useControlledValue } from '../state'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: string
+interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
+  /** 结构化头部 dock */
+  header?: unknown
   /** 分区标题 */
   title?: string
   /** 分区描述 */
@@ -172,6 +173,7 @@ const { context, registerApi } = useSparkPageComponent(props)
 const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
   computed(() => props.children),
   SECTION_DOCK_TYPES,
+  { propSource: computed(() => props) },
 )
 
 function readStringAttr(name: string): string {

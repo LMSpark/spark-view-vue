@@ -1,8 +1,8 @@
 <!--
 /**
  * @skill r-collapse
- * @description 折叠面板容器，内部使用 r-collapse-item 定义分组；支持 dock 分区工具栏，每个折叠项内容默认采用 24 列 CSS Grid
- * @input { props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, modelValue?: string|number|Array<string|number> } }
+ * @description 折叠面板容器，内部使用 r-collapse-item 定义分组；支持 `r-toolbar` wrapper 工具栏，每个折叠项内容默认采用 24 列 CSS Grid
+ * @input { props: { modelValue?: string|number|Array<string|number> }, children?: [{ type: 'r-toolbar'|'r-collapse-item', props?: Record<string, unknown>, children?: SparkNode[] }] }
  * @example { "type": "r-collapse", "children": [{ "type": "r-collapse-item", "props": { "title": "基本信息", "name": "base" }, "children": [] }] }
  */
 -->
@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useSparkPageComponent } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
 import { useDockExtraction, NAVIGATION_DOCK_TYPES } from '../../docks/dock-extraction'
@@ -53,10 +53,11 @@ import { useControlledValue } from '../state'
 
 type CollapseValue = string | number | Array<string | number>
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: string
+interface Props extends SparkNode {
   /** 子节点（折叠项配置） */
   children?: SparkNode[]
+  /** 结构化工具栏 dock */
+  toolbar?: unknown
   /** 当前展开的面板 */
   modelValue?: CollapseValue
   /** 展开/折叠切换回调 */
@@ -76,6 +77,7 @@ const { registerApi } = useSparkPageComponent(props)
 const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
   computed(() => props.children),
   NAVIGATION_DOCK_TYPES,
+  { propSource: computed(() => props) },
 )
 
 const itemConfigs = computed(() =>

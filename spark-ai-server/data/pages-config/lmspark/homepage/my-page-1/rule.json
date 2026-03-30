@@ -69,9 +69,7 @@
             },
             "style": {
               "width": "200px"
-            },
-            "field": "searchKeyword",
-            "value": ""
+            }
           },
           {
             "type": "el-button",

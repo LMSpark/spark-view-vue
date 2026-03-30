@@ -71,8 +71,8 @@ await view.loadFromServer({ page: 1 })
 - 当 `props.dataSource.rows` 为空时，组件会调用 `dataSource.loadFromServer()`（不直接调用 `DataLoader`）。
 - 表的 `currentChange` / `selectionChange` 由 `RendererTable` 直接同步回 `DataView.selection`。
 
-## 6.1 r-table 统一过滤器（dock='filter'）
-- `r-table` 的筛选项统一放在 `children` 中，并声明 `dock: "filter"`。
+## 6.1 r-table 统一过滤器（r-filter）
+- `r-table` 的筛选项统一放在 `children` 中，并包在 `r-filter` 包装节点下。
 - 筛选区的布局与折叠参数统一写在 `props.docks.filter.*`，不再推荐扁平 `filterColumns` / `filterGrid*` 写法。
 - 远端表：过滤值会同步到 `DataView.filterExpression` 并触发 `refresh()`。
 - 内联数据表：容器会按同一份过滤表达式做本地过滤。
@@ -97,40 +97,41 @@ await view.loadFromServer({ page: 1 })
   },
   "children": [
     {
-      "type": "r-text",
-      "dock": "filter",
-      "props": { "label": "姓名" }
-    },
-    {
-      "type": "r-multi-select",
-      "dock": "filter",
-      "props": {
-        "field": "status",
-        "label": "状态",
-        "options": [
-          { "label": "草稿", "value": "draft" },
-          { "label": "完成", "value": "done" },
-          { "label": "归档", "value": "archived" }
-        ]
-      }
-    },
-    {
-      "type": "r-number",
-      "dock": "filter",
-      "props": {
-        "field": "score",
-        "label": "分数",
-        "filterMode": "range"
-      }
-    },
-    {
-      "type": "r-date",
-      "dock": "filter",
-      "props": {
-        "field": "createdAt",
-        "label": "创建日期",
-        "filterMode": "range"
-      }
+      "type": "r-filter",
+      "children": [
+        {
+          "type": "r-text",
+          "props": { "label": "姓名" }
+        },
+        {
+          "type": "r-multi-select",
+          "props": {
+            "field": "status",
+            "label": "状态",
+            "options": [
+              { "label": "草稿", "value": "draft" },
+              { "label": "完成", "value": "done" },
+              { "label": "归档", "value": "archived" }
+            ]
+          }
+        },
+        {
+          "type": "r-number",
+          "props": {
+            "field": "score",
+            "label": "分数",
+            "filterMode": "range"
+          }
+        },
+        {
+          "type": "r-date",
+          "props": {
+            "field": "createdAt",
+            "label": "创建日期",
+            "filterMode": "range"
+          }
+        }
+      ]
     }
   ]
 }

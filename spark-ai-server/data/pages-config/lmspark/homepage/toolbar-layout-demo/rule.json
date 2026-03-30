@@ -167,8 +167,10 @@
                 "type": "button",
                 "props": {
                   "class": "toolbar-action toolbar-action--primary",
-                  "onClick": "handleCreateTask",
                   "type": "button"
+                },
+                "on": {
+                  "click": "handleCreateTask"
                 },
                 "children": [
                   "新增任务"
@@ -178,8 +180,10 @@
                 "type": "button",
                 "props": {
                   "class": "toolbar-action",
-                  "onClick": "handleRefresh",
                   "type": "button"
+                },
+                "on": {
+                  "click": "handleRefresh"
                 },
                 "children": [
                   "刷新数据"
@@ -189,8 +193,10 @@
                 "type": "button",
                 "props": {
                   "class": "toolbar-action",
-                  "onClick": "handleExport",
                   "type": "button"
+                },
+                "on": {
+                  "click": "handleExport"
                 },
                 "children": [
                   "导出摘要"
@@ -213,8 +219,10 @@
             "props": {
               "class": "menu-button is-active",
               "type": "button",
-              "onClick": "filterAllTasks",
               "data-menu-filter": "all"
+            },
+            "on": {
+              "click": "filterAllTasks"
             },
             "children": [
               "全部任务"
@@ -225,8 +233,10 @@
             "props": {
               "class": "menu-button",
               "type": "button",
-              "onClick": "filterTodoTasks",
               "data-menu-filter": "todo"
+            },
+            "on": {
+              "click": "filterTodoTasks"
             },
             "children": [
               "待处理"
@@ -237,8 +247,10 @@
             "props": {
               "class": "menu-button",
               "type": "button",
-              "onClick": "filterDoingTasks",
               "data-menu-filter": "doing"
+            },
+            "on": {
+              "click": "filterDoingTasks"
             },
             "children": [
               "进行中"
@@ -249,8 +261,10 @@
             "props": {
               "class": "menu-button",
               "type": "button",
-              "onClick": "filterDoneTasks",
               "data-menu-filter": "done"
+            },
+            "on": {
+              "click": "filterDoneTasks"
             },
             "children": [
               "已完成"
@@ -310,7 +324,7 @@
                     },
                     "children": [
                       {
-                        "type": "el-button",
+                        "type": "builtin-action",
                         "order": 1,
                         "props": {
                           "builtinAction": "append-row",
@@ -319,7 +333,7 @@
                         }
                       },
                       {
-                        "type": "el-button",
+                        "type": "builtin-action",
                         "order": 2,
                         "props": {
                           "builtinAction": "refresh",
@@ -416,7 +430,7 @@
                     "type": "r-actions",
                     "children": [
                       {
-                        "type": "el-button",
+                        "type": "builtin-action",
                         "order": 1,
                         "props": {
                           "builtinAction": "message-row",
@@ -426,7 +440,7 @@
                         }
                       },
                       {
-                        "type": "el-button",
+                        "type": "builtin-action",
                         "order": 2,
                         "props": {
                           "builtinAction": "delete-row",

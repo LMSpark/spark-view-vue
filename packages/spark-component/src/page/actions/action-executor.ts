@@ -2,7 +2,7 @@
  * Action Descriptor 执行引擎
  *
  * 解析并执行声明式 action descriptor，提供框架无关的行为执行能力。
- * 被 normalizeRuleEvents（on 事件）和 容器组件（toolbar/rowActions）共同使用。
+ * 被 normalizeRuleEvents（on 事件）和 容器 wrapper 区域（如 `r-toolbar` / `r-actions`）共同使用。
  */
 
 import type {

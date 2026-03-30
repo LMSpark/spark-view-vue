@@ -14,7 +14,7 @@ import SparkComponentRenderer from '../SparkComponentRenderer.vue'
 import {
   bindSparkChildType,
   buildTemplateNode,
-  collectTemplateSlotChildren,
+  collectTemplateSlotBindings,
   normalizeSpan,
 } from './SparkChild.shared.js'
 
@@ -27,8 +27,6 @@ interface Props {
   type: string
   id?: string
   nodeId?: string
-  dock?: string
-  order?: number
   colSpan?: number | string
   rowSpan?: number | string
 }
@@ -39,8 +37,8 @@ const slots = useSlots()
 
 bindSparkChildType(getCurrentInstance()?.type ?? null)
 
-const nestedChildren = computed(() => {
-  return collectTemplateSlotChildren(slots as unknown as Record<string, unknown>)
+const slotBindings = computed(() => {
+  return collectTemplateSlotBindings(slots as unknown as Record<string, unknown>)
 })
 
 const node = computed<SparkNode>(() => {
@@ -49,15 +47,14 @@ const node = computed<SparkNode>(() => {
     type: props.type,
     ...(props.id !== undefined ? { id: props.id } : {}),
     ...(props.nodeId !== undefined ? { nodeId: props.nodeId } : {}),
-    ...(props.dock !== undefined ? { dock: props.dock } : {}),
-    ...(props.order !== undefined ? { order: props.order } : {}),
     ...(props.colSpan !== undefined ? { colSpan: props.colSpan } : {}),
     ...(props.rowSpan !== undefined ? { rowSpan: props.rowSpan } : {}),
   }
 
   return buildTemplateNode(rawNode, {
     scope: `props:${props.type}`,
-    slotChildren: nestedChildren.value,
+    slotChildren: slotBindings.value.defaultChildren,
+    slotProps: slotBindings.value.namedSlotNodes,
   })
 })
 

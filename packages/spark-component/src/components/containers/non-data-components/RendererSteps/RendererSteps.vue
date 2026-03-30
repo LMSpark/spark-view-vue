@@ -1,8 +1,8 @@
 <!--
 /**
  * @skill r-steps
- * @description 步骤容器，内部使用 r-step 定义步骤；支持 dock 分区工具栏，当前步骤内容区采用 24 列 CSS Grid
- * @input { props: { docks?: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } }, modelValue?: string|number } }
+ * @description 步骤容器，内部使用 r-step 定义步骤；支持 `r-toolbar` wrapper 工具栏，当前步骤内容区采用 24 列 CSS Grid
+ * @input { props: { modelValue?: string|number }, children?: [{ type: 'r-toolbar'|'r-step', props?: Record<string, unknown>, children?: SparkNode[] }] }
  * @example { "type": "r-steps", "children": [{ "type": "r-step", "props": { "title": "步骤一", "name": "s1" }, "children": [] }] }
  */
 -->
@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useSparkPageComponent } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
 import { useDockExtraction, NAVIGATION_DOCK_TYPES } from '../../docks/dock-extraction'
@@ -53,10 +53,11 @@ import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: string
+interface Props extends SparkNode {
   /** 子节点（步骤配置） */
   children?: SparkNode[]
+  /** 结构化工具栏 dock */
+  toolbar?: unknown
   /** 当前步骤 */
   modelValue?: string | number
   /** 步骤切换回调 */
@@ -76,6 +77,7 @@ const { registerApi } = useSparkPageComponent(props)
 const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
   computed(() => props.children),
   NAVIGATION_DOCK_TYPES,
+  { propSource: computed(() => props) },
 )
 
 const stepConfigs = computed(() =>

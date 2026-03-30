@@ -28,16 +28,7 @@ interface RendererTableZeroCodeOptions {
   handleFilterSearch: () => Promise<void>
 }
 
-type LoadTreeNestedResult = Awaited<ReturnType<RendererTableApi['loadTreeNested']>>
-type LoadTreeChildrenResult = Awaited<ReturnType<RendererTableApi['loadTreeChildren']>>
 type LoadTreePathResult = Awaited<ReturnType<RendererTableApi['loadTreePath']>>
-type MoveNodeResult = Awaited<ReturnType<RendererTableApi['moveNode']>>
-type SearchTreeNestedResult = Awaited<ReturnType<RendererTableApi['searchTreeNested']>>
-
-type LoadTreeNestedFn = (rootId?: string | number | null, limit?: number, depthLimit?: number) => Promise<NonNullable<LoadTreeNestedResult>>
-type LoadTreePathFn = (id: string | number) => Promise<NonNullable<LoadTreePathResult>>
-type MoveNodeFn = (nodeId: string | number, newParentId: string | number | null, index?: number) => Promise<NonNullable<MoveNodeResult>>
-type SearchTreeNestedFn = (keyword: string, limit?: number) => Promise<unknown[]>
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -131,23 +122,20 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
     async loadTreeNested(rootId, limit, depthLimit) {
       const view = options.resolvedView.value
       if (!view) return null
-      const loadTreeNested = ((nextRootId?: string | number | null, nextLimit?: number, nextDepthLimit?: number) =>
-        view.loadTreeNested(nextRootId, nextLimit, nextDepthLimit)) as unknown as LoadTreeNestedFn
-      const resultUnknown: unknown = await loadTreeNested(rootId, limit, depthLimit)
-      return sanitizeTreePayload(resultUnknown as LoadTreeNestedResult, view)
+      const result = await view.loadTreeNested(rootId, limit, depthLimit)
+      return sanitizeTreePayload(result, view)
     },
     async loadTreeChildren(parentId, limit) {
       const view = options.resolvedView.value
       if (!view) return []
-      const result: LoadTreeChildrenResult = await view.loadTreeChildren(parentId, limit)
+      const result = await view.loadTreeChildren(parentId, limit)
       return sanitizeTreePayload(result, view)
     },
     async loadTreePath(id) {
       const view = options.resolvedView.value
       if (!view) return null
-      const loadTreePath = view.loadTreePath.bind(view) as unknown as LoadTreePathFn
-      const resultUnknown: unknown = await loadTreePath(id)
-      return resultUnknown as LoadTreePathResult
+      const result = await view.loadTreePath(id)
+      return sanitizeTreePayload(result, view) as LoadTreePathResult
     },
     async expandToNode(key) {
       const view = options.resolvedView.value
@@ -158,18 +146,14 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
     async moveNode(nodeId, newParentId, index) {
       const view = options.resolvedView.value
       if (!view) return null
-      const moveNode = ((nextNodeId: string | number, nextParentId: string | number | null, nextIndex?: number) =>
-        view.moveTreeNode(nextNodeId, nextParentId, nextIndex)) as unknown as MoveNodeFn
-      const resultUnknown: unknown = await moveNode(nodeId, newParentId, index)
-      return sanitizeTreePayload(resultUnknown as MoveNodeResult, view)
+      const result = await view.moveTreeNode(nodeId, newParentId, index)
+      return sanitizeTreePayload(result, view)
     },
     async searchTreeNested(keyword, limit) {
       const view = options.resolvedView.value
       if (!view) return []
-      const searchTreeNested = view.searchTreeNested.bind(view) as unknown as SearchTreeNestedFn
-      const resultUnknown: unknown = await searchTreeNested(keyword, limit)
-      if (!Array.isArray(resultUnknown)) return []
-      return sanitizeTreePayload(resultUnknown as SearchTreeNestedResult, view)
+      const result = await view.searchTreeNested(keyword, limit)
+      return sanitizeTreePayload(result, view)
     },
     // Override: Table uses selection.setCurrentRow + nativeTableRef sync
     setCurrentRow(row) {

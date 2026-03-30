@@ -67,24 +67,29 @@ export type SparkCapabilityContext = ICapabilityContext
  * 严格对齐 Vue `h(type, props, children)` 三段式，仅保留 3 个根级字段 + 结构标识 `id`。
  *
  * 停靠区域（toolbar / actions / filter / header / footer / editor / tail）
- * 作为容器组件的**直接 props** 传递，每个 dock area 是一个包含 `children` 和显示配置的对象。
+ * 推荐通过结构化 props 表达，例如 `props.toolbar = { type: 'r-toolbar', children: [...] }`。
+ * 容器运行时也兼容等价的 wrapper 子节点输入，例如 `r-toolbar` / `r-actions` / `r-filter` / `r-header` / `r-footer`。
  *
  * @example
  * ```jsonc
  * {
  *   "type": "r-table",
  *   "dataKey": "Orders@rows",
- *   "toolbar": {
- *     "children": [
- *       { "type": "el-button", "props": { "builtinAction": "append-row" } }
- *     ]
- *   },
- *   "actions": {
- *     "children": [
- *       { "type": "el-button", "props": { "builtinAction": "delete-row" } }
- *     ]
- *   },
  *   "children": [
+ *     {
+ *       "type": "r-toolbar",
+ *       "props": { "position": "top" },
+ *       "children": [
+ *         { "type": "builtin-action", "props": { "builtinAction": "append-row" } }
+ *       ]
+ *     },
+ *     {
+ *       "type": "r-actions",
+ *       "props": { "position": "right" },
+ *       "children": [
+ *         { "type": "builtin-action", "props": { "builtinAction": "delete-row" } }
+ *       ]
+ *     },
  *     { "type": "el-table-column", "props": { "field": "name", "label": "姓名" } }
  *   ]
  * }

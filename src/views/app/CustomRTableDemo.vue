@@ -39,7 +39,7 @@
         <p class="custom-r-table-demo__panel-desc">
           下方表格就是原始 RendererTable，页面层只负责提供 PAGE_DATASET。
         </p>
-        <RendererTable :data-key="tableDataKey" border stripe>
+        <RendererTable type="r-table" :data-key="tableDataKey" border stripe>
           <FieldText type="r-text" field="name" label="姓名" :width="160" />
           <FieldNumber type="r-number" field="age" label="年龄" :width="100" />
           <FieldNumber type="r-number" field="score" label="绩效分" :width="120" />

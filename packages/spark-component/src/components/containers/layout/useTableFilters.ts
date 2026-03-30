@@ -9,10 +9,8 @@ interface LoggerLike {
 }
 
 interface UseTableFiltersOptions {
-  children: ComputedRef<SparkNode[]>
   filterChildren: ComputedRef<SparkNode[]>
   dataView: ComputedRef<DataView | null>
-  filterColumns: ComputedRef<string[] | undefined>
   filterClass: ComputedRef<string | undefined>
   filterGridColumns: ComputedRef<number | undefined>
   filterGridGap: ComputedRef<number | string | undefined>
@@ -38,11 +36,6 @@ function isSameFilterExpression(
   if (left === right) return true
   if (!left || !right) return false
   return JSON.stringify(left) === JSON.stringify(right)
-}
-
-function normalizeFilterColumns(value: unknown): string[] {
-  if (!Array.isArray(value)) return []
-  return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
 }
 
 function isEmptyFilterValue(value: unknown): boolean {
@@ -186,9 +179,6 @@ function matchesExpression(row: IDataRow, expr: FilterExpression): boolean {
 export function useTableFilters(options: UseTableFiltersOptions) {
   const filterModel = reactive<Record<string, unknown>>({})
 
-  const filterColumnsValue = computed(() =>
-    normalizeFilterColumns(options.filterColumns.value)
-  )
   const filterClassValue = computed(() =>
     options.filterClass.value ?? ''
   )
@@ -203,19 +193,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   )
 
   const filterConfigs = computed(() => {
-    if (options.filterChildren.value.length > 0) return options.filterChildren.value
-
-    if (filterColumnsValue.value.length === 0) return []
-    const configMap = new Map<string, SparkNode>()
-    for (const child of options.children.value) {
-      const fieldName = getNodeField(child)
-      if (typeof fieldName === 'string' && fieldName.trim().length > 0) {
-        configMap.set(fieldName, child)
-      }
-    }
-    return filterColumnsValue.value
-      .map(name => configMap.get(name))
-      .filter((config): config is SparkNode => config !== undefined)
+    return options.filterChildren.value
   })
 
   watch(filterConfigs, (configs) => {

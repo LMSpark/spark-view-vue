@@ -12,6 +12,15 @@ import { computed, type ComputedRef } from 'vue'
 import { isSparkNode, getSparkNodeChildren, type SparkNode, type SparkNodeChildren } from '../../../core/types.js'
 
 /**
+ * Dock prop 源类型。
+ *
+ * 使用 `object` 而非 `Record<string, unknown>`，避免 Vue `defineProps<Props>()` 返回的
+ * `Readonly<Props>` 缺少索引签名而导致容器组件调用处需要 double-cast。
+ * 运行时索引访问在 `collectPropDocks` 内部单点完成。
+ */
+type DockPropSource = object
+
+/**
  * Dock 提取结果。
  *
  * `docks` 是按 type 索引的 dock 节点映射（每种类型只取第一个匹配）。
@@ -22,6 +31,65 @@ export interface DockExtractionResult {
   docks: ReadonlyMap<string, SparkNode>
   /** 剩余的内容子节点（非 dock 节点 + 文本/数字字面量） */
   contentChildren: SparkNodeChildren
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function dockTypeToPropName(dockType: string): string {
+  return dockType.startsWith('r-') ? dockType.slice(2) : dockType
+}
+
+function normalizeDockPropNode(dockType: string, rawValue: unknown): SparkNode | undefined {
+  if (rawValue === null || rawValue === undefined || rawValue === false || Array.isArray(rawValue)) {
+    return undefined
+  }
+
+  if (isSparkNode(rawValue)) {
+    return rawValue.type === dockType ? rawValue : { ...rawValue, type: dockType }
+  }
+
+  if (!isRecord(rawValue)) return undefined
+
+  const rawProps = isRecord(rawValue['props']) ? rawValue['props'] : {}
+  const inlineProps = Object.fromEntries(
+    Object.entries(rawValue).filter(([key]) => key !== 'type' && key !== 'props' && key !== 'children' && key !== 'id')
+  )
+  const mergedProps = {
+    ...inlineProps,
+    ...rawProps,
+  }
+  const rawChildren = Array.isArray(rawValue['children']) ? rawValue['children'] as SparkNodeChildren : undefined
+  const rawId = typeof rawValue['id'] === 'string' ? rawValue['id'] : undefined
+
+  return {
+    type: dockType,
+    ...(Object.keys(mergedProps).length > 0 ? { props: mergedProps } : {}),
+    ...(rawChildren !== undefined ? { children: rawChildren } : {}),
+    ...(rawId !== undefined ? { id: rawId } : {}),
+  }
+}
+
+function collectPropDocks(
+  dockTypes: ReadonlySet<string>,
+  propSource: DockPropSource | undefined,
+): ReadonlyMap<string, SparkNode> {
+  const docks = new Map<string, SparkNode>()
+  if (propSource === undefined) return docks
+
+  // 单点 cast：运行时按 dock 类型名查找属性值，类型安全由 normalizeDockPropNode 保证。
+  const source = propSource as Record<string, unknown>
+
+  for (const dockType of dockTypes) {
+    const propName = dockTypeToPropName(dockType)
+    const dockNode = normalizeDockPropNode(dockType, source[propName])
+    if (dockNode !== undefined) {
+      docks.set(dockType, dockNode)
+    }
+  }
+
+  return docks
 }
 
 /**
@@ -45,9 +113,12 @@ export interface DockExtractionResult {
 export function extractDockChildren(
   children: SparkNodeChildren | undefined,
   dockTypes: ReadonlySet<string>,
+  propSource?: DockPropSource,
 ): DockExtractionResult {
   const normalized = getSparkNodeChildren(children)
-  if (normalized.length === 0) {
+  const propDocks = collectPropDocks(dockTypes, propSource)
+
+  if (normalized.length === 0 && propDocks.size === 0) {
     return { docks: new Map(), contentChildren: [] }
   }
 
@@ -62,6 +133,12 @@ export function extractDockChildren(
       }
     } else {
       contentChildren.push(child)
+    }
+  }
+
+  for (const [dockType, dockNode] of propDocks) {
+    if (!docks.has(dockType)) {
+      docks.set(dockType, dockNode)
     }
   }
 
@@ -114,6 +191,16 @@ export interface UseDockExtractionReturn {
   getDockProp: <T = unknown>(type: string, propName: string) => T | undefined
 }
 
+export interface UseDockExtractionOptions {
+  /**
+   * 结构化 dock prop 源。
+   *
+   * 例如：
+   * `{ toolbar: { type: 'r-toolbar', children: [...] } }`
+   */
+  propSource?: ComputedRef<DockPropSource | undefined>
+}
+
 /**
  * 响应式 dock 提取 composable。
  *
@@ -129,8 +216,13 @@ export interface UseDockExtractionReturn {
 export function useDockExtraction(
   children: ComputedRef<SparkNodeChildren | undefined>,
   dockTypes: ReadonlySet<string>,
+  options?: UseDockExtractionOptions,
 ): UseDockExtractionReturn {
-  const extraction = computed(() => extractDockChildren(children.value, dockTypes))
+  const extraction = computed(() => extractDockChildren(
+    children.value,
+    dockTypes,
+    options?.propSource?.value,
+  ))
 
   const docks = computed(() => extraction.value.docks)
   const contentChildren = computed(() => extraction.value.contentChildren)

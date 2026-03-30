@@ -401,6 +401,9 @@ function buildNodeForwardedProps(rawProps: NodeRuntimeProps): NodeRuntimeProps {
 }
 
 // 已注册组件额外收到的结构字段，只在 registry 分支透传。
+// SparkNode 四字段（type / props / children / id）全部在此向下桥接：
+//   type    → 组件 context.type
+// 已注册组件额外收到的结构字段，只在 registry 分支透传。
 function buildRegistryStructuralProps(
   node: SparkNode,
   consumesChildrenProp: boolean,
@@ -506,7 +509,7 @@ const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undef
 
 // ── SparkNode 处理管线：输入节点 → beforeRender → 生效节点 ───────────────────
 
-// 归一化后的输入节点：补默认 type / children / dock / order。
+// 归一化后的输入节点：补默认 type / children。
 const normalizedNode = computed<SparkNode>(() => normalizeSparkNode(rendererProps.config, 'unknown'))
 
 // 归一化节点 props：供 beforeRender 上下文构造使用。
@@ -685,8 +688,8 @@ const externalComponentProps = computed(() => {
  *   - 业务输入 → config.props
  *   - 结构输入 → type / id / children
  *
- * dock area 配置已作为组件直接 props（如 toolbar / actions）传递，
- * 不再通过子节点 dock 属性路由。
+ * dock 分区通过 wrapper 子节点（如 `r-toolbar` / `r-actions`）声明；
+ * 这里仅做统一 props 透传，并保留对历史 `dock` / `order` 残余输入的过滤兜底。
  *
  * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
  */

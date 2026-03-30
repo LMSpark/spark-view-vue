@@ -1,8 +1,8 @@
 <!--
 /**
  * @skill r-drawer
- * @description 抽屉容器，支持 header/footer dock 动作区和 24 列 Grid 内容区
- * @input { props: { modelValue?: boolean, title?: string, docks?: { header?: { class?: string }, footer?: { class?: string } } } }
+ * @description 抽屉容器，支持 `r-header` / `r-footer` wrapper 动作区和 24 列 Grid 内容区
+ * @input { props: { modelValue?: boolean, title?: string }, children?: [{ type: 'r-header'|'r-footer'|string, props?: Record<string, unknown>, children?: SparkNode[] }] }
  * @example { "type": "r-drawer", "props": { "title": "详情", "modelValue": true }, "children": [] }
  */
 -->
@@ -69,10 +69,13 @@ import { useDockExtraction, OVERLAY_DOCK_TYPES } from '../../docks/dock-extracti
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: string
+interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
+  /** 结构化头部 dock */
+  header?: unknown
+  /** 结构化底部 dock */
+  footer?: unknown
   /** 抽屉标题 */
   title?: string
   /** 控制显隐（v-model） */
@@ -116,6 +119,7 @@ const { context, registerApi } = useSparkPageComponent(props)
 const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
   computed(() => props.children),
   OVERLAY_DOCK_TYPES,
+  { propSource: computed(() => props) },
 )
 
 function readStringAttr(name: string): string {

@@ -67,6 +67,7 @@
           字段定义来自 SparkNode 数组，适合 rule.json、后端配置生成、远程页面编排。
         </p>
         <RendererForm
+          type="r-form"
           :data-key="formDataKey"
           :children="configChildren"
           label-width="92px"
@@ -78,7 +79,7 @@
         <p class="r-form-compare-demo__panel-desc">
           字段直接写在 Vue 模板里，适合本地业务组件把 RendererForm 当作宿主直接组合。
         </p>
-        <RendererForm :data-key="formDataKey" label-width="92px">
+        <RendererForm type="r-form" :data-key="formDataKey" label-width="92px">
           <div class="r-form-compare-demo__template-fields">
             <FieldText type="r-text" field="name" label="姓名" />
             <FieldText type="r-text" field="department" label="部门" />
