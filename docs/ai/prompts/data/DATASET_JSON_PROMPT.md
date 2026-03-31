@@ -48,7 +48,7 @@
 ```
 第 1 步：复制下方「3. 提示词」全文
 第 2 步：粘贴到 AI 对话框，在末尾追加你的业务需求
-第 3 步：将 AI 输出的 JSON 保存为 public/pages-config/<页面名>/pagedata.json
+第 3 步：将 AI 输出的 JSON 通过 API 保存为页面的 pagedata.json（后端管理于 spark-ai-server/data/pages-config/）
 ```
 
 **业务需求描述建议包含**：

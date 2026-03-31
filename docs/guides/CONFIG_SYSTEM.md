@@ -97,7 +97,7 @@ TenantResolver.save('demo')
 { "pageConfig": { "source": "local", "localPrefix": "/pages-config" } }
 ```
 
-页面配置从 `public/pages-config/` 目录加载。
+页面配置从后端 `spark-ai-server/data/pages-config/` 目录加载（通过 API 访问）。
 
 ### 远程模式
 

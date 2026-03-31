@@ -73,7 +73,7 @@ pagedata.json (JSON 字符串)
   ↓ parsePageData()         ← spark-page-config：唯一转换点
   DataSet 实例               ← ⚠️ 被 FileLoader memCache 缓存，同 pageId 复用同一实例
   ↓ initDataSet(ds)          ← usePageDataSet：仅存储引用，不转换，不 destroy
-  ↓ provide(PAGE_DATASET, ds)
+  ↓ sparkProvide(PAGE_DATASET, ds)
   ↓ DataKey 解析 → DataView → UI
 ```
 
@@ -100,7 +100,7 @@ interface UsePageDataSetReturn {
 // 使用示例
 const { dataSet, initDataSet } = usePageDataSet({ enableDataSet: true })
 initDataSet(compiledDataSet)        // compiledDataSet 须来自 parsePageData()
-provide(PAGE_DATASET, dataSet!)     // 向子组件暴露 DataSet
+sparkProvide(PAGE_DATASET, dataSet!)     // 向子组件暴露 DataSet
 ```
 
 **实现说明**：`dataSet` 以闭包变量（`let dataSet: DataSet | null`）存储，**不** 包裹 Vue `ref`/`reactive`——DataSet 自身通过事件总线驱动 UI 更新，响应式包装反而会引入不必要的代理开销。
@@ -121,12 +121,12 @@ const {
   context,          // SparkCapabilityContext — 当前能力上下文（响应式）
   isVisible,        // ComputedRef<boolean> — 基于 config.visible
   isDisabled,       // ComputedRef<boolean> — 基于 config.disabled
-  provide,          // (name, impl) => void — 写入 ctx.capabilities（SPARK 能力，非 Vue DI）
-                    // 重载：provide<K extends keyof CapabilityTypeMap>(name: K, impl: CapabilityTypeMap[K])
+  sparkProvide,     // (name, impl) => void — 写入 ctx.capabilities（SPARK 能力，非 Vue DI）
+                    // 重载：sparkProvide<K extends keyof CapabilityTypeMap>(name: K, impl: CapabilityTypeMap[K])
   provideEvents,    // (name?) => IEventEmitter — 提供事件总线
   getProvider,      // (name) => unknown — 仅查找本组件 capabilities（不走 parent 链）
-  consume,          // <T>(name) => T | null — 沿 parent 链向上查找能力
-                    // 重载：consume<K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
+  sparkConsume,     // <T>(name) => T | null — 沿 parent 链向上查找能力
+                    // 重载：sparkConsume<K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
   consumeEvents,    // (name, handlers) => IEventEmitter | null — 消费并绑定事件
   initialize,       // () => void — onMounted 自动调用
   destroy,          // () => void — onUnmounted 自动调用（清理 children + capabilities）
@@ -299,7 +299,7 @@ applyConfig（async）
   ├─ executeScript()        ← 编译脚本，生成 pageFunctions
   ├─ registerRenderComponents() ← 注册 Render* Vue 组件
   ├─ initDataSet(config.data) ← DataSet 直接初始化（wrapInstance 在 SparkPlugin.install 时已设定）
-  ├─ provide(PAGE_DATASET)  ← 向子组件暴露 DataSet
+  ├─ sparkProvide(PAGE_DATASET)  ← 向子组件暴露 DataSet
   ├─ await nextTick()
   └─ rebindRules()          ← dataKey 解析到真实数据
        ↓
@@ -514,13 +514,13 @@ dataSet.on('loadSuccess', ({ tableName }) => {
 | **SPARK 能力系统** | `ctx.capabilities` Map + `lookup()` 走 parent 链 | 所有业务能力 |
 | **Vue DI（仅基础设施）** | `app.provide()` / `inject()` | 仅 `SPARK_REGISTRY_KEY`（注册表） |
 
-**重要**：`useSparkComponent` 的 `provide()` / `consume()` 是 **SPARK 能力系统**，不是 Vue 的 `provide/inject`。
+**重要**：`useSparkComponent` 的 `sparkProvide()` / `sparkConsume()` 是 **SPARK 能力系统**，不是 Vue 的 `provide/inject`。
 
 ### 能力键类型扩展（CapabilityTypeMap）
 
 能力键支持两种形式：
 - **Symbol 键**（向后兼容）：`import { DATA_SOURCE } from '@spark-view/spark-component'`
-- **字符串键**（可扩展）：`consume('spark:capability:page-dataset')` — 通过 `CapabilityTypeMap` 声明合并提供类型推断
+- **字符串键**（可扩展）：`sparkConsume('spark:capability:page-dataset')` — 通过 `CapabilityTypeMap` 声明合并提供类型推断
 
 `normalizeKey(name)` 内部将字符串转换为 `Symbol.for(name)`，与 Symbol 键等价。扩展自定义能力键的完整示例见下方「新增自定义能力 → 方式二」章节。
 
@@ -561,17 +561,17 @@ SparkPlugin.install()
   Vue DI: SPARK_REGISTRY_KEY
     ↓
 PageRenderer
-  provide(APP_SERVICES, { router, logger })   ← SPARK 能力，不是 Vue DI
-  provide(PAGE_DATASET, dataSet)
+  sparkProvide(APP_SERVICES, { router, logger })   ← SPARK 能力，不是 Vue DI
+  sparkProvide(PAGE_DATASET, dataSet)
     ↓
 r-table / r-tree
-  consume(PAGE_DATASET) → 解析 dataKey → DataView
-  provide(DATA_SOURCE, dataView)
-  provide(SELECTION, {...})
+  sparkConsume(PAGE_DATASET) → 解析 dataKey → DataView
+  sparkProvide(DATA_SOURCE, dataView)
+  sparkProvide(SELECTION, {...})
     ↓
 r-row / r-cell
-  consume(DATA_SOURCE)  → DataView (IDataSource)
-  consume(SELECTION)
+  sparkConsume(DATA_SOURCE)  → DataView (IDataSource)
+  sparkConsume(SELECTION)
 ```
 
 ## Renderer 容器组件架构（DataView-first + h(type,props,children) 模型）🏗️
@@ -609,13 +609,13 @@ rule.json
     ↓ SparkComponentRenderer       ← v-bind="config.props" + children
     ↓
 RendererTable.vue
-  props.dataKey → consume(PAGE_DATASET) → DataView
-  provide(DATA_SOURCE, dataView)   ← 子组件通过 consume 获取
-  provide(FIELD_CONTEXT, 'table')  ← 子组件感知父容器类型
+  props.dataKey → sparkConsume(PAGE_DATASET) → DataView
+  sparkProvide(DATA_SOURCE, dataView)   ← 子组件通过 sparkConsume 获取
+  sparkProvide(FIELD_CONTEXT, 'table')  ← 子组件感知父容器类型
     ↓
 子组件（r-text / r-number / el-table-column 等）
-  consume(DATA_SOURCE)  → DataView
-  consume(FIELD_CONTEXT) → 'table' | 'form' | 'detail'
+  sparkConsume(DATA_SOURCE)  → DataView
+  sparkConsume(FIELD_CONTEXT) → 'table' | 'form' | 'detail'
 ```
 
 ### ❗ children 直传机制（关键，必读）
@@ -653,7 +653,7 @@ const { configChildren } = useContainerInput({
 `isSelfResolvingType()` 判断组件是否自行解析 dataKey：
 - `r-table`、`r-form`、`r-detail`、`r-tree` 默认为自解析
 - 组件注册时可声明 `meta: { dataKey: 'self-resolve' }` 标记
-- 自解析组件：bindRules 透传 `dataKey` 到 props，由组件自行 `consume(PAGE_DATASET)` 解析
+- 自解析组件：bindRules 透传 `dataKey` 到 props，由组件自行 `sparkConsume(PAGE_DATASET)` 解析
 - 非自解析组件：bindRules 在规则绑定阶段直接解析 dataKey 并注入数据
 
 ### ❗ 属性规范化（根级 → props）
@@ -727,8 +727,8 @@ function tryAutoLoad(view: DataView | null) {
 | el-table 列不显示 | slot 包装破坏父子关系 | 容器组件通过 `props.children` 接收，用 SparkComponentRenderer 渲染 |
 | `Table xxx has no API configuration` | tryAutoLoad 未判断 api 存在 | `if (!view.dataTable?.api) return` |
 | 字段组件读不到 field | 根级 field 未规范化到 props | 绑定阶段已统一收入 props，组件通过 `defineProps` 接收 |
-| 子组件 consume(DATA_SOURCE) 返回 null | 父容器未 provide | 确认 r-table/form/detail 的 `watch(resolvedView)` 正确 `sparkProvide(DATA_SOURCE, view)` |
-| 表格渲染但无数据 | dataKey 写错 / pageDataSet 为 null | 检查 pagedata.json 表名、rule.json dataKey 格式、PageRenderer 是否 provide(PAGE_DATASET) |
+| 子组件 sparkConsume(DATA_SOURCE) 返回 null | 父容器未 sparkProvide | 确认 r-table/form/detail 的 `watch(resolvedView)` 正确 `sparkProvide(DATA_SOURCE, view)` |
+| 表格渲染但无数据 | dataKey 写错 / pageDataSet 为 null | 检查 pagedata.json 表名、rule.json dataKey 格式、PageRenderer 是否 sparkProvide(PAGE_DATASET) |
 | `console.error` 调试日志泄漏到生产 | 忘记删除或忘加 `import.meta.env.DEV` 守卫 | 所有诊断日志必须包裹 `if (import.meta.env.DEV)` |
 | 同步注册问题（el-table 找不到列组件） | `defineAsyncComponent` 异步加载 | el-table 内的列组件必须**同步注册**（`Spark.register('r-col', Component)` 而非懒加载） |
 
@@ -740,11 +740,11 @@ function tryAutoLoad(view: DataView | null) {
 import { defineCapability } from '@spark-view/spark-utils'
 export const MY_CAP = defineCapability<{ doSomething(): void }>('app:my-capability')
 
-const { provide } = useSparkComponent(props.config)
-provide(MY_CAP, { doSomething() { ... } })
+const { sparkProvide } = useSparkComponent(props.config)
+sparkProvide(MY_CAP, { doSomething() { ... } })
 
-const { consume } = useSparkComponent(props.config)
-const cap = consume(MY_CAP)  // { doSomething(): void } | null
+const { sparkConsume } = useSparkComponent(props.config)
+const cap = sparkConsume(MY_CAP)  // { doSomething(): void } | null
 ```
 
 **方式二：字符串键 + CapabilityTypeMap（推荐，可扩展）**
@@ -759,8 +759,8 @@ declare module '@spark-view/spark-utils' {
 }
 
 // 直接用字符串，类型从 CapabilityTypeMap 自动推断
-provide('app:my-service', myImpl)   // impl 类型必须匹配 MyServiceCapability
-const cap = consume('app:my-service') // MyServiceCapability | null
+sparkProvide('app:my-service', myImpl)   // impl 类型必须匹配 MyServiceCapability
+const cap = sparkConsume('app:my-service') // MyServiceCapability | null
 ```
 
 ## 计算列 & 聚合（配置驱动，零代码）📊
@@ -989,8 +989,8 @@ const reg = Spark.createRegister(import.meta.glob('./*.vue'))
 reg.registerAll({ 'user-grid': './UserGrid.vue' })
 
 // 组件 setup 内
-const { consume, provide, logger } = useSparkComponent(props.config)
-const services = consume(APP_SERVICES)
+const { sparkConsume, sparkProvide, logger } = useSparkComponent(props.config)
+const services = sparkConsume(APP_SERVICES)
 services?.router?.push('/home')
 // logger 自动感知 APP_SERVICES.logger，无需手动 consume
 ```
