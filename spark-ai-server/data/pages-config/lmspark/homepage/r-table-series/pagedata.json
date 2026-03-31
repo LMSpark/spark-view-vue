@@ -328,15 +328,12 @@
             }
         }
     },
-    "relations": [
+    "tableRelations": [
         {
             "parentTable": "Orders",
-            "parentViewId": "default",
             "childTable": "OrderItems",
-            "childViewId": "default",
             "parentField": "id",
-            "childField": "orderId",
-            "dependencyType": "currentRow"
+            "childField": "orderId"
         }
     ]
 }

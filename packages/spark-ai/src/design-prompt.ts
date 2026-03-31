@@ -471,7 +471,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 | UI 消息 | 用 \`$page.showMessage / showConfirm\`，禁止 ElMessage |
 | 树场景 | 用 \`view.replaceRows()\` + DOM 直写驱动更新 |
 | 事件签名 | \`currentRowChanged\` handler 第一参数直接是 currentRow，不是事件对象 |
-| 父子联动 | 优先用 relations 配置，不手写 watch + 过滤 |
+| 父子联动 | 优先用 tableRelations 配置，不手写 watch + 过滤 |
 | 跨函数状态 | \`let _pageState = {}\` 模块顶层声明 |
 
 ## r-table 组件系列专用协议（高优先级）
@@ -553,7 +553,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 生成前逐项自检：
 1. 主表 \`dataKey\` 是否绑定 \`@rows\`
 2. 汇总区是否至少包含 \`@summaryRow\`（\`@selectionSummaryRow\` 仅在存在选中能力时使用）
-3. 是否存在子表 relation 且字段映射可闭环
+3. 是否存在子表 tableRelation 且字段映射可闭环
 4. 是否包含至少 3 个 builtin-action（覆盖 toolbar + actions dock）
 5. script.js 是否保持最小（无复杂逻辑时仅空 \`__init__\`）
 6. 所有 \`field\` 字段是否在 data-model 列定义中存在
@@ -564,7 +564,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 \`\`\`text
 @@proposal:data-model
 # r-table 组件系列数据模型
-{ ...主表/子表/relations/aggregates... }
+{ ...主表/子表/tableRelations/aggregates... }
 @@end
 
 @@proposal:ui-structure
@@ -645,15 +645,21 @@ function __init__() {}
 - \`"dataKey": "Orders@summaryRow"\` — 全部行汇总
 - \`"dataKey": "Orders@selectionSummaryRow"\` — 选中行汇总
 
-## DataRelation 主从联动（父子视图数据流配置）
+## tableRelations + viewDependencies 主从联动（两层关系模型）
 
-配置 relation 后，父视图状态切换会自动驱动子视图数据流（内存级联或 API 级联）：
+**TableRelation**（表间 FK）+ **ViewDependency**（视图级联）配置后，父视图状态切换自动驱动子视图数据流：
 
 \`\`\`jsonc
 {
-  "relations": [{
+  "tableRelations": [{
     "parentTable": "Orders",     "parentField": "id",
     "childTable":  "OrderItems", "childField": "orderId"
+  }],
+  // viewDependencies 可省略（自动从 tableRelations 推导，默认 dependencyType: "currentRow"）
+  // 仅需非默认行为时显式声明：
+  "viewDependencies": [{
+    "parentTable": "Orders", "childTable": "OrderItems",
+    "dependencyType": "allRows"
   }]
 }
 \`\`\`
@@ -666,7 +672,8 @@ function __init__() {}
 **必备配置**：
 - 父表主键 \`isPrimaryKey: true\`
 - 父视图 \`autoCurrentFirst: true\`（避免子视图初始为空）
-- relation 仅用 \`parentTable / parentField / childTable / childField / dependencyType\`
+- tableRelations 仅用 \`parentTable / parentField / childTable / childField\`
+- viewDependencies 仅用 \`parentTable / childTable / dependencyType / autoLoad\`
 
 ## SparkNode 根级字段白名单
 

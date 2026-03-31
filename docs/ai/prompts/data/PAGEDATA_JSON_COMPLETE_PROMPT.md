@@ -60,7 +60,7 @@
   "dataset": {
     "dataSetName": "BusinessDataSet",
     "tables": {},
-    "relations": []
+    "tableRelations": []
   }
 }
 
@@ -189,7 +189,7 @@ dataset 内部结构：
       "Orders": { ... },
       "OrderItems": { ... }
     },
-    "relations": [ ... ]
+    "tableRelations": [ ... ]
   }
 }
 
@@ -411,7 +411,7 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
         }
       }
     },
-    "relations": []
+    "tableRelations": []
   }
 }
 
@@ -651,9 +651,7 @@ relations 数组中的每条关系：
 
 {
   "parentTable": "Orders",
-  "parentViewId": "default",
   "childTable": "OrderItems",
-  "childViewId": "default",
   "parentField": "id",
   "childField": "orderId",
   "dependencyType": "currentRow"

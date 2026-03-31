@@ -793,46 +793,34 @@
                 ]
             }
         },
-        "relations": [
+        "tableRelations": [
             {
-                "relationName": "NodeProfileToEditorProfile",
                 "parentTable": "NavigationNodes",
-                "parentViewId": "default",
-                "parentField": "editorProfileKey",
                 "childTable": "NodeEditorProfiles",
-                "childViewId": "default",
-                "childField": "profileKey",
-                "dependencyType": "currentRow"
-            },
-            {
-                "relationName": "NodeKindToLinkTargets",
-                "parentTable": "NavigationNodes",
-                "parentViewId": "default",
-                "parentField": "nodeKind",
-                "childTable": "LinkTargetOptions",
-                "childViewId": "default",
-                "childField": "nodeKind",
-                "dependencyType": "currentRow"
-            },
-            {
-                "relationName": "NodeKindToChildPlacements",
-                "parentTable": "NavigationNodes",
-                "parentViewId": "default",
-                "parentField": "nodeKind",
-                "childTable": "ChildPlacementOptions",
-                "childViewId": "default",
-                "childField": "nodeKind",
-                "dependencyType": "currentRow"
-            },
-            {
-                "relationName": "NodeProfileToRefNodeKinds",
-                "parentTable": "NavigationNodes",
-                "parentViewId": "default",
                 "parentField": "editorProfileKey",
-                "childTable": "RefNodeKindOptions",
-                "childViewId": "default",
                 "childField": "profileKey",
-                "dependencyType": "currentRow"
+                "relationName": "NodeProfileToEditorProfile"
+            },
+            {
+                "parentTable": "NavigationNodes",
+                "childTable": "LinkTargetOptions",
+                "parentField": "nodeKind",
+                "childField": "nodeKind",
+                "relationName": "NodeKindToLinkTargets"
+            },
+            {
+                "parentTable": "NavigationNodes",
+                "childTable": "ChildPlacementOptions",
+                "parentField": "nodeKind",
+                "childField": "nodeKind",
+                "relationName": "NodeKindToChildPlacements"
+            },
+            {
+                "parentTable": "NavigationNodes",
+                "childTable": "RefNodeKindOptions",
+                "parentField": "editorProfileKey",
+                "childField": "profileKey",
+                "relationName": "NodeProfileToRefNodeKinds"
             }
         ]
     }

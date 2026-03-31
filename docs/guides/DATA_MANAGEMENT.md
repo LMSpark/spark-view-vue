@@ -49,7 +49,7 @@ const dataSet = SparkData.createDataSet({
       rows: []
     }
   },
-  relations: [
+  tableRelations: [
     {
       name: 'UserDepartment',
       parentTable: 'Departments',
@@ -279,7 +279,7 @@ const dataSet = SparkData.createDataSet({
     Orders: { /* ... */ },
     OrderItems: { /* ... */ }
   },
-  relations: [
+  tableRelations: [
     {
       parentTable: 'Orders',
       childTable: 'OrderItems',

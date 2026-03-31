@@ -177,20 +177,18 @@
                 }
             }
         },
-        "relations": [
+        "tableRelations": [
             {
                 "parentTable": "Customers",
                 "childTable": "Contacts",
                 "parentField": "id",
-                "childField": "customerId",
-                "dependencyType": "currentRow"
+                "childField": "customerId"
             },
             {
                 "parentTable": "Customers",
                 "childTable": "Followups",
                 "parentField": "id",
-                "childField": "customerId",
-                "dependencyType": "currentRow"
+                "childField": "customerId"
             }
         ]
     }

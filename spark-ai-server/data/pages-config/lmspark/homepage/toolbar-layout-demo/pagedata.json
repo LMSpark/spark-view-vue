@@ -115,6 +115,6 @@
                 }
             }
         },
-        "relations": []
+        "tableRelations": []
     }
 }

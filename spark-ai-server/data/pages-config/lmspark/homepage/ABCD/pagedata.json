@@ -1,100 +1,100 @@
 {
-  "dataset": {
-    "dataSetName": "PageDataSet",
-    "tables": {
-      "Projects": {
-        "columns": [
-          {
-            "name": "id",
-            "type": "number",
-            "isPrimaryKey": true,
-            "label": "ID"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "label": "项目名称"
-          },
-          {
-            "name": "status",
-            "type": "string",
-            "label": "状态"
-          },
-          {
-            "name": "manager",
-            "type": "string",
-            "label": "负责人"
-          },
-          {
-            "name": "startDate",
-            "type": "date",
-            "label": "开始日期"
-          },
-          {
-            "name": "endDate",
-            "type": "date",
-            "label": "结束日期"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "label": "描述"
-          }
-        ],
-        "views": {
-          "default": {
-            "rows": [
-              {
-                "id": 1,
-                "name": "智慧城市平台",
-                "status": "进行中",
-                "manager": "张三",
-                "startDate": "2024-01-15",
-                "endDate": "2024-12-31",
-                "description": "开发城市管理综合平台"
-              },
-              {
-                "id": 2,
-                "name": "电商系统升级",
-                "status": "已完成",
-                "manager": "李四",
-                "startDate": "2023-10-01",
-                "endDate": "2024-03-31",
-                "description": "升级现有电商系统架构"
-              },
-              {
-                "id": 3,
-                "name": "数据分析工具",
-                "status": "规划中",
-                "manager": "王五",
-                "startDate": "2024-06-01",
-                "endDate": "2024-11-30",
-                "description": "开发企业内部数据分析工具"
-              },
-              {
-                "id": 4,
-                "name": "移动端APP",
-                "status": "进行中",
-                "manager": "赵六",
-                "startDate": "2024-02-10",
-                "endDate": "2024-09-30",
-                "description": "开发跨平台移动应用"
-              },
-              {
-                "id": 5,
-                "name": "云迁移项目",
-                "status": "暂停",
-                "manager": "钱七",
-                "startDate": "2024-03-01",
-                "endDate": "2024-08-31",
-                "description": "将本地服务迁移到云端"
-              }
-            ],
-            "autoCurrentFirst": true
-          }
-        }
-      }
-    },
-    "relations": []
-  }
+    "dataset": {
+        "dataSetName": "PageDataSet",
+        "tables": {
+            "Projects": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "isPrimaryKey": true,
+                        "label": "ID"
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "label": "项目名称"
+                    },
+                    {
+                        "name": "status",
+                        "type": "string",
+                        "label": "状态"
+                    },
+                    {
+                        "name": "manager",
+                        "type": "string",
+                        "label": "负责人"
+                    },
+                    {
+                        "name": "startDate",
+                        "type": "date",
+                        "label": "开始日期"
+                    },
+                    {
+                        "name": "endDate",
+                        "type": "date",
+                        "label": "结束日期"
+                    },
+                    {
+                        "name": "description",
+                        "type": "string",
+                        "label": "描述"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "name": "智慧城市平台",
+                                "status": "进行中",
+                                "manager": "张三",
+                                "startDate": "2024-01-15",
+                                "endDate": "2024-12-31",
+                                "description": "开发城市管理综合平台"
+                            },
+                            {
+                                "id": 2,
+                                "name": "电商系统升级",
+                                "status": "已完成",
+                                "manager": "李四",
+                                "startDate": "2023-10-01",
+                                "endDate": "2024-03-31",
+                                "description": "升级现有电商系统架构"
+                            },
+                            {
+                                "id": 3,
+                                "name": "数据分析工具",
+                                "status": "规划中",
+                                "manager": "王五",
+                                "startDate": "2024-06-01",
+                                "endDate": "2024-11-30",
+                                "description": "开发企业内部数据分析工具"
+                            },
+                            {
+                                "id": 4,
+                                "name": "移动端APP",
+                                "status": "进行中",
+                                "manager": "赵六",
+                                "startDate": "2024-02-10",
+                                "endDate": "2024-09-30",
+                                "description": "开发跨平台移动应用"
+                            },
+                            {
+                                "id": 5,
+                                "name": "云迁移项目",
+                                "status": "暂停",
+                                "manager": "钱七",
+                                "startDate": "2024-03-01",
+                                "endDate": "2024-08-31",
+                                "description": "将本地服务迁移到云端"
+                            }
+                        ],
+                        "autoCurrentFirst": true
+                    }
+                }
+            }
+        },
+        "tableRelations": []
+    }
 }

@@ -710,12 +710,10 @@ pnpm run plop
 ```json
 // DataSet relations 配置
 {
-  "relations": [{
+  "tableRelations": [{
     "name": "OrderItems",
     "parentTable": "Orders",
     "childTable": "OrderItems",
-    "parentViewId": "grid",
-    "childViewId": "detail",
     "dependencyType": "currentRow",
     "parentField": "id",
     "childField": "orderId"

@@ -664,7 +664,7 @@ pagedata.json 声明 DataSet：表结构、列定义、测试数据行、关联�
   "dataset": {
     "dataSetName": "PageDataSet",
     "tables": { ... },
-    "relations": [ ... ]
+    "tableRelations": [ ... ]
   }
 }
 ```

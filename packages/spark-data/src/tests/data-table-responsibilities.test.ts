@@ -44,8 +44,8 @@ describe('DataTable responsibilities (refactor verification)', () => {
         Departments: { tableName: 'Departments', columns: [{ name: 'id', type: 'number' }], rows: [{ id: 1 }] },
         Users: { tableName: 'Users', columns: [{ name: 'id', type: 'number' }], rows: [{ id: 101, deptId: 1 }] }
       },
-      relations: [
-        { parentTable: 'Departments', childTable: 'Users', dependencyType: 'currentRow', filterExpression: { field: 'deptId', op: '==', value: null } }
+      tableRelations: [
+        { parentTable: 'Departments', childTable: 'Users', childField: 'deptId' }
       ]
     })
 
@@ -167,8 +167,8 @@ describe('Event system', () => {
         Departments: { tableName: 'Departments', columns: [{ name: 'id', type: 'number' }], rows: [{ id: 1 }, { id: 2 }] },
         Employees: { tableName: 'Employees', columns: [{ name: 'id', type: 'number' }, { name: 'deptId', type: 'number' }], rows: [{ id: 101, deptId: 1 }, { id: 102, deptId: 2 }] }
       },
-      relations: [
-        { parentTable: 'Departments', childTable: 'Employees', dependencyType: 'currentRow', filterExpression: { field: 'deptId', op: '==', value: null } }
+      tableRelations: [
+        { parentTable: 'Departments', childTable: 'Employees', childField: 'deptId' }
       ]
     })
 

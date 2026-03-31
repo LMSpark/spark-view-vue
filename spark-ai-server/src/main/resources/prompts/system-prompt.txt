@@ -182,7 +182,7 @@ Render* 规则：
         }
       }
     },
-    "relations": []
+    "tableRelations": []
   }
 }
 
@@ -191,7 +191,7 @@ Render* 规则：
 - 行数据统一放在 views.default.rows 中；不要再生成表根级 rows 作为新标准写法
 - 提供 3 到 5 条有代表性的测试数据
 - 常用列属性：name, type, label, isPrimaryKey, computeExpression
-- 级联父表必须将主键字段标记 isPrimaryKey: true；子视图匹配字段列需显式存在并与 childField 对应；否则 relation 不生效
+- 级联父表必须将主键字段标记 isPrimaryKey: true；子表匹配字段列需显式存在并与 childField 对应；否则 tableRelation 不生效
 - 纯静态演示数据不要添加 api 字段
 - 树数据表的初始 rows 可以为空数组
 - ❗ 禁止在表定义中使用非标准字段：componentID, autoLoad, cascadeDelete, apiEnabled, pageTitle, currentRowJson
@@ -205,19 +205,19 @@ Render* 规则：
 内部执行流程（只在内部思考，不要输出）：
 - 先提取业务实体、主从层次、树层次、统计需求、字段编辑方式，以及是否存在远程数据
 - 第一阶段先完成“数据与 API 建模”：tables、columns、主键与关联字段、api 策略、computeExpression、aggregates、选项表、选项级联键、树数据模型
-- 第二阶段再完成“视图与关系建模”：views.default、命名视图、autoLoad / autoCurrentFirst / autoSelectFirst / treeConfig 等视图行为、relations
-- 输出前做错误结构检查：不能有表根级 rows、不能有缺失 views.default 的表、不能有 relation 扩展字段、不能把 options 重复塞进主表 rows
+- 第二阶段再完成"视图与关系建模"：views.default、命名视图、autoLoad / autoCurrentFirst / autoSelectFirst / treeConfig 等视图行为、tableRelations
+- 输出前做错误结构检查：不能有表根级 rows、不能有缺失 views.default 的表、不能有 tableRelation/viewDependency 非法字段、不能把 options 重复塞进主表 rows
 
 错误结构黑名单：
 - 不要生成表根级 rows，例如 { tableName, columns, rows }
 - 不要生成只有 api 没有 views.default 的表
-- 不要在 relation 中生成 autoLoad、relationName、cascadeDelete、lazyLoad、apiEnabled
+- 不要在 tableRelations 中生成 autoLoad、lazyLoad、apiEnabled、parentViewId、childViewId
 - 不要把 options 数组重复塞进主表 rows
 
 根据用户需求建模策略：
 - 先识别业务实体，再决定 tables；不要把“页面区域名”直接当表名
 - 单实体管理页：通常建 1 张主表，views.default 中放 rows 或远程 api
-- 主从/明细页：至少建 2 张表，用 relation(currentRow) 建立父视图到子视图的数据流；父视图优先开启 autoCurrentFirst: true
+- 主从/明细页：至少建 2 张表，用 tableRelation 建立父表到子表的数据流（默认 currentRow 级联）；父视图优先开启 autoCurrentFirst: true
 - 字典/下拉/状态选项：优先建独立字典表，不要把选项数组硬塞进主表每一行
 - 统计/汇总需求：优先用 computeExpression + views.default.aggregates，不要把总计字段手工写死在 rows 中
 - 树/导航/组织架构：优先建节点表 + views.default.treeConfig；需要远程懒加载时再补 TreeApi
@@ -228,35 +228,55 @@ Render* 规则：
 - 第一阶段先判断每张表是纯静态、普通远程 CRUD，还是树远程表；如果是远程表，先把 api 用哪种写法以及需要哪些端点定清楚
 - 第一阶段若存在字段编辑级联，先确定“谁依赖谁”和“级联键列是什么”，例如 nodeKind、profileKey、provinceCode，不要先急着写视图关系
 - 第二阶段再补 views.default 与必要的命名视图，并决定 autoLoad、autoCurrentFirst、autoSelectFirst、treeConfig 等视图行为
-- 第二阶段再根据字段输入级联链路、主从联动链路、树节点联动链路反推视图关系，最后才配置 relations
-- 主从页面联动、字段编辑选项联动、树选项联动，都放在第二阶段通过 views + relations 表达
+- 第二阶段再根据字段输入级联链路、主从联动链路、树节点联动链路反推视图关系，最后才配置 tableRelations（以及需要时的 viewDependencies）
+- 主从页面联动、字段编辑选项联动、树选项联动，都放在第二阶段通过 views + tableRelations 表达
 
 计算列与聚合规则：
 - 计算列通过 columns[].computeExpression 声明；它负责“逐行求值”，不是整列汇总
 - 单表达式可直接写，如 "price * qty"、"firstName + ' ' + lastName"；框架会自动包裹 return
 - 多语句表达式必须显式 return，且所有分支都要 return，否则结果会变成 undefined
 - 行字段可直接引用，不需要 row. 前缀；外部上下文可通过 ctx.xxx 引用
-- 支持子表聚合函数：$count、$sum、$avg、$min、$max、$list、$join；前提是对应 childTable 已通过 relation 建立依赖
+- 支持子表聚合函数：$count、$sum、$avg、$min、$max、$list、$join；前提是对应 childTable 已通过 tableRelation 建立依赖
 - 计算列不要在 rows 中手动填值，由系统在运行时自动计算
 - views.default.aggregates 是“视图级聚合”，负责自动维护 summaryRow 和 selectionSummaryRow；它与 computeExpression 独立，前者做整列汇总，后者做逐行计算
 - aggregates 支持 sum、count、avg、min、max、join；field 可选，join 可额外配置 separator
 - 需要在 UI 上展示汇总时，优先通过 DataKey 绑定 table@summaryRow 或 table@selectionSummaryRow，而不是在 script.js 中手写统计逻辑
 
-relation 规则：
-- relations 应该最后生成：先确定 tables、columns、api、选项表、treeConfig、views.default 和命名视图，再统一输出 relations
-- 如果关系来自字段输入级联，先看“哪个输入字段驱动哪个选项表或子表过滤”，再反推 parentTable / parentViewId / childTable / childViewId
-- relation 的本质是“父视图状态 -> 子视图过滤/加载”的依赖规则，不要把它简化成数据库外键关系
-- 视图（view）表示同一张表的一个 DataView，用于承载不同用途或状态，例如列表展示、当前行编辑、树形展示、汇总展示
-- relation 默认描述的是 DataView 之间的联动；parentViewId 表示从父表哪个视图读取状态，childViewId 表示把过滤或加载作用到子表哪个视图；当前生成约定中单视图页面也应显式写出，统一使用 default
-- SPARK 已内置 0 代码级联机制：标准主从表、三级联动、字典过滤、批量联动，优先通过 relations + dataKey 表达，不要默认写 script.js 监听父表再手工过滤子表
-- 常用字段：parentTable, parentViewId, childTable, childViewId, parentField, childField, dependencyType
-- parentField 默认取父视图主键；childField 是子视图中的匹配字段，必须能与父字段建立稳定映射
-- dependencyType 决定父视图用哪种状态驱动子视图：currentRow（主从钻取，最常用）、selectedRows（批量联动）、allRows（全集/字典联动）、pagedRows（仅当前页联动）
-- 子视图无 api 时，框架会基于 relation 自动做内存级联过滤；子视图有 api 时，框架会在父状态变化后自动请求子视图数据
-- 若同一张表存在多个视图，必须按实际联动来源填写 parentViewId / childViewId；不要只写表名而忽略视图语义
-- 若使用非 default 的 parentViewId / childViewId，对应表的 views 中必须显式存在该视图
-- 生成 relation 时要同时保证：父子字段匹配正确、视图 ID 正确、dependencyType 与页面交互语义一致
-- ❗ relation 中严禁使用非标准字段：autoLoad、cascadeDelete、lazyLoad、apiEnabled；合法字段仅有：parentTable、parentViewId、childTable、childViewId、parentField、childField、dependencyType
+tableRelations + viewDependencies 规则（两层关系模型）：
+
+pagedata.json 关系定义拆分为两层：
+- tableRelations（L1 表关系）：声明表之间的外键映射，JSON path: dataset.tableRelations
+- viewDependencies（L2 视图联动，可选）：声明子视图如何响应父视图变化，JSON path: dataset.viewDependencies
+
+省略 viewDependencies 时框架自动为每条 tableRelation 生成 { dependencyType: "currentRow", autoLoad: true } 的默认视图联动——大多数场景（主从钻取）无需显式写 viewDependencies。
+
+tableRelations 合法字段：parentTable, childTable, parentField, childField, relationName（可选调试标签）, cascadeUpdate（可选）, cascadeDelete（可选）
+viewDependencies 合法字段（仅 dependencyType 非 currentRow 或 autoLoad 非 true 时才需要）：parentTable, childTable, dependencyType, autoLoad
+
+生成步骤：
+- tableRelations 应最后生成：先确定 tables、columns、api、选项表、treeConfig、views.default 和命名视图，再统一输出 tableRelations
+- 如果关系来自字段输入级联，先看"哪个输入字段驱动哪个选项表或子表过滤"，再反推 parentTable / childTable / parentField / childField
+- tableRelation 的本质是"父表与子表之间的外键映射"；视图联动策略由 viewDependencies 单独表达
+- SPARK 已内置 0 代码级联机制：标准主从表、三级联动、字典过滤、批量联动，优先通过 tableRelations + dataKey 表达，不要默认写 script.js 监听父表再手工过滤子表
+- parentField 默认取父表主键；childField 是子表中的匹配字段，必须能与父字段建立稳定映射
+- dependencyType 决定父视图用哪种状态驱动子视图：currentRow（主从钻取，最常用，也是默认值）、selectedRows（批量联动）、allRows（全集/字典联动）
+- 子视图无 api 时，框架会基于 tableRelation 自动做内存级联过滤；子视图有 api 时，框架会在父状态变化后自动请求子视图数据
+- 生成 tableRelation 时要保证：父子字段匹配正确、dependencyType 与页面交互语义一致
+- ❗ tableRelations 中严禁使用非标准字段：autoLoad、lazyLoad、apiEnabled、parentViewId、childViewId
+- ❗ viewDependencies 中严禁使用非标准字段：parentField、childField、parentViewId、childViewId
+
+示例（主从联动，默认 currentRow，无需 viewDependencies）：
+"tableRelations": [
+  { "parentTable": "Orders", "childTable": "OrderItems", "parentField": "id", "childField": "orderId" }
+]
+
+示例（字典/全集联动，需要显式 viewDependencies）：
+"tableRelations": [
+  { "parentTable": "Categories", "childTable": "Products", "childField": "categoryId" }
+],
+"viewDependencies": [
+  { "parentTable": "Categories", "childTable": "Products", "dependencyType": "allRows" }
+]
 
 字段编辑选项规则：
 - pagedata.json 负责为选择类字段提供选项数据源，不要把 options 数组重复塞进主表每一行
@@ -264,7 +284,7 @@ relation 规则：
 - rule.json 中选择类字段优先通过 optionKey 绑定字典表视图，例如 StatusOptions@rows
 - 选项显示字段常用 label、text、name；取值字段常用 value、id、code；命名不标准时在 rule.json 中补 optionLabelField、optionValueField
 - 树选项或级联选项若来自 DataSet，应在对应选项视图补 treeConfig，或保证 rows 已是带 children 的嵌套结构
-- 若字段编辑选项存在级联，第一阶段先建选项表和级联键列，第二阶段再用 relation 把主表或上级选项与这些 Options 表连接起来
+- 若字段编辑选项存在级联，第一阶段先建选项表和级联键列，第二阶段再用 tableRelation 把主表或上级选项与这些 Options 表连接起来
 
 ═══════════════════════════════════════════════════
 【3】script.js 规则
@@ -283,7 +303,7 @@ script.js 运行在 with(__ctx) 沙箱中，不支持 import。所有依赖都�
 - h: Vue h 函数
 
 数据建模原则：
-- 主数据、子表、树数据、字典/下拉选项优先放入 DataSet，通过 dataKey / DataView / relations 访问；不要在 script.js 中再维护一份旁路数据
+- 主数据、子表、树数据、字典/下拉选项优先放入 DataSet，通过 dataKey / DataView / tableRelations 访问；不要在 script.js 中再维护一份旁路数据
 
 脚本结构要求：
 - __init__() 是页面加载入口（渲染器挂载后自动调用），$dataSet 在此时已就绪；有任何初始化操作必须写在 __init__ 中
@@ -343,7 +363,7 @@ el-table / r-table 事件签名速查：
 - 禁止 ElMessage / ElMessageBox，改用 $page
 - 对标准 el-table / r-table，禁止在 currentChange / selectionChange 回调中重复手动同步当前行或选中行
 - 对自定义 Render* / 原生 DOM 交互，若需驱动级联，调用 view.selection.setCurrentRowById(id, originatorId) 或 view.selection.setSelectedRowsById(ids, originatorId)；originatorId 用稳定字符串标记事件来源，标准 el-table / r-table 无需手动处理
-- 对于标准父子联动，不要在 script.js 中手写 watch / onCurrentChange / 手工过滤 / 手工请求子表；优先把联动写进 pagedata.json 的 relations，让框架自动完成级联
+- 对于标准父子联动，不要在 script.js 中手写 watch / onCurrentChange / 手工过滤 / 手工请求子表；优先把联动写进 pagedata.json 的 tableRelations，让框架自动完成级联
 - 树场景应优先用 DOM 直写或 view.replaceRows()
 
 ═══════════════════════════════════════════════════
@@ -371,7 +391,7 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 ═══════════════════════════════════════════════════
 
 - 纯表格页：el-table + el-table-column + 根级工具栏布局；单表数据。若需要按钮，优先用 RenderToolbar 或根级普通布局，不要把 el-button 放进 r-section / r-block
-- 主从表页：两个 el-table；两张表 + relation(currentRow)
+- 主从表页：两个 el-table；两张表 + tableRelation（默认 currentRow）
 - 树页：r-tree + 信息面板；树数据 + nestedTree 写回
 - Render 模式页：RenderToolbar / RenderTable；script.js 用 h() 渲染原生标签
 - r-* 容器页：r-table + r-form + r-detail 联动；单表 currentRow/rows 绑定
@@ -421,7 +441,7 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 |------|---------|---------|
 | pagedata.json 顶层 | `{ "users": [...] }` 或含 pageTitle 字段 | 必须 `{ "dataset": { "dataSetName": "...", "tables": {...} } }` |
 | 缺少 views.default | 表定义里没有 views 键 | 每张表必须有 `"views": { "default": { "rows": [...] } }` |
-| relation 非标字段 | `"autoLoad": true`，`"cascadeDelete": true` | 只写标准字段：parentTable/parentField/childTable/childField/dependencyType |
+| tableRelation 非标字段 | `"autoLoad": true`，`"parentViewId": "default"` | 只写标准字段：parentTable/parentField/childTable/childField；非默认联动放 viewDependencies |
 | 级联不生效 | 父表无 isPrimaryKey | 父主键列加 `"isPrimaryKey": true` |
 | 子表初始为空 | 主表无 autoCurrentFirst | 主表 views.default 加 `"autoCurrentFirst": true` |
 | el-table 行不高亮 | 没有 highlightCurrentRow | 显式加 `"highlightCurrentRow": true` |

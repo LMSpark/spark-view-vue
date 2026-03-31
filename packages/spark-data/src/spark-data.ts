@@ -9,7 +9,7 @@ import { DataView } from './data-view'
 import { CrudService } from './crud-service'
 import * as DataKeyModule from './core/data-key'
 import * as ColumnValidationModule from './column-validation'
-import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig, TreeConfig, FilterExpression, SortExpression, CommitMode } from './types'
+import type { DataColumn, CrudApi, TableRelation, ViewDependency, DependencyType, FlatTreeNode, AggregateColumnConfig, TreeConfig, FilterExpression, SortExpression, CommitMode } from './types'
 import type { RequestConfig } from '@spark-view/spark-utils'
 
 // ===== SparkData 命名空间 API =====
@@ -151,25 +151,48 @@ export namespace SparkData {
   // ===== 关系快捷创建 =====
 
   /**
-   * 创建简写关系定义（规范化由 DataSet 构造函数自动完成）
+   * 创建表关系定义（L1 数据 schema）
    *
    * @example
    * ```ts
-   * SparkData.createRelation('Users', 'Orders', 'userId')
+   * SparkData.createTableRelation('Users', 'Orders', 'userId')
    * // → { parentTable: 'Users', childTable: 'Orders', childField: 'userId' }
    * ```
    */
-  export function createRelation(
+  export function createTableRelation(
     parentTable: string,
     childTable: string,
     childField: string,
-    options?: { parentField?: string; dependencyType?: DependencyType; autoLoad?: boolean },
-  ): DataRelation {
+    options?: { parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean },
+  ): TableRelation {
     return {
       parentTable,
       childTable,
       childField,
       ...(options?.parentField !== undefined ? { parentField: options.parentField } : {}),
+      ...(options?.condition !== undefined ? { condition: options.condition } : {}),
+      ...(options?.cascadeUpdate !== undefined ? { cascadeUpdate: options.cascadeUpdate } : {}),
+      ...(options?.cascadeDelete !== undefined ? { cascadeDelete: options.cascadeDelete } : {}),
+    }
+  }
+
+  /**
+   * 创建视图依赖定义（L2 视图联动 schema）
+   *
+   * @example
+   * ```ts
+   * SparkData.createViewDependency('Users', 'Orders', { dependencyType: 'selectedRows' })
+   * // → { parentTable: 'Users', childTable: 'Orders', dependencyType: 'selectedRows' }
+   * ```
+   */
+  export function createViewDependency(
+    parentTable: string,
+    childTable: string,
+    options?: { dependencyType?: DependencyType; autoLoad?: boolean },
+  ): ViewDependency {
+    return {
+      parentTable,
+      childTable,
       ...(options?.dependencyType !== undefined ? { dependencyType: options.dependencyType } : {}),
       ...(options?.autoLoad !== undefined ? { autoLoad: options.autoLoad } : {}),
     }

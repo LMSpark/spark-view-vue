@@ -107,11 +107,10 @@ function makeTestDS(
         rows: itemRows ?? DEFAULT_ITEMS,
       },
     },
-    relations: [{
+    tableRelations: [{
       parentTable: 'Orders',
       childTable: 'Items',
       childField: 'orderId',
-      dependencyType: 'currentRow',
     }],
   })
   return {

@@ -408,7 +408,7 @@ app-blueprint.json           （设计时：AI 规划产物）
       ]
     }
   },
-  "relations": [
+  "tableRelations": [
     {
       "type": "one-to-many",
       "parent": "Customer",
@@ -436,7 +436,7 @@ pagedata.json (前端数据模型)
   ├── tables: 从 entities 映射
   ├── columns: 从 db columns 映射（补充 label/computeExpression）
   ├── views.default: 自动生成视图配置
-  ├── relations: 从 db relations 映射到 DataRelation
+  ├── relations: 从 db tableRelations 映射到 TableRelation
   └── aggregates: AI 根据数据类型推断聚合配置
 ```
 

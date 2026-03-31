@@ -348,7 +348,7 @@ describe('normalizeRuleNode', () => {
 
 describe('parsePageData', () => {
   const makeRaw = (name: string, tables: Record<string, unknown> = {}) =>
-    JSON.stringify({ dataSetName: name, tables, relations: undefined, version: undefined, pageId: undefined })
+    JSON.stringify({ dataSetName: name, tables, version: undefined, pageId: undefined })
 
   it('返回 DataSet 实例', () => {
     const result = parsePageData(makeRaw('OrderDS'))

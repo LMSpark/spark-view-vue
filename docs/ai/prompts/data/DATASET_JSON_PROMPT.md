@@ -148,12 +148,10 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       {
         "parentTable":    "Readers",
-        "parentViewId":   "default",
         "childTable":     "BorrowRecords",
-        "childViewId":    "default",
         "childField":     "readerId",
         "dependencyType": "currentRow"
       }
@@ -237,12 +235,10 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       {
         "parentTable":    "Orders",
-        "parentViewId":   "default",
         "childTable":     "OrderItems",
-        "childViewId":    "default",
         "childField":     "orderId",
         "dependencyType": "currentRow"
       }
@@ -326,12 +322,10 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       {
         "parentTable":    "Departments",
-        "parentViewId":   "default",
         "childTable":     "Employees",
-        "childViewId":    "default",
         "childField":     "deptId",
         "dependencyType": "currentRow"
       }
@@ -427,7 +421,7 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       { "parentTable": "Departments", "parentViewId": "default", "childTable": "Doctors",      "childViewId": "default", "childField": "departmentId", "dependencyType": "currentRow" },
       { "parentTable": "Doctors",     "parentViewId": "default", "childTable": "Appointments", "childViewId": "default", "childField": "doctorId",     "dependencyType": "currentRow" }
     ]
@@ -521,20 +515,16 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       {
         "parentTable":   "Employees",
-        "parentViewId":  "default",
         "childTable":    "AttendanceRecords",
-        "childViewId":   "default",
         "childField":    "employeeId",
         "dependencyType": "currentRow"
       },
       {
         "parentTable":   "Employees",
-        "parentViewId":  "detail",
         "childTable":    "SalaryRecords",
-        "childViewId":   "default",
         "childField":    "employeeId",
         "dependencyType": "currentRow"
       }
@@ -634,7 +624,7 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       { "parentTable": "Suppliers",      "parentViewId": "default", "childTable": "PurchaseOrders",  "childViewId": "default", "childField": "supplierId", "dependencyType": "currentRow" },
       { "parentTable": "PurchaseOrders", "parentViewId": "default", "childTable": "PurchaseDetails", "childViewId": "default", "childField": "orderId",    "dependencyType": "currentRow" }
     ]
@@ -713,13 +703,11 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       {
         "parentTable":    "Warehouses",
-        "parentViewId":   "default",
         "parentField":    "id",
         "childTable":     "StockItems",
-        "childViewId":    "default",
         "childField":     "warehouseId",
         "dependencyType": "currentRow"
       }
@@ -823,20 +811,16 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       {
         "parentTable":    "Warehouses",
-        "parentViewId":   "default",
         "childTable":     "Inventories",
-        "childViewId":    "default",
         "childField":     "warehouseId",
         "dependencyType": "currentRow"
       },
       {
         "parentTable":    "Warehouses",
-        "parentViewId":   "default",
         "childTable":     "Inbounds",
-        "childViewId":    "default",
         "childField":     "warehouseId",
         "dependencyType": "currentRow"
       }
@@ -949,20 +933,16 @@
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       {
         "parentTable":    "Communities",
-        "parentViewId":   "default",
         "childTable":     "Buildings",
-        "childViewId":    "default",
         "childField":     "communityId",
         "dependencyType": "currentRow"
       },
       {
         "parentTable":    "Buildings",
-        "parentViewId":   "default",
         "childTable":     "RepairOrders",
-        "childViewId":    "default",
         "childField":     "buildingId",
         "dependencyType": "currentRow"
       }

@@ -62,7 +62,7 @@ export interface RegistryRelation {
 /** 表定义（名册A — DataRegistry 内） */
 export interface RegistryTable {
   columns: RegistryColumn[]
-  relations: RegistryRelation[]
+  tableRelations: RegistryRelation[]
   /** 视图级聚合配置（仅字段名 → 聚合类型） */
   aggregates?: Record<string, { type: string; field?: string }>
 }
@@ -281,12 +281,12 @@ export function registerTable(
   existing.columns = [...colMap.values()]
   // 追加关系（去重：相同 childTable+parentField+childField 视为重复）
   const relKeys = new Set(
-    existing.relations.map((r) => `${r.childTable}:${r.parentField}:${r.childField}`),
+    existing.tableRelations.map((r) => `${r.childTable}:${r.parentField}:${r.childField}`),
   )
-  for (const rel of table.relations) {
+  for (const rel of table.tableRelations) {
     const key = `${rel.childTable}:${rel.parentField}:${rel.childField}`
     if (!relKeys.has(key)) {
-      existing.relations.push(rel)
+      existing.tableRelations.push(rel)
       relKeys.add(key)
     }
   }
@@ -658,8 +658,8 @@ function parseTableDef(raw: unknown): RegistryTable | null {
     }
   }
 
-  const relations: RegistryRelation[] = []
-  const rawRels = obj['relations']
+  const tableRelations: RegistryRelation[] = []
+  const rawRels = obj['tableRelations'] ?? obj['relations']
   if (Array.isArray(rawRels)) {
     for (const r of rawRels) {
       if (typeof r === 'object' && r !== null) {
@@ -667,7 +667,7 @@ function parseTableDef(raw: unknown): RegistryTable | null {
         if (typeof rel['childTable'] === 'string' &&
             typeof rel['parentField'] === 'string' &&
             typeof rel['childField'] === 'string') {
-          relations.push({
+          tableRelations.push({
             childTable: rel['childTable'],
             parentField: rel['parentField'],
             childField: rel['childField'],
@@ -698,7 +698,7 @@ function parseTableDef(raw: unknown): RegistryTable | null {
 
   return {
     columns,
-    relations,
+    tableRelations,
     ...(Object.keys(aggregates).length > 0 ? { aggregates } : {}),
   }
 }
@@ -904,8 +904,8 @@ export function buildSessionContextPrompt(session: PersistedDesignSession): stri
         return s
       })
       sections.push(`- **${tn}**: ${cols.join(', ')}`)
-      if (t.relations.length > 0) {
-        for (const r of t.relations) {
+      if (t.tableRelations.length > 0) {
+        for (const r of t.tableRelations) {
           sections.push(`  - → ${r.childTable} (${r.parentField} → ${r.childField})`)
         }
       }

@@ -528,7 +528,11 @@ export interface IDataSetMetadata {
   schemaVersion?: number
   dataSetName: string
   tables: Record<string, ITableMetadata>
-  relations: DataRelation[] | undefined
+
+  /** L1: 表关系 — 声明表间外键/逻辑关联 */
+  tableRelations?: TableRelation[]
+  /** L2: 视图联动 — 声明视图联动策略（省略时自动从 tableRelations 推导） */
+  viewDependencies?: ViewDependency[]
   /** 业务数据版本号（乐观锁），与 schemaVersion 含义不同 */
   version: number | undefined
   pageId: string | undefined
@@ -584,21 +588,94 @@ export type FilterExpression =
 
 // ===== 关系类型 =====
 
+// ═══════════════════════════════════════════
+// L1: 表关系（Data Schema）
+// ═══════════════════════════════════════════
+
 /**
- * 数据关系定义
+ * 表关系 — 声明两张表之间的外键/逻辑关联。
  *
- * 简写模式：只需 `parentTable` + `childTable` + `childField`，系统自动推导其余字段。
+ * 纯数据结构描述，不涉及 UI 联动。
+ * 消费者：计算列聚合函数（$sum/$count）、内存级联过滤、API 请求参数构建。
+ *
+ * SQL 等价：
+ * ```sql
+ * SELECT child.* FROM {childTable} child
+ * JOIN {parentTable} parent ON child.{childField} = parent.{parentField}
+ * ```
+ *
+ * @example
  * ```json
  * { "parentTable": "Users", "childTable": "Orders", "childField": "userId" }
  * ```
- * 等价于完整写法：
+ */
+export interface TableRelation {
+  /** 关系名称（可选，用于日志和调试） */
+  relationName?: string
+  /** 父表名 */
+  parentTable: string
+  /** 子表名 */
+  childTable: string
+
+  // ── 简写模式（单字段外键，95% 场景）──
+  /** 子表外键字段（简写模式必填） */
+  childField?: string
+  /** 父表匹配字段（默认取父表 primaryKey，通常 'id'） */
+  parentField?: string
+
+  // ── 完整条件（与 childField/parentField 互斥，后续迭代定义具体结构）──
+  /**
+   * 复合匹配条件（预留）。
+   *
+   * 用于复合键、带静态过滤等高级场景。
+   * SQL 等价：JOIN ON + WHERE 合并。
+   * 当前版本不消费此字段，具体结构后续迭代定义。
+   */
+  condition?: Record<string, unknown>
+
+  // ── 声明性元数据 ──
+  cascadeUpdate?: boolean
+  cascadeDelete?: boolean
+}
+
+// ═══════════════════════════════════════════
+// L2: 视图联动（View Schema）
+// ═══════════════════════════════════════════
+
+/**
+ * 视图依赖 — 声明子视图如何响应父视图数据变化。
+ *
+ * 基于 TableRelation 的字段信息工作，独立描述视图层面的联动策略。
+ * 省略 `viewDependencies` 时框架为每条 TableRelation 自动生成默认依赖。
+ *
+ * @example
  * ```json
  * {
  *   "parentTable": "Users", "childTable": "Orders",
- *   "dependencyType": "currentRow",
- *   "filterExpression": { "field": "userId", "op": "==", "value": { "func": "FIELD", "args": ["id"] } }
+ *   "dependencyType": "selectedRows"
  * }
  * ```
+ */
+export interface ViewDependency {
+  /** 与 TableRelation 对齐的父表名 */
+  parentTable: string
+  /** 与 TableRelation 对齐的子表名 */
+  childTable: string
+  /** 响应父视图的哪种数据变化（默认 'currentRow'） */
+  dependencyType?: DependencyType
+  /** 父变化时是否自动级联加载子视图（默认 true） */
+  autoLoad?: boolean
+}
+
+// ═══════════════════════════════════════════
+// 内部展开格式（TableRelation + ViewDependency 合并后）
+// ═══════════════════════════════════════════
+
+/**
+ * 展开后的内部关系格式 — TableRelation + ViewDependency 合并 + filterExpression 自动生成。
+ *
+ * @internal 仅供 spark-data 内部消费（CascadeDelegate / DataView / ComputedColumnDelegate）。
+ * 外部配置使用 `TableRelation` + `ViewDependency`。
  */
 export interface DataRelation {
   parentTable: string
@@ -783,8 +860,10 @@ export interface IDataSet {
   readonly dataSetName: string
   /** 数据表集合 */
   readonly tables: Record<string, DataTable>
-  /** 数据关系定义 */
-  readonly relations: DataRelation[] | undefined
+  /** L1: 表关系定义 */
+  readonly tableRelations: TableRelation[] | undefined
+  /** L2: 视图联动定义 */
+  readonly viewDependencies: ViewDependency[] | undefined
   /** Schema 格式版本（默认 1） */
   readonly schemaVersion: number
   /** 业务数据版本号（乐观锁） */
@@ -792,10 +871,14 @@ export interface IDataSet {
   /** 页面ID */
   readonly pageId: string | undefined
 
-  /** 查询以指定视图为父的子关系 */
+  /** 查询以指定视图为父的子关系（视图级索引） */
   getChildRelations(parentTable: string, parentViewId: string): DataRelation[]
-  /** 查询以指定视图为子的父关系 */
+  /** 查询以指定视图为子的父关系（视图级索引） */
   getParentRelations(childTable: string, childViewId: string): DataRelation[]
+  /** 查询以指定表为父的所有表关系（表级索引，聚合函数消费） */
+  getTableChildRelations(parentTable: string): TableRelation[]
+  /** 查询以指定表为子的所有表关系（表级索引） */
+  getTableParentRelations(childTable: string): TableRelation[]
   /** 获取数据表 */
   getTable(name: string): DataTable | undefined
   /** 获取数据视图（委托到 DataTable） */

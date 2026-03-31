@@ -237,11 +237,11 @@ Phase-1 已生成的 rule.json 会作为上下文提供。
       "api": { "list": { "url": "/api/xxx", "method": "GET" } }
     }
   },
-  "relations": [
+  "tableRelations": [
     {
       "parentTable": "父表", "childTable": "子表",
       "parentField": "id", "childField": "parentId",
-      "parentViewId": "default", "childViewId": "default"
+      "parentViewId": "default",
     }
   ]
 }
@@ -871,7 +871,7 @@ public class SharedConfigController {
       ]
     }
   },
-  "relations": [
+  "tableRelations": [
     {
       "type": "one-to-many | many-to-many",
       "parent": "ParentEntity",
@@ -939,7 +939,7 @@ public class SchemaTransformerService {
             .filter(r -> tableNames.contains(r.parent) && tableNames.contains(r.child))
             .map(this::buildRelation)
             .toList();
-        if (!relations.isEmpty()) pageData.put("relations", relations);
+        if (!tableRelations.isEmpty()) pageData.put("tableRelations", relations);
         
         return objectMapper.writerWithDefaultPrettyPrinter()
             .writeValueAsString(pageData);

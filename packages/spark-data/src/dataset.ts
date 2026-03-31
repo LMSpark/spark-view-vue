@@ -6,7 +6,7 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, ColumnType, CrudApi, ViewChangeHandlers } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, TableRelation, ViewDependency, FilterExpression, IDataRow, DataColumn, ColumnType, CrudApi, ViewChangeHandlers } from './types'
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
@@ -76,42 +76,97 @@ function resolveRouteTemplateParams(routeLike: unknown): {
 }
 
 /**
- * @internal 关系规范化——填充默认值 + 根据 childField/parentField 自动生成 filterExpression
+ * @internal 自动推导视图联动
  *
- * 简写模式只需 `{ parentTable, childTable, childField }` 即可：
- * - `dependencyType` 默认 `'currentRow'`
- * - `parentViewId` / `childViewId` 默认 `'default'`
- * - `parentField` 默认取父视图 primaryKey（通常为 `'id'`）
- * - `filterExpression` 根据 childField + parentField 自动生成
+ * - viewDependencies 未提供（undefined）: 每条 tableRelation 生成默认视图联动
+ * - viewDependencies 显式提供（含空数组）: 使用显式列表，未覆盖的 tableRelation 仍自动推导
+ * - viewDependencies: []（空数组）: 明确无视图联动
  */
-function normalizeRelation(r: DataRelation, ds: DataSet): DataRelation {
-  const norm = {
-    ...r,
-    dependencyType: r.dependencyType ?? 'currentRow',
-    parentViewId: r.parentViewId ?? 'default',
-    childViewId: r.childViewId ?? 'default',
-  } as DataRelation
+function deriveViewDependencies(
+  tableRelations: TableRelation[],
+  explicit: ViewDependency[] | undefined,
+): ViewDependency[] {
+  if (explicit?.length === 0) return []
 
-  // 自动生成 filterExpression（简写模式：childField 存在但 filterExpression 缺失）
-  if (!norm.filterExpression && norm.childField) {
-    // parentField 回退到父视图 primaryKey（与 data-view.ts requestData 逻辑对齐）
-    let parentKey = norm.parentField
-    if (!parentKey) {
-      const parentView = ds.getView(norm.parentTable, norm.parentViewId)
-      if (parentView) {
-        parentKey = parentView.primaryKey
-      }
-      parentKey = parentKey ?? 'id'
-    }
-    norm.parentField = parentKey
-    norm.filterExpression = {
-      field: norm.childField,
-      op: '==',
-      value: { func: 'FIELD', args: [parentKey] },
+  const result: ViewDependency[] = explicit ? [...explicit] : []
+
+  // 已显式覆盖的 parentTable+childTable 对
+  const covered = new Set<string>()
+  for (const vd of result) {
+    covered.add(`${vd.parentTable}:${vd.childTable}`)
+  }
+
+  // 为未覆盖的 tableRelation 自动推导默认视图联动
+  for (const tr of tableRelations) {
+    const key = `${tr.parentTable}:${tr.childTable}`
+    if (!covered.has(key)) {
+      result.push({
+        parentTable: tr.parentTable,
+        childTable: tr.childTable,
+        dependencyType: 'currentRow',
+        autoLoad: true,
+      })
     }
   }
 
-  return norm
+  return result
+}
+
+/**
+ * @internal 将 TableRelation + ViewDependency 展开为内部扁平 DataRelation（供 CascadeDelegate / DataView 消费）
+ */
+function expandRelations(
+  tableRelations: TableRelation[],
+  viewDependencies: ViewDependency[],
+  ds: DataSet,
+): DataRelation[] {
+  // tableRelation 索引：parentTable:childTable → TableRelation
+  const trMap = new Map<string, TableRelation>()
+  for (const tr of tableRelations) {
+    trMap.set(`${tr.parentTable}:${tr.childTable}`, tr)
+  }
+
+  return viewDependencies.map(vd => {
+    const tr = trMap.get(`${vd.parentTable}:${vd.childTable}`)
+    const dependencyType = vd.dependencyType ?? 'currentRow'
+
+    // parentField 回退到父视图 primaryKey（与 data-view.ts requestData 逻辑对齐）
+    let parentField = tr?.parentField
+    if (!parentField) {
+      const parentView = ds.getView(vd.parentTable, 'default')
+      if (parentView) {
+        parentField = parentView.primaryKey
+      }
+      parentField = parentField ?? 'id'
+    }
+
+    const childField = tr?.childField
+
+    // 自动生成 filterExpression
+    let filterExpression: FilterExpression | undefined
+    if (childField) {
+      filterExpression = {
+        field: childField,
+        op: '==',
+        value: { func: 'FIELD', args: [parentField] },
+      }
+    }
+
+    return {
+      parentTable: vd.parentTable,
+      childTable: vd.childTable,
+      parentViewId: 'default',
+      childViewId: 'default',
+      parentField,
+      childField,
+      dependencyType,
+      filterExpression,
+      autoLoad: vd.autoLoad,
+      cascadeUpdate: tr?.cascadeUpdate,
+      cascadeDelete: tr?.cascadeDelete,
+      relationName: tr?.relationName,
+    } as DataRelation
+  })
 }
 
 export class DataSet implements IDataSet {
@@ -124,8 +179,17 @@ export class DataSet implements IDataSet {
   /** 数据表集合 */
   tables: Record<string, DataTable> = {}
 
-  /** 数据关系定义 */
-  relations: DataRelation[] | undefined
+  /** L1: 表关系定义 */
+  tableRelations: TableRelation[] | undefined
+
+  /** L2: 视图联动定义 */
+  viewDependencies: ViewDependency[] | undefined
+
+  /**
+   * @internal 展开后的内部扁平关系（TableRelation + ViewDependency 合并）。
+   * CascadeDelegate / DataView / ComputedColumnDelegate 消费此结构。
+   */
+  _resolvedRelations: DataRelation[] | undefined
 
   /** Schema 格式版本（默认 1） */
   schemaVersion: number
@@ -149,10 +213,15 @@ export class DataSet implements IDataSet {
   /** @internal 页面路由快照（APP_SERVICES 缺失时的作用域兜底） */
   _pageRoute?: unknown
 
-  /** @internal 关系索引：parentTable:parentViewId → children relations */
+  /** @internal 关系索引（视图级）：parentTable:parentViewId → children relations */
   private _childRelIdx = new Map<string, DataRelation[]>()
-  /** @internal 关系索引：childTable:childViewId → parent relations */
+  /** @internal 关系索引（视图级）：childTable:childViewId → parent relations */
   private _parentRelIdx = new Map<string, DataRelation[]>()
+
+  /** @internal 关系索引（表级）：parentTable → TableRelation[]（聚合函数消费） */
+  private _tableChildIdx = new Map<string, TableRelation[]>()
+  /** @internal 关系索引（表级）：childTable → TableRelation[]  */
+  private _tableParentIdx = new Map<string, TableRelation[]>()
 
   // ===== 动态视图订阅追踪 =====
 
@@ -189,20 +258,26 @@ export class DataSet implements IDataSet {
     dataSetName: string
     tables: Record<string, ITableMetadata>
     schemaVersion?: number | undefined
-    relations?: DataRelation[] | undefined
+    tableRelations?: TableRelation[] | undefined
+    viewDependencies?: ViewDependency[] | undefined
     version?: number | undefined
     pageId?: string | undefined
   }) {
     assertNoSeparator(config.dataSetName, 'dataSetName')
     this.dataSetName = config.dataSetName
     this.schemaVersion = config.schemaVersion ?? 1
-    this.relations = config.relations
+    this.tableRelations = config.tableRelations
     this.version = config.version
     this.pageId = config.pageId
 
-    // 预构建关系索引（供 setDataSet → setupCascade 查询，此时关系尚未规范化但 ?? 'default' 能正确匹配）
-    if (this.relations) {
-      this._buildRelationIndex()
+    // ① 自动推导 viewDependencies（未提供时从 tableRelations 生成默认值）
+    this.viewDependencies = this.tableRelations?.length
+      ? deriveViewDependencies(this.tableRelations, config.viewDependencies)
+      : undefined
+
+    // ② 构建表级索引（聚合函数在视图编译时查询，需先于表构建就绪）
+    if (this.tableRelations?.length) {
+      this._buildTableRelationIndex()
     }
 
     // 构建表实例并建立引用链（DataSet → DataTable → DataView）
@@ -218,10 +293,10 @@ export class DataSet implements IDataSet {
       this.tables[name] = table
     }
 
-    // 关系规范化（浅拷贝 + 默认值填充 + filterExpression 自动生成）+ 索引构建
-    if (this.relations) {
-      this.relations = this.relations.map(r => normalizeRelation(r, this))
-      this._buildRelationIndex()
+    // ③ 展开为内部扁平关系 + 构建视图级索引
+    if (this.tableRelations?.length && this.viewDependencies?.length) {
+      this._resolvedRelations = expandRelations(this.tableRelations, this.viewDependencies, this)
+      this._buildViewRelationIndex()
     }
 
     // 后置重算：聚合表达式需要完整 DataSet（所有表 + 规范化关系），
@@ -438,7 +513,7 @@ export class DataSet implements IDataSet {
   // ===== 关系图查询（网状关系，非树形） =====
 
   /**
-   * 查询以指定视图为父的子关系
+   * 查询以指定视图为父的子关系（视图级索引）
    * @param parentTable 父表名
    * @param parentViewId 父视图ID
    */
@@ -447,7 +522,7 @@ export class DataSet implements IDataSet {
   }
 
   /**
-   * 查询以指定视图为子的父关系（在网状关系图中向上查找）
+   * 查询以指定视图为子的父关系（视图级索引）
    * @param childTable 子表名
    * @param childViewId 子视图ID
    */
@@ -455,11 +530,25 @@ export class DataSet implements IDataSet {
     return this._parentRelIdx.get(`${childTable}:${childViewId}`) ?? []
   }
 
-  /** @internal 构建关系双向索引 */
-  private _buildRelationIndex(): void {
+  /**
+   * 查询以指定表为父的所有表关系（表级索引，聚合函数消费）
+   */
+  getTableChildRelations(parentTable: string): TableRelation[] {
+    return this._tableChildIdx.get(parentTable) ?? []
+  }
+
+  /**
+   * 查询以指定表为子的所有表关系（表级索引）
+   */
+  getTableParentRelations(childTable: string): TableRelation[] {
+    return this._tableParentIdx.get(childTable) ?? []
+  }
+
+  /** @internal 构建视图级关系双向索引（从 _resolvedRelations） */
+  private _buildViewRelationIndex(): void {
     this._childRelIdx.clear()
     this._parentRelIdx.clear()
-    for (const r of this.relations ?? []) {
+    for (const r of this._resolvedRelations ?? []) {
       const pKey = `${r.parentTable}:${r.parentViewId ?? 'default'}`
       const cKey = `${r.childTable}:${r.childViewId ?? 'default'}`
       let pArr = this._childRelIdx.get(pKey)
@@ -468,6 +557,20 @@ export class DataSet implements IDataSet {
       let cArr = this._parentRelIdx.get(cKey)
       if (!cArr) { cArr = []; this._parentRelIdx.set(cKey, cArr) }
       cArr.push(r)
+    }
+  }
+
+  /** @internal 构建表级关系双向索引（从 tableRelations） */
+  private _buildTableRelationIndex(): void {
+    this._tableChildIdx.clear()
+    this._tableParentIdx.clear()
+    for (const tr of this.tableRelations ?? []) {
+      let pArr = this._tableChildIdx.get(tr.parentTable)
+      if (!pArr) { pArr = []; this._tableChildIdx.set(tr.parentTable, pArr) }
+      pArr.push(tr)
+      let cArr = this._tableParentIdx.get(tr.childTable)
+      if (!cArr) { cArr = []; this._tableParentIdx.set(tr.childTable, cArr) }
+      cArr.push(tr)
     }
   }
 
@@ -481,13 +584,15 @@ export class DataSet implements IDataSet {
   static fromConfig(config: {
     dataSetName: string
     tables: Record<string, Omit<ITableMetadata, 'tableName' | 'loading' | 'error'> & { tableName?: string }>
-    relations?: DataRelation[]
+    tableRelations?: TableRelation[]
+    viewDependencies?: ViewDependency[]
   }): DataSet {
     // tableName 回填由 DataSet 构造函数统一处理（P1-1），此处直接透传
     return new DataSet({
       dataSetName: config.dataSetName,
       tables: config.tables as Record<string, ITableMetadata>,
-      relations: config.relations,
+      tableRelations: config.tableRelations,
+      viewDependencies: config.viewDependencies,
     })
   }
 
@@ -573,7 +678,8 @@ export class DataSet implements IDataSet {
       schemaVersion: this.schemaVersion,
       dataSetName: this.dataSetName,
       tables,
-      relations: this.relations,
+      tableRelations: this.tableRelations,
+      viewDependencies: this.viewDependencies,
       version: this.version,
       pageId: this.pageId
     } as IDataSetMetadata
@@ -637,14 +743,16 @@ export class DataSet implements IDataSet {
           columns: DataColumn[]
           rows?: IDataRow[]
           api?: CrudApi
-          views?: Record<string, IViewMetadata>  // ✅ 支持 views 配置
+          views?: Record<string, IViewMetadata>
         }>
-        relations?: DataRelation[]
+        tableRelations?: TableRelation[]
+        viewDependencies?: ViewDependency[]
       }
       return DataSet.fromConfig({
         dataSetName: rd.dataSetName ?? 'PageDataSet',
         tables: (rd.tables ?? {}) as Record<string, Omit<ITableMetadata, 'tableName' | 'loading' | 'error'> & { tableName?: string }>,
-        ...(rd.relations ? { relations: rd.relations } : {}),
+        ...(rd.tableRelations ? { tableRelations: rd.tableRelations } : {}),
+        ...(rd.viewDependencies ? { viewDependencies: rd.viewDependencies } : {}),
       })
     }
 

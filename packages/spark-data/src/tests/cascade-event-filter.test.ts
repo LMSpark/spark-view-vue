@@ -29,15 +29,20 @@ function makeDs(dependencyType: string) {
         api: { list: { url: '/test/items', method: 'GET' } }
       }
     },
-    relations: [
+    tableRelations: [
+      {
+        parentTable: 'Orders',
+        childTable: 'Items',
+        parentField: 'id',
+        childField: 'orderId',
+      }
+    ],
+    viewDependencies: [
       {
         parentTable: 'Orders',
         childTable: 'Items',
         dependencyType,
-        parentField: 'id',
-        childField: 'orderId',
-        filterExpression: { field: 'orderId', op: '==', value: null },
-        autoLoad: true
+        autoLoad: true,
       }
     ]
   })

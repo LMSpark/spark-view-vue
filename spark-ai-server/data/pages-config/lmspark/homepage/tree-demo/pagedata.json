@@ -824,46 +824,34 @@
                 }
             }
         },
-        "relations": [
+        "tableRelations": [
             {
-                "relationName": "NodeProfileToEditorProfile",
                 "parentTable": "NavigationNodes",
-                "parentViewId": "default",
                 "childTable": "NodeEditorProfiles",
-                "childViewId": "default",
                 "parentField": "editorProfileKey",
                 "childField": "profileKey",
-                "dependencyType": "currentRow"
+                "relationName": "NodeProfileToEditorProfile"
             },
             {
-                "relationName": "NodeKindToLinkTargets",
                 "parentTable": "NavigationNodes",
-                "parentViewId": "default",
                 "childTable": "LinkTargetOptions",
-                "childViewId": "default",
                 "parentField": "nodeKind",
                 "childField": "nodeKind",
-                "dependencyType": "currentRow"
+                "relationName": "NodeKindToLinkTargets"
             },
             {
-                "relationName": "NodeKindToChildPlacements",
                 "parentTable": "NavigationNodes",
-                "parentViewId": "default",
                 "childTable": "ChildPlacementOptions",
-                "childViewId": "default",
                 "parentField": "nodeKind",
                 "childField": "nodeKind",
-                "dependencyType": "currentRow"
+                "relationName": "NodeKindToChildPlacements"
             },
             {
-                "relationName": "NodeProfileToRefNodeKinds",
                 "parentTable": "NavigationNodes",
-                "parentViewId": "default",
                 "childTable": "RefNodeKindOptions",
-                "childViewId": "default",
                 "parentField": "editorProfileKey",
                 "childField": "profileKey",
-                "dependencyType": "currentRow"
+                "relationName": "NodeProfileToRefNodeKinds"
             }
         ]
     }

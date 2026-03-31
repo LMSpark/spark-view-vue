@@ -305,7 +305,7 @@ const pipeline = new ResponsePipeline()
 [L3] ∀ dataKey in rule.json:
      parseDataKey(dk).tableName ∈ pagedata.tables
 
-[L3] ∀ relation in pagedata.relations:
+[L3] ∀ relation in pagedata.tableRelations:
      relation.parentTable ∈ pagedata.tables
      relation.childTable  ∈ pagedata.tables
 
@@ -728,7 +728,7 @@ applied
         }
       }
     },
-    "relations": [
+    "tableRelations": [
       {
         "parentTable": "Parent",
         "childTable": "Child",

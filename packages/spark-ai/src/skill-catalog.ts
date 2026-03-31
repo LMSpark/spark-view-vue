@@ -42,15 +42,15 @@ export const SKILL_CATALOG: Record<string, SkillCatalogEntry> = {
     summary: '上/左主表，下/右子表，选中主行自动联动子表数据',
     when: '存在 1:N 关系（订单-订单行、部门-人员等），需要"选主行看明细"',
     avoid: '数据完全独立无关联时无需使用；3层以上嵌套请改用 tree-data',
-    requires: ['relation'],
+    requires: ['tableRelation'],
     produces: ['data-model', 'view-plan', 'ui-structure'],
-    checks: ['父表主键 isPrimaryKey', '父视图 autoCurrentFirst', '子视图 childField 与 relation 对应', '主子两个表格各自声明 highlightCurrentRow'],
+    checks: ['父表主键 isPrimaryKey', '父视图 autoCurrentFirst', '子视图 childField 与 tableRelation 对应', '主子两个表格各自声明 highlightCurrentRow'],
     detail: `## master-detail 配置要点
 
-### pagedata.json — relations 配置（关键）
+### pagedata.json — tableRelations 配置（关键）
 \`\`\`json
 {
-  "relations": [{
+  "tableRelations": [{
     "parentTable": "Orders",
     "childTable":  "OrderItems",
     "parentField": "id",
@@ -60,6 +60,7 @@ export const SKILL_CATALOG: Record<string, SkillCatalogEntry> = {
 \`\`\`
 - 子表若**无 api 配置**，框架自动走内存过滤（\`applyInMemoryCascade\`），父行切换自动重过滤
 - 子表若**有 api 配置**，父行切换触发 \`childView.loadFromServer({ orderId })\`
+- viewDependencies 可省略（默认从 tableRelations 推导，dependencyType: "currentRow"）
 
 ### rule.json — 典型布局
 \`\`\`json

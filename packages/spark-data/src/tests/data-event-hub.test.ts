@@ -50,12 +50,17 @@ function createTestDataSet() {
         ]
       }
     },
-    relations: [
+    tableRelations: [
       {
         parentTable: 'Departments',
         childTable: 'Users',
-        dependencyType: 'currentRow' as const,
-        filterExpression: { field: 'deptId', op: '==' as const, value: null },
+        childField: 'deptId',
+      }
+    ],
+    viewDependencies: [
+      {
+        parentTable: 'Departments',
+        childTable: 'Users',
         autoLoad: false,  // 本测试聚焦事件发射，级联行为在 dataset-request-orchestration.test.ts 测试
       }
     ]

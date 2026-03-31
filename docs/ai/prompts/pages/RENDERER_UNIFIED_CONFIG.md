@@ -939,7 +939,7 @@ r-text / r-select / r-number / ...（字段组件）
       }
     }
   },
-  "relations": [                                 // 父子级联
+  "tableRelations": [                                 // 父子级联（tableRelations）
     {
       "parentTable": "父表",
       "childTable": "子表",

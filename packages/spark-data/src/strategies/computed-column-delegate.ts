@@ -29,7 +29,7 @@
  */
 
 import { Logger, toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
-import type { IDataRow, ComputedColumnFn, DataRelation } from '../types'
+import type { IDataRow, ComputedColumnFn, TableRelation } from '../types'
 
 const logger = Logger('DataView:Computed')
 
@@ -208,8 +208,8 @@ export interface IComputedColumnHost {
  * Delegate 所需的 DataSet 最小接口——避免导入完整 DataSet 类型。
  */
 export interface IComputedColumnDataSet {
-  readonly relations: DataRelation[] | undefined
-  getChildRelations(parentTable: string, parentViewId: string): DataRelation[]
+  readonly tableRelations: TableRelation[] | undefined
+  getTableChildRelations(parentTable: string): TableRelation[]
   getView(tableName: string, viewId?: string): { readonly rows: IDataRow[] } | undefined
 }
 
@@ -349,15 +349,13 @@ export class ComputedColumnDelegate {
     const ds = this._host.getDataSet()
     if (!ds) return undefined
 
-    const relations = ds.relations?.length
-      ? ds.getChildRelations(this._host.tableName, this._host.viewId)
+    const tableRelations = ds.tableRelations?.length
+      ? ds.getTableChildRelations(this._host.tableName)
       : []
 
-    // 双重索引：精确键 "childTable@childViewId" + 短键 "childTable"（取第一匹配）
-    const relMap = new Map<string, DataRelation>()
-    for (const r of relations) {
-      const vid = r.childViewId ?? 'default'
-      relMap.set(`${r.childTable}@${vid}`, r)
+    // 双重索引：短键 "childTable"（取第一匹配）
+    const relMap = new Map<string, TableRelation>()
+    for (const r of tableRelations) {
       if (!relMap.has(r.childTable)) relMap.set(r.childTable, r)
     }
 
@@ -370,7 +368,7 @@ export class ComputedColumnDelegate {
         const parentField = rel.parentField ?? defaultParentField
         const parentValue = parentRow[parentField]
         if (parentValue === null || parentValue === undefined) return []
-        const childView = ds.getView(rel.childTable, rel.childViewId ?? 'default')
+        const childView = ds.getView(rel.childTable, 'default')
         if (!childView) return []
         const childField = rel.childField
         if (!childField) return []

@@ -79,13 +79,12 @@ const CASE_A_JSON = {
         },
       },
     },
-    relations: [
+    tableRelations: [
       {
         relationName:   'ReaderBorrowRecords',
         parentTable:    'Readers',
         childTable:     'BorrowRecords',
         childField:     'readerId',
-        dependencyType: 'currentRow',
         cascadeDelete:  true,
       },
     ],
@@ -215,13 +214,12 @@ const CASE_B_JSON = {
         },
       },
     },
-    relations: [
+    tableRelations: [
       {
         relationName:   'OrderItems',
         parentTable:    'Orders',
         childTable:     'OrderItems',
         childField:     'orderId',
-        dependencyType: 'currentRow',
         cascadeDelete:  true,
       },
     ],
@@ -358,13 +356,12 @@ const EXAMPLE_9_JSON = {
         },
       },
     },
-    relations: [
+    tableRelations: [
       {
         relationName:   'StudentGrades',
         parentTable:    'Students',
         childTable:     'Grades',
         childField:     'studentId',
-        dependencyType: 'currentRow',
       },
     ],
   },
@@ -493,14 +490,12 @@ const CASE_C_JSON = {
         },
       },
     },
-    relations: [
+    tableRelations: [
       {
         relationName:   'DeptEmployees',
         parentTable:    'Departments',
         childTable:     'Employees',
         childField:     'deptId',
-        dependencyType: 'currentRow',
-        cascadeDelete:  false,
       },
     ],
   },
@@ -549,10 +544,10 @@ describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
   // 注：Employees 配置了 api: '/api/employees'，级联触发的是 HTTP 请求而非内存过滤。
   // 需要 mock loadFromServer 才能验证级联行为，此处仅验证结构正确性。
   // API 级联行为的测试见 dataset-request-orchestration.test.ts。
-  it('C-5: DataSet 含 api 配置时 relations 仍能正常注册', () => {
+  it('C-5: DataSet 含 api 配置时 tableRelations 仍能正常展开', () => {
     const ds = fromPromptJson(CASE_C_JSON)
-    // relations 规范化后 parentViewId/childViewId 均默认 'default'
-    const rel = ds.relations?.[0]
+    // tableRelations 展开后 parentViewId/childViewId 均默认 'default'
+    const rel = ds._resolvedRelations?.[0]
     expect(rel?.parentTable).toBe('Departments')
     expect(rel?.childTable).toBe('Employees')
     expect(rel?.parentViewId).toBe('default')
@@ -632,14 +627,13 @@ const CASE_G_JSON = {
         },
       },
     },
-    relations: [
+    tableRelations: [
       {
         relationName:   'WarehouseStock',
         parentTable:    'Warehouses',
-        parentField:    'id',            // 显式声明 parentField（默认取主键，此处等价）
+        parentField:    'id',
         childTable:     'StockItems',
         childField:     'warehouseId',
-        dependencyType: 'currentRow',
       },
     ],
   },
@@ -833,20 +827,18 @@ const CASE_H_JSON = {
         },
       },
     },
-    relations: [
+    tableRelations: [
       {
         relationName:   'WarehouseInventories',
         parentTable:    'Warehouses',
         childTable:     'Inventories',
         childField:     'warehouseId',
-        dependencyType: 'currentRow',
       },
       {
         relationName:   'WarehouseInbounds',
         parentTable:    'Warehouses',
         childTable:     'Inbounds',
         childField:     'warehouseId',
-        dependencyType: 'currentRow',
       },
     ],
   },
@@ -888,9 +880,9 @@ describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', 
     expect(f(rows[3], 'status')).toBe('预警')
   })
 
-  it('H-5: 两条 relation 均已注册', () => {
+  it('H-5: 两条 tableRelation 均已展开', () => {
     const ds = fromPromptJson(CASE_H_JSON)
-    const relations = ds.relations ?? []
+    const relations = ds._resolvedRelations ?? []
     const names = relations.map(r => r.relationName)
     expect(names).toContain('WarehouseInventories')
     expect(names).toContain('WarehouseInbounds')
@@ -1026,20 +1018,18 @@ const CASE_I_JSON = {
         },
       },
     },
-    relations: [
+    tableRelations: [
       {
         relationName:   'CommunityBuildings',
         parentTable:    'Communities',
         childTable:     'Buildings',
         childField:     'communityId',
-        dependencyType: 'currentRow',
       },
       {
         relationName:   'BuildingRepairOrders',
         parentTable:    'Buildings',
         childTable:     'RepairOrders',
         childField:     'buildingId',
-        dependencyType: 'currentRow',
       },
     ],
   },
@@ -1085,9 +1075,9 @@ describe('Case I：标准提示词模板自测 - 物业管理系统（三级层�
     expect(f(rows[4], 'status')).toBe('一般')
   })
 
-  it('I-5: 两条 relation 均已注册', () => {
+  it('I-5: 两条 tableRelation 均已展开', () => {
     const ds = fromPromptJson(CASE_I_JSON)
-    const names = (ds.relations ?? []).map(r => r.relationName)
+    const names = (ds._resolvedRelations ?? []).map(r => r.relationName)
     expect(names).toContain('CommunityBuildings')
     expect(names).toContain('BuildingRepairOrders')
   })

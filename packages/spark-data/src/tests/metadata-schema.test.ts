@@ -158,7 +158,6 @@ describe('L4: schemaVersion in IDataSetMetadata', () => {
     const raw: IDataSetMetadata = {
       dataSetName: 'Old',
       tables: {},
-      relations: undefined,
       version: undefined,
       pageId: undefined,
       // schemaVersion 未指定 — 旧 JSON 场景

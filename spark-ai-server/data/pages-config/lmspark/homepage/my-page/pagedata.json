@@ -1,101 +1,101 @@
 {
-  "dataset": {
-    "dataSetName": "PageDataSet",
-    "tables": {
-      "Permissions": {
-        "tableName": "Permissions",
-        "columns": [
-          {
-            "name": "id",
-            "type": "number",
-            "label": "ID",
-            "isPrimaryKey": true
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "label": "权限名称"
-          },
-          {
-            "name": "type",
-            "type": "string",
-            "label": "权限类型"
-          },
-          {
-            "name": "target",
-            "type": "string",
-            "label": "目标对象"
-          },
-          {
-            "name": "status",
-            "type": "string",
-            "label": "状态"
-          },
-          {
-            "name": "createdAt",
-            "type": "date",
-            "label": "创建时间"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "label": "描述"
-          }
-        ],
-        "views": {
-          "default": {
-            "rows": [
-              {
-                "id": 1,
-                "name": "用户数据查看",
-                "type": "user",
-                "target": "张三",
-                "status": "active",
-                "createdAt": "2024-01-15",
-                "description": "允许查看用户个人数据"
-              },
-              {
-                "id": 2,
-                "name": "角色管理权限",
-                "type": "role",
-                "target": "管理员",
-                "status": "active",
-                "createdAt": "2024-02-20",
-                "description": "允许管理角色配置"
-              },
-              {
-                "id": 3,
-                "name": "部门数据编辑",
-                "type": "dept",
-                "target": "技术部",
-                "status": "inactive",
-                "createdAt": "2024-03-05",
-                "description": "允许编辑部门相关数据"
-              },
-              {
-                "id": 4,
-                "name": "用户数据导出",
-                "type": "user",
-                "target": "李四",
-                "status": "active",
-                "createdAt": "2024-03-10",
-                "description": "允许导出用户数据报表"
-              },
-              {
-                "id": 5,
-                "name": "角色审批权限",
-                "type": "role",
-                "target": "审批员",
-                "status": "active",
-                "createdAt": "2024-03-12",
-                "description": "允许审批角色变更请求"
-              }
-            ],
-            "autoCurrentFirst": true
-          }
-        }
-      }
-    },
-    "relations": []
-  }
+    "dataset": {
+        "dataSetName": "PageDataSet",
+        "tables": {
+            "Permissions": {
+                "tableName": "Permissions",
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "number",
+                        "label": "ID",
+                        "isPrimaryKey": true
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "label": "权限名称"
+                    },
+                    {
+                        "name": "type",
+                        "type": "string",
+                        "label": "权限类型"
+                    },
+                    {
+                        "name": "target",
+                        "type": "string",
+                        "label": "目标对象"
+                    },
+                    {
+                        "name": "status",
+                        "type": "string",
+                        "label": "状态"
+                    },
+                    {
+                        "name": "createdAt",
+                        "type": "date",
+                        "label": "创建时间"
+                    },
+                    {
+                        "name": "description",
+                        "type": "string",
+                        "label": "描述"
+                    }
+                ],
+                "views": {
+                    "default": {
+                        "rows": [
+                            {
+                                "id": 1,
+                                "name": "用户数据查看",
+                                "type": "user",
+                                "target": "张三",
+                                "status": "active",
+                                "createdAt": "2024-01-15",
+                                "description": "允许查看用户个人数据"
+                            },
+                            {
+                                "id": 2,
+                                "name": "角色管理权限",
+                                "type": "role",
+                                "target": "管理员",
+                                "status": "active",
+                                "createdAt": "2024-02-20",
+                                "description": "允许管理角色配置"
+                            },
+                            {
+                                "id": 3,
+                                "name": "部门数据编辑",
+                                "type": "dept",
+                                "target": "技术部",
+                                "status": "inactive",
+                                "createdAt": "2024-03-05",
+                                "description": "允许编辑部门相关数据"
+                            },
+                            {
+                                "id": 4,
+                                "name": "用户数据导出",
+                                "type": "user",
+                                "target": "李四",
+                                "status": "active",
+                                "createdAt": "2024-03-10",
+                                "description": "允许导出用户数据报表"
+                            },
+                            {
+                                "id": 5,
+                                "name": "角色审批权限",
+                                "type": "role",
+                                "target": "审批员",
+                                "status": "active",
+                                "createdAt": "2024-03-12",
+                                "description": "允许审批角色变更请求"
+                            }
+                        ],
+                        "autoCurrentFirst": true
+                    }
+                }
+            }
+        },
+        "tableRelations": []
+    }
 }

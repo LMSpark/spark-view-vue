@@ -10,14 +10,11 @@ describe('DataView.requestData orchestration', () => {
         Parents: { tableName: 'Parents', columns: [{ name: 'id', type: 'number' }], rows: [] },
         Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }], rows: [] }
       },
-      relations: [
-        {
-          parentTable: 'Parents',
-          childTable: 'Children',
-          dependencyType: 'allRows',
-          filterExpression: { field: 'parentId', op: '==', value: null },
-          autoLoad: true
-        }
+      tableRelations: [
+        { parentTable: 'Parents', childTable: 'Children', childField: 'parentId' }
+      ],
+      viewDependencies: [
+        { parentTable: 'Parents', childTable: 'Children', dependencyType: 'allRows' }
       ]
     })
 
@@ -58,8 +55,11 @@ describe('DataView.requestData orchestration', () => {
         Parents: { tableName: 'Parents', columns: [{ name: 'id', type: 'number' }], rows: [] },
         Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }], rows: [] }
       },
-      relations: [
-        { parentTable: 'Parents', childTable: 'Children', dependencyType: 'allRows', filterExpression: { field: 'parentId', op: '==', value: null } }
+      tableRelations: [
+        { parentTable: 'Parents', childTable: 'Children', childField: 'parentId' }
+      ],
+      viewDependencies: [
+        { parentTable: 'Parents', childTable: 'Children', dependencyType: 'allRows' }
       ]
     })
 
@@ -91,12 +91,10 @@ describe('DataView.requestData orchestration', () => {
         Parents: { tableName: 'Parents', columns: [{ name: 'uuid', type: 'string', isPrimaryKey: true }], rows: [] },
         Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }, { name: 'parentUuid', type: 'string' }], rows: [] }
       },
-      relations: [
+      tableRelations: [
         {
-          parentTable: 'Parents', childTable: 'Children', dependencyType: 'currentRow',
+          parentTable: 'Parents', childTable: 'Children',
           parentField: 'uuid', childField: 'parentUuid',
-          filterExpression: { field: 'parentUuid', op: '==', value: null },
-          autoLoad: true
         }
       ]
     })
@@ -139,17 +137,13 @@ describe('DataView.requestData orchestration', () => {
         B: { tableName: 'B', columns: [{ name: 'id', type: 'number' }, { name: 'aId', type: 'number' }], rows: [], api: { list: { url: '/test/b', method: 'GET' } } },
         C: { tableName: 'C', columns: [{ name: 'id', type: 'number' }, { name: 'bId', type: 'number' }], rows: [], api: { list: { url: '/test/c', method: 'GET' } } }
       },
-      relations: [
-        {
-          parentTable: 'A', childTable: 'B', dependencyType: 'allRows',
-          filterExpression: { field: 'aId', op: '==', value: null },
-          autoLoad: true
-        },
-        {
-          parentTable: 'B', childTable: 'C', dependencyType: 'allRows',
-          filterExpression: { field: 'bId', op: '==', value: null },
-          autoLoad: true
-        }
+      tableRelations: [
+        { parentTable: 'A', childTable: 'B', childField: 'aId' },
+        { parentTable: 'B', childTable: 'C', childField: 'bId' },
+      ],
+      viewDependencies: [
+        { parentTable: 'A', childTable: 'B', dependencyType: 'allRows' },
+        { parentTable: 'B', childTable: 'C', dependencyType: 'allRows' },
       ]
     })
 

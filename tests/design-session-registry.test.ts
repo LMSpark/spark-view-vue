@@ -94,7 +94,7 @@ describe('createEmptySession', () => {
   it('returns independent instances (no shared state)', () => {
     const a = createEmptySession()
     const b = createEmptySession()
-    a.dataRegistry.tables['Orders'] = { columns: [], relations: [] }
+    a.dataRegistry.tables['Orders'] = { columns: [], tableRelations: [] }
     expect(b.dataRegistry.tables).toEqual({})
   })
 })
@@ -118,8 +118,8 @@ describe('getRegisteredTableNames', () => {
 
   it('returns all table names', () => {
     const session = createEmptySession()
-    session.dataRegistry.tables['Orders'] = { columns: [], relations: [] }
-    session.dataRegistry.tables['Users'] = { columns: [], relations: [] }
+    session.dataRegistry.tables['Orders'] = { columns: [], tableRelations: [] }
+    session.dataRegistry.tables['Users'] = { columns: [], tableRelations: [] }
     const names = getRegisteredTableNames(session)
     expect(names.sort()).toEqual(['Orders', 'Users'])
   })
@@ -138,7 +138,7 @@ describe('getRegisteredColumnNames', () => {
         { name: 'amount', type: 'number' },
         { name: 'customer', type: 'string' },
       ],
-      relations: [],
+      tableRelations: [],
     }
     expect(getRegisteredColumnNames(session, 'Orders')).toEqual(['id', 'amount', 'customer'])
   })
@@ -192,7 +192,7 @@ function buildTestSession(): PersistedDesignSession {
       { name: 'customer', type: 'string' },
       { name: 'status', type: 'string' },
     ],
-    relations: [{ childTable: 'OrderItems', parentField: 'id', childField: 'orderId' }],
+    tableRelations: [{ childTable: 'OrderItems', parentField: 'id', childField: 'orderId' }],
   }
   session.dataRegistry.tables['OrderItems'] = {
     columns: [
@@ -202,7 +202,7 @@ function buildTestSession(): PersistedDesignSession {
       { name: 'qty', type: 'number' },
       { name: 'price', type: 'number' },
     ],
-    relations: [],
+    tableRelations: [],
   }
   session.viewRegistry.views['Orders@default'] = {
     tableName: 'Orders', viewId: 'default', purpose: '主列表', origin: 'auto-default',
@@ -896,7 +896,7 @@ describe('registerTable', () => {
         { name: 'id', type: 'string', isPrimaryKey: true },
         { name: 'name', type: 'string' },
       ],
-      relations: [],
+      tableRelations: [],
     }
     registerTable(session, 'Users', table)
     expect(getRegisteredTableNames(session)).toEqual(['Users'])
@@ -910,7 +910,7 @@ describe('registerTable', () => {
         { name: 'id', type: 'string' },
         { name: 'amount', type: 'number' },
       ],
-      relations: [],
+      tableRelations: [],
     })
     // Second registration: override 'amount' type, add 'status'
     registerTable(session, 'Orders', {
@@ -918,7 +918,7 @@ describe('registerTable', () => {
         { name: 'amount', type: 'string' }, // type changed
         { name: 'status', type: 'string' },
       ],
-      relations: [],
+      tableRelations: [],
     })
     const cols = getRegisteredColumnNames(session, 'Orders')
     expect(cols).toEqual(['id', 'amount', 'status'])
@@ -931,29 +931,29 @@ describe('registerTable', () => {
     const session = createEmptySession()
     registerTable(session, 'Orders', {
       columns: [{ name: 'id', type: 'string' }],
-      relations: [{ childTable: 'Items', parentField: 'id', childField: 'orderId' }],
+      tableRelations: [{ childTable: 'Items', parentField: 'id', childField: 'orderId' }],
     })
     // Same relation again + a new one
     registerTable(session, 'Orders', {
       columns: [],
-      relations: [
+      tableRelations: [
         { childTable: 'Items', parentField: 'id', childField: 'orderId' }, // dup
         { childTable: 'Payments', parentField: 'id', childField: 'orderId' },
       ],
     })
-    expect(session.dataRegistry.tables['Orders']!.relations).toHaveLength(2)
+    expect(session.dataRegistry.tables['Orders']!.tableRelations).toHaveLength(2)
   })
 
   it('merges aggregates on existing table', () => {
     const session = createEmptySession()
     registerTable(session, 'Orders', {
       columns: [{ name: 'amount', type: 'number' }],
-      relations: [],
+      tableRelations: [],
       aggregates: { amount: { type: 'sum' } },
     })
     registerTable(session, 'Orders', {
       columns: [],
-      relations: [],
+      tableRelations: [],
       aggregates: { count: { type: 'count' } },
     })
     expect(session.dataRegistry.tables['Orders']!.aggregates).toEqual({
@@ -1117,7 +1117,7 @@ describe('checkCascadeImpact', () => {
         { name: 'amount', type: 'number' },
         { name: 'customer', type: 'string' },
       ],
-      relations: [],
+      tableRelations: [],
     })
     lockDataRegistry(session)
     session.currentStep = 'B2'
@@ -1228,7 +1228,7 @@ describe('End-to-end session flow', () => {
         { name: 'customer', type: 'string' },
         { name: 'total', type: 'number', computeExpression: 'amount * qty' },
       ],
-      relations: [{ childTable: 'Items', parentField: 'id', childField: 'orderId' }],
+      tableRelations: [{ childTable: 'Items', parentField: 'id', childField: 'orderId' }],
     })
     registerTable(session, 'Items', {
       columns: [
@@ -1237,7 +1237,7 @@ describe('End-to-end session flow', () => {
         { name: 'product', type: 'string' },
         { name: 'qty', type: 'number' },
       ],
-      relations: [],
+      tableRelations: [],
     })
     recordAcceptedProposal(session, {
       id: 'p-data-1', type: 'data-model', title: '订单+明细表',
@@ -1348,7 +1348,7 @@ describe('applyProposalToSession', () => {
               { name: 'amount', type: 'number' },
               { name: 'customer', type: 'string' },
             ],
-            relations: [],
+            tableRelations: [],
           },
           Items: {
             columns: [
@@ -1356,7 +1356,7 @@ describe('applyProposalToSession', () => {
               { name: 'orderId', type: 'string' },
               { name: 'qty', type: 'number' },
             ],
-            relations: [{ childTable: 'Items', parentField: 'id', childField: 'orderId' }],
+            tableRelations: [{ childTable: 'Items', parentField: 'id', childField: 'orderId' }],
           },
         },
       })
@@ -1378,7 +1378,7 @@ describe('applyProposalToSession', () => {
         tables: {
           Orders: {
             columns: [{ name: 'amount', type: 'number' }],
-            relations: [],
+            tableRelations: [],
             aggregates: { amount: { type: 'sum' }, score: { type: 'avg', field: 'score' } },
           },
         },
@@ -1406,7 +1406,7 @@ describe('applyProposalToSession', () => {
           { name: 'name', type: 'string' },
           { name: 'email', type: 'string' },
         ],
-        relations: [],
+        tableRelations: [],
       })
 
       const result = applyProposalToSession(session, {
@@ -1430,7 +1430,7 @@ describe('applyProposalToSession', () => {
           { name: 'amount', type: 'number' },
           { name: 'customer', type: 'string' },
         ],
-        relations: [],
+        tableRelations: [],
       })
       lockDataRegistry(session)
       session.currentStep = 'B2'
@@ -1452,7 +1452,7 @@ describe('applyProposalToSession', () => {
               { name: 'customer', type: 'string' },
               // 'amount' removed!
             ],
-            relations: [],
+            tableRelations: [],
           },
         },
       })
@@ -1470,7 +1470,7 @@ describe('applyProposalToSession', () => {
       const session = createEmptySession()
       registerTable(session, 'Orders', {
         columns: [{ name: 'amount', type: 'number' }],
-        relations: [],
+        tableRelations: [],
       })
       // NOT locked!
       addDependency(session, 'Orders.amount', 'p-ui-dep')
@@ -1480,7 +1480,7 @@ describe('applyProposalToSession', () => {
       })
 
       const content = JSON.stringify({
-        tables: { Orders: { columns: [{ name: 'id', type: 'string' }], relations: [] } },
+        tables: { Orders: { columns: [{ name: 'id', type: 'string' }], tableRelations: [] } },
       })
 
       const result = applyProposalToSession(session, {
@@ -1509,8 +1509,8 @@ describe('applyProposalToSession', () => {
   describe('view-plan (Markdown 表格解析)', () => {
     it('parses standard Markdown table with Chinese headers', () => {
       const session = createEmptySession()
-      registerTable(session, 'Orders', { columns: [{ name: 'id', type: 'string' }], relations: [] })
-      registerTable(session, 'Items', { columns: [{ name: 'id', type: 'string' }], relations: [] })
+      registerTable(session, 'Orders', { columns: [{ name: 'id', type: 'string' }], tableRelations: [] })
+      registerTable(session, 'Items', { columns: [{ name: 'id', type: 'string' }], tableRelations: [] })
 
       const content = [
         '| 表名 | viewId | 用途 | 来源 |',
@@ -1542,7 +1542,7 @@ describe('applyProposalToSession', () => {
 
     it('parses Markdown table with English headers', () => {
       const session = createEmptySession()
-      registerTable(session, 'Users', { columns: [{ name: 'id', type: 'string' }], relations: [] })
+      registerTable(session, 'Users', { columns: [{ name: 'id', type: 'string' }], tableRelations: [] })
 
       const content = [
         '| tableName | viewId | purpose | origin |',
@@ -1786,7 +1786,7 @@ describe('buildSessionContextPrompt', () => {
         { name: 'id', type: 'string', isPrimaryKey: true },
         { name: 'total', type: 'number', computeExpression: 'price * qty' },
       ],
-      relations: [{ childTable: 'Items', parentField: 'id', childField: 'orderId' }],
+      tableRelations: [{ childTable: 'Items', parentField: 'id', childField: 'orderId' }],
     })
 
     const prompt = buildSessionContextPrompt(session)
@@ -1798,7 +1798,7 @@ describe('buildSessionContextPrompt', () => {
 
   it('shows lock status when DataRegistry is locked', () => {
     const session = createEmptySession()
-    registerTable(session, 'T', { columns: [{ name: 'a', type: 'string' }], relations: [] })
+    registerTable(session, 'T', { columns: [{ name: 'a', type: 'string' }], tableRelations: [] })
     lockDataRegistry(session)
 
     const prompt = buildSessionContextPrompt(session)
@@ -1873,7 +1873,7 @@ describe('serializeSession / deserializeSession', () => {
         { name: 'id', type: 'string', isPrimaryKey: true },
         { name: 'amount', type: 'number' },
       ],
-      relations: [],
+      tableRelations: [],
     })
     lockDataRegistry(session)
     registerView(session, 'Orders@default', {
@@ -1941,7 +1941,7 @@ describe('runFullValidation', () => {
     const session = createEmptySession()
     registerTable(session, 'Orders', {
       columns: [{ name: 'id', type: 'string' }],
-      relations: [],
+      tableRelations: [],
     })
     registerView(session, 'Orders@default', {
       tableName: 'Orders', viewId: 'default', purpose: '列表', origin: 'auto-default',
@@ -2007,7 +2007,7 @@ describe('runFullValidation', () => {
 
   it('detects orphan views (no dependency references)', () => {
     const session = createEmptySession()
-    registerTable(session, 'Orders', { columns: [{ name: 'id', type: 'string' }], relations: [] })
+    registerTable(session, 'Orders', { columns: [{ name: 'id', type: 'string' }], tableRelations: [] })
     registerView(session, 'Orders@orphan', {
       tableName: 'Orders', viewId: 'orphan', purpose: '孤立视图', origin: 'planned',
     })
@@ -2022,7 +2022,7 @@ describe('runFullValidation', () => {
 
   it('does not flag orphan views when <=2 proposals (early session)', () => {
     const session = createEmptySession()
-    registerTable(session, 'Orders', { columns: [{ name: 'id', type: 'string' }], relations: [] })
+    registerTable(session, 'Orders', { columns: [{ name: 'id', type: 'string' }], tableRelations: [] })
     registerView(session, 'Orders@orphan', {
       tableName: 'Orders', viewId: 'orphan', purpose: '早期视图', origin: 'planned',
     })

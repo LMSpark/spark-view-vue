@@ -480,15 +480,15 @@ dataSet.on('loadSuccess', ({ tableName }) => {
     "Orders":     { "rows": [...] },
     "OrderItems": { "rows": [...] }
   },
-  "relations": [
+  "tableRelations": [
     {
-      "parentTable": "Orders",     "parentViewId": "default",
-      "childTable":  "OrderItems", "childViewId":  "default",
+      "parentTable": "Orders",
+      "childTable":  "OrderItems",
       "parentField": "id",         "childField": "orderId"
     }
   ]
-  // parentViewId / childViewId 均默认 'default'，单视图页面可省略
-  // DataRelation 定义的是视图之间的依赖，而非纯表结构关系
+  // viewDependencies 可省略（默认从 tableRelations 推导，dependencyType: "currentRow"）
+  // 仅需非默认级联行为时显式声明 viewDependencies
 }
 ```
 
