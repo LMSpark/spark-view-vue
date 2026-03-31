@@ -1,28 +1,55 @@
 # SPARK 快速开始
 
-> 5 分钟上手 SPARK 企业级低代码组件系统
+> 先跑起来，再理解架构。这个指南优先帮你看到页面效果、配置入口和稳定运行时。
 
 ## 📋 前置要求
 
 - **Node.js** >= 20.0.0
 - **pnpm** >= 10.0.0
-- **TypeScript** >= 5.0 (推荐使用最新版本)
+- **JDK** >= 17.0.0（仅完整开发模式需要）
 
 ## 🚀 安装和运行
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/your-org/spark-view.git
-cd spark-view
+git clone https://github.com/LMSpark/spark-view-vue.git SPARK_VIEW
+cd SPARK_VIEW
 
 # 2. 安装依赖
 pnpm install
 
-# 3. 启动开发服务器
+# 3. 只启动前端示例
+pnpm run dev:fe
+```
+
+访问 [http://localhost:5173](http://localhost:5173) 查看页面效果。
+
+如果你要体验页面配置、AI 相关能力或 Java 后端接口，再启动完整开发模式：
+
+```bash
 pnpm run dev
 ```
 
-访问 [http://localhost:5173](http://localhost:5173) 查看运行效果。
+- `pnpm run dev:fe`：只启动 Vite，适合先熟悉前端组件和页面渲染
+- `pnpm run dev`：启动 Java 后端 + Vite，适合体验配置系统、SSE 调试链路和 AI 配置生成能力
+
+## AI 能力的边界
+
+- SPARK 的 AI 能力主要生成页面配置和最小化脚本，不以“生成任意代码工程”为目标
+- 页面最终由稳定运行时解释执行，重点是可验证、可回滚、可维护，而不是自由度最大化
+
+## 📌 推荐体验路径
+
+1. 先运行 `pnpm run dev:fe`，确认前端页面能正常打开。
+2. 在示例导航中优先体验这 3 个页面：`tree-demo`、`master-detail`、`permission-render`。
+3. 再查看根目录 [README.md](../../README.md) 里的定位说明和文档导航。
+4. 需要完整配置链路时，再切换到 `pnpm run dev`。
+
+### 为什么先看这 3 个 demo
+
+- `tree-demo`：最适合感受“页面引擎”而不是“组件拼装”
+- `master-detail`：最适合理解零代码主从联动
+- `permission-render`：最适合理解权限策略是如何进入渲染链的
 
 ## 🏗️ 项目结构
 

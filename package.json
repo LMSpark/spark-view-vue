@@ -1,7 +1,7 @@
 {
     "name": "spark-view-architecture-prototype",
     "version": "0.3.0",
-    "description": "SPARK 架构原型 - 能力分层 × 职责解耦 × 上下文契约",
+    "description": "SPARK 配置平台 - 深度配置 × 稳定运行时 × 受约束 AI 生成",
     "type": "module",
     "engines": {
         "node": ">=20.0.0",

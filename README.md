@@ -1,22 +1,62 @@
 # SPARK View
 
-> 基于 Vue 3 的企业级低代码组件系统，支持类型安全、能力驱动和动态配置
+> 面向 Vue 3 和 Element Plus 的深度配置平台，内置数据视图、权限策略和受约束的 AI 配置生成能力
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 [![Vue 3](https://img.shields.io/badge/Vue-3.5-brightgreen.svg)](https://vuejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF.svg)](https://vitejs.dev/)
 
-## ✨ 核心特性
+## 适合什么场景
 
-- **🔒 类型安全** - 完整的 TypeScript 支持，严格的类型检查，零类型错误
-- **🏗️ 模块化架构** - 基于 pnpm workspace 的独立包设计，按需引入
-- **🔗 能力系统** - 基于 Symbol 的组件间松耦合通信，支持延迟绑定和依赖注入
-- **🔌 插件机制** - 灵活的扩展点，支持 Element Plus、VxeTable 等第三方库集成
-- **⚡ 动态加载** - 支持组件按需加载，基于 `import.meta.glob` 的代码分割优化
-- **📄 配置驱动** - JSON 配置即可搭建复杂页面，支持页面级配置系统
-- **🛡️ 权限控制** - 内置字段级权限系统，支持数据访问控制
-- **📊 数据管理** - 完整的 DataSet 和 TreeManager，支持关系数据和依赖分析
-- **🧪 测试友好** - 支持测试隔离，遵循 SOLID 原则的依赖注入架构
+- 配置驱动的后台页面、运营平台、管理系统
+- 表格、表单、树形编辑、主从联动等复杂页面编排
+- 需要统一权限策略、数据模型和页面配置体系的团队
+
+## 为什么不是另一个 JSON 表单生成器
+
+- 页面绑定围绕 DataSet 和 DataView 组织，不只是把字段渲染出来
+- 权限控制覆盖字段、动作和页面模式，而不是零散地写在组件里
+- 内置树数据、聚合、计算列、跨表联动等企业后台常见能力
+- 配置系统、脚本沙箱和 AI 配置生成可以接到同一条工作流里
+
+## 为什么不主打生成代码
+
+- AI 主要生成 `rule.json`、`pagedata.json`、`style.css` 和最小化 `script.js`，而不是无边界地改整个代码仓库
+- 生成结果进入固定运行时解释执行，可靠性依赖平台内核，而不是依赖每次生成的偶然正确性
+- 配置天然更适合做结构校验、依赖校验、权限校验、回滚和审计
+- 对企业场景来说，可控、可验证、可维护，比“多生成一些代码”更有价值
+
+## 5 分钟内先看到什么
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/LMSpark/spark-view-vue.git SPARK_VIEW
+cd SPARK_VIEW
+
+# 2. 安装依赖
+pnpm install
+
+# 3. 只看前端示例
+pnpm run dev:fe
+
+# 4. 需要页面配置和 AI 后端时，再启动完整开发模式
+pnpm run dev
+```
+
+- `pnpm run dev:fe`：只启动 Vite，适合先看组件系统和前端页面
+- `pnpm run dev`：启动 Java 后端 + Vite，适合体验页面配置、AI 配置生成、SSE 调试链路
+- 完整模式需要 JDK 17+
+
+## 核心特性
+
+- **类型安全** - TypeScript 严格模式，能力键、页面配置和数据模型都有明确类型边界
+- **配置驱动** - 基于页面结构配置和数据配置搭建复杂页面，而不是散落的命令式代码
+- **稳定运行时** - AI 负责生成受约束配置，固定渲染链负责解释执行，降低生成不确定性
+- **权限内建** - 页面模式、字段可见性、字段可编辑性和动作权限统一收口
+- **数据视图模型** - DataSet、DataView、TreeManager、计算列和聚合面向真实业务页面
+- **能力系统** - 基于 Symbol 和上下文契约的松耦合组件通信，支持延迟绑定
+- **插件和扩展** - 可以接入 Element Plus、VxeTable 和自定义组件注册体系
+- **工程纪律** - pnpm workspace、严格 lint/typecheck、Vitest 测试和约束化提交流程
 
 ## 📦 包结构
 
@@ -29,13 +69,16 @@ packages/
 └── spark-utils/         # 🛠️ 共享工具（Logger、HTTP 客户端、类型定义）
 ```
 
-## 🚀 快速开始
+## 快速开始
 
 ```bash
 # 安装依赖
 pnpm install
 
-# 开发模式（支持热重载）
+# 只启动前端
+pnpm run dev:fe
+
+# 启动完整开发环境（Java 后端 + Vite）
 pnpm run dev
 
 # 构建生产版本
@@ -51,134 +94,111 @@ pnpm run lint
 pnpm run test
 ```
 
-## 📖 核心概念
+推荐先从 [docs/guides/QUICKSTART.md](docs/guides/QUICKSTART.md) 开始，再按需查看数据管理、树能力和配置系统文档。
 
-### 组件系统
+## 首发最该展示的 3 个 demo
 
-SPARK 采用声明式组件注册，支持三种注册方式：
+如果你准备把项目正式对外发布，首页和录屏建议先只展示下面 3 个页面。它们最能说明 SPARK 的差异化，而不是把所有能力同时摊开。
 
-```typescript
-import { Spark } from '@spark-view/spark-component'
+1. **tree-demo**
+   一个完整的树形导航编辑器，包含树容器、表单编辑、工具栏动作、当前节点联动和页面脚本。这个页面最适合做首页首屏，因为它最容易让人感受到“这不是组件拼装，而是一套页面引擎”。
+2. **master-detail**
+   点击主表行自动切换子表数据，突出 DataView 驱动的零代码联动。这个页面最适合接在 tree-demo 后面，帮助用户快速理解 SPARK 在企业后台里的直接价值。
+3. **permission-render**
+   用同一套页面结构演示不同权限快照下的渲染结果，突出“改权限不改页面代码”。这个页面适合放第三位，证明权限不是附属能力，而是内建能力。
 
-// 1. 直接注册（同步加载）
-import MyComponent from './MyComponent.vue'
-Spark.register('my-component', MyComponent)
+第二梯队演示建议：
 
-// 2. 动态导入（代码分割）
-Spark.register('my-detail', () => import('./MyDetail.vue'))
+- **smart-load**：展示依赖链驱动的数据智能加载，适合放在深入能力部分
+- **dynamic-columns**：展示动态列和可配置表格能力，适合补充数据视图表达力
+- **vxe-demo**：展示插件接入与扩展能力，适合面向更重表格场景的用户
 
-// 3. 路径注册（批量管理）
-const register = Spark.createRegister(import.meta.glob('./*.vue'))
-register.registerAll({
-  'r-table':   './data-components/RendererTable.vue',
-  'r-form':    './data-components/RendererForm.vue'
-})
-```
+## 首页展示顺序建议
 
-### 运行时自动注册
+1. 第一屏：tree-demo 截图或录屏，标题只讲一句话定位
+2. 第二屏：master-detail，强调零代码联动
+3. 第三屏：permission-render，强调权限策略内建
+4. 第四屏：用简图解释页面结构配置、数据模型和脚本如何协同
+5. 第五屏：再补 smart-load、dynamic-columns、vxe-demo 作为进阶能力
 
-对于希望在运行时扫描组件的场景，或者不使用 Vite 智能模式的项目，
-可以调用 `setupAutoRegister` 来自动注册全局组件。该函数现在位于
-`@spark-view/spark-app` 包中，并支持配置扫描模式和排除规则：
+## 理解这个项目的最短路径
 
-```ts
-import { setupAutoRegister } from '@spark-view/spark-app'
+如果你是第一次接触 SPARK，建议按下面顺序理解，而不是先进入包结构和内部实现细节：
 
-await setupAutoRegister(app, {
-  patterns: ['./src/components/**/*.vue'],
-  exclude: ['**/demo/**']
-})
-```
+1. **页面结构配置**
+   用 `rule.json` 描述页面布局、容器、字段、事件和工具栏。
+2. **页面数据模型**
+   用 `pagedata.json` 描述 DataSet、表、视图、关系、计算列和聚合。
+3. **页面数据绑定**
+   通过 DataKey 把组件和 DataView 连接起来，例如 `Users@rows`、`Orders@currentRow`。
+4. **页面行为脚本**
+   在 `script.js` 里只写最小化业务分支和页面行为，数据管理仍然通过 DataSet 流转。
+5. **组件能力系统**
+   当页面复杂度上来时，再理解能力系统、组件注册和上下文契约。
 
-### 能力系统
+## 一个最小页面长什么样
 
-基于 Symbol 的松耦合通信机制：
+下面这段配置比大段架构说明更能帮助新用户理解 SPARK 的工作方式：
 
-```typescript
-import { defineCapability } from '@spark-view/spark-utils'
-import { useSparkComponent } from '@spark-view/spark-component'
-
-// 定义能力
-const GRID_SELECTION = defineCapability<SelectionApi>('grid-selection')
-
-// 提供能力
-const { provide } = useSparkComponent({ type: 'data-grid' })
-provide(GRID_SELECTION, {
-  getSelectedRows: () => selectedRows,
-  onSelectionChange: (callback) => { /* ... */ }
-})
-
-// 消费能力
-const { consume } = useSparkComponent({ type: 'action-bar' })
-const selection = consume(GRID_SELECTION)
-if (selection) {
-  selection.onSelectionChange(handleSelection)
+```json
+{
+  "type": "r-table",
+  "dataKey": "Users@rows",
+  "props": {
+    "border": true,
+    "stripe": true,
+    "highlightCurrentRow": true
+  },
+  "children": [
+    {
+      "type": "r-text",
+      "field": "name",
+      "props": { "label": "姓名" }
+    },
+    {
+      "type": "r-text",
+      "field": "role",
+      "props": { "label": "角色" }
+    }
+  ]
 }
 ```
 
-### 数据管理
+这段配置背后对应的是同一套运行时模型：
 
-完整的客户端数据空间：
+- 页面结构配置决定渲染什么
+- 页面数据模型决定数据从哪里来
+- DataKey 决定组件绑定到哪个 DataView
+- 权限和页面模式决定字段最终是否可见、可编辑、可操作
 
-```typescript
-import { SparkData } from '@spark-view/spark-data'
+## 对外理解的 4 个核心概念
 
-// 创建 DataSet
-const dataSet = SparkData.createDataSet({
-  dataSetName: 'UserManagement',
-  tables: {
-    Users: {
-      tableName: 'Users',
-      columns: [
-        { name: 'id', type: 'number', primaryKey: true },
-        { name: 'name', type: 'string', nullable: false },
-        { name: 'email', type: 'string' }
-      ],
-      rows: []
-    }
-  },
-  relations: [
-    { from: 'Users', to: 'Roles', type: 'many-to-many' }
-  ]
-})
+### 1. 页面结构配置
 
-// 数据操作
-await dataSet.loadTable('Users')
-const users = dataSet.getTable('Users').getRows()
-```
+SPARK 用页面结构配置描述页面，而不是让每个页面都从零开始写 Vue 模板。容器组件、字段组件、工具栏和动作都在同一套结构里组织。
 
-### 应用启动
+### 2. 数据视图模型
 
-声明式应用配置：
+SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、DataView 管理数据。这样主从联动、树形结构、计算列、聚合和选中态才能统一工作。
 
-```typescript
-import { SparkApp } from '@spark-view/spark-app'
+### 3. 页面权限策略
 
-await SparkApp.start({
-  // 路由配置
-  router: {
-    mode: 'history',
-    base: '/',
-    routes: [
-      { path: '/', component: 'page-home' },
-      { path: '/users', component: 'page-users' }
-    ]
-  },
+权限不是零散地塞进单个组件的 `disabled` 或 `v-if`，而是通过统一的权限快照和页面模式进入渲染链。这样同一页面能稳定支持只读、脱敏、不可见等模式。
 
-  // 插件配置
-  plugins: {
-    'element-plus': true,
-    'vxe-table': { enabled: true, options: { size: 'large' } }
-  },
+### 4. 组件能力系统
 
-  // 页面配置
-  pageConfig: {
-    source: 'hybrid',
-    apiBaseUrl: '/api',
-    localPrefix: '/config'
-  }
-})
-```
+能力系统负责在复杂容器里做松耦合通信。大部分新用户不需要一开始就理解它，但当你要扩展树、表格、动作栏、选择状态这些复杂交互时，它是关键基础设施。
+
+## 对外讲法建议
+
+如果你要对外介绍 SPARK，建议优先使用下面这套说法，而不是直接抛内部术语：
+
+- 页面结构配置：比 `rule.json` 更容易被外部理解
+- 页面数据模型：比 `pagedata.json` 更容易被外部理解
+- 页面节点配置：比 `SparkNode` 更容易被外部理解
+- 页面权限策略：比单讲 `permissionMode` 更容易被外部理解
+- 页面行为脚本：比直接强调脚本沙箱更容易被外部理解
+- 受约束配置生成：比“AI 生成代码”更准确地描述平台能力边界
 
 ## 📚 文档导航
 
@@ -209,4 +229,4 @@ await SparkApp.start({
 
 ---
 
-**SPARK View** - 构建下一代低代码应用
+**SPARK View** - 构建稳定、可控、可验证的配置驱动应用

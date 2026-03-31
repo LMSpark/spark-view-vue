@@ -13,45 +13,51 @@
       </nav>
 
       <div class="hero-body">
+        <p class="hero-eyebrow">For Multi-Tenant SaaS And Enterprise Delivery</p>
         <h1 class="hero-title">
-          当<span class="hero-highlight">配置即代码</span><br>遇上大模型
+          企业应用系统<br>是 <span class="hero-highlight">AI 配</span>出来的
         </h1>
         <p class="hero-desc">
-          以标准化 JSON 配置替代自由散漫的代码生成，让 AI 输出天然可校验、可迭代、可审核。<br>
-          Logger 闭环自动诊断，实现"AI 生成 → 框架渲染 → 日志诊断 → 自动修复"全链路闭环。
+          不是让 AI 无边界写代码，而是让 AI 在受约束的配置空间里生成页面结构、数据模型、权限策略和最小化脚本。<br>
+          SPARK 用稳定运行时承接多租户、多系统 SaaS 场景，把交付效率和维护升级成本控制放在同一条链路里。
         </p>
         <div class="hero-metrics">
           <div class="metric">
-            <span class="metric-value">3×</span>
-            <span class="metric-label">Token 效率提升</span>
+            <span class="metric-value">多租户</span>
+            <span class="metric-label">租户隔离与配置分层</span>
           </div>
           <div class="metric-divider"></div>
           <div class="metric">
-            <span class="metric-value">1000×</span>
-            <span class="metric-label">验证速度</span>
+            <span class="metric-value">多系统</span>
+            <span class="metric-label">项目与业务域统一承载</span>
           </div>
           <div class="metric-divider"></div>
           <div class="metric">
-            <span class="metric-value">≤15s</span>
-            <span class="metric-label">每轮自动迭代</span>
+            <span class="metric-value">低成本</span>
+            <span class="metric-label">维护升级更可控</span>
           </div>
         </div>
         <div class="hero-actions">
-          <router-link to="/login" class="btn btn--primary btn--lg" @click="setRegisterTab">
-            免费开始
+          <router-link to="/tree-demo" class="btn btn--primary btn--lg">
+            查看三大 Demo
           </router-link>
-          <router-link to="/login" class="btn btn--outline btn--lg">
-            登录
+          <router-link to="/login" class="btn btn--outline btn--lg" @click="setRegisterTab">
+            免费注册
           </router-link>
+        </div>
+        <div class="hero-proof">
+          <span class="hero-proof-item">AI 生成受约束配置</span>
+          <span class="hero-proof-item">稳定运行时解释执行</span>
+          <span class="hero-proof-item">多租户 + 多系统统一承载</span>
         </div>
       </div>
     </header>
 
     <section class="demo-showcase">
-      <p class="demo-showcase__eyebrow">Live Demo</p>
-      <h2 class="section-title">平台可直达的两个 Demo 页</h2>
+      <p class="demo-showcase__eyebrow">Business Demo</p>
+      <h2 class="section-title">直接看出平台价值的三大 Demo</h2>
       <p class="section-desc demo-showcase__desc">
-        一个验证原始 r-table 的模板字段桥接，一个对照原始 r-form 的配置式与模板式 children。
+        不是原始渲染器验证页，而是更接近企业系统交付的三类典型场景：树形配置、主从联动、权限驱动。
       </p>
       <div class="demo-showcase__grid">
         <article
@@ -75,18 +81,18 @@
 
     <!-- ── 范式对比 ── -->
     <section class="paradigm">
-      <h2 class="section-title">两种范式的根本分野</h2>
-      <p class="section-desc">AI 的输出是"代码"还是"配置"，决定了自动化链路能走多远</p>
+      <h2 class="section-title">从 AI 写代码，到 AI 配系统</h2>
+      <p class="section-desc">在企业场景里，关键不是第一次生成得多快，而是后续能否稳定维护和升级</p>
       <div class="paradigm-compare">
         <div class="paradigm-card paradigm-card--old">
           <div class="paradigm-badge">传统 AI 平台</div>
           <div class="paradigm-flow">
             <div class="flow-step">用户需求 → LLM</div>
-            <div class="flow-step">自由格式代码 (.vue)</div>
-            <div class="flow-step warn">编译 + 运行 + 人工审查</div>
-            <div class="flow-step warn">编译错误（模糊）</div>
-            <div class="flow-step warn">人工粘贴错误给 AI</div>
-            <div class="flow-step">人工确认后合并</div>
+            <div class="flow-step">自由格式代码 / 页面拼接</div>
+            <div class="flow-step warn">编译 + 运行 + 人工排错</div>
+            <div class="flow-step warn">租户/系统差异落到分叉代码</div>
+            <div class="flow-step warn">升级时逐系统回归验证</div>
+            <div class="flow-step">长期维护成本持续上升</div>
           </div>
         </div>
         <div class="paradigm-vs">VS</div>
@@ -94,11 +100,11 @@
           <div class="paradigm-badge">SPARK View</div>
           <div class="paradigm-flow">
             <div class="flow-step">用户需求 → LLM</div>
-            <div class="flow-step ok">4 个标准化文件</div>
-            <div class="flow-step ok">JSON Schema + 正则（毫秒级）</div>
-            <div class="flow-step ok">结构化诊断（精准）</div>
-            <div class="flow-step ok">自动收集日志回传 AI</div>
-            <div class="flow-step ok">框架自动渲染生效</div>
+            <div class="flow-step ok">页面结构 + 数据模型 + 权限配置</div>
+            <div class="flow-step ok">结构校验 + 运行时解释执行</div>
+            <div class="flow-step ok">租户/系统差异收敛到配置层</div>
+            <div class="flow-step ok">日志自动回传 AI 精准修复</div>
+            <div class="flow-step ok">平台升级优先收敛在运行时</div>
           </div>
         </div>
       </div>
@@ -106,8 +112,8 @@
 
     <!-- ── 四文件体系 ── -->
     <section class="four-files">
-      <h2 class="section-title">4 文件标准化配置</h2>
-      <p class="section-desc">Schema 固定、依赖显式、验证只需毫秒——AI 输出的终极归宿</p>
+      <h2 class="section-title">企业系统由 4 类资产配置出来</h2>
+      <p class="section-desc">AI 生成受约束配置，运行时解释执行，长期维护和升级成本更低</p>
       <div class="files-grid">
         <div class="file-card">
           <div class="file-header">
@@ -146,8 +152,8 @@
 
     <!-- ── AI 闭环迭代 ── -->
     <section class="ai-loop">
-      <h2 class="section-title">AI 闭环自动迭代</h2>
-      <p class="section-desc">不是"人工粘贴错误给 AI"，而是 Logger 自动收集 → AI 自主诊断修复</p>
+      <h2 class="section-title">受约束 AI 配置闭环</h2>
+      <p class="section-desc">不是让 AI 猜页面怎么修，而是把结构化日志、配置边界和运行时约束一起交给 AI</p>
       <div class="loop-container">
         <div class="loop-track">
           <div class="loop-node">
@@ -170,15 +176,15 @@
             <div class="loop-label">日志回传 AI 精准修复</div>
           </div>
         </div>
-        <div class="loop-caption">自动循环最多 3 轮，每轮 10~15 秒，无需人工介入</div>
+        <div class="loop-caption">配置生成、热更新、日志回传和自动修复走在同一条闭环里</div>
         <div class="loop-compare">
           <div class="compare-item compare-item--old">
             <span class="compare-tag">传统</span>
-            人 ↔ AI，人工传递错误信息，每轮 2~5 分钟
+            人 ↔ AI，人工传递错误信息，页面差异和系统差异都落到代码层
           </div>
           <div class="compare-item compare-item--new">
             <span class="compare-tag">SPARK</span>
-            AI ↔ 框架，自动传递日志，每轮 10~15 秒
+            AI ↔ 运行时，自动传递结构化日志，优先修配置而不是扩散代码
           </div>
         </div>
       </div>
@@ -186,76 +192,76 @@
 
     <!-- ── 核心能力 ── -->
     <section class="features">
-      <h2 class="section-title">六大核心能力</h2>
-      <p class="section-desc">从配置到上线，每一环都比传统方式更快、更准、更省</p>
+      <h2 class="section-title">平台直接落地的六个理由</h2>
+      <p class="section-desc">从多租户 SaaS 到企业后台交付，核心不是能不能生成，而是能不能长期演进</p>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="Document" :size="32" /></div>
-          <h3>配置驱动零代码</h3>
-          <p>用 JSON 描述页面结构与数据绑定。表单、表格、树形组件自动渲染。同等页面 Token 消耗仅传统方式的 <strong>1/3</strong>。</p>
+          <h3>AI 配系统</h3>
+          <p>AI 生成页面结构配置、数据模型配置、样式配置和最小化脚本，不让复杂度无边界扩散到业务代码。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="Share" :size="32" /></div>
-          <h3>父子级联零代码</h3>
-          <p>配置一个 DataRelation 即可实现树→表联动。无需 watch、无需 API 调用、无需手动过滤——框架自动内存级联。</p>
+          <h3>稳定运行时</h3>
+          <p>页面最终由统一渲染链、DataSet/DataView 和权限链解释执行，减少“这次能跑、下次失控”的不确定性。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="MagicStick" :size="32" /></div>
-          <h3>AI 闭环迭代</h3>
-          <p>Logger 自动收集渲染日志 → 打包回传 AI → 精准修复配置。AI 不是闭眼猜 bug，而是拿着调试器做诊断。</p>
+          <h3>低维护升级成本</h3>
+          <p>业务变化优先落在配置层，平台升级优先收敛在运行时，减少系统分叉、重复改造和跨项目回归成本。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="DataBoard" :size="32" /></div>
-          <h3>聚合计算列</h3>
-          <p>computeExpression 行级表达式 + aggregates 视图级聚合，sum / avg / count / join 全配置化，增删改行时自动重算。</p>
+          <h3>多租户隔离</h3>
+          <p>每个租户独立数据空间、配置空间和接口上下文，统一平台管理，避免不同客户需求相互污染。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="Lock" :size="32" /></div>
-          <h3>权限渲染</h3>
-          <p>后端下发 _perm 权限快照驱动 UI。改权限不改代码——切换角色 = 切换数据，前端代码是不变量。</p>
+          <h3>多系统统一承载</h3>
+          <p>同一个运行时承载多个项目和业务域，页面差异通过配置表达，不靠复制一套又一套代码仓库来扩展。</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><NavIcon name="OfficeBuilding" :size="32" /></div>
-          <h3>多租户隔离</h3>
-          <p>每个租户独立数据空间与页面配置。统一平台管理，安全隔离互不干扰，开箱即用。</p>
+          <h3>权限与数据一体化</h3>
+          <p>DataKey、DataRelation、_perm 和页面模式进入同一条渲染链，配置一次，就能稳定覆盖联动、权限和展示状态。</p>
         </div>
       </div>
     </section>
 
     <!-- ── 场景案例 ── -->
     <section class="scenarios">
-      <h2 class="section-title">真实场景 · 量化对比</h2>
-      <p class="section-desc">在中后台主场，优势是碾压级的</p>
+      <h2 class="section-title">SaaS 数字化转型里的真实收益</h2>
+      <p class="section-desc">从新系统交付到后续演进，真正决定成败的是长期成本，而不是第一次生成有多快</p>
       <div class="scenario-list">
         <div class="scenario-card">
           <div class="scenario-header">
             <span class="scenario-icon"><NavIcon name="Lightning" :size="20" /></span>
-            <h3>极速原型</h3>
+            <h3>新系统交付</h3>
           </div>
           <div class="scenario-body">
             <div class="scenario-old">
               <span class="scenario-tag">传统</span>
-              业务分析 2h → 原型图 4h → 评审 1h → 编码 2天 → 联调 1天
+              新需求一来就新建页面、新写接口适配、新拼权限逻辑，越做系统越多，越多越难管
             </div>
             <div class="scenario-new">
               <span class="scenario-tag">SPARK</span>
-              一句话描述需求 → AI 生成 5min → 自动迭代 3 轮 15min → <strong>&lt; 1 小时可演示</strong>
+              以租户、项目、页面配置为交付单位，AI 先把系统配出来，再由运行时统一承载和复用
             </div>
           </div>
         </div>
         <div class="scenario-card">
           <div class="scenario-header">
             <span class="scenario-icon"><NavIcon name="Share" :size="20" /></span>
-            <h3>树形主从联动</h3>
+            <h3>系统差异适配</h3>
           </div>
           <div class="scenario-body">
             <div class="scenario-old">
               <span class="scenario-tag">传统</span>
-              watch 监听 → 手动 API/过滤 → 更新表格，约 40~60 行逻辑代码
+              每个客户、每个业务域都在原有系统上打补丁，最后变成多个相似但无法统一升级的分叉版本
             </div>
             <div class="scenario-new">
               <span class="scenario-tag">SPARK</span>
-              pagedata.json 配 DataRelation，<strong>zero 行业务代码</strong>，框架自动内存过滤
+              差异优先通过配置表达，统一运行时持续复用，租户和系统边界明确但平台能力不重复建设
             </div>
           </div>
         </div>
@@ -278,16 +284,16 @@
         <div class="scenario-card">
           <div class="scenario-header">
             <span class="scenario-icon"><NavIcon name="MagicStick" :size="20" /></span>
-            <h3>AI 自动诊断</h3>
+            <h3>升级与迭代</h3>
           </div>
           <div class="scenario-body">
             <div class="scenario-old">
               <span class="scenario-tag">传统</span>
-              人工复制报错 → 粘贴给 AI → AI 猜测原因 → 人工验证
+              平台一升级，就要逐系统查兼容、补分叉、回归验证，历史越久，升级越像拆弹
             </div>
             <div class="scenario-new">
               <span class="scenario-tag">SPARK</span>
-              Logger 自动收集 → AI 读真实日志精准定位 → <strong>自动修复 + 自动验证</strong>
+              变化优先收敛到配置层，运行时和日志闭环负责托底，让升级更多发生在平台而不是业务代码里
             </div>
           </div>
         </div>
@@ -368,6 +374,21 @@
               <td>1~3 天/页</td>
               <td class="highlight-col">10~30 分钟/页</td>
             </tr>
+            <tr>
+              <td>多租户隔离</td>
+              <td>额外设计上下文和权限边界</td>
+              <td class="highlight-col">tenant / project 维度内建隔离</td>
+            </tr>
+            <tr>
+              <td>多系统承载</td>
+              <td>复制项目后逐步分叉</td>
+              <td class="highlight-col">统一运行时承载多个系统</td>
+            </tr>
+            <tr>
+              <td>升级方式</td>
+              <td>逐系统追差异、追兼容</td>
+              <td class="highlight-col">优先升级平台运行时，业务变化留在配置层</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -376,7 +397,7 @@
     <!-- ── 五层架构 ── -->
     <section class="architecture">
       <h2 class="section-title">五层 AI 交互体系</h2>
-      <p class="section-desc">从生成闭环到企业级数据治理，递进覆盖</p>
+      <p class="section-desc">从配置生成闭环到多租户、多系统治理，递进覆盖</p>
       <div class="arch-stack">
         <div class="arch-layer arch-layer--5">
           <span class="arch-num">5</span>
@@ -418,25 +439,25 @@
 
     <!-- ── 工作流程 ── -->
     <section class="workflow">
-      <h2 class="section-title">三步上线</h2>
-      <p class="section-desc">从想法到可运行的业务页面</p>
+      <h2 class="section-title">三步配出企业应用</h2>
+      <p class="section-desc">从租户与系统，到可运行页面和可持续演进的平台资产</p>
       <div class="workflow-steps">
         <div class="step">
           <div class="step-number">1</div>
-          <h3>注册租户</h3>
-          <p>创建你的专属空间，获取独立的数据隔离与配置管理能力。</p>
+          <h3>选择租户与系统</h3>
+          <p>明确本次交付属于哪个租户、哪个项目或业务域，把边界先定清楚。</p>
         </div>
         <div class="step-arrow">→</div>
         <div class="step">
           <div class="step-number">2</div>
-          <h3>配置页面</h3>
-          <p>通过 AI 对话或可视化编辑器，用 JSON 配置描述页面需求。</p>
+          <h3>AI 配置页面</h3>
+          <p>生成页面结构、数据模型、权限策略和最小化脚本，而不是无边界地生成代码。</p>
         </div>
         <div class="step-arrow">→</div>
         <div class="step">
           <div class="step-number">3</div>
-          <h3>即刻上线</h3>
-          <p>保存即生效，无需编译部署。AI 自动迭代修复，秒级交付。</p>
+          <h3>稳定运行时生效</h3>
+          <p>配置写入即运行，可继续预览、迭代、审阅和回滚，让交付资产长期可维护。</p>
         </div>
       </div>
     </section>
@@ -470,16 +491,16 @@
 
     <!-- ── 底部 CTA ── -->
     <section class="cta">
-      <h2>AI 写的代码，你敢直接用吗？</h2>
-      <p>如果 AI 的输出是标准化配置——验证是自动的，迭代是闭环的，审核是结构化的。</p>
-      <router-link to="/login" class="btn btn--primary btn--lg" @click="setRegisterTab">
-        免费注册 →
+      <h2>企业应用系统，不是写出来的，是 AI 配出来的</h2>
+      <p>前提是 AI 只在受约束的配置空间里工作，而页面最终由稳定运行时解释执行。</p>
+      <router-link to="/tree-demo" class="btn btn--primary btn--lg">
+        直接看 Demo →
       </router-link>
     </section>
 
     <!-- ── 页脚 ── -->
     <footer class="home-footer">
-      <span>© {{ year }} SPARK View — 配置驱动，零代码，AI 原生</span>
+      <span>© {{ year }} SPARK View — 深度配置 · 多租户多系统 · 低维护升级成本</span>
     </footer>
   </div>
 </template>
@@ -491,25 +512,36 @@ const year = new Date().getFullYear()
 
 const platformDemos = [
   {
-    path: '/demo/custom-r-table',
-    badge: 'RendererTable',
-    title: '原始 r-table Template Bridge Demo',
-    description: '直接打开原始 RendererTable 页面，验证 slot 中的 r-text 和 r-number 已经按表格列语义落下去。',
+    path: '/tree-demo',
+    badge: 'tree-demo',
+    title: '树形导航编辑器',
+    description: '展示树容器、表单编辑、工具栏动作、当前节点联动和页面脚本，最适合体现“AI 配系统”的平台感。',
     points: [
-      '不再额外包一层自定义表格宿主',
-      '页面层只负责提供 PAGE_DATASET',
-      '字段桥接点就在 RendererTable 内部',
+      '树结构与节点编辑在同一页闭环工作',
+      '更像真实系统配置页，而不是单一组件示例',
+      '适合做首页首屏和录屏主镜头',
     ],
   },
   {
-    path: '/demo/r-form-compare',
-    badge: 'RendererForm',
-    title: '原始 r-form Compare Demo',
-    description: '同一份 currentRow 数据，同时展示 SparkNode 配置式 children 和 Vue 模板式 slot children。',
+    path: '/master-detail',
+    badge: 'master-detail',
+    title: '主从联动页面',
+    description: '点击主表行自动切换子表数据，直接体现 DataView 驱动的零代码联动能力。',
     points: [
-      '两边底层都是原始 RendererForm',
-      '切 currentRow 时两边同步变化',
-      '适合直接看配置式与模板式边界',
+      '更贴近企业后台里的典型列表场景',
+      '配置驱动的数据联动比手写 watch 更稳定',
+      '适合说明为什么后续维护成本更低',
+    ],
+  },
+  {
+    path: '/permission-render',
+    badge: 'permission-render',
+    title: '权限渲染页面',
+    description: '用同一套页面结构演示不同权限快照下的渲染结果，突出改权限不改页面代码。',
+    points: [
+      '最适合解释企业级治理不是附属能力',
+      '权限、数据和页面模式走在同一条渲染链里',
+      '适合和多租户、多系统故事一起讲',
     ],
   },
 ] as const
@@ -566,9 +598,9 @@ function setRegisterTab() {
 
 .demo-showcase__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
 }
 
@@ -731,6 +763,20 @@ function setRegisterTab() {
   z-index: 1;
 }
 
+.hero-eyebrow {
+  margin: 0 0 18px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+}
+
 .hero-title {
   font-size: 52px;
   font-weight: 800;
@@ -796,6 +842,27 @@ function setRegisterTab() {
 .hero-actions {
   display: flex;
   gap: 16px;
+}
+
+.hero-proof {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.hero-proof-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 13px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
 }
 
 /* ── 按钮 ── */
@@ -1572,6 +1639,11 @@ html.dark .home-footer {
 
 /* ── 响应式 ── */
 @media (max-width: 768px) {
+  .hero-eyebrow {
+    letter-spacing: 0.12em;
+    text-align: center;
+  }
+
   .hero-title {
     font-size: 32px;
   }
@@ -1584,6 +1656,10 @@ html.dark .home-footer {
     flex-direction: column;
     gap: 16px;
     padding: 16px 24px;
+  }
+
+  .hero-proof {
+    gap: 10px;
   }
 
   .metric-divider {
