@@ -22,6 +22,7 @@
 | | [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md) | 案例与验证版 |
 | **页面生成** | [SPARK_PAGE_CONFIG_PROMPT.md](prompts/pages/SPARK_PAGE_CONFIG_PROMPT.md) | 页面配置主提示词 |
 | | [AI_PAGE_GENERATION_STRATEGY.md](prompts/pages/AI_PAGE_GENERATION_STRATEGY.md) | 策略与实战经验 |
+| | [RENDERER_UNIFIED_CONFIG.md](prompts/pages/RENDERER_UNIFIED_CONFIG.md) | Renderer 统一配置架构 AI 生成指南 |
 | **组件专项** | [SPARK_COMPONENT_PROMPT.md](prompts/components/SPARK_COMPONENT_PROMPT.md) | 组件开发主提示词 |
 | | [R_TABLE_PROMPT.md](prompts/components/R_TABLE_PROMPT.md) | r-table 专项 |
 | | [COMPONENT_DEEP_OPTIMIZATION_PROMPT_TEMPLATE.md](prompts/components/COMPONENT_DEEP_OPTIMIZATION_PROMPT_TEMPLATE.md) | 深度优化模板 |

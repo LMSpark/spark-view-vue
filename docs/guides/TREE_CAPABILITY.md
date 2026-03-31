@@ -566,7 +566,6 @@ PUT /navigation/nodes/{id}/move
 
 文件：
 
-- docs/guides/DATASET_TREE_4_PLUS_7_TESTS.md
 - packages/spark-data/src/tests/dataset-tree-4-plus-7.test.ts
 
 覆盖内容：

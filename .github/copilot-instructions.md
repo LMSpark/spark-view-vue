@@ -1244,8 +1244,6 @@ if (id.includes('packages/spark-page-config'))return 'spark-config'
 
 ## npm 发布规范 📦
 
-> 完整操作文档见 `docs/guides/NPM_PUBLISH.md`，本节为速查摘要。
-
 发布使用 `node scripts/publish-packages.mjs`（自动按依赖顺序构建 + 发布所有子包）。
 
 ### Token 配置（首次 / token 过期时执行）⚠️

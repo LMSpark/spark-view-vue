@@ -612,7 +612,6 @@ pnpm -F <包名> run test   # 测试单个包
 
 - [组件开发指南](COMPONENT_DEVELOPMENT.md) - 创建自定义组件（含能力系统）
 - [数据管理指南](DATA_MANAGEMENT.md) - DataSet、视图状态、CRUD
-- [组件注册指南](COMPONENT_REGISTRATION.md) - 编译时/运行时注册
 
 ---
 

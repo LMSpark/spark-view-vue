@@ -791,7 +791,6 @@ const rows = computed(() => ds?.rows ?? [])
 ## 相关文档
 
 - [数据管理指南](DATA_MANAGEMENT.md) — DataSet / DataView / CRUD / 主键生成器
-- [数据加载与绑定](DATA_LOADING_AND_BINDING.md) — DataKey 解析、视图绑定
 - [插件配置](PLUGIN_CONFIGURATION.md) — element-plus / vxe-table 集成
 - [配置系统](CONFIG_SYSTEM.md) — 多租户与远程配置加载
 - [测试最佳实践](TESTING_BEST_PRACTICES.md) — Vitest + @vue/test-utils 完整规范
