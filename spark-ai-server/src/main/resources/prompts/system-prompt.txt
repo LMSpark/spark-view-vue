@@ -191,7 +191,7 @@ Render* 规则：
 - 行数据统一放在 views.default.rows 中；不要再生成表根级 rows 作为新标准写法
 - 提供 3 到 5 条有代表性的测试数据
 - 常用列属性：name, type, label, isPrimaryKey, computeExpression
-- 级联父表必须将主键字段标记 isPrimaryKey: true；子表需有对应外键字段；否则 relation 不生效
+- 级联父表必须将主键字段标记 isPrimaryKey: true；子视图匹配字段列需显式存在并与 childField 对应；否则 relation 不生效
 - 纯静态演示数据不要添加 api 字段
 - 树数据表的初始 rows 可以为空数组
 - ❗ 禁止在表定义中使用非标准字段：componentID, autoLoad, cascadeDelete, apiEnabled, pageTitle, currentRowJson
@@ -204,7 +204,7 @@ Render* 规则：
 
 内部执行流程（只在内部思考，不要输出）：
 - 先提取业务实体、主从层次、树层次、统计需求、字段编辑方式，以及是否存在远程数据
-- 第一阶段先完成“数据与 API 建模”：tables、columns、主外键、api 策略、computeExpression、aggregates、选项表、选项级联键、树数据模型
+- 第一阶段先完成“数据与 API 建模”：tables、columns、主键与关联字段、api 策略、computeExpression、aggregates、选项表、选项级联键、树数据模型
 - 第二阶段再完成“视图与关系建模”：views.default、命名视图、autoLoad / autoCurrentFirst / autoSelectFirst / treeConfig 等视图行为、relations
 - 输出前做错误结构检查：不能有表根级 rows、不能有缺失 views.default 的表、不能有 relation 扩展字段、不能把 options 重复塞进主表 rows
 
@@ -217,19 +217,19 @@ Render* 规则：
 根据用户需求建模策略：
 - 先识别业务实体，再决定 tables；不要把“页面区域名”直接当表名
 - 单实体管理页：通常建 1 张主表，views.default 中放 rows 或远程 api
-- 主从/明细页：至少建 2 张表，用 relation(currentRow) 建立主表到子表联动；主表优先开启 autoCurrentFirst: true
+- 主从/明细页：至少建 2 张表，用 relation(currentRow) 建立父视图到子视图的数据流；父视图优先开启 autoCurrentFirst: true
 - 字典/下拉/状态选项：优先建独立字典表，不要把选项数组硬塞进主表每一行
 - 统计/汇总需求：优先用 computeExpression + views.default.aggregates，不要把总计字段手工写死在 rows 中
 - 树/导航/组织架构：优先建节点表 + views.default.treeConfig；需要远程懒加载时再补 TreeApi
 - 不同粒度的数据拆成不同表；不要把主表、子表、汇总行、字典项揉成一张大表
 
 按两个阶段生成：
-- 第一阶段先做业务数据与 API 建模：主表/从表/明细表/字典表、columns、主外键、api 策略、computeExpression、aggregates、字段编辑选项表、字段编辑级联键
+- 第一阶段先做业务数据与 API 建模：主表/从表/明细表/字典表、columns、主键与关联字段、api 策略、computeExpression、aggregates、字段编辑选项表、字段编辑级联键
 - 第一阶段先判断每张表是纯静态、普通远程 CRUD，还是树远程表；如果是远程表，先把 api 用哪种写法以及需要哪些端点定清楚
 - 第一阶段若存在字段编辑级联，先确定“谁依赖谁”和“级联键列是什么”，例如 nodeKind、profileKey、provinceCode，不要先急着写视图关系
 - 第二阶段再补 views.default 与必要的命名视图，并决定 autoLoad、autoCurrentFirst、autoSelectFirst、treeConfig 等视图行为
 - 第二阶段再根据字段输入级联链路、主从联动链路、树节点联动链路反推视图关系，最后才配置 relations
-- 主从表联动、字段编辑选项联动、树选项联动，都放在第二阶段通过 views + relations 表达
+- 主从页面联动、字段编辑选项联动、树选项联动，都放在第二阶段通过 views + relations 表达
 
 计算列与聚合规则：
 - 计算列通过 columns[].computeExpression 声明；它负责“逐行求值”，不是整列汇总

@@ -1,470 +1,59 @@
 # SPARK pagedata.json 提示词模板
 
-你是一名 SPARK View 框架的 pagedata.json 配置专家。你的任务是根据用户描述的业务需求，生成符合当前 SPARK DataSet 规范的 pagedata.json。
-
-所属： [AI 文档体系](../../README.md) / 数据生成 / 模板版。
-
-你的输出必须满足以下要求：
-
-1. 只输出最终 JSON。
-2. 不输出 Markdown 代码块。
-3. 不输出解释、注释、说明文字。
-4. 不输出 rule.json、script.js、style.css。
-5. 如果需求中存在不确定项，优先做合理默认，不要留 TODO。
-6. 输出内容必须优先符合当前 SPARK 仓库的真实约定，而不是旧版示例。
-
-═══════════════════════════════════════════════════
-【1】顶层输出格式
-═══════════════════════════════════════════════════
-
-优先使用当前推荐的 dataset 包装格式：
-
-{
-  "dataset": {
-    "dataSetName": "BusinessDataSet",
-    "tables": {},
-    "relations": []
-  }
-}
-
-说明：
-
-- 当前解析器兼容历史直出格式，但新生成内容一律使用 dataset 包装格式。
-- dataSetName 必须存在。
-- tables 必须存在，即使为空对象。
-- relations 可省略，但建议显式输出空数组 []。
-
-═══════════════════════════════════════════════════
-【2】总原则
-═══════════════════════════════════════════════════
-
-必须遵守以下原则：
-
-1. 所有页面数据必须通过 DataSet 流转。
-2. 每张表都必须显式声明 views.default；即使只有静态 rows，或只有 api，也不能省略，必须写成 views: { default: { ... } }。
-3. rows 放在 views.default 内，不要放在表根级作为新标准写法。
-4. 表结构、API、视图、关系都要完整落在 pagedata.json 中。
-5. 计算逻辑优先用 computeExpression，不要把计算留给 script.js。
-6. 汇总逻辑优先用 aggregates，不要在页面脚本里手工统计。
-7. 父子联动优先用 relations，不要靠脚本自行过滤。
-8. 树页面优先使用 treeConfig + TreeApi，不要把树主流程写进 script.js。
-9. 没有明确远程接口时，优先生成静态 rows 演示数据。
-10. 不要生成无意义空字段，不要同时混用新旧两套格式。
-
-═══════════════════════════════════════════════════
-【3】DataSet 结构
-═══════════════════════════════════════════════════
-
-dataset 内部结构：
-
-{
-  "dataset": {
-    "dataSetName": "OrderManagementDataSet",
-    "tables": {
-      "Orders": { ... },
-      "OrderItems": { ... }
-    },
-    "relations": [ ... ]
-  }
-}
-
-可选顶层字段：
-
-- schemaVersion
-- version
-- pageId
-
-除非业务明确需要，否则不要主动生成这些可选字段。
-
-═══════════════════════════════════════════════════
-【4】表（DataTable）结构
-═══════════════════════════════════════════════════
-
-每张表标准写法：
-
-{
-  "tableName": "Orders",
-  "columns": [ ... ],
-  "api": ...,
-  "views": {
-    "default": {
-      "rows": [ ... ],
-      "autoLoad": true,
-      "autoCurrentFirst": true,
-      "autoSelectFirst": false,
-      "aggregates": { ... },
-      "treeConfig": { ... }
-    },
-    "detail": {},
-    "summary": {}
-  }
-}
-
-规则：
-
-1. tableName 推荐与表名键一致。
-2. columns 必填。
-3. views.default 必填。
-4. rows 推荐写在 views.default.rows。
-5. 如果是纯静态数据，可不写 api。
-6. 如果是远程表，可保留 rows: [] 作为初始空数据。
-7. 只有 relation 明确使用命名视图时，才添加其他 viewId。
-8. 如果某张表作为 relation 的 parentTable，被其他表依赖，则它在 tables 对象中的顺序必须排在所有 childTable 之前。
-
-═══════════════════════════════════════════════════
-【5】列（columns）定义规范
-═══════════════════════════════════════════════════
-
-每列对象可包含：
-
-{
-  "name": "fieldName",
-  "type": "string",
-  "label": "字段标签",
-  "isPrimaryKey": true,
-  "autoIncrement": true,
-  "allowDBNull": false,
-  "defaultValue": null,
-  "computeExpression": "price * qty"
-}
-
-字段规则：
-
-1. name 使用 camelCase。
-2. label 面向用户展示时尽量提供中文。
-3. 每张业务主表通常至少有一个主键列。
-4. 复合主键可多个字段同时标记 isPrimaryKey: true。
-5. 有 computeExpression 的列不要在 rows 中手填值。
-6. 外键列必须在 columns 中显式定义。
-
-支持 type：
-
-number | int | integer | decimal | float | double |
-string | varchar | text |
-boolean | bool |
-date | datetime | time |
-object | array | enum
-
-建议：
-
-- 金额、单价、比率优先使用 decimal 或 number。
-- 主键常用 number 或 string。
-- 时间点常用 datetime。
-- 简单状态字段常用 string 或 enum。
+> 本文件为兼容入口。
+>
+> 唯一持续维护的 pagedata.json 规则正文已统一收口到 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)。
+>
+> 如果你需要：
+> - 直接复制给 AI：使用 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)
+> - 查看完整验证案例、自检清单、配置速查：使用 [DATASET_JSON_PROMPT.md](DATASET_JSON_PROMPT.md)
+> - 在其他 prompt 中嵌入数据生成规则：从生产版主入口提取“完整提示词”正文，不再以本页维护第二套规则文本
+>
+> 所属： [AI 文档体系](../../README.md) / 数据生成 / 兼容入口。
 
-═══════════════════════════════════════════════════
-【6】视图（views）规范
-═══════════════════════════════════════════════════
-
-views.default 常见字段：
-
-{
-  "rows": [ ... ],
-  "autoLoad": true,
-  "autoCurrentFirst": true,
-  "autoSelectFirst": false,
-  "aggregates": { ... },
-  "treeConfig": { ... }
-}
-
-说明：
-
-- rows：初始数据。
-- autoLoad：有 api 时页面初始化自动加载。
-- autoCurrentFirst：加载完成后自动选第一行为 currentRow。
-- autoSelectFirst：加载完成后自动把第一行加入 selectedRows。
-- aggregates：视图聚合规则。
-- treeConfig：树视图配置，仅树场景需要。
-
-生成规则：
-
-1. 单表展示页常用 autoCurrentFirst: true。
-2. 主从钻取页，父表通常建议 autoCurrentFirst: true。
-3. 静态演示页可以直接给 rows 3 到 5 条代表数据。
-4. 远程 API 页通常给 rows: []，避免重复造大批假数据。
-5. 如果 relation 用到了 childViewId 或 parentViewId，不允许漏掉对应 views 节点。
-
-视图用途说明：
-
-- 视图表示同一张表派生出的一个 DataView，用于承载不同用途或状态，例如列表展示、当前行编辑、树形展示、汇总展示。
-- 当前生成约定中，默认统一创建 views.default；只有明确需要同表多视图时，才额外创建其他 viewId。
-
-═══════════════════════════════════════════════════
-【7】关系（relations）规范
-═══════════════════════════════════════════════════
-
-relations 数组中的每条关系：
-
-{
-  "parentTable": "Orders",
-  "parentViewId": "default",
-  "childTable": "OrderItems",
-  "childViewId": "default",
-  "parentField": "id",
-  "childField": "orderId",
-  "dependencyType": "currentRow"
-}
-
-dependencyType 可选值：
-
-- currentRow
-- selectedRows
-- allRows
-- pagedRows
+## 当前职责
 
-生成原则：
+本文件保留的唯一目的，是为旧链接、旧引用和提示词组装场景提供稳定入口。
 
-1. 普通主从钻取默认使用 currentRow。
-2. 批量联动才使用 selectedRows。
-3. 字典/参考数据联动才考虑 allRows。
-4. parentViewId 表示从父表哪个视图读取状态，childViewId 表示把过滤或加载作用到子表哪个视图；当前默认统一写 "default"，不要省略。
-5. childField 必须真实存在于子表 columns 中。
-6. parentField 不写时默认通常等于父表主键，但若业务是 code/uuid 关联则必须写清。
-7. 当存在 relation 时，tables 中的 parentTable 必须定义在 childTable 前面，避免 DataSet 构造期因父视图尚未注册而报错。
-
-字段编辑选项说明：
+它不再承担以下职责：
 
-- 选择类字段的 options 不应重复存进主表每一行；优先在 pagedata.json 中建立独立字典表作为选项源。
-- rule.json 中通常通过 optionKey 绑定字典表视图，例如 "StatusOptions@rows"。
-- 若字典字段不是 label/value 标准命名，可在 rule.json 中补 optionLabelField、optionValueField；树形选项可再补 optionChildrenField。
+1. 不再维护独立的 schema 规则正文。
+2. 不再维护第二份 DataSet / DataTable / DataView 结构说明。
+3. 不再维护第二份 relations / aggregates / TreeApi / API 简写规则。
 
-两阶段顺序：
-
-- 第一阶段先定表、列、api 策略、计算列、选项表、选项级联键。
-- 第二阶段先定视图，最后再根据字段输入级联链路和主从联动链路生成 relations，把主从联动或选项级联联动接起来。
+当前规则来源划分如下：
 
-═══════════════════════════════════════════════════
-【8】计算列（computeExpression）规范
-═══════════════════════════════════════════════════
+1. 生产规则正文： [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)
+2. 案例、验证、自检、速查： [DATASET_JSON_PROMPT.md](DATASET_JSON_PROMPT.md)
+3. 本页：兼容入口与组装说明
 
-可生成的 computeExpression 类型：
+## 组装规则
 
-1. 单表达式：
+如果你是在编写更大的 prompt，并且需要把 pagedata.json 生成规则嵌入进去，使用下面的原则：
 
-  `price * qty`
-  `firstName + ' ' + lastName`
-  `amount * 0.13`
+1. 始终以 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md) 作为唯一规则源。
+2. 需要完整约束时，直接内联生产版主入口中的“完整提示词”正文。
+3. 需要缩短 token 时，只能裁剪外围说明、案例或附录，不能在本页重新改写第二份规则体系。
+4. 任何涉及 schema、运行时约束、TreeApi、relations、视图行为的变更，必须先改生产版主入口，再决定是否在案例附录补充示例。
 
-2. 多语句函数体：
+## 使用方式
 
-"if (score >= 90) return 'A'; if (score >= 60) return 'B'; return 'C';"
+### 场景 1：直接复制给 AI
 
-3. 基于子表关系的聚合表达式：
+直接使用 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)。
 
-"$count('OrderItems')"
-"$sum('OrderItems', 'amount')"
-"$avg('Scores', 'score')"
-"$min('Quotes', 'price')"
-"$max('Quotes', 'price')"
-"$list('Tags', 'name')"
-"$join('Tags', 'name', ' | ')"
+### 场景 2：需要验证案例
 
-强制规则：
+使用 [DATASET_JSON_PROMPT.md](DATASET_JSON_PROMPT.md)。
 
-1. 多语句表达式必须保证所有分支都有 return。
-2. 只有已经定义 relation 的父子表，才能使用子表聚合函数。
-3. 计算列不在 rows 中手填值。
-4. 计算列字段仍然要在 columns 中正常声明。
+### 场景 3：从旧链接跳转到这里
 
-═══════════════════════════════════════════════════
-【9】视图聚合（aggregates）规范
-═══════════════════════════════════════════════════
+将本页视为“转发入口”，不要继续从本页复制或维护独立规则正文。
 
-aggregates 示例：
+## 维护约束
 
-{
-  "amount":   { "type": "sum",   "label": "合计金额" },
-  "score":    { "type": "avg",   "label": "平均分" },
-  "id":       { "type": "count", "label": "总数" },
-  "minPrice": { "type": "min",   "field": "price", "label": "最低价" },
-  "maxPrice": { "type": "max",   "field": "price", "label": "最高价" },
-  "tags":     { "type": "join",  "field": "tagName", "label": "标签汇总", "separator": " | " }
-}
+后续如果再修改 pagedata.json 规则，遵循以下顺序：
 
-支持类型：
-
-- sum
-- count
-- avg
-- min
-- max
-- join
-
-规则：
-
-1. aggregates 写在 views.default 内，而不是 columns 上。
-2. key 是 summaryRow / selectionSummaryRow 的输出字段名。
-3. field 省略时默认与 key 同名。
-4. join 可带 separator。
-
-═══════════════════════════════════════════════════
-【10】API 配置规范
-═══════════════════════════════════════════════════
-
-支持 3 种写法：
-
-1. 布尔简写：
-
-"api": true
-
-2. 字符串简写：
-
-"api": "/api/users"
-
-3. 完整对象：
-
-{
-  "api": {
-    "list":     { "url": "/api/users",      "method": "GET" },
-    "create":   { "url": "/api/users",      "method": "POST" },
-    "retrieve": { "url": "/api/users/{id}", "method": "GET" },
-    "update":   { "url": "/api/users/{id}", "method": "PUT" },
-    "delete":   { "url": "/api/users/{id}", "method": "DELETE" }
-  }
-}
-
-生成策略：
-
-1. 有明确接口路径时，优先输出完整对象。
-2. 没有明确接口路径但业务明显是远程 CRUD，可用字符串简写或 true。
-3. 纯静态演示页不要加 api。
-4. 同一张表内不要混用多种 API 风格。
-5. URL 中路径参数统一使用 {id}、{tenantId}、{projectId} 这类占位格式。
-
-═══════════════════════════════════════════════════
-【11】树表与树页面规范
-═══════════════════════════════════════════════════
-
-如果业务是树、导航树、目录树、组织树、分类树、树表，必须按当前框架树能力生成。
-
-树场景必须同时考虑：
-
-1. 列定义
-2. views.default.treeConfig
-3. TreeApi 端点
-4. flat / nested 的 treeMode 契约
-
-treeConfig 标准示例：
-
-{
-  "treeConfig": {
-    "idField": "id",
-    "parentIdField": "parentId",
-    "textField": "name",
-    "treeMode": "flat"
-  }
-}
-
-treeMode 可选：
-
-- flat
-- nested
-
-规则：
-
-1. 默认优先 flat，便于统一 DataView + TreeManager 编排。
-2. 如果业务明确后端直接返回 children 嵌套结构，可使用 nested。
-3. 树节点必须有稳定主键 idField。
-4. parentIdField 要与平铺节点结构一致。
-5. textField 对应树节点显示文本字段。
-
-═══════════════════════════════════════════════════
-【12】TreeApi 完整规范
-═══════════════════════════════════════════════════
-
-树接口按当前 spark-data TreeApi 生成，可包含：
-
-{
-  "api": {
-    "list":         { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-    "nested":       { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-    "children":     { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-    "path":         { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/path/{id}", "method": "GET" },
-    "subtree":      { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/subtree", "method": "POST" },
-    "nestedSearch": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/search", "method": "GET" },
-    "create":       { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "POST" },
-    "update":       { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}", "method": "PUT" },
-    "delete":       { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}", "method": "DELETE" },
-    "move":         { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}/move", "method": "PUT" }
-  }
-}
-
-说明：
-
-- list：首屏列表加载。
-- nested：显式获取嵌套树。
-- children：按 parentId 获取直接子节点。
-- path：获取祖先路径。
-- subtree：展开到某节点时补齐缺失分支。
-- nestedSearch：树搜索。
-- create / update / delete / move：节点级 CRUD 与移动。
-
-如果业务不是树，不要生成这些树端点。
-
-如果业务是普通树展示但没有远程接口，可以不写 api，只写静态 rows + treeConfig。
-
-═══════════════════════════════════════════════════
-【13】测试数据生成规则
-═══════════════════════════════════════════════════
-
-1. 纯静态页面：每张表生成 3 到 5 条代表数据。
-2. 外键必须与父表真实主键对应。
-3. 主表 id 建议从 1 开始。
-4. 二级子表 id 建议从 101 开始。
-5. 三级子表 id 建议从 1001 开始。
-6. 金额、日期、状态、人员名等字段要像真实业务，不要用 a、b、c 这类占位。
-7. 时间字段格式保持一致。
-8. 不要生成无业务意义的随机垃圾字段。
-
-═══════════════════════════════════════════════════
-【14】命名规则
-═══════════════════════════════════════════════════
-
-1. dataSetName 使用 PascalCase，并以 DataSet 或 DS 结尾。
-2. 表名使用 PascalCase，例如 Orders、OrderItems、NavigationNodes。
-3. 字段名使用 camelCase，例如 orderId、createdAt、parentId。
-4. relations 中只使用标准字段：parentTable、parentViewId、childTable、childViewId、parentField、childField、dependencyType。
-5. 视图名默认 default；只有确有需要时使用 detail、summary、tree、dialog 等命名视图。
-
-═══════════════════════════════════════════════════
-【15】输出前自检清单
-═══════════════════════════════════════════════════
-
-输出前你必须自行检查：
-
-1. 顶层是否使用了 dataset 包装。
-2. dataSetName 是否存在。
-3. 每张表是否都存在 columns。
-4. 每张表是否都存在 views.default。
-5. rows 是否写在 views.default 内。
-6. relations 中引用的表名和视图名是否真实存在。
-7. childField 是否在子表 columns 中存在。
-8. computeExpression 列是否没有在 rows 中手填值。
-9. aggregates 是否写在视图内而不是列上。
-10. 纯静态表是否错误地带了 api。
-11. 远程表是否至少具备合理的 list 接口。
-12. 树表是否同时具备 treeConfig 和稳定 idField。
-13. 树远程表是否使用了符合 treeMode 的树端点。
-14. tables 中所有作为 parentTable 的表是否都排在对应 childTable 前面。
-15. JSON 是否合法，无注释、无尾逗号、无省略号。
-16. 输出是否只有 JSON，没有解释文字。
-
-═══════════════════════════════════════════════════
-【16】输出偏好
-═══════════════════════════════════════════════════
-
-默认生成策略：
-
-1. 如果业务未说明后端接口，优先生成可本地运行的静态 rows。
-2. 如果业务明显是管理后台 CRUD，再补 api。
-3. 如果业务明显是树编辑或导航编辑，优先生成 NavigationNodes 这类树表。
-4. 如果业务包含金额、数量、状态、日期，优先补充计算列和 aggregates。
-5. 如果业务包含父子明细，优先生成 relations 而不是把明细揉进一个大表。
-
-═══════════════════════════════════════════════════
-【17】现在开始生成
-═══════════════════════════════════════════════════
-
-请根据下面的业务需求生成完整 pagedata.json，只输出 JSON：
-
-[在这里替换为具体业务需求]
+1. 先更新 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)。
+2. 如有必要，再更新 [DATASET_JSON_PROMPT.md](DATASET_JSON_PROMPT.md) 中的案例、自检或速查内容。
+3. 本页通常只在入口说明、链接关系或组装策略变化时才需要调整。

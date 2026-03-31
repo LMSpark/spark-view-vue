@@ -492,7 +492,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 
 1. \`@@proposal:data-model\`：至少两张表（主表 + 子表），包含：
   - 主表主键、\`autoCurrentFirst: true\`
-  - 子表外键 + \`relations\`
+  - 子视图匹配字段（\`childField\`） + \`relations\`
   - 至少 1 个 \`computeExpression\` 列
   - 至少 1 组 \`aggregates\`（建议含 count + sum）
 2. \`@@proposal:ui-structure\`：一个页面内至少包含：
@@ -645,9 +645,9 @@ function __init__() {}
 - \`"dataKey": "Orders@summaryRow"\` — 全部行汇总
 - \`"dataKey": "Orders@selectionSummaryRow"\` — 选中行汇总
 
-## DataRelation 主从联动（父子表配置）
+## DataRelation 主从联动（父子视图数据流配置）
 
-配置 relation 后，父行切换自动驱动子表数据过滤（内存级联或 API 级联）：
+配置 relation 后，父视图状态切换会自动驱动子视图数据流（内存级联或 API 级联）：
 
 \`\`\`jsonc
 {
@@ -665,7 +665,7 @@ function __init__() {}
 
 **必备配置**：
 - 父表主键 \`isPrimaryKey: true\`
-- 父表 \`autoCurrentFirst: true\`（避免子表初始为空）
+- 父视图 \`autoCurrentFirst: true\`（避免子视图初始为空）
 - relation 仅用 \`parentTable / parentField / childTable / childField / dependencyType\`
 
 ## SparkNode 根级字段白名单

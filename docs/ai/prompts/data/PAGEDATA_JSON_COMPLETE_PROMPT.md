@@ -45,9 +45,9 @@
 在真正输出 JSON 之前，你必须先在内部完成以下流程，但不要把这些过程输出出来：
 
 1. 先从需求中提取业务实体、主从层次、树层次、统计需求、字段编辑方式，以及是否存在远程数据。
-2. 第一阶段先完成“数据与 API 建模”：确定 tables、columns、主外键、api 策略、computeExpression、aggregates、选项表、选项级联键、树数据模型。
+2. 第一阶段先完成“数据与 API 建模”：确定 tables、columns、主键与关联字段、api 策略、computeExpression、aggregates、选项表、选项级联键、树数据模型。
 3. 第二阶段再完成“视图与关系建模”：补 views.default、决定是否需要命名视图、决定 autoLoad / autoCurrentFirst / autoSelectFirst / treeConfig 等视图行为，并生成 relations。
-4. 输出前再做一次错误结构检查：不能有表根级 rows、不能有缺失 views.default 的表、不能有 relation 扩展字段、不能把 options 重复塞进主表 rows。
+4. 输出前再做一次错误结构检查：不能有表根级 rows、不能有缺失 views.default 的表、不能在 relation 中生成不必要的高级可选字段（autoLoad / relationName 等，留给框架默认值）、不能把 options 重复塞进主表 rows。
 5. 最终只输出合法 JSON，不输出你的推理过程。
 
 ═══════════════════════════════════════════════════
@@ -110,7 +110,7 @@
   "api": "/api/users"
 }
 
-错误示例 3：在 relation 中生成非标准字段
+错误示例 3：在 relation 中生成不必要的高级可选字段
 
 {
   "parentTable": "Orders",
@@ -120,6 +120,8 @@
   "autoLoad": true,
   "relationName": "OrderItemsByOrder"
 }
+
+说明：autoLoad、relationName、cascadeUpdate、cascadeDelete 是 DataRelation 接口的合法可选字段，但框架已有合理默认值（autoLoad 默认 true），AI 生成时不应显式输出，留给框架默认处理即可。
 
 错误示例 4：把 options 重复塞进主表 rows
 
@@ -138,7 +140,7 @@
 生成前先根据业务需求判断数据建模方式：
 
 1. 如果是单实体管理页，通常只需要 1 张主表。
-2. 如果是主从、明细、钻取页面，至少需要主表 + 子表，并用 relations 建立 currentRow 联动。
+2. 如果是主从、明细、钻取页面，至少需要主表 + 子表，并通过 views + relations 建立父视图到子视图的 currentRow 数据流。
 3. 如果页面里有下拉、单选、树选项、状态字典，优先补独立字典表，不要把 options 直接塞进主表每一行。
 4. 如果需求包含金额、数量、单价、折扣、得分、统计指标，优先用 computeExpression 和 aggregates，而不是在 rows 里手填汇总值。
 5. 如果需求是树、导航、组织架构、目录分类，优先建节点表 + treeConfig；需要远程时再补 TreeApi。
@@ -154,7 +156,7 @@
 第一阶段：业务数据与 API 建模
 
 1. 先确定业务主表、从表、明细表、字典表、树表分别有哪些。
-2. 先把 columns 设计完整：主键、外键、业务字段、状态字段、金额字段、时间字段、选项键字段。
+2. 先把 columns 设计完整：主键、关联字段、业务字段、状态字段、金额字段、时间字段、选项键字段。
 3. 先确定每张表是纯静态表、普通远程 CRUD 表，还是树远程表；如果是远程表，先把 api 形态和端点范围定清楚。
 4. 先确定 computeExpression、aggregates 依赖哪些字段，哪些列是计算列，哪些列是汇总目标。
 5. 如果字段可编辑且有下拉/单选/多选/树选项，先建独立选项表，不要先讨论视图。
@@ -162,7 +164,7 @@
   - nodeKind -> ChildPlacementOptions，级联键为 nodeKind
   - editorProfileKey -> RefNodeKindOptions，级联键为 profileKey
   - provinceCode -> CityOptions，级联键为 provinceCode
-7. 第一阶段的目标是把“表、列、主外键、api 策略、计算列、汇总口径、选项表、选项级联键、树数据模型”定清楚。
+7. 第一阶段的目标是把“表、列、主键与关联字段、api 策略、计算列、汇总口径、选项表、选项级联键、树数据模型”定清楚。
 
 第二阶段：视图与关系建模
 
@@ -171,7 +173,7 @@
 3. 再决定 autoLoad、autoCurrentFirst、autoSelectFirst、treeConfig 等视图行为。
 4. 再根据字段输入级联链路、主从联动链路、树节点联动链路，反推需要哪些父视图 / 子视图关系。
 5. 最后再统一生成 relations，明确 parentTable、childTable、parentField、childField、dependencyType，以及 parentViewId / childViewId。
-6. 主从表联动、字段编辑选项联动、树节点选项联动，都属于第二阶段的 relations / views 表达问题。
+6. 主从页面联动、字段编辑选项联动、树节点选项联动，本质上都属于第二阶段的 relations / views 数据流表达问题。
 7. 第二阶段的目标是把“哪个视图驱动哪个视图、如何过滤、如何加载、哪些视图需要自动行为”说明白。
 
 ═══════════════════════════════════════════════════
@@ -198,6 +200,30 @@ dataset 内部结构：
 - pageId
 
 除非业务明确需要，否则不要主动生成这些可选字段。
+
+═══════════════════════════════════════════════════
+【3.1】运行时结构理解（用于统一建模，不要输出说明文字）
+═══════════════════════════════════════════════════
+
+生成时必须按当前运行时的三层结构理解 pagedata.json：
+
+  DataSet
+    └── DataTable "Orders"
+          ├── columns                 ← 列定义
+          ├── api                     ← 表级接口配置
+          └── DataView "default"
+                ├── rows                  ← UI 绑定的基础行数据
+                ├── currentRow            ← 驱动 currentRow 级联
+                ├── selectedRows          ← 驱动 selectedRows 级联
+                ├── summaryRow            ← aggregates 的全量汇总结果
+                ├── selectionSummaryRow   ← aggregates 的选中汇总结果
+                └── aggregates            ← 视图级聚合规则
+
+要点：
+
+1. columns 和 api 属于 DataTable 层；rows、autoLoad、autoCurrentFirst、autoSelectFirst、aggregates、treeConfig 属于 DataView 层。
+2. AI 生成时不要把 currentRow、selectedRows、summaryRow、selectionSummaryRow 当成需要手填的 JSON 字段；它们是运行时状态或运行时派生结果。
+3. pagedata.json 的核心任务是把“表结构 + 视图初始数据 + 视图行为 + relations”建模正确，而不是把运行时状态写死在 JSON 里。
 
 ═══════════════════════════════════════════════════
 【4】表（DataTable）结构
@@ -263,7 +289,7 @@ dataset 内部结构：
 3. 每张业务主表通常至少有一个主键列。
 4. 复合主键可多个字段同时标记 isPrimaryKey: true。
 5. 有 computeExpression 的列不要在 rows 中手填值。
-6. 外键列必须在 columns 中显式定义。
+6. relation 要用到的 parentField / childField 对应列必须在 columns 中显式定义。
 
 支持 type：
 
@@ -411,7 +437,7 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
 
 "if (score >= 90) return 'A'; if (score >= 60) return 'B'; return 'C';"
 
-3. 基于子表关系的聚合表达式：
+3. 基于 relation 数据流的子表聚合表达式：
 
 "$count('OrderItems')"
 "$sum('OrderItems', 'amount')"
@@ -424,7 +450,7 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
 强制规则：
 
 1. 多语句表达式必须保证所有分支都有 return。
-2. 只有已经定义 relation 的父子表，才能使用子表聚合函数。
+2. 只有已经定义 relation 数据流的父/子视图归属表，才能使用子表聚合函数。
 3. 计算列不在 rows 中手填值。
 4. 计算列字段仍然要在 columns 中正常声明。
 
@@ -458,6 +484,7 @@ aggregates 示例：
 2. key 是 summaryRow / selectionSummaryRow 的输出字段名。
 3. field 省略时默认与 key 同名。
 4. join 可带 separator。
+5. UI 侧如需绑定汇总行，可使用 TableName@summaryRow 或 TableName@selectionSummaryRow 这类 DataKey。
 
 ═══════════════════════════════════════════════════
 【9】API 配置规范
@@ -487,6 +514,11 @@ aggregates 示例：
   }
 }
 
+补充说明：
+
+1. 字符串简写和 api: true 本质上都是基于 RESTful 基础路径展开，展开后至少包含 CRUD 五端点（list/create/retrieve/update/delete）和 Tree 七端点（node/children/path/subtree/search/nested/nestedSearch）。
+2. move 不属于简写自动展开范围；如果业务需要树节点移动，必须使用完整对象显式提供 move 端点。
+
 生成策略：
 
 1. 有明确接口路径时，优先输出完整对象。
@@ -497,6 +529,7 @@ aggregates 示例：
 6. 第一阶段先决定“这张表是否远程、需要哪些端点”；第二阶段再决定是否在 views.default 上启用 autoLoad、autoCurrentFirst 等视图行为。
 7. 树远程表的 api 规划也属于第一阶段；treeConfig 和树视图行为属于第二阶段。
 8. autoLoad、autoCurrentFirst、autoSelectFirst 是 views.default 的字段，不是 api 字段的一部分。
+9. 子表是否配置 api 会改变 relation 的运行路径：子表无 api 时，父变化后走内存过滤；子表有 api 时，父变化后由框架刷新子视图并按关系条件重新请求数据。
 
 ═══════════════════════════════════════════════════
 【10】树表与树页面规范
@@ -561,9 +594,11 @@ treeMode 可选：
 - list：首屏列表加载。
 - nested：显式获取嵌套树。
 - children：按 parentId 获取直接子节点。
+- node：获取单节点详情。
 - path：获取祖先路径。
 - subtree：展开到某节点时补齐缺失分支。
-- nestedSearch：树搜索。
+- search：扁平模式搜索（返回匹配节点 + pathIds）。
+- nestedSearch：层次模式树搜索（返回匹配节点 + 嵌套祖先链）。
 - create / update / delete / move：节点级 CRUD 与移动。
 
 如果业务不是树，不要生成这些树端点。
@@ -575,7 +610,7 @@ treeMode 可选：
 ═══════════════════════════════════════════════════
 
 1. 纯静态页面：每张表生成 3 到 5 条代表数据。
-2. 外键必须与父表真实主键对应。
+2. 子视图 rows 中用于 relation 匹配的 childField 值，必须能在父视图匹配字段中找到对应值。
 3. 主表 id 建议从 1 开始。
 4. 二级子表 id 建议从 101 开始。
 5. 三级子表 id 建议从 1001 开始。
@@ -598,7 +633,9 @@ treeMode 可选：
 
 relations 必须放在所有表、列、API、选项表、树配置、views.default 和命名视图都确定之后，作为最后一个结构设计步骤统一生成。
 
-不要先写 relation 再回头猜表结构；正确顺序是：
+relations 描述的不是纯表结构关系，而是父视图到子视图的数据流配置；parentTable / childTable 用来定位视图归属的表，真正的联动语义由 parentViewId / childViewId / parentField / childField / dependencyType 共同决定。
+
+不要先写 relation 再回头猜表结构或视图流向；正确顺序是：
 
 1. 先确定字段输入级联链路、主从联动链路、树节点联动链路。
 2. 再确定这些链路分别落在哪个 parentTable / parentViewId 和 childTable / childViewId。
@@ -638,7 +675,7 @@ dependencyType 可选值：
 5. childField 必须真实存在于子表 columns 中。
 6. parentField 不写时默认通常等于父表主键，但若业务是 code/uuid/字段输入值关联则必须写清。
 7. 当存在 relation 时，tables 中的 parentTable 必须定义在 childTable 前面，避免 DataSet 构造期因父视图尚未注册而报错。
-8. 只生成标准 relation 字段：parentTable、parentViewId、childTable、childViewId、parentField、childField、dependencyType；不要生成 relationName、cascadeUpdate、cascadeDelete、autoLoad、lazyLoad、apiEnabled。
+8. 只生成核心 relation 字段：parentTable、parentViewId、childTable、childViewId、parentField、childField、dependencyType；其他可选字段（autoLoad、relationName、cascadeUpdate、cascadeDelete）虽然是 DataRelation 接口的合法字段，但框架已有合理默认值，生成时不需要显式输出。
 9. 如果关系来自字段输入级联，优先根据字段输入链路反推 parentViewId / childViewId，不要先拍脑袋把所有关系都写成 default。
 10. relations 是最后收尾步骤：先有 tables / columns / api / views / 选项表 / treeConfig，再有 relations。
 
@@ -661,11 +698,11 @@ dependencyType 可选值：
 11. 远程表是否至少具备合理的 list 接口。
 12. 树表是否同时具备 treeConfig 和稳定 idField。
 13. 树远程表是否使用了符合 treeMode 的树端点。
-14. relation 是否只使用标准字段，没有 relationName、cascadeDelete、autoLoad、lazyLoad、apiEnabled 等扩展字段。
+14. relation 是否只使用核心字段（parentTable / childTable / parentViewId / childViewId / parentField / childField / dependencyType），没有显式生成 autoLoad、relationName 等高级可选字段。
 15. tables 中所有作为 parentTable 的表是否都排在对应 childTable 前面。
 16. JSON 是否合法，无注释、无尾逗号、无省略号。
 17. 输出是否只有 JSON，没有解释文字。
-18. 是否存在表根级 rows、只有 api 没有 views.default、或 relation 扩展字段这类错误结构。
+18. 是否存在表根级 rows、只有 api 没有 views.default、或 relation 中多余的高级可选字段这类不推荐结构。
 19. autoLoad、autoCurrentFirst、autoSelectFirst 是否只出现在 views.default，而不是 api、relation 或表根级。
 
 ═══════════════════════════════════════════════════

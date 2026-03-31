@@ -18,8 +18,8 @@
 | **平台规则** | [API_FIRST_PROMPT.md](prompts/platform/API_FIRST_PROMPT.md) | API-first 约束（强制） |
 | | [AI_PROTOCOL_UNIFIED.md](prompts/platform/AI_PROTOCOL_UNIFIED.md) | 统一交互协议 |
 | **数据生成** | [PAGEDATA_JSON_COMPLETE_PROMPT.md](prompts/data/PAGEDATA_JSON_COMPLETE_PROMPT.md) | 生产版主入口 |
-| | [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md) | 模板版（可嵌入组装） |
-| | [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md) | 案例与验证版 |
+| | [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md) | 兼容入口（规则已收口到生产版） |
+| | [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md) | 案例与验证附录 |
 | **页面生成** | [SPARK_PAGE_CONFIG_PROMPT.md](prompts/pages/SPARK_PAGE_CONFIG_PROMPT.md) | 页面配置主提示词 |
 | | [AI_PAGE_GENERATION_STRATEGY.md](prompts/pages/AI_PAGE_GENERATION_STRATEGY.md) | 策略与实战经验 |
 | | [RENDERER_UNIFIED_CONFIG.md](prompts/pages/RENDERER_UNIFIED_CONFIG.md) | Renderer 统一配置架构 AI 生成指南 |
@@ -41,14 +41,15 @@ AI 能力的系统设计与实施规划：
 
 ## 角色约定
 
-- **生产版**：直接复制给 AI 使用的主提示词。
-- **模板版**：适合嵌入其他提示词、做二次组装的精简模板。
-- **案例版**：保留验证案例和质量门，不作为首选复制入口。
+- **生产版主入口**：直接复制给 AI 使用的主提示词。
+- **兼容入口**：用于旧链接兼容或提示词组装跳转，不再维护第二份独立规则正文。
+- **模板版**：用于二次组装的精简模板；并非所有文件名带 TEMPLATE 的文档都仍承担该角色。
+- **案例附录**：保留验证案例和质量门，不作为首选复制入口。
 - **策略版**：沉淀实战方法和跨文件协同经验。
 
 ## 使用顺序
 
 1. 先判断问题属于平台规则、数据生成、页面生成还是组件专项。
-2. 进入对应分组，选择合适角色（生产版 / 模板版 / 案例版 / 策略版）。
+2. 进入对应分组，选择合适角色（生产版主入口 / 兼容入口 / 模板版 / 案例附录 / 策略版）。
 3. 涉及运行时行为时，以 system-prompt.txt 为最终对齐基线。
 4. 维护或扩展体系前，先看 [GOVERNANCE.md](GOVERNANCE.md)。

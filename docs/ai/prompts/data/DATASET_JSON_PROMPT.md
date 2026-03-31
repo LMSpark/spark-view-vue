@@ -1,12 +1,12 @@
-# SPARK DataSet JSON 配置 AI 生成指南
+# SPARK pagedata.json 案例与验证附录
 
 > 当前推荐直接使用完整版提示词：[PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)。
 >
-> 本文仍保留案例与扩展说明；如果你只是要一份可直接复制给 AI 的完整 pagedata.json 提示词，优先使用上面的新文档和 [DATASET_JSON_PROMPT_TEMPLATE.md](DATASET_JSON_PROMPT_TEMPLATE.md)。
+> 本文仍保留案例与扩展说明；如果你只是要一份可直接复制给 AI 的完整 pagedata.json 提示词，优先使用上面的新文档。若你是从旧链接进入 [DATASET_JSON_PROMPT_TEMPLATE.md](DATASET_JSON_PROMPT_TEMPLATE.md)，请将其视为兼容入口，而非独立规则正文。
 >
-> 所属： [AI 文档体系](../../README.md) / 数据生成 / 案例与验证版。
+> 所属： [AI 文档体系](../../README.md) / 数据生成 / 案例与验证附录。
 
-本文档提供一套经过验证的提示词（Prompt），帮助开发者通过 AI 模型（ChatGPT、Claude、Gemini 等）根据业务描述自动生成符合 SPARK `spark-data` 规范的 `pagedata.json` DataSet 配置文件。
+本文档收录与生产版主提示词配套的验证案例、自检清单与配置速查，帮助开发者对照业务场景校验 pagedata.json 生成质量。
 
 ---
 
@@ -14,7 +14,7 @@
 
 1. [概述](#1-概述)
 2. [使用方法](#2-使用方法)
-3. [提示词（可直接复制）](#3-提示词可直接复制)
+3. [主提示词入口](#3-主提示词入口)
 4. [验证案例](#4-验证案例)
 - 案例 A：图书馆管理（简单两表 + 主从关系）
 - 案例 B：电商订单管理（计算列 + 聚合）
@@ -32,7 +32,7 @@
 
 ## 1. 概述
 
-`pagedata.json` 中的 `dataset` 配置是 SPARK 的数据中枢，驱动所有表格、表单、详情页的数据流转。手写 DataSet JSON 需要熟悉类型系统，容易出错。本指南提供一套标准提示词，把业务需求文字转换为可直接运行的 DataSet 配置。
+`pagedata.json` 中的 `dataset` 配置是 SPARK 的数据中枢，驱动所有表格、表单、详情页的数据流转。手写 DataSet JSON 需要熟悉类型系统，容易出错；因此生产规则正文已统一收口到主提示词文件，而本文档只保留案例、验证与速查内容。
 
 **适用场景**：
 - 新建业务页面，快速生成初始 `pagedata.json`
@@ -43,11 +43,11 @@
 
 ## 2. 使用方法
 
-**三步完成**：
+**推荐使用方式**：
 
 ```
-第 1 步：复制下方「3. 提示词」全文
-第 2 步：粘贴到 AI 对话框，在末尾追加你的业务需求
+第 1 步：打开 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md) 并复制其中的“完整提示词”正文
+第 2 步：若需要案例对照、结构自检或字段速查，再回看本文档的第 4-6 节
 第 3 步：将 AI 输出的 JSON 通过 API 保存为页面的 pagedata.json（后端管理于 spark-ai-server/data/pages-config/）
 ```
 
@@ -65,323 +65,31 @@
 
 需求：图书馆借阅管理系统
 - 读者表（Readers）：存储读者基本信息，包含：ID、姓名、借阅卡号、手机号、账号状态
-- 借阅记录表（BorrowRecords）：记录每次借阅情况，包含：ID、读者ID（外键）、书名、借阅日期、应还日期、实还日期（可为空）、状态
+- 借阅记录表（BorrowRecords）：记录每次借阅情况，包含：ID、读者ID（关联字段）、书名、借阅日期、应还日期、实还日期（可为空）、状态
 - 关联关系：点击读者，下方显示该读者的全部借阅记录
 - 不需要后端API，使用静态测试数据
 ```
 
 ---
 
-## 3. 提示词（可直接复制）
+## 3. 主提示词入口
 
-> 以下内容为完整提示词，复制全文粘贴到 AI 对话框，然后在末尾追加业务需求。
+完整可复制的 pagedata.json 规则提示词，已经统一收口到 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)。
 
----
+本文档不再重复维护第二份规则正文。
 
-```
-你是一名 SPARK View 框架的配置专家。你的任务是根据用户描述的业务需求，生成符合
-SPARK DataSet 规范的 pagedata.json 配置文件。仅输出完整的 JSON，不添加任何解释说明。
+使用方式：
 
-═══════════════════════════════════════════════════
-【1】输出格式规范
-═══════════════════════════════════════════════════
-
-必须严格使用以下顶层包装结构，所有配置包含在 dataset 键内：
-
-{
-  "dataset": {
-    "dataSetName": "BusinessDataSet",
-    "tables": { ... },
-    "relations": [ ... ]
-  }
-}
-
-═══════════════════════════════════════════════════
-【2】三层结构：DataSet → 表（DataTable）→ 视图（DataView）
-═══════════════════════════════════════════════════
-
-每张表有两层：DataTable（列定义 + api）+ DataView（数据层，UI 唯一来源）：
-
-  DataSet
-    └── DataTable "Orders"
-          ├── columns: [...]        ← 列定义（与视图无关）
-          ├── api: "/api/..."       ← 可选
-          └── DataView "default"
-                ├── rows: [...]          ← 表格 / 表单绑定
-                ├── currentRow           ← 驱动 currentRow 依赖
-                ├── selectedRows: [...]  ← 驱动 selectedRows 依赖
-                ├── summaryRow           ← aggregates 全行汇总
-                ├── selectionSummaryRow  ← aggregates 选中行汇总
-                └── aggregates: {...}    ← 视图级聚合规则
-
-每张表对象的标准写法（rows / aggregates / autoLoad 均在 views.default 内）：
-
-  "TableName": {
-    "columns": [...],                  // 必填
-    "api":     "/api/...",             // 可选：有后端接口时填写
-    "views": {
-      "default": {                     // 必须显式声明
-        "rows":             [...],     // 3-5 条测试行
-        "autoLoad":         true,      // 可选：初始化后自动请求 api 加载数据
-        "autoCurrentFirst": true,      // 可选：加载后自动将第一行设为 currentRow（驱动 currentRow 级联）
-        "autoSelectFirst":  true,      // 可选：加载后自动将第一行加入 selectedRows（驱动 selectedRows 级联）
-        "aggregates":       { ... }    // 可选：聚合规则
-      },
-      "otherViewId": {}                // 仅当某 relation 使用了此 viewId 时才添加
-    }
-  }
-
-═══════════════════════════════════════════════════
-【3】列（Column）定义
-═══════════════════════════════════════════════════
-
-每列对象的字段：
-
-{
-  "name":              "fieldName",   // 必填：camelCase 字段名
-  "type":              "string",      // 必填：见「数据类型」
-  "label":             "字段标签",    // 推荐：UI 表头显示文字（中文）
-  "isPrimaryKey":      true,          // 标记主键列（多列同时标记 → 自动合成复合主键 _pk）
-  "autoIncrement":     true,          // 可选：自增主键
-  "allowDBNull":       false,         // 可选：是否允许空值
-  "defaultValue":      null,          // 可选：字段默认值
-  "computeExpression": "price * qty"  // 可选：计算列表达式
-}
-
-数据类型（type）完整列表：
-number | int | integer | decimal | float | double |
-string | varchar | text | boolean | bool |
-date | datetime | time | object | array | enum
-
-═══════════════════════════════════════════════════
-【4】视图关联关系（Relations）
-═══════════════════════════════════════════════════
-
-父视图的交互状态变化（切换当前行 / 勾选行）→ 子视图自动过滤匹配行。
-视图表示同一张表的一个 DataView，用于承载不同用途或状态，例如列表展示、当前行编辑、树形展示、汇总展示。
-parentViewId 表示从父表哪个视图读取状态，childViewId 表示把过滤或加载作用到子表哪个视图。
-parentViewId / childViewId 默认均为 'default'；当前生成约定中单视图页面也应显式写出，不要省略。
-
-选择类字段的编辑选项：
-
-- pagedata.json 负责提供选项数据源，优先用独立字典表承载，而不是把 options 塞进主表每一行。
-- rule.json 中选择类字段通常通过 optionKey 绑定到某个选项视图，例如 "StatusOptions@rows"。
-- 选项显示字段常用 label/text/name，取值字段常用 value/id/code；非标准命名时在 rule.json 中补 optionLabelField、optionValueField。
-- 树形选项和级联选项如需从 DataSet 读取，应在选项视图上补 treeConfig，或直接提供带 children 的嵌套结构。
-
-推荐顺序：
-
-- 第一阶段先定业务主从表、列、api 策略、计算表达式、选项表、选项级联键。
-- 第二阶段先定视图，最后再根据字段输入级联链路和主从联动链路生成 relations，把主从联动和字段编辑级联串起来。
-
-relations 数组中每条关联：
-
-{
-  "parentTable":    "ParentName",    // 必填：父视图所在表名
-  "parentViewId":   "default",       // 建议显式填写：父视图 ID
-  "childTable":     "ChildName",     // 必填：子视图所在表名
-  "childViewId":    "default",       // 建议显式填写：子视图 ID
-  "parentField":    "id",            // 可选：父视图匹配字段（默认取父表主键）
-  "childField":     "parentId",      // 必填：子视图行中的外键字段名
-  "dependencyType": "currentRow"     // 推荐填写：见选择规则
-}
-
-dependencyType — 父视图的哪种状态变化会驱动子视图重新过滤（重要）：
-
-┌──────────────────┬──────────────────────────────────────────────────────┐
-│ dependencyType   │ 使用场景                                             │
-├──────────────────┼──────────────────────────────────────────────────────┤
-│ "currentRow"     │ 主从钻取：父视图当前行变化 → 子视图只显示该行的关联数据│
-│ (默认)           │ 例：父视图点击订单 → 子视图显示该订单的商品明细      │
-├──────────────────┼──────────────────────────────────────────────────────┤
-│ "allRows"        │ 字典/参考表：子视图显示父视图所有行的子数据           │
-│                  │ 例：加载所有分类下的产品，用于下拉选择器数据源       │
-├──────────────────┼──────────────────────────────────────────────────────┤
-│ "selectedRows"   │ 批量操作：父视图已勾选行变化 → 子视图显示这些行的子数据│
-├──────────────────┼──────────────────────────────────────────────────────┤
-│ "pagedRows"      │ 分页模式：子视图仅基于父视图当前页行数据过滤         │
-└──────────────────┴──────────────────────────────────────────────────────┘
-
-═══════════════════════════════════════════════════
-【5】计算列（computeExpression）
-═══════════════════════════════════════════════════
-
-a) 单行字段表达式（不含 return，框架自动包裹）：
-
-  "price * qty"
-  "firstName + ' ' + lastName"
-  "amount * 0.1"
-
-b) 多语句函数体（含 return，所有分支必须有 return，否则返回 undefined）：
-
-  "if (score >= 90) return 'A'; if (score >= 75) return 'B'; if (score >= 60) return 'C'; return 'D';"
-  "if (status === 'active') return '启用'; return '禁用';"
-
-c) 子表聚合函数（需要已定义对应 DataRelation，括号内为从表表名）：
-
-  "$count('ChildTable')"                        // 子行总数
-  "$sum('ChildTable', 'fieldName')"             // 子行字段求和
-  "$avg('ChildTable', 'fieldName')"             // 子行字段均值
-  "$min('ChildTable', 'fieldName')"             // 子行字段最小值
-  "$max('ChildTable', 'fieldName')"             // 子行字段最大值
-  "$list('ChildTable', 'fieldName')"            // 子行字段值数组（返回 unknown[]）
-  "$join('ChildTable', 'fieldName', ' | ')"     // 子行字段拼接（第三参数为分隔符，默认 ', '）
-
-═══════════════════════════════════════════════════
-【6】视图聚合（aggregates）
-═══════════════════════════════════════════════════
-
-声明后自动维护 summaryRow（全行汇总）和 selectionSummaryRow（选中行汇总），可通过
-DataKey 绑定到 UI 汇总行。
-
-"aggregates": {
-  "amount":     { "type": "sum",   "label": "合计金额" },
-  "score":      { "type": "avg",   "label": "平均分"   },
-  "id":         { "type": "count", "label": "总记录数" },
-  "minPrice":   { "type": "min",   "field": "price", "label": "最低价" },
-  "maxPrice":   { "type": "max",   "field": "price", "label": "最高价" },
-  "tags":       { "type": "join",  "label": "标签列表", "separator": " | " }
-}
-
-支持类型：sum | count | avg | min | max | join
-- 键名 = summaryRow 中的输出字段名（可与列名不同）
-- field（可选）= 聚合哪个源字段；省略时默认取与键名同名的列
-- separator（可选）= 仅 join 类型有效，默认 ', '
-
-═══════════════════════════════════════════════════
-【7】API 配置（有后端接口时使用）
-═══════════════════════════════════════════════════
-
-字符串简写（自动展开为 CRUD 五端点 + Tree 端点族）：
-  "api": "/api/users"
-
-true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /api/order-items）：
-  "api": true
-
-完整对象（自定义每个端点，URL 路径参数用 {id} 格式）：
-  "api": {
-    "list":     { "url": "/api/users",      "method": "GET"    },
-    "create":   { "url": "/api/users",      "method": "POST"   },
-    "retrieve": { "url": "/api/users/{id}", "method": "GET"    },
-    "update":   { "url": "/api/users/{id}", "method": "PUT"    },
-    "delete":   { "url": "/api/users/{id}", "method": "DELETE" }
-  }
-
-纯静态演示数据（仅 rows 内联）不要添加 api 字段。
-
-═══════════════════════════════════════════════════
-【8】生成规则（必须严格遵守）
-═══════════════════════════════════════════════════
-
-1. 【主键规则】每张业务表通常一列声明 "isPrimaryKey": true（id 列）；需要复合主键时可同时标记多列，框架自动合成 _pk 计算列作为唯一标识
-
-2. 【测试数据】每张表在 `views.default.rows` 中提供 3-5 条有代表性的测试数据
-
-3. 【外键完整性】rows 中的外键值必须对应父表 rows 中存在的 id 值，不允许引用不存在的父行
-
-4. 【ID 编号规范】顶级表 id 从 1 开始，二级子表 id 从 101 开始，三级子表 id 从 1001 开始
-
-5. 【计算列不填 rows】有 computeExpression 的列，rows 中不要为该列填充数据（由系统自动计算）
-
-6. 【标签规范】所有面向用户展示的字段须添加 label 属性（中文），id/外键列按需添加
-
-7. 【views 声明规则】每张表必须有 views.default（见【2】标准写法）。
-   ⚠️ 若某 relation 使用了非 default 的 parentViewId / childViewId，该表 views 中必须
-   显式声明该视图（如 "detail": {}），否则级联将无法生效。
-
-8. 【命名规范】表名用 PascalCase（OrderItems），字段名用 camelCase（orderId），
-   dataSetName 以 DataSet 结尾（UserOrderDataSet）
-
-9. 【外键列必须在 columns 中定义】从表必须在 columns 数组中包含外键列的定义
-
-10. 【静态数据不加 api】仅有 rows 内联数据的表不要添加 api 字段
-
-11. 【API 表级联行为】子表是否配置 `api` 决定级联走哪条路径：
-    - 子表**无 api**（纯静态/内联数据）→ 级联在内存中直接过滤 `DataTable.rows`，无需网络请求，适合演示页面
-    - 子表**有 api**（后端 REST 接口）→ 父行切换时自动发 HTTP 请求刷新子视图（框架在 URL 参数中携带父行主键）
-    演示/原型页面推荐全部使用无 api 静态数据（规则 10），实现完全离线的内存级联。
-
-12. 【tables 顺序约束】如果存在 relation，所有 `parentTable` 必须在 `tables` 对象中排在对应 `childTable` 之前。
-  原因：当前 DataSet 构造阶段会在表注册过程中立即建立级联订阅；若 childTable 先于 parentTable 创建，可能出现“父视图 X:default 不存在，请检查 DataSet 关系配置”。
-
-═══════════════════════════════════════════════════
-【9】完整示例（学生成绩管理）✅ 已通过 DataSet 实例化测试
-═══════════════════════════════════════════════════
-
-{
-  "dataset": {
-    "dataSetName": "StudentGradeDataSet",
-    "tables": {
-      "Students": {
-        "columns": [
-          { "name": "id",        "type": "number", "isPrimaryKey": true, "label": "学号" },
-          { "name": "name",      "type": "string",                       "label": "姓名" },
-          { "name": "className", "type": "string",                       "label": "班级" },
-          { "name": "gradeAvg",  "type": "number",                       "label": "平均分",
-            "computeExpression": "$avg('Grades', 'score')" }
-        ],
-        "views": {
-          "default": {
-            "rows": [
-              { "id": 1, "name": "张三", "className": "高一(1)班" },
-              { "id": 2, "name": "李四", "className": "高一(1)班" },
-              { "id": 3, "name": "王五", "className": "高一(2)班" }
-            ]
-          }
-        }
-      },
-      "Grades": {
-        "columns": [
-          { "name": "id",        "type": "number", "isPrimaryKey": true, "label": "成绩ID" },
-          { "name": "studentId", "type": "number",                       "label": "学号"   },
-          { "name": "subject",   "type": "string",                       "label": "科目"   },
-          { "name": "score",     "type": "number",                       "label": "分数"   },
-          { "name": "grade",     "type": "string",                       "label": "等级",
-            "computeExpression": "if (score >= 90) return 'A'; if (score >= 75) return 'B'; if (score >= 60) return 'C'; return 'D';" }
-        ],
-        "views": {
-          "default": {
-            "rows": [
-              { "id": 1001, "studentId": 1, "subject": "数学", "score": 95 },
-              { "id": 1002, "studentId": 1, "subject": "语文", "score": 82 },
-              { "id": 1003, "studentId": 2, "subject": "数学", "score": 76 },
-              { "id": 1004, "studentId": 2, "subject": "语文", "score": 68 },
-              { "id": 1005, "studentId": 3, "subject": "数学", "score": 55 },
-              { "id": 1006, "studentId": 3, "subject": "语文", "score": 70 }
-            ],
-            "aggregates": {
-              "score": { "type": "avg",   "label": "平均分" },
-              "id":    { "type": "count", "label": "科目数" }
-            }
-          }
-        }
-      }
-    },
-    "relations": [
-      {
-        "parentTable":    "Students",
-        "parentViewId":   "default",
-        "childTable":     "Grades",
-        "childViewId":    "default",
-        "childField":     "studentId",
-        "dependencyType": "currentRow"
-      }
-    ]
-  }
-}
-
-═══════════════════════════════════════════════════
-
-以上是框架规范。现在请根据以下业务需求生成 pagedata.json：
-
-[在此替换为你的业务需求描述]
-```
+1. 如果你要直接复制提示词给 AI，使用 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)。
+2. 如果你要查看已经验证过的业务案例，继续阅读本文档第 4-6 节。
+3. 如果你是从旧链接进入 [DATASET_JSON_PROMPT_TEMPLATE.md](DATASET_JSON_PROMPT_TEMPLATE.md)，请将其视为兼容入口，而不是独立规则源。
+4. 若生产版主入口发生规则变更，本文档只同步更新案例、自检清单和配置速查，不再同步整段提示词正文。
 
 ---
 
 ## 4. 验证案例
 
-以下三个案例由上方提示词生成并经过逐项验证，可直接用于项目。
+以下案例以 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md) 作为规则基线生成，并经过逐项验证，可直接用于项目。
 
 ---
 
@@ -389,7 +97,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 
 **需求描述**：
 - 读者表（Readers）：ID、姓名、借阅卡号、手机号、状态
-- 借阅记录表（BorrowRecords）：ID、读者ID（外键）、书名、借阅/应还/实还日期、状态
+- 借阅记录表（BorrowRecords）：ID、读者ID（关联字段）、书名、借阅/应还/实还日期、状态
 - 关联：点击读者 → 显示该读者的借阅记录
 - 纯静态数据，无后端 API
 
@@ -468,7 +176,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 
 **需求描述**：
 - 订单表（Orders）：ID、订单号、客户姓名、下单日期、状态；自动汇总商品件数和总金额
-- 订单明细表（OrderItems）：ID、订单ID（外键）、商品名、数量、单价；小计 = 数量 × 单价（计算列）
+- 订单明细表（OrderItems）：ID、订单ID（关联字段）、商品名、数量、单价；小计 = 数量 × 单价（计算列）
 - OrderItems 显示汇总行：总数量和合计金额
 - 关联：点击订单 → 显示该订单的明细
 - 纯静态数据，无后端 API
@@ -547,7 +255,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 - ✅ 计算列 `subtotal`、`itemCount`、`totalAmount` 在 rows 中**不填充值**（框架自动计算）
 - ✅ `$count('OrderItems')` / `$sum('OrderItems', 'subtotal')` 引用从表名 "OrderItems"，与 relation.childTable 一致
 - ✅ `aggregates` 的键名 `quantity` / `subtotal` 与 OrderItems.columns 中的 name 匹配
-- ✅ orderId 外键值（1, 1, 2, 3, 3）在 Orders.rows 中均有对应
+- ✅ orderId 关联值（1, 1, 2, 3, 3）在 Orders.rows 中均有对应
 
 ---
 
@@ -555,7 +263,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 
 **需求描述**：
 - 部门表（Departments）：ID、名称、主管ID（可空）；自动统计部门人数
-- 员工表（Employees）：ID、部门ID（外键）、姓名、性别、职位、薪资、入职日期；自动计算薪资等级
+- 员工表（Employees）：ID、部门ID（关联字段）、姓名、性别、职位、薪资、入职日期；自动计算薪资等级
 - Employees 显示平均薪资和人数汇总行
 - 关联：点击部门 → 显示该部门的员工（`currentRow`）
 - 两张表均有后端 REST API，部门在页面加载时自动拉取
@@ -637,7 +345,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 - ✅ 计算列 `headcount` 引用 `$count('Employees')`，与 relation.childTable 一致
 - ✅ Employees rows 中**不含 `level` 字段**（计算列不填值）
 - ✅ API 配置：`autoLoad: true` 让部门表页面加载时自动拉取；`autoLoad: false` 让员工表由级联触发
-- ✅ 所有 deptId 外键值（1, 1, 2, 2, 3）在 Departments.rows 中均有对应
+- ✅ 所有 deptId 关联值（1, 1, 2, 2, 3）在 Departments.rows 中均有对应
 
 ---
 
@@ -645,8 +353,8 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 
 **需求描述**：
 - 科室表（Departments）：ID、名称、楼层；自动统计医生数（$count）
-- 医生表（Doctors）：ID、科室ID（外键）、姓名、职称、挂号费；自动统计预约数（$count）
-- 预约记录表（Appointments）：ID、医生ID（外键）、患者姓名、预约日期、状态；显示预约数量汇总
+- 医生表（Doctors）：ID、科室ID（关联字段）、姓名、职称、挂号费；自动统计预约数（$count）
+- 预约记录表（Appointments）：ID、医生ID（关联字段）、患者姓名、预约日期、状态；显示预约数量汇总
 - 三级关联：科室 → 医生 → 预约（两条 currentRow 关联）
 - 纯静态数据，无后端 API
 
@@ -730,7 +438,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 **验证通过要点**：
 - ✅ 三级 ID 编号：科室 1-3，医生 101-104，预约 1001-1004
 - ✅ `$count('Doctors')` / `$count('Appointments')` 引用名与对应 relation.childTable 完全一致
-- ✅ 三级外键完整性：departmentId ∈ {1,2,3}，doctorId ∈ {101,102,103,104}
+- ✅ 三级关系匹配完整性：departmentId ∈ {1,2,3}，doctorId ∈ {101,102,103,104}
 - ✅ doctorCount / appointmentCount 这两个计算列在 rows 中均无值
 - ✅ aggregates 键名 `id` 与 Appointments.columns[0].name 匹配
 
@@ -741,9 +449,9 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 **需求描述**：
 - 员工表（Employees）：ID、姓名、部门、入职日期
   - 需要两个视图：`default`（列表页使用）和 `detail`（详情页使用）
-- 考勤记录表（AttendanceRecords）：ID、员工ID（外键）、日期、状态
+- 考勤记录表（AttendanceRecords）：ID、员工ID（关联字段）、日期、状态
   - 与 Employees **default 视图**关联（列表切换行时更新）
-- 薪资记录表（SalaryRecords）：ID、员工ID（外键）、月份、基本工资、绩效奖金、合计（计算列）；聚合：合计 sum
+- 薪资记录表（SalaryRecords）：ID、员工ID（关联字段）、月份、基本工资、绩效奖金、合计（计算列）；聚合：合计 sum
   - 与 Employees **detail 视图**关联（详情页显示薪资历史）
 - 纯静态数据
 
@@ -849,8 +557,8 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 
 **需求描述**：
 - 供应商（Suppliers）：ID、名称、联系人、评级；有 API，页面加载自动拉取并选中第一行
-- 采购单（PurchaseOrders）：ID、供应商ID（外键）、下单日期、总金额（子表小计之和，计算列）；有 API
-- 采购明细（PurchaseDetails）：ID、采购单ID（外键）、商品名、数量、单价、小计（计算列：数量×单价）；有 API；聚合：合计金额 sum、合计数量 sum
+- 采购单（PurchaseOrders）：ID、供应商ID（关联字段）、下单日期、总金额（子表小计之和，计算列）；有 API
+- 采购明细（PurchaseDetails）：ID、采购单ID（关联字段）、商品名、数量、单价、小计（计算列：数量×单价）；有 API；聚合：合计金额 sum、合计数量 sum
 - 三级关联：Suppliers → PurchaseOrders → PurchaseDetails（两条 currentRow 关联）
 
 **生成结果**：
@@ -937,7 +645,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 **验证通过要点**：
 - ✅ `$sum('PurchaseDetails', 'subTotal')` 表名与 relations[1].childTable 一致，字段名 `subTotal` 与列 name 一致
 - ✅ aggregates 键 `subTotal`、`quantity` 与 PurchaseDetails.columns 中已有列 name 完全匹配
-- ✅ 三级外键完整性：supplierId ∈ {1,2,3}，orderId ∈ {101,102,103}
+- ✅ 三级关系匹配完整性：supplierId ∈ {1,2,3}，orderId ∈ {101,102,103}
 - ✅ totalAmount 和 subTotal 均为计算列，rows 中均无这两个字段值
 - ✅ 三表均有 api 且同时有 rows（API 场景：rows 提供本地演示数据，api 用于生产请求，两者并存合法）
 
@@ -1028,7 +736,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 - ✅ `aggregates.productList.separator = ' | '`：join 类型自定义分隔符（默认 ', '）
 - ✅ `relations[0].parentField = 'id'`：显式声明父视图匹配字段（v1.9 补充文档）
 - ✅ 规则 10：无 api 字段（纯静态数据），级联走内存过滤路径
-- ✅ 外键完整性：StockItems.warehouseId ∈ {1, 2}，均在 Warehouses.rows 中存在
+- ✅ 关系匹配完整性：StockItems.warehouseId ∈ {1, 2}，均在 Warehouses.rows 中存在
 - ✅ 计算列（totalStockValue / productCodes / productNames / totalValue）在 rows 中**均不填充值**
 
 ---
@@ -1037,8 +745,8 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 
 **需求描述**：
 - 仓库表（Warehouses）：ID、名称、城市、负责人
-- 库存表（Inventories）：ID、仓库ID（外键）、商品名称、SKU、库存数量、单位、最低预警值；计算列：库存状态（quantity ≤ minQuantity → 预警，否则正常）
-- 入库记录表（Inbounds）：ID、仓库ID（外键）、商品名称、入库数量、入库日期、供应商；聚合：入库总数量 sum
+- 库存表（Inventories）：ID、仓库ID（关联字段）、商品名称、SKU、库存数量、单位、最低预警值；计算列：库存状态（quantity ≤ minQuantity → 预警，否则正常）
+- 入库记录表（Inbounds）：ID、仓库ID（关联字段）、商品名称、入库数量、入库日期、供应商；聚合：入库总数量 sum
 - 双 relation：Warehouses→Inventories，Warehouses→Inbounds（均 currentRow）
 - 纯静态数据，无后端 API
 - **来源**：外部 AI（非本项目 AI）按标准提示词模板生成，用于验证提示词对外部模型的引导效果
@@ -1142,7 +850,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 - ✅ `rows` 和 `aggregates` 均在 `views.default` 内（v1.9 核心结构要求）
 - ✅ 计算列 `status` 多分支逻辑正确（含边界值 quantity===minQuantity → 预警）
 - ✅ 两条 relation 均已声明（WarehouseInventories + WarehouseInbounds）
-- ✅ 外键完整性：warehouseId ∈ {1,2,3} 均在 Warehouses.rows 中存在
+- ✅ 关系匹配完整性：warehouseId ∈ {1,2,3} 均在 Warehouses.rows 中存在
 - ✅ 无多余 api 字段（纯静态数据）
 - ✅ `aggregates.inQuantity` 直接使用列名作为键名（无需 field 覆盖）
 - ✅ 全量汇总 inQuantity sum = 380，级联后华东仓 = 130
@@ -1153,8 +861,8 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 
 **需求描述**：
 - 小区表（Communities）：ID、名称、地址、物业经理；自动统计楼栋数（$count）、总户数（$sum）
-- 楼栋表（Buildings）：ID、小区ID（外键）、楼栋号、楼层数、户数；自动统计报修数（$count）、报修类型列表（$join）
-- 报修工单表（RepairOrders）：ID、楼栋ID（外键）、报修人、电话、类型、描述、日期、优先级；计算列：状态（优先级≥3 → 紧急，=2 → 一般，其他 → 低优先）
+- 楼栋表（Buildings）：ID、小区ID（关联字段）、楼栋号、楼层数、户数；自动统计报修数（$count）、报修类型列表（$join）
+- 报修工单表（RepairOrders）：ID、楼栋ID（关联字段）、报修人、电话、类型、描述、日期、优先级；计算列：状态（优先级≥3 → 紧急，=2 → 一般，其他 → 低优先）
 - 三级关联：小区→楼栋→报修工单（两条 currentRow 关联）
 - 聚合：报修工单 count + 报修类型 join（field 覆盖）
 - 纯静态数据，无后端 API
@@ -1269,7 +977,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 - ✅ `$count('RepairOrders')` / `$join('RepairOrders', 'repairType', ' / ')` 二级计算列正确
 - ✅ 计算列 `status` 三分支逻辑：priority≥3→紧急，=2→一般，其他→低优先
 - ✅ `aggregates.typeList.field = 'repairType'`：输出键名（typeList）与源字段名（repairType）不同（field 覆盖）
-- ✅ 三级外键完整性：communityId ∈ {1,2,3}，buildingId ∈ {101,102,103,104}
+- ✅ 三级关系匹配完整性：communityId ∈ {1,2,3}，buildingId ∈ {101,102,103,104}
 - ✅ 级联后 aggregates 只汇总过滤行（翠湖花园→1栋: count=2, typeList="水管漏水 | 电梯故障"）
 - ✅ 所有计算列（buildingCount / totalUnits / repairCount / repairTypes / status）在 rows 中均不填充值
 
@@ -1297,7 +1005,7 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 
 - [ ] 每张表的 `views.default.rows` 中有 3-5 条数据
 - [ ] 有 `computeExpression` 的列，rows 中**不含该列的值**
-- [ ] 从表 rows 中的外键值在主表 rows 中**全部存在**（外键完整性）
+- [ ] 从表 rows 中用于 relation 匹配的 childField 值在父表匹配字段中**全部存在**（关系匹配完整性）
 - [ ] 可空字段已设 `"allowDBNull": true`，且 rows 中允许出现 `null`
 
 ### 关联层面（每条 relation 检查）

@@ -653,7 +653,7 @@ Render* 函数使用 `h()` 创建 VNode，**只能使用原生 HTML 标签**（`
 ═══════════════════════════════════════════════════
 
 pagedata.json 声明 DataSet：表结构、列定义、测试数据行、关联关系。
-**完整规范见本项目的 DATASET_JSON_PROMPT_TEMPLATE.md**，以下为速查摘要。
+**完整规范见本项目的 [PAGEDATA_JSON_COMPLETE_PROMPT.md](../data/PAGEDATA_JSON_COMPLETE_PROMPT.md)**，以下为速查摘要。
 
 ───────────────────────────────────────────────────
 2.1  顶层结构
@@ -711,7 +711,7 @@ pagedata.json 声明 DataSet：表结构、列定义、测试数据行、关联�
 ───────────────────────────────────────────────────
 
 1. 每张表都有 `views.default`，rows 提供 3~5 条测试数据
-2. 外键值必须引用父表中存在的 id
+2. 子视图 rows 中用于 relation 匹配的 childField 值，必须能在父视图匹配字段中找到对应值
 3. 计算列（有 computeExpression）不在 rows 中填值
 4. 纯静态演示数据不加 `api` 字段
 5. 有 api 且需初始加载的表设 `autoLoad: true`
@@ -1075,7 +1075,7 @@ rule.json 规则：
 pagedata.json 规则：
 10. 每张表必须有 `views.default`
 11. 提供 3~5 条有代表性的测试数据
-12. 外键完整性：子表外键值必须引用父表中存在的 id
+12. 关系匹配完整性：子视图 childField 值必须能在父视图匹配字段中找到对应值
 13. 计算列不在 rows 中填值
 14. 树数据表（`hierarchicalTreeData`）的 rows 可初始为空 `[]`
 

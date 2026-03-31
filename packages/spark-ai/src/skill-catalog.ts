@@ -44,7 +44,7 @@ export const SKILL_CATALOG: Record<string, SkillCatalogEntry> = {
     avoid: '数据完全独立无关联时无需使用；3层以上嵌套请改用 tree-data',
     requires: ['relation'],
     produces: ['data-model', 'view-plan', 'ui-structure'],
-    checks: ['父表主键 isPrimaryKey', '父表 autoCurrentFirst', '子表外键与 relation 对应', '父子表各自声明 highlightCurrentRow'],
+    checks: ['父表主键 isPrimaryKey', '父视图 autoCurrentFirst', '子视图 childField 与 relation 对应', '主子两个表格各自声明 highlightCurrentRow'],
     detail: `## master-detail 配置要点
 
 ### pagedata.json — relations 配置（关键）
@@ -74,7 +74,7 @@ export const SKILL_CATALOG: Record<string, SkillCatalogEntry> = {
   }
 ]
 \`\`\`
-### ⚠️ 注意：父子表各自独立声明 highlightCurrentRow`,
+### ⚠️ 注意：主子两个表格各自独立声明 highlightCurrentRow`,
   },
 
   'tree-data': {
