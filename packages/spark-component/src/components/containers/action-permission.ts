@@ -1,30 +1,13 @@
 import type { SparkNode } from '../internal'
-import { nodeInputProp } from '../internal'
-import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
-import { isPermittedAction } from '../../permission/index.js'
 
 type RuntimeActionConfig = SparkNode & { display?: boolean }
 
-function isModelScopedPermAction(action: string | undefined): boolean {
-  return action === 'create' || action === 'import' || action === 'export' || action === 'create-child'
-}
-
-function isRowScopedPermAction(action: string | undefined): boolean {
-  return action === 'edit' || action === 'delete' || action === 'create-child'
-}
-
+/**
+ * 判断动作节点是否显示（display prop，非权限逻辑）。
+ */
 export function isActionDisplayed(action: SparkNode): boolean {
   return (action as RuntimeActionConfig).display !== false
 }
 
-export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined): boolean {
-  const permAction = nodeInputProp(action, 'permAction') as string | undefined
-  if (!isModelScopedPermAction(permAction)) return true
-  return isPermittedAction(permAction, modelPerm ? { modelPermission: modelPerm } : {})
-}
-
-export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined): boolean {
-  const permAction = nodeInputProp(action, 'permAction') as string | undefined
-  if (!isRowScopedPermAction(permAction)) return true
-  return isPermittedAction(permAction, { row: row ?? null })
-}
+// 权限纯函数统一收口在 permission/ 模块，此处仅做 re-export 保持向后兼容
+export { isModelActionAllowed, isRowActionAllowed } from '../../permission/index.js'

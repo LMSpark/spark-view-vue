@@ -88,6 +88,7 @@ import { DATA_ROW, DATA_SOURCE, consumeSparkCapability } from '../core/capabilit
 import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
 import type { BeforeRenderContext } from './support/beforeRender.js'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from './support/beforeRender.js'
+import { extractModelPermission } from '../permission/index.js'
 
 // ── 常量与局部类型：渲染器内部约束、运行时局部类型 ───────────────────────────
 
@@ -371,7 +372,7 @@ function buildBeforeRenderContext({ rawProps, parentContext }: ScopedRuntimeInpu
     data: rawProps['data'] ?? row,
     index: resolveScopedRowIndex(rawProps),
     dataSource,
-    modelPermission: dataSource?._modelPerm,
+    modelPermission: extractModelPermission(dataSource),
     parentType: parentContext?.type ?? null,
   }
 }

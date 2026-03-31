@@ -358,6 +358,7 @@ export class DynamicRouter {
                 ...(node.refProjectId !== undefined && { refProjectId: node.refProjectId }),
                 ...(this.resolveCrossProjectRefPageId(node) !== null && { refPageId: this.resolveCrossProjectRefPageId(node) }),
                 ...(node.icon !== undefined && { icon: node.icon }),
+                ...(node.permissionMode !== undefined && { permissionMode: node.permissionMode }),
               },
             }
           : {
@@ -371,6 +372,7 @@ export class DynamicRouter {
                 ...(node.description !== undefined && { description: node.description }),
                 externalUrl,
                 ...(node.icon !== undefined && { icon: node.icon }),
+                ...(node.permissionMode !== undefined && { permissionMode: node.permissionMode }),
               },
             }
         this.router.addRoute(route)
@@ -389,6 +391,7 @@ export class DynamicRouter {
               title: node.title,
               ...(node.description !== undefined && { description: node.description }),
               ...(node.icon !== undefined && { icon: node.icon }),
+              ...(node.permissionMode !== undefined && { permissionMode: node.permissionMode }),
             },
           }
           this.router.addRoute(route)
@@ -411,6 +414,7 @@ export class DynamicRouter {
             title: node.title,
             ...(node.description !== undefined && { description: node.description }),
             ...(node.icon !== undefined && { icon: node.icon }),
+            ...(node.permissionMode !== undefined && { permissionMode: node.permissionMode }),
           },
         }
         this.router.addRoute(route)

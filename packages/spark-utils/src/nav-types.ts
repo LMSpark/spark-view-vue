@@ -91,6 +91,9 @@ export interface AppModuleBase<TChild = unknown> {
 /**
  * 导航接口（菜单展示 / 交互行为相关）
  */
+/** 导航节点权限模式 */
+export type NavPermissionMode = 'none' | 'masked' | 'invisible'
+
 export interface AppNavigation {
   /** 图标 */
   icon?: string
@@ -108,6 +111,15 @@ export interface AppNavigation {
   disabled?: boolean
   /** 在该节点后显示分割线 */
   dividerAfter?: boolean
+
+  /**
+   * 权限模式
+   *
+   * - `'none'`（默认）：不控制，任何已认证用户可见
+   * - `'masked'`：可见 + 脱敏，菜单可见但内容按权限脱敏
+   * - `'invisible'`：不可见，无权用户看不到该节点
+   */
+  permissionMode?: NavPermissionMode
 }
 
 /* ── 导航节点 ── */

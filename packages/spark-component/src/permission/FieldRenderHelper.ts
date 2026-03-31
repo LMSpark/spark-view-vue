@@ -1,12 +1,14 @@
 /**
- * 字段渲染助手
+ * 字段渲染状态计算 — 纯函数
  *
- * 结合字段配置和权限，计算字段的最终渲染状态
+ * 结合字段配置和权限，计算字段的最终渲染状态。
+ * 内部直接调用 checker 纯函数，调用方无需传入 checker 依赖。
  */
 
 import type { IDataRow } from '@spark-view/spark-data'
 import { FieldVisibility } from '@spark-view/spark-data'
-import type { PermissionChecker } from './PermissionChecker'
+import type { NavPermissionMode } from '@spark-view/spark-utils'
+import { canEdit, isFieldEditable, getFieldVisibility } from './PermissionChecker'
 
 export interface IFieldRenderConfig {
   field: string
@@ -25,51 +27,23 @@ export interface IFieldRenderState {
   shouldRender: boolean
 }
 
-export interface IFieldRenderHelper {
-  computeFieldState(config: IFieldRenderConfig, row: IDataRow, checker: PermissionChecker): IFieldRenderState
-  computeFieldStates(configs: IFieldRenderConfig[], row: IDataRow, checker: PermissionChecker): IFieldRenderState[]
-  filterVisibleFields(configs: IFieldRenderConfig[], row: IDataRow, checker: PermissionChecker): IFieldRenderConfig[]
-}
+/**
+ * 计算单个字段的渲染状态（可见性 + 可编辑性 + 展示值）。
+ */
+export function computeFieldState(config: IFieldRenderConfig, row: IDataRow, permissionMode?: NavPermissionMode): IFieldRenderState {
+  const { field } = config
+  const visibility = getFieldVisibility(field, row, permissionMode)
+  const readable = visibility !== FieldVisibility.Hidden && (config.visible !== false)
+  const editable = canEdit(row, permissionMode)
+    && isFieldEditable(field, row, permissionMode)
+    && (config.editable !== false)
+  const shouldRender = readable
 
-export class FieldRenderHelper implements IFieldRenderHelper {
-  computeFieldState(config: IFieldRenderConfig, row: IDataRow, checker: PermissionChecker): IFieldRenderState {
-    const { field } = config
-    const visibility = checker.getFieldVisibility(field, row)
-    const readable = visibility !== FieldVisibility.Hidden && (config.visible !== false)
-    const editable = checker.canEdit(row)
-      && checker.isFieldEditable(field, row)
-      && (config.editable !== false)
-    const shouldRender = readable
-
-    let displayValue: string | undefined
-    if (readable) {
-      const value = row[field]
-      displayValue = value !== undefined && value !== null ? String(value) : ''
-    }
-
-    return { field, visibility, readable, editable, displayValue, shouldRender }
+  let displayValue: string | undefined
+  if (readable) {
+    const value = row[field]
+    displayValue = value !== undefined && value !== null ? String(value) : ''
   }
 
-  computeFieldStates(configs: IFieldRenderConfig[], row: IDataRow, checker: PermissionChecker): IFieldRenderState[] {
-    return configs.map(config => this.computeFieldState(config, row, checker))
-  }
-
-  filterVisibleFields(configs: IFieldRenderConfig[], row: IDataRow, checker: PermissionChecker): IFieldRenderConfig[] {
-    return configs.filter(config => this.computeFieldState(config, row, checker).shouldRender)
-  }
+  return { field, visibility, readable, editable, displayValue, shouldRender }
 }
-
-const _instance: IFieldRenderHelper = new FieldRenderHelper()
-
-export function createFieldRenderHelper(): IFieldRenderHelper {
-  return _instance
-}
-
-export const computeFieldState = (config: IFieldRenderConfig, row: IDataRow, checker: PermissionChecker): IFieldRenderState =>
-  createFieldRenderHelper().computeFieldState(config, row, checker)
-
-export const computeFieldStates = (configs: IFieldRenderConfig[], row: IDataRow, checker: PermissionChecker): IFieldRenderState[] =>
-  createFieldRenderHelper().computeFieldStates(configs, row, checker)
-
-export const filterVisibleFields = (configs: IFieldRenderConfig[], row: IDataRow, checker: PermissionChecker): IFieldRenderConfig[] =>
-  createFieldRenderHelper().filterVisibleFields(configs, row, checker)

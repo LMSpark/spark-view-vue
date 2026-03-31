@@ -3,7 +3,7 @@ import { FieldVisibility } from '@spark-view/spark-data'
 import type { DataColumn } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { formatPermissionAwareFieldValue, resolveFieldPermissionState } from '../../../permission/index.js'
+import { usePermission } from '../../../permission/index.js'
 import { useSparkConsume, DATA_SOURCE, DATA_ROW } from '../../internal'
 import { columnToFormRules } from '../columnFormRules'
 import type { FormItemRule } from '../columnFormRules'
@@ -32,6 +32,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const contextData = sparkConsume(DATA_ROW)
   const pageService = sparkConsume(PAGE_SERVICE)
   const dataSource = sparkConsume(DATA_SOURCE)
+  const perm = usePermission()
 
   const boundColumn = computed<DataColumn | null>(() => {
     if (!fieldName.value || !dataSource?.columns) return null
@@ -57,7 +58,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   })
 
   const currentFieldState = computed(() =>
-    resolveFieldPermissionState(fieldName.value, currentRow.value)
+    perm.resolveFieldState(fieldName.value, currentRow.value)
   )
 
   const isCurrentFieldReadable = computed(() => {
@@ -99,11 +100,11 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
 
   const currentDisplayValue = computed(() => {
     if (shouldSuppressReadableValueInWritableForm.value) return ''
-    return formatPermissionAwareFieldValue(fieldName.value, sourceFieldValue.value, currentRow.value, formatValue)
+    return perm.formatFieldValue(fieldName.value, sourceFieldValue.value, currentRow.value, formatValue)
   })
 
   function isTableCellHidden(row: IDataRow): boolean {
-    return resolveFieldPermissionState(fieldName.value, row)?.visibility === FieldVisibility.Hidden
+    return perm.resolveFieldState(fieldName.value, row)?.visibility === FieldVisibility.Hidden
   }
 
   function getRowRawValue(row: IDataRow): unknown {
@@ -117,7 +118,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
 
   function getTableCellDisplayValue(row: IDataRow): string {
     if (!fieldName.value) return formatValue(fallbackValue)
-    return formatPermissionAwareFieldValue(fieldName.value, getRowRawValue(row), row, formatValue)
+    return perm.formatFieldValue(fieldName.value, getRowRawValue(row), row, formatValue)
   }
 
   function syncValue(value: TValue): void {

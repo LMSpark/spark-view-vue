@@ -2,7 +2,8 @@ import { computed } from 'vue'
 import type { ComputedRef, Slots } from 'vue'
 import type { SparkNode } from '../../internal'
 import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
-import { isActionDisplayed, isModelActionAllowed } from '../action-permission'
+import { usePermission } from '../../../permission/index.js'
+import { isActionDisplayed } from '../action-permission'
 import { isBuiltinAction } from '../builtin-actions'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 
@@ -18,6 +19,7 @@ interface UseContainerToolbarOptions {
 }
 
 export function useContainerToolbar(options: UseContainerToolbarOptions) {
+  const perm = usePermission()
   const toolbarConfigs = computed(() =>
     options.toolbar.value ?? []
   )
@@ -55,7 +57,7 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
 
         if (patched === null) return null
 
-        return isActionDisplayed(patched) && isModelActionAllowed(patched, options.modelPermission.value)
+        return isActionDisplayed(patched) && perm.isModelActionAllowed(patched, options.modelPermission.value)
           ? patched
           : null
       })

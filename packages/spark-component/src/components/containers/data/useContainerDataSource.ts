@@ -1,7 +1,8 @@
 import { computed, watch } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { DataView, IDataSet, IDataSource, IModelPermission } from '@spark-view/spark-data'
+import type { DataView, IDataSet, IModelPermission } from '@spark-view/spark-data'
 import { resolveViewFromDataKey } from '../../../shared/data-key-resolver.js'
+import { extractModelPermission } from '../../../permission/index.js'
 
 interface LoggerLike {
   warn(message: string): void
@@ -29,7 +30,7 @@ export function useContainerDataSource<TSource>(options: UseContainerDataSourceO
   })
 
   const modelPermission = computed<IModelPermission | undefined>(() =>
-    (resolvedDataSource.value as IDataSource | null | undefined)?._modelPerm
+    extractModelPermission(resolvedDataSource.value as { _modelPerm?: IModelPermission } | null | undefined)
   )
 
   return {

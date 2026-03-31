@@ -28,7 +28,7 @@
 
 import { defineCapability, normalizeKey, sparkConsume as rawSparkConsume } from '@spark-view/spark-utils'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
-import type { CapabilityKey, CapabilityName, CapabilityTypeMap, IModuleContext } from '@spark-view/spark-utils'
+import type { CapabilityKey, CapabilityName, CapabilityTypeMap, IModuleContext, NavPermissionMode } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext } from './types.js'
 
 /** 能力消费函数签名：统一返回 null，避免 undefined 向上游扩散。 */
@@ -156,6 +156,8 @@ declare module '@spark-view/spark-utils' {
     'app:module-context': ModuleContextCapability
     /** 页面 CSS 作用域注入能力（由 SparkPageRenderer sparkProvide，四文件 style.css 收口） */
     'spark:capability:css-scope': PageCssScopeCapability
+    /** 页面级权限模式（none=不控制 / masked=可见+脱敏 / invisible=后端控制） */
+    'spark:capability:permission-mode': NavPermissionMode
   }
 }
 
@@ -205,3 +207,5 @@ export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('app:mod
  * 消费方：插件、嵌套渲染器、动态主题注入等。
  */
 export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
+
+// PAGE_PERMISSION_MODE 已迁入 permission/page-permission-mode.ts（权限模块唯一维护）

@@ -59,6 +59,7 @@ export type {
   NavContextItem,
   NavContextConfig,
   NavContextInput,
+  NavPermissionMode,
   AppModuleBase,
   AppNavigation,
   NavNode,

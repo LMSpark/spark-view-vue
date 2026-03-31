@@ -33,7 +33,7 @@ export type { SparkPluginOptions } from './system/index.js'
 
 // ── 3.5 权限渲染 API ──
 export * as permission from './permission/index.js'
-export type { IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper, PermissionActionContext } from './permission/index.js'
+export type { IFieldRenderConfig, IFieldRenderState, PermissionActionContext } from './permission/index.js'
 
 // ── 4. 核心类型 ──
 export type {

@@ -15,6 +15,7 @@ import type { CrudResult, IDataRow, DataView, IDataSource } from '@spark-view/sp
 import type { PageMessageType, IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from './support/crud-result-helpers.js'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../support/beforeRender.js'
+import { extractModelPermission } from '../../permission/index.js'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────
 
@@ -175,7 +176,7 @@ function resolveBuiltinBeforeRenderAction(
     data: currentRow,
     index: scope?.index,
     dataSource,
-    modelPermission: dataSource?._modelPerm,
+    modelPermission: extractModelPermission(dataSource),
     parentType: null,
   }, (message, error) => {
     if (!import.meta.env.DEV) return

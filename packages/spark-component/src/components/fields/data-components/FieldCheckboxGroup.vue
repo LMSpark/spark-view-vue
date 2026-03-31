@@ -7,7 +7,7 @@
           v-for="option in options"
           :key="String(option.value)"
           :label="option.value"
-          :disabled="option.disabled"
+          :disabled="option.disabled || undefined"
         >
           {{ option.label }}
         </component>

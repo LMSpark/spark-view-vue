@@ -18,7 +18,7 @@
           :key="String(option.value)"
           :label="option.label"
           :value="option.value"
-          :disabled="option.disabled"
+          :disabled="option.disabled || undefined"
         />
       </el-select>
     </template>

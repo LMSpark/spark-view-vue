@@ -2,7 +2,8 @@ import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { SparkNode } from '../../internal'
 import type { IDataRow, IDataSource, IModelPermission } from '@spark-view/spark-data'
-import { isActionDisplayed, isModelActionAllowed, isRowActionAllowed } from '../action-permission'
+import { usePermission } from '../../../permission/index.js'
+import { isActionDisplayed } from '../action-permission'
 import { isBuiltinAction } from '../builtin-actions'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 
@@ -41,6 +42,7 @@ function wrapScopedHandler(handler: unknown, scopedArgs: unknown[]): unknown {
 }
 
 export function useContainerActions<TScope>(options: UseContainerActionsOptions<TScope>) {
+  const perm = usePermission()
   const rawActionConfigs = computed(() => options.actionConfigs.value ?? [])
   const actionPositionValue = computed<LateralActionPosition>(() => options.actionPosition.value ?? 'right')
   const actionClassValue = computed(() => options.actionClass.value ?? '')
@@ -80,8 +82,8 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
         if (patchedAction === null) return null
 
         if (!(isActionDisplayed(patchedAction)
-          && isModelActionAllowed(patchedAction, options.modelPermission.value)
-          && isRowActionAllowed(patchedAction, resolved.row))) {
+          && perm.isModelActionAllowed(patchedAction, options.modelPermission.value)
+          && perm.isRowActionAllowed(patchedAction, resolved.row))) {
           return null
         }
 

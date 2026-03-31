@@ -7,7 +7,6 @@ import {
 import { permission } from '../packages/spark-component/src/index'
 
 const {
-  formatPermissionAwareFieldValue,
   isPermittedAction,
   resolveFieldPermissionState,
 } = permission
@@ -101,7 +100,6 @@ describe('PermissionResolver', () => {
     expect(maskedState?.readable).toBe(true)
     expect(maskedState?.editable).toBe(true)
     expect(maskedState?.displayValue).toBe('138****1234')
-    expect(formatPermissionAwareFieldValue('phone', row['phone'], row)).toBe('138****1234')
   })
 
   it('keeps read and write channels independent for hidden editable fields', () => {

@@ -1,67 +1,103 @@
+/**
+ * 权限动作解析器 — 纯函数集
+ *
+ * 统一的动作级权限判断 + 字段权限状态解析。
+ * 合并了原 action-permission.ts 的模型/行级判断。
+ */
+
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
-import { createFieldRenderHelper } from './FieldRenderHelper'
+import type { NavPermissionMode } from '@spark-view/spark-utils'
+import type { SparkNode } from '../core/types'
+import { nodeInputProp } from '../core/types'
+import { canCreate, canImport, canExport, canDelete, canCreateChild, canEdit } from './PermissionChecker'
+import { computeFieldState } from './FieldRenderHelper'
 import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
-import { createPermissionChecker } from './PermissionChecker'
+
+// ── 动作权限上下文 ──
 
 export interface PermissionActionContext {
   modelPermission?: IModelPermission
   row?: IDataRow | null
+  permissionMode?: NavPermissionMode | undefined
 }
 
-const checker = createPermissionChecker()
-const fieldRenderHelper = createFieldRenderHelper()
+// ── 核心动作判断 ──
 
 function hasOwnContext<T extends object, K extends PropertyKey>(value: T, key: K): value is T & Record<K, unknown> {
   return Object.prototype.hasOwnProperty.call(value, key)
 }
 
+/**
+ * 判断指定动作在权限上下文中是否被允许。
+ *
+ * 支持 model 级（create/import/export）和 row 级（edit/delete/create-child）动作。
+ * 未注册的自定义动作默认放行。
+ */
 export function isPermittedAction(
   action: string | undefined,
   context: PermissionActionContext,
 ): boolean {
   if (action === undefined) return true
 
+  const mode = context.permissionMode
+  if (mode === 'none') return true
+
   const hasModelPermission = hasOwnContext(context, 'modelPermission')
   const hasRow = hasOwnContext(context, 'row')
 
   switch (action) {
     case 'create':
-      return hasModelPermission && checker.canCreate(context.modelPermission)
+      return hasModelPermission && canCreate(context.modelPermission, mode)
     case 'import':
-      return hasModelPermission && checker.canImport(context.modelPermission)
+      return hasModelPermission && canImport(context.modelPermission, mode)
     case 'export':
-      return hasModelPermission && checker.canExport(context.modelPermission)
+      return hasModelPermission && canExport(context.modelPermission, mode)
     case 'create-child':
-      return (hasModelPermission ? checker.canCreate(context.modelPermission) : true)
-        && (hasRow ? !!context.row && checker.canCreateChild(context.row) : true)
+      return (hasModelPermission ? canCreate(context.modelPermission, mode) : true)
+        && (hasRow ? !!context.row && canCreateChild(context.row, mode) : true)
     case 'delete':
-      return hasRow && !!context.row && checker.canDelete(context.row)
+      return hasRow && !!context.row && canDelete(context.row, mode)
     case 'edit':
-      return hasRow && !!context.row && checker.canEdit(context.row)
+      return hasRow && !!context.row && canEdit(context.row, mode)
     default:
       return true
   }
 }
 
+// ── 字段权限状态解析 ──
+
 export function resolveFieldPermissionState(
   field: string | undefined,
   row: IDataRow | null | undefined,
   config: Omit<IFieldRenderConfig, 'field'> = {},
+  permissionMode?: NavPermissionMode,
 ): IFieldRenderState | null {
   if (!field || !row) return null
-  return fieldRenderHelper.computeFieldState({ field, ...config }, row, checker)
+  return computeFieldState({ field, ...config }, row, permissionMode)
 }
 
-export function formatPermissionAwareFieldValue(
-  field: string | undefined,
-  value: unknown,
-  row: IDataRow | null | undefined,
-  formatDisplay?: (value: unknown) => string,
-): string {
-  const formatter = formatDisplay ?? ((nextValue: unknown) => String(nextValue ?? ''))
-  if (!field || !row) return formatter(value)
+// ── SparkNode 动作分类 + 判断（原 action-permission.ts）──
 
-  const state = resolveFieldPermissionState(field, row)
-  if (!state) return formatter(value)
-  return formatter(value)
+/** 是否为模型级权限动作（create/import/export/create-child） */
+export function isModelScopedPermAction(action: string | undefined): boolean {
+  return action === 'create' || action === 'import' || action === 'export' || action === 'create-child'
+}
+
+/** 是否为行级权限动作（edit/delete/create-child） */
+export function isRowScopedPermAction(action: string | undefined): boolean {
+  return action === 'edit' || action === 'delete' || action === 'create-child'
+}
+
+/** 判断 SparkNode 的模型级动作（create/import/export）是否被权限允许 */
+export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined, permissionMode?: NavPermissionMode): boolean {
+  const permAction = nodeInputProp(action, 'permAction') as string | undefined
+  if (!isModelScopedPermAction(permAction)) return true
+  return isPermittedAction(permAction, modelPerm ? { modelPermission: modelPerm, permissionMode } : { permissionMode })
+}
+
+/** 判断 SparkNode 的行级动作（edit/delete/create-child）是否被权限允许 */
+export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined, permissionMode?: NavPermissionMode): boolean {
+  const permAction = nodeInputProp(action, 'permAction') as string | undefined
+  if (!isRowScopedPermAction(permAction)) return true
+  return isPermittedAction(permAction, { row: row ?? null, permissionMode })
 }

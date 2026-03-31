@@ -15,6 +15,15 @@
       <el-switch v-model="state.editForm.dividerAfter" @change="state.markNavDirty" />
       <span class="switch-item__hint">在当前节点后显示分割线</span>
     </el-form-item>
+
+    <el-divider content-position="left">权限控制</el-divider>
+    <el-form-item label="权限模式">
+      <el-radio-group v-model="state.editForm.permissionMode" @change="state.markNavDirty">
+        <el-radio value="none">不控制</el-radio>
+        <el-radio value="masked">可见+脱敏</el-radio>
+        <el-radio value="invisible">不可见</el-radio>
+      </el-radio-group>
+    </el-form-item>
   </div>
 </template>
 

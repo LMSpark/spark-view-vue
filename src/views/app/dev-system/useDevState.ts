@@ -36,6 +36,7 @@ export interface DevEditForm {
   hidden: boolean
   disabled: boolean
   refId: string
+  permissionMode: 'none' | 'masked' | 'invisible'
 }
 
 export interface DevContextConfig {
@@ -94,6 +95,7 @@ export function useDevState() {
     parentPageId: '', refId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
+    permissionMode: 'masked',
   })
   const hasContext = ref(false)
   const contextItems = ref<Array<{ id: string; title: string }>>([])
@@ -461,6 +463,7 @@ export function useDevState() {
     editForm.order = node.order ?? 0
     editForm.hidden = node.hidden ?? false
     editForm.disabled = node.disabled ?? false
+    editForm.permissionMode = node.permissionMode ?? 'masked'
 
     if (!editForm.icon) {
       editForm.icon = defaultIconByKind(editForm.nodeKind)
@@ -555,6 +558,7 @@ export function useDevState() {
     if (editForm.order !== 0) patch['order'] = editForm.order
     if (editForm.hidden !== false) patch['hidden'] = editForm.hidden
     if (editForm.disabled !== false) patch['disabled'] = editForm.disabled
+    patch['permissionMode'] = editForm.permissionMode
 
     if (hasContext.value && contextItems.value.length > 0) {
       const items = contextItems.value.filter(i => i.id && i.title)
@@ -573,7 +577,7 @@ export function useDevState() {
     const optKeys: Array<keyof NavNode> = [
       'icon', 'description', 'path', 'redirect', 'linkTarget',
       'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
-      'dividerAfter', 'nodeKind', 'refId',
+      'dividerAfter', 'nodeKind', 'refId', 'permissionMode',
     ]
     for (const k of optKeys) {
       if (!(k in patch)) {
@@ -713,7 +717,7 @@ export function useDevState() {
 
   function selectNode(node: NavNode) {
     cancelAutoSave()
-    if (navDirty.value && selectedNode.value) applyNavChanges()
+    if (navDirty.value && selectedNode.value) void saveNodeChanges()
     selectedNode.value = node
     loadNodeToForm(node)
     const pageId = normalizePageIdFromPath(node.path)

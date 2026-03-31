@@ -221,51 +221,51 @@ export interface IFieldRenderStateInScript {
   shouldRender: boolean
 }
 
-export interface IPermissionCheckerInScript {
+/**
+ * 沙箱权限 API — 纯函数集，无类/工厂/单例。
+ *
+ * 所有函数可选接受 `permissionMode` 参数（脚本通常省略）。
+ * 函数直接来自组件层 `permission/` 模块导出。
+ */
+export interface IPermissionApiInScript {
+  // ── 动作权限 ──
+  isPermittedAction(action: string | undefined, context: IPermissionActionContextInScript): boolean
+  isModelScopedPermAction(action: string | undefined): boolean
+  isRowScopedPermAction(action: string | undefined): boolean
+
+  // ── 模型级检查 ──
   canCreate(modelPermission?: IModelPermission): boolean
   canImport(modelPermission?: IModelPermission): boolean
   canExport(modelPermission?: IModelPermission): boolean
+
+  // ── 行级检查 ──
   canDelete(row: IDataRow): boolean
   canCreateChild(row: IDataRow): boolean
   canEdit(row: IDataRow): boolean
+
+  // ── 字段级检查 ──
   isFieldVisible(field: string, row: IDataRow): boolean
   isFieldEditable(field: string, row: IDataRow): boolean
   getFieldVisibility(field: string, row: IDataRow): FieldVisibility
-  getFieldDisplayValue(field: string, value: unknown, row: IDataRow): string
-}
 
-export interface IPermissionFilterInScript {
+  // ── 字段渲染状态 ──
+  resolveFieldPermissionState(
+    field: string | undefined,
+    row: IDataRow | null | undefined,
+    config?: Omit<IFieldRenderConfigInScript, 'field'>,
+  ): IFieldRenderStateInScript | null
+  computeFieldState(config: IFieldRenderConfigInScript, row: IDataRow): IFieldRenderStateInScript
+
+  // ── 行过滤 ──
   filterDeletableRows(rows: IDataRow[]): IDataRow[]
   filterEditableRows(rows: IDataRow[]): IDataRow[]
   filterFields(row: IDataRow): Record<string, unknown>
   getEditableFields(row: IDataRow, allFields: string[]): string[]
   getVisibleFields(row: IDataRow, allFields: string[]): string[]
   filterDisplayableFields(row: IDataRow): IDataRow
-  filterDisplayableFieldsInDataSet(rows: IDataRow[]): IDataRow[]
-}
 
-export interface IFieldRenderHelperInScript {
-  computeFieldState(config: IFieldRenderConfigInScript, row: IDataRow, checker: IPermissionCheckerInScript): IFieldRenderStateInScript
-  computeFieldStates(configs: IFieldRenderConfigInScript[], row: IDataRow, checker: IPermissionCheckerInScript): IFieldRenderStateInScript[]
-  filterVisibleFields(configs: IFieldRenderConfigInScript[], row: IDataRow, checker: IPermissionCheckerInScript): IFieldRenderConfigInScript[]
-}
-
-export interface IPermissionApiInScript {
-  isPermittedAction(action: string | undefined, context: IPermissionActionContextInScript): boolean
-  resolveFieldPermissionState(
-    field: string | undefined,
-    row: IDataRow | null | undefined,
-    config?: Omit<IFieldRenderConfigInScript, 'field'>,
-  ): IFieldRenderStateInScript | null
-  formatPermissionAwareFieldValue(
-    field: string | undefined,
-    value: unknown,
-    row: IDataRow | null | undefined,
-    formatDisplay?: (value: unknown) => string,
-  ): string
-  createPermissionChecker(): IPermissionCheckerInScript
-  createPermissionFilter(): IPermissionFilterInScript
-  createFieldRenderHelper(): IFieldRenderHelperInScript
+  // ── 工具 ──
+  extractModelPermission(dataSource: { _modelPerm?: IModelPermission } | null | undefined): IModelPermission | undefined
 }
 
 /** 页面内组件实例快照（脚本可读） */

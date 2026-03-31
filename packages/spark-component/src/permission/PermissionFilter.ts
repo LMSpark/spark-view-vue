@@ -1,71 +1,51 @@
 /**
- * 权限过滤器
+ * 权限过滤器 — 纯函数集
  *
  * 批量过滤行、字段，并保留服务端已经处理好的显示值
  */
 
 import type { IDataRow } from '@spark-view/spark-data'
 import { FieldVisibility } from '@spark-view/spark-data'
-import { createPermissionChecker } from './PermissionChecker'
+import type { NavPermissionMode } from '@spark-view/spark-utils'
+import { canDelete, canEdit, isFieldEditable, isFieldVisible, getFieldVisibility } from './PermissionChecker'
 
-export class PermissionFilter {
-  private checker = createPermissionChecker()
+export function filterDeletableRows(rows: IDataRow[], permissionMode?: NavPermissionMode): IDataRow[] {
+  return rows.filter(row => canDelete(row, permissionMode))
+}
 
-  filterDeletableRows(rows: IDataRow[]): IDataRow[] {
-    return rows.filter(row => this.checker.canDelete(row))
-  }
+export function filterEditableRows(rows: IDataRow[], permissionMode?: NavPermissionMode): IDataRow[] {
+  return rows.filter(row => canEdit(row, permissionMode))
+}
 
-  filterEditableRows(rows: IDataRow[]): IDataRow[] {
-    return rows.filter(row => this.checker.canEdit(row))
-  }
-
-  filterFields(row: IDataRow): Record<string, unknown> {
-    const filtered: Record<string, unknown> = {}
-    for (const [field, value] of Object.entries(row)) {
-      if (!field.startsWith('_') && this.checker.isFieldVisible(field, row)) {
-        filtered[field] = value
-      }
-    }
-    return filtered
-  }
-
-  getEditableFields(row: IDataRow, allFields: string[]): string[] {
-    return allFields.filter(field => this.checker.isFieldEditable(field, row))
-  }
-
-  getVisibleFields(row: IDataRow, allFields: string[]): string[] {
-    return allFields.filter(field => this.checker.isFieldVisible(field, row))
-  }
-
-  filterDisplayableFields(row: IDataRow): IDataRow {
-    const filtered: IDataRow = {}
-    for (const [field, value] of Object.entries(row)) {
-      if (field.startsWith('_')) {
-        filtered[field] = value
-        continue
-      }
-
-      const visibility = this.checker.getFieldVisibility(field, row)
-      if (visibility === FieldVisibility.Hidden) continue
+export function filterFields(row: IDataRow, permissionMode?: NavPermissionMode): Record<string, unknown> {
+  const filtered: Record<string, unknown> = {}
+  for (const [field, value] of Object.entries(row)) {
+    if (!field.startsWith('_') && isFieldVisible(field, row, permissionMode)) {
       filtered[field] = value
     }
-    return filtered
   }
-
-  filterDisplayableFieldsInDataSet(rows: IDataRow[]): IDataRow[] {
-    return rows.map(row => this.filterDisplayableFields(row))
-  }
+  return filtered
 }
 
-const _instance = new PermissionFilter()
-
-export function createPermissionFilter(): PermissionFilter {
-  return _instance
+export function getEditableFields(row: IDataRow, allFields: string[], permissionMode?: NavPermissionMode): string[] {
+  return allFields.filter(field => isFieldEditable(field, row, permissionMode))
 }
 
-export const filterByPermission = {
-  deletableRows: (rows: IDataRow[]) => createPermissionFilter().filterDeletableRows(rows),
-  editableRows: (rows: IDataRow[]) => createPermissionFilter().filterEditableRows(rows),
-  displayableFields: (row: IDataRow) => createPermissionFilter().filterDisplayableFields(row),
-  displayableFieldsInRows: (rows: IDataRow[]) => createPermissionFilter().filterDisplayableFieldsInDataSet(rows),
+export function getVisibleFields(row: IDataRow, allFields: string[], permissionMode?: NavPermissionMode): string[] {
+  return allFields.filter(field => isFieldVisible(field, row, permissionMode))
+}
+
+export function filterDisplayableFields(row: IDataRow, permissionMode?: NavPermissionMode): IDataRow {
+  const filtered: IDataRow = {}
+  for (const [field, value] of Object.entries(row)) {
+    if (field.startsWith('_')) {
+      filtered[field] = value
+      continue
+    }
+
+    const visibility = getFieldVisibility(field, row, permissionMode)
+    if (visibility === FieldVisibility.Hidden) continue
+    filtered[field] = value
+  }
+  return filtered
 }

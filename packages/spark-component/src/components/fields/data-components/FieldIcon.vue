@@ -20,7 +20,7 @@
           :key="String(option.value)"
           :label="option.label"
           :value="option.value"
-          :disabled="option.disabled"
+          :disabled="option.disabled || undefined"
         >
           <div class="icon-option">
             <i v-if="option.value" :class="iconClass(String(option.value))"></i>

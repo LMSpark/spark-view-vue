@@ -12,7 +12,18 @@ import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from './types'
 import type { PageComponentApiEntry, PageComponentRegistry } from '../../core/capabilities'
-import * as permission from '../../permission/index.js'
+import {
+  isPermittedAction, resolveFieldPermissionState,
+  canCreate, canImport, canExport,
+  canDelete, canCreateChild, canEdit,
+  isFieldVisible, isFieldEditable, getFieldVisibility,
+  filterDeletableRows, filterEditableRows,
+  filterFields, getEditableFields, getVisibleFields,
+  filterDisplayableFields,
+  computeFieldState,
+  extractModelPermission,
+  isModelScopedPermAction, isRowScopedPermAction,
+} from '../../permission/index.js'
 import { pageLogger } from '../services/pageLogger'
 
 // ─── 共享 $refreshData 实现 ──────────────────────────────────────────────────
@@ -138,7 +149,18 @@ export function buildPageContext(deps: PageContextDeps): PageContext {
     $refreshData: createRefreshData(getDataSet),
 
     $page: pageService,
-  permission,
+    permission: {
+      isPermittedAction, resolveFieldPermissionState,
+      canCreate, canImport, canExport,
+      canDelete, canCreateChild, canEdit,
+      isFieldVisible, isFieldEditable, getFieldVisibility,
+      filterDeletableRows, filterEditableRows,
+      filterFields, getEditableFields, getVisibleFields,
+      filterDisplayableFields,
+      computeFieldState,
+      extractModelPermission,
+      isModelScopedPermAction, isRowScopedPermAction,
+    },
     console: scriptConsole,
     SparkData,
     h: h as (type: unknown, ...args: unknown[]) => unknown,

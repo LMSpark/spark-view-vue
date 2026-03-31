@@ -73,7 +73,7 @@ import { computed, ref } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode } from '../../../internal'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
-import { isPermittedAction } from '../../../../permission/index.js'
+import { usePermission } from '../../../../permission/index.js'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
@@ -165,6 +165,7 @@ const {
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
+const perm = usePermission()
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
@@ -220,14 +221,14 @@ const {
 function shouldShowLegacyAppend(row: IDataRow): boolean {
   return hasLegacyNodeActions.value
     && effectiveAllowAppend.value
-    && isPermittedAction('create', modelPermission.value ? { modelPermission: modelPermission.value } : {})
-    && isPermittedAction('create-child', { row })
+    && perm.isPermitted('create', modelPermission.value ? { modelPermission: modelPermission.value } : {})
+    && perm.isPermitted('create-child', { row })
 }
 
 function shouldShowLegacyDelete(row: IDataRow): boolean {
   return hasLegacyNodeActions.value
     && effectiveAllowDelete.value
-    && isPermittedAction('delete', { row })
+    && perm.isPermitted('delete', { row })
 }
 
 sparkProvide(DATA_ROW, {} as IDataRow)

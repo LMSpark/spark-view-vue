@@ -58,8 +58,10 @@ import type { HttpClient } from '@spark-view/spark-utils'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
+import type { NavPermissionMode } from '@spark-view/spark-utils'
 import { nodeId, SPARK_NODE_STRUCT_KEYS, type SparkNode } from '../../core/types'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE } from '../../core/capabilities'
+import { PAGE_PERMISSION_MODE } from '../../permission/page-permission-mode'
 import type { ModuleContextCapability, PageCssScopeCapability } from '../../core/capabilities'
 import { useRendererSetup } from './useRendererSetup'
 import { useCssScope } from './useCssScope'
@@ -167,6 +169,10 @@ const cssScopeCapability: PageCssScopeCapability = {
   inject(css: string) { setScopedCss(currentPageId.value, css) },
 }
 sparkProvide(CSS_SCOPE, cssScopeCapability)
+
+// ── 页面权限模式（后端通过导航配置下发，route meta 传递） ──
+const permissionMode = (route.meta['permissionMode'] as NavPermissionMode | undefined) ?? 'masked'
+sparkProvide(PAGE_PERMISSION_MODE, permissionMode)
 
 // ── DataSet ──
 const pds = usePageDataSet({ enableDataSet: props.enableDataSet })

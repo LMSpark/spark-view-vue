@@ -47,7 +47,8 @@ public class ProjectNavigationTreeService {
     private static final String SELECT_FLAT_SQL = """
         SELECT NODE_ID, PARENT_ID, TITLE, DESCRIPTION, NODE_KIND, PATH, ICON,
            DIVIDER_AFTER, CHILD_PLACEMENT, LINK_TARGET,
-           HIDDEN, DISABLED, SORT_ORDER, REF_ID, CONTEXT
+           HIDDEN, DISABLED, SORT_ORDER, REF_ID, CONTEXT,
+           PERMISSIONS
         FROM NAVIGATION_NODE_FLAT
         WHERE TENANT_ID = ? AND PROJECT_ID = ?
         ORDER BY SORT_ORDER, NODE_ID
@@ -62,8 +63,9 @@ public class ProjectNavigationTreeService {
             TITLE, DESCRIPTION, NODE_KIND, PATH, ICON,
             DIVIDER_AFTER, CHILD_PLACEMENT, LINK_TARGET,
             HIDDEN, DISABLED, SORT_ORDER,
-            NODE_ID, UPDATED_AT, REF_ID, CONTEXT
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            NODE_ID, UPDATED_AT, REF_ID, CONTEXT,
+            PERMISSIONS
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
     private static final String EXISTS_NODE_SQL = """
         SELECT 1 FROM NAVIGATION_NODE_FLAT
@@ -82,7 +84,8 @@ public class ProjectNavigationTreeService {
         UPDATE NAVIGATION_NODE_FLAT SET
             TITLE = ?, DESCRIPTION = ?, NODE_KIND = ?, PATH = ?, ICON = ?,
             DIVIDER_AFTER = ?, CHILD_PLACEMENT = ?, LINK_TARGET = ?,
-            HIDDEN = ?, DISABLED = ?, REF_ID = ?, CONTEXT = ?, UPDATED_AT = ?
+            HIDDEN = ?, DISABLED = ?, REF_ID = ?, CONTEXT = ?,
+            PERMISSIONS = ?, UPDATED_AT = ?
         WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
         """;
     private static final String DELETE_BY_NODE_ID_SQL = """
@@ -141,14 +144,27 @@ public class ProjectNavigationTreeService {
                 SORT_ORDER      INT           DEFAULT 0,
                 UPDATED_AT      TIMESTAMP,
                 REF_ID          VARCHAR(255),
-                CONTEXT         CLOB
+                CONTEXT         CLOB,
+                PERMISSIONS     VARCHAR(2000)
             )
             """);
+        // 向已有表安全添加新列（列已存在则忽略）
+        safeAddColumn("PERMISSIONS", "VARCHAR(2000)");
         jdbcTemplate.execute("""
             CREATE INDEX IF NOT EXISTS IDX_NAV_TENANT_PROJECT
             ON NAVIGATION_NODE_FLAT (TENANT_ID, PROJECT_ID)
             """);
         log.info("[Navigation] 表 NAVIGATION_NODE_FLAT 已就绪");
+    }
+
+    /** 安全添加列：如果列已存在则忽略。 */
+    private void safeAddColumn(String column, String type) {
+        try {
+            jdbcTemplate.execute("ALTER TABLE NAVIGATION_NODE_FLAT ADD COLUMN " + column + " " + type);
+            log.info("[Navigation] 已添加列 {}", column);
+        } catch (Exception e) {
+            // 列已存在，忽略
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -252,6 +268,7 @@ public class ProjectNavigationTreeService {
                 toBoolean(merged.get("disabled")),
                 blankToNull(asTrimmedString(merged.get("refId"))),
                 serializeContext(merged.get("context")),
+                blankToNull(asTrimmedString(merged.get("permissionMode"))),
                 Timestamp.from(Instant.now()),
                 tenantId, projectId, id);
 
@@ -866,6 +883,13 @@ public class ProjectNavigationTreeService {
         if (Boolean.TRUE.equals(raw.get("disabled"))) {
             node.put("disabled", true);
         }
+        // 权限模式：none / masked / invisible
+        String permMode = asTrimmedString(raw.get("permissionMode"));
+        if ("none".equals(permMode) || "masked".equals(permMode) || "invisible".equals(permMode)) {
+            node.put("permissionMode", permMode);
+        } else {
+            node.put("permissionMode", "masked");
+        }
         if (raw.containsKey("context") && raw.get("context") != null) {
             node.put("context", raw.get("context"));
         }
@@ -1044,6 +1068,8 @@ public class ProjectNavigationTreeService {
         }
     }
 
+
+
     private HttpResponse<Void> requestHead(HttpClient client, URI uri) throws IOException {
         HttpRequest request = HttpRequest.newBuilder(uri)
                 .timeout(Duration.ofSeconds(12))
@@ -1146,6 +1172,13 @@ public class ProjectNavigationTreeService {
             }
             if (Boolean.TRUE.equals(row.get("DISABLED"))) {
                 node.put("disabled", true);
+            }
+            // 权限模式：DB null 默认 masked
+            String permMode = asTrimmedString(row.get("PERMISSIONS"));
+            if ("none".equals(permMode) || "masked".equals(permMode) || "invisible".equals(permMode)) {
+                node.put("permissionMode", permMode);
+            } else {
+                node.put("permissionMode", "masked");
             }
 
             flatNodes.add(new FlatNode(nodeId, parentId.isBlank() ? null : parentId, sortOrder, node));
@@ -1437,6 +1470,7 @@ public class ProjectNavigationTreeService {
             statement.setTimestamp(16, Timestamp.from(Instant.now()));
             statement.setString(17, refId.isBlank() ? null : refId);
             statement.setString(18, contextJson);
+            statement.setString(19, blankToNull(asTrimmedString(node.get("permissionMode"))));
             return statement;
         });
 

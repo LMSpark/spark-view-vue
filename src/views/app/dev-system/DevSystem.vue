@@ -223,16 +223,14 @@ const state = useDevState()
 // 工作区 Tab
 const workTab = ref<string>('props')
 
-// activePageId 变化时自动切换 Tab：
-// - 关联了配置页（选下拉/点击配置节点）→ 切到文件编辑
-// - 取消关联或选中非配置节点 → 切到节点属性
+// 切换节点时，一律回到节点属性 tab
+watch(() => state.selectedNode.value, () => {
+  workTab.value = 'props'
+})
+
+// activePageId 清空时切回节点属性（取消关联 / 选中非配置节点）
 watch(() => state.activePageId.value, (newId) => {
-  if (newId) {
-    // 切到第一个文件 tab（若当前不在任何文件 tab 上）
-    if (!PAGE_FILE_NAMES.includes(workTab.value as typeof PAGE_FILE_NAMES[number])) {
-      workTab.value = PAGE_FILE_NAMES[0]
-    }
-  } else if (state.selectedNode.value) {
+  if (!newId && state.selectedNode.value) {
     workTab.value = 'props'
   }
 })

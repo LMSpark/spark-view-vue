@@ -1,25 +1,48 @@
 /**
- * 权限系统模块 — 面向渲染层的权限 API
+ * 权限系统模块 — 权限数据的唯一消费者
  *
  * ## 定位
- * 这里导出的是 `spark-component` 使用的权限解析与渲染 API。
- * 权限快照类型仍定义在 `@spark-view/spark-data`，但字段/动作权限的聚合与渲染辅助统一收口到组件层。
+ * 页面权限模型 + 权限解析/渲染 API 统一收口于此。
+ * 权限快照类型仍定义在 `@spark-view/spark-data`，但所有权限数据消费、字段/动作权限判断均在本模块内。
+ *
+ * ## 设计原则
+ * - 纯函数优先：所有权限检查/过滤/字段状态计算均为纯函数，无类实例、无单例
+ * - usePermission 是唯一的 Vue composable 桥接，内部消费 PAGE_PERMISSION_MODE 能力
+ * - 其他 composable 只能通过 usePermission() 访问权限数据，不允许直接 sparkConsume 权限能力
  */
 
-export { PermissionChecker, createPermissionChecker, checkPermission } from './PermissionChecker'
-export { PermissionFilter, createPermissionFilter, filterByPermission } from './PermissionFilter'
+// ── 页面权限模型（能力键，仅 SparkPageRenderer 应 import） ──
+export { PAGE_PERMISSION_MODE } from './page-permission-mode'
+
+// ── 权限检查纯函数 ──
 export {
-  FieldRenderHelper,
-  createFieldRenderHelper,
-  computeFieldState,
-  computeFieldStates,
-  filterVisibleFields,
-} from './FieldRenderHelper'
+  canCreate, canImport, canExport,
+  canDelete, canCreateChild, canEdit,
+  isFieldVisible, isFieldEditable, getFieldVisibility,
+  extractModelPermission,
+} from './PermissionChecker'
+
+// ── 权限过滤纯函数 ──
 export {
-  isPermittedAction,
-  resolveFieldPermissionState,
-  formatPermissionAwareFieldValue,
+  filterDeletableRows, filterEditableRows,
+  filterFields, getEditableFields, getVisibleFields,
+  filterDisplayableFields,
+} from './PermissionFilter'
+
+// ── 字段渲染状态 ──
+export { computeFieldState } from './FieldRenderHelper'
+
+// ── 动作权限解析 ──
+export {
+  isPermittedAction, resolveFieldPermissionState,
+  isModelScopedPermAction, isRowScopedPermAction,
+  isModelActionAllowed, isRowActionAllowed,
 } from './PermissionResolver'
 
-export type { IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper } from './FieldRenderHelper'
+// ── Vue composable 桥接 ──
+export { usePermission } from './usePermission'
+
+// ── 类型 ──
+export type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
 export type { PermissionActionContext } from './PermissionResolver'
+export type { UsePermissionReturn } from './usePermission'
