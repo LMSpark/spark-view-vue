@@ -1,7 +1,7 @@
 /**
  * DataSet JSON 提示词验证测试
  *
- * 把 docs/guides/DATASET_JSON_PROMPT.md 中的所有完整验证案例 JSON
+ * 把 docs/ai/prompts/data/DATASET_JSON_PROMPT.md 中的所有完整验证案例 JSON
  * 用 DataSet.fromPageData() 实例化，自动验证：
  *  1. 能成功实例化（不抛出错误）
  *  2. 视图（DataView）行数据正确

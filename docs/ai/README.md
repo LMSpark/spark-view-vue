@@ -1,0 +1,53 @@
+# SPARK AI 文档体系
+
+> 所有 AI 相关文档的统一入口。按「运行时基线 → 提示词 → 架构设计」三层组织。
+
+## 分层总览
+
+### 第 1 层：运行时基线
+
+[system-prompt.txt](../../spark-ai-server/src/main/resources/prompts/system-prompt.txt)
+— 后端页面生成链路实际加载的系统提示词，是所有文档规则的最终对齐基线。
+
+### 第 2 层：提示词（prompts/）
+
+可直接复制给 AI 使用的操作文档，按场景分组：
+
+| 分组 | 文件 | 角色 |
+|------|------|------|
+| **平台规则** | [API_FIRST_PROMPT.md](prompts/platform/API_FIRST_PROMPT.md) | API-first 约束（强制） |
+| | [AI_PROTOCOL_UNIFIED.md](prompts/platform/AI_PROTOCOL_UNIFIED.md) | 统一交互协议 |
+| **数据生成** | [PAGEDATA_JSON_COMPLETE_PROMPT.md](prompts/data/PAGEDATA_JSON_COMPLETE_PROMPT.md) | 生产版主入口 |
+| | [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md) | 模板版（可嵌入组装） |
+| | [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md) | 案例与验证版 |
+| **页面生成** | [SPARK_PAGE_CONFIG_PROMPT.md](prompts/pages/SPARK_PAGE_CONFIG_PROMPT.md) | 页面配置主提示词 |
+| | [AI_PAGE_GENERATION_STRATEGY.md](prompts/pages/AI_PAGE_GENERATION_STRATEGY.md) | 策略与实战经验 |
+| **组件专项** | [SPARK_COMPONENT_PROMPT.md](prompts/components/SPARK_COMPONENT_PROMPT.md) | 组件开发主提示词 |
+| | [R_TABLE_PROMPT.md](prompts/components/R_TABLE_PROMPT.md) | r-table 专项 |
+| | [COMPONENT_DEEP_OPTIMIZATION_PROMPT_TEMPLATE.md](prompts/components/COMPONENT_DEEP_OPTIMIZATION_PROMPT_TEMPLATE.md) | 深度优化模板 |
+
+### 第 3 层：AI 架构设计（architecture/）
+
+AI 能力的系统设计与实施规划：
+
+| 文件 | 说明 |
+|------|------|
+| [AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md](architecture/AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md) | 全生命周期方案（对标 v0.dev / Bolt.new） |
+| [AI_INTERACTION_ARCHITECTURE.md](architecture/AI_INTERACTION_ARCHITECTURE.md) | 五层交互体系设计 |
+| [AI_LIFECYCLE_IMPLEMENTATION_PLAN.md](architecture/AI_LIFECYCLE_IMPLEMENTATION_PLAN.md) | 分阶段实施路线图 |
+| [AI_METADATA_PIPELINE.md](architecture/AI_METADATA_PIPELINE.md) | 组件元数据提取管线 |
+| [DEV_SYSTEM_ENGINEERING_CHAIN.md](architecture/DEV_SYSTEM_ENGINEERING_CHAIN.md) | 开发系统工程链 |
+
+## 角色约定
+
+- **生产版**：直接复制给 AI 使用的主提示词。
+- **模板版**：适合嵌入其他提示词、做二次组装的精简模板。
+- **案例版**：保留验证案例和质量门，不作为首选复制入口。
+- **策略版**：沉淀实战方法和跨文件协同经验。
+
+## 使用顺序
+
+1. 先判断问题属于平台规则、数据生成、页面生成还是组件专项。
+2. 进入对应分组，选择合适角色（生产版 / 模板版 / 案例版 / 策略版）。
+3. 涉及运行时行为时，以 system-prompt.txt 为最终对齐基线。
+4. 维护或扩展体系前，先看 [GOVERNANCE.md](GOVERNANCE.md)。

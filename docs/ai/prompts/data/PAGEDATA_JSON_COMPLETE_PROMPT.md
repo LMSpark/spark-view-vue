@@ -4,7 +4,7 @@
 >
 > 目标是让 AI 一次生成可落地、与当前运行时提示词一致的 pagedata.json，而不是生成旧格式、半成品结构，或把业务逻辑错误地塞进 script.js。
 >
-> 所属： [AI 提示词体系](../ai-prompts/README.md) / [数据生成](../ai-prompts/data/README.md) / 生产版主入口。
+> 所属： [AI 文档体系](../../README.md) / 数据生成 / 生产版主入口。
 
 ## 使用方式
 
@@ -693,4 +693,4 @@ dependencyType 可选值：
 
 ## 使用建议
 
-如果目标页面是树页面，建议把这份提示词和 [docs/guides/TREE_CAPABILITY.md](docs/guides/TREE_CAPABILITY.md) 一起给模型，这样它更容易把 treeConfig、treeMode 和导航树 API 一次写对。
+如果目标页面是树页面，建议把这份提示词和 [TREE_CAPABILITY.md](../../../guides/TREE_CAPABILITY.md) 一起给模型，这样它更容易把 treeConfig、treeMode 和导航树 API 一次写对。

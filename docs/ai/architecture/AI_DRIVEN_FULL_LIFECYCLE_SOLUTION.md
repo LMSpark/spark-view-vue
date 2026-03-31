@@ -98,7 +98,7 @@
 5. **写入优先批量接口**：`pages-config` 写操作优先 `__batch`，降低重绑与事件风暴。
 6. **fail-fast**：异常必须显式暴露，不允许静默兜底掩盖根因。
 
-> 现有后端完整 API 基线见：[docs/ai-prompts/platform/API_FIRST_PROMPT.md](../ai-prompts/platform/API_FIRST_PROMPT.md)。
+> 现有后端完整 API 基线见：[API_FIRST_PROMPT.md](../prompts/platform/API_FIRST_PROMPT.md)。
 
 ### 1.5 术语与边界定义（优化①）
 

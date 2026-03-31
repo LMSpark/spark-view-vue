@@ -15,31 +15,34 @@
    这是后端页面生成链路真正加载的系统提示词。凡是“运行时一定要这样做”的约束，最终以它为准。
 
 2. 生产版主入口
-   例如 [PAGEDATA_JSON_COMPLETE_PROMPT.md](../guides/PAGEDATA_JSON_COMPLETE_PROMPT.md)。
-   这类文档面向“直接复制给 AI”的使用场景，必须与运行时基线对齐。
+   例如 [PAGEDATA_JSON_COMPLETE_PROMPT.md](prompts/data/PAGEDATA_JSON_COMPLETE_PROMPT.md)。
+   这类文档面向"直接复制给 AI"的使用场景，必须与运行时基线对齐。
 
 3. 模板版
-   例如 [DATASET_JSON_PROMPT_TEMPLATE.md](../guides/DATASET_JSON_PROMPT_TEMPLATE.md)。
+   例如 [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md)。
    这类文档用于嵌入其他 prompt、做组装或裁剪，不应引入独立规则体系。
 
 4. 案例版
-   例如 [DATASET_JSON_PROMPT.md](../guides/DATASET_JSON_PROMPT.md)。
+   例如 [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md)。
    这类文档保留验证案例、历史演进和扩展说明，不作为首选复制入口。
 
 5. 策略版
-   例如 [AI_PAGE_GENERATION_STRATEGY.md](pages/AI_PAGE_GENERATION_STRATEGY.md)。
+   例如 [AI_PAGE_GENERATION_STRATEGY.md](prompts/pages/AI_PAGE_GENERATION_STRATEGY.md)。
    这类文档沉淀拆分策略、生成方法、跨文件协同经验，不负责定义底层 schema。
 
-## 当前目录职责
+## 目录职责
 
-1. [docs/ai-prompts](README.md)
-   负责体系入口、分类导航、角色说明、治理规则，以及已迁移文档的 canonical 正文。
+1. [docs/ai/](README.md)
+   所有 AI 相关文档的统一根目录。prompts/ 存放可操作提示词，architecture/ 存放 AI 系统设计。
 
-2. [docs/guides](../guides)
-   当前只承担未迁移的数据正文与通用指南职责；对于已迁移 prompt，不再保留第二份同名包装文件。
+2. [docs/guides/](../guides)
+   纯开发者指南（非 AI），不承载任何 prompt 正文。
 
-3. [spark-ai-server/src/main/resources/prompts](../../spark-ai-server/src/main/resources/prompts)
-   负责运行时系统 prompt，不由 docs 替代。
+3. [docs/architecture/](../architecture)
+   纯框架架构设计（非 AI），如数据流、权限、导航、租户路由。
+
+4. [spark-ai-server/src/main/resources/prompts/](../../spark-ai-server/src/main/resources/prompts)
+   运行时系统 prompt，不由 docs 替代。
 
 ## 更新顺序
 
@@ -52,14 +55,10 @@
 5. 如果分类或角色发生变化，再更新 [README.md](README.md) 和对应子目录 README。
 6. 最后确认测试、README、QUICKSTART、交叉引用是否仍然指向有效路径。
 
-## 数据分组迁移约束
+## 数据分组说明
 
-数据生成分组当前不属于普通的“移动正文 + 保留包装页”低风险迁移，原因如下：
-
-1. [DATASET_JSON_PROMPT.md](../guides/DATASET_JSON_PROMPT.md) 仍承担案例与验证基线职责，不只是一个历史入口。
-2. [dataset-prompt-validation.test.ts](../../packages/spark-data/src/tests/dataset-prompt-validation.test.ts) 明确把旧 guides 正文作为提示词质量门说明来源。
-3. 因此，在没有先改验证基线、引用方式和入口文档前，数据分组仍应在旧路径单份承载正文，不要再复制出第二份同名正文。
-4. 数据分组的正确迁移顺序应是：先处理验证依赖，再处理正文承载路径，最后再切换入口与兼容策略。
+数据生成提示词已统一迁入 [prompts/data/](prompts/data/)。
+[dataset-prompt-validation.test.ts](../../packages/spark-data/src/tests/dataset-prompt-validation.test.ts) 中的路径注释需同步更新。
 
 ## 新增文档准入规则
 
@@ -77,7 +76,7 @@
 
 ## 命名与标识规则
 
-1. 新增正文 prompt 文档时，优先放在对应的 [docs/ai-prompts](README.md) 分类目录；已迁移的同名旧路径文件应删除，而不是保留第二份包装页。数据分组在验证基线未解耦前除外。
+1. 新增正文 prompt 文档时，放在 [docs/ai/prompts/](prompts/) 对应分类目录，同一场景只保留一份正文。
 2. 每份核心正文文档顶部都应写明“所属：AI 提示词体系 / 分类 / 角色”。
 3. 每个分类下应尽量保持一个清晰主入口，不要并列多个“都可以直接复制”的版本。
 

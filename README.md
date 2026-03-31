@@ -183,8 +183,7 @@ await SparkApp.start({
 ## 📚 文档导航
 
 - [🏗️ 架构设计](docs/architecture/DATAFLOW_ARCHITECTURE.md) - 完整的数据流和分层架构
-- [🗂️ AI 提示词体系](docs/ai-prompts/README.md) - 按平台 / 数据 / 页面 / 组件分类整理的 AI 提示词入口
-- [🧠 数据生成提示词](docs/ai-prompts/data/README.md) - pagedata.json / DataSet / API / views / relations 的分类入口
+- [🤖 AI 文档体系](docs/ai/README.md) - 提示词 + AI 架构设计的统一入口
 - [⚙️ 组件开发](docs/guides/COMPONENT_DEVELOPMENT.md) - 组件注册和能力系统
 - [📊 数据管理](docs/guides/DATA_MANAGEMENT.md) - DataSet 和 TreeManager 使用
 - [🌲 树能力总览](docs/guides/TREE_CAPABILITY.md) - 树容器、DataView、TreeManager、导航树 API 与零代码动作

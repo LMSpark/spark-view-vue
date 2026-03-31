@@ -4,7 +4,7 @@
 >
 > 本文仍保留案例与扩展说明；如果你只是要一份可直接复制给 AI 的完整 pagedata.json 提示词，优先使用上面的新文档和 [DATASET_JSON_PROMPT_TEMPLATE.md](DATASET_JSON_PROMPT_TEMPLATE.md)。
 >
-> 所属： [AI 提示词体系](../ai-prompts/README.md) / [数据生成](../ai-prompts/data/README.md) / 案例与验证版。
+> 所属： [AI 文档体系](../../README.md) / 数据生成 / 案例与验证版。
 
 本文档提供一套经过验证的提示词（Prompt），帮助开发者通过 AI 模型（ChatGPT、Claude、Gemini 等）根据业务描述自动生成符合 SPARK `spark-data` 规范的 `pagedata.json` DataSet 配置文件。
 

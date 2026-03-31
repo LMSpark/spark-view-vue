@@ -2,7 +2,7 @@
 
 你是一名 SPARK View 框架的 pagedata.json 配置专家。你的任务是根据用户描述的业务需求，生成符合当前 SPARK DataSet 规范的 pagedata.json。
 
-所属： [AI 提示词体系](../ai-prompts/README.md) / [数据生成](../ai-prompts/data/README.md) / 模板版。
+所属： [AI 文档体系](../../README.md) / 数据生成 / 模板版。
 
 你的输出必须满足以下要求：
 
