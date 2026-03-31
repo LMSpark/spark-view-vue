@@ -23,6 +23,8 @@ pnpm add @spark-view/spark-page-config
 
 ### 1. 配置文件结构
 
+本地 SPA 模式（`source: 'local'`）下，页面配置存放于前端静态目录：
+
 ```
 public/pages-config/
   <pageId>/
@@ -30,6 +32,8 @@ public/pages-config/
       pagedata.json     # 页面数据
       script.js         # 页面脚本（可选）
 ```
+
+> 生产部署默认使用远程模式（`source: 'remote'`），配置由后端 API 管理（`spark-ai-server/data/pages-config/`）。
 
 ### 2. 页面规则 (rule.json)
 
@@ -99,27 +103,18 @@ if (ruleErrors.length > 0) {
 }
 ```
 
-## 与 L1 (spark-app) 集成
+## 与其他 SPARK 包的关系
 
-本包依赖 [spark-app](../spark-app/README.md) 提供的基础设施：
-
-- **Logger** - 使用 `createLogger(scope)` 创建作用域日志
-- **符号常量** - 使用 `DefaultConfig`、`ErrorCodes`
-- **错误处理** - 统一错误码和消息
-- **权限过滤** - 通过 `beforeRegister` 钩子集成
-
-详细集成说明请查阅 [INTEGRATION.md](./INTEGRATION.md)。
-
-## API 文档
-
-完整 API 文档请查看 [API.md](./API.md)
+本包依赖：
+- **[spark-data](../spark-data/API.md)** — DataSet / DataView / DataKey 数据模型
+- **[spark-utils](../spark-utils/README.md)** — Logger、能力系统基础设施
 
 ## 依赖
 
 ```json
 {
-  "@spark-view/spark-app": "workspace:*",
-  "vue-router": "^4.2.0"
+  "@spark-view/spark-data": "workspace:*",
+  "@spark-view/spark-utils": "workspace:*"
 }
 ```
 

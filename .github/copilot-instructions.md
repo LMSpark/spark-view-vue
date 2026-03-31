@@ -1196,7 +1196,7 @@ for (const [k, v] of Object.entries(data)) {
 
 ## Testing & common pitfalls 🧪
 - 测试使用 Vitest + jsdom
-- 测试挂载时通过 `Spark.createPlugin()` 注入 `sparkManager`
+- 测试挂载时通过 `app.use(Spark.createPlugin())` 注入 SPARK 注册表与根上下文
 - 常见运行时错误：`Component not found` → 确认组件注册发生在使用之前
 - 能力 `consume` 返回 null 是正常情况（late-binding），不是错误
 
