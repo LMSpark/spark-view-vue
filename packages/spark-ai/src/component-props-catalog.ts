@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-30T15:48:39.322Z
- * 条目数量：97
+ * 生成时间：2026-03-31T02:44:05.329Z
+ * 条目数量：98
  */
 import type { ComponentCatalog } from './catalog-types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-30T15:48:39.318Z",
-  "componentCount": 97,
+  "buildTime": "2026-03-31T02:44:05.324Z",
+  "componentCount": 98,
   "registry": {
     "containers": [
       "r-block",
@@ -5647,6 +5647,60 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "askToFormat",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: string]",
+          "schema": []
+        }
+      ],
+      "binding": {
+        "bindingDelegate": "form-element",
+        "valueType": "string"
+      }
+    },
+    "spark-code-editor": {
+      "type": "spark-code-editor",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。",
+      "props": [
+        {
+          "name": "modelValue",
+          "type": "string",
+          "required": false,
+          "default": "\"\""
+        },
+        {
+          "name": "language",
+          "type": "SparkCodeLanguage",
+          "required": false,
+          "default": "\"javascript\""
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "height",
+          "type": "string | number",
+          "required": false,
+          "default": "360"
+        },
+        {
+          "name": "tabSize",
+          "type": "number",
+          "required": false,
+          "default": "2"
+        },
+        {
+          "name": "lineWrapping",
           "type": "boolean",
           "required": false,
           "default": "false"

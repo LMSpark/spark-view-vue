@@ -3,6 +3,8 @@
 > 当前推荐直接使用完整版提示词：[PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md)。
 >
 > 本文仍保留案例与扩展说明；如果你只是要一份可直接复制给 AI 的完整 pagedata.json 提示词，优先使用上面的新文档和 [DATASET_JSON_PROMPT_TEMPLATE.md](DATASET_JSON_PROMPT_TEMPLATE.md)。
+>
+> 所属： [AI 提示词体系](../ai-prompts/README.md) / [数据生成](../ai-prompts/data/README.md) / 案例与验证版。
 
 本文档提供一套经过验证的提示词（Prompt），帮助开发者通过 AI 模型（ChatGPT、Claude、Gemini 等）根据业务描述自动生成符合 SPARK `spark-data` 规范的 `pagedata.json` DataSet 配置文件。
 
@@ -14,15 +16,15 @@
 2. [使用方法](#2-使用方法)
 3. [提示词（可直接复制）](#3-提示词可直接复制)
 4. [验证案例](#4-验证案例)
-   - [案例 A：图书馆管理（简单两表 + 主从关系）](#案例-a图书馆管理简单两表--主从关系)
-   - [案例 B：电商订单管理（计算列 + 聚合）](#案例-b电商订单管理计算列--聚合)
-   - [案例 C：HR 人员管理（API + 多计算列 + 聚合）](#案例-chr-人员管理api--多计算列--聚合)
-   - [案例 D：医院门诊管理（三级层次 + 多计算列）](#案例-d医院门诊管理三级层次--多计算列--聚合)
-   - [案例 E：员工系统双视图（同父表不同视图驱动不同子表）](#案例-e员工系统双视图同一父表不同命名视图分别驱动不同子表)
-   - [案例 F：供应商采购管理（三级层次 + API + 计算列 + 聚合）](#案例-f供应商采购管理三级层次--api--计算列--聚合)
-   - [案例 G：仓库库存管理（v1.9 新特性：复合主键 + integer/decimal + $list + aggregates.field/separator）](#案例-g仓库库存管理v19-新特性复合主键--integerdecimal--list--aggregatesfieldseparator)
-   - [案例 H：仓库库存管理（外部 AI 验证：number/string/date + 多分支计算列 + 双 relation）](#案例-h仓库库存管理外部-ai-验证numberstringdate--多分支计算列--双-relation)
-   - [案例 I：物业管理系统（提示词模板自测：三级层次 + $count/$sum/$join + aggregates.field）](#案例-i物业管理系统提示词模板自测三级层次--countsumjoin--aggregatesfield)
+- 案例 A：图书馆管理（简单两表 + 主从关系）
+- 案例 B：电商订单管理（计算列 + 聚合）
+- 案例 C：HR 人员管理（API + 多计算列 + 聚合）
+- 案例 D：医院门诊管理（三级层次 + 多计算列）
+- 案例 E：员工系统双视图（同父表不同视图驱动不同子表）
+- 案例 F：供应商采购管理（三级层次 + API + 计算列 + 聚合）
+- 案例 G：仓库库存管理（v1.9 新特性：复合主键 + integer/decimal + $list + aggregates.field/separator）
+- 案例 H：仓库库存管理（外部 AI 验证：number/string/date + 多分支计算列 + 双 relation）
+- 案例 I：物业管理系统（提示词模板自测：三级层次 + $count/$sum/$join + aggregates.field）
 5. [JSON 自检清单](#5-json-自检清单)
 6. [配置参考速查](#6-配置参考速查)
 
@@ -156,22 +158,32 @@ date | datetime | time | object | array | enum
 ═══════════════════════════════════════════════════
 
 父视图的交互状态变化（切换当前行 / 勾选行）→ 子视图自动过滤匹配行。
-parentViewId / childViewId 默认均为 'default'，单视图页面可省略。
+视图表示同一张表的一个 DataView，用于承载不同用途或状态，例如列表展示、当前行编辑、树形展示、汇总展示。
+parentViewId 表示从父表哪个视图读取状态，childViewId 表示把过滤或加载作用到子表哪个视图。
+parentViewId / childViewId 默认均为 'default'；当前生成约定中单视图页面也应显式写出，不要省略。
+
+选择类字段的编辑选项：
+
+- pagedata.json 负责提供选项数据源，优先用独立字典表承载，而不是把 options 塞进主表每一行。
+- rule.json 中选择类字段通常通过 optionKey 绑定到某个选项视图，例如 "StatusOptions@rows"。
+- 选项显示字段常用 label/text/name，取值字段常用 value/id/code；非标准命名时在 rule.json 中补 optionLabelField、optionValueField。
+- 树形选项和级联选项如需从 DataSet 读取，应在选项视图上补 treeConfig，或直接提供带 children 的嵌套结构。
+
+推荐顺序：
+
+- 第一阶段先定业务主从表、列、api 策略、计算表达式、选项表、选项级联键。
+- 第二阶段先定视图，最后再根据字段输入级联链路和主从联动链路生成 relations，把主从联动和字段编辑级联串起来。
 
 relations 数组中每条关联：
 
 {
   "parentTable":    "ParentName",    // 必填：父视图所在表名
-  "parentViewId":   "default",       // 可选：父视图 ID（默认 'default'）
+  "parentViewId":   "default",       // 建议显式填写：父视图 ID
   "childTable":     "ChildName",     // 必填：子视图所在表名
-  "childViewId":    "default",       // 可选：子视图 ID（默认 'default'）
+  "childViewId":    "default",       // 建议显式填写：子视图 ID
   "parentField":    "id",            // 可选：父视图匹配字段（默认取父表主键）
   "childField":     "parentId",      // 必填：子视图行中的外键字段名
-  "dependencyType": "currentRow",    // 推荐填写：见选择规则
-  "cascadeUpdate":  true,            // 可选：父视图行更新时级联刷新子视图
-  "cascadeDelete":  true,            // 可选：父视图行删除时级联删除子视图匹配行
-  "autoLoad":       false,           // 可选：父视图行切换时是否自动请求子视图 api（默认 true，设为 false 禁用）
-  "relationName":   "ParentChild"    // 可选：关联命名（便于调试）
+  "dependencyType": "currentRow"     // 推荐填写：见选择规则
 }
 
 dependencyType — 父视图的哪种状态变化会驱动子视图重新过滤（重要）：
@@ -347,9 +359,10 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
     },
     "relations": [
       {
-        "relationName":   "StudentGrades",
         "parentTable":    "Students",
+        "parentViewId":   "default",
         "childTable":     "Grades",
+        "childViewId":    "default",
         "childField":     "studentId",
         "dependencyType": "currentRow"
       }
@@ -429,12 +442,12 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
     },
     "relations": [
       {
-        "relationName":   "ReaderBorrowRecords",
         "parentTable":    "Readers",
+        "parentViewId":   "default",
         "childTable":     "BorrowRecords",
+        "childViewId":    "default",
         "childField":     "readerId",
-        "dependencyType": "currentRow",
-        "cascadeDelete":  true
+        "dependencyType": "currentRow"
       }
     ]
   }
@@ -518,12 +531,12 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
     },
     "relations": [
       {
-        "relationName":   "OrderItems",
         "parentTable":    "Orders",
+        "parentViewId":   "default",
         "childTable":     "OrderItems",
+        "childViewId":    "default",
         "childField":     "orderId",
-        "dependencyType": "currentRow",
-        "cascadeDelete":  true
+        "dependencyType": "currentRow"
       }
     ]
   }
@@ -607,12 +620,12 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
     },
     "relations": [
       {
-        "relationName":   "DeptEmployees",
         "parentTable":    "Departments",
+        "parentViewId":   "default",
         "childTable":     "Employees",
+        "childViewId":    "default",
         "childField":     "deptId",
-        "dependencyType": "currentRow",
-        "cascadeDelete":  false
+        "dependencyType": "currentRow"
       }
     ]
   }
@@ -707,8 +720,8 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
       }
     },
     "relations": [
-      { "relationName": "DepartmentDoctors",  "parentTable": "Departments", "childTable": "Doctors",       "childField": "departmentId", "dependencyType": "currentRow" },
-      { "relationName": "DoctorAppointments", "parentTable": "Doctors",     "childTable": "Appointments",  "childField": "doctorId",     "dependencyType": "currentRow" }
+      { "parentTable": "Departments", "parentViewId": "default", "childTable": "Doctors",      "childViewId": "default", "childField": "departmentId", "dependencyType": "currentRow" },
+      { "parentTable": "Doctors",     "parentViewId": "default", "childTable": "Appointments", "childViewId": "default", "childField": "doctorId",     "dependencyType": "currentRow" }
     ]
   }
 }
@@ -802,17 +815,18 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
     },
     "relations": [
       {
-        "relationName": "EmployeeAttendance",
-        "parentTable": "Employees",
-        "childTable": "AttendanceRecords",
-        "childField": "employeeId",
+        "parentTable":   "Employees",
+        "parentViewId":  "default",
+        "childTable":    "AttendanceRecords",
+        "childViewId":   "default",
+        "childField":    "employeeId",
         "dependencyType": "currentRow"
       },
       {
-        "relationName":  "EmployeeDetailSalary",
         "parentTable":   "Employees",
         "parentViewId":  "detail",
         "childTable":    "SalaryRecords",
+        "childViewId":   "default",
         "childField":    "employeeId",
         "dependencyType": "currentRow"
       }
@@ -913,8 +927,8 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
       }
     },
     "relations": [
-      { "relationName": "SupplierOrders", "parentTable": "Suppliers",      "childTable": "PurchaseOrders",  "childField": "supplierId", "dependencyType": "currentRow" },
-      { "relationName": "OrderDetails",   "parentTable": "PurchaseOrders", "childTable": "PurchaseDetails", "childField": "orderId",    "dependencyType": "currentRow" }
+      { "parentTable": "Suppliers",      "parentViewId": "default", "childTable": "PurchaseOrders",  "childViewId": "default", "childField": "supplierId", "dependencyType": "currentRow" },
+      { "parentTable": "PurchaseOrders", "parentViewId": "default", "childTable": "PurchaseDetails", "childViewId": "default", "childField": "orderId",    "dependencyType": "currentRow" }
     ]
   }
 }
@@ -993,10 +1007,11 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
     },
     "relations": [
       {
-        "relationName":   "WarehouseStock",
         "parentTable":    "Warehouses",
+        "parentViewId":   "default",
         "parentField":    "id",
         "childTable":     "StockItems",
+        "childViewId":    "default",
         "childField":     "warehouseId",
         "dependencyType": "currentRow"
       }
@@ -1102,16 +1117,18 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
     },
     "relations": [
       {
-        "relationName":   "WarehouseInventories",
         "parentTable":    "Warehouses",
+        "parentViewId":   "default",
         "childTable":     "Inventories",
+        "childViewId":    "default",
         "childField":     "warehouseId",
         "dependencyType": "currentRow"
       },
       {
-        "relationName":   "WarehouseInbounds",
         "parentTable":    "Warehouses",
+        "parentViewId":   "default",
         "childTable":     "Inbounds",
+        "childViewId":    "default",
         "childField":     "warehouseId",
         "dependencyType": "currentRow"
       }
@@ -1226,16 +1243,18 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
     },
     "relations": [
       {
-        "relationName":   "CommunityBuildings",
         "parentTable":    "Communities",
+        "parentViewId":   "default",
         "childTable":     "Buildings",
+        "childViewId":    "default",
         "childField":     "communityId",
         "dependencyType": "currentRow"
       },
       {
-        "relationName":   "BuildingRepairOrders",
         "parentTable":    "Buildings",
+        "parentViewId":   "default",
         "childTable":     "RepairOrders",
+        "childViewId":    "default",
         "childField":     "buildingId",
         "dependencyType": "currentRow"
       }

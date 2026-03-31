@@ -1,6 +1,8 @@
 # API-first 提示词（前端优先，禁止默认改后端）
 
 > 适用场景：页面配置、路由同步、导航、项目管理、数据 CRUD、缓存清理、日志、AI 生成等需求。
+>
+> 所属： [AI 提示词体系](../README.md) / [平台基础](README.md) / API-first 规则基线。
 
 ## 一、执行原则（强约束）
 
@@ -38,7 +40,7 @@
 | `PUT` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}` | 写入单文件 |
 | `POST` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__batch` | 批量写入 |
 
-**兼容接口（扁平路径，需头部上下文）**
+### 兼容接口（扁平路径，需头部上下文）
 
 | Method | Path |
 |---|---|

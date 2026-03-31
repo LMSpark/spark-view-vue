@@ -3,6 +3,8 @@
 > 通过 tree-demo（导航树编辑器工作台）实战迭代验证的提示词工程最佳实践。
 >
 > 目标：让 AI 一次正确生成 SPARK 页面配置的 4 个文件（pagedata.json, rule.json, script.js, style.css）。
+>
+> 所属： [AI 提示词体系](../README.md) / [页面生成](README.md) / 策略与实战版。
 
 ---
 
@@ -15,7 +17,7 @@
 | 版本 | 策略 | 通过率 | 典型错误 |
 |------|------|--------|----------|
 | V1 | 纯业务描述 + 框架规范 | ❌ | `primaryKey` 代替 `isPrimaryKey`，API 带 `/api/` 前缀，表内多余 `tableName` 字段 |
-| V2 | V1 + 格式修正规则 | ❌ | relation 用 `name` 代替 `relationName` |
+| V2 | V1 + 格式修正规则 | ❌ | relation 中混入旧扩展字段，破坏当前标准结构 |
 | V3 | 逐表逐列完整指定 | ✅ | 无（但提示词冗长，接近"抄答案"） |
 | V4 | 纯业务抽象描述 | ❌ | `dependencyType: "cascade"` 代替 `"currentRow"` |
 | **V5** | **业务描述 + 格式约束网格** | **✅** | **无（最佳平衡点）** |
@@ -23,7 +25,7 @@
 
 ### 1.2 核心发现
 
-1. **格式约束必须显式声明**——LLM 对框架自定义字段名（`isPrimaryKey` vs `primaryKey`、`relationName` vs `name`、`dependencyType: "currentRow"` vs `"cascade"`）无法从语境推断，必须**逐条列举**。
+1. **格式约束必须显式声明**——LLM 对框架自定义字段名和 relation 结构限制（`isPrimaryKey` vs `primaryKey`、标准 relation 字段 vs 旧扩展字段、`dependencyType: "currentRow"` vs `"cascade"`）无法从语境推断，必须**逐条列举**。
 
 2. **业务语义可以抽象**——表的用途、列结构、行数据可以用自然语言描述（"8 种 nodeKind 下拉选项"），LLM 能推断出合理的列定义和数据行。
 
@@ -59,9 +61,9 @@
 
 ## 关系定义（M 条 DataRelation）
 
-| relationName | parent→child | parentField→childField |
+| 链路说明 | parent→child | parentField→childField |
 |---|---|---|
-| RelA | TableA→TableB | field1→field2 |
+| 主从联动 | TableA→TableB | field1→field2 |
 | ... |
 
 ## 格式约束（必须严格遵守）
@@ -71,7 +73,7 @@
 - 主键: `"isPrimaryKey": true`（不是 `primaryKey`）
 - 每列都有 name 和 type（string/number/boolean）
 - API URL 不带 `/api/` 前缀
-- relation 字段名: `relationName`（不是 `name`），每条含 parentViewId/childViewId 均为 "default"
+- relation 只允许标准字段：`parentTable`、`parentViewId`、`childTable`、`childViewId`、`parentField`、`childField`、`dependencyType`
 - 所有 dependencyType 必须是 "currentRow"
 - computeExpression 用多语句 if-return 格式，所有分支有 return
 ```
@@ -184,7 +186,7 @@ $dataSet, $page, $route, $query, $queryAll, $el, $refreshData, SparkData, h
 | 主键标记 | `"isPrimaryKey": true` | `"primaryKey": true` |
 | 表对象字段 | 只有 `columns` + `views`（+ `api`） | 多加 `"tableName": "xxx"` |
 | API URL | `/tenants/{tenantId}/...` | `/api/tenants/{tenantId}/...` |
-| 关系名字段 | `"relationName"` | `"name"` |
+| relation 扩展字段 | 不生成 `relationName` / `cascadeDelete` / `autoLoad` | 混入旧扩展字段 |
 | 级联类型 | `"dependencyType": "currentRow"` | `"dependencyType": "cascade"` |
 | 关系视图 ID | 必须有 `parentViewId` + `childViewId` | 遗漏 |
 | 计算列 | 所有分支必须 `return` | 缺少最终 `return` |
@@ -265,9 +267,12 @@ for (const [tn, t] of Object.entries(r.tables)) {
 
 // 7. 关系结构
 for (const rel of g.relations || []) {
-  if (!rel.relationName) err.push(`relation missing relationName`);
-  if (rel.dependencyType !== 'currentRow') err.push(`${rel.relationName} dep: ${rel.dependencyType}`);
-  if (!rel.parentViewId || !rel.childViewId) err.push(`${rel.relationName} missing viewId`);
+  if (rel.relationName !== undefined) err.push('relation has legacy relationName');
+  if (rel.cascadeDelete !== undefined || rel.cascadeUpdate !== undefined || rel.autoLoad !== undefined) {
+    err.push('relation has legacy extension fields');
+  }
+  if (rel.dependencyType !== 'currentRow') err.push(`relation dep: ${rel.dependencyType}`);
+  if (!rel.parentViewId || !rel.childViewId) err.push('relation missing viewId');
 }
 
 if (err.length === 0) console.log('ALL CHECKS PASSED ✅');
@@ -311,7 +316,7 @@ else { console.log(`FAILED (${err.length} errors):`); err.forEach(e => console.l
 
 ### 5.3 常见 LLM 陷阱
 
-1. **字段名混淆**：LLM 倾向于使用更"通用"的字段名（`primaryKey` 比 `isPrimaryKey` 更常见、`name` 比 `relationName` 更常见）→ 必须显式纠正
+1. **字段名和 relation 结构混淆**：LLM 倾向于使用更"通用"的字段名或补出旧扩展字段（如 `primaryKey`、`relationName`、`cascadeDelete`）→ 必须显式纠正
 2. **URL 前缀**：LLM 习惯给 API URL 加 `/api/` 前缀 → 必须声明"不带 /api/"
 3. **级联类型**：LLM 倾向用 `"cascade"` → 必须声明 `"currentRow"` 并解释含义
 4. **表结构冗余**：LLM 喜欢加 `tableName` 字段 → 必须声明"只有 columns + views"
@@ -433,12 +438,12 @@ else { console.log(`FAILED (${err.length} errors):`); err.forEach(e => console.l
 
 所有关系都是内存级联（子表无 API，父行切换时自动过滤）。
 
-| relationName | parentTable | childTable | parentField | childField |
+| 链路说明 | parentTable | childTable | parentField | childField |
 |---|---|---|---|---|
-| NodeProfileToEditorProfile | NavigationNodes | NodeEditorProfiles | editorProfileKey | profileKey |
-| NodeKindToLinkTargets | NavigationNodes | LinkTargetOptions | nodeKind | nodeKind |
-| NodeKindToChildPlacements | NavigationNodes | ChildPlacementOptions | nodeKind | nodeKind |
-| NodeProfileToRefNodeKinds | NavigationNodes | RefNodeKindOptions | editorProfileKey | profileKey |
+| 编辑配置联动 | NavigationNodes | NodeEditorProfiles | editorProfileKey | profileKey |
+| 链接方式联动 | NavigationNodes | LinkTargetOptions | nodeKind | nodeKind |
+| 布局方式联动 | NavigationNodes | ChildPlacementOptions | nodeKind | nodeKind |
+| 引用类型联动 | NavigationNodes | RefNodeKindOptions | editorProfileKey | profileKey |
 
 ## 4. 格式约束（必须严格遵守）
 
@@ -447,7 +452,7 @@ else { console.log(`FAILED (${err.length} errors):`); err.forEach(e => console.l
 - 主键: "isPrimaryKey": true（不是 primaryKey）
 - 每列都有 name 和 type
 - API URL 不带 /api/ 前缀，直接以 /tenants/ 开头
-- relation 字段名: "relationName"（不是 "name"），每条含 parentViewId/childViewId 均为 "default"
+- relation 只允许标准字段，且每条都显式包含 parentViewId/childViewId = "default"
 - 所有 dependencyType 必须是 "currentRow"
 - computeExpression 用多语句 if-return 格式，所有分支有 return
 ```

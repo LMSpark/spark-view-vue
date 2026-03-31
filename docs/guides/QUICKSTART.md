@@ -22,7 +22,7 @@ pnpm install
 pnpm run dev
 ```
 
-访问 **http://localhost:5173** 查看运行效果。
+访问 [http://localhost:5173](http://localhost:5173) 查看运行效果。
 
 ## 🏗️ 项目结构
 
@@ -470,10 +470,11 @@ pnpm run lint
 1. **[组件开发指南](COMPONENT_DEVELOPMENT.md)** - 深入了解组件系统和能力机制
 2. **[数据管理指南](DATA_MANAGEMENT.md)** - 掌握 DataSet 和 TreeManager
 3. **[树能力总览](TREE_CAPABILITY.md)** - 理解 r-tree、TreeManager、treeMode 与导航树 API
-4. **[pagedata 完整提示词](PAGEDATA_JSON_COMPLETE_PROMPT.md)** - 直接生成符合当前规范的 pagedata.json
-5. **[插件配置](PLUGIN_CONFIGURATION.md)** - 集成第三方 UI 库
-6. **[配置系统](CONFIG_SYSTEM.md)** - 多租户与远程配置
-7. **[架构设计](https://github.com/your-org/spark-view/tree/main/docs/architecture)** - 理解系统设计理念
+4. **[AI 提示词体系](../ai-prompts/README.md)** - 按平台 / 数据 / 页面 / 组件选择合适提示词
+5. **[数据生成提示词](../ai-prompts/data/README.md)** - pagedata.json / DataSet / API / views / relations 的分类入口
+6. **[插件配置](PLUGIN_CONFIGURATION.md)** - 集成第三方 UI 库
+7. **[配置系统](CONFIG_SYSTEM.md)** - 多租户与远程配置
+8. **[架构设计](https://github.com/your-org/spark-view/tree/main/docs/architecture)** - 理解系统设计理念
 
 ## 🆘 常见问题
 
@@ -499,6 +500,8 @@ A: 使用动态导入进行代码分割，避免一次性加载所有组件。
 - 部署到生产环境
 
 加入我们的社区，分享你的经验和建议！
+
+```vue
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES } from '@spark-view/spark-utils'

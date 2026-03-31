@@ -1,6 +1,8 @@
 # r-table 完整提示词（可直接复制）
 
 > 目标：让 AI 一次性输出可运行的 r-table 页面配置（`rule.json` / `pagedata.json` / `script.js` / `style.css`），并严格遵循 SPARK 架构约束。
+>
+> 所属： [AI 提示词体系](../README.md) / [组件与专项](README.md) / r-table 专项提示词。
 
 ---
 

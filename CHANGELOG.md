@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### docs
 
-- 新增 `docs/guides/API_FIRST_PROMPT.md`，沉淀可复用的 API-first 提示词模板（前端优先调用 API，禁止默认改后端）。
+- 新增 API-first 提示词模板，当前收口于 `docs/ai-prompts/platform/API_FIRST_PROMPT.md`（前端优先调用 API，禁止默认改后端）。
 - 更新 `.github/copilot-instructions.md` 的 AI Server 章节：补全后端完整 API 清单，并明确多租户优先与扁平兼容路径约束。
 - 明确历史迁移策略：迁移由前端显式调用 API 触发，禁止后端启动期隐式迁移。
 
@@ -16,18 +16,18 @@ All notable changes to this project will be documented in this file.
 
 ### spark-utils@0.4.0
 
-#### ✨ Features
+#### ✨ Features - spark-utils
 - **`normalizeKey(name)`** — 新增公开导出。将字符串名称标准化为 `Symbol.for(name)`，symbol 原样返回，使字符串键与符号键在 `capabilities` Map 中等价
 - **`CapabilityTypeMap` 接口** — 可扩展的能力类型映射表，任意包可通过 `declare module '@spark-view/spark-utils' { interface CapabilityTypeMap { ... } }` 注入类型，消费方无需 import 符号对象即可获得精确类型
 - `provide` 和 `lookup` 内部调用 `normalizeKey`，字符串键与 `defineCapability` 符号键完全等价
 
 ### spark-component@0.4.0
 
-#### ✨ Features
+#### ✨ Features - spark-component
 - **`consume` 新增 `CapabilityTypeMap` 字符串键重载** — `consume('spark:capability:selection')` 直接返回 `ISelectionCapability | null`，无需 import 符号对象；declaration merging 可扩展
 - **`provide` 新增 `CapabilityTypeMap` 字符串键重载** — 同上，类型安全
 
-#### ⚡ Performance
+#### ⚡ Performance - spark-component
 - **`capabilities` / `children` markRaw** — `Map` 和子上下文数组从 Vue 深层响应系统中摘出，消除每次 `provide/consume` 的依赖追踪开销
 - **去掉双重 `reactive()`** — `reactive(reactive(obj))` 改为单次 `shallowReactive({})`
 - **全局单调 ID 计数器** — `spark-${++_idCounter}` 替代 `Date.now()+random`，更快、确定、SSR 友好
@@ -35,21 +35,21 @@ All notable changes to this project will be documented in this file.
 - **`SparkComponentRenderer` 零 context 化** — 渲染器不再创建中间 `ComponentContext`，直接 `inject(SPARK_REGISTRY_KEY)` 解析组件。能力链从 `root→renderer→business` 简化为 `root→business`
 - **`getAll()` 返回 `ReadonlyMap`（零拷贝）** — 不再每次 `new Map(components)`，O(1) 直接暴露内部引用
 
-#### 🐛 Bug Fixes
+#### 🐛 Bug Fixes - spark-component
 - `SparkPlugin` 和 `createSystem()` 的 `capabilities`/`children` 补充 `markRaw`，与 `useSparkComponent` 保持一致
 - `createSystem().createContext()` 的 id 改用单调计数器
 
-#### ♻️ Refactor
+#### ♻️ Refactor - spark-component
 - `provide`/`consume`/`consumeEvents`/`initialize` 的 debug 日志加 `import.meta.env.DEV` 守卫，生产构建零字符串构建开销
 
 ### spark-data@0.4.1
 
-#### ✨ Features
+#### ✨ Features - spark-data
 - `capability-keys.ts` 补充 `declare module '@spark-view/spark-utils'` 声明合并，`PAGE_DATASET` / `DATA_SOURCE` 加入 `CapabilityTypeMap`；消费方可用 `consume('spark:capability:data-source')` 获得 `IDataSource | null` 精确类型
 
 ### spark-app@0.3.2
 
-#### 🐛 Bug Fixes
+#### 🐛 Bug Fixes - spark-app
 - `logger/index.ts`：`process.env.NODE_ENV` → `import.meta.env.PROD`
 - `utils/simpleEnv.ts`：`process.env.VITEST` → `import.meta.env['VITEST']`
 - `start.ts`：修复 TS2352 类型断言
@@ -149,7 +149,6 @@ All notable changes to this project will be documented in this file.
 - `packages/spark-data/src/types.ts`
 - `packages/spark-data/src/data-view.ts`
 - `tests/crud-service-permission.test.ts`
-
 
 ### 💥 Breaking Changes - 统一网络请求层
 
@@ -311,42 +310,42 @@ const services = consume(APP_SERVICES)
 
 **第四轮优化（API 清理）：**
 - 从公共 API 移除 6 个内部使用的函数导出
-  * `useAppContextOptional`, `hasPermission`, `hasAnyPermission`
-  * `hasAllPermissions`, `hasRole`, `hasAnyRole`
+  - `useAppContextOptional`, `hasPermission`, `hasAnyPermission`
+  - `hasAllPermissions`, `hasRole`, `hasAnyRole`
 - 为所有内部函数添加 `@internal` 和 `@deprecated` JSDoc 标记
 - 推荐使用 `usePermissions()` composable 替代旧的工具函数
 - 更清晰的 API 边界，引导最佳实践
 
 **第五轮优化（类型和文档）：**
 - 优化 `simpleEnv.ts` 类型定义
-  * 新增 `EnvironmentInfo` 接口替代内联类型
-  * 添加详细 JSDoc 注释，提升 IDE 体验
+  - 新增 `EnvironmentInfo` 接口替代内联类型
+  - 添加详细 JSDoc 注释，提升 IDE 体验
 - 为 7 个内部使用常量添加 `@internal` 标记
-  * `BootstrapPhases`, `LogLevels`, `PermissionActions`
-  * `ResourceTypes`, `StorageKeys`, `AppEvents`, `ConfigSources`
+  - `BootstrapPhases`, `LogLevels`, `PermissionActions`
+  - `ResourceTypes`, `StorageKeys`, `AppEvents`, `ConfigSources`
 - 明确区分公共 API 和内部实现
 - 减少开发者接触到的 API 表面积
 
 **第六轮优化（文档完善）：**
 - 重写 `packages/spark-app/README.md`
-  * 移除已废弃的 API 示例（ConfigManager, createAuthGuard 等）
-  * 更新为实际可用的 API（SparkApp.start, authService, Composables）
-  * 添加完整的 Composables 使用示例
-  * 新增 API 概览表格和类型定义参考
-  * 新增最佳实践和迁移指南
+  - 移除已废弃的 API 示例（ConfigManager, createAuthGuard 等）
+  - 更新为实际可用的 API（SparkApp.start, authService, Composables）
+  - 添加完整的 Composables 使用示例
+  - 新增 API 概览表格和类型定义参考
+  - 新增最佳实践和迁移指南
 - 确保文档与代码完全同步
 - 所有示例代码可直接复制使用
 
 **第七轮优化（API 示例修复）：**
 - 修复 `packages/spark-utils/README.md`
-  * Logger.create() → Logger(context)
-  * Logger.consoleTransport() → createConsoleTransport()
-  * Capability.create() → 使用正确的类型导入
-  * PermissionChecker/Filter/FieldRenderHelper.create() → create* 函数
+  - Logger.create() → Logger(context)
+  - Logger.consoleTransport() → createConsoleTransport()
+  - Capability.create() → 使用正确的类型导入
+  - PermissionChecker/Filter/FieldRenderHelper.create() → create* 函数
 - 修复 `packages/spark-page-config/README.md`
-  * new ConfigLoader() → createConfigLoader()
-  * registerDynamicRoutes → setupDynamicRoutes
-  * validatePageConfig → validateRouteConfig/validateRuleConfig
+  - new ConfigLoader() → createConfigLoader()
+  - registerDynamicRoutes → setupDynamicRoutes
+  - validatePageConfig → validateRouteConfig/validateRuleConfig
 - 确保所有示例代码与实际导出 API 完全匹配
 
 **清理成果：**

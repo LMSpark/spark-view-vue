@@ -608,12 +608,12 @@ public class AiPageService {
         sb.append("📌 生成前必需自检（按项逐一确认）：\n");
         sb.append("1. pagedata.json 顶层结构是否为 { \"dataset\": { \"dataSetName\": \"...\", \"tables\": {...}, \"relations\": [...] } }？\n");
         sb.append("2. 每张表是否都有 views.default（缺少则表格无法渲染）？\n");
-        sb.append("3. 如有 relation，父表主键字歗是否标记 isPrimaryKey: true？关联得 dependencyType 是否正确？\n");
+        sb.append("3. 如有 relation，父表主键字段是否标记 isPrimaryKey: true？关联的 dependencyType 是否正确？\n");
         sb.append("4. script.js 中是否包含 __init__() 函数（必需）？\n");
         sb.append("5. rule.json on: 引用的所有函数名，script.js 中是否全部定义？\n");
         sb.append("6. rule.json Render* type 引用的函数，script.js 中是否全部定义？\n");
         sb.append("7. Render* 函数中 h() 第一个参数是否都是原生 HTML 标签（不得用 el-*/r-* 组件名）？\n");
-        sb.append("8. pagedata.json 中是否存在 autoLoad、cascadeDelete 等非标准字段（如有请删除）？\n");
+        sb.append("8. relation 中是否存在 cascadeDelete、lazyLoad、apiEnabled 等非标准字段？如果使用 autoLoad，是否只写在合法的 views 配置内而不是 relation / 表根级？\n");
         sb.append("📌 如果你在生成 pagedata.json / script.js 过程中发现第 1 轮的 rule.json 或 style.css 有问题（如 dataKey 表名不合理、class 名遗漏、事件函数名需调整等），");
         sb.append("可以在 files 中额外包含修正后的 \"rule.json\" 和/或 \"style.css\"，它们会覆盖第 1 轮的版本。\n");
         sb.append("📌 如果你认为当前生成结果可能存在需要用户确认或进一步调整的问题，请设置 \"needsIteration\": true 并在 explanation 中说明原因。\n");

@@ -183,10 +183,11 @@ await SparkApp.start({
 ## 📚 文档导航
 
 - [🏗️ 架构设计](docs/architecture/DATAFLOW_ARCHITECTURE.md) - 完整的数据流和分层架构
+- [🗂️ AI 提示词体系](docs/ai-prompts/README.md) - 按平台 / 数据 / 页面 / 组件分类整理的 AI 提示词入口
+- [🧠 数据生成提示词](docs/ai-prompts/data/README.md) - pagedata.json / DataSet / API / views / relations 的分类入口
 - [⚙️ 组件开发](docs/guides/COMPONENT_DEVELOPMENT.md) - 组件注册和能力系统
 - [📊 数据管理](docs/guides/DATA_MANAGEMENT.md) - DataSet 和 TreeManager 使用
 - [🌲 树能力总览](docs/guides/TREE_CAPABILITY.md) - 树容器、DataView、TreeManager、导航树 API 与零代码动作
-- [🧠 pagedata 提示词](docs/guides/PAGEDATA_JSON_COMPLETE_PROMPT.md) - 面向 AI 的完整 pagedata.json 生成提示词
 - [🔌 插件配置](docs/guides/PLUGIN_CONFIGURATION.md) - 第三方库集成
 - [📄 配置系统](docs/guides/CONFIG_SYSTEM.md) - 多租户与远程配置
 - [🚀 快速开始](docs/guides/QUICKSTART.md) - 5分钟上手指南
@@ -207,11 +208,11 @@ await SparkApp.start({
 
 [MIT License](LICENSE)
 
-##  核心概念
+## 核心概念
 
-### 能力系统
+### 能力系统示例
 
-```	ypescript
+```typescript
 // 提供能力
 provide('selection', {
   select: (id) => { /* ... */ },
@@ -223,9 +224,9 @@ const selection = consume('selection')
 selection?.select(123)
 ```
 
-### 数据管理
+### 数据管理示例
 
-```	ypescript
+```typescript
 import { SparkData } from '@spark-view/spark-data'
 
 const dataSet = SparkData.createDataSet({
@@ -236,7 +237,7 @@ const dataSet = SparkData.createDataSet({
 
 ### 组件注册
 
-```	ypescript
+```typescript
 Spark.register({
   type: 'my-component',
   name: 'MyComponent',
@@ -244,31 +245,31 @@ Spark.register({
 })
 ```
 
-##  文档
+## 文档
 
 - [组件开发指南](docs/guides/COMPONENT_DEVELOPMENT.md)（含能力系统）
 - [数据管理指南](docs/guides/DATA_MANAGEMENT.md)（含视图状态、CRUD）
 - [测试最佳实践](docs/guides/TESTING_BEST_PRACTICES.md)
 
-##  质量保证
+## 质量保证
 
--  **Lint**: 0 errors, 0 warnings
--  **TypeCheck**: 0 errors
--  **Tests**: 79/79 passed (16 test files)
--  **Type Safety**: 完整的类型定义
--  **Recent Update**: DI 架构统一到单一管道（SPARK 能力系统），删除废弃 API（详见 [CHANGELOG](CHANGELOG.md)）
+- **Lint**: 0 errors, 0 warnings
+- **TypeCheck**: 0 errors
+- **Tests**: 79/79 passed (16 test files)
+- **Type Safety**: 完整的类型定义
+- **Recent Update**: DI 架构统一到单一管道（SPARK 能力系统），删除废弃 API（详见 [CHANGELOG](CHANGELOG.md)）
 
-##  技术栈
+## 技术栈
 
 - Vue 3.5 + TypeScript 5.8
 - Vite 6.0 + pnpm
 - Vitest + @vue/test-utils
 - ESLint + vue-tsc
 
-##  许可证
+## 许可证
 
 [MIT](LICENSE)
 
 ---
 
-**SPARK View** - 构建下一代低代码应用 
+**SPARK View** - 构建下一代低代码应用
