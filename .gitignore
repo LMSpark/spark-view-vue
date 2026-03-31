@@ -37,7 +37,7 @@ spark-ai-server/.env.java
 
 
 data/sparkdb.mv.db
-data/
+/data/
 temp-*.json
 temp-*.cjs
 temp-*.mts
