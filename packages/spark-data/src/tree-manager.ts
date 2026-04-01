@@ -14,6 +14,7 @@ import type {
   TreePath
 } from './types'
 import { resolveUrlTemplate } from './core/url-template'
+import { applyPlatformProjectScope } from './core/platform-scoped-url'
 
 import { Logger, createRequest, type HttpClient } from '@spark-view/spark-utils'
 
@@ -39,6 +40,9 @@ export class TreeManager {
   /** HTTP 客户端（优先使用外部注入的实例，共享拦截器/认证/配置；否则懒初始化独立实例） */
   private _http?: HttpClient
 
+  /** 端点上下文（tenantId/projectId 等），用于内部 scoped URL 归一化 */
+  private endpointContextProvider?: (() => Record<string, unknown>) | undefined
+
   /** 日志记录器 */
   private logger = Logger()
 
@@ -50,7 +54,13 @@ export class TreeManager {
    * @param initialNodes 初始节点
    * @param dataView 关联的数据视图
    */
-  constructor(config: TreeConfig, api?: TreeApi, initialNodes?: FlatTreeNode[], httpClient?: HttpClient) {
+  constructor(
+    config: TreeConfig,
+    api?: TreeApi,
+    initialNodes?: FlatTreeNode[],
+    httpClient?: HttpClient,
+    endpointContextProvider?: () => Record<string, unknown>
+  ) {
     this.config = {
       idField: 'id',
       parentIdField: 'parentId',
@@ -60,6 +70,7 @@ export class TreeManager {
     }
     if (api) this.api = api
     if (httpClient) this._http = httpClient
+    this.endpointContextProvider = endpointContextProvider
     if (initialNodes) {
       this.addNodesToCache(initialNodes)
     }
@@ -76,20 +87,25 @@ export class TreeManager {
    * 调用树端点（自动替换 URL 路径参数，剩余参数作为 query/body）
    */
   private _callEndpoint<T>(endpoint: HttpEndpoint, params: Record<string, unknown> = {}): Promise<T> {
-    const { url, rest } = resolveUrlTemplate(endpoint.url, params)
+    const contextParams = this.endpointContextProvider?.() ?? {}
+    const { url: resolvedUrl, rest } = resolveUrlTemplate(endpoint.url, { ...contextParams, ...params })
+    const url = applyPlatformProjectScope(resolvedUrl, contextParams)
+    const requestParams = Object.fromEntries(
+      Object.entries(rest).filter(([key]) => key !== 'tenantId' && key !== 'projectId')
+    )
     const http = this._getHttp()
     const method = endpoint.method ?? 'GET'
     const config = endpoint.headers ? { headers: endpoint.headers } : {}
     switch (method) {
       case 'GET':
-        return http.get<T>(url, rest, config)
+        return http.get<T>(url, requestParams, config)
       case 'POST':
       case 'PATCH':
-        return http.post<T>(url, rest, config)
+        return http.post<T>(url, requestParams, config)
       case 'PUT':
-        return http.put<T>(url, rest, config)
+        return http.put<T>(url, requestParams, config)
       case 'DELETE':
-        return http.delete<T>(url, rest, config)
+        return http.delete<T>(url, requestParams, config)
     }
   }
 

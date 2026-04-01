@@ -23,7 +23,7 @@
 - 案例 E：员工系统双视图（同父表不同视图驱动不同子表）
 - 案例 F：供应商采购管理（三级层次 + API + 计算列 + 聚合）
 - 案例 G：仓库库存管理（v1.9 新特性：复合主键 + integer/decimal + $list + aggregates.field/separator）
-- 案例 H：仓库库存管理（外部 AI 验证：number/string/date + 多分支计算列 + 双 relation）
+- 案例 H：仓库库存管理（外部 AI 验证：number/string/date + 多分支计算列 + 双 tableRelation）
 - 案例 I：物业管理系统（提示词模板自测：三级层次 + $count/$sum/$join + aggregates.field）
 5. [JSON 自检清单](#5-json-自检清单)
 6. [配置参考速查](#6-配置参考速查)
@@ -152,8 +152,7 @@
       {
         "parentTable":    "Readers",
         "childTable":     "BorrowRecords",
-        "childField":     "readerId",
-        "dependencyType": "currentRow"
+        "childField":     "readerId"
       }
     ]
   }
@@ -165,7 +164,7 @@
 - ✅ Readers / BorrowRecords 各有一列 `isPrimaryKey: true`
 - ✅ BorrowRecords.readerId 值（1, 1, 2, 3）均在 Readers.rows 中存在
 - ✅ 可空字段 `returnDate` 设置了 `allowDBNull: true`，rows 中可出现 `null`
-- ✅ relation 包含三个必填字段（parentTable / childTable / childField）
+- ✅ `tableRelations[0]` 仅包含 parentTable / childTable / childField 三个核心字段（`currentRow` 为默认联动，不显式输出）
 - ✅ 无 api 字段（纯静态数据）
 
 ---
@@ -239,8 +238,7 @@
       {
         "parentTable":    "Orders",
         "childTable":     "OrderItems",
-        "childField":     "orderId",
-        "dependencyType": "currentRow"
+        "childField":     "orderId"
       }
     ]
   }
@@ -249,7 +247,7 @@
 
 **验证通过要点**：
 - ✅ 计算列 `subtotal`、`itemCount`、`totalAmount` 在 rows 中**不填充值**（框架自动计算）
-- ✅ `$count('OrderItems')` / `$sum('OrderItems', 'subtotal')` 引用从表名 "OrderItems"，与 relation.childTable 一致
+- ✅ `$count('OrderItems')` / `$sum('OrderItems', 'subtotal')` 引用从表名 `OrderItems`，与 `tableRelations[0].childTable` 一致
 - ✅ `aggregates` 的键名 `quantity` / `subtotal` 与 OrderItems.columns 中的 name 匹配
 - ✅ orderId 关联值（1, 1, 2, 3, 3）在 Orders.rows 中均有对应
 
@@ -279,7 +277,7 @@
           { "name": "headcount", "type": "number",                       "label": "人数",
             "computeExpression": "$count('Employees')" }
         ],
-        "api":      "/api/departments",
+        "api":      "/departments",
         "views": {
           "default": {
             "rows": [
@@ -303,7 +301,7 @@
           { "name": "level",    "type": "string",                       "label": "薪资等级",
             "computeExpression": "if (salary >= 30000) return 'S'; if (salary >= 20000) return 'A'; if (salary >= 10000) return 'B'; return 'C';" }
         ],
-        "api":      "/api/employees",
+        "api":      "/employees",
         "views": {
           "default": {
             "rows": [
@@ -326,8 +324,7 @@
       {
         "parentTable":    "Departments",
         "childTable":     "Employees",
-        "childField":     "deptId",
-        "dependencyType": "currentRow"
+        "childField":     "deptId"
       }
     ]
   }
@@ -336,7 +333,7 @@
 
 **验证通过要点**：
 - ✅ 多语句计算列 `level`：所有分支（salary ≥ 30000 / ≥ 20000 / ≥ 10000 / else）均有 `return`
-- ✅ 计算列 `headcount` 引用 `$count('Employees')`，与 relation.childTable 一致
+- ✅ 计算列 `headcount` 引用 `$count('Employees')`，与 `tableRelations[0].childTable` 一致
 - ✅ Employees rows 中**不含 `level` 字段**（计算列不填值）
 - ✅ API 配置：`autoLoad: true` 让部门表页面加载时自动拉取；`autoLoad: false` 让员工表由级联触发
 - ✅ 所有 deptId 关联值（1, 1, 2, 2, 3）在 Departments.rows 中均有对应
@@ -349,7 +346,7 @@
 - 科室表（Departments）：ID、名称、楼层；自动统计医生数（$count）
 - 医生表（Doctors）：ID、科室ID（关联字段）、姓名、职称、挂号费；自动统计预约数（$count）
 - 预约记录表（Appointments）：ID、医生ID（关联字段）、患者姓名、预约日期、状态；显示预约数量汇总
-- 三级关联：科室 → 医生 → 预约（两条 currentRow 关联）
+- 三级关联：科室 → 医生 → 预约（两条默认 currentRow 的 tableRelation）
 - 纯静态数据，无后端 API
 
 **生成结果**：
@@ -422,8 +419,8 @@
       }
     },
     "tableRelations": [
-      { "parentTable": "Departments", "parentViewId": "default", "childTable": "Doctors",      "childViewId": "default", "childField": "departmentId", "dependencyType": "currentRow" },
-      { "parentTable": "Doctors",     "parentViewId": "default", "childTable": "Appointments", "childViewId": "default", "childField": "doctorId",     "dependencyType": "currentRow" }
+      { "parentTable": "Departments", "childTable": "Doctors",      "childField": "departmentId" },
+      { "parentTable": "Doctors",     "childTable": "Appointments", "childField": "doctorId" }
     ]
   }
 }
@@ -431,14 +428,14 @@
 
 **验证通过要点**：
 - ✅ 三级 ID 编号：科室 1-3，医生 101-104，预约 1001-1004
-- ✅ `$count('Doctors')` / `$count('Appointments')` 引用名与对应 relation.childTable 完全一致
+- ✅ `$count('Doctors')` / `$count('Appointments')` 引用名与对应 `tableRelations.childTable` 完全一致
 - ✅ 三级关系匹配完整性：departmentId ∈ {1,2,3}，doctorId ∈ {101,102,103,104}
 - ✅ doctorCount / appointmentCount 这两个计算列在 rows 中均无值
 - ✅ aggregates 键名 `id` 与 Appointments.columns[0].name 匹配
 
 ---
 
-### 案例 E：员工系统双视图（同一父表不同命名视图分别驱动不同子表）
+### 案例 E：员工系统双视图（命名视图共存，级联仍走 default）
 
 **需求描述**：
 - 员工表（Employees）：ID、姓名、部门、入职日期
@@ -446,7 +443,7 @@
 - 考勤记录表（AttendanceRecords）：ID、员工ID（关联字段）、日期、状态
   - 与 Employees **default 视图**关联（列表切换行时更新）
 - 薪资记录表（SalaryRecords）：ID、员工ID（关联字段）、月份、基本工资、绩效奖金、合计（计算列）；聚合：合计 sum
-  - 与 Employees **detail 视图**关联（详情页显示薪资历史）
+  - 详情页可以复用 `Employees.detail` 做 UI 展示，但当前 pagedata public schema 的级联仍默认由 Employees.default 驱动，不手写 `parentViewId` / `childViewId`
 - 纯静态数据
 
 **生成结果**：
@@ -519,14 +516,12 @@
       {
         "parentTable":   "Employees",
         "childTable":    "AttendanceRecords",
-        "childField":    "employeeId",
-        "dependencyType": "currentRow"
+        "childField":    "employeeId"
       },
       {
         "parentTable":   "Employees",
         "childTable":    "SalaryRecords",
-        "childField":    "employeeId",
-        "dependencyType": "currentRow"
+        "childField":    "employeeId"
       }
     ]
   }
@@ -534,9 +529,8 @@
 ```
 
 **验证通过要点**：
-- ✅ Employees 在 `views` 中**显式声明了 `detail` 视图**（`"detail": {}`）
-  — 这是必须的：`fromTableData` 只处理 `data.views` 中已声明的视图，若漏写则 detail 视图在初始化时不存在，第二条 relation 的级联将失效
-- ✅ 第二条 relation 中 `parentViewId: "detail"` 绑定到 Employees.detail 视图
+- ✅ Employees 在 `views` 中**显式声明了 `detail` 视图**（`"detail": {}`），可供 UI 层复用为命名视图
+- ✅ 当前代码层会把 `tableRelations` 展开到 `default` 视图；附录案例不再手写 `parentViewId: "detail"`
 - ✅ 两张子表各自都是二级子表，id 均从 101 开始（互不影响，不同表）
 - ✅ totalSalary 是计算列，rows 中无此字段值
 - ✅ aggregates 键 `totalSalary` 与 SalaryRecords.columns 中的 name 一致
@@ -549,7 +543,7 @@
 - 供应商（Suppliers）：ID、名称、联系人、评级；有 API，页面加载自动拉取并选中第一行
 - 采购单（PurchaseOrders）：ID、供应商ID（关联字段）、下单日期、总金额（子表小计之和，计算列）；有 API
 - 采购明细（PurchaseDetails）：ID、采购单ID（关联字段）、商品名、数量、单价、小计（计算列：数量×单价）；有 API；聚合：合计金额 sum、合计数量 sum
-- 三级关联：Suppliers → PurchaseOrders → PurchaseDetails（两条 currentRow 关联）
+- 三级关联：Suppliers → PurchaseOrders → PurchaseDetails（两条默认 currentRow 的 tableRelation）
 
 **生成结果**：
 
@@ -565,7 +559,7 @@
           { "name": "contact", "type": "string",                       "label": "联系人"     },
           { "name": "rating",  "type": "number",                       "label": "评级"       }
         ],
-        "api": "/api/suppliers",
+        "api": "/suppliers",
         "views": {
           "default": {
             "rows": [
@@ -586,7 +580,7 @@
           { "name": "totalAmount", "type": "number",                       "label": "总金额",
             "computeExpression": "$sum('PurchaseDetails', 'subTotal')" }
         ],
-        "api": "/api/purchase-orders",
+        "api": "/purchase-orders",
         "views": {
           "default": {
             "rows": [
@@ -607,7 +601,7 @@
           { "name": "subTotal",    "type": "number",                       "label": "小计",
             "computeExpression": "quantity * unitPrice" }
         ],
-        "api": "/api/purchase-details",
+        "api": "/purchase-details",
         "views": {
           "default": {
             "rows": [
@@ -625,15 +619,15 @@
       }
     },
     "tableRelations": [
-      { "parentTable": "Suppliers",      "parentViewId": "default", "childTable": "PurchaseOrders",  "childViewId": "default", "childField": "supplierId", "dependencyType": "currentRow" },
-      { "parentTable": "PurchaseOrders", "parentViewId": "default", "childTable": "PurchaseDetails", "childViewId": "default", "childField": "orderId",    "dependencyType": "currentRow" }
+      { "parentTable": "Suppliers",      "childTable": "PurchaseOrders",  "childField": "supplierId" },
+      { "parentTable": "PurchaseOrders", "childTable": "PurchaseDetails", "childField": "orderId" }
     ]
   }
 }
 ```
 
 **验证通过要点**：
-- ✅ `$sum('PurchaseDetails', 'subTotal')` 表名与 relations[1].childTable 一致，字段名 `subTotal` 与列 name 一致
+- ✅ `$sum('PurchaseDetails', 'subTotal')` 表名与 `tableRelations[1].childTable` 一致，字段名 `subTotal` 与列 name 一致
 - ✅ aggregates 键 `subTotal`、`quantity` 与 PurchaseDetails.columns 中已有列 name 完全匹配
 - ✅ 三级关系匹配完整性：supplierId ∈ {1,2,3}，orderId ∈ {101,102,103}
 - ✅ totalAmount 和 subTotal 均为计算列，rows 中均无这两个字段值
@@ -708,8 +702,7 @@
         "parentTable":    "Warehouses",
         "parentField":    "id",
         "childTable":     "StockItems",
-        "childField":     "warehouseId",
-        "dependencyType": "currentRow"
+        "childField":     "warehouseId"
       }
     ]
   }
@@ -722,20 +715,20 @@
 - ✅ `$list('StockItems', 'productCode')` 返回 `unknown[]` 数组（v1.9 新增函数），rows 中**不含 productCodes 值**
 - ✅ `aggregates.totalVal.field = 'totalValue'`：输出键名（totalVal）与源字段名（totalValue）不同（field 覆盖）
 - ✅ `aggregates.productList.separator = ' | '`：join 类型自定义分隔符（默认 ', '）
-- ✅ `relations[0].parentField = 'id'`：显式声明父视图匹配字段（v1.9 补充文档）
+- ✅ `tableRelations[0].parentField = 'id'`：显式声明父表匹配字段（v1.9 补充文档）
 - ✅ 规则 10：无 api 字段（纯静态数据），级联走内存过滤路径
 - ✅ 关系匹配完整性：StockItems.warehouseId ∈ {1, 2}，均在 Warehouses.rows 中存在
 - ✅ 计算列（totalStockValue / productCodes / productNames / totalValue）在 rows 中**均不填充值**
 
 ---
 
-### 案例 H：仓库库存管理（外部 AI 验证：number/string/date + 多分支计算列 + 双 relation）✅ 已通过 DataSet 实例化测试
+### 案例 H：仓库库存管理（外部 AI 验证：number/string/date + 多分支计算列 + 双 tableRelation）✅ 已通过 DataSet 实例化测试
 
 **需求描述**：
 - 仓库表（Warehouses）：ID、名称、城市、负责人
 - 库存表（Inventories）：ID、仓库ID（关联字段）、商品名称、SKU、库存数量、单位、最低预警值；计算列：库存状态（quantity ≤ minQuantity → 预警，否则正常）
 - 入库记录表（Inbounds）：ID、仓库ID（关联字段）、商品名称、入库数量、入库日期、供应商；聚合：入库总数量 sum
-- 双 relation：Warehouses→Inventories，Warehouses→Inbounds（均 currentRow）
+- 双 tableRelation：Warehouses→Inventories，Warehouses→Inbounds（均使用默认 currentRow 联动）
 - 纯静态数据，无后端 API
 - **来源**：外部 AI（非本项目 AI）按标准提示词模板生成，用于验证提示词对外部模型的引导效果
 
@@ -815,14 +808,12 @@
       {
         "parentTable":    "Warehouses",
         "childTable":     "Inventories",
-        "childField":     "warehouseId",
-        "dependencyType": "currentRow"
+        "childField":     "warehouseId"
       },
       {
         "parentTable":    "Warehouses",
         "childTable":     "Inbounds",
-        "childField":     "warehouseId",
-        "dependencyType": "currentRow"
+        "childField":     "warehouseId"
       }
     ]
   }
@@ -833,7 +824,7 @@
 - ✅ 顶层 `{ "dataset": {...} }` 结构正确
 - ✅ `rows` 和 `aggregates` 均在 `views.default` 内（v1.9 核心结构要求）
 - ✅ 计算列 `status` 多分支逻辑正确（含边界值 quantity===minQuantity → 预警）
-- ✅ 两条 relation 均已声明（WarehouseInventories + WarehouseInbounds）
+- ✅ 两条 `tableRelations` 均已声明（WarehouseInventories + WarehouseInbounds）
 - ✅ 关系匹配完整性：warehouseId ∈ {1,2,3} 均在 Warehouses.rows 中存在
 - ✅ 无多余 api 字段（纯静态数据）
 - ✅ `aggregates.inQuantity` 直接使用列名作为键名（无需 field 覆盖）
@@ -847,7 +838,7 @@
 - 小区表（Communities）：ID、名称、地址、物业经理；自动统计楼栋数（$count）、总户数（$sum）
 - 楼栋表（Buildings）：ID、小区ID（关联字段）、楼栋号、楼层数、户数；自动统计报修数（$count）、报修类型列表（$join）
 - 报修工单表（RepairOrders）：ID、楼栋ID（关联字段）、报修人、电话、类型、描述、日期、优先级；计算列：状态（优先级≥3 → 紧急，=2 → 一般，其他 → 低优先）
-- 三级关联：小区→楼栋→报修工单（两条 currentRow 关联）
+- 三级关联：小区→楼栋→报修工单（两条默认 currentRow 的 tableRelation）
 - 聚合：报修工单 count + 报修类型 join（field 覆盖）
 - 纯静态数据，无后端 API
 - **来源**：使用独立提示词模板文件自测，验证提示词模板的完整性和准确性
@@ -937,14 +928,12 @@
       {
         "parentTable":    "Communities",
         "childTable":     "Buildings",
-        "childField":     "communityId",
-        "dependencyType": "currentRow"
+        "childField":     "communityId"
       },
       {
         "parentTable":    "Buildings",
         "childTable":     "RepairOrders",
-        "childField":     "buildingId",
-        "dependencyType": "currentRow"
+        "childField":     "buildingId"
       }
     ]
   }
@@ -972,7 +961,7 @@
 - [ ] 顶层是 `{ "dataset": { ... } }`，不是直接 `{ "tables": { ... } }`
 - [ ] `dataSetName` 已设置，以 "DataSet" 结尾
 - [ ] `tables` 是对象，键名为 PascalCase（`OrderItems` ✅，`order_items` ❌）
-- [ ] `relations` 是数组
+- [ ] `tableRelations` 是数组；若存在非默认联动，再显式补 `viewDependencies`
 
 ### 表层面（每张表检查）
 
@@ -985,16 +974,15 @@
 
 - [ ] 每张表的 `views.default.rows` 中有 3-5 条数据
 - [ ] 有 `computeExpression` 的列，rows 中**不含该列的值**
-- [ ] 从表 rows 中用于 relation 匹配的 childField 值在父表匹配字段中**全部存在**（关系匹配完整性）
+- [ ] 从表 rows 中用于 `tableRelations` 匹配的 `childField` 值在父表匹配字段中**全部存在**（关系匹配完整性）
 - [ ] 可空字段已设 `"allowDBNull": true`，且 rows 中允许出现 `null`
 
-### 关联层面（每条 relation 检查）
+### 关联层面（tableRelations / viewDependencies 检查）
 
-- [ ] 包含 `parentTable`、`childTable`、`childField`
+- [ ] `tableRelations` 项包含 `parentTable`、`childTable`、`childField`；若父匹配字段不是主键，再显式补 `parentField`
 - [ ] `childField` 是**子视图所在表** columns 中已定义的字段名
-- [ ] `dependencyType` 选择正确（主从钻取用 `currentRow`，字典/全集用 `allRows`）
-- [ ] 同一张表有多个视图时，已正确填写 `parentViewId` / `childViewId`（默认均为 `'default'`）
-- [ ] 若使用了非 default 的 `parentViewId`，该表的 `views` 键中已显式声明该视图（哪怕是空对象 `{}`）
+- [ ] 若存在 `viewDependencies`，`dependencyType` 选择正确（主从钻取通常省略，字典/全集联动常用 `allRows`）
+- [ ] 不要在 pagedata JSON 中手写 `parentViewId` / `childViewId`
 
 ### 计算列 / 聚合层面
 
@@ -1030,7 +1018,7 @@
 
 ### dependencyType 选择指南
 
-`dependencyType` 描述**父视图的哪种状态变化**会触发子视图重新过滤：
+`dependencyType` 属于 `viewDependencies`，描述**父视图的哪种状态变化**会触发子视图重新过滤；默认的 `currentRow` 联动通常可省略，由框架自动推导：
 
 | 场景 | dependencyType | 示例 |
 |------|----------------|------|

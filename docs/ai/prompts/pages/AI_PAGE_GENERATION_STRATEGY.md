@@ -16,7 +16,7 @@
 
 | 版本 | 策略 | 通过率 | 典型错误 |
 |------|------|--------|----------|
-| V1 | 纯业务描述 + 框架规范 | ❌ | `primaryKey` 代替 `isPrimaryKey`，API 带 `/api/` 前缀，表内多余 `tableName` 字段 |
+| V1 | 纯业务描述 + 框架规范 | ❌ | `primaryKey` 代替 `isPrimaryKey`，API 带 `/api/` 前缀或手写完整 scoped 前缀，表内多余 `tableName` 字段 |
 | V2 | V1 + 格式修正规则 | ❌ | relation 中混入旧扩展字段，破坏当前标准结构 |
 | V3 | 逐表逐列完整指定 | ✅ | 无（但提示词冗长，接近"抄答案"） |
 | V4 | 纯业务抽象描述 | ❌ | `dependencyType: "cascade"` 代替 `"currentRow"` |
@@ -59,7 +59,7 @@
 
 [对有 API、计算列、treeConfig 的表展开说明列定义和 API 端点]
 
-## 关系定义（M 条 DataRelation）
+## 关系定义（M 条 tableRelations，按需补 viewDependencies）
 
 | 链路说明 | parent→child | parentField→childField |
 |---|---|---|
@@ -72,9 +72,10 @@
 - 每张表: `{ "columns": [...], "views": { "default": { "rows": [...] } } }`（不加 tableName 字段）
 - 主键: `"isPrimaryKey": true`（不是 `primaryKey`）
 - 每列都有 name 和 type（string/number/boolean）
-- API URL 不带 `/api/` 前缀
-- relation 只允许标准字段：`parentTable`、`parentViewId`、`childTable`、`childViewId`、`parentField`、`childField`、`dependencyType`
-- 所有 dependencyType 必须是 "currentRow"
+- API URL 不带 `/api/` 前缀；平台内置 scoped 资源优先写短资源路径（如 `/navigation/nodes`），不要手写 `/tenants/{tenantId}/projects/{projectId}`
+- tableRelations 默认只写：`parentTable`、`childTable`、`parentField`、`childField`
+- 非默认联动时再显式补 `viewDependencies`，其中可写：`parentTable`、`childTable`、`dependencyType`、`autoLoad`
+- 不在 pagedata JSON 中手写 `parentViewId` / `childViewId`
 - computeExpression 用多语句 if-return 格式，所有分支有 return
 ```
 
@@ -185,10 +186,10 @@ $dataSet, $page, $route, $query, $queryAll, $el, $refreshData, SparkData, h
 |------|------|----------|
 | 主键标记 | `"isPrimaryKey": true` | `"primaryKey": true` |
 | 表对象字段 | 只有 `columns` + `views`（+ `api`） | 多加 `"tableName": "xxx"` |
-| API URL | `/tenants/{tenantId}/...` | `/api/tenants/{tenantId}/...` |
-| relation 扩展字段 | 不生成 `relationName` / `cascadeDelete` / `autoLoad` | 混入旧扩展字段 |
-| 级联类型 | `"dependencyType": "currentRow"` | `"dependencyType": "cascade"` |
-| 关系视图 ID | 必须有 `parentViewId` + `childViewId` | 遗漏 |
+| API URL | `/navigation/nodes`（平台 scoped 资源示例） | `/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes` |
+| tableRelations 字段 | 默认只写 `parentTable` / `childTable` / `parentField` / `childField` | 混入 `autoLoad` / `parentViewId` / `childViewId` |
+| viewDependencies | 非默认联动时才显式写 `dependencyType` / `autoLoad` | 把 `dependencyType` 塞进 tableRelations |
+| 关系视图 ID | 不在 pagedata JSON 中手写 `parentViewId` / `childViewId` | 强行要求显式写 `default` |
 | 计算列 | 所有分支必须 `return` | 缺少最终 `return` |
 
 ### rule.json
@@ -251,10 +252,14 @@ for (const [tn, t] of Object.entries(g.tables)) {
   if (t.tableName) err.push(`${tn}: has tableName`);
 }
 
-// 5. API URL 无 /api/ 前缀
+// 5. API URL 无 /api/ 前缀；平台 scoped 资源不要展开 tenant/project scope
+const isExpandedPlatformScopedUrl = (url) =>
+  /^\/(?:api\/)?tenants\/\{tenantId\}\/projects\/\{projectId\}\/(?:navigation|data|pages-config)(?:\/|$)/.test(url);
+
 for (const [tn, t] of Object.entries(g.tables)) {
   if (t.api) for (const [k, v] of Object.entries(t.api)) {
     if (v.url?.startsWith('/api/')) err.push(`${tn} API ${k}: /api/ prefix`);
+    if (isExpandedPlatformScopedUrl(v.url ?? '')) err.push(`${tn} API ${k}: expanded tenant/project scope`);
   }
 }
 
@@ -266,13 +271,21 @@ for (const [tn, t] of Object.entries(r.tables)) {
 }
 
 // 7. 关系结构
-for (const rel of g.relations || []) {
-  if (rel.relationName !== undefined) err.push('relation has legacy relationName');
-  if (rel.cascadeDelete !== undefined || rel.cascadeUpdate !== undefined || rel.autoLoad !== undefined) {
-    err.push('relation has legacy extension fields');
+for (const rel of g.tableRelations || []) {
+  if (rel.autoLoad !== undefined || rel.parentViewId !== undefined || rel.childViewId !== undefined) {
+    err.push('tableRelation has invalid non-standard fields');
   }
-  if (rel.dependencyType !== 'currentRow') err.push(`relation dep: ${rel.dependencyType}`);
-  if (!rel.parentViewId || !rel.childViewId) err.push('relation missing viewId');
+  if (rel.dependencyType !== undefined) err.push('tableRelation should not carry dependencyType');
+}
+
+for (const dep of g.viewDependencies || []) {
+  const depType = dep.dependencyType || 'currentRow';
+  if (!['currentRow', 'selectedRows', 'allRows', 'pagedRows'].includes(depType)) {
+    err.push(`viewDependency dep: ${dep.dependencyType}`);
+  }
+  if (dep.parentField !== undefined || dep.childField !== undefined || dep.parentViewId !== undefined || dep.childViewId !== undefined) {
+    err.push('viewDependency has invalid fields');
+  }
 }
 
 if (err.length === 0) console.log('ALL CHECKS PASSED ✅');
@@ -317,7 +330,7 @@ else { console.log(`FAILED (${err.length} errors):`); err.forEach(e => console.l
 ### 5.3 常见 LLM 陷阱
 
 1. **字段名和 relation 结构混淆**：LLM 倾向于使用更"通用"的字段名或补出旧扩展字段（如 `primaryKey`、`relationName`、`cascadeDelete`）→ 必须显式纠正
-2. **URL 前缀**：LLM 习惯给 API URL 加 `/api/` 前缀 → 必须声明"不带 /api/"
+2. **URL 前缀**：LLM 习惯给 API URL 加 `/api/` 前缀，或把平台 scoped 资源写成完整 `/tenants/{tenantId}/projects/{projectId}/...` → 必须声明“pagedata 里不带 /api/，平台资源优先短路径”
 3. **级联类型**：LLM 倾向用 `"cascade"` → 必须声明 `"currentRow"` 并解释含义
 4. **表结构冗余**：LLM 喜欢加 `tableName` 字段 → 必须声明"只有 columns + views"
 5. **computeExpression 缺少 return**：多语句时 LLM 可能遗漏最后的 `return` → 必须声明"所有分支有 return"
@@ -391,11 +404,11 @@ else { console.log(`FAILED (${err.length} errors):`); err.forEach(e => console.l
    - views.default: autoLoad=true, autoCommit=true, autoCurrentFirst=true
    - treeConfig: { idField:"id", parentIdField:"parentId", textField:"title",
      treeMode:"nested" }
-   - api（10 端点，基础路径 /tenants/{tenantId}/projects/{projectId}/navigation/nodes）:
-     list(GET), nested(GET), children(GET), path(GET .../path/{id}),
-     subtree(POST .../subtree), nestedSearch(GET .../search),
-     create(POST), update(PUT .../{id}), delete(DELETE .../{id}),
-     move(PUT .../{id}/move)
+   - api（10 端点；生成时写短资源路径，不写 scoped 前缀）:
+     list(GET /navigation/nodes), nested(GET /navigation/nodes), children(GET /navigation/nodes), path(GET /navigation/nodes/path/{id}),
+     subtree(POST /navigation/nodes/subtree), nestedSearch(GET /navigation/nodes/search),
+     create(POST /navigation/nodes), update(PUT /navigation/nodes/{id}), delete(DELETE /navigation/nodes/{id}),
+     move(PUT /navigation/nodes/{id}/move)
    - 无内联 rows
 
 4. **NodeKindOptions** — nodeKind 下拉选项
@@ -451,9 +464,9 @@ else { console.log(`FAILED (${err.length} errors):`); err.forEach(e => console.l
 - 每张表: { "columns": [...], "views": { "default": { "rows": [...] } } }（不加 tableName 字段）
 - 主键: "isPrimaryKey": true（不是 primaryKey）
 - 每列都有 name 和 type
-- API URL 不带 /api/ 前缀，直接以 /tenants/ 开头
-- relation 只允许标准字段，且每条都显式包含 parentViewId/childViewId = "default"
-- 所有 dependencyType 必须是 "currentRow"
+- API URL 不带 /api/ 前缀；平台内置 scoped 资源直接写短资源路径，如 /navigation/nodes，不要手写 /tenants/{tenantId}/projects/{projectId}
+- tableRelations 默认只写 parentTable / childTable / parentField / childField
+- 非默认联动时再显式补 viewDependencies；不要手写 parentViewId / childViewId
 - computeExpression 用多语句 if-return 格式，所有分支有 return
 ```
 

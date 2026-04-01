@@ -680,7 +680,7 @@ pagedata.json 声明 DataSet：表结构、列定义、测试数据行、关联�
     { "name": "name", "type": "string", "label": "名称" },
     { "name": "total", "type": "number", "computeExpression": "price * qty", "label": "合计" }
   ],
-  "api": "/api/table-name",
+  "api": "/table-name",
   "views": {
     "default": {
       "rows": [ ... ],
@@ -692,6 +692,8 @@ pagedata.json 声明 DataSet：表结构、列定义、测试数据行、关联�
 }
 ```
 
+说明：`table.api` 中不要写 `/api` 前缀；普通业务接口用 `/table-name` 这类资源路径，平台内置 scoped 资源用 `/navigation/nodes`、`/data/Orders` 这类短路径。
+
 ───────────────────────────────────────────────────
 2.3  关联関系
 ───────────────────────────────────────────────────
@@ -701,10 +703,11 @@ pagedata.json 声明 DataSet：表结构、列定义、测试数据行、关联�
   "parentTable": "Users",
   "childTable": "Orders",
   "parentField": "id",
-  "childField": "userId",
-  "dependencyType": "currentRow"
+  "childField": "userId"
 }
 ```
+
+默认 currentRow 联动由框架自动推导；只有非默认联动时，才在 pagedata.json 中额外补 viewDependencies。
 
 ───────────────────────────────────────────────────
 2.4  关键规则
@@ -1110,7 +1113,7 @@ A. 纯数据表格页面（最简单）
 
 B. 主从表页面（Master-Detail）
 - rule.json: 两个 el-table（父表 highlightCurrentRow + 子表）
-- pagedata.json: 两张表 + relation (dependencyType: "currentRow")
+- pagedata.json: 两张表 + tableRelations（默认 currentRow，无需显式写 dependencyType）
 - script.js: `__init__()` 订阅 currentRowChanged，可选 loadFromServer
 - style.css: section 样式
 

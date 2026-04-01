@@ -19,7 +19,7 @@
 
 1. 不再维护独立的 schema 规则正文。
 2. 不再维护第二份 DataSet / DataTable / DataView 结构说明。
-3. 不再维护第二份 relations / aggregates / TreeApi / API 简写规则。
+3. 不再维护第二份 tableRelations / viewDependencies / aggregates / TreeApi / API 简写规则。
 
 当前规则来源划分如下：
 
@@ -34,7 +34,7 @@
 1. 始终以 [PAGEDATA_JSON_COMPLETE_PROMPT.md](PAGEDATA_JSON_COMPLETE_PROMPT.md) 作为唯一规则源。
 2. 需要完整约束时，直接内联生产版主入口中的“完整提示词”正文。
 3. 需要缩短 token 时，只能裁剪外围说明、案例或附录，不能在本页重新改写第二份规则体系。
-4. 任何涉及 schema、运行时约束、TreeApi、relations、视图行为的变更，必须先改生产版主入口，再决定是否在案例附录补充示例。
+4. 任何涉及 schema、运行时约束、TreeApi、tableRelations / viewDependencies、视图行为的变更，必须先改生产版主入口，再决定是否在案例附录补充示例。
 
 ## 使用方式
 

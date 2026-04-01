@@ -4,6 +4,7 @@ import { TreeManager } from '../tree-manager'
 import type { FlatTreeNode } from '../types'
 
 const NAV_BASE = '/api/tenants/tenant-test/projects/homepage/navigation/nodes'
+const RELATIVE_NAV_BASE = '/navigation/nodes'
 
 function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
   const dataSet = DataSet.fromConfig({
@@ -40,6 +41,55 @@ function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
   })
 
   dataSet.setSharedHttpClient(mockHttpClient as never)
+  return dataSet
+}
+
+function createScopedRelativeTreeDataSet(mockHttpClient: unknown): DataSet {
+  const dataSet = DataSet.fromConfig({
+    dataSetName: 'Tree4Plus7ScopedRelative',
+    tables: {
+      NavigationNodes: {
+        tableName: 'NavigationNodes',
+        columns: [
+          { name: 'id', type: 'number' },
+          { name: 'parentId', type: 'number' },
+          { name: 'name', type: 'string' },
+        ],
+        api: {
+          list: { url: RELATIVE_NAV_BASE, method: 'GET' },
+          nested: { url: RELATIVE_NAV_BASE, method: 'GET' },
+          children: { url: RELATIVE_NAV_BASE, method: 'GET' },
+          path: { url: `${RELATIVE_NAV_BASE}/path/{id}`, method: 'GET' },
+          subtree: { url: `${RELATIVE_NAV_BASE}/subtree`, method: 'POST' },
+          move: { url: `${RELATIVE_NAV_BASE}/{id}/move`, method: 'PUT' },
+          nestedSearch: { url: `${RELATIVE_NAV_BASE}/search`, method: 'GET' },
+        },
+        views: {
+          default: {
+            treeConfig: {
+              idField: 'id',
+              parentIdField: 'parentId',
+              textField: 'name',
+            },
+          },
+        },
+        rows: [],
+      },
+    },
+  })
+
+  dataSet.setSharedHttpClient(mockHttpClient as never)
+  dataSet.setAppServices({
+    router: {
+      push: async () => undefined,
+      replace: async () => undefined,
+      back: () => undefined,
+      currentRoute: {
+        params: { tenantId: 'tenant-test', projectId: 'homepage' },
+        query: {},
+      },
+    },
+  })
   return dataSet
 }
 
@@ -112,6 +162,23 @@ describe('DataSet Tree 4+7 interfaces', () => {
       expect(view!.rows[0]?.['id']).toBe(1)
     })
 
+    it('loadTreeChildren should prepend project scope for relative platform URLs', async () => {
+      const get = vi.fn().mockResolvedValue([
+        { id: 1, parentId: null, name: 'Root' },
+      ])
+      const post = vi.fn()
+      const dataSet = createScopedRelativeTreeDataSet({ get, post })
+      const view = dataSet.getView('NavigationNodes', 'default')
+      expect(view).toBeDefined()
+
+      const rows = await view!.loadTreeChildren(null, 20)
+
+      expect(rows).toHaveLength(1)
+      expect(get).toHaveBeenCalledOnce()
+      expect(get.mock.calls[0]?.[0]).toBe('/tenants/tenant-test/projects/homepage/navigation/nodes')
+      expect(get.mock.calls[0]?.[1]).toEqual({ parentId: '', treeMode: 'flat', limit: 20 })
+    })
+
     it('loadTreePath should call navigation path endpoint and return pathIds', async () => {
       const get = vi.fn().mockResolvedValue({ pathIds: [1, 2, 3] })
       const post = vi.fn()
@@ -175,7 +242,27 @@ describe('DataSet Tree 4+7 interfaces', () => {
 
       expect(put).toHaveBeenCalledOnce()
       expect(put.mock.calls[0]?.[0]).toBe(`${NAV_BASE}/2/move`)
-      expect(put.mock.calls[0]?.[1]).toEqual({ id: 2, newParentId: 1, index: -1 })
+      expect(put.mock.calls[0]?.[1]).toEqual({ newParentId: 1, index: -1 })
+      expect(moved?.['parentId']).toBe(1)
+    })
+
+    it('moveTreeNode should prepend project scope for relative move endpoint', async () => {
+      const get = vi.fn().mockResolvedValue([
+        { id: 1, parentId: null, name: 'Root' },
+        { id: 2, parentId: null, name: 'Leaf' },
+      ])
+      const post = vi.fn()
+      const put = vi.fn().mockResolvedValue({ node: { id: 2, parentId: 1, name: 'Leaf' } })
+      const dataSet = createScopedRelativeTreeDataSet({ get, post, put })
+      const view = dataSet.getView('NavigationNodes', 'default')
+      expect(view).toBeDefined()
+
+      await view!.loadFromServer()
+      const moved = await view!.moveTreeNode(2, 1, -1)
+
+      expect(put).toHaveBeenCalledOnce()
+      expect(put.mock.calls[0]?.[0]).toBe('/tenants/tenant-test/projects/homepage/navigation/nodes/2/move')
+      expect(put.mock.calls[0]?.[1]).toEqual({ newParentId: 1, index: -1 })
       expect(moved?.['parentId']).toBe(1)
     })
 

@@ -24,6 +24,7 @@ import {
   MODEL_PERMISSION_FIELD
 } from './types'
 import { resolveUrlTemplate } from './core/url-template'
+import { applyPlatformProjectScope } from './core/platform-scoped-url'
 
 const UNRESOLVED_URL_TEMPLATE_RE = /:\w+|\{\w+\}/
 
@@ -567,7 +568,7 @@ export class CrudService {
       : {}
     const templateParams = { ...contextParams, ...dataParams }
     const resolved = resolveUrlTemplate(endpoint.url, templateParams)
-    const url = resolved.url
+    const url = applyPlatformProjectScope(resolved.url, contextParams)
 
     if (UNRESOLVED_URL_TEMPLATE_RE.test(url)) {
       throw new Error(`Unresolved URL template params: ${url}`)

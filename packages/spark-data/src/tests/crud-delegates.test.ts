@@ -130,6 +130,51 @@ describe('M5: CrudService shared HTTP client', () => {
     expect(mockClient.get.mock.calls[0][0]).toBe('/tenants/tenant-a/projects/proj-1/navigation/nodes')
   })
 
+  it('DataTable.crudService should prepend project scope for platform-relative URLs', async () => {
+    const mockClient = {
+      get: vi.fn().mockResolvedValue([]),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+      request: vi.fn(),
+      requestFull: vi.fn(),
+      patch: vi.fn(),
+    }
+    const ds = new DataSet({
+      dataSetName: 'ScopedRelative',
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [],
+          api: { list: { url: '/navigation/nodes', method: 'GET' } },
+          views: undefined,
+          loading: undefined,
+          error: undefined,
+        },
+      },
+    })
+    ds.setSharedHttpClient(mockClient as any)
+    ds.setAppServices({
+      router: {
+        push: async () => undefined,
+        replace: async () => undefined,
+        back: () => undefined,
+        currentRoute: {
+          params: { tenantId: 'tenant-a', projectId: 'proj-1' },
+          query: {},
+        },
+      },
+    })
+
+    const table = ds.getTable('T')!
+    const service = table.crudService!
+
+    const result = await service.list()
+    expect(result.success).toBe(true)
+    expect(mockClient.get).toHaveBeenCalledOnce()
+    expect(mockClient.get.mock.calls[0][0]).toBe('/tenants/tenant-a/projects/proj-1/navigation/nodes')
+  })
+
   it('DataTable.crudService should fail-fast when URL template params are unresolved', async () => {
     const mockClient = {
       get: vi.fn().mockResolvedValue([]),
@@ -161,6 +206,40 @@ describe('M5: CrudService shared HTTP client', () => {
     const result = await service.list()
     expect(result.success).toBe(false)
     expect(result.error?.message).toContain('Unresolved URL template params')
+    expect(mockClient.get).not.toHaveBeenCalled()
+  })
+
+  it('DataTable.crudService should fail-fast when platform-relative URL misses route scope', async () => {
+    const mockClient = {
+      get: vi.fn().mockResolvedValue([]),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+      request: vi.fn(),
+      requestFull: vi.fn(),
+      patch: vi.fn(),
+    }
+    const ds = new DataSet({
+      dataSetName: 'ScopedRelativeFailFast',
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [],
+          api: { list: { url: '/navigation/nodes', method: 'GET' } },
+          views: undefined,
+          loading: undefined,
+          error: undefined,
+        },
+      },
+    })
+    ds.setSharedHttpClient(mockClient as any)
+
+    const table = ds.getTable('T')!
+    const service = table.crudService!
+
+    const result = await service.list()
+    expect(result.success).toBe(false)
+    expect(result.error?.message).toContain('Missing tenantId/projectId for platform scoped URL')
     expect(mockClient.get).not.toHaveBeenCalled()
   })
 

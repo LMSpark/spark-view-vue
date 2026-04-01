@@ -414,6 +414,8 @@ RendererTree 仍兼容旧式：
 
 ### 9.1 pagedata.json
 
+说明：pagedata.json 中推荐写短资源路径；页面运行时会补 `/api` baseURL，并按当前 tenant/project 路由上下文自动补作用域前缀。
+
 ```json
 {
   "dataSetName": "NavDS",
@@ -426,13 +428,13 @@ RendererTree 仍兼容旧式：
         { "name": "name", "type": "string" }
       ],
       "api": {
-        "list": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-        "nested": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-        "children": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-        "path": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/path/{id}", "method": "GET" },
-        "subtree": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/subtree", "method": "POST" },
-        "move": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}/move", "method": "PUT" },
-        "nestedSearch": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/search", "method": "GET" }
+        "list": { "url": "/navigation/nodes", "method": "GET" },
+        "nested": { "url": "/navigation/nodes", "method": "GET" },
+        "children": { "url": "/navigation/nodes", "method": "GET" },
+        "path": { "url": "/navigation/nodes/path/{id}", "method": "GET" },
+        "subtree": { "url": "/navigation/nodes/subtree", "method": "POST" },
+        "move": { "url": "/navigation/nodes/{id}/move", "method": "PUT" },
+        "nestedSearch": { "url": "/navigation/nodes/search", "method": "GET" }
       },
       "views": {
         "default": {

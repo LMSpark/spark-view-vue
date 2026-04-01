@@ -226,6 +226,8 @@ Render* 规则：
 按两个阶段生成：
 - 第一阶段先做业务数据与 API 建模：主表/从表/明细表/字典表、columns、主键与关联字段、api 策略、computeExpression、aggregates、字段编辑选项表、字段编辑级联键
 - 第一阶段先判断每张表是纯静态、普通远程 CRUD，还是树远程表；如果是远程表，先把 api 用哪种写法以及需要哪些端点定清楚
+- 平台内置 scoped 资源（如 /navigation/**、/data/**、/pages-config/**）在生成 pagedata.json 时优先写短资源路径，不要手写 /tenants/{tenantId}/projects/{projectId} 前缀
+- tenantId/projectId 与 /api 前缀属于运行时注入逻辑，不属于业务建模内容；AI 只需给出正确的资源路径与端点族
 - 第一阶段若存在字段编辑级联，先确定“谁依赖谁”和“级联键列是什么”，例如 nodeKind、profileKey、provinceCode，不要先急着写视图关系
 - 第二阶段再补 views.default 与必要的命名视图，并决定 autoLoad、autoCurrentFirst、autoSelectFirst、treeConfig 等视图行为
 - 第二阶段再根据字段输入级联链路、主从联动链路、树节点联动链路反推视图关系，最后才配置 tableRelations（以及需要时的 viewDependencies）

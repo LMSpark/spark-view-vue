@@ -3,6 +3,8 @@
 > 适用场景：页面配置、路由同步、导航、项目管理、数据 CRUD、缓存清理、日志、AI 生成等需求。
 >
 > 所属： [AI 提示词体系](../README.md) / [平台基础](README.md) / API-first 规则基线。
+>
+> 说明：本文件列的是后端真实 HTTP API 路径；如果是在生成 pagedata.json 的 `table.api.url`，平台 scoped 资源应写短资源路径（如 `/navigation/nodes`），由运行时补 `/api` 与 tenant/project scope。
 
 ## 一、执行原则（强约束）
 
@@ -147,6 +149,7 @@
 ```text
 需求先做 API 覆盖判定：若现有 API 可实现，禁止默认修改后端 Controller/Service；
 页面/导航/项目/数据操作优先走多租户 API（/api/tenants/{tenantId}/projects/{projectId}/...）；
+若是在生成 pagedata.json 的 table.api.url，平台 scoped 资源写短路径（如 /navigation/nodes），不要把 /api 与 tenant/project scope 展开进去；
 历史迁移必须由前端显式调用 API 触发，禁止后端启动期隐式迁移；
 pages-config 写入优先 __batch；
 错误必须 fail-fast 显式暴露，禁止静默兜底。

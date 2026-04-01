@@ -46,8 +46,8 @@
 
 1. 先从需求中提取业务实体、主从层次、树层次、统计需求、字段编辑方式，以及是否存在远程数据。
 2. 第一阶段先完成“数据与 API 建模”：确定 tables、columns、主键与关联字段、api 策略、computeExpression、aggregates、选项表、选项级联键、树数据模型。
-3. 第二阶段再完成“视图与关系建模”：补 views.default、决定是否需要命名视图、决定 autoLoad / autoCurrentFirst / autoSelectFirst / treeConfig 等视图行为，并生成 relations。
-4. 输出前再做一次错误结构检查：不能有表根级 rows、不能有缺失 views.default 的表、不能在 relation 中生成不必要的高级可选字段（autoLoad / relationName 等，留给框架默认值）、不能把 options 重复塞进主表 rows。
+3. 第二阶段再完成“视图与关系建模”：补 views.default、决定是否需要命名视图、决定 autoLoad / autoCurrentFirst / autoSelectFirst / treeConfig 等视图行为，并生成 tableRelations；只有 dependencyType 非 currentRow 或 autoLoad 非 true 时，再补 viewDependencies。
+4. 输出前再做一次错误结构检查：不能有表根级 rows、不能有缺失 views.default 的表、不能在 tableRelations 中生成非标准字段、不能在 viewDependencies 中生成非法字段、不能把 options 重复塞进主表 rows。
 5. 最终只输出合法 JSON，不输出你的推理过程。
 
 ═══════════════════════════════════════════════════
@@ -69,7 +69,8 @@
 - 当前解析器兼容历史直出格式，但新生成内容一律使用 dataset 包装格式。
 - dataSetName 必须存在。
 - tables 必须存在，即使为空对象。
-- relations 可省略，但建议显式输出空数组 []。
+- tableRelations 可省略，但建议显式输出空数组 []。
+- 只有 dependencyType 非 currentRow 或 autoLoad 非 true 时，再显式输出 viewDependencies。
 
 ═══════════════════════════════════════════════════
 【2】总原则
@@ -80,10 +81,10 @@
 1. 所有页面数据必须通过 DataSet 流转。
 2. 每张表都必须显式声明 views.default；即使只有静态 rows，或只有 api，也不能省略，必须写成 views: { default: { ... } }。
 3. rows 放在 views.default 内，不要放在表根级作为新标准写法。
-4. 表结构、API、视图、关系都要完整落在 pagedata.json 中。
+4. 表结构、API、视图、tableRelations 都要完整落在 pagedata.json 中；只有非默认联动时再补 viewDependencies。
 5. 计算逻辑优先用 computeExpression，不要把计算留给 script.js。
 6. 汇总逻辑优先用 aggregates，不要在页面脚本里手工统计。
-7. 父子联动优先用 relations，不要靠脚本自行过滤。
+7. 父子联动优先用 tableRelations；只有 dependencyType 非 currentRow 或 autoLoad 非 true 时再用 viewDependencies，不要靠脚本自行过滤。
 8. 树页面优先使用 treeConfig + TreeApi，不要把树主流程写进 script.js。
 9. 没有明确远程接口时，优先生成静态 rows 演示数据。
 10. 不要生成无意义空字段，不要同时混用新旧两套格式。
@@ -107,21 +108,20 @@
 {
   "tableName": "Users",
   "columns": [ ... ],
-  "api": "/api/users"
+  "api": "/users"
 }
 
-错误示例 3：在 relation 中生成不必要的高级可选字段
+错误示例 3：在 tableRelations / viewDependencies 中生成错误字段
 
 {
   "parentTable": "Orders",
   "childTable": "OrderItems",
   "childField": "orderId",
-  "dependencyType": "currentRow",
   "autoLoad": true,
-  "relationName": "OrderItemsByOrder"
+  "parentViewId": "default"
 }
 
-说明：autoLoad、relationName、cascadeUpdate、cascadeDelete 是 DataRelation 接口的合法可选字段，但框架已有合理默认值（autoLoad 默认 true），AI 生成时不应显式输出，留给框架默认处理即可。
+说明：autoLoad 属于 viewDependencies；parentViewId / childViewId / lazyLoad / apiEnabled 都不是当前 prompt 允许生成的字段。tableRelations 默认只生成 parentTable、childTable、parentField、childField；只有 dependencyType 非 currentRow 或 autoLoad 非 true 时，再单独生成 viewDependencies。relationName、cascadeUpdate、cascadeDelete 虽然在类型上是合法可选字段，但除非业务明确需要，否则不要主动输出。
 
 错误示例 4：把 options 重复塞进主表 rows
 
@@ -140,18 +140,18 @@
 生成前先根据业务需求判断数据建模方式：
 
 1. 如果是单实体管理页，通常只需要 1 张主表。
-2. 如果是主从、明细、钻取页面，至少需要主表 + 子表，并通过 views + relations 建立父视图到子视图的 currentRow 数据流。
+2. 如果是主从、明细、钻取页面，至少需要主表 + 子表，并通过 views + tableRelations 建立父表到子表的 currentRow 数据流；只有非默认联动时再补 viewDependencies。
 3. 如果页面里有下拉、单选、树选项、状态字典，优先补独立字典表，不要把 options 直接塞进主表每一行。
 4. 如果需求包含金额、数量、单价、折扣、得分、统计指标，优先用 computeExpression 和 aggregates，而不是在 rows 里手填汇总值。
 5. 如果需求是树、导航、组织架构、目录分类，优先建节点表 + treeConfig；需要远程时再补 TreeApi。
-6. 如果需求同时包含列表、详情、明细、统计，这些通常不是一张表的不同字段，而是多张表 + relation + summaryRow 的组合。
+6. 如果需求同时包含列表、详情、明细、统计，这些通常不是一张表的不同字段，而是多张表 + tableRelations + summaryRow 的组合。
 7. 不要把“页面模块名”“卡片名”“区块名”直接当成表名；表名应对应真实业务实体。
 
 ═══════════════════════════════════════════════════
 【2.2】按两个阶段建模
 ═══════════════════════════════════════════════════
 
-生成 pagedata.json 时，按以下顺序思考，不要一上来就写 views 和 relations：
+生成 pagedata.json 时，按以下顺序思考，不要一上来就写 views 和 tableRelations：
 
 第一阶段：业务数据与 API 建模
 
@@ -171,9 +171,9 @@
 1. 在第一阶段表结构稳定后，再为每张表补 views.default。
 2. 只有确实存在多用途 DataView 时，才补非 default 视图；否则统一使用 default。
 3. 再决定 autoLoad、autoCurrentFirst、autoSelectFirst、treeConfig 等视图行为。
-4. 再根据字段输入级联链路、主从联动链路、树节点联动链路，反推需要哪些父视图 / 子视图关系。
-5. 最后再统一生成 relations，明确 parentTable、childTable、parentField、childField、dependencyType，以及 parentViewId / childViewId。
-6. 主从页面联动、字段编辑选项联动、树节点选项联动，本质上都属于第二阶段的 relations / views 数据流表达问题。
+4. 再根据字段输入级联链路、主从联动链路、树节点联动链路，反推需要哪些表关系和视图联动。
+5. 最后再统一生成 tableRelations；只有 dependencyType 非 currentRow 或 autoLoad 非 true 时，再补 viewDependencies。
+6. 主从页面联动、字段编辑选项联动、树节点选项联动，本质上都属于第二阶段的 views + tableRelations / viewDependencies 数据流表达问题。
 7. 第二阶段的目标是把“哪个视图驱动哪个视图、如何过滤、如何加载、哪些视图需要自动行为”说明白。
 
 ═══════════════════════════════════════════════════
@@ -223,7 +223,7 @@ dataset 内部结构：
 
 1. columns 和 api 属于 DataTable 层；rows、autoLoad、autoCurrentFirst、autoSelectFirst、aggregates、treeConfig 属于 DataView 层。
 2. AI 生成时不要把 currentRow、selectedRows、summaryRow、selectionSummaryRow 当成需要手填的 JSON 字段；它们是运行时状态或运行时派生结果。
-3. pagedata.json 的核心任务是把“表结构 + 视图初始数据 + 视图行为 + relations”建模正确，而不是把运行时状态写死在 JSON 里。
+3. pagedata.json 的核心任务是把“表结构 + 视图初始数据 + 视图行为 + tableRelations（以及需要时的 viewDependencies）”建模正确，而不是把运行时状态写死在 JSON 里。
 
 ═══════════════════════════════════════════════════
 【4】表（DataTable）结构
@@ -262,8 +262,8 @@ dataset 内部结构：
 4. rows 推荐写在 views.default.rows。
 5. 如果是纯静态数据，可不写 api。
 6. 如果是远程表，可保留 rows: [] 作为初始空数据。
-7. 只有 relation 明确使用命名视图时，才添加其他 viewId。
-8. 如果某张表作为 relation 的 parentTable，被其他表依赖，则它在 tables 对象中的顺序必须排在所有 childTable 之前。
+7. 只有确实需要 detail / summary / tree 等独立用途时，才添加其他 viewId；当前 tableRelations 默认作用于 default 视图。
+8. 如果某张表作为 tableRelations 的 parentTable，被其他表依赖，则它在 tables 对象中的顺序必须排在所有 childTable 之前。
 
 ═══════════════════════════════════════════════════
 【5】列（columns）定义规范
@@ -342,8 +342,8 @@ views.default 常见字段：
 2. 主从钻取页，父表通常建议 autoCurrentFirst: true。
 3. 静态演示页可以直接给 rows 3 到 5 条代表数据。
 4. 远程 API 页通常给 rows: []，避免重复造大批假数据。
-5. 如果 relation 用到了 childViewId 或 parentViewId，不允许漏掉对应 views 节点。
-6. autoLoad、autoCurrentFirst、autoSelectFirst 都属于第二阶段的视图行为；不要在第一阶段把它们误当成 api 字段或 relation 字段。
+5. 如果存在 tableRelations，对应父子表都必须有 views.default；当前关系默认从 default 视图展开，不需要生成 parentViewId / childViewId。
+6. autoLoad、autoCurrentFirst、autoSelectFirst 都属于第二阶段的视图行为；不要在第一阶段把它们误当成 api 字段、tableRelations 字段或 viewDependencies 字段。
 
 ═══════════════════════════════════════════════════
 【6.1】字段编辑选项（下拉 / 单选 / 多选 / 树选项）
@@ -351,7 +351,7 @@ views.default 常见字段：
 
 pagedata.json 的职责是提供“选项数据源”，不是把字段组件的 props.options 重复塞进主表每一行。
 
-这部分属于第一阶段：先把选项表和级联键建好；到第二阶段再通过 views / relations 把选项联动串起来。
+这部分属于第一阶段：先把选项表和级联键建好；到第二阶段再通过 views / tableRelations / viewDependencies 把选项联动串起来。
 
 生成规则：
 
@@ -360,8 +360,8 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
 3. 选择类字段在 rule.json 中通常通过 optionKey 绑定字典表视图，例如 "StatusOptions@rows"、"RoleOptions@rows"。
 4. 选项显示字段常用 label / text / name，取值字段常用 value / id / code；如果不是这些常见命名，rule.json 中应补 optionLabelField、optionValueField。
 5. 树选项、级联选项、树下拉如果来自 DataSet，优先给选项视图补 treeConfig；如果 rows 已经是带 children 的嵌套结构，也可以直接使用。
-6. 如果字段编辑选项存在级联，不要在第一阶段直接写 relation；先把选项表的级联键列设计出来，例如 nodeKind、profileKey、parentId、categoryCode。
-7. 到第二阶段最后，再根据字段输入级联链路生成 relation，并反推 parentViewId / childViewId；不要先写 relation 再回头猜视图。
+6. 如果字段编辑选项存在级联，不要在第一阶段直接写 tableRelations 或 viewDependencies；先把选项表的级联键列设计出来，例如 nodeKind、profileKey、parentId、categoryCode。
+7. 到第二阶段最后，再根据字段输入级联链路生成 tableRelations；只有 dependencyType 非 currentRow 或 autoLoad 非 true 时，再补 viewDependencies；不要先写 tableRelations 再回头猜表结构。
 
 推荐示例：
 
@@ -419,7 +419,7 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
 
 - r-select / r-radio：optionKey 绑定 "StatusOptions@rows"
 - 若选项字段是 name/code 这类命名：补 optionLabelField: "name"、optionValueField: "code"
-- 若选项需要按当前行字段级联过滤：先在 pagedata.json 中准备带级联键的 Options 表，第二阶段再补 relation
+- 若选项需要按当前行字段级联过滤：先在 pagedata.json 中准备带级联键的 Options 表，第二阶段再补 tableRelations / viewDependencies
 
 ═══════════════════════════════════════════════════
 【7】计算列（computeExpression）规范
@@ -437,7 +437,7 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
 
 "if (score >= 90) return 'A'; if (score >= 60) return 'B'; return 'C';"
 
-3. 基于 relation 数据流的子表聚合表达式：
+3. 基于 tableRelations 数据流的子表聚合表达式：
 
 "$count('OrderItems')"
 "$sum('OrderItems', 'amount')"
@@ -450,7 +450,7 @@ pagedata.json 的职责是提供“选项数据源”，不是把字段组件的
 强制规则：
 
 1. 多语句表达式必须保证所有分支都有 return。
-2. 只有已经定义 relation 数据流的父/子视图归属表，才能使用子表聚合函数。
+2. 只有已经定义 tableRelations 的父/子表，才能使用子表聚合函数。
 3. 计算列不在 rows 中手填值。
 4. 计算列字段仍然要在 columns 中正常声明。
 
@@ -500,17 +500,17 @@ aggregates 示例：
 
 2. 字符串简写：
 
-"api": "/api/users"
+"api": "/users"
 
 3. 完整对象：
 
 {
   "api": {
-    "list":     { "url": "/api/users",      "method": "GET" },
-    "create":   { "url": "/api/users",      "method": "POST" },
-    "retrieve": { "url": "/api/users/{id}", "method": "GET" },
-    "update":   { "url": "/api/users/{id}", "method": "PUT" },
-    "delete":   { "url": "/api/users/{id}", "method": "DELETE" }
+    "list":     { "url": "/users",      "method": "GET" },
+    "create":   { "url": "/users",      "method": "POST" },
+    "retrieve": { "url": "/users/{id}", "method": "GET" },
+    "update":   { "url": "/users/{id}", "method": "PUT" },
+    "delete":   { "url": "/users/{id}", "method": "DELETE" }
   }
 }
 
@@ -518,6 +518,7 @@ aggregates 示例：
 
 1. 字符串简写和 api: true 本质上都是基于 RESTful 基础路径展开，展开后至少包含 CRUD 五端点（list/create/retrieve/update/delete）和 Tree 七端点（node/children/path/subtree/search/nested/nestedSearch）。
 2. move 不属于简写自动展开范围；如果业务需要树节点移动，必须使用完整对象显式提供 move 端点。
+3. pagedata.json 中的 URL 一律不要写 `/api` 前缀；普通业务接口写 `/users`、`/orders/{id}` 这类资源路径，平台 scoped 资源写 `/navigation/nodes`、`/data/Orders` 这类短路径。
 
 生成策略：
 
@@ -525,11 +526,11 @@ aggregates 示例：
 2. 没有明确接口路径但业务明显是远程 CRUD，可用字符串简写或 true。
 3. 纯静态演示页不要加 api。
 4. 同一张表内不要混用多种 API 风格。
-5. URL 中路径参数统一使用 {id}、{tenantId}、{projectId} 这类占位格式。
+5. URL 中路径参数统一使用 {id}、{tableName}、{pageId} 这类占位格式；tenantId/projectId 不属于 pagedata 生成内容，平台 scoped 资源不要手写这两个占位符。
 6. 第一阶段先决定“这张表是否远程、需要哪些端点”；第二阶段再决定是否在 views.default 上启用 autoLoad、autoCurrentFirst 等视图行为。
 7. 树远程表的 api 规划也属于第一阶段；treeConfig 和树视图行为属于第二阶段。
 8. autoLoad、autoCurrentFirst、autoSelectFirst 是 views.default 的字段，不是 api 字段的一部分。
-9. 子表是否配置 api 会改变 relation 的运行路径：子表无 api 时，父变化后走内存过滤；子表有 api 时，父变化后由框架刷新子视图并按关系条件重新请求数据。
+9. 子表是否配置 api 会改变 tableRelations 的运行路径：子表无 api 时，父变化后走内存过滤；子表有 api 时，父变化后由框架刷新子视图并按关系条件重新请求数据；只有 dependencyType 非 currentRow 或需要关闭自动加载时，再额外补 viewDependencies。
 
 ═══════════════════════════════════════════════════
 【10】树表与树页面规范
@@ -569,37 +570,49 @@ treeMode 可选：
 5. textField 对应树节点显示文本字段。
 
 ═══════════════════════════════════════════════════
-【11】TreeApi 完整规范
+【11】TreeApi 与导航树示例
 ═══════════════════════════════════════════════════
 
-树接口按当前 spark-data TreeApi 生成，可包含：
+TreeApi 按当前 spark-data 的接口族理解；下面给出当前导航树后端的常见映射示例：
+
+先看约束：
+
+- `/api/tenants/{tenantId}/projects/{projectId}` 是平台多租户/多项目作用域前缀，属于内部路由拼接逻辑，不是 AI 需要展开的业务内容。
+- 页面运行时共享 HttpClient 提供 `/api` baseURL；spark-data 会再按 APP_SERVICES.router.currentRoute / pageRoute 自动补 `/tenants/{tenantId}/projects/{projectId}`。
+- 因此生成 pagedata.json 时，平台内置资源优先写短资源路径，如 `/navigation/nodes`、`/data/Orders`，不要手写完整 scoped 前缀。
+- 兼容性：手写完整 scoped URL 仍可工作；但作为 prompt 产物，默认应优先输出短路径。
 
 {
   "api": {
-    "list":         { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-    "nested":       { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-    "children":     { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "GET" },
-    "path":         { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/path/{id}", "method": "GET" },
-    "subtree":      { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/subtree", "method": "POST" },
-    "nestedSearch": { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/search", "method": "GET" },
-    "create":       { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes", "method": "POST" },
-    "update":       { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}", "method": "PUT" },
-    "delete":       { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}", "method": "DELETE" },
-    "move":         { "url": "/api/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}/move", "method": "PUT" }
+    "list":         { "url": "/navigation/nodes", "method": "GET" },
+    "nested":       { "url": "/navigation/nodes", "method": "GET" },
+    "children":     { "url": "/navigation/nodes", "method": "GET" },
+    "path":         { "url": "/navigation/nodes/path/{id}", "method": "GET" },
+    "subtree":      { "url": "/navigation/nodes/subtree", "method": "POST" },
+    "search":       { "url": "/navigation/nodes/search", "method": "GET" },
+    "nestedSearch": { "url": "/navigation/nodes/search", "method": "GET" },
+    "create":       { "url": "/navigation/nodes", "method": "POST" },
+    "update":       { "url": "/navigation/nodes/{id}", "method": "PUT" },
+    "delete":       { "url": "/navigation/nodes/{id}", "method": "DELETE" },
+    "move":         { "url": "/navigation/nodes/{id}/move", "method": "PUT" }
   }
 }
 
 说明：
 
-- list：首屏列表加载。
-- nested：显式获取嵌套树。
-- children：按 parentId 获取直接子节点。
-- node：获取单节点详情。
+- list：首屏平铺列表加载。
+- nested：显式获取嵌套树；当前导航后端通常通过同一个 /nodes 端点配合 treeMode=nested 返回层级结果。
+- children：按 parentId 获取直接子节点；当前导航后端通常复用同一个 /nodes 端点。
 - path：获取祖先路径。
 - subtree：展开到某节点时补齐缺失分支。
 - search：扁平模式搜索（返回匹配节点 + pathIds）。
-- nestedSearch：层次模式树搜索（返回匹配节点 + 嵌套祖先链）。
+- nestedSearch：层次模式树搜索（返回匹配节点 + 嵌套祖先链）；当前导航后端通常复用 /nodes/search，并用 treeMode=nested 决定返回形态。
 - create / update / delete / move：节点级 CRUD 与移动。
+
+说明补充：
+
+- node 端点属于 TreeApi 的合法能力，但当前导航后端通常不单独暴露；只有业务后端明确提供时，才显式补 node。
+- AI 生成这类 URL 时，重点是选对资源与端点族；tenantId/projectId 与 `/api` 前缀属于平台注入，不要再写进 pagedata.json。
 
 如果业务不是树，不要生成这些树端点。
 
@@ -610,7 +623,7 @@ treeMode 可选：
 ═══════════════════════════════════════════════════
 
 1. 纯静态页面：每张表生成 3 到 5 条代表数据。
-2. 子视图 rows 中用于 relation 匹配的 childField 值，必须能在父视图匹配字段中找到对应值。
+2. 子表 rows 中用于 tableRelations 匹配的 childField 值，必须能在父表匹配字段中找到对应值。
 3. 主表 id 建议从 1 开始。
 4. 二级子表 id 建议从 101 开始。
 5. 三级子表 id 建议从 1001 开始。
@@ -628,36 +641,51 @@ treeMode 可选：
 4. 视图名默认 default；只有确有需要时使用 detail、summary、tree、dialog 等命名视图。
 
 ═══════════════════════════════════════════════════
-【14】关系（relations，最后生成）规范
+【14】tableRelations + viewDependencies（最后生成）规范
 ═══════════════════════════════════════════════════
 
-relations 必须放在所有表、列、API、选项表、树配置、views.default 和命名视图都确定之后，作为最后一个结构设计步骤统一生成。
+pagedata.json 的关系定义拆分为两层：
 
-relations 描述的不是纯表结构关系，而是父视图到子视图的数据流配置；parentTable / childTable 用来定位视图归属的表，真正的联动语义由 parentViewId / childViewId / parentField / childField / dependencyType 共同决定。
+- tableRelations（L1 表关系）：声明表之间的外键映射，JSON path 为 dataset.tableRelations
+- viewDependencies（L2 视图联动，可选）：声明子视图如何响应父视图变化，JSON path 为 dataset.viewDependencies
 
-不要先写 relation 再回头猜表结构或视图流向；正确顺序是：
+省略 viewDependencies 时，框架会为每条 tableRelation 自动生成 { dependencyType: "currentRow", autoLoad: true } 的默认视图联动；大多数主从钻取场景只写 tableRelations 即可。
+
+当前运行时会把 tableRelations + viewDependencies 展开成 default 视图上的内部关系；不要在 JSON 中手写 parentViewId / childViewId。
+
+不要先写 tableRelations 再回头猜表结构或视图流向；正确顺序是：
 
 1. 先确定字段输入级联链路、主从联动链路、树节点联动链路。
-2. 再确定这些链路分别落在哪个 parentTable / parentViewId 和 childTable / childViewId。
-3. 最后再输出 relations 数组。
+2. 再反推这些链路分别落在哪个 parentTable / childTable / parentField / childField。
+3. 最后再输出 tableRelations。
+4. 只有 dependencyType 非 currentRow 或 autoLoad 非 true 时，再补 viewDependencies。
 
 如果关系来自字段输入级联，先看“哪个输入字段驱动哪个选项表或子表过滤”，再反推视图关系。例如：
 
 - provinceCode -> CityOptions：先确定 provinceCode 位于哪个父视图，再用 CityOptions 中的 provinceCode 作为 childField。
 - nodeKind -> ChildPlacementOptions：先确定 nodeKind 来自哪个父视图，再用 ChildPlacementOptions 中的 nodeKind 作为 childField。
-- editorProfileKey -> RefNodeKindOptions：先确定 editorProfileKey 的来源视图，再反推 RefNodeKindOptions 的 childViewId / childField。
+- editorProfileKey -> RefNodeKindOptions：先确定 editorProfileKey 的来源表，再反推 RefNodeKindOptions 的 childField。
 
-relations 数组中的每条关系：
+tableRelations 数组中的每条关系：
 
 {
   "parentTable": "Orders",
   "childTable": "OrderItems",
   "parentField": "id",
-  "childField": "orderId",
-  "dependencyType": "currentRow"
+  "childField": "orderId"
 }
 
-dependencyType 可选值：
+viewDependencies 只有在需要非默认联动时才显式输出，例如：
+
+[
+  {
+    "parentTable": "Categories",
+    "childTable": "Products",
+    "dependencyType": "allRows"
+  }
+]
+
+dependencyType 可选值（属于 viewDependencies，而不是 tableRelations）：
 
 - currentRow
 - selectedRows
@@ -666,16 +694,16 @@ dependencyType 可选值：
 
 生成原则：
 
-1. 普通主从钻取默认使用 currentRow。
-2. 批量联动才使用 selectedRows。
-3. 字典/参考数据联动、字段输入级联过滤，才考虑 allRows。
-4. parentViewId 表示从父表的哪个视图读取 currentRow / selectedRows 等状态，childViewId 表示把过滤或加载作用到子表的哪个视图；当前默认统一写 "default"，不要省略。
-5. childField 必须真实存在于子表 columns 中。
-6. parentField 不写时默认通常等于父表主键，但若业务是 code/uuid/字段输入值关联则必须写清。
-7. 当存在 relation 时，tables 中的 parentTable 必须定义在 childTable 前面，避免 DataSet 构造期因父视图尚未注册而报错。
-8. 只生成核心 relation 字段：parentTable、parentViewId、childTable、childViewId、parentField、childField、dependencyType；其他可选字段（autoLoad、relationName、cascadeUpdate、cascadeDelete）虽然是 DataRelation 接口的合法字段，但框架已有合理默认值，生成时不需要显式输出。
-9. 如果关系来自字段输入级联，优先根据字段输入链路反推 parentViewId / childViewId，不要先拍脑袋把所有关系都写成 default。
-10. relations 是最后收尾步骤：先有 tables / columns / api / views / 选项表 / treeConfig，再有 relations。
+1. 普通主从钻取默认只写 tableRelations，不需要显式写 viewDependencies。
+2. 批量联动才使用 selectedRows；字典/参考数据联动、字段输入级联过滤，才考虑 allRows。
+3. tableRelations 默认只生成 parentTable、childTable、parentField、childField；relationName、cascadeUpdate、cascadeDelete 只有业务明确需要时才生成。
+4. viewDependencies 默认只生成 parentTable、childTable、dependencyType、autoLoad。
+5. tableRelations 中严禁生成 autoLoad、lazyLoad、apiEnabled、parentViewId、childViewId。
+6. viewDependencies 中严禁生成 parentField、childField、parentViewId、childViewId。
+7. childField 必须真实存在于子表 columns 中。
+8. parentField 不写时默认通常等于父表主键，但若业务是 code / uuid / 字段输入值关联则必须写清。
+9. 当存在 tableRelations 时，tables 中的 parentTable 必须定义在 childTable 前面，避免 DataSet 构造期因父表尚未注册而报错。
+10. tableRelations / viewDependencies 是最后收尾步骤：先有 tables / columns / api / views / 选项表 / treeConfig，再统一输出关系。
 
 ═══════════════════════════════════════════════════
 【15】输出前自检清单
@@ -688,7 +716,7 @@ dependencyType 可选值：
 3. 每张表是否都存在 columns。
 4. 每张表是否都存在 views.default。
 5. rows 是否写在 views.default 内。
-6. relations 中引用的表名和视图名是否真实存在。
+6. tableRelations / viewDependencies 中引用的表名是否真实存在。
 7. childField 是否在子表 columns 中存在。
 8. computeExpression 列是否没有在 rows 中手填值。
 9. aggregates 是否写在视图内而不是列上。
@@ -696,12 +724,12 @@ dependencyType 可选值：
 11. 远程表是否至少具备合理的 list 接口。
 12. 树表是否同时具备 treeConfig 和稳定 idField。
 13. 树远程表是否使用了符合 treeMode 的树端点。
-14. relation 是否只使用核心字段（parentTable / childTable / parentViewId / childViewId / parentField / childField / dependencyType），没有显式生成 autoLoad、relationName 等高级可选字段。
+14. tableRelations 是否只使用标准字段，viewDependencies 是否只在非默认联动时显式输出。
 15. tables 中所有作为 parentTable 的表是否都排在对应 childTable 前面。
 16. JSON 是否合法，无注释、无尾逗号、无省略号。
 17. 输出是否只有 JSON，没有解释文字。
-18. 是否存在表根级 rows、只有 api 没有 views.default、或 relation 中多余的高级可选字段这类不推荐结构。
-19. autoLoad、autoCurrentFirst、autoSelectFirst 是否只出现在 views.default，而不是 api、relation 或表根级。
+18. 是否存在表根级 rows、只有 api 没有 views.default、或 tableRelations / viewDependencies 中非法字段这类不推荐结构。
+19. autoLoad、autoCurrentFirst、autoSelectFirst 是否只出现在 views.default 或 viewDependencies，而不是 api、tableRelations 或表根级。
 
 ═══════════════════════════════════════════════════
 【16】输出偏好
@@ -713,7 +741,7 @@ dependencyType 可选值：
 2. 如果业务明显是管理后台 CRUD，再补 api。
 3. 如果业务明显是树编辑或导航编辑，优先生成 NavigationNodes 这类树表。
 4. 如果业务包含金额、数量、状态、日期，优先补充计算列和 aggregates。
-5. 如果业务包含父子明细，优先生成 relations 而不是把明细揉进一个大表。
+5. 如果业务包含父子明细，优先生成 tableRelations；只有非默认联动时再补 viewDependencies，而不是把明细揉进一个大表。
 
 ═══════════════════════════════════════════════════
 【17】现在开始生成

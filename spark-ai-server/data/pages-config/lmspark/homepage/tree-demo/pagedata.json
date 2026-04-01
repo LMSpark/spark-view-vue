@@ -160,43 +160,43 @@
                 ],
                 "api": {
                     "list": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "url": "/navigation/nodes",
                         "method": "GET"
                     },
                     "nested": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "url": "/navigation/nodes",
                         "method": "GET"
                     },
                     "children": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "url": "/navigation/nodes",
                         "method": "GET"
                     },
                     "path": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/path/{id}",
+                        "url": "/navigation/nodes/path/{id}",
                         "method": "GET"
                     },
                     "subtree": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/subtree",
+                        "url": "/navigation/nodes/subtree",
                         "method": "POST"
                     },
                     "nestedSearch": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/search",
+                        "url": "/navigation/nodes/search",
                         "method": "GET"
                     },
                     "create": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes",
+                        "url": "/navigation/nodes",
                         "method": "POST"
                     },
                     "update": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
+                        "url": "/navigation/nodes/{id}",
                         "method": "PUT"
                     },
                     "delete": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}",
+                        "url": "/navigation/nodes/{id}",
                         "method": "DELETE"
                     },
                     "move": {
-                        "url": "/tenants/{tenantId}/projects/{projectId}/navigation/nodes/{id}/move",
+                        "url": "/navigation/nodes/{id}/move",
                         "method": "PUT"
                     }
                 },

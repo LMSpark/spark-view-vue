@@ -920,18 +920,17 @@ r-text / r-select / r-number / ...（字段组件）
   "dataSetName": "PageDS",
   "tables": {
     "表名": {
-      "tableName": "表名",
       "columns": [
         { "name": "id", "type": "string", "isPrimaryKey": true },
         { "name": "name", "type": "string" },
         { "name": "total", "type": "number", "computeExpression": "price * qty" }
       ],
-      "rows": [],                                // 内联数据（可空）
       "api": {                                   // 远程数据源
-        "list": { "url": "/api/表名", "method": "GET" }
+        "list": { "url": "/表名", "method": "GET" }
       },
       "views": {
         "default": {
+          "rows": [],                            // 内联数据（可空）
           "aggregates": {                        // 视图聚合
             "total": { "type": "sum" }
           }

@@ -1067,7 +1067,8 @@ export class DataView implements IDataSource {
       const cfg = this.treeConfig ?? {}
       // S3: 将 CrudService 的 HTTP 客户端传递给 TreeManager，共享拦截器/认证/配置
       const httpClient = this._dataTable?.crudService?.getHttpClient()
-      this.treeManager = new TreeManager(cfg, this._dataTable?.api, undefined, httpClient)
+      const endpointContextProvider = () => this._dataTable?.dataSet?.getRequestTemplateParams() ?? {}
+      this.treeManager = new TreeManager(cfg, this._dataTable?.api, undefined, httpClient, endpointContextProvider)
     }
     return this.treeManager
   }
