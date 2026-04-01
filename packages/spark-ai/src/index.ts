@@ -203,3 +203,27 @@ export type {
   ApplyResult,
   FullValidationIssue,
 } from './session-state'
+
+// ── Stills（SAP 协议动作引擎）────────────────────────────────────────────────
+export {
+  registerAllStills,
+  registerStill,
+  getStill,
+  getAllStills,
+  clearRegistry,
+  executeStill,
+  createSession,
+  createEmptyDataset,
+  checkGuard,
+} from './stills'
+export type {
+  DesignSessionV2,
+  StillGuard,
+  StillResult,
+  StillContext,
+  StillDefinition,
+  ExecutionBlueprint,
+  BlueprintCheckpoint,
+  PatchEntry,
+  DesignStep as StillDesignStep,
+} from './stills'
