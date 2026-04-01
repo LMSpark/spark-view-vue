@@ -16,11 +16,11 @@
  */
 
 import { DataView } from './data-view'
-import { RequestState } from './types'
-import type { IDataRow, DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
+import type { IDataRow, DataColumn, CrudApi, ITableMetadata, CrudOperationConfig } from './types'
 import type { DataSet } from './dataset'
 import { type DataValidator, createValidator, createSchema } from './validation'
 import { type CrudService, createCrudService } from './crud-service'
+import { normalizeTableMetadata } from './metadata'
 import { assertNoSeparator, resolveApi } from './core/utils'
 
 /**
@@ -204,37 +204,21 @@ export class DataTable {
   // ===== 序列化 / 反序列化 =====
 
   /**
-   * 将 DataTable 序列化为 ITableMetadata（主要序列化 `default` 视图状态及命名视图的元数据）
+   * 将 DataTable 序列化为 canonical ITableMetadata（表核 + views 壳）。
    */
   toData(): ITableMetadata {
-    const viewsData: Record<string, IViewMetadata> = {}
+    const viewsData = {} as ITableMetadata['views']
     for (const [id, view] of Object.entries(this.views)) {
-      if (id === 'default') continue
       viewsData[id] = view.toData()
     }
 
-    // 'default' 视图始终在构造函数中创建，直接访问即可
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- default view is guaranteed by constructor
-    const dv = this.views['default']!
-    const def = dv.toData()
-    const result: ITableMetadata = {
+    return {
       tableName: this.tableName,
       columns: this.columns.filter(c => !c.isComputed),
-      viewId: def.viewId ?? 'default',
       views: viewsData,
-      api: this.api,
-      loading: (dv.requestState === RequestState.Loading) || undefined,
-      error: dv.loadingError?.message,
+      ...(this.api !== undefined ? { api: this.api } : {}),
+      ...(this.crudConfig !== undefined ? { crudConfig: this.crudConfig } : {}),
     }
-    if (def.rows !== undefined) result.rows = def.rows
-    if (def.filterExpression !== undefined) result.filterExpression = def.filterExpression
-    if (def.sortExpression !== undefined) result.sortExpression = def.sortExpression
-    if (def.autoCurrentFirst !== undefined) result.autoCurrentFirst = def.autoCurrentFirst
-    if (def.autoSelectFirst !== undefined) result.autoSelectFirst = def.autoSelectFirst
-    if (def.page !== undefined) result.page = def.page
-    if (def.pageSize !== undefined) result.pageSize = def.pageSize
-    if (def.treeConfig !== undefined) result.treeConfig = def.treeConfig
-    return result
   }
 
   // ===== 销毁与内存管理 =====
@@ -268,20 +252,21 @@ export class DataTable {
   // ===== 工厂方法 =====
 
   /**
-   * 从 ITableMetadata 恢复 DataTable（重建 default 视图状态和命名视图）
+   * 从表元数据恢复 DataTable。
    */
   static fromTableData(data: ITableMetadata): DataTable {
-    const t = new DataTable(data.tableName, data.columns)
+    const normalized = normalizeTableMetadata(data)
+    const t = new DataTable(normalized.tableName, normalized.columns)
     // P2: API 简写展开（字符串 / true → CrudApi 对象）
-    if (data.api !== undefined) {
-      const resolved = resolveApi(data.api, data.tableName)
+    if (normalized.api !== undefined) {
+      const resolved = resolveApi(normalized.api, normalized.tableName)
       if (resolved !== undefined) t.api = resolved
     }
+    if (normalized.crudConfig !== undefined) t.crudConfig = normalized.crudConfig
 
     const def = t.getOrCreateView('default')
-    const defaultViewCfg = data.views?.['default']
-    // 优先读取 views.default.rows（显式格式），回退到表级 rows（简写格式）
-    const sourceRows = defaultViewCfg?.rows ?? data.rows
+    const defaultViewCfg = normalized.views['default']
+    const sourceRows = defaultViewCfg.rows
     if (sourceRows) {
       // 存入 DataTable.rows（内联静态数据 source of truth，供无 API 内存级联过滤使用）
       t.rows = [...sourceRows]
@@ -289,23 +274,18 @@ export class DataTable {
       def.rows = [...sourceRows]
     }
 
-    // views.default（若存在）优先于表级字段；ITableMetadata = ITableOwnMetadata & IViewMetadata，
-    // 两条路径（default 视图 vs 扁平化表级字段）字段名完全一致，统一委托给 applyViewConfig。
-    const vc: IViewMetadata = defaultViewCfg ?? data
-    def.applyViewConfig(vc)
+    def.applyViewConfig(defaultViewCfg)
 
     // 注意：不在此处调用 initAutoSelection()。
     // autoCurrentFirst / autoSelectFirst 的初始选中事件必须在消费者（如页面脚本）
     // 完成订阅后再发射，由渲染层在渲染器 mounted 后调用 DataSet.initAutoSelection() 统一触发。
 
     // 处理命名视图（非 default）
-    if (data.views) {
-      for (const [cid, cd] of Object.entries(data.views)) {
-        if (cid === 'default') continue
-        const namedView = DataView.fromData(cd, t.tableName, cid)
-        namedView.dataTable = t   // 确保 primaryKey getter 可访问列定义
-        t.views[cid] = namedView
-      }
+    for (const [cid, cd] of Object.entries(normalized.views)) {
+      if (cid === 'default') continue
+      const namedView = DataView.fromData(cd, t.tableName, cid)
+      namedView.dataTable = t   // 确保 primaryKey getter 可访问列定义
+      t.views[cid] = namedView
     }
     return t
   }

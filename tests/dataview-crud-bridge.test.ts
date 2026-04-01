@@ -16,7 +16,11 @@ function createDataView() {
           { name: 'id', type: 'number' },
           { name: 'name', type: 'string' },
         ],
-        rows: [{ id: 1, name: 'Alice' }],
+        views: {
+          default: {
+            rows: [{ id: 1, name: 'Alice' }],
+          },
+        },
       },
     },
   })
@@ -76,7 +80,11 @@ describe('DataView CRUD bridge', () => {
             update: { url: '/api/users/{id}', method: 'PUT' },
             delete: { url: '/api/users/{id}', method: 'DELETE' },
           },
-          rows: [{ id: 1, name: 'Alice', status: 'active' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice', status: 'active' }],
+            },
+          },
         },
       },
     })
@@ -128,7 +136,11 @@ describe('DataView CRUD bridge', () => {
           api: {
             update: { url: '/api/nodes/{id}', method: 'PUT' },
           },
-          rows: [{ id: 'node-1', title: '旧标题', path: '/old' }],
+          views: {
+            default: {
+              rows: [{ id: 'node-1', title: '旧标题', path: '/old' }],
+            },
+          },
         },
       },
     })
@@ -279,7 +291,11 @@ describe('DataView CRUD bridge', () => {
             { name: 'parentId', type: 'string' },
             { name: 'nodeKind', type: 'string' },
           ],
-          rows: [{ id: 'root-1', title: '根节点', parentId: null, nodeKind: 'module' }],
+          views: {
+            default: {
+              rows: [{ id: 'root-1', title: '根节点', parentId: null, nodeKind: 'module' }],
+            },
+          },
         },
       },
     })
@@ -356,7 +372,11 @@ describe('DataView CRUD bridge', () => {
             { name: 'nodeKind', type: 'string' },
             { name: 'parentId', type: 'string' },
           ],
-          rows: [{ id: '__toolbar__', nodeKind: 'system-directory', parentId: null }],
+          views: {
+            default: {
+              rows: [{ id: '__toolbar__', nodeKind: 'system-directory', parentId: null }],
+            },
+          },
         },
       },
     })

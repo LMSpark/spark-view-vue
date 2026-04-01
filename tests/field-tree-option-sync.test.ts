@@ -61,13 +61,13 @@ function createFlatTreeOptionDataSet() {
           { name: 'parentId', type: 'string' as const },
           { name: 'name', type: 'string' as const },
         ],
-        rows: [
-          { id: 'root-a', parentId: null, name: '根节点 A' },
-          { id: 'child-a1', parentId: 'root-a', name: '子节点 A1' },
-          { id: 'root-b', parentId: null, name: '根节点 B' },
-        ],
         views: {
           default: {
+            rows: [
+              { id: 'root-a', parentId: null, name: '根节点 A' },
+              { id: 'child-a1', parentId: 'root-a', name: '子节点 A1' },
+              { id: 'root-b', parentId: null, name: '根节点 B' },
+            ],
             treeConfig: {
               idField: 'id',
               parentIdField: 'parentId',

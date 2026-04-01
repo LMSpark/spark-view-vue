@@ -1,73 +1,56 @@
 /**
- * Phase 8 测试 — S4 (ITableMetadata 组合), L4 (schemaVersion)
+ * Metadata schema 测试 — v2 canonical 结构
  */
 import { describe, it, expect } from 'vitest'
 import { DataSet } from '../dataset'
 import { DataTable } from '../data-table'
-import type { ITableMetadata, ITableOwnMetadata, IViewMetadata, IDataSetMetadata } from '../types'
+import type { ITableMetadata, IViewMetadata, IDataSetMetadata } from '../types'
 
 // ============================================================
-// S4: ITableMetadata = ITableOwnMetadata & IViewMetadata (组合)
+// Table/View metadata 对齐
 // ============================================================
-describe('S4: ITableMetadata composition (not inheritance)', () => {
-  it('ITableMetadata should be assignable as IViewMetadata (structural compat)', () => {
+describe('ITableMetadata canonical structure', () => {
+  it('ITableMetadata should contain table fields and views only', () => {
     const tableMeta: ITableMetadata = {
       tableName: 'Users',
       columns: [{ name: 'id', type: 'number', label: 'ID' }],
-      api: undefined,
-      views: undefined,
-      loading: undefined,
-      error: undefined,
-      rows: [{ id: 1 }],
-      page: 1,
-      pageSize: 20,
+      views: {
+        default: {
+          rows: [{ id: 1 }],
+          page: 1,
+          pageSize: 20,
+        },
+      },
     }
-    // 可以赋值给 IViewMetadata（组合后仍然满足结构子类型）
-    const viewMeta: IViewMetadata = tableMeta
+    const viewMeta: IViewMetadata = tableMeta.views.default
     expect(viewMeta.rows).toEqual([{ id: 1 }])
     expect(viewMeta.page).toBe(1)
+    expect(tableMeta).not.toHaveProperty('rows')
   })
 
-  it('ITableOwnMetadata should only contain table-level fields', () => {
-    const own: ITableOwnMetadata = {
-      tableName: 'Test',
-      columns: [],
-      api: undefined,
-      views: undefined,
-      loading: undefined,
-      error: undefined,
-    }
-    // 不应包含 rows/page/filter 等视图字段
-    expect(own).not.toHaveProperty('rows')
-    expect(own).not.toHaveProperty('page')
-    expect(own).not.toHaveProperty('filterExpression')
-  })
-
-  it('DataTable.toData() should return valid ITableMetadata (composition)', () => {
+  it('DataTable.toData() should return valid ITableMetadata with default view under views', () => {
     const t = new DataTable('Products', [{ name: 'id', type: 'number', label: 'ID' }])
     const dv = t.getOrCreateView('default')
     dv.rows = [{ id: 1 }, { id: 2 }]
 
     const data = t.toData()
-    // 表自有字段
     expect(data.tableName).toBe('Products')
     expect(data.columns).toHaveLength(1)
-    // 视图字段（从 default 视图提升）
-    expect(data.rows).toEqual([{ id: 1 }, { id: 2 }])
+    expect(data.views.default.rows).toEqual([{ id: 1 }, { id: 2 }])
   })
 
-  it('DataTable.fromTableData() should handle flat view fields (backward compat)', () => {
+  it('DataTable.fromTableData() should read default view from views.default', () => {
     const data: ITableMetadata = {
       tableName: 'Orders',
       columns: [{ name: 'oid', type: 'string', label: 'OID' }],
-      api: undefined,
-      views: undefined,
-      loading: undefined,
-      error: undefined,
-      rows: [{ oid: 'A' }],
-      autoCurrentFirst: true,
-      page: 2,
-      pageSize: 10,
+      views: {
+        default: {
+          rows: [{ oid: 'A' }],
+          autoCurrentFirst: true,
+          page: 2,
+          pageSize: 10,
+        },
+      },
     }
     const table = DataTable.fromTableData(data)
     const dv = table.getOrCreateView('default')
@@ -77,28 +60,22 @@ describe('S4: ITableMetadata composition (not inheritance)', () => {
     expect(dv.autoCurrentFirst).toBe(true)
   })
 
-  it('DataTable.fromTableData() should prefer views.default config over flat fields', () => {
+  it('DataTable.fromTableData() should keep named views independent from default view', () => {
     const data: ITableMetadata = {
       tableName: 'T',
       columns: [],
-      api: undefined,
       views: {
-        default: { page: 5, pageSize: 50, autoCurrentFirst: false },
+        default: { rows: [{ x: 1 }], page: 5, pageSize: 50, autoCurrentFirst: false },
+        grid: { rows: [{ x: 2 }], page: 2, pageSize: 10 },
       },
-      loading: undefined,
-      error: undefined,
-      // 表级字段（应被忽略 — views.default 优先）
-      rows: [{ x: 1 }],
-      page: 1,
-      pageSize: 20,
     }
     const table = DataTable.fromTableData(data)
-    const dv = table.getOrCreateView('default')
-    // rows 来自表级 data.rows（fromTableData 固定行为）
-    expect(dv.rows).toEqual([{ x: 1 }])
-    // config 字段优先取 views.default
-    expect(dv.page).toBe(5)
-    expect(dv.pageSize).toBe(50)
+    const defaultView = table.getOrCreateView('default')
+    const gridView = table.getOrCreateView('grid')
+    expect(defaultView.rows).toEqual([{ x: 1 }])
+    expect(defaultView.page).toBe(5)
+    expect(gridView.rows).toEqual([{ x: 2 }])
+    expect(gridView.page).toBe(2)
   })
 })
 
@@ -106,12 +83,12 @@ describe('S4: ITableMetadata composition (not inheritance)', () => {
 // L4: schemaVersion
 // ============================================================
 describe('L4: schemaVersion in IDataSetMetadata', () => {
-  it('DataSet should default schemaVersion to 1', () => {
+  it('DataSet should default schemaVersion to 2', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'Test',
-      tables: { T: { tableName: 'T', columns: [], rows: [] } },
+      tables: { T: { tableName: 'T', columns: [], views: { default: { rows: [] } } } },
     })
-    expect(ds.schemaVersion).toBe(1)
+    expect(ds.schemaVersion).toBe(2)
   })
 
   it('DataSet constructor should accept explicit schemaVersion', () => {
@@ -121,10 +98,7 @@ describe('L4: schemaVersion in IDataSetMetadata', () => {
         T: {
           tableName: 'T',
           columns: [],
-          api: undefined,
-          views: undefined,
-          loading: undefined,
-          error: undefined,
+          views: { default: {} },
         },
       },
       schemaVersion: 2,
@@ -138,13 +112,13 @@ describe('L4: schemaVersion in IDataSetMetadata', () => {
       tables: {},
     })
     const data = ds.toData()
-    expect(data.schemaVersion).toBe(1)
+    expect(data.schemaVersion).toBe(2)
   })
 
   it('fromData() roundtrip should preserve schemaVersion', () => {
     const ds1 = new DataSet({
       dataSetName: 'RT',
-      tables: { T: { tableName: 'T', columns: [], api: undefined, views: undefined, loading: undefined, error: undefined } },
+      tables: { T: { tableName: 'T', columns: [], views: { default: {} } } },
       schemaVersion: 3,
       version: 42,
     })
@@ -154,29 +128,29 @@ describe('L4: schemaVersion in IDataSetMetadata', () => {
     expect(ds2.version).toBe(42)
   })
 
-  it('fromData() should default schemaVersion to 1 when missing', () => {
+  it('fromData() should default schemaVersion to 2 when missing', () => {
     const raw: IDataSetMetadata = {
       dataSetName: 'Old',
       tables: {},
       version: undefined,
       pageId: undefined,
-      // schemaVersion 未指定 — 旧 JSON 场景
+      // schemaVersion 未指定 — 默认按 canonical v2 处理
     }
     const ds = DataSet.fromData(raw)
-    expect(ds.schemaVersion).toBe(1)
+    expect(ds.schemaVersion).toBe(2)
   })
 
   it('schemaVersion should be distinct from business version', () => {
     const ds = new DataSet({
       dataSetName: 'Dual',
       tables: {},
-      schemaVersion: 1,
+      schemaVersion: 2,
       version: 99,
     })
-    expect(ds.schemaVersion).toBe(1)  // schema 格式版本
+    expect(ds.schemaVersion).toBe(2)  // schema 格式版本
     expect(ds.version).toBe(99)        // 业务乐观锁版本
     const data = ds.toData()
-    expect(data.schemaVersion).toBe(1)
+    expect(data.schemaVersion).toBe(2)
     expect(data.version).toBe(99)
   })
 })

@@ -476,12 +476,13 @@ export interface IViewMetadata {
 }
 
 /**
- * 数据表自有元数据（不含视图层字段）
+ * 数据表元数据（对应 DataTable 核）
  *
- * 表级关注点：表名、列定义、API 端点、命名视图集合、加载状态。
- * 视图层关注点（rows / filter / sort / page / treeConfig 等）由 IViewMetadata 描述。
+ * 表级关注点：表名、列定义、CRUD API、CRUD 配置和视图集合。
+ * 所有视图配置均进入 `views`，包括 `default`；
+ * 不再将 default 视图字段扁平提升到表级。
  */
-export interface ITableOwnMetadata {
+export interface ITableMetadata {
   tableName: string
   columns: DataColumn[]
   /**
@@ -491,39 +492,17 @@ export interface ITableOwnMetadata {
    * - `true`：从 tableName 按约定生成路径（`/api/${kebab-case(tableName)}`）
    */
   api?: CrudApi | string | boolean | undefined
-  views?: Record<string, IViewMetadata> | undefined
-  loading: boolean | undefined
-  error: string | undefined
+  /** 表级 CRUD 配置（超时、重试、权限等） */
+  crudConfig?: CrudOperationConfig | undefined
+  /** 视图集合；canonical 结构中必须包含 `default` 视图 */
+  views: { default: IViewMetadata } & Record<string, IViewMetadata>
 }
-
-/**
- * 数据表完整元数据（配置 JSON 的扁平格式）
- *
- * = ITableOwnMetadata（表结构字段）& IViewMetadata（default 视图字段）
- *
- * **字段归属一览**
- *
- * 表结构字段（属于 DataTable，由 DataTable.fromTableData 消费）：
- *   `tableName` `columns` `api` `views` `loading` `error`
- *
- * default 视图字段（属于 DataView，由 DataView.applyViewConfig 消费）：
- *   `rows` `filterExpression` `sortExpression` `page` `pageSize`
- *   `autoCurrentFirst` `autoSelectFirst`
- *   `autoLoad` `autoRefresh` `autoCommit`
- *   `valueField` `labelField` `selectionDelimiter` `treeConfig` `aggregates`
- *
- * 扁平化原因：pagedata.json 惯例将 default 视图字段直接挂在表级，
- * 避免配置中出现 `views.default.rows` 这种冗长路径。
- * DataTable.fromTableData 通过 `data.views?.['default'] ?? data`
- * 优先读取显式的 views.default，回退到扁平化表级字段，保持两者等价。
- */
-export type ITableMetadata = ITableOwnMetadata & IViewMetadata
 
 /** 数据集元数据 */
 export interface IDataSetMetadata {
   /**
    * Schema 格式版本（用于未来迁移兼容）。
-   * 缺失时视为 1（当前格式：default 视图字段扁平化到 ITableMetadata）。
+   * 当前 canonical 结构为 2：`tables -> views -> default`。
    */
   schemaVersion?: number
   dataSetName: string

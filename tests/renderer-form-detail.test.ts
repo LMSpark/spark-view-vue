@@ -71,7 +71,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
         },
       },
     })
@@ -113,7 +117,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
         },
       },
     })
@@ -147,7 +155,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
         },
       },
     })
@@ -197,7 +209,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
             { name: 'id', type: 'number' as const },
             { name: 'title', type: 'string' as const },
           ],
-          rows: [{ id: 2, title: 'Detail Row' }],
+          views: {
+            default: {
+              rows: [{ id: 2, title: 'Detail Row' }],
+            },
+          },
         },
       },
     })
@@ -238,7 +254,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
             { name: 'id', type: 'number' as const },
             { name: 'title', type: 'string' as const },
           ],
-          rows: [{ id: 2, title: 'Detail Row' }],
+          views: {
+            default: {
+              rows: [{ id: 2, title: 'Detail Row' }],
+            },
+          },
         },
       },
     })
@@ -271,7 +291,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
             { name: 'id', type: 'number' as const, isPrimaryKey: true },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }],
+            },
+          },
         },
       },
     })
@@ -345,7 +369,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
             { name: 'id', type: 'number' as const, isPrimaryKey: true },
             { name: 'title', type: 'string' as const },
           ],
-          rows: [{ id: 10, title: 'Alpha' }, { id: 11, title: 'Beta' }],
+          views: {
+            default: {
+              rows: [{ id: 10, title: 'Alpha' }, { id: 11, title: 'Beta' }],
+            },
+          },
         },
       },
     })
@@ -418,7 +446,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
             { name: 'id', type: 'number' as const, isPrimaryKey: true },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
         },
       },
     })

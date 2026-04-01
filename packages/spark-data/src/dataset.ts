@@ -6,12 +6,13 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, TableRelation, ViewDependency, FilterExpression, IDataRow, DataColumn, ColumnType, CrudApi, ViewChangeHandlers } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, FilterExpression, IDataRow, DataColumn, ColumnType, ViewChangeHandlers } from './types'
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
 import type { IAppServicesCapability } from '@spark-view/spark-utils'
 import { DataTable } from './data-table'
+import { normalizeDataSetMetadata } from './metadata'
 import { assertNoSeparator } from './core/utils'
 
 /** @internal 从未知值推断列类型 */
@@ -265,7 +266,7 @@ export class DataSet implements IDataSet {
   }) {
     assertNoSeparator(config.dataSetName, 'dataSetName')
     this.dataSetName = config.dataSetName
-    this.schemaVersion = config.schemaVersion ?? 1
+    this.schemaVersion = config.schemaVersion ?? 2
     this.tableRelations = config.tableRelations
     this.version = config.version
     this.pageId = config.pageId
@@ -583,16 +584,26 @@ export class DataSet implements IDataSet {
    */
   static fromConfig(config: {
     dataSetName: string
-    tables: Record<string, Omit<ITableMetadata, 'tableName' | 'loading' | 'error'> & { tableName?: string }>
+    tables: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>
     tableRelations?: TableRelation[]
     viewDependencies?: ViewDependency[]
+    schemaVersion?: number
+    version?: number
+    pageId?: string
   }): DataSet {
-    // tableName 回填由 DataSet 构造函数统一处理（P1-1），此处直接透传
-    return new DataSet({
+    return DataSet.fromData({
       dataSetName: config.dataSetName,
-      tables: config.tables as Record<string, ITableMetadata>,
-      tableRelations: config.tableRelations,
-      viewDependencies: config.viewDependencies,
+      tables: Object.fromEntries(
+        Object.entries(config.tables).map(([tableName, table]) => [
+          tableName,
+          { ...table, tableName: table.tableName ?? tableName },
+        ]),
+      ) as Record<string, ITableMetadata>,
+      ...(config.schemaVersion !== undefined ? { schemaVersion: config.schemaVersion } : {}),
+      ...(config.tableRelations !== undefined ? { tableRelations: config.tableRelations } : {}),
+      ...(config.viewDependencies !== undefined ? { viewDependencies: config.viewDependencies } : {}),
+      version: config.version,
+      pageId: config.pageId,
     })
   }
 
@@ -701,7 +712,8 @@ export class DataSet implements IDataSet {
    * @returns 数据集实例
    */
   static fromData(data: IDataSetMetadata): DataSet {
-    return new DataSet(data)
+    const normalized = normalizeDataSetMetadata(data)
+    return new DataSet(normalized)
   }
 
   /**
@@ -738,26 +750,26 @@ export class DataSet implements IDataSet {
     ) {
       const rd = datasetCandidate as {
         dataSetName?: string
-        tables?: Record<string, { 
-          tableName: string
-          columns: DataColumn[]
-          rows?: IDataRow[]
-          api?: CrudApi
-          views?: Record<string, IViewMetadata>
-        }>
+        tables?: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>
         tableRelations?: TableRelation[]
         viewDependencies?: ViewDependency[]
+        schemaVersion?: number
+        version?: number
+        pageId?: string
       }
       return DataSet.fromConfig({
         dataSetName: rd.dataSetName ?? 'PageDataSet',
-        tables: (rd.tables ?? {}) as Record<string, Omit<ITableMetadata, 'tableName' | 'loading' | 'error'> & { tableName?: string }>,
+        tables: (rd.tables ?? {}) as Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>,
         ...(rd.tableRelations ? { tableRelations: rd.tableRelations } : {}),
         ...(rd.viewDependencies ? { viewDependencies: rd.viewDependencies } : {}),
+        ...(rd.schemaVersion !== undefined ? { schemaVersion: rd.schemaVersion } : {}),
+        ...(rd.version !== undefined ? { version: rd.version } : {}),
+        ...(rd.pageId !== undefined ? { pageId: rd.pageId } : {}),
       })
     }
 
     // 情形 2：将整个 pagedata 的每个 key 归一化为一张表
-    const tables: Record<string, { tableName: string; columns: DataColumn[]; rows: IDataRow[] }> = {}
+    const tables: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName: string }> = {}
 
     for (const [key, val] of Object.entries(rawPageData)) {
       if (key === 'dataset') continue
@@ -780,7 +792,7 @@ export class DataSet implements IDataSet {
           for (const r of val) rows.push({ value: r } as IDataRow)
         }
 
-        tables[key] = { tableName: key, columns, rows }
+        tables[key] = { tableName: key, columns, views: { default: { rows } } }
         continue
       }
 
@@ -789,7 +801,7 @@ export class DataSet implements IDataSet {
         const obj = val as Record<string, unknown>
         const columns = inferColumnsFromRecord(obj)
         const row = obj as IDataRow
-        tables[key] = { tableName: key, columns, rows: [row] }
+        tables[key] = { tableName: key, columns, views: { default: { rows: [row] } } }
         continue
       }
 
@@ -797,7 +809,7 @@ export class DataSet implements IDataSet {
       tables[key] = {
         tableName: key,
         columns: [{ name: 'value', type: inferColumnType(val), label: 'value' }],
-        rows: [{ value: val } as IDataRow],
+        views: { default: { rows: [{ value: val } as IDataRow] } },
       }
     }
 

@@ -84,11 +84,15 @@ const employeeDataSet = SparkData.createDataSet({
         { name: 'score', type: 'number' },
         { name: 'department', type: 'string' },
       ],
-      rows: [
-        { id: 1, name: '陈岚', age: 28, score: 91, department: '产品' },
-        { id: 2, name: '赵宁', age: 33, score: 87, department: '研发' },
-        { id: 3, name: '林澈', age: 30, score: 95, department: '设计' },
-      ],
+      views: {
+        default: {
+          rows: [
+            { id: 1, name: '陈岚', age: 28, score: 91, department: '产品' },
+            { id: 2, name: '赵宁', age: 33, score: 87, department: '研发' },
+            { id: 3, name: '林澈', age: 30, score: 95, department: '设计' },
+          ],
+        },
+      },
     },
   },
 })

@@ -40,10 +40,14 @@ describe('RendererList and RendererSection container integration', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [
-            { id: 1, name: 'Alice', _perm: { allowDelete: true } },
-            { id: 2, name: 'Bob', _perm: { allowDelete: false } },
-          ],
+          views: {
+            default: {
+              rows: [
+                { id: 1, name: 'Alice', _perm: { allowDelete: true } },
+                { id: 2, name: 'Bob', _perm: { allowDelete: false } },
+              ],
+            },
+          },
         },
       },
     })
@@ -105,7 +109,11 @@ describe('RendererList and RendererSection container integration', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' as const }],
-          rows: [{ id: 1 }],
+          views: {
+            default: {
+              rows: [{ id: 1 }],
+            },
+          },
         },
       },
     })
@@ -135,7 +143,11 @@ describe('RendererList and RendererSection container integration', () => {
             { name: 'id', type: 'number' as const, isPrimaryKey: true },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }],
+            },
+          },
         },
       },
     })
@@ -207,7 +219,11 @@ describe('RendererList and RendererSection container integration', () => {
             { name: 'id', type: 'number' as const, isPrimaryKey: true },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
         },
       },
     })

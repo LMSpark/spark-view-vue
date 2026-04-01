@@ -155,7 +155,11 @@ const employeeDataSet = SparkData.createDataSet({
         { name: 'age', type: 'number' },
         { name: 'score', type: 'number' },
       ],
-      rows: employees,
+      views: {
+        default: {
+          rows: employees,
+        },
+      },
     },
   },
 })

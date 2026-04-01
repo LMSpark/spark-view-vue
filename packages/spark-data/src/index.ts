@@ -43,7 +43,6 @@ export type {
 
   // DataSet 配置（createDataSet / fromConfig 参数类型）
   IDataSetMetadata,
-  ITableOwnMetadata,
   ITableMetadata,
   DataColumn,
   TableRelation,

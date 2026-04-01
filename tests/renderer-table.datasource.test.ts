@@ -414,7 +414,11 @@ function createInlineDataSet(tableName: string, rows: IDataRow[]): IDataSet {
       [tableName]: {
         tableName,
         columns,
-        rows,
+        views: {
+          default: {
+            rows,
+          },
+        },
       },
     },
   })
@@ -509,7 +513,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
         },
       },
     })
@@ -569,7 +577,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' as const }],
-          rows: [{ id: 1 }, { id: 2 }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1 }, { id: 2 }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -596,7 +608,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' as const }],
-          rows: [] as IDataRow[]
+          views: {
+            default: {
+              rows: [] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -624,7 +640,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' as const }],
-          rows: [{ id: 1 }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1 }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -648,7 +668,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'number' as const }],
-          rows: [] as IDataRow[]
+          views: {
+            default: {
+              rows: [] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -679,7 +703,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -718,7 +746,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -754,7 +786,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -795,7 +831,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [{ id: 'node-1', label: '节点 1', _perm: { allowDelete: true, allowCreateChild: true } }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 'node-1', label: '节点 1', _perm: { allowDelete: true, allowCreateChild: true } }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -864,15 +904,19 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [
-            {
-              id: 'root',
-              label: '根节点',
-              children: [
-                { id: 'leaf', label: '叶子节点', children: [] },
-              ],
+          views: {
+            default: {
+              rows: [
+                {
+                  id: 'root',
+                  label: '根节点',
+                  children: [
+                    { id: 'leaf', label: '叶子节点', children: [] },
+                  ],
+                },
+              ] as IDataRow[],
             },
-          ] as IDataRow[]
+          },
         }
       }
     })
@@ -937,21 +981,25 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [
-            {
-              id: 'root',
-              label: '根节点',
-              children: [
+          views: {
+            default: {
+              rows: [
                 {
-                  id: 'branch',
-                  label: '分支节点',
+                  id: 'root',
+                  label: '根节点',
                   children: [
-                    { id: 'leaf', label: '叶子节点', children: [] },
+                    {
+                      id: 'branch',
+                      label: '分支节点',
+                      children: [
+                        { id: 'leaf', label: '叶子节点', children: [] },
+                      ],
+                    },
                   ],
                 },
-              ],
+              ] as IDataRow[],
             },
-          ] as IDataRow[]
+          },
         }
       }
     })
@@ -1022,12 +1070,12 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'parentId', type: 'string' as const },
             { name: 'label', type: 'string' as const },
           ],
-          rows: [
-            { id: 'root', parentId: null, label: '根节点' },
-            { id: 'leaf', parentId: null, label: '叶子节点' },
-          ] as IDataRow[],
           views: {
             default: {
+              rows: [
+                { id: 'root', parentId: null, label: '根节点' },
+                { id: 'leaf', parentId: null, label: '叶子节点' },
+              ] as IDataRow[],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1065,12 +1113,12 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'parentId', type: 'string' as const },
             { name: 'label', type: 'string' as const },
           ],
-          rows: [
-            { id: 'root', parentId: null, label: '根节点' },
-            { id: 'leaf', parentId: 'root', label: '叶子节点' },
-          ] as IDataRow[],
           views: {
             default: {
+              rows: [
+                { id: 'root', parentId: null, label: '根节点' },
+                { id: 'leaf', parentId: 'root', label: '叶子节点' },
+              ] as IDataRow[],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1119,7 +1167,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const, isPrimaryKey: true },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] as IDataRow[],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] as IDataRow[],
+            },
+          },
         },
       },
     })
@@ -1315,9 +1367,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'parentId', type: 'string' as const },
             { name: 'label', type: 'string' as const },
           ],
-          rows: [] as IDataRow[],
           views: {
             default: {
+              rows: [] as IDataRow[],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1410,7 +1462,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             update: { url: '/api/users/{id}', method: 'PUT' },
             delete: { url: '/api/users/{id}', method: 'DELETE' },
           },
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         },
       },
     })
@@ -1511,7 +1567,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -1586,7 +1646,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -1642,7 +1706,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -1703,7 +1771,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 7, name: 'Alice' }, { id: 8, name: 'Bob' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 7, name: 'Alice' }, { id: 8, name: 'Bob' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -1757,7 +1829,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Carol' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Carol' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -1810,7 +1886,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -1868,7 +1948,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -1928,7 +2012,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -2018,7 +2106,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'string' as const, isPrimaryKey: true },
             { name: 'label', type: 'string' as const },
           ],
-          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+          views: {
+            default: {
+              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+            },
+          },
           api: { list: { url: '/api/nodes', method: 'GET' } },
         },
       },
@@ -2278,7 +2370,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -2311,7 +2407,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 'node-1', label: '节点 1' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -2387,7 +2487,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Nodes: {
           tableName: 'Nodes',
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          rows: [{ id: 'node-2', label: '节点 2', _perm: { allowDelete: false, allowCreateChild: false } }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 'node-2', label: '节点 2', _perm: { allowDelete: false, allowCreateChild: false } }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -2443,7 +2547,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'label', type: 'string' as const },
             { name: 'parentId', type: 'string' as const },
           ],
-          rows: [{ id: 'node-1', label: '节点 1', _perm: { allowCreateChild: true } }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 'node-1', label: '节点 1', _perm: { allowCreateChild: true } }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -2503,7 +2611,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'id', type: 'number' as const },
             { name: 'name', type: 'string' as const },
           ],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         },
       },
     })
@@ -2565,11 +2677,15 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'name', type: 'string' as const }],
-          rows: [
-            { id: 1, name: 'Alice' },
-            { id: 2, name: 'Bob' },
-            { id: 3, name: 'Alicia' },
-          ] as IDataRow[]
+          views: {
+            default: {
+              rows: [
+                { id: 1, name: 'Alice' },
+                { id: 2, name: 'Bob' },
+                { id: 3, name: 'Alicia' },
+              ] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -2614,7 +2730,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'name', type: 'string' as const }],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -2663,7 +2783,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'name', type: 'string' as const }],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         },
       },
     })
@@ -2705,11 +2829,15 @@ describe('RendererTable - DataView as single data intermediary', () => {
             { name: 'score', type: 'number' as const },
             { name: 'status', type: 'string' as const },
           ],
-          rows: [
-            { id: 1, score: 10, status: 'draft' },
-            { id: 2, score: 20, status: 'done' },
-            { id: 3, score: 30, status: 'archived' },
-          ] as IDataRow[]
+          views: {
+            default: {
+              rows: [
+                { id: 1, score: 10, status: 'draft' },
+                { id: 2, score: 20, status: 'done' },
+                { id: 3, score: 30, status: 'archived' },
+              ] as IDataRow[],
+            },
+          },
         }
       }
     })
@@ -2753,7 +2881,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'name', type: 'string' as const }],
-          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }] as IDataRow[],
+            },
+          },
         }
       }
     })

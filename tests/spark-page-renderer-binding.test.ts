@@ -41,9 +41,13 @@ describe('SparkPageRenderer root props aggregation', () => {
             columns: [
               { name: 'id', type: 'string' },
             ],
-            rows: [
-              { id: 'u-1' },
-            ],
+            views: {
+              default: {
+                rows: [
+                  { id: 'u-1' },
+                ],
+              },
+            },
           },
         },
       }),

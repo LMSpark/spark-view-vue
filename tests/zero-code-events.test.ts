@@ -52,7 +52,11 @@ function createActionContext(overrides?: Partial<ActionExecutionContext>): Actio
           { name: 'id', type: 'number' },
           { name: 'name', type: 'string' },
         ],
-        rows: [{ id: 1, name: 'Alice' }],
+        views: {
+          default: {
+            rows: [{ id: 1, name: 'Alice' }],
+          },
+        },
       },
     },
   })
@@ -75,7 +79,11 @@ function createInlineDataSet(tableName: string, rows: IDataRow[]) {
           { name: 'id', type: 'number', isPrimaryKey: true },
           { name: 'name', type: 'string' },
         ],
-        rows,
+        views: {
+          default: {
+            rows,
+          },
+        },
       },
     },
   })
@@ -415,7 +423,11 @@ describe('navigate action — 事件行插值', () => {
             { name: 'id', type: 'number' },
             { name: 'name', type: 'string' },
           ],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
         },
       },
     })
@@ -447,7 +459,11 @@ describe('navigate action — 事件行插值', () => {
             { name: 'id', type: 'number' },
             { name: 'name', type: 'string' },
           ],
-          rows: [{ id: 99, name: 'Charlie' }],
+          views: {
+            default: {
+              rows: [{ id: 99, name: 'Charlie' }],
+            },
+          },
         },
       },
     })
@@ -475,7 +491,17 @@ describe('navigate action — 事件行插值', () => {
     const pageService = createPageService()
     const ds = SparkData.createDataSet({
       dataSetName: 'NavDS3',
-      tables: { T: { tableName: 'T', columns: [], rows: [] } },
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [],
+          views: {
+            default: {
+              rows: [],
+            },
+          },
+        },
+      },
     })
     const actionCtx: ActionExecutionContext = {
       getDataSet: () => ds,

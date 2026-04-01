@@ -13,7 +13,11 @@ describe('spark-component dataKey resolver', () => {
             { name: 'id', type: 'number' },
             { name: 'name', type: 'string' },
           ],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: {
+            default: {
+              rows: [{ id: 1, name: 'Alice' }],
+            },
+          },
         },
       },
     })
