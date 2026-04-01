@@ -92,7 +92,8 @@ import { ref, nextTick, onUnmounted, computed } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { createAuthHeaders } from '@/services/http'
 import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
-import { streamAiChatText, extractToolProtocolBlocks, stripToolProtocolBlocks } from '@/services/ai-protocol'
+import { streamAiChatText } from '@/services/ai-protocol'
+import { extractSapProtocolBlocks, stripSapProtocolBlocks } from '@/services/sap-protocol'
 
 const props = withDefaults(defineProps<{ embedded?: boolean; forceOpen?: boolean }>(), {
   embedded: false,
@@ -102,27 +103,37 @@ const { isOwner } = useFloatingPanelOwner('__SPARK_SAP_PANEL_OWNER__')
 
 // ── 常量 ──────────────────────────────────────────────────────────────────
 
-/** 最大前端 Tool Loop 回合数（防止无限循环） */
+/** 最大前端 SAP 协议回合数（防止无限循环） */
 const MAX_TOOL_ROUNDS = 5
 
 /** SAP 系统提示词 — 指导 LLM 输出 SAP/1.0 协议块 */
-const SAP_SYSTEM_PROMPT = `你是一个 SAP 工具助手，拥有以下能力：
+const SAP_SYSTEM_PROMPT = `你是一个 SAP/1.0 协议助手，拥有以下能力：
 
 1. file.write — 写入文件到沙箱目录
-   协议格式：
-   @@tool:file.write#<requestId>
+  发起请求时必须输出：
+  @@request:file.write#<requestId>
    {"path":"<相对路径>","content":"<文件内容>","append":false}
    @@end
 
 2. db.query — 执行只读 SQL 查询
-   协议格式：
-   @@tool:db.query#<requestId>
+  发起请求时必须输出：
+  @@request:db.query#<requestId>
    {"sql":"SELECT ...","limit":10}
    @@end
 
+3. system.capabilities — 查看当前可用动作
+  查询能力时必须输出：
+  @@describe:system.capabilities#<requestId>
+  {}
+  @@end
+
 使用规则：
-- 每次回复中可以包含 0~N 个工具调用块
+- 每次回复中最多只能包含 1 个 SAP 协议块
+- 如果需要多个动作，必须等待上一轮执行结果返回后再决定下一步
+- 发起真实操作只能使用 request 类型
+- 查看能力只能使用 describe:system.capabilities
 - requestId 使用 req-1, req-2 等递增编号
+- 严禁输出 @@tool:*，只能使用 @@request:* 或 @@describe:system.capabilities
 - 如果不需要调用工具，直接用自然语言回复即可
 - 收到工具执行结果后，请用自然语言总结执行情况给用户
 - 不要在同一次回复中既调用工具又做最终总结，先调工具等结果`
@@ -211,7 +222,13 @@ async function executeSapProtocol(sapText: string): Promise<string> {
   return json.result ?? ''
 }
 
-// ── 核心：前端 Tool Loop ──────────────────────────────────────────────────
+function getSapExecutionKind(result: string): 'result' | 'error' | 'unknown' {
+  if (result.includes('@@result:')) return 'result'
+  if (result.includes('@@error:')) return 'error'
+  return 'unknown'
+}
+
+// ── 核心：前端 SAP 协议回路 ────────────────────────────────────────────────
 
 async function handleSend() {
   const text = prompt.value.trim()
@@ -240,7 +257,7 @@ async function handleSend() {
 
       // ── Step 1: 流式调用 LLM ──
       streamingText.value = ''
-      phaseMessage.value = round > 1 ? `第 ${round} 轮工具调用` : ''
+      phaseMessage.value = round > 1 ? `第 ${round} 轮 SAP 协议执行` : ''
       scrollToBottom()
 
       const aiReply = await streamAiChatText({
@@ -262,8 +279,8 @@ async function handleSend() {
       if (_abortRequested) break
 
       // ── Step 2: 检测是否包含 SAP 协议块 ──
-      const blocks = extractToolProtocolBlocks(aiReply, { type: 'tool' })
-      if (blocks.length === 0) {
+      const extraction = extractSapProtocolBlocks(aiReply)
+      if (extraction.kind === 'none') {
         // 无工具调用 → 最终回复，退出循环
         messages.value.push({ role: 'assistant', text: aiReply })
         conversation.push({ role: 'assistant', content: aiReply })
@@ -271,38 +288,47 @@ async function handleSend() {
         break
       }
 
-      // ── Step 3: 提取并执行工具调用 ──
+      if (extraction.kind === 'multiple') {
+        messages.value.push({
+          role: 'assistant',
+          text: '⚠️ SAP 协议错误：一次只允许输出 1 个 request/describe 协议块，已要求模型重试。',
+        })
+        conversation.push({ role: 'assistant', content: aiReply })
+        conversation.push({
+          role: 'user',
+          content: '[系统协议错误]\n一次只允许输出 1 个 SAP 协议块。请只输出一个 @@request:<action>#<id> 或 @@describe:system.capabilities#<id>，或者直接用自然语言回答。',
+        })
+        scrollToBottom()
+        continue
+      }
+
+      const [block] = extraction.blocks
+      if (block === undefined) {
+        throw new Error('SAP 协议提取失败：缺少协议块')
+      }
+
+      // ── Step 3: 执行单个 SAP 协议块 ──
       const toolCalls: ToolCallInfo[] = []
-      const resultParts: string[] = []
 
       // 显示 AI 回复（含协议块）
-      phaseMessage.value = `正在执行 ${blocks.length} 个工具调用...`
+      phaseMessage.value = `正在执行 SAP 协议请求 ${block.action}#${block.id}...`
 
-      for (const block of blocks) {
-        try {
-          const result = await executeSapProtocol(block.raw)
-          toolCalls.push({
-            action: block.action,
-            id: block.id,
-            success: true,
-            detail: truncateResult(result),
-          })
-          resultParts.push(`[${block.action}#${block.id}] 成功:\n${result}`)
-        } catch (err) {
-          const errMsg = err instanceof Error ? err.message : String(err)
-          toolCalls.push({
-            action: block.action,
-            id: block.id,
-            success: false,
-            detail: errMsg,
-          })
-          resultParts.push(`[${block.action}#${block.id}] 失败: ${errMsg}`)
-        }
+      const executionResult = await executeSapProtocol(block.raw)
+      const executionKind = getSapExecutionKind(executionResult)
+      if (executionKind === 'unknown') {
+        throw new Error('SAP 执行返回了未知协议结果')
       }
+
+      toolCalls.push({
+        action: block.action,
+        id: block.id,
+        success: executionKind === 'result',
+        detail: truncateResult(executionResult),
+      })
 
       // 将 AI 回复（含工具调用追踪）加入消息列表
       // 将非协议文本部分提取为展示文本
-      const displayText = stripToolProtocolBlocks(aiReply, { type: 'tool' }) || `调用了 ${blocks.length} 个工具`
+      const displayText = stripSapProtocolBlocks(aiReply) || `调用了 SAP 协议请求 ${block.action}#${block.id}`
       messages.value.push({
         role: 'assistant',
         text: displayText,
@@ -312,16 +338,51 @@ async function handleSend() {
 
       // ── Step 4: 将结果拼回对话，让 AI 继续 ──
       conversation.push({ role: 'assistant', content: aiReply })
+
+      if (executionKind === 'result') {
+        conversation.push({
+          role: 'user',
+          content: `[系统工具执行结果]\n${executionResult}\n\n请根据以上结果回复用户。`,
+        })
+
+        phaseMessage.value = '正在生成执行总结...'
+        streamingText.value = ''
+        scrollToBottom()
+
+        const finalAnswer = await streamAiChatText({
+          messages: conversation,
+          mode: 'multi',
+          systemPrompt: SAP_SYSTEM_PROMPT,
+          signal: _abortController.signal,
+          onDelta: (delta) => {
+            streamingText.value += delta
+            scrollToBottom()
+          },
+          onReasoning: (reasoning) => {
+            streamingText.value += reasoning
+            scrollToBottom()
+          },
+        })
+        streamingText.value = ''
+
+        if (_abortRequested) break
+
+        messages.value.push({ role: 'assistant', text: finalAnswer })
+        conversation.push({ role: 'assistant', content: finalAnswer })
+        scrollToBottom()
+        break
+      }
+
       conversation.push({
         role: 'user',
-        content: `工具执行结果：\n${resultParts.join('\n\n')}\n\n请根据以上结果回复用户。`,
+        content: `[系统工具执行结果]\n${executionResult}\n\n如果上面是 @@error，请根据其中的 msg 和 fix 修正参数，并且只输出一个 SAP 协议块。`,
       })
     }
 
     if (round >= MAX_TOOL_ROUNDS && !_abortRequested) {
       messages.value.push({
         role: 'assistant',
-        text: `⚠️ 已达最大工具调用轮数 (${MAX_TOOL_ROUNDS})，循环终止。`,
+        text: `⚠️ 已达最大 SAP 协议轮数 (${MAX_TOOL_ROUNDS})，循环终止。`,
       })
     }
 

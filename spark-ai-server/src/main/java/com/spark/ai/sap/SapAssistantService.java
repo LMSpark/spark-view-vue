@@ -21,10 +21,9 @@ import java.util.Map;
  * <h3>流程</h3>
  * <ol>
  *   <li>将用户消息 + SAP 系统提示词发给 LLM</li>
- *   <li>LLM 输出（含 @@协议块）→ 送入 {@link SapOrchestrator} 执行</li>
- *   <li>执行结果（@@result 或 @@error）回灌给 LLM 作为 tool result</li>
- *   <li>LLM 收到 @@error 后自动修正，收到 @@result 后组织最终答案</li>
- *   <li>重复 2-4 直到 LLM 输出纯文本回答（无 @@ 协议块）或达到最大轮次</li>
+ *   <li>LLM 每轮最多输出一个 {@code @@request} 或 {@code @@describe} 协议块，或直接输出纯文本</li>
+ *   <li>协议块送入 {@link SapOrchestrator} 执行，执行结果以 {@code @@result} 或 {@code @@error} 回灌给 LLM</li>
+ *   <li>收到 {@code @@error} 时继续让 LLM 自动修正；收到 {@code @@result} 时只再请求一轮自然语言总结并立即返回</li>
  * </ol>
  *
  * <p><b>静默纠错</b>：纠错过程对用户完全透明，用户只看到最终结果。
@@ -47,6 +46,12 @@ public class SapAssistantService {
                @@end
                
                其中 <action> 是操作类型（如 file.write、db.query），<id> 是唯一请求标识。
+                    每次回复最多只能包含一个 SAP 协议块；如果需要多个动作，必须等上一轮结果返回后再决定下一步。
+
+                1.1 **查看能力**：当你需要查看当前支持的动作时，必须输出：
+                    @@describe:system.capabilities#<id>
+                    {}
+                    @@end
             
             2. **自我修正**：如果你收到 @@error，这代表你的参数被系统拦截了。
                - 你必须仔细阅读 msg 和 fix 字段。
@@ -56,8 +61,6 @@ public class SapAssistantService {
             3. **直到成功**：只有收到 @@result 后，你才能根据结果回答用户的问题。
             
             4. **纯文本回答**：当不需要执行操作时，直接用自然语言回答。
-            
-            5. **查看能力**：发送 @@describe:system.capabilities#cap1 @@end 可查看所有可用操作。
             """;
 
     private final SapOrchestrator orchestrator;

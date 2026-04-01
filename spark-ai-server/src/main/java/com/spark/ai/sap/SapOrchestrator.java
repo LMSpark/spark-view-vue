@@ -48,7 +48,10 @@ public class SapOrchestrator {
     }
 
     /**
-     * 处理一段 SAP 协议文本（可能包含多个协议块，取第一个执行）。
+     * 处理一段 SAP 协议文本。
+     *
+     * <p>当前编排入口只接受单个协议块；如果输入里包含多个块，会直接返回
+     * {@code INVALID_PROTOCOL}，避免前后端对多块执行语义产生分叉。
      *
      * @param rawSapText AI 输出的完整 SAP 协议文本
      * @return SAP 协议格式的响应文本（@@result 或 @@error）
@@ -57,8 +60,8 @@ public class SapOrchestrator {
         log.info("[SAP] 收到协议请求:\n{}", rawSapText);
 
         // 1. 协议格式识别
-        SapProtocolBlock block = SapProtocolParser.parseFirst(rawSapText);
-        if (block == null) {
+        List<SapProtocolBlock> blocks = SapProtocolParser.parseAll(rawSapText);
+        if (blocks.isEmpty()) {
             log.warn("[SAP] 协议格式无效");
             return formatError("system", "err",
                     new SapError("FORMAT_ERROR",
@@ -66,12 +69,28 @@ public class SapOrchestrator {
                             "请构造 @@request:<action>#<id>\\n<JSON>\\n@@end 格式"));
         }
 
+        if (blocks.size() > 1) {
+            log.warn("[SAP] 协议块数量非法: {}", blocks.size());
+            return formatError("system", "multi",
+                    new SapError("INVALID_PROTOCOL",
+                            "一次只允许一个 SAP 协议块",
+                            "请只保留一个 @@request:<action>#<id> 或 @@describe:system.capabilities#<id> 块"));
+        }
+
+        SapProtocolBlock block = blocks.get(0);
+
         log.info("[SAP] 解析成功: {}", block);
+        String type = block.getType();
         String action = block.getAction();
         String id = block.getId();
 
+        String typeValidationError = validateProtocolType(type, action, id);
+        if (typeValidationError != null) {
+            return typeValidationError;
+        }
+
         // 2. 内置动作：system.capabilities
-        if ("system.capabilities".equals(action)) {
+        if ("describe".equals(type) && "system.capabilities".equals(action)) {
             return handleCapabilities(id);
         }
 
@@ -117,6 +136,31 @@ public class SapOrchestrator {
         data.put("status", "success");
         data.put("actions", actions);
         return formatResult(new SapResult("system.capabilities", id, data));
+    }
+
+    private String validateProtocolType(String type, String action, String id) {
+        if (!"request".equals(type) && !"describe".equals(type)) {
+            return formatError(action, id,
+                    new SapError("INVALID_TYPE",
+                            "不支持的协议类型: " + type,
+                            "仅允许 @@request:<action>#<id> 发起操作，或使用 @@describe:system.capabilities#<id> 查看能力"));
+        }
+
+        if ("describe".equals(type) && !"system.capabilities".equals(action)) {
+            return formatError(action, id,
+                    new SapError("INVALID_PROTOCOL",
+                            "describe 类型仅允许用于 system.capabilities",
+                            "真实操作请改用 @@request:<action>#<id>；查看能力请使用 @@describe:system.capabilities#<id>"));
+        }
+
+        if ("request".equals(type) && "system.capabilities".equals(action)) {
+            return formatError(action, id,
+                    new SapError("INVALID_PROTOCOL",
+                            "system.capabilities 必须使用 describe 类型",
+                            "请改为 @@describe:system.capabilities#" + id + "\\n{}\\n@@end"));
+        }
+
+        return null;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

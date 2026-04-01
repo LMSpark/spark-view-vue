@@ -4,6 +4,8 @@
 > 目标：将前端所有 AI 交互协议（流式输出、工具块、提案块）收敛到统一协议层，避免各组件重复实现。
 >
 > 所属： [AI 提示词体系](../README.md) / [平台基础](README.md) / 统一交互协议。
+>
+> SAP 专项完整口径另见：[SAP_PROTOCOL_COMPLETE.md](SAP_PROTOCOL_COMPLETE.md)。
 
 ---
 
@@ -14,7 +16,7 @@
 
 提供能力：
 - `streamAiChatText()`：统一 `/api/ai/chat/stream` SSE 解析
-- `extractToolProtocolBlocks()` / `stripToolProtocolBlocks()` / `parseToolProtocolPayload()`：统一 `@@tool:*#* ... @@end`
+- `extractToolProtocolBlocks()` / `stripToolProtocolBlocks()` / `parseToolProtocolPayload()`：统一 `@@type:*#* ... @@end`
 - `extractProposalProtocolBlocks()` / `stripProposalProtocolBlocks()`：统一 `@@proposal:* ... @@end`
 - `extractFirstJsonObject()`：统一容错 JSON 抽取
 
@@ -22,12 +24,12 @@
 
 ## 2. 协议格式
 
-### 2.1 工具协议（Tool Block）
+### 2.1 动作协议（Action Block）
 
 格式：
 
 ```text
-@@tool:<action>#<requestId>
+@@<type>:<action>#<requestId>
 <json>
 @@end
 ```
@@ -40,7 +42,16 @@
 @@end
 ```
 
+SAP 专项示例：
+
+```text
+@@request:file.write#req-1
+{"path":"output/hello.txt","content":"Hello SAP","append":false}
+@@end
+```
+
 说明：
+- `type`：协议类型，如通用 AI 工具常用 `tool`，SAP 专项使用 `request` / `describe`
 - `action`：工具动作（如 `page.auto` / `file.write`）
 - `requestId`：工具调用唯一标识
 - `<json>`：工具参数
@@ -86,6 +97,8 @@
 - 变更：
   - 移除本地 SSE 手写解析，改为 `streamAiChatText()`
   - 移除本地正则，改为 `extractToolProtocolBlocks()` / `stripToolProtocolBlocks()`
+  - SAP 专项块类型统一为 `request / describe`
+  - SAP 专项执行语义统一为“一轮最多一个协议块；成功后一轮总结；多块直接判协议错误”
 
 ### 3.3 顶栏 AI Chat 组件链路
 - 文件：`src/composables/useAiChat.ts`

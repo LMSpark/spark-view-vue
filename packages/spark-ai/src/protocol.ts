@@ -93,6 +93,8 @@ export interface ProtocolBlockFilter {
 export interface ToolBlockFilter {
   /** 仅匹配指定类型 */
   type?: string
+  /** 仅匹配指定类型集合 */
+  types?: string[]
   /** 仅匹配指定动作 */
   actions?: string[]
 }
@@ -185,6 +187,7 @@ export function extractToolBlocks(text: string, filter?: ToolBlockFilter): ToolP
       raw: match[0],
     }
     if (filter?.type !== undefined && block.type !== filter.type) continue
+    if (filter?.types !== undefined && !filter.types.includes(block.type)) continue
     if (filter?.actions !== undefined && !filter.actions.includes(block.action)) continue
     blocks.push(block)
   }
@@ -199,6 +202,7 @@ export function stripToolBlocks(text: string, filter?: ToolBlockFilter): string 
   TOOL_BLOCK_RE.lastIndex = 0
   const stripped = text.replace(TOOL_BLOCK_RE, (raw: string, type: string, action: string) => {
     if (filter?.type !== undefined && type !== filter.type) return raw
+    if (filter?.types !== undefined && !filter.types.includes(type)) return raw
     if (filter?.actions !== undefined && !filter.actions.includes(action)) return raw
     return ''
   })

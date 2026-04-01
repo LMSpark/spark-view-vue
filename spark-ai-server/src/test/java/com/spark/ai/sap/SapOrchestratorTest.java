@@ -81,6 +81,50 @@ class SapOrchestratorTest {
             assertTrue(result.contains("@@result:system.capabilities#cap1"));
             assertTrue(result.contains("file.write"));
         }
+
+        @Test
+        @DisplayName("tool 类型返回 INVALID_TYPE")
+        void shouldRejectLegacyToolType() {
+            String input = "@@tool:file.write#legacy1\n{\"path\":\"ok.txt\",\"content\":\"data\"}\n@@end";
+
+            String result = orchestrator.processProtocol(input);
+
+            assertTrue(result.contains("INVALID_TYPE"));
+            assertTrue(result.contains("@@error:file.write#legacy1"));
+        }
+
+        @Test
+        @DisplayName("多个协议块返回 INVALID_PROTOCOL")
+        void shouldRejectMultipleBlocks() {
+            String input = "@@request:file.write#r1\n{\"path\":\"a.txt\",\"content\":\"A\"}\n@@end\n@@describe:system.capabilities#cap1\n{}\n@@end";
+
+            String result = orchestrator.processProtocol(input);
+
+            assertTrue(result.contains("INVALID_PROTOCOL"));
+            assertTrue(result.contains("一次只允许一个 SAP 协议块"));
+        }
+
+        @Test
+        @DisplayName("describe 非 system.capabilities 返回 INVALID_PROTOCOL")
+        void shouldRejectDescribeForRealAction() {
+            String input = "@@describe:file.write#desc1\n{\"path\":\"ok.txt\"}\n@@end";
+
+            String result = orchestrator.processProtocol(input);
+
+            assertTrue(result.contains("INVALID_PROTOCOL"));
+            assertTrue(result.contains("describe 类型仅允许用于 system.capabilities"));
+        }
+
+        @Test
+        @DisplayName("request system.capabilities 返回 INVALID_PROTOCOL")
+        void shouldRejectRequestForCapabilities() {
+            String input = "@@request:system.capabilities#cap2\n{}\n@@end";
+
+            String result = orchestrator.processProtocol(input);
+
+            assertTrue(result.contains("INVALID_PROTOCOL"));
+            assertTrue(result.contains("system.capabilities 必须使用 describe 类型"));
+        }
     }
 
     @Nested

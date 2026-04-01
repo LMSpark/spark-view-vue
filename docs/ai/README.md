@@ -23,6 +23,7 @@
 |------|------|------|
 | **平台规则** | [API_FIRST_PROMPT.md](prompts/platform/API_FIRST_PROMPT.md) | API-first 约束（强制） |
 | | [AI_PROTOCOL_UNIFIED.md](prompts/platform/AI_PROTOCOL_UNIFIED.md) | 统一交互协议 |
+| | [SAP_PROTOCOL_COMPLETE.md](prompts/platform/SAP_PROTOCOL_COMPLETE.md) | SAP 协议完整说明 |
 | **数据生成** | [PAGEDATA_JSON_COMPLETE_PROMPT.md](prompts/data/PAGEDATA_JSON_COMPLETE_PROMPT.md) | 生产版主入口 |
 | | [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md) | 兼容入口（规则已收口到生产版） |
 | | [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md) | 案例与验证附录 |
