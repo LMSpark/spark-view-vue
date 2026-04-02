@@ -579,7 +579,7 @@ export default registerComponents
     const root = this.viteConfig!.root
 
     // 读取 sparkCatalogPlugin 已生成的 component-catalog.json（SSoT）
-    const catalogPath = resolve(root, 'packages/spark-ai/src/component-catalog.json')
+    const catalogPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
     let catalog: Record<string, unknown> | null = null
     try {
       const raw = readFileSync(catalogPath, 'utf-8')

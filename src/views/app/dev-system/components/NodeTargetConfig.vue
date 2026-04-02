@@ -157,7 +157,6 @@ interface TargetOption {
 }
 
 const actionTargetOptions: TargetOption[] = [
-  { value: 'action:ai-design', label: '动作 · AI 协同设计' },
   { value: 'action:ai-chat', label: '动作 · AI 对话' },
   { value: 'action:search', label: '动作 · 搜索' },
   { value: 'action:fullscreen', label: '动作 · 全屏' },

@@ -130,7 +130,7 @@ export interface AppNavigation {
  * `path` 的语义由 `nodeKind` 决定：
  * - **page / sub-page** — SPA 路由路径（如 `/dashboard`）
  * - **system-page** — SPA 路由路径，与 VUE_PAGE_MAP 匹配（如 `/dashboard`、`/dev`）
- * - **system-action** — 动作标识符（如 `'ai-design'`、`'fullscreen'`、`'profile'`）
+ * - **system-action** — 动作标识符（如 `'ai-chat'`、`'fullscreen'`、`'profile'`）
  * - **link** — 外部 URL（配合 `linkTarget` 使用）
  * - **module / system-directory** — 通常不设置 `path`（可设 `redirect`）
  */
@@ -142,7 +142,7 @@ export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
    *
    * - page / sub-page → SPA 路由路径
    * - system-page → SPA 路由路径（与 VUE_PAGE_MAP 匹配，如 `/dashboard`）
-   * - system-action → 动作标识符（如 `'ai-design'`、`'fullscreen'`）
+  * - system-action → 动作标识符（如 `'ai-chat'`、`'fullscreen'`）
    * - link → 外部 URL
    */
   path?: string

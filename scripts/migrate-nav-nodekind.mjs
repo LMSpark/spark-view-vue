@@ -195,7 +195,7 @@ function migrateNode(raw, parentKind, parentChildPlacement, stats) {
     }
     if (node.hidden === true) migrated.hidden = true
   } else if (kind === 'system-action') {
-    // system-action: path 是动作标识符（如 'ai-design'），规范化为无 '/' 前缀
+    // system-action: path 是动作标识符（如 'ai-chat'），规范化为无 '/' 前缀
     if (typeof node.path === 'string' && node.path.trim()) {
       migrated.path = node.path.trim().replace(/^\/+/, '')
     }

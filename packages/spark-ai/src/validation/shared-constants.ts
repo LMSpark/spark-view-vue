@@ -1,4 +1,4 @@
-// ── 跨模块共享常量（config-validator + response-pipeline 复用）──────────────
+// ── 跨模块共享常量（config-validator 等校验逻辑复用）─────────────────────
 
 /**
  * DataKey 格式校验正则
@@ -11,7 +11,7 @@ export const DATAKEY_RE = /^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selecte
 /**
  * HTML 原生标签白名单（组件类型校验时排除这些标签）
  *
- * 单一来源：config-validator 和 response-pipeline 共用同一集合。
+ * 单一来源：校验逻辑共用同一集合。
  */
 export const HTML_TYPES: ReadonlySet<string> = new Set([
   'a', 'article', 'aside', 'b', 'blockquote', 'br', 'button', 'code', 'del',
@@ -32,7 +32,7 @@ export const VALID_TYPE_PREFIXES: readonly string[] = ['r-', 'el-', 'Render', 's
 /**
  * 容器组件类型 → 渲染上下文映射
  *
- * config-validator 和 response-pipeline 共用同一映射。
+ * 校验逻辑共用同一映射。
  */
 export const CONTAINER_CONTEXT_MAP: Record<string, 'table' | 'form' | 'detail' | 'list' | 'tree'> = {
   'r-table': 'table',
@@ -45,7 +45,7 @@ export const CONTAINER_CONTEXT_MAP: Record<string, 'table' | 'form' | 'detail' |
 /**
  * 非字段 r-* 类型集合（容器/布局组件，不当作 field 处理）
  *
- * 单一来源：config-validator 和 response-pipeline 共用同一集合。
+ * 单一来源：校验逻辑共用同一集合。
  */
 export const NON_FIELD_R_TYPES: ReadonlySet<string> = new Set([
   'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree',

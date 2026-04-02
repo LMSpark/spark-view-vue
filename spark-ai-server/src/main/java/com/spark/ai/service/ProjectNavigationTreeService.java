@@ -961,7 +961,7 @@ public class ProjectNavigationTreeService {
                     node.put("childPlacement", childPlacement);
                 }
                 if ("system-page".equals(kind)) {
-                    // system-page: path 可能是 action 标识符（如 ai-design）或路由路径
+                    // system-page: path 可能是 action 标识符（如 ai-chat）或路由路径
                     // action 标识符不加 '/' 前缀，保持原样
                     String spPath = asTrimmedString(raw.get("path"));
                     putIfNotBlank(node, "path", spPath);
@@ -970,7 +970,7 @@ public class ProjectNavigationTreeService {
                         putIfNotBlank(node, "path", asTrimmedString(raw.get("action")));
                     }
                 } else if ("system-action".equals(kind)) {
-                    // system-action: path 是动作标识符（如 'ai-design'），规范化为无 '/' 前缀
+                    // system-action: path 是动作标识符（如 'ai-chat'），规范化为无 '/' 前缀
                     String actionPath = asTrimmedString(raw.get("path")).replaceAll("^/+", "");
                     putIfNotBlank(node, "path", actionPath);
                 } else {
