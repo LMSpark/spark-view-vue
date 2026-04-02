@@ -141,18 +141,23 @@ function dsGuard(checks: DsGuardOptions = {}): StillGuard {
 
 /** 仅要求 blueprint 存在；dataset.init 用这个 guard，因为它本身就是创建 dataset 的动作。 */
 const guardBlueprintOnly = dsGuard({ requireDataset: false, requireBlueprint: true })
+const guardBlueprintOnlyDesc = '需要 blueprint 已创建'
 
 /** 结构编辑类动作：要求 blueprint、dataset 都已存在，且 schema 仍可编辑。 */
 const guardSchemaUnlocked = dsGuard({ requireBlueprint: true, requireSchemaUnlocked: true })
+const guardSchemaUnlockedDesc = '需要 blueprint + dataset 已创建，且 schema 未锁定'
 
 /** 后置配置类动作：要求 schema 已冻结，避免视图/API 配置跟结构同时漂移。 */
 const guardSchemaLocked = dsGuard({ requireBlueprint: true, requireSchemaLocked: true })
+const guardSchemaLockedDesc = '需要 blueprint + dataset 已创建，且 schema 已锁定'
 
 /** 既要求 blueprint，也要求 dataset，但不关心 schema 是否已锁定。 */
 const guardBlueprintAndDataset = dsGuard({ requireBlueprint: true })
+const guardBlueprintAndDatasetDesc = '需要 blueprint + dataset 已创建'
 
 /** 仅要求 dataset 存在。 */
 const guardDatasetOnly = dsGuard({})
+const guardDatasetOnlyDesc = '需要 dataset 已创建'
 
 /** 完全不设前置条件，适合 reset 这类“从任何状态都可执行”的动作。 */
 const guardNone = dsGuard({ requireDataset: false })
@@ -186,6 +191,7 @@ const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
   type: 'request',
   description: '创建空 IDataSetMetadata（设 dataSetName）',
   guard: guardBlueprintOnly,
+  guardDescription: guardBlueprintOnlyDesc,
   paramsSchema: { dataSetName: 'string — DataSet 名称' },
   example: { dataSetName: 'OrderSystem' },
   validate: (params) => {
@@ -215,6 +221,7 @@ const datasetDescribe: StillDefinition<Record<string, never>, unknown> = {
   type: 'describe',
   description: '返回当前 dataset 结构摘要',
   guard: guardDatasetOnly,
+  guardDescription: guardDatasetOnlyDesc,
   paramsSchema: {},
   example: {},
   validate: () => null,
@@ -233,6 +240,7 @@ const datasetValidate: StillDefinition<Record<string, never>, unknown> = {
   type: 'request',
   description: '全量结构校验，返回 issues[]',
   guard: guardDatasetOnly,
+  guardDescription: guardDatasetOnlyDesc,
   paramsSchema: {},
   example: {},
   validate: () => null,
@@ -251,6 +259,7 @@ const datasetExport: StillDefinition<Record<string, never>, unknown> = {
   type: 'request',
   description: '导出完整 IDataSetMetadata 快照',
   guard: guardBlueprintAndDataset,
+  guardDescription: guardBlueprintAndDatasetDesc,
   paramsSchema: {},
   example: {},
   validate: () => null,
@@ -297,6 +306,7 @@ const datatableCreate: StillDefinition<DatatableCreateParams, unknown> = {
   type: 'request',
   description: '添加一张表（tableName + columns）',
   guard: guardSchemaUnlocked,
+  guardDescription: guardSchemaUnlockedDesc,
   paramsSchema: { tableName: 'string — 表名', columns: 'DataColumn[] — 列定义（name/type/isPrimaryKey/label 等）' },
   example: {
     tableName: 'Orders',
@@ -330,6 +340,7 @@ const datatableDescribe: StillDefinition<DatatableDescribeParams, unknown> = {
   type: 'describe',
   description: '返回指定表详情（列清单/关系/API/视图数）',
   guard: guardDatasetOnly,
+  guardDescription: guardDatasetOnlyDesc,
   paramsSchema: { tableName: 'string — 表名' },
   example: { tableName: 'Orders' },
   validate: (params) => {
@@ -352,6 +363,7 @@ const datatableAddColumns: StillDefinition<AddColumnsParams, unknown> = {
   type: 'request',
   description: '向已有表追加列（同名列不覆盖）',
   guard: guardSchemaUnlocked,
+  guardDescription: guardSchemaUnlockedDesc,
   paramsSchema: { tableName: 'string', columns: 'DataColumn[] — 新增的列定义' },
   example: { tableName: 'Users', columns: [{ name: 'email', type: 'string', label: '邮箱' }] },
   validate: (params) => {
@@ -375,6 +387,7 @@ const datatableUpdateColumn: StillDefinition<UpdateColumnParams, unknown> = {
   type: 'request',
   description: '修改单列属性（type/label/computeExpression 等）',
   guard: guardSchemaUnlocked,
+  guardDescription: guardSchemaUnlockedDesc,
   paramsSchema: {
     tableName: 'string',
     columnName: 'string — 要修改的列名',
@@ -403,6 +416,7 @@ const datatableRemoveColumn: StillDefinition<RemoveColumnParams, unknown> = {
   type: 'request',
   description: '删除列（校验关系/视图引用，返回 impact）',
   guard: guardSchemaUnlocked,
+  guardDescription: guardSchemaUnlockedDesc,
   paramsSchema: { tableName: 'string', columnName: 'string — 要删除的列名' },
   example: { tableName: 'Users', columnName: 'tempField' },
   validate: (params) => {
@@ -426,6 +440,7 @@ const datatableSetApi: StillDefinition<SetApiParams, unknown> = {
   type: 'request',
   description: '设置表的 CrudApi 配置',
   guard: guardSchemaLocked,
+  guardDescription: guardSchemaLockedDesc,
   paramsSchema: {
     tableName: 'string',
     api: 'CrudApi — { list?, create?, update?, delete?, ... }',
@@ -455,6 +470,7 @@ const datatableAddRows: StillDefinition<AddRowsParams, unknown> = {
   type: 'request',
   description: '写入内联静态行（枚举/配置表用）',
   guard: guardBlueprintAndDataset,
+  guardDescription: guardBlueprintAndDatasetDesc,
   paramsSchema: {
     tableName: 'string',
     rows: 'Array<Record<string, unknown>> — 行数据对象数组',
@@ -494,6 +510,7 @@ const relationAdd: StillDefinition<RelationAddParams, unknown> = {
   type: 'request',
   description: '添加 TableRelation',
   guard: guardSchemaUnlocked,
+  guardDescription: guardSchemaUnlockedDesc,
   paramsSchema: {
     parentTable: 'string', childTable: 'string',
     parentField: 'string', childField: 'string',
@@ -523,6 +540,7 @@ const relationRemove: StillDefinition<RelationRemoveParams, unknown> = {
   type: 'request',
   description: '删除 TableRelation（校验 viewDependency 引用）',
   guard: guardSchemaUnlocked,
+  guardDescription: guardSchemaUnlockedDesc,
   paramsSchema: { parentTable: 'string', childTable: 'string' },
   example: { parentTable: 'Orders', childTable: 'OrderItems' },
   validate: (params) => {
@@ -544,6 +562,7 @@ const relationList: StillDefinition<Record<string, never>, unknown> = {
   type: 'describe',
   description: '列出所有 tableRelations',
   guard: guardDatasetOnly,
+  guardDescription: guardDatasetOnlyDesc,
   paramsSchema: {},
   example: {},
   validate: () => null,
@@ -565,6 +584,7 @@ const schemaLock: StillDefinition<Record<string, never>, unknown> = {
   type: 'request',
   description: '锁定结构（禁止增删表/列/关系，允许 dataview / dependency / api 配置）',
   guard: guardSchemaUnlocked,
+  guardDescription: guardSchemaUnlockedDesc,
   paramsSchema: {},
   example: {},
   validate: () => null,
@@ -607,6 +627,7 @@ const schemaUnlock: StillDefinition<SchemaUnlockParams, unknown> = {
   type: 'request',
   description: '解锁结构（需说明原因，允许修改表/列/关系）',
   guard: guardSchemaLocked,
+  guardDescription: guardSchemaLockedDesc,
   paramsSchema: { reason: 'string? — 解锁原因' },
   example: { reason: '需要添加新字段' },
   validate: () => null,
@@ -634,6 +655,7 @@ const dataviewCreate: StillDefinition<DataviewCreateParams, unknown> = {
   type: 'request',
   description: '为表添加自定义 DataView（default 视图在建表时已自动创建）',
   guard: guardSchemaLocked,
+  guardDescription: guardSchemaLockedDesc,
   paramsSchema: { tableName: 'string', viewId: 'string' },
   example: { tableName: 'Orders', viewId: 'grid' },
   validate: (params) => {
@@ -657,6 +679,7 @@ const dataviewDescribe: StillDefinition<DataviewDescribeParams, unknown> = {
   type: 'describe',
   description: '查看视图配置详情',
   guard: guardDatasetOnly,
+  guardDescription: guardDatasetOnlyDesc,
   paramsSchema: { tableName: 'string', viewId: 'string? — 默认 default' },
   example: { tableName: 'Orders' },
   validate: (params) => {
@@ -705,10 +728,12 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
   type: 'request',
   description: '配置视图属性（autoLoad / autoCurrentFirst / pageSize / rows 等）',
   guard: guardSchemaLocked,
+  guardDescription: guardSchemaLockedDesc,
   paramsSchema: {
     tableName: 'string', viewId: 'string? — 默认 default',
     autoLoad: 'boolean? — 自动加载数据', autoCurrentFirst: 'boolean? — 自动选中首行',
-    pageSize: 'number? — 每页行数', filterExpression: 'string?', sortExpression: 'string?',
+    pageSize: 'number? — 每页行数', rows: 'object[]? — 初始行数据',
+    filterExpression: 'string?', sortExpression: 'string?',
   },
   example: { tableName: 'Orders', autoLoad: true, autoCurrentFirst: true, pageSize: 20 },
   validate: (params) => {
@@ -739,6 +764,7 @@ const dataviewSetAggregates: StillDefinition<SetAggregatesParams, unknown> = {
   type: 'request',
   description: '设置视图级聚合列',
   guard: guardSchemaLocked,
+  guardDescription: guardSchemaLockedDesc,
   paramsSchema: {
     tableName: 'string', viewId: 'string? — 默认 default',
     aggregates: 'Record<string, AggregateColumnConfig> — 如 { price: { type: "sum" } }',
@@ -769,6 +795,7 @@ const dataviewSetTreeConfig: StillDefinition<SetTreeConfigParams, unknown> = {
   type: 'request',
   description: '设置视图树配置（treeMode / idField / parentIdField / textField）',
   guard: guardSchemaLocked,
+  guardDescription: guardSchemaLockedDesc,
   paramsSchema: {
     tableName: 'string', viewId: 'string? — 默认 default',
     treeConfig: 'TreeConfig — { idField, parentIdField, textField, treeMode? }',
@@ -817,6 +844,7 @@ const dependencyAdd: StillDefinition<DependencyAddParams, unknown> = {
   type: 'request',
   description: '添加 ViewDependency（级联类型默认 currentRow）',
   guard: guardSchemaLocked,
+  guardDescription: guardSchemaLockedDesc,
   paramsSchema: {
     parentTable: 'string', childTable: 'string',
     parentView: 'string? — 默认 default', childView: 'string? — 默认 default',
@@ -853,6 +881,7 @@ const dependencyRemove: StillDefinition<DependencyRemoveParams, unknown> = {
   type: 'request',
   description: '删除 ViewDependency',
   guard: guardSchemaLocked,
+  guardDescription: guardSchemaLockedDesc,
   paramsSchema: {
     parentTable: 'string', childTable: 'string',
     parentView: 'string? — 默认 default', childView: 'string? — 默认 default',
@@ -932,6 +961,7 @@ const allDatasetStills = [
 /** DataSet 域 — 24 个数据建模 action */
 export const datasetDomain: DomainProvider = {
   name: 'dataset',
+  roleHint: 'SPARK View 数据建模专家——负责 DataSet 结构设计（表、列、关系、视图、依赖）',
   stills: allDatasetStills,
   createSlot: createDataSetSlot,
 }

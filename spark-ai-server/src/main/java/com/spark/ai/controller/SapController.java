@@ -50,9 +50,10 @@ public class SapController {
             return ResponseEntity.badRequest().body(Map.of("error", "message 不能为空"));
         }
 
-        log.info("[SAP] /api/sap/chat message={}", truncate(message, 100));
+        String mode = request.getOrDefault("mode", "sap");
+        log.info("[SAP] /api/sap/chat mode={} message={}", mode, truncate(message, 100));
 
-        SapChatResponse response = assistantService.chat(message);
+        SapChatResponse response = assistantService.chat(message, mode);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("answer", response.getAnswer());

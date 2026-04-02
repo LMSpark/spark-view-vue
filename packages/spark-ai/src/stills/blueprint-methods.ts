@@ -226,6 +226,7 @@ export const blueprintDescribe: StillDefinition<Record<string, never>, unknown> 
   type: 'describe',
   description: '返回当前蓝图、当前 checkpoint、未决问题',
   guard: requireBlueprint,
+  guardDescription: '需要 blueprint 已创建',
   paramsSchema: {},
   example: {},
   validate: () => null,
@@ -268,6 +269,7 @@ export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> 
   type: 'request',
   description: '标记当前 checkpoint 完成并推进下一步',
   guard: requireBlueprint,
+  guardDescription: '需要 blueprint 已创建',
   paramsSchema: {
     completedCheckpointId: 'string — 要标记完成的 checkpoint ID',
     note: 'string? — 完成备注',
@@ -331,6 +333,7 @@ export const blueprintRevise: StillDefinition<BlueprintReviseParams, unknown> = 
   type: 'request',
   description: '根据执行反馈修订 blueprint',
   guard: requireBlueprint,
+  guardDescription: '需要 blueprint 已创建',
   paramsSchema: {
     reason: 'string — 修订原因',
     addCheckpoints: 'Array<{ id, title, plannedActions, validation, insertAfter? }>? — 新增 checkpoints',

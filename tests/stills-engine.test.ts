@@ -1,7 +1,7 @@
 /**
  * Stills Engine — 完整请假系统流程测试
  *
- * 模拟 DATASET_NEED_TO_BLUEPRINT_PROMPT 中的 SAP 协议全流程：
+ * 模拟 STILLS_BLUEPRINT_PROMPT 中的 SAP 协议全流程：
  * session.describe → stills.capabilities → blueprint.create →
  * dataset.init → datatable.create×5 → relation.add×4 →
  * schema.lock → dataview.configure×5 → dependency.add×3 →

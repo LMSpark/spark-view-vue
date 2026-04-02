@@ -34,6 +34,8 @@ export interface StillDefinition<TParams = unknown, TResult = unknown> {
   description: string
   /** 函数式准入条件 */
   guard: StillGuard
+  /** 人类可读的 guard 描述（供 stills.capabilities / stills.actionSpec 返回给 AI） */
+  guardDescription?: string
   /** 参数结构说明（供 stills.actionSpec 返回） */
   paramsSchema?: Record<string, unknown>
   /** 返回结构说明 */
@@ -96,6 +98,8 @@ export interface IStillSession {
 export interface DomainProvider {
   /** 域名（作为 session.domains 的 key） */
   name: string
+  /** AI 角色描述（session.describe 返回给 AI 的角色定义） */
+  roleHint: string
   /** 该域提供的全部 stills */
   stills: StillDefinition[]
   /** 创建域 slot 初始值 */

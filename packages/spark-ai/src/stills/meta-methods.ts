@@ -11,6 +11,7 @@ import type { StillDefinition, StillResult, IStillSession, ExecutionBlueprint } 
 import { noGuard } from './types'
 import { getAllStills, getStill } from './dispatcher'
 import { getDataSetSlot } from './dataset-domain'
+import { getDomain } from './domain'
 
 // ═══════════════════════════════════════════════════════════
 // helper
@@ -20,6 +21,7 @@ interface ActionCatalogItem {
   name: string
   type: string
   brief: string
+  guard?: string
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }
@@ -48,6 +50,7 @@ function buildActionCatalog(): ActionCatalogItem[] {
       name: still.action,
       type: still.type,
       brief: still.description,
+      ...(still.guardDescription ? { guard: still.guardDescription } : {}),
       ...(still.paramsSchema && Object.keys(still.paramsSchema).length > 0
         ? { params: still.paramsSchema }
         : {}),
@@ -77,6 +80,27 @@ function buildBlueprintSummary(blueprint: ExecutionBlueprint | null): BlueprintS
     completedCheckpoints: blueprint.checkpoints.filter((checkpoint) => checkpoint.status === 'done').length,
     openQuestions: blueprint.openQuestions,
   }
+}
+
+/** 根据当前会话状态推导推荐下一步。 */
+function inferNextStep(
+  session: IStillSession,
+  slot: { dataset: unknown; schemaLocked: boolean },
+  blueprintSummary: BlueprintSummary | null,
+): string {
+  if (session.blueprint === null) {
+    return 'stills.capabilities → 了解可用动作，然后 blueprint.create → 创建蓝图'
+  }
+  if (slot.dataset === null) {
+    return '按蓝图执行初始化动作'
+  }
+  if (blueprintSummary !== null && blueprintSummary.completedCheckpoints < blueprintSummary.totalCheckpoints) {
+    return `继续推进蓝图 checkpoint（${blueprintSummary.completedCheckpoints}/${blueprintSummary.totalCheckpoints}）`
+  }
+  if (blueprintSummary !== null && blueprintSummary.completedCheckpoints === blueprintSummary.totalCheckpoints) {
+    return '所有 checkpoint 已完成，执行验证与导出'
+  }
+  return '查看 session.describe 确认状态后继续'
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -142,7 +166,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
         action: still.action,
         type: still.type,
         description: still.description,
-        guard: still.guard,
+        guard: still.guardDescription ?? null,
         paramsSchema: still.paramsSchema ?? null,
         resultSchema: still.resultSchema ?? null,
         example: still.example ?? null,
@@ -159,7 +183,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
 export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = {
   action: 'session.describe',
   type: 'describe',
-  description: '返回当前步骤、锁状态、dataset 摘要、blueprint 摘要',
+  description: '返回当前角色、状态、推荐下一步',
   guard: noGuard,
   paramsSchema: {},
   example: {},
@@ -168,6 +192,13 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
     const slot = getDataSetSlot(session)
     const dataset = slot.dataset
     const blueprintSummary = buildBlueprintSummary(session.blueprint)
+
+    // 聚合所有已注册域的 roleHint
+    const roles: string[] = []
+    const datasetDomain = getDomain('dataset')
+    if (datasetDomain?.roleHint) {
+      roles.push(datasetDomain.roleHint)
+    }
 
     const datasetSummary = dataset
       ? {
@@ -178,19 +209,19 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
         }
       : null
 
+    // 推荐下一步 — 基于当前状态推导
+    const nextStep = inferNextStep(session, slot, blueprintSummary)
+
     return {
       ok: true,
       data: {
+        role: roles.length > 0 ? roles.join('；') : '通用 Stills 助手',
         currentStep: slot.currentStep,
         schemaLocked: slot.schemaLocked,
         dataset: datasetSummary,
         blueprint: blueprintSummary,
         patchCount: session.patchLog.length,
-        hint: dataset === null
-          ? '新会话，尚未开始建模'
-          : session.blueprint === null
-            ? '已有 DataSet，但尚无蓝图'
-            : `进行中：${blueprintSummary?.completedCheckpoints}/${blueprintSummary?.totalCheckpoints} checkpoints`,
+        nextStep,
       },
       summary: '返回当前会话状态',
     }

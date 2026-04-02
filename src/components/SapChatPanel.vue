@@ -94,10 +94,12 @@ import { createAuthHeaders } from '@/services/http'
 import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
 import { streamAiChatText } from '@/services/ai-protocol'
 import { extractSapProtocolBlocks, stripSapProtocolBlocks } from '@/services/sap-protocol'
+import { registerAllStills, createSession, executeStill } from '@spark-view/spark-ai'
 
-const props = withDefaults(defineProps<{ embedded?: boolean; forceOpen?: boolean }>(), {
+const props = withDefaults(defineProps<{ embedded?: boolean; forceOpen?: boolean; mode?: 'sap' | 'stills' }>(), {
   embedded: false,
   forceOpen: false,
+  mode: 'sap',
 })
 const { isOwner } = useFloatingPanelOwner('__SPARK_SAP_PANEL_OWNER__')
 
@@ -106,7 +108,7 @@ const { isOwner } = useFloatingPanelOwner('__SPARK_SAP_PANEL_OWNER__')
 /** 最大前端 SAP 协议回合数（防止无限循环） */
 const MAX_TOOL_ROUNDS = 5
 
-/** SAP 系统提示词 — 指导 LLM 输出 SAP/1.0 协议块 */
+/** 通用 SAP 系统提示词 — 指导 LLM 输出 SAP/1.0 协议块 */
 const SAP_SYSTEM_PROMPT = `你是一个 SAP/1.0 协议助手，拥有以下能力：
 
 1. file.write — 写入文件到沙箱目录
@@ -137,6 +139,77 @@ const SAP_SYSTEM_PROMPT = `你是一个 SAP/1.0 协议助手，拥有以下能�
 - 如果不需要调用工具，直接用自然语言回复即可
 - 收到工具执行结果后，请用自然语言总结执行情况给用户
 - 不要在同一次回复中既调用工具又做最终总结，先调工具等结果`
+
+/** Stills 系统提示词 — 与 STILLS_RUNTIME_PROMPT.md 内容保持一致 */
+const STILLS_SYSTEM_PROMPT = `你通过 SAP/1.0 协议与 Stills 引擎交互。
+
+══ 协议语法 ══
+
+  @@<type>:<action>#<id>
+  <JSON>
+  @@end
+
+type：describe（查询）/ request（执行）。
+系统返回 @@result（成功）或 @@error（失败，含 code + msg + fix）。
+一轮只能发一个协议块。
+
+══ 发现优先 ══
+
+你的角色、目标、可用动作、参数格式、守卫条件——全部由引擎动态提供：
+
+  session.describe      → 当前角色 + 状态 + 推荐下一步
+  stills.capabilities   → 全部动作目录（params / example / guard）
+  stills.actionSpec     → 单个动作详细规格
+
+**以上三个发现动作是唯一真实来源。不假设任何动作名或参数格式。**
+
+══ 执行纪律 ══
+
+1. 首轮必须 @@describe:session.describe —— 获取角色与状态
+2. 首次执行前必须 @@describe:stills.capabilities —— 获取全部动作规格
+3. 参数格式以 stills.capabilities 返回值为准
+4. 一轮最多一个协议块
+5. 引擎有状态守卫，违反时返回 @@error + fix
+6. @@error 的 fix 字段是必读输入，不允许忽略
+7. 连续 2 次同一错误 → 向用户请求澄清
+8. 口头声明不算数 —— 只有收到 @@result 的变更才存在
+
+══ 蓝图纪律 ══
+
+引擎支持蓝图工作流（blueprint）。当 session.describe 指示需要蓝图时：
+- 先创建 blueprint，再执行写动作
+- blueprint 管步骤，不存业务数据
+- 不确定的项放 openQuestions
+- 不替用户决定关键业务事实 —— 必须确认后再执行`
+
+/** 根据当前模式选择系统提示词 */
+const activeSystemPrompt = computed(() =>
+  props.mode === 'stills' ? STILLS_SYSTEM_PROMPT : SAP_SYSTEM_PROMPT,
+)
+
+// ── Stills 引擎（仅 stills 模式使用，前端本地执行）─────────────────────
+
+let _stillsSession: ReturnType<typeof createSession> | null = null
+
+function getOrCreateStillsSession() {
+  if (_stillsSession === null) {
+    registerAllStills()
+    _stillsSession = createSession()
+  }
+  return _stillsSession
+}
+
+/**
+ * 在本地 Stills 引擎中执行 SAP 协议块，返回 @@result / @@error 文本。
+ */
+function executeStillsLocal(block: { type: string; action: string; id: string; body: unknown }): string {
+  const session = getOrCreateStillsSession()
+  const result = executeStill(block.action, block.body, session, block.id)
+  if (result.ok) {
+    return `@@result:${block.action}#${block.id}\n${JSON.stringify(result.data)}\n@@end`
+  }
+  return `@@error:${block.action}#${block.id}\n${JSON.stringify({ code: result.code, msg: result.msg, fix: result.fix })}\n@@end`
+}
 
 // ── 类型 ──────────────────────────────────────────────────────────────────
 
@@ -263,7 +336,7 @@ async function handleSend() {
       const aiReply = await streamAiChatText({
         messages: conversation,
         mode: 'multi',
-        systemPrompt: SAP_SYSTEM_PROMPT,
+        systemPrompt: activeSystemPrompt.value,
         signal: _abortController.signal,
         onDelta: (delta) => {
           streamingText.value += delta
@@ -313,7 +386,10 @@ async function handleSend() {
       // 显示 AI 回复（含协议块）
       phaseMessage.value = `正在执行 SAP 协议请求 ${block.action}#${block.id}...`
 
-      const executionResult = await executeSapProtocol(block.raw)
+      // Stills 模式 → 本地引擎执行；通用模式 → 后端执行
+      const executionResult = props.mode === 'stills'
+        ? executeStillsLocal(block)
+        : await executeSapProtocol(block.raw)
       const executionKind = getSapExecutionKind(executionResult)
       if (executionKind === 'unknown') {
         throw new Error('SAP 执行返回了未知协议结果')
@@ -352,7 +428,7 @@ async function handleSend() {
         const finalAnswer = await streamAiChatText({
           messages: conversation,
           mode: 'multi',
-          systemPrompt: SAP_SYSTEM_PROMPT,
+          systemPrompt: activeSystemPrompt.value,
           signal: _abortController.signal,
           onDelta: (delta) => {
             streamingText.value += delta

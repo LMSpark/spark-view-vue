@@ -74,7 +74,7 @@ public class SapOrchestrator {
             return formatError("system", "multi",
                     new SapError("INVALID_PROTOCOL",
                             "一次只允许一个 SAP 协议块",
-                            "请只保留一个 @@request:<action>#<id> 或 @@describe:system.capabilities#<id> 块"));
+                            "请只保留一个 @@request:<action>#<id> 或 @@describe:<action>#<id> 块"));
         }
 
         SapProtocolBlock block = blocks.get(0);
@@ -94,7 +94,7 @@ public class SapOrchestrator {
             return handleCapabilities(id);
         }
 
-        // 3. 查找 handler
+        // 3. 查找 handler（describe 和 request 统一路由到 handler）
         ActionHandler handler = registry.getHandler(action);
         if (handler == null) {
             return formatError(action, id,
@@ -143,21 +143,7 @@ public class SapOrchestrator {
             return formatError(action, id,
                     new SapError("INVALID_TYPE",
                             "不支持的协议类型: " + type,
-                            "仅允许 @@request:<action>#<id> 发起操作，或使用 @@describe:system.capabilities#<id> 查看能力"));
-        }
-
-        if ("describe".equals(type) && !"system.capabilities".equals(action)) {
-            return formatError(action, id,
-                    new SapError("INVALID_PROTOCOL",
-                            "describe 类型仅允许用于 system.capabilities",
-                            "真实操作请改用 @@request:<action>#<id>；查看能力请使用 @@describe:system.capabilities#<id>"));
-        }
-
-        if ("request".equals(type) && "system.capabilities".equals(action)) {
-            return formatError(action, id,
-                    new SapError("INVALID_PROTOCOL",
-                            "system.capabilities 必须使用 describe 类型",
-                            "请改为 @@describe:system.capabilities#" + id + "\\n{}\\n@@end"));
+                            "仅允许 @@request:<action>#<id> 发起操作，或使用 @@describe:<action>#<id> 查询信息"));
         }
 
         return null;
