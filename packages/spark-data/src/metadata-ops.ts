@@ -99,7 +99,9 @@ function toMetadataError(error: unknown): MetadataOpResult {
 }
 
 function countTotalColumns(ds: DataSet): number {
-  return Object.values(ds.tables).reduce((sum, table) => sum + table.columns.length, 0)
+  return Object.values(ds.tables).reduce(
+    (sum, table) => sum + table.columns.filter(c => !c.isComputed).length, 0,
+  )
 }
 
 function syncMetadataFromRuntime(target: IDataSetMetadata, runtime: DataSet): void {

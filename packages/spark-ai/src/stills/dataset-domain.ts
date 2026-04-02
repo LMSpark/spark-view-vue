@@ -731,11 +731,14 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
   guardDescription: guardSchemaLockedDesc,
   paramsSchema: {
     tableName: 'string', viewId: 'string? — 默认 default',
+    note: 'string? — 视图用途备注（如 "主列表" / "下拉选项数据源"）',
     autoLoad: 'boolean? — 自动加载数据', autoCurrentFirst: 'boolean? — 自动选中首行',
     pageSize: 'number? — 每页行数', rows: 'object[]? — 初始行数据',
     filterExpression: 'string?', sortExpression: 'string?',
+    valueField: 'string? — 值字段（用于下拉选项的 value）',
+    labelField: 'string? — 标签字段（用于下拉选项的显示文本）',
   },
-  example: { tableName: 'Orders', autoLoad: true, autoCurrentFirst: true, pageSize: 20 },
+  example: { tableName: 'Orders', note: '订单主列表', autoLoad: true, autoCurrentFirst: true, pageSize: 20 },
   validate: (params) => {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
     const config = extractViewConfig(params)

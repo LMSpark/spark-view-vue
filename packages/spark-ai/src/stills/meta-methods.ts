@@ -18,9 +18,9 @@ import { getDomain } from './domain'
 // ═══════════════════════════════════════════════════════════
 
 interface ActionCatalogItem {
-  name: string
+  action: string
   type: string
-  brief: string
+  description: string
   guard?: string
   params?: Record<string, unknown>
   example?: Record<string, unknown>
@@ -47,9 +47,9 @@ function buildActionCatalog(): ActionCatalogItem[] {
 
   for (const [, still] of getAllStills()) {
     actions.push({
-      name: still.action,
+      action: still.action,
       type: still.type,
-      brief: still.description,
+      description: still.description,
       ...(still.guardDescription ? { guard: still.guardDescription } : {}),
       ...(still.paramsSchema && Object.keys(still.paramsSchema).length > 0
         ? { params: still.paramsSchema }

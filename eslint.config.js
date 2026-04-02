@@ -12,6 +12,7 @@ export default [
       'packages/**/dist/**',  // 排除所有dist目录
       'packages/vxe-table/**', // 第三方源码，不受项目 ESLint 规则约束
       'tools/**',
+      'scripts/**',            // 独立脚本，不纳入 tsconfig project
       '**/*.example.ts',
       'dist/**',
       'node_modules/**',

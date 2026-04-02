@@ -1308,8 +1308,8 @@ export class DataView implements IDataSource {
     if (this.filterExpression !== undefined) result.filterExpression = this.filterExpression
     if (this.sortExpression !== undefined) result.sortExpression = this.sortExpression
     // 只在非默认值时序列化（减少 JSON 体积）
-    if (this.autoCurrentFirst !== true) result.autoCurrentFirst = this.autoCurrentFirst
-    if (this.autoSelectFirst !== true) result.autoSelectFirst = this.autoSelectFirst
+    if (this.autoCurrentFirst) result.autoCurrentFirst = this.autoCurrentFirst
+    if (this.autoSelectFirst) result.autoSelectFirst = this.autoSelectFirst
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     if (this.autoLoad !== false) result.autoLoad = this.autoLoad
     if (this.autoRefresh !== false) result.autoRefresh = this.autoRefresh

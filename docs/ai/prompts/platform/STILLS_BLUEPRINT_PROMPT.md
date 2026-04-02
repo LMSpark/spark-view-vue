@@ -93,7 +93,7 @@
 | 发现动作 | 返回内容 |
 |---|---|
 | `session.describe` | 当前角色、目标、状态、推荐下一步（首轮必查） |
-| `stills.capabilities` | 全部动作目录：name / type / brief / params / example / guard（首次执行前必查） |
+| `stills.capabilities` | 全部动作目录：action / type / description / params / example / guard（首次执行前必查） |
 | `stills.actionSpec` | 单个动作详细规格：guard / params / result / example（遇错误时精查） |
 
 **以上三个发现动作是唯一真实来源。**
@@ -131,6 +131,35 @@
 | 具体 | `plannedActions` 是具体 SAP action 名（从 stills.capabilities 获取） |
 | 诚实 | 不确定的项放 `openQuestions` |
 | 不越界 | blueprint 管步骤，不存业务数据 |
+
+### 3.3 DataSet 建模蓝图推荐结构
+
+当目标是构建 DataSet 元数据时，蓝图 checkpoint 应覆盖以下全部层次：
+
+| 阶段 | Checkpoint 目标 | 关键动作 |
+|------|----------------|---------|
+| 结构层 | 初始化 DataSet | `dataset.init` |
+| 结构层 | 创建全部表与列 | `datatable.create`（每表一调用） |
+| 结构层 | 建立表间关系 | `relation.add` |
+| 结构层 | 锁定结构 | `schema.lock` |
+| 行为层 | API 端点配置 | `datatable.setApi`（**每张表**都需要 CRUD 端点） |
+| 行为层 | 视图属性配置 | `dataview.configure`（排序/分页/过滤） |
+| 行为层 | 视图聚合配置 | `dataview.setAggregates`（**有数值列的视图**必配） |
+| 行为层 | 级联依赖配置 | `dependency.add`（父子表级联） |
+| 计算层 | 派生计算列 | `datatable.addColumns`（**可从已有列派生**的字段加 `computeExpression`） |
+| 数据层 | 枚举/字典内联数据 | `datatable.addRows`（枚举表写入初始行） |
+| 交付 | 校验并导出 | `dataset.validate` → `dataset.export` |
+
+**完整性检查**：在执行 `dataset.export` 前，必须确认：
+- ✅ 每张表都配置了 API 端点（`datatable.setApi`）
+- ✅ **每张表**的 default 视图都配置了 autoLoad + 排序（`dataview.configure`）
+- ✅ 有数值列的视图配置了聚合（`dataview.setAggregates`）
+- ✅ 可派生的字段添加了计算列（`datatable.addColumns` + `computeExpression`）
+- ✅ 枚举/字典表写入了内联初始数据（`datatable.addRows`）
+- ✅ 父子表配置了级联依赖（`dependency.add`）
+- ✅ `dataset.validate` 校验通过
+
+缺任何一项应补齐后再导出，不得跳过。
 
 ═══════════════════════════════════════════════════
 【4】执行纪律层
