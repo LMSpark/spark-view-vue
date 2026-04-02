@@ -1,8 +1,10 @@
 # AI Design Session DataSet-In-Memory Plan
 
-> Status: corrected
+> **归档说明**：本文基于已删除的 `AiDesignStudio` / `design-session` / `session-state` 体系，仅保留历史决策记录；现行实现以 `DATASET_STILLS_SCHEME.md` 和 `packages/spark-ai/ARCHITECTURE.md` 为准。
+
+> Status: archived
 > Updated: 2026-04-01
-> Scope: AiDesignStudio / spark-ai design-session / session-state redesign
+> Scope: archived design-session redesign notes
 
 ---
 

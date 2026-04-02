@@ -1,6 +1,8 @@
 # SPARK 开发系统工程链重构设计文档
 
-> **文档状态**：实施中（Phase 0-1 已完成）  
+> **归档说明**：本文包含 `AiDesignStudio` / Proposal / `useDesignSession` 路线的历史方案。相关入口已删除，本文仅保留归档；现行实现以 `DATASET_STILLS_SCHEME.md` 和 DevSystem 当前代码为准。
+
+> **文档状态**：归档文档（不再作为现行实现依据）  
 > **版本**：v0.2.0 · 2026-03-13  
 > **分支**：`feat/ai-server-config-management`  
 > **约束**：后端 Java 代码不修改，所有改动限于前端

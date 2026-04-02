@@ -1,5 +1,7 @@
 # SPARK AI 全生命周期 —— 分阶段详细实施方案
 
+> **归档说明**：本文依赖旧的 `AiDesignStudio` / `design-session` 规划前提，现已不再作为现行实现依据；保留仅用于历史对照。
+
 > **前置文档**：`AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md`（总体架构设计）
 >
 > **本文定位**：可落地的实施指南——对每个开发阶段给出 DB Schema、REST API、Prompt 模板、前端 UI 组件、渐进式切入点的完整规格

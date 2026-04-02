@@ -104,7 +104,7 @@
 
 **消费方**：
 - `generatePropsCatalog()` → 降格为 `COMPONENT_PROPS_CATALOG` 扁平文本
-- `spark-ai` 包的 `design-session.ts` → 设计会话引擎直接查询
+- `spark-ai` 包的 stills / prompt 组装层 → 查询组件目录与提示词片段
 
 ### 2.2 `spark-component-metadata.json`（运行时元数据）
 

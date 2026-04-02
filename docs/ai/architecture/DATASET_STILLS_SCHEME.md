@@ -2,7 +2,7 @@
 
 > 状态：待评审
 > 日期：2026-04-01
-> 范围：spark-ai / design-session / SAP 协议扩展
+> 范围：spark-ai / stills / SAP 协议扩展
 
 ---
 
@@ -661,7 +661,7 @@ packages/spark-ai/src/stills/
 | 前端 action 路由分流 | AI 输出 `datatable.create` → 本地执行 → 结果回灌 |
 | session 持久化/恢复 | 刷新页面后 dataset 不丢失 |
 
-闭环标志：在 AiDesignStudio 中完整跑一遍 16 轮流程。
+闭环标志：在前端 stills 宿主中完整跑一遍 16 轮流程。
 
 ### P7：后端移植
 

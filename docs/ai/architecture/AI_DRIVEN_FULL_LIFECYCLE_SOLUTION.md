@@ -1,5 +1,7 @@
 # SPARK AI 驱动全生命周期配置生成方案
 
+> **归档说明**：本文包含 `AiDesignStudio` / `design-session` / `response-pipeline` 的旧生命周期愿景。相关体系已删除，本文仅保留历史讨论；现行实现以 `DATASET_STILLS_SCHEME.md`、`AI_PROTOCOL_UNIFIED.md` 和 `packages/spark-ai/ARCHITECTURE.md` 为准。
+
 > **目标**：以 AI 生成配置、不写代码为核心，实现业务系统从需求到上线的全流程 AI 定制。
 >
 > **对标**：Claude Artifacts / GitHub Copilot Workspace / Cursor Composer / v0.dev / Bolt.new

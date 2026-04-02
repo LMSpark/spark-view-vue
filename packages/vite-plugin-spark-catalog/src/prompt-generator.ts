@@ -185,7 +185,7 @@ export function queryComponentProps(catalog: ComponentCatalog, types: string[]):
 /**
  * 生成 COMPONENT_PROPS_CATALOG 等价的 Record<string, string>
  *
- * 向后兼容：供已有的 design-prompt.ts 消费。
+ * 向后兼容：供仍依赖旧字符串目录接口的调用方消费。
  */
 export function generateLegacyCatalogRecord(catalog: ComponentCatalog): Record<string, string> {
   const result: Record<string, string> = {}

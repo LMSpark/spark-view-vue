@@ -1,6 +1,8 @@
 # AI 交互架构设计 — 配置化 · 自动化 · 分层验证 · 企业审核
 
-> **状态**: 架构设计（尚未实现）  
+> **归档说明**：本文描述的是旧的双通道方案（`AiChatPanel` + `AiDesignStudio`）。`AiDesignStudio` 与相关 `design-session` 前端入口已删除，本文仅作历史归档；现行实现以 `DATASET_STILLS_SCHEME.md` 和 `packages/spark-ai/ARCHITECTURE.md` 为准。
+
+> **状态**: 归档文档（不再作为现行实现依据）  
 > **创建日期**: 2026-03-13  
 > **分支**: `feat/ai-server-config-management`
 

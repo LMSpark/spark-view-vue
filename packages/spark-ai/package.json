@@ -6,12 +6,13 @@
   "types": "./dist/index.d.ts",
   "private": false,
   "license": "MIT",
-  "description": "SPARK AI Layer - AI 闭环协调、SSE 事件总线、设计会话、响应管线",
+  "description": "SPARK AI Layer - AI 闭环协调、SSE 事件总线、Stills 执行引擎、SAP 协议运行时",
   "keywords": [
     "spark",
     "ai",
     "sse",
-    "design-session",
+    "stills",
+    "sap-protocol",
     "page-loop"
   ],
   "files": [
