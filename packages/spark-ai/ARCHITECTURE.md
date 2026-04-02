@@ -1,6 +1,6 @@
 # spark-ai 架构全景
 
-> 自动生成于 2026-03-22，基于 14 个源文件（~4500+ 行）的完整代码审计。
+> 更新于 2026-04-03，基于 19 个源文件的代码审计。
 
 ---
 
@@ -9,79 +9,95 @@
 - [1. 模块依赖关系](#1-模块依赖关系)
 - [2. AIPageLoop 主循环](#2-aipageloop-主循环)
 - [3. SSE 流式处理](#3-sse-流式处理)
-- [4. Response Pipeline（7 处理器）](#4-response-pipeline7-处理器)
-- [5. Config Validation 校验](#5-config-validation-校验)
-- [6. Design Session 状态机](#6-design-session-状态机)
-- [7. 端到端数据流](#7-端到端数据流)
+- [4. Stills 动作引擎](#4-stills-动作引擎)
+- [5. SAP Runtime 桥接](#5-sap-runtime-桥接)
+- [6. Config Validation 校验](#6-config-validation-校验)
 
 ---
 
 ## 1. 模块依赖关系
 
-14 个源文件的 import 方向 + 外部依赖一览。
+19 个源文件的 import 方向 + 外部依赖一览。
 
 ```mermaid
 graph TB
     subgraph "spark-ai 包架构"
         IDX["index.ts<br/>统一导出入口"]
-        LOOP["ai-loop.ts<br/>核心引擎 ~950行"]
-        PIPE["response-pipeline.ts<br/>7处理器管线 ~660行"]
-        VALID["config-validator.ts<br/>4类校验 ~320行"]
-        PROTO["protocol.ts<br/>SSE协议解析 ~300行"]
-        DS["design-session.ts<br/>提案提取+提示词 ~400行"]
-        SS["session-state.ts<br/>双通道状态机 ~960行"]
-        SK["skill-catalog.ts<br/>14+设计模式 ~400行"]
-        NAV["nav-register.ts<br/>导航注册"]
-        PC["page-cache.ts<br/>缓存管理"]
-        SC["shared-constants.ts<br/>DATAKEY_RE / HTML_TYPES"]
-        DP["design-prompt.ts<br/>系统提示词"]
-        NP["nav-planner-prompt.ts<br/>导航提示词"]
-        CPC["component-props-catalog.ts<br/>组件Props字典"]
+
+        subgraph "runtime/ — 页面循环引擎"
+            LOOP["ai-loop.ts<br/>核心引擎 ~950行"]
+            NAV["nav-register.ts<br/>导航自动注册"]
+            PC["page-cache.ts<br/>缓存管理"]
+        end
+
+        subgraph "stills/ — SAP 动作引擎"
+            DISP["dispatcher.ts<br/>注册表+分发管线"]
+            DOM["domain.ts<br/>域注册+会话工厂"]
+            DS_DOM["dataset-domain.ts<br/>DataSet 域 24 stills"]
+            BP["blueprint-methods.ts<br/>蓝图编排 4 stills"]
+            META["meta-methods.ts<br/>自省层 3 stills"]
+            TYPES["types.ts<br/>类型定义"]
+        end
+
+        subgraph "protocol/ — 协议解析"
+            PROTO["protocol.ts<br/>@@ 块解析 ~270行"]
+            SAP["sap-runtime.ts<br/>协议→stills 桥接"]
+        end
+
+        subgraph "validation/ — 配置校验"
+            VALID["config-validator.ts<br/>4类校验 ~320行"]
+            SC["shared-constants.ts<br/>DATAKEY_RE / HTML_TYPES"]
+        end
+
+        subgraph "catalog/ — 组件元数据"
+            CPC["component-props-catalog.ts<br/>组件 Props 字典"]
+            CT["types.ts<br/>Catalog 类型"]
+            CJ["component-catalog.json<br/>静态 JSON"]
+        end
+
+        subgraph "prompts/"
+            NP["nav-planner-prompt.ts<br/>导航提示词"]
+        end
     end
 
     subgraph "外部依赖"
         SU["spark-utils<br/>createRequest / NavNode"]
+        SD["spark-data<br/>IDataSetMetadata / meta*"]
         BE["Java 后端<br/>Spring Boot 8080"]
     end
 
-    IDX --> LOOP & PIPE & VALID & PROTO & DS & SS & SK & NAV & PC
+    IDX --> LOOP & DISP & SAP & VALID & PROTO & NAV & PC & CPC & NP
 
     LOOP -->|"validateGeneratedConfig"| VALID
     LOOP -->|"clearPageCache"| PC
     LOOP -->|"registerPageNavigation"| NAV
-    LOOP -->|"StreamCallbacks"| PROTO
-    LOOP -->|"createRequest"| SU
+    LOOP -->|"consumeSSEStream"| PROTO
+    VALID -->|"DATAKEY_RE"| SC
+    SAP -->|"extractToolBlocks"| PROTO
+    SAP -->|"executeStill"| DISP
+    DOM -->|"registerStill"| DISP
+    DS_DOM -->|"registerDomain"| DOM
+    DS_DOM -->|"meta*"| SD
+    BP -->|"registerStill"| DISP
+    META -->|"getAllStills"| DISP
 
-    PIPE -->|"extractProposals / resolveComponentQuery"| DS
-    PIPE -->|"resolveSkillQuery"| SK
-    PIPE -->|"DATAKEY_RE / HTML_TYPES"| SC
-    PIPE -->|"getRegisteredTableNames"| SS
-
-    VALID -->|"DATAKEY_RE / HTML_TYPES"| SC
-
-    DS -->|"extractBlocks / stripBlocks"| PROTO
-    DS -->|"COMPONENT_PROPS_CATALOG"| CPC
-    DS -->|"DESIGN_SYSTEM_PROMPT"| DP
-
-    SS -.->|"type-only: ProposalType"| DS
-    SK -.->|"type-only: ProposalType"| DS
-
-    NAV -->|"createRequest / NavNode"| SU
-
-    LOOP -->|"HTTP POST / SSE"| BE
-    NAV -->|"HTTP POST"| BE
+    LOOP --> SU
+    NAV --> SU
+    DS_DOM --> SD
 ```
 
 ### 依赖规则
 
-| 层级 | 模块 | 可依赖 |
-|------|------|--------|
-| **零依赖** | `protocol.ts`, `page-cache.ts`, `shared-constants.ts`, `design-prompt.ts`, `nav-planner-prompt.ts`, `component-props-catalog.ts` | 无内部依赖 |
-| **基础层** | `design-session.ts` | protocol, component-props-catalog, design-prompt |
-| **基础层** | `session-state.ts`, `skill-catalog.ts` | design-session (type-only) |
-| **管线层** | `response-pipeline.ts` | design-session, skill-catalog, session-state, shared-constants |
-| **管线层** | `config-validator.ts` | shared-constants |
-| **引擎层** | `ai-loop.ts` | config-validator, page-cache, nav-register, protocol, spark-utils |
+| 层 | 文件 | 内部依赖 |
+|---|---|---|
+| **零依赖** | `protocol.ts`, `page-cache.ts`, `shared-constants.ts`, `nav-planner-prompt.ts`, `component-props-catalog.ts`, `types.ts`(stills) | 无 |
+| **基础层** | `config-validator.ts` | shared-constants |
+| **基础层** | `dispatcher.ts` | types |
+| **基础层** | `domain.ts` | dispatcher, types |
+| **域层** | `dataset-domain.ts` | domain, dispatcher, types + spark-data |
+| **域层** | `blueprint-methods.ts`, `meta-methods.ts` | dispatcher, types |
+| **桥接层** | `sap-runtime.ts` | protocol, dispatcher, types |
+| **引擎层** | `ai-loop.ts` | config-validator, page-cache, nav-register, protocol + spark-utils |
 
 ---
 
@@ -154,15 +170,16 @@ flowchart TD
 | 选项 | 类型 | 说明 |
 |------|------|------|
 | `aiEndpoint` | `string` | AI 后端地址 |
-| `onFilesUpdated` | `(resp) => void` | 文件写入后回调 |
-| `onError` | `(err) => void` | 错误回调（始终触发，不受 DEV 守卫） |
+| `onFilesUpdated` | `(pageId, files) => void` | 文件写入后回调 |
+| `onError` | `(err) => void` | 错误回调 |
 | `logCollectDelay` | `number` | 日志收集延迟 ms |
-| `skillCatalog` | `string` | 技能目录文本 |
+| `skillCatalog` | `string` | 技能目录文本（注入到每个请求） |
 | `includeGlobalDiagnostics` | `boolean` | 是否包含全局诊断 |
 | `autoRegisterNav` | `boolean` | generate 后自动注册导航 |
-| `onNavigationRegistered` | `(pageId) => void` | 导航注册成功回调 |
+| `onNavigationRegistered` | `(pageId, result) => void` | 导航注册成功回调 |
 | `autoIterateTimeout` | `number` | 自动迭代超时 ms |
-| `onResponseProcessed` | `(resp) => void` | Pipeline 挂接点 |
+| `catalogValidator` | `(files) => Report` | 可选增强校验器（基于 ComponentCatalog） |
+| `onResponseProcessed` | `(resp, pageId) => resp` | AI 响应后处理钩子 |
 
 ### 全局配置
 
@@ -240,98 +257,131 @@ sequenceDiagram
 
 ---
 
-## 4. Response Pipeline（7 处理器）
+## 4. Stills 动作引擎
 
-`createStandardPipeline()` 创建标准管线，处理器按顺序串行执行。
+Stills 是 SAP 协议驱动的**原子动作系统**。
 
-```mermaid
-flowchart TD
-    IN(["pipeline.execute(rawContent, messageId, session?)"])
-    CTX["PipelineContext 初始化"]
+### 核心概念
 
-    subgraph P1["P1 BlockExtractor"]
-        P1A["extractBlocks() — @@type:name...@@end"]
-        P1OUT["产出: proposals[] / queries[]<br/>clarifyBlocks[] / compareBlocks[]<br/>skillQueryRequests[] / cleanContent"]
-    end
+| 概念 | 说明 |
+|------|------|
+| **Still** | 原子动作单元（`StillDefinition`），含 guard / validate / execute 三阶段 |
+| **Session** | 域无关容器（`IStillSession`），持有 blueprint + patchLog + 各域 slot |
+| **Domain** | 领域提供者（`DomainProvider`），注册一组 stills 并管理域 slot |
+| **Blueprint** | 执行蓝图（`ExecutionBlueprint`），由检查点序列驱动多步任务编排 |
+| **PatchLog** | 操作日志（`PatchEntry[]`），记录每次 request 类型 still 的执行摘要 |
 
-    subgraph P2["P2 ProposalValidator"]
-        P2A{"提案 type ∈<br/>data-model / ui-structure<br/>api-config / dict-entry?"}
-        P2B["JSON.parse(content)"]
-        P2ERR["→ validationErrors: json-syntax"]
-    end
+### 执行管线（dispatcher.ts）
 
-    subgraph P3["P3 SchemaChecker"]
-        P3A["递归 walkNodes() — ui-structure 提案"]
-        P3B["检查: 组件 type ∉ HTML_TYPES 且无合法前缀 → warning"]
-        P3C["检查: dataKey ∉ DATAKEY_RE → error"]
-    end
+`executeStill(action, params, session, requestId)` 是唯一执行入口：
 
-    subgraph P4["P4 QueryResolver"]
-        P4A["resolveComponentQuery(components)<br/>→ COMPONENT_PROPS_CATALOG"]
-        P4OUT["→ metadata.resolvedProps"]
-    end
-
-    subgraph P5["P5 SkillQueryProcessor"]
-        P5A["resolveSkillQuery(queryType, targets)"]
-        P5OUT["→ metadata.skillQueryResults"]
-    end
-
-    subgraph P6["P6 RegistryValidator"]
-        P6A{"session 存在?"}
-        P6B["validateDataModel — 重复表名"]
-        P6C["validateViewPlan — 表名须在名册A"]
-        P6D["validateUiStructure — dataKey/field 校验"]
-        P6E["validateInteraction — 函数引用 + 声明提取"]
-        P6F["validateStyle — CSS 类交叉检查"]
-        P6G["→ discoveredFunctions[]"]
-    end
-
-    subgraph P7["P7 AutoResponder"]
-        P7A["props-injection ← resolvedProps"]
-        P7B["query-response ← skillQueryResults"]
-        P7C["validation-feedback ← validationErrors"]
-        P7OUT["→ autoMessages[]"]
-    end
-
-    OUT(["返回 PipelineContext"])
-
-    IN --> CTX --> P1A --> P1OUT
-    P1OUT --> P2A
-    P2A -->|是| P2B
-    P2B -->|失败| P2ERR
-    P2A & P2ERR --> P3A
-    P3A --> P3B & P3C
-    P3B & P3C --> P4A --> P4OUT --> P5A --> P5OUT --> P6A
-    P6A -->|是| P6B & P6C & P6D & P6E & P6F
-    P6E --> P6G
-    P6A -->|否| P7A
-    P6B & P6C & P6D & P6F & P6G --> P7A
-    P7A & P7B & P7C --> P7OUT --> OUT
+```
+1. 查找 → _registry.get(action)       → 未知: UNKNOWN_ACTION
+2. Guard → still.guard(session)        → 不通过: 返回 guard 错误
+3. Validate → still.validate(params)   → 不通过: INVALID_PARAMS
+4. Execute → still.execute(session, params) → StillResult
+5. PatchLog → 仅 ok + type=request 才写日志（describe 不产生变更记录）
 ```
 
-### PipelineContext 字段
+### 域体系（domain.ts + dataset-domain.ts）
 
-| 字段 | 来源 | 说明 |
-|------|------|------|
-| `rawContent` | 输入 | AI 原始回复 |
-| `messageId` | 输入 | 消息 ID |
-| `cleanContent` | P1 | 去除 @@ 块后的纯文本 |
-| `proposals` | P1 | 结构化提案列表 |
-| `queries` | P1 | 组件 Props 查询请求 |
-| `clarifyBlocks` | P1 | 追问块 |
-| `compareBlocks` | P1 | 方案对比块 |
-| `skillQueryRequests` | P1 | 技能查询请求 |
-| `discoveredFunctions` | P6 | interaction 中发现的函数名 |
-| `validationErrors` | P2-P6 | 累积校验错误 |
-| `autoMessages` | P7 | 待发送自动回复 |
-| `metadata` | P4-P5 | 中间数据 |
-| `session?` | 注入 | 设计会话状态 |
+**域注册**：`registerDomain(provider)` 双写——①写入域注册表；②把域内 stills 批量注册到 dispatcher。
+
+**会话工厂**：`createSession()` 创建空 `IStillSession`，遍历所有已注册域调用 `createSlot()` 初始化各域 slot。
+
+**DataSet 域**（24 stills，6 命名空间）：
+
+| 命名空间 | stills | 说明 |
+|----------|--------|------|
+| `dataset.*` | init, describe, validate, export, reset | 整体初始化/查询/校验/导出/重置 |
+| `datatable.*` | create, describe, addColumns, updateColumn, removeColumn, setApi, addRows | 表结构操作 |
+| `relation.*` | add, remove, list | DataRelation 管理 |
+| `schema.*` | lock, unlock | 结构锁定/解锁 |
+| `dataview.*` | create, describe, configure, setAggregates, setTreeConfig | 视图配置 |
+| `dependency.*` | add, remove | ViewDependency 管理 |
+
+**Guard 分级**（组合式，实现阶段约束）：
+
+| Guard | 场景 |
+|-------|------|
+| `noGuard` | 无约束 |
+| `requireBlueprint` | 需要蓝图存在 |
+| `guardDatasetOnly` | 需要 dataset slot 已初始化 |
+| `guardBlueprintAndDataset` | 需要蓝图 + dataset |
+| `guardSchemaUnlocked` | 结构编辑（建表/改列） |
+| `guardSchemaLocked` | 后置配置（视图/API/依赖） |
+
+### 蓝图编排（blueprint-methods.ts）
+
+| Still | 类型 | 说明 |
+|-------|------|------|
+| `blueprint.create` | request | 生成蓝图 + checkpoints 序列 |
+| `blueprint.describe` | describe | 查询蓝图进度 |
+| `blueprint.advance` | request | 标记当前 checkpoint 完成，推进到下一个 |
+| `blueprint.revise` | request | 增删 checkpoint + 更新 openQuestions |
+
+### 自省层（meta-methods.ts）
+
+| Still | 类型 | 说明 |
+|-------|------|------|
+| `stills.capabilities` | describe | 枚举全部已注册 action + params + example |
+| `stills.actionSpec` | describe | 查询单个 action 的详细规格 |
+| `session.describe` | describe | 汇总当前 step/lock/dataset/blueprint/patchCount |
+
+### 31 Stills 一览
+
+```
+# 框架级（7）
+stills.capabilities    stills.actionSpec    session.describe
+blueprint.create       blueprint.describe   blueprint.advance   blueprint.revise
+
+# DataSet 域（24）
+dataset.init           dataset.describe     dataset.validate    dataset.export      dataset.reset
+datatable.create       datatable.describe   datatable.addColumns datatable.updateColumn
+datatable.removeColumn datatable.setApi     datatable.addRows
+relation.add           relation.remove      relation.list
+schema.lock            schema.unlock
+dataview.create        dataview.describe    dataview.configure  dataview.setAggregates dataview.setTreeConfig
+dependency.add         dependency.remove
+```
 
 ---
 
-## 5. Config Validation 校验
+## 5. SAP Runtime 桥接
 
-`validateGeneratedConfig(files)` 在 `_postProcess` 第一步执行，返回 `ConfigValidationReport`。
+`sap-runtime.ts` 是纯函数管道，将 SAP 协议文本路由到 Stills 引擎。
+
+```mermaid
+flowchart LR
+    RAW["Raw AI text"]
+    EXT["extractToolBlocks(text)"]
+    PARSE["parseToolPayload(block)"]
+    EXEC["executeStill(action, params, session)"]
+    FMT["formatResponseBlock(action, id, result)"]
+    OUT["@@result / @@error 文本"]
+
+    RAW --> EXT --> PARSE --> EXEC --> FMT --> OUT
+```
+
+### processSapBlocks(text, session, options?)
+
+批量处理入口，返回三部分：
+
+| 字段 | 说明 |
+|------|------|
+| `dispatched` | `SapDispatchResult[]` — 每个块的调度结果 |
+| `naturalText` | 去除协议块后的自然语言文本 |
+| `fullResponse` | 所有 `@@result/@@error` 拼接 |
+
+**关键设计**：
+- 默认 `maxBlocks=1`，只处理第一个协议块
+- 完整错误链：块类型非法 → `INVALID_BLOCK_TYPE`；JSON 解析失败 → `INVALID_JSON`；后续进入 dispatcher 管线
+
+---
+
+## 6. Config Validation 校验
+
+`validateGeneratedConfig(files)` 对 AI 生成的页面配置文件做 4 类结构化检查。
 
 ```mermaid
 flowchart TD
@@ -397,219 +447,3 @@ flowchart TD
 | dataKey | dataKey 引用不存在的表 | error |
 | render | Render* 函数未定义 | error |
 | handler | 事件处理函数未定义 | error |
-
----
-
-## 6. Design Session 状态机
-
-### 双通道步骤推进（A1→A4→B1→B6）
-
-```mermaid
-stateDiagram-v2
-    direction LR
-
-    state "Pass A — 数据建模" as PassA {
-        A1: A1 需求摸底
-        A2: A2 技能扫描
-        A3: A3 数据建模<br/>→ data-model
-        A4: A4 名册A锁定<br/>→ data-model<br/>🔒 lockDataRegistry()
-
-        A1 --> A2
-        A2 --> A3
-        A3 --> A4
-    }
-
-    state "Pass B — UI 设计" as PassB {
-        B1: B1 视图规划 → view-plan
-        B2: B2 UI 设计 → ui-structure
-        B3: B3 交互设计 → interaction
-        B4: B4 API 配置 → api-config
-        B5: B5 样式打磨 → style
-        B6: B6 全量校验<br/>runFullValidation()
-
-        B1 --> B2
-        B2 --> B3
-        B3 --> B4
-        B4 --> B5
-        B5 --> B6
-    }
-
-    [*] --> A1
-    A4 --> B1: 名册A必须已锁定
-    B6 --> [*]
-```
-
-### 三大名册 + 提案写入
-
-```mermaid
-flowchart TD
-    subgraph "名册"
-        DR["📋 DataRegistry — 名册A<br/>tables: Record‹string, RegistryTable›<br/>  columns / relations / aggregates<br/>lockedAt: string | null"]
-        VR["📋 ViewRegistry — 名册B-1<br/>views: Record‹string, RegistryView›<br/>  tableName / viewId / purpose / origin"]
-        UR["📋 UIRegistry — 名册B-2<br/>componentIds / functionNames<br/>cssClassesDefined / cssClassesReferenced"]
-    end
-
-    subgraph "applyProposalToSession"
-        DM["data-model → parseTableDef<br/>→ registerTable"]
-        VP["view-plan → Markdown 表格解析<br/>→ registerView"]
-        UI["ui-structure → walkUiNodes<br/>→ componentIds + cssRefs"]
-        IA["interaction → 正则提取函数<br/>→ functionNames"]
-        ST["style → 正则提取 .class<br/>→ cssClassesDefined"]
-    end
-
-    DM -->|写入| DR
-    VP -->|写入| VR
-    UI & IA & ST -->|追加| UR
-
-    subgraph "级联校验"
-        CI["checkCascadeImpact()<br/>锁定后修改 → 扫描依赖图<br/>→ 过滤 Pass B 提案<br/>→ CascadeImpact[]"]
-    end
-
-    DR -->|修改已锁定表| CI
-
-    subgraph "B6 全量校验"
-        FV["runFullValidation()<br/>① CSS 引用未定义<br/>② CSS 定义未引用<br/>③ 视图引用不存在的表<br/>④ 孤立视图"]
-    end
-
-    UR & VR & DR --> FV
-```
-
-### PersistedDesignSession 结构
-
-```typescript
-interface PersistedDesignSession {
-  version: 1
-  currentPass: 'A' | 'B'
-  currentStep: DesignStep          // A1 | A2 | ... | B6
-  dataRegistry: DataRegistry       // 名册A
-  viewRegistry: ViewRegistry       // 名册B-1
-  uiRegistry: UIRegistry           // 名册B-2
-  acceptedProposals: AcceptedProposalSnapshot[]
-  dependencyGraph: Record<string, string[]>  // 'Table.col' → [proposalId]
-}
-```
-
-### 步骤推进规则
-
-- `advanceStep(session)` — 沿 A1→…→B6 顺序前进，最后一步返回 `null`
-- `canAdvanceTo(session, target)` — 不允许倒退；进入 Pass B 需名册 A 已锁定
-- `serializeSession / deserializeSession` — JSON 持久化 + 版本/结构校验
-- `buildSessionContextPrompt(session)` — 动态 Markdown 摘要注入 AI 系统提示词尾部
-
----
-
-## 7. 端到端数据流
-
-从用户 prompt 到页面渲染再到自动迭代的完整闭环。
-
-```mermaid
-flowchart TD
-    USER(["👤 用户输入 prompt"])
-
-    subgraph "① AIPageLoop"
-        GEN["generate / generateStream"]
-        SKILL["注入 skillCatalog"]
-    end
-
-    subgraph "② AI 后端"
-        BE["Spring Boot<br/>/api/ai/chat<br/>/api/ai/chat/stream-page"]
-        LLM["LLM（GPT-4o 等）"]
-    end
-
-    subgraph "③ 响应"
-        RAW["AIResponse<br/>{ files, explanation, needsIteration }"]
-    end
-
-    subgraph "④ _postProcess"
-        V["① validateGeneratedConfig"]
-        RP["② ResponsePipeline（7 处理器）"]
-        WF["③ writePageFiles → /__batch"]
-        NR["④ registerPageNavigation → /nodes"]
-        CB["⑤ onFilesUpdated → 前端路由"]
-    end
-
-    subgraph "⑤ 热更新"
-        SSE2["SSE /api/events 文件变更"]
-        CLR["clearPageCache()"]
-        RLD["页面 reload"]
-        LOG["PageLogCollector 日志收集"]
-    end
-
-    subgraph "⑥ 自动迭代"
-        CHK{"needsIteration?"}
-        ITER["iterate() + logs + 文件快照"]
-    end
-
-    USER --> GEN --> SKILL --> BE --> LLM --> BE --> RAW
-
-    RAW --> V --> RP --> WF --> NR --> CB
-
-    WF -->|SSE 广播| SSE2 --> CLR --> RLD --> LOG
-
-    CB --> CHK
-    CHK -->|是| ITER -->|循环| BE
-    CHK -->|否| DONE(["✅ 完成"])
-
-    LOG -.->|日志注入| ITER
-```
-
-### 关键集成点
-
-| 集成点 | API | 用途 |
-|--------|-----|------|
-| `configureAILoopHttp()` | 应用启动 | 注入 auth headers + 多租户 URL 工厂 |
-| `setConfigLoader(loader)` | page-cache | 注入 FileLoader 清缓存 |
-| `onResponseProcessed` | 构造器 | 挂接 ResponsePipeline |
-| `onFilesUpdated` | 构造器 | 路由导航到新页面 |
-| `onNavigationRegistered` | 构造器 | 刷新侧边栏导航 |
-| `setupHotReload()` | 应用层 | SSE → clearPageCache → reload |
-| `PageLogCollector` | 全局 | 收集运行时日志 → 下次迭代注入 |
-
----
-
-## 协议格式参考
-
-### 通用块协议
-
-```
-@@type:name
-payload content
-@@end
-```
-
-正则: `BLOCK_RE = /^@@(\w+):([\w-]+)\s*$([\s\S]*?)^@@end\s*$/gm`
-
-### 工具块协议
-
-```
-@@type:action#id
-payload content
-@@end
-```
-
-正则: `TOOL_BLOCK_RE = /@@(\w+):([\w.]+)#([\w-]+)\n([\s\S]*?)\n@@end/g`
-
-### ProposalType 枚举（10 种）
-
-`data-model` · `view-plan` · `ui-structure` · `interaction` · `style` · `api-config` · `db-schema` · `dict-entry` · `function-plan` · `navigation`
-
----
-
-## 文件索引
-
-| 文件 | 行数 | 职责 |
-|------|------|------|
-| `ai-loop.ts` | ~950 | 核心引擎：4 入口 + `_postProcess` + 自动迭代 + 全局配置 |
-| `response-pipeline.ts` | ~660 | 7 处理器管线 + `createStandardPipeline()` |
-| `session-state.ts` | ~960 | 双通道状态机 + 三名册 + 级联校验 + 序列化 |
-| `design-session.ts` | ~400 | 提案提取 + 组件查询 + 追问/对比块 + 提示词构建 |
-| `skill-catalog.ts` | ~400 | 14+ 设计模式目录 + `resolveSkillQuery` |
-| `config-validator.ts` | ~320 | 4 类校验 + highlightCurrentRow 交叉检查 |
-| `protocol.ts` | ~300 | SSE 协议解析 + `extractFirstJsonObject` 括号深度匹配 |
-| `shared-constants.ts` | ~30 | `DATAKEY_RE` / `HTML_TYPES`(48) / `VALID_TYPE_PREFIXES` |
-| `nav-register.ts` | ~80 | 导航注册 + `configureNavRegister` |
-| `page-cache.ts` | ~60 | `setConfigLoader` / `clearPageCache` / `clearAllCache` |
-| `design-prompt.ts` | — | `DESIGN_SYSTEM_PROMPT` 常量 |
-| `nav-planner-prompt.ts` | — | `NAV_PLANNER_SYSTEM_PROMPT` 常量 |
-| `component-props-catalog.ts` | — | `COMPONENT_PROPS_CATALOG` 字典 |
-| `index.ts` | ~200 | 统一公共 API 导出 |

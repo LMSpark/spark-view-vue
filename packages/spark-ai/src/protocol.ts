@@ -4,7 +4,6 @@
  * SPARK AI 系统使用两种 @@ 定界协议：
  *
  * 1. **通用块协议** — `@@type:name\n...\n@@end`（proposal / query / review / error）
- *    由 design-session 和 response-pipeline 消费
  *
  * 2. **工具块协议** — `@@type:action#id\n...\n@@end`（tool calling）
  *    由 SapChatPanel / AiChatPanel 消费

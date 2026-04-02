@@ -1,23 +1,150 @@
 /**
- * Blueprint Methods — blueprint.create / describe / advance / revise
+ * Blueprint Methods
+ *
+ * 这个文件只负责蓝图编排本身，不触碰 dataset / meta / domain 细节：
+ * 1. 创建 blueprint 与 checkpoints；
+ * 2. 查询当前编排进度；
+ * 3. 推进已完成 checkpoint；
+ * 4. 根据执行反馈修订蓝图。
  */
 
-import type { StillDefinition, StillResult, BlueprintCheckpoint, ExecutionBlueprint, IStillSession } from './types'
+import type {
+  StillDefinition,
+  StillResult,
+  BlueprintCheckpoint,
+  ExecutionBlueprint,
+  IStillSession,
+} from './types'
 import { noGuard, requireBlueprint } from './types'
 
-// ─── blueprint.create ──────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// 输入结构与通用 helper
+// ═══════════════════════════════════════════════════════════
+
+interface BlueprintCheckpointInput {
+  id: string
+  title: string
+  plannedActions: string[]
+  validation: string
+}
+
+interface BlueprintCheckpointInsertInput extends BlueprintCheckpointInput {
+  insertAfter?: string
+}
 
 interface BlueprintCreateParams {
   title: string
   requirements: string
-  checkpoints: Array<{
-    id: string
-    title: string
-    plannedActions: string[]
-    validation: string
-  }>
+  checkpoints: BlueprintCheckpointInput[]
   openQuestions?: string[]
 }
+
+interface BlueprintAdvanceParams {
+  completedCheckpointId: string
+  note?: string
+}
+
+interface BlueprintReviseParams {
+  reason: string
+  addCheckpoints?: BlueprintCheckpointInsertInput[]
+  removeCheckpointIds?: string[]
+  updateOpenQuestions?: string[]
+}
+
+function missingParam(name: string): string {
+  return `缺少 ${name}`
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string')
+}
+
+function validateCheckpointInput(
+  checkpoint: BlueprintCheckpointInput | BlueprintCheckpointInsertInput,
+  index: number,
+): string | null {
+  if (!isNonEmptyString(checkpoint.id)) return `checkpoint[${index}] 缺少 id`
+  if (!isNonEmptyString(checkpoint.title)) return `checkpoint[${index}] 缺少 title`
+  if (!Array.isArray(checkpoint.plannedActions) || checkpoint.plannedActions.length === 0) {
+    return `checkpoint[${index}] 缺少 plannedActions`
+  }
+  if (!isStringArray(checkpoint.plannedActions)) {
+    return `checkpoint[${index}] 的 plannedActions 必须是 string[]`
+  }
+  if (!isNonEmptyString(checkpoint.validation)) return `checkpoint[${index}] 缺少 validation`
+  return null
+}
+
+function toBlueprintCheckpoint(input: BlueprintCheckpointInput): BlueprintCheckpoint {
+  return {
+    id: input.id,
+    title: input.title,
+    plannedActions: input.plannedActions,
+    validation: input.validation,
+    status: 'pending',
+  }
+}
+
+function requireSessionBlueprint(
+  session: IStillSession,
+): { blueprint: ExecutionBlueprint } | { error: StillResult } {
+  if (session.blueprint === null) {
+    return {
+      error: {
+        ok: false,
+        code: 'NO_BLUEPRINT',
+        msg: 'Blueprint 未创建',
+        fix: '请先执行 blueprint.create',
+      },
+    }
+  }
+  return { blueprint: session.blueprint }
+}
+
+function countDoneCheckpoints(blueprint: ExecutionBlueprint): number {
+  return blueprint.checkpoints.filter((checkpoint) => checkpoint.status === 'done').length
+}
+
+function findNextPendingCheckpoint(blueprint: ExecutionBlueprint): BlueprintCheckpoint | undefined {
+  return blueprint.checkpoints.find((checkpoint) => checkpoint.status === 'pending')
+}
+
+/**
+ * 修订蓝图后，currentCheckpointId 可能指向已删除节点。
+ * 这里统一修正为：当前 pending → 第一个 checkpoint → 空字符串。
+ */
+function normalizeCurrentCheckpoint(blueprint: ExecutionBlueprint): void {
+  const currentExists = blueprint.checkpoints.some(
+    (checkpoint) => checkpoint.id === blueprint.currentCheckpointId,
+  )
+  if (currentExists) return
+
+  const nextPending = findNextPendingCheckpoint(blueprint)
+  blueprint.currentCheckpointId = nextPending?.id ?? blueprint.checkpoints[0]?.id ?? ''
+}
+
+function insertCheckpoint(
+  checkpoints: BlueprintCheckpoint[],
+  checkpoint: BlueprintCheckpoint,
+  insertAfter?: string,
+): void {
+  if (insertAfter) {
+    const insertIndex = checkpoints.findIndex((current) => current.id === insertAfter)
+    if (insertIndex >= 0) {
+      checkpoints.splice(insertIndex + 1, 0, checkpoint)
+      return
+    }
+  }
+  checkpoints.push(checkpoint)
+}
+
+// ═══════════════════════════════════════════════════════════
+// blueprint.create
+// ═══════════════════════════════════════════════════════════
 
 export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = {
   action: 'blueprint.create',
@@ -38,14 +165,19 @@ export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = 
     ],
   },
   validate: (params) => {
-    if (!params.title || typeof params.title !== 'string') return '缺少 title'
-    if (!params.requirements || typeof params.requirements !== 'string') return '缺少 requirements'
-    if (!Array.isArray(params.checkpoints) || params.checkpoints.length === 0) return '缺少 checkpoints'
-    for (const cp of params.checkpoints) {
-      if (!cp.id || !cp.title || !Array.isArray(cp.plannedActions) || !cp.validation) {
-        return `checkpoint ${cp.id} 缺少必填字段（id/title/plannedActions/validation）`
-      }
+    if (!isNonEmptyString(params.title)) return missingParam('title')
+    if (!isNonEmptyString(params.requirements)) return missingParam('requirements')
+    if (!Array.isArray(params.checkpoints) || params.checkpoints.length === 0) return missingParam('checkpoints')
+
+    for (const [index, checkpoint] of params.checkpoints.entries()) {
+      const error = validateCheckpointInput(checkpoint, index)
+      if (error) return error
     }
+
+    if (params.openQuestions !== undefined && !isStringArray(params.openQuestions)) {
+      return 'openQuestions 必须是 string[]'
+    }
+
     return null
   },
   execute: (session: IStillSession, params: BlueprintCreateParams): StillResult => {
@@ -58,25 +190,16 @@ export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = 
       }
     }
 
-    const checkpoints: BlueprintCheckpoint[] = params.checkpoints.map((cp) => ({
-      id: cp.id,
-      title: cp.title,
-      plannedActions: cp.plannedActions,
-      validation: cp.validation,
-      status: 'pending' as const,
-    }))
+    const checkpoints = params.checkpoints.map(toBlueprintCheckpoint)
+    const firstCheckpoint = checkpoints[0]
 
-    const blueprint: ExecutionBlueprint = {
+    session.blueprint = {
       version: 1,
       userGoal: params.title,
-      currentCheckpointId: checkpoints[0]?.id ?? '',
+      currentCheckpointId: firstCheckpoint?.id ?? '',
       openQuestions: params.openQuestions ?? [],
       checkpoints,
     }
-
-    session.blueprint = blueprint
-
-    const firstCp = checkpoints[0]
 
     return {
       ok: true,
@@ -85,16 +208,18 @@ export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = 
         blueprintVersion: 1,
         userGoal: params.title,
         checkpointCount: checkpoints.length,
-        currentCheckpointId: firstCp?.id ?? '',
-        openQuestions: blueprint.openQuestions,
-        hint: `蓝图已就绪，当前 checkpoint: ${firstCp?.id ?? ''}${firstCp ? `（${firstCp.title}）` : ''}`,
+        currentCheckpointId: firstCheckpoint?.id ?? '',
+        openQuestions: session.blueprint.openQuestions,
+        hint: `蓝图已就绪，当前 checkpoint: ${firstCheckpoint?.id ?? ''}${firstCheckpoint ? `（${firstCheckpoint.title}）` : ''}`,
       },
       summary: `创建蓝图：${checkpoints.length} 个 checkpoints`,
     }
   },
 }
 
-// ─── blueprint.describe ────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// blueprint.describe
+// ═══════════════════════════════════════════════════════════
 
 export const blueprintDescribe: StillDefinition<Record<string, never>, unknown> = {
   action: 'blueprint.describe',
@@ -105,37 +230,38 @@ export const blueprintDescribe: StillDefinition<Record<string, never>, unknown> 
   example: {},
   validate: () => null,
   execute: (session: IStillSession): StillResult => {
-    const bp = session.blueprint
-    if (bp === null) return { ok: false, code: 'NO_BLUEPRINT', msg: 'Blueprint 未创建', fix: '请先执行 blueprint.create' }
-    const current = bp.checkpoints.find((cp) => cp.id === bp.currentCheckpointId)
-    const done = bp.checkpoints.filter((cp) => cp.status === 'done').length
+    const required = requireSessionBlueprint(session)
+    if ('error' in required) return required.error
+
+    const blueprint = required.blueprint
+    const currentCheckpoint = blueprint.checkpoints.find(
+      (checkpoint) => checkpoint.id === blueprint.currentCheckpointId,
+    )
+    const doneCount = countDoneCheckpoints(blueprint)
 
     return {
       ok: true,
       data: {
-        userGoal: bp.userGoal,
-        currentCheckpointId: bp.currentCheckpointId,
-        currentCheckpointTitle: current?.title ?? null,
-        progress: `${done}/${bp.checkpoints.length}`,
-        checkpoints: bp.checkpoints.map((cp) => ({
-          id: cp.id,
-          title: cp.title,
-          status: cp.status,
-          note: cp.note,
+        userGoal: blueprint.userGoal,
+        currentCheckpointId: blueprint.currentCheckpointId,
+        currentCheckpointTitle: currentCheckpoint?.title ?? null,
+        progress: `${doneCount}/${blueprint.checkpoints.length}`,
+        checkpoints: blueprint.checkpoints.map((checkpoint) => ({
+          id: checkpoint.id,
+          title: checkpoint.title,
+          status: checkpoint.status,
+          note: checkpoint.note,
         })),
-        openQuestions: bp.openQuestions,
+        openQuestions: blueprint.openQuestions,
       },
-      summary: `蓝图进度 ${done}/${bp.checkpoints.length}`,
+      summary: `蓝图进度 ${doneCount}/${blueprint.checkpoints.length}`,
     }
   },
 }
 
-// ─── blueprint.advance ─────────────────────────────────────
-
-interface BlueprintAdvanceParams {
-  completedCheckpointId: string
-  note?: string
-}
+// ═══════════════════════════════════════════════════════════
+// blueprint.advance
+// ═══════════════════════════════════════════════════════════
 
 export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> = {
   action: 'blueprint.advance',
@@ -148,16 +274,18 @@ export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> 
   },
   example: { completedCheckpointId: 'cp1', note: 'dataset.init 成功' },
   validate: (params) => {
-    if (!params.completedCheckpointId || typeof params.completedCheckpointId !== 'string') {
-      return '缺少 completedCheckpointId'
-    }
+    if (!isNonEmptyString(params.completedCheckpointId)) return missingParam('completedCheckpointId')
     return null
   },
   execute: (session: IStillSession, params: BlueprintAdvanceParams): StillResult => {
-    const bp = session.blueprint
-    if (bp === null) return { ok: false, code: 'NO_BLUEPRINT', msg: 'Blueprint 未创建', fix: '请先执行 blueprint.create' }
-    const cp = bp.checkpoints.find((c) => c.id === params.completedCheckpointId)
-    if (!cp) {
+    const required = requireSessionBlueprint(session)
+    if ('error' in required) return required.error
+
+    const blueprint = required.blueprint
+    const checkpoint = blueprint.checkpoints.find(
+      (current) => current.id === params.completedCheckpointId,
+    )
+    if (!checkpoint) {
       return {
         ok: false,
         code: 'CHECKPOINT_NOT_FOUND',
@@ -166,48 +294,37 @@ export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> 
       }
     }
 
-    cp.status = 'done'
-    if (params.note) cp.note = params.note
+    checkpoint.status = 'done'
+    if (params.note) checkpoint.note = params.note
 
-    // 找下一个 pending checkpoint
-    const next = bp.checkpoints.find((c) => c.status === 'pending')
-    if (next) {
-      bp.currentCheckpointId = next.id
+    // 只推进到下一个 pending checkpoint；如果没有后续节点，则保留当前完成节点作为收尾位置。
+    const nextCheckpoint = findNextPendingCheckpoint(blueprint)
+    if (nextCheckpoint) {
+      blueprint.currentCheckpointId = nextCheckpoint.id
     }
 
-    const done = bp.checkpoints.filter((c) => c.status === 'done').length
+    const doneCount = countDoneCheckpoints(blueprint)
 
     return {
       ok: true,
       data: {
         status: 'ok',
         completedCheckpointId: params.completedCheckpointId,
-        nextCheckpointId: next?.id ?? null,
-        nextCheckpointTitle: next?.title ?? null,
-        progress: `${done}/${bp.checkpoints.length}`,
-        hint: next
-          ? `请执行 ${next.plannedActions[0]} (${next.title})`
+        nextCheckpointId: nextCheckpoint?.id ?? null,
+        nextCheckpointTitle: nextCheckpoint?.title ?? null,
+        progress: `${doneCount}/${blueprint.checkpoints.length}`,
+        hint: nextCheckpoint
+          ? `请执行 ${nextCheckpoint.plannedActions[0]} (${nextCheckpoint.title})`
           : '所有 checkpoints 已完成',
       },
-      summary: `推进: ${params.completedCheckpointId} → ${next?.id ?? '全部完成'}`,
+      summary: `推进: ${params.completedCheckpointId} → ${nextCheckpoint?.id ?? '全部完成'}`,
     }
   },
 }
 
-// ─── blueprint.revise ──────────────────────────────────────
-
-interface BlueprintReviseParams {
-  reason: string
-  addCheckpoints?: Array<{
-    id: string
-    title: string
-    plannedActions: string[]
-    validation: string
-    insertAfter?: string
-  }>
-  removeCheckpointIds?: string[]
-  updateOpenQuestions?: string[]
-}
+// ═══════════════════════════════════════════════════════════
+// blueprint.revise
+// ═══════════════════════════════════════════════════════════
 
 export const blueprintRevise: StillDefinition<BlueprintReviseParams, unknown> = {
   action: 'blueprint.revise',
@@ -227,63 +344,60 @@ export const blueprintRevise: StillDefinition<BlueprintReviseParams, unknown> = 
     ],
   },
   validate: (params) => {
-    if (!params.reason || typeof params.reason !== 'string') return '缺少 reason'
-    return null
-  },
-  execute: (session: IStillSession, params: BlueprintReviseParams): StillResult => {
-    const bp = session.blueprint
-    if (bp === null) return { ok: false, code: 'NO_BLUEPRINT', msg: 'Blueprint 未创建', fix: '请先执行 blueprint.create' }
+    if (!isNonEmptyString(params.reason)) return missingParam('reason')
 
-    // 移除 checkpoints
-    if (params.removeCheckpointIds) {
-      const toRemove = params.removeCheckpointIds
-      bp.checkpoints = bp.checkpoints.filter(
-        (cp) => !toRemove.includes(cp.id),
-      )
-    }
-
-    // 新增 checkpoints
-    if (params.addCheckpoints) {
-      for (const newCp of params.addCheckpoints) {
-        const checkpoint: BlueprintCheckpoint = {
-          id: newCp.id,
-          title: newCp.title,
-          plannedActions: newCp.plannedActions,
-          validation: newCp.validation,
-          status: 'pending',
-        }
-        if (newCp.insertAfter) {
-          const idx = bp.checkpoints.findIndex((c) => c.id === newCp.insertAfter)
-          if (idx >= 0) {
-            bp.checkpoints.splice(idx + 1, 0, checkpoint)
-            continue
-          }
-        }
-        bp.checkpoints.push(checkpoint)
+    if (params.addCheckpoints !== undefined) {
+      if (!Array.isArray(params.addCheckpoints)) return 'addCheckpoints 必须是数组'
+      for (const [index, checkpoint] of params.addCheckpoints.entries()) {
+        const error = validateCheckpointInput(checkpoint, index)
+        if (error) return error
       }
     }
 
-    // 更新 openQuestions
+    if (params.removeCheckpointIds !== undefined && !isStringArray(params.removeCheckpointIds)) {
+      return 'removeCheckpointIds 必须是 string[]'
+    }
+
+    if (params.updateOpenQuestions !== undefined && !isStringArray(params.updateOpenQuestions)) {
+      return 'updateOpenQuestions 必须是 string[]'
+    }
+
+    return null
+  },
+  execute: (session: IStillSession, params: BlueprintReviseParams): StillResult => {
+    const required = requireSessionBlueprint(session)
+    if ('error' in required) return required.error
+
+    const blueprint = required.blueprint
+
+    if (params.removeCheckpointIds) {
+      const checkpointIdsToRemove = params.removeCheckpointIds
+      blueprint.checkpoints = blueprint.checkpoints.filter(
+        (checkpoint) => !checkpointIdsToRemove.includes(checkpoint.id),
+      )
+    }
+
+    if (params.addCheckpoints) {
+      for (const checkpointInput of params.addCheckpoints) {
+        const checkpoint = toBlueprintCheckpoint(checkpointInput)
+        insertCheckpoint(blueprint.checkpoints, checkpoint, checkpointInput.insertAfter)
+      }
+    }
+
     if (params.updateOpenQuestions) {
-      bp.openQuestions = params.updateOpenQuestions
+      blueprint.openQuestions = params.updateOpenQuestions
     }
 
-    bp.lastReflection = params.reason
-
-    // 确保 currentCheckpointId 仍有效
-    const currentStillExists = bp.checkpoints.some((c) => c.id === bp.currentCheckpointId)
-    if (!currentStillExists) {
-      const next = bp.checkpoints.find((c) => c.status === 'pending')
-      if (next) bp.currentCheckpointId = next.id
-    }
+    blueprint.lastReflection = params.reason
+    normalizeCurrentCheckpoint(blueprint)
 
     return {
       ok: true,
       data: {
         status: 'ok',
         reason: params.reason,
-        checkpointCount: bp.checkpoints.length,
-        currentCheckpointId: bp.currentCheckpointId,
+        checkpointCount: blueprint.checkpoints.length,
+        currentCheckpointId: blueprint.currentCheckpointId,
       },
       summary: `蓝图修订: ${params.reason}`,
     }

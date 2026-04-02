@@ -362,7 +362,6 @@ export interface AIPageLoopOptions {
   /**
    * AI 响应后处理钩子（校验后、文件写入前调用）
    *
-   * 适用于接入 ResponsePipeline 进行提案提取、名册校验、自动回复组装等。
    * 返回修改后的 AIResponse（可补充 explanation / needsIteration）。
    * 若抛出异常则跳过该步骤，不影响文件写入。
    */
@@ -800,7 +799,7 @@ export class AIPageLoop {
   private async _postProcess(pageId: string, aiResp: AIResponse, action: string, prompt?: string): Promise<AIResponse> {
     let validatedResp = withValidationReport(aiResp, this.options.catalogValidator)
 
-    // 响应处理钩子（用于 ResponsePipeline 集成）
+    // 响应处理钩子
     if (this.options.onResponseProcessed) {
       try {
         validatedResp = await this.options.onResponseProcessed(validatedResp, pageId)

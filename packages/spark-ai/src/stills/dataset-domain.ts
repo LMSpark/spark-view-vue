@@ -1,9 +1,14 @@
 /**
- * DataSet Domain — 24 个数据建模 action 的域注册
+ * DataSet Domain
  *
- * 域 slot: DataSetSlot { dataset, schemaLocked, currentStep }
- * Guard 工厂: dsGuard() — 按需组合 dataset/blueprint/schema 检查
- * 底层操作: 委托给 spark-data/metadata-ops 的 meta* 纯函数
+ * 这个文件只负责三类事情：
+ * 1. 定义 dataset 域在 still session 中的状态槽位；
+ * 2. 按 namespace 注册数据建模 action；
+ * 3. 将真正的数据建模变更委托给 spark-data 提供的 meta* 包装层。
+ *
+ * meta* 对外仍然收发 IDataSetMetadata，
+ * 对内会投影到 DataSet/DataTable/DataView 运行时对象并直接复用 dataset-ops。
+ * 这里本身不直接操作运行时实例，也不承担 UI 交互逻辑。
  */
 
 import type {
@@ -41,26 +46,61 @@ import {
 } from '@spark-view/spark-data'
 
 // ═══════════════════════════════════════════════════════════
-// DataSetSlot — 域 session 数据
+// 域状态与通用帮助函数
 // ═══════════════════════════════════════════════════════════
 
-/** 6 步工作流步骤标识 */
+/**
+ * 6 步设计流程序号。
+ * 本文件只负责保存当前位置，不重新定义各步骤的业务含义。
+ */
 export type DesignStep = '①' | '②' | '③' | '④' | '⑤' | '⑥'
 
-/** DataSet 域在 session.domains['dataset'] 中的 slot */
+/** DataSet 域在 session.domains['dataset'] 中保存的槽位结构。 */
 export interface DataSetSlot {
+  /** 当前正在编辑的元数据快照；未初始化时为 null。 */
   dataset: IDataSetMetadata | null
+  /** true 表示进入“结构冻结”阶段，只允许改视图/API/依赖等后置配置。 */
   schemaLocked: boolean
+  /** 供外层 still 工作流 UI 展示当前阶段。 */
   currentStep: DesignStep
 }
 
-/** 类型安全的域 slot 访问器 */
+/** 类型安全的域 slot 访问器。 */
 export function getDataSetSlot(session: IStillSession): DataSetSlot {
   return session.domains['dataset'] as DataSetSlot
 }
 
+/**
+ * 统一的初始 slot 工厂。
+ * createSlot 与 dataset.reset 共用它，避免默认值出现双份定义后漂移。
+ */
+function createDataSetSlot(): DataSetSlot {
+  return {
+    dataset: null,
+    schemaLocked: false,
+    currentStep: '①',
+  }
+}
+
+/** validate 回调必须返回字符串，不要因为空参直接抛异常。 */
+function missingParam(name: string): string {
+  return `缺少 ${name}`
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0
+}
+
+function isNonEmptyArray<T>(value: unknown): value is T[] {
+  return Array.isArray(value) && value.length > 0
+}
+
+function isNonEmptyRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && Object.keys(value).length > 0
+}
+
 // ═══════════════════════════════════════════════════════════
-// Guard 工厂
+// Guard 工厂与会话前置约束
 // ═══════════════════════════════════════════════════════════
 
 interface DsGuardOptions {
@@ -74,7 +114,12 @@ interface DsGuardOptions {
   requireSchemaLocked?: boolean
 }
 
-/** 创建 DataSet 域的 Guard 函数 */
+/**
+ * 创建 DataSet 域 guard。
+ *
+ * still action 的职责是“声明前置条件”，不是在 execute 中到处散落 if/else。
+ * 这里把 blueprint、dataset、schema 状态组合成可复用的 guard 片段。
+ */
 function dsGuard(checks: DsGuardOptions = {}): StillGuard {
   return (session: IStillSession): { code: string; msg: string } | null => {
     if (checks.requireBlueprint === true && session.blueprint === null) {
@@ -94,28 +139,32 @@ function dsGuard(checks: DsGuardOptions = {}): StillGuard {
   }
 }
 
-/** 无 dataset 要求的 guard（仅 blueprint） */
+/** 仅要求 blueprint 存在；dataset.init 用这个 guard，因为它本身就是创建 dataset 的动作。 */
 const guardBlueprintOnly = dsGuard({ requireDataset: false, requireBlueprint: true })
 
-/** 标准 guard：需 blueprint + dataset + schema 未锁定 */
+/** 结构编辑类动作：要求 blueprint、dataset 都已存在，且 schema 仍可编辑。 */
 const guardSchemaUnlocked = dsGuard({ requireBlueprint: true, requireSchemaUnlocked: true })
 
-/** 需 blueprint + dataset + schema 已锁定 */
+/** 后置配置类动作：要求 schema 已冻结，避免视图/API 配置跟结构同时漂移。 */
 const guardSchemaLocked = dsGuard({ requireBlueprint: true, requireSchemaLocked: true })
 
-/** 需 blueprint + dataset */
+/** 既要求 blueprint，也要求 dataset，但不关心 schema 是否已锁定。 */
 const guardBlueprintAndDataset = dsGuard({ requireBlueprint: true })
 
-/** 仅需 dataset（默认行为） */
+/** 仅要求 dataset 存在。 */
 const guardDatasetOnly = dsGuard({})
 
-/** 无任何要求（用于 describe 类 action） */
+/** 完全不设前置条件，适合 reset 这类“从任何状态都可执行”的动作。 */
 const guardNone = dsGuard({ requireDataset: false })
 
 // ═══════════════════════════════════════════════════════════
-// helper: 从 session 提取 dataset 或返回错误
+// 统一读取当前 dataset 元数据
 // ═══════════════════════════════════════════════════════════
 
+/**
+ * 从 session 读取 dataset 元数据。
+ * 失败时直接返回 StillResult，方便 execute 里早返回并保持错误结构一致。
+ */
 function requireDataset(session: IStillSession): { ds: IDataSetMetadata } | { error: StillResult } {
   const slot = getDataSetSlot(session)
   if (slot.dataset === null) {
@@ -140,7 +189,7 @@ const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
   paramsSchema: { dataSetName: 'string — DataSet 名称' },
   example: { dataSetName: 'OrderSystem' },
   validate: (params) => {
-    if (!params.dataSetName || typeof params.dataSetName !== 'string') return '缺少 dataSetName'
+    if (!isNonEmptyString(params.dataSetName)) return missingParam('dataSetName')
     return null
   },
   execute: (session, params): StillResult => {
@@ -149,6 +198,7 @@ const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
       return { ok: false, code: 'DATASET_EXISTS', msg: 'Dataset 已存在', fix: '如需重建请先 dataset.reset' }
     }
     slot.dataset = metaCreateDataSet(params.dataSetName)
+    // 与外层设计工作流保持一致：dataset 初始化完成后进入结构设计阶段。
     slot.currentStep = '④'
     return {
       ok: true,
@@ -223,9 +273,7 @@ const datasetReset: StillDefinition<Record<string, never>, unknown> = {
   validate: () => null,
   execute: (session): StillResult => {
     const slot = getDataSetSlot(session)
-    slot.dataset = null
-    slot.schemaLocked = false
-    slot.currentStep = '①'
+    Object.assign(slot, createDataSetSlot())
     session.blueprint = null
     session.patchLog = []
     return {
@@ -258,11 +306,11 @@ const datatableCreate: StillDefinition<DatatableCreateParams, unknown> = {
     ],
   },
   validate: (params) => {
-    if (!params.tableName || typeof params.tableName !== 'string') return '缺少 tableName'
-    if (!Array.isArray(params.columns) || params.columns.length === 0) return '缺少 columns'
-    for (const col of params.columns) {
-      if (!col.name || typeof col.name !== 'string') return `列缺少 name`
-      if (col.type.length === 0) return `列 ${col.name} 缺少 type`
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyArray<DataColumn>(params.columns)) return missingParam('columns')
+    for (const column of params.columns) {
+      if (!isNonEmptyString(column.name)) return '列缺少 name'
+      if (!isNonEmptyString(column.type)) return `列 ${column.name} 缺少 type`
     }
     return null
   },
@@ -285,7 +333,7 @@ const datatableDescribe: StillDefinition<DatatableDescribeParams, unknown> = {
   paramsSchema: { tableName: 'string — 表名' },
   example: { tableName: 'Orders' },
   validate: (params) => {
-    if (!params.tableName || typeof params.tableName !== 'string') return '缺少 tableName'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
     return null
   },
   execute: (session, params): StillResult => {
@@ -307,8 +355,8 @@ const datatableAddColumns: StillDefinition<AddColumnsParams, unknown> = {
   paramsSchema: { tableName: 'string', columns: 'DataColumn[] — 新增的列定义' },
   example: { tableName: 'Users', columns: [{ name: 'email', type: 'string', label: '邮箱' }] },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
-    if (!Array.isArray(params.columns) || params.columns.length === 0) return '缺少 columns'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyArray<DataColumn>(params.columns)) return missingParam('columns')
     return null
   },
   execute: (session, params): StillResult => {
@@ -334,9 +382,9 @@ const datatableUpdateColumn: StillDefinition<UpdateColumnParams, unknown> = {
   },
   example: { tableName: 'Orders', columnName: 'status', updates: { label: '订单状态', type: 'string' } },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
-    if (!params.columnName) return '缺少 columnName'
-    if (Object.keys(params.updates).length === 0) return '缺少 updates'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyString(params.columnName)) return missingParam('columnName')
+    if (!isNonEmptyRecord(params.updates)) return missingParam('updates')
     return null
   },
   execute: (session, params): StillResult => {
@@ -358,8 +406,8 @@ const datatableRemoveColumn: StillDefinition<RemoveColumnParams, unknown> = {
   paramsSchema: { tableName: 'string', columnName: 'string — 要删除的列名' },
   example: { tableName: 'Users', columnName: 'tempField' },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
-    if (!params.columnName) return '缺少 columnName'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyString(params.columnName)) return missingParam('columnName')
     return null
   },
   execute: (session, params): StillResult => {
@@ -387,8 +435,8 @@ const datatableSetApi: StillDefinition<SetApiParams, unknown> = {
     api: { list: { url: '/api/orders', method: 'GET' }, create: { url: '/api/orders', method: 'POST' } },
   },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
-    if (Object.keys(params.api).length === 0) return '缺少 api'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyRecord(params.api)) return missingParam('api')
     return null
   },
   execute: (session, params): StillResult => {
@@ -416,8 +464,8 @@ const datatableAddRows: StillDefinition<AddRowsParams, unknown> = {
     rows: [{ id: '1', label: '待审批' }, { id: '2', label: '已通过' }],
   },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
-    if (!Array.isArray(params.rows) || params.rows.length === 0) return '缺少 rows'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyArray<IDataRow>(params.rows)) return missingParam('rows')
     return null
   },
   execute: (session, params): StillResult => {
@@ -453,10 +501,10 @@ const relationAdd: StillDefinition<RelationAddParams, unknown> = {
   },
   example: { parentTable: 'Orders', childTable: 'OrderItems', parentField: 'id', childField: 'orderId' },
   validate: (params) => {
-    if (!params.parentTable) return '缺少 parentTable'
-    if (!params.childTable) return '缺少 childTable'
-    if (!params.parentField) return '缺少 parentField'
-    if (!params.childField) return '缺少 childField'
+    if (!isNonEmptyString(params.parentTable)) return missingParam('parentTable')
+    if (!isNonEmptyString(params.childTable)) return missingParam('childTable')
+    if (!isNonEmptyString(params.parentField)) return missingParam('parentField')
+    if (!isNonEmptyString(params.childField)) return missingParam('childField')
     return null
   },
   execute: (session, params): StillResult => {
@@ -478,8 +526,8 @@ const relationRemove: StillDefinition<RelationRemoveParams, unknown> = {
   paramsSchema: { parentTable: 'string', childTable: 'string' },
   example: { parentTable: 'Orders', childTable: 'OrderItems' },
   validate: (params) => {
-    if (!params.parentTable) return '缺少 parentTable'
-    if (!params.childTable) return '缺少 childTable'
+    if (!isNonEmptyString(params.parentTable)) return missingParam('parentTable')
+    if (!isNonEmptyString(params.childTable)) return missingParam('childTable')
     return null
   },
   execute: (session, params): StillResult => {
@@ -525,6 +573,10 @@ const schemaLock: StillDefinition<Record<string, never>, unknown> = {
     if ('error' in r) return r.error
     const ds = r.ds
     const tables = Object.keys(ds.tables)
+
+    // 锁定前做两层硬校验：
+    // 1. 至少存在一张表，避免生成空壳 schema；
+    // 2. 每张表都必须具备主键，确保后续 CRUD、选中态和级联能稳定定位行。
     if (tables.length === 0) {
       return { ok: false, code: 'EMPTY_SCHEMA', msg: '没有任何表，无法锁定', fix: '请先 datatable.create' }
     }
@@ -585,8 +637,8 @@ const dataviewCreate: StillDefinition<DataviewCreateParams, unknown> = {
   paramsSchema: { tableName: 'string', viewId: 'string' },
   example: { tableName: 'Orders', viewId: 'grid' },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
-    if (!params.viewId) return '缺少 viewId'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyString(params.viewId)) return missingParam('viewId')
     return null
   },
   execute: (session, params): StillResult => {
@@ -608,7 +660,7 @@ const dataviewDescribe: StillDefinition<DataviewDescribeParams, unknown> = {
   paramsSchema: { tableName: 'string', viewId: 'string? — 默认 default' },
   example: { tableName: 'Orders' },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
     return null
   },
   execute: (session, params): StillResult => {
@@ -627,9 +679,15 @@ interface DataviewConfigureParams {
   [key: string]: unknown
 }
 
-/** 从扁平 params 中提取视图配置属性 */
+/**
+ * dataview.configure 同时兼容两种传参方式：
+ * 1. config: { autoLoad: true, pageSize: 20 }
+ * 2. 扁平字段：{ tableName: 'Orders', autoLoad: true, pageSize: 20 }
+ *
+ * 这里会剥离结构性字段，只保留真正属于 IViewMetadata 的配置项。
+ */
 function extractViewConfig(params: DataviewConfigureParams): Partial<IViewMetadata> | null {
-  if (params.config && typeof params.config === 'object') {
+  if (isNonEmptyRecord(params.config)) {
     return params.config
   }
   const structuralKeys = new Set(['tableName', 'viewId', 'config'])
@@ -639,7 +697,7 @@ function extractViewConfig(params: DataviewConfigureParams): Partial<IViewMetada
       extracted[k] = v
     }
   }
-  return Object.keys(extracted).length > 0 ? (extracted as Partial<IViewMetadata>) : null
+  return isNonEmptyRecord(extracted) ? (extracted as Partial<IViewMetadata>) : null
 }
 
 const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
@@ -654,7 +712,7 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
   },
   example: { tableName: 'Orders', autoLoad: true, autoCurrentFirst: true, pageSize: 20 },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
     const config = extractViewConfig(params)
     if (!config) return '缺少配置属性（autoLoad / pageSize / autoCurrentFirst 等）'
     return null
@@ -687,7 +745,8 @@ const dataviewSetAggregates: StillDefinition<SetAggregatesParams, unknown> = {
   },
   example: { tableName: 'Orders', aggregates: { price: { type: 'sum' }, score: { type: 'avg' } } },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyRecord(params.aggregates)) return missingParam('aggregates')
     return null
   },
   execute: (session, params): StillResult => {
@@ -719,9 +778,9 @@ const dataviewSetTreeConfig: StillDefinition<SetTreeConfigParams, unknown> = {
     treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'name', treeMode: 'nested' },
   },
   validate: (params) => {
-    if (!params.tableName) return '缺少 tableName'
-    if (!params.treeConfig.idField) return 'treeConfig 缺少 idField'
-    if (!params.treeConfig.parentIdField) return 'treeConfig 缺少 parentIdField'
+    if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    if (!isNonEmptyString(params.treeConfig.idField)) return 'treeConfig 缺少 idField'
+    if (!isNonEmptyString(params.treeConfig.parentIdField)) return 'treeConfig 缺少 parentIdField'
     return null
   },
   execute: (session, params): StillResult => {
@@ -746,6 +805,13 @@ interface DependencyAddParams {
   autoLoad?: boolean
 }
 
+const VALID_DEPENDENCY_TYPES: ReadonlyArray<ViewDependency['dependencyType']> = [
+  'currentRow',
+  'selectedRows',
+  'allRows',
+  'pagedRows',
+]
+
 const dependencyAdd: StillDefinition<DependencyAddParams, unknown> = {
   action: 'dependency.add',
   type: 'request',
@@ -759,11 +825,10 @@ const dependencyAdd: StillDefinition<DependencyAddParams, unknown> = {
   },
   example: { parentTable: 'Orders', childTable: 'OrderItems', dependencyType: 'currentRow' },
   validate: (params) => {
-    if (!params.parentTable) return '缺少 parentTable'
-    if (!params.childTable) return '缺少 childTable'
-    const valid = ['currentRow', 'selectedRows', 'allRows', 'pagedRows']
-    if (params.dependencyType !== undefined && !valid.includes(params.dependencyType)) {
-      return `dependencyType 必须是 ${valid.join('|')}`
+    if (!isNonEmptyString(params.parentTable)) return missingParam('parentTable')
+    if (!isNonEmptyString(params.childTable)) return missingParam('childTable')
+    if (params.dependencyType !== undefined && !VALID_DEPENDENCY_TYPES.includes(params.dependencyType)) {
+      return `dependencyType 必须是 ${VALID_DEPENDENCY_TYPES.join('|')}`
     }
     return null
   },
@@ -794,8 +859,8 @@ const dependencyRemove: StillDefinition<DependencyRemoveParams, unknown> = {
   },
   example: { parentTable: 'Orders', childTable: 'OrderItems' },
   validate: (params) => {
-    if (!params.parentTable) return '缺少 parentTable'
-    if (!params.childTable) return '缺少 childTable'
+    if (!isNonEmptyString(params.parentTable)) return missingParam('parentTable')
+    if (!isNonEmptyString(params.childTable)) return missingParam('childTable')
     return null
   },
   execute: (session, params): StillResult => {
@@ -809,31 +874,66 @@ const dependencyRemove: StillDefinition<DependencyRemoveParams, unknown> = {
 // Domain Provider
 // ═══════════════════════════════════════════════════════════
 
-const allDatasetStills: StillDefinition[] = [
-  // dataset (5)
-  datasetInit, datasetDescribe, datasetValidate, datasetExport, datasetReset,
-  // datatable (7)
-  datatableCreate, datatableDescribe, datatableAddColumns, datatableUpdateColumn,
-  datatableRemoveColumn, datatableSetApi, datatableAddRows,
-  // relation (3)
-  relationAdd, relationRemove, relationList,
-  // schema (2)
-  schemaLock, schemaUnlock,
-  // dataview (5)
-  dataviewCreate, dataviewDescribe, dataviewConfigure, dataviewSetAggregates, dataviewSetTreeConfig,
-  // dependency (2)
-  dependencyAdd, dependencyRemove,
+const datasetStills = [
+  datasetInit,
+  datasetDescribe,
+  datasetValidate,
+  datasetExport,
+  datasetReset,
+]
+
+const datatableStills = [
+  datatableCreate,
+  datatableDescribe,
+  datatableAddColumns,
+  datatableUpdateColumn,
+  datatableRemoveColumn,
+  datatableSetApi,
+  datatableAddRows,
+]
+
+const relationStills = [
+  relationAdd,
+  relationRemove,
+  relationList,
+]
+
+const schemaStills = [
+  schemaLock,
+  schemaUnlock,
+]
+
+const dataviewStills = [
+  dataviewCreate,
+  dataviewDescribe,
+  dataviewConfigure,
+  dataviewSetAggregates,
+  dataviewSetTreeConfig,
+]
+
+const dependencyStills = [
+  dependencyAdd,
+  dependencyRemove,
+]
+
+/**
+ * 暴露顺序就是 still 面板和命令发现时看到的顺序。
+ * 这里按 namespace 分组拼装，后续增删 action 时不必在人肉统计里找位置。
+ */
+const allDatasetStills = [
+  ...datasetStills,
+  ...datatableStills,
+  ...relationStills,
+  ...schemaStills,
+  ...dataviewStills,
+  ...dependencyStills,
 ] as unknown as StillDefinition[]
 
 /** DataSet 域 — 24 个数据建模 action */
 export const datasetDomain: DomainProvider = {
   name: 'dataset',
   stills: allDatasetStills,
-  createSlot: (): DataSetSlot => ({
-    dataset: null,
-    schemaLocked: false,
-    currentStep: '①',
-  }),
+  createSlot: createDataSetSlot,
 }
 
 // ═══════════════════════════════════════════════════════════

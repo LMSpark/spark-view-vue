@@ -77,55 +77,6 @@ export {
   getCacheStats,
 } from './runtime/page-cache'
 
-// ── Design Session ───────────────────────────────────────────────────────────
-export {
-  typeLabel,
-  typeIcon,
-  extractProposals,
-  stripProposalTags,
-  extractComponentQueries,
-  resolveComponentQuery,
-  buildGenerationPrompt,
-  AUTO_QUERY_PREFIX,
-  AUTO_SKILL_PREFIX,
-  extractClarifyBlocks,
-  extractCompareBlocks,
-  extractSkillQueryRequests,
-} from './session/design-session'
-export type {
-  ProposalType,
-  ProposalStatus,
-  SessionPhase,
-  DesignProposal,
-  ValidationFeedback,
-  ReviewChecklistItem,
-  ClarifyBlock,
-  CompareBlock,
-  SkillQueryRequest,
-} from './session/design-session'
-
-// ── Design System Prompt ───────────────────────────────────────────────
-export { DESIGN_SYSTEM_PROMPT } from './prompts/design-prompt'
-
-// ── Response Pipeline ────────────────────────────────────────────────────────
-export {
-  ResponsePipeline,
-  BlockExtractorProcessor,
-  ProposalValidatorProcessor,
-  SchemaCheckerProcessor,
-  QueryResolverProcessor,
-  SkillQueryProcessor,
-  RegistryValidatorProcessor,
-  AutoResponderProcessor,
-  createStandardPipeline,
-} from './session/response-pipeline'
-export type {
-  ComponentQuery,
-  AutoMessage,
-  PipelineContext,
-  ResponseProcessor,
-} from './session/response-pipeline'
-
 // ── AI Component Catalog ─────────────────────────────────────────────────────
 export { COMPONENT_CATALOG } from './catalog/component-props-catalog'
 export type {
@@ -142,70 +93,10 @@ export type {
 // ── Shared Constants ─────────────────────────────────────────────────────────
 export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './validation/shared-constants'
 
-// ── Skill Catalog (设计模式库) ──────────────────────────────────────────────
-export { SKILL_CATALOG, SKILL_CATEGORY_INDEX, resolveSkillQuery } from './catalog/skill-catalog'
-export type { SkillCatalogEntry, SkillCategory } from './catalog/skill-catalog'
-
 // ── Nav Planner Prompt ───────────────────────────────────────────────────────
 export { NAV_PLANNER_SYSTEM_PROMPT } from './prompts/nav-planner-prompt'
 
-// ── Session State（设计会话持久化状态 + 名册类型）───────────────────────────────
-export {
-  STEP_REGISTRY,
-  createEmptySession,
-  // ── 读取辅助 ──
-  isDataRegistryLocked,
-  getRegisteredTableNames,
-  getRegisteredColumnNames,
-  getRegisteredViewKeys,
-  getDependentProposals,
-  // ── 步骤推进 ──
-  advanceStep,
-  canAdvanceTo,
-  // ── 名册A 写入 ──
-  registerTable,
-  lockDataRegistry,
-  // ── 名册B 写入 ──
-  registerView,
-  appendUIRegistry,
-  // ── 提案记录 ──
-  recordAcceptedProposal,
-  // ── 依赖图操作 ──
-  addDependency,
-  removeDependency,
-  // ── 级联校验 ──
-  checkCascadeImpact,
-  formatCascadeNotification,
-  // ── 提案自动写入 ──
-  applyProposalToSession,
-  // ── 上下文提示词 ──
-  buildSessionContextPrompt,
-  // ── 序列化 ──
-  serializeSession,
-  deserializeSession,
-  // ── 全量校验 ──
-  runFullValidation,
-} from './session/session-state'
-export type {
-  PassAStep,
-  PassBStep,
-  DesignStep,
-  StepMeta,
-  RegistryColumn,
-  RegistryRelation,
-  RegistryTable,
-  DataRegistry,
-  RegistryView,
-  ViewRegistry,
-  UIRegistry,
-  AcceptedProposalSnapshot,
-  PersistedDesignSession,
-  CascadeImpact,
-  ApplyResult,
-  FullValidationIssue,
-} from './session/session-state'
-
-// ── Stills（SAP 协議動作引擎）────────────────────────────────────────────────
+// ── Stills（SAP 协议动作引擎）────────────────────────────────────────────────
 export {
   registerAllStills,
   registerStill,
@@ -215,6 +106,9 @@ export {
   clearDomains,
   executeStill,
   createSession,
+  registerDomain,
+  getDomain,
+  getDataSetSlot,
 } from './stills'
 export type {
   IStillSession,
@@ -225,7 +119,7 @@ export type {
   BlueprintCheckpoint,
   PatchEntry,
   DomainProvider,
-  DesignStep as StillDesignStep,
+  DesignStep,
   DataSetSlot,
 } from './stills'
 

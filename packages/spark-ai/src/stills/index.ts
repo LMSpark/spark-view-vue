@@ -1,12 +1,12 @@
 /**
- * Stills — barrel export & registerAll
+ * Stills
  *
- * 31 stills 覆盖 P0→P5 全部 action（P6 rule / P7 page 为未来阶段）
+ * 这个 barrel 负责两件事：
+ * 1. 统一导出 still 引擎的核心 API；
+ * 2. 提供 registerAllStills()，一次性完成框架 still 与 dataset domain 的注册。
  */
 
-// ── core types ─────────────────────────────────────────────
 import { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill } from './dispatcher'
-export { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill }
 import type {
   StillGuard,
   StillResult,
@@ -17,6 +17,45 @@ import type {
   IStillSession,
   DomainProvider,
 } from './types'
+import { noGuard, requireBlueprint } from './types'
+import { registerDomain, getDomain, clearDomains, createSession } from './domain'
+import {
+  datasetDomain,
+  getDataSetSlot,
+  datasetInit,
+  datasetDescribe,
+  datasetValidate,
+  datasetExport,
+  datasetReset,
+  datatableCreate,
+  datatableDescribe,
+  datatableAddColumns,
+  datatableUpdateColumn,
+  datatableRemoveColumn,
+  datatableSetApi,
+  datatableAddRows,
+  relationAdd,
+  relationRemove,
+  relationList,
+  schemaLock,
+  schemaUnlock,
+  dataviewCreate,
+  dataviewDescribe,
+  dataviewConfigure,
+  dataviewSetAggregates,
+  dataviewSetTreeConfig,
+  dependencyAdd,
+  dependencyRemove,
+} from './dataset-domain'
+import type { DataSetSlot, DesignStep } from './dataset-domain'
+import { stillsCapabilities, stillsActionSpec, sessionDescribe } from './meta-methods'
+import { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintRevise } from './blueprint-methods'
+
+// ═══════════════════════════════════════════════════════════
+// Core Export
+// ═══════════════════════════════════════════════════════════
+
+export { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill }
 export type {
   StillGuard,
   StillResult,
@@ -27,37 +66,64 @@ export type {
   IStillSession,
   DomainProvider,
 }
-export { noGuard, requireBlueprint } from './types'
+export { noGuard, requireBlueprint }
 
-// ── domain infrastructure ──────────────────────────────────
-export { registerDomain, getDomain, clearDomains, createSession } from './domain'
+// ═══════════════════════════════════════════════════════════
+// Domain Infrastructure
+// ═══════════════════════════════════════════════════════════
 
-// ── dataset domain ─────────────────────────────────────────
-export { datasetDomain, getDataSetSlot } from './dataset-domain'
-export type { DataSetSlot, DesignStep } from './dataset-domain'
+export { registerDomain, getDomain, clearDomains, createSession }
+
+// ═══════════════════════════════════════════════════════════
+// Dataset Domain
+// ═══════════════════════════════════════════════════════════
+
+export { datasetDomain, getDataSetSlot }
+export type { DataSetSlot, DesignStep }
 export {
-  datasetInit, datasetDescribe, datasetValidate, datasetExport, datasetReset,
-  datatableCreate, datatableDescribe, datatableAddColumns, datatableUpdateColumn,
-  datatableRemoveColumn, datatableSetApi, datatableAddRows,
-  relationAdd, relationRemove, relationList,
-  schemaLock, schemaUnlock,
-  dataviewCreate, dataviewDescribe, dataviewConfigure, dataviewSetAggregates, dataviewSetTreeConfig,
-  dependencyAdd, dependencyRemove,
-} from './dataset-domain'
+  datasetInit,
+  datasetDescribe,
+  datasetValidate,
+  datasetExport,
+  datasetReset,
+  datatableCreate,
+  datatableDescribe,
+  datatableAddColumns,
+  datatableUpdateColumn,
+  datatableRemoveColumn,
+  datatableSetApi,
+  datatableAddRows,
+  relationAdd,
+  relationRemove,
+  relationList,
+  schemaLock,
+  schemaUnlock,
+  dataviewCreate,
+  dataviewDescribe,
+  dataviewConfigure,
+  dataviewSetAggregates,
+  dataviewSetTreeConfig,
+  dependencyAdd,
+  dependencyRemove,
+}
 
-// ── framework stills (domain-agnostic) ─────────────────────
-export { stillsCapabilities, stillsActionSpec, sessionDescribe } from './meta-methods'
-export { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintRevise } from './blueprint-methods'
+// ═══════════════════════════════════════════════════════════
+// Framework Stills
+// ═══════════════════════════════════════════════════════════
 
-// ── registerAllStills ──────────────────────────────────────
+export { stillsCapabilities, stillsActionSpec, sessionDescribe }
+export { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintRevise }
 
-import { registerDomain } from './domain'
-import { datasetDomain } from './dataset-domain'
+// ═══════════════════════════════════════════════════════════
+// Register All
+// ═══════════════════════════════════════════════════════════
 
-import { stillsCapabilities, stillsActionSpec, sessionDescribe } from './meta-methods'
-import { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintRevise } from './blueprint-methods'
-
-/** 7 个框架级 stills（不属于任何 domain） */
+/**
+ * 不隶属于任何业务 domain 的框架级 still。
+ *
+ * 这里保留原始异构 still 元组；注册时再做一次受控类型擦除，
+ * 避免 StillDefinition<TParams> 的逆变参数把数组类型逼成一长串联合类型。
+ */
 const frameworkStills = [
   stillsCapabilities,
   stillsActionSpec,
@@ -66,12 +132,12 @@ const frameworkStills = [
   blueprintDescribe,
   blueprintAdvance,
   blueprintRevise,
-]
+] as const
 
 /**
  * 注册全部 31 个 stills 到全局 registry。
- * - dataset domain（24 stills）通过 registerDomain 注册
- * - 框架级 stills（7）通过 registerAll 注册
+ * - dataset domain（24 个）通过 registerDomain 注册；
+ * - 框架级 stills（7 个）通过 registerAll 注册。
  */
 export function registerAllStills(): void {
   registerDomain(datasetDomain)

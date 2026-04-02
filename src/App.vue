@@ -43,10 +43,7 @@
             :items="nav.regionItems.value.header"
           />
         </template>
-        <template v-if="enableAI && hasToolbarAction('ai-design', 'ai-chat')" #actions>
-          <button v-if="hasToolbarAction('ai-design')" class="app-ai-action" title="AI 协同设计" @click="showDesignStudio = true">
-            <NavIcon name="Brush" :size="16" />
-          </button>
+        <template v-if="enableAI && hasToolbarAction('ai-chat')" #actions>
           <el-popover
             v-if="hasToolbarAction('ai-chat')"
             :visible="showAiChat"
@@ -122,9 +119,6 @@
   </AppLayout>
 
   <!-- AI 聊天浮窗已下沉到 AppPageRendererBridge（仅配置页面渲染） -->
-
-  <!-- AI 协同设计抽屉 -->
-  <AiDesignStudio v-if="enableAI" v-model="showDesignStudio" />
 
   <!-- 主题配置抽屉 -->
   <ThemeConfigurator
@@ -437,9 +431,7 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatWidget = defineAsyncComponent(() => import('@/components/AiChatWidget.vue'))
-const AiDesignStudio = defineAsyncComponent(() => import('@/components/AiDesignStudio.vue'))
 const showAiChat = ref(false)
-const showDesignStudio = ref(false)
 
 /** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */
 const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))

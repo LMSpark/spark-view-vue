@@ -8,11 +8,19 @@
 import type { IStillSession, DomainProvider } from './types'
 import { registerAll } from './dispatcher'
 
-// ─── Domain Registry ────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// Domain Registry
+// ═══════════════════════════════════════════════════════════
 
 const _domains = new Map<string, DomainProvider>()
 
-/** 注册一个域：写入 domain 注册表 + 将域的 stills 注册到 action registry */
+/**
+ * 注册一个域。
+ *
+ * 域注册是双写操作：
+ * 1. 写入 domain 注册表，供 createSession() 创建 slot；
+ * 2. 将域内 stills 注册到 dispatcher 的 action registry。
+ */
 export function registerDomain(domain: DomainProvider): void {
   _domains.set(domain.name, domain)
   registerAll(domain.stills)
@@ -28,17 +36,25 @@ export function clearDomains(): void {
   _domains.clear()
 }
 
-// ─── Session Factory ────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// Session Factory
+// ═══════════════════════════════════════════════════════════
 
-/** 创建会话：初始化框架字段 + 每个已注册域的 slot */
-export function createSession(): IStillSession {
-  const session: IStillSession = {
+function createBaseSession(): IStillSession {
+  return {
     blueprint: null,
     patchLog: [],
     domains: {},
   }
+}
+
+/** 创建会话：初始化框架字段 + 每个已注册域的 slot */
+export function createSession(): IStillSession {
+  const session = createBaseSession()
+
   for (const [name, domain] of _domains) {
     session.domains[name] = domain.createSlot()
   }
+
   return session
 }

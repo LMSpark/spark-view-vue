@@ -1,25 +1,29 @@
 /**
- * Stills 类型系统 — Dataset Memory 渐进式构建引擎
+ * Stills 类型系统
  *
- * IStillSession = 通用会话容器（域对象以 key-value 挂载在 domains 中）
- * StillDefinition = 一个原子动作的完整描述（描述、守卫、校验、执行）
- * DomainProvider = 域注册契约
+ * 这个文件只定义 still 引擎的公共协议，不承载任何具体 domain 的业务逻辑：
+ * 1. StillDefinition 描述一个原子动作；
+ * 2. IStillSession 描述跨 domain 共享的会话容器；
+ * 3. DomainProvider 描述一个 domain 如何挂接到 still 引擎。
  */
 
 import type { IDataSetMetadata, TableRelation, ViewDependency } from '@spark-view/spark-data'
 
-// ─── StillGuard（函数式准入条件）────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// Guard / Result
+// ═══════════════════════════════════════════════════════════
 
 /** Guard 检查函数，返回 null 表示通过，返回对象表示被拒原因 */
 export type StillGuard = (session: IStillSession) => { code: string; msg: string } | null
 
-// ─── StillResult（动作执行结果）─────────────────────────────
-
+/** still 动作统一返回值。ok=true 产出数据，ok=false 产出结构化修复提示。 */
 export type StillResult<T = unknown> =
   | { ok: true; data: T; summary: string }
   | { ok: false; code: string; msg: string; fix: string }
 
-// ─── StillDefinition（动作定义）─────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// Still Definition
+// ═══════════════════════════════════════════════════════════
 
 export interface StillDefinition<TParams = unknown, TResult = unknown> {
   /** action 名，如 'datatable.create' */
@@ -42,7 +46,9 @@ export interface StillDefinition<TParams = unknown, TResult = unknown> {
   execute: (session: IStillSession, params: TParams) => StillResult<TResult>
 }
 
-// ─── ExecutionBlueprint（蓝图，域无关）──────────────────────
+// ═══════════════════════════════════════════════════════════
+// Blueprint
+// ═══════════════════════════════════════════════════════════
 
 export interface BlueprintCheckpoint {
   id: string
@@ -62,16 +68,17 @@ export interface ExecutionBlueprint {
   lastReflection?: string
 }
 
-// ─── PatchEntry（操作日志）──────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// Session State
+// ═══════════════════════════════════════════════════════════
 
+/** 成功 request 动作写入的变更日志。 */
 export interface PatchEntry {
   action: string
   requestId: string
   timestamp: number
   summary: string
 }
-
-// ─── IStillSession（通用会话容器）───────────────────────────
 
 export interface IStillSession {
   /** 蓝图（域无关，所有域共享编排） */
@@ -82,7 +89,9 @@ export interface IStillSession {
   domains: Record<string, unknown>
 }
 
-// ─── DomainProvider（域注册契约）────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// Domain Contract
+// ═══════════════════════════════════════════════════════════
 
 export interface DomainProvider {
   /** 域名（作为 session.domains 的 key） */
@@ -93,7 +102,9 @@ export interface DomainProvider {
   createSlot(): unknown
 }
 
-// ─── Guard 工具函数 ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// Guard Helper
+// ═══════════════════════════════════════════════════════════
 
 /** 无准入条件 */
 export const noGuard: StillGuard = () => null
@@ -104,6 +115,8 @@ export function requireBlueprint(session: IStillSession): { code: string; msg: s
   return null
 }
 
-// ─── 辅助类型（导出给 methods 使用）────────────────────────
+// ═══════════════════════════════════════════════════════════
+// Re-exported Data Types
+// ═══════════════════════════════════════════════════════════
 
 export type { IDataSetMetadata, TableRelation, ViewDependency }

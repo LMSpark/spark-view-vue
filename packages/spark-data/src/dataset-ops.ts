@@ -219,16 +219,19 @@ export function dsDescribeTable(ds: DataSet, tableName: string): Record<string, 
     (r) => r.parentTable === tableName || r.childTable === tableName,
   )
 
+  // 排除框架计算列（如 _pk），只展示用户定义列
+  const userColumns = table.columns.filter(c => !c.isComputed)
+
   return {
     tableName: table.tableName,
-    columns: table.columns.map((c) => ({
+    columns: userColumns.map((c) => ({
       name: c.name,
       type: c.type,
       isPrimaryKey: c.isPrimaryKey ?? false,
       label: c.label,
       computeExpression: c.computeExpression,
     })),
-    columnCount: table.columns.length,
+    columnCount: userColumns.length,
     api: table.api ?? null,
     viewCount: Object.keys(table.views).length,
     views: Object.keys(table.views),
@@ -327,10 +330,13 @@ export function dsSetTableApi(ds: DataSet, tableName: string, api: CrudApi): Rec
 
 /** 写入内联静态行到 default view */
 export function dsAddRows(ds: DataSet, tableName: string, rows: IDataRow[]): Record<string, unknown> {
-  const { view } = requireView(ds, tableName, 'default')
+  const { table, view } = requireView(ds, tableName, 'default')
 
-  const existing = view.rows
-  view.replaceRows([...existing, ...rows])
+  // 内联静态数据的 source of truth 是 DataTable.rows。
+  // default 视图只是当前展示快照，两者需要同步，后续内存级联才会基于完整源数据过滤。
+  const nextRows = [...table.rows, ...rows]
+  table.rows = nextRows
+  view.replaceRows([...nextRows])
 
   return {
     status: 'ok',
@@ -512,14 +518,15 @@ export function dsRemoveRelation(ds: DataSet, parentTable: string, childTable: s
     throw new DataSetOpError('RELATION_NOT_FOUND', '关系不存在', '请查 relation.list')
   }
 
-  const depImpact = (ds.viewDependencies ?? []).filter(
+  // 检查 viewDependency 引用
+  const blocking = (ds.viewDependencies ?? []).some(
     (d) => d.parentTable === parentTable && d.childTable === childTable,
   )
-  if (depImpact.length > 0) {
+  if (blocking) {
     throw new DataSetOpError(
       'RELATION_IN_USE',
-      `关系被 ${depImpact.length} 条 viewDependency 引用`,
-      '请先 dependency.remove 相关依赖后再删除此关系',
+      `关系 ${parentTable}→${childTable} 被 viewDependency 引用`,
+      '先 dependency.remove 再删关系',
     )
   }
 

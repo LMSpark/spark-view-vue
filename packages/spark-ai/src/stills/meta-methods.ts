@@ -1,13 +1,87 @@
 /**
- * Meta Methods — stills.capabilities / stills.actionSpec / session.describe
+ * Meta Methods
+ *
+ * 这个文件提供 still 系统自己的元动作，不参与实际建模：
+ * 1. 枚举当前已注册的 still 动作；
+ * 2. 查询单个动作的规格；
+ * 3. 汇总当前会话状态。
  */
 
-import type { StillDefinition, StillResult, IStillSession } from './types'
+import type { StillDefinition, StillResult, IStillSession, ExecutionBlueprint } from './types'
 import { noGuard } from './types'
 import { getAllStills, getStill } from './dispatcher'
 import { getDataSetSlot } from './dataset-domain'
 
-// ─── stills.capabilities ───────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// helper
+// ═══════════════════════════════════════════════════════════
+
+interface ActionCatalogItem {
+  name: string
+  type: string
+  brief: string
+  params?: Record<string, unknown>
+  example?: Record<string, unknown>
+}
+
+interface BlueprintSummary {
+  userGoal: string
+  currentCheckpointId: string
+  totalCheckpoints: number
+  completedCheckpoints: number
+  openQuestions: string[]
+}
+
+function missingParam(name: string): string {
+  return `缺少 ${name} 参数`
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0
+}
+
+function buildActionCatalog(): ActionCatalogItem[] {
+  const actions: ActionCatalogItem[] = []
+
+  for (const [, still] of getAllStills()) {
+    actions.push({
+      name: still.action,
+      type: still.type,
+      brief: still.description,
+      ...(still.paramsSchema && Object.keys(still.paramsSchema).length > 0
+        ? { params: still.paramsSchema }
+        : {}),
+      ...(still.example && Object.keys(still.example).length > 0
+        ? { example: still.example }
+        : {}),
+    })
+  }
+
+  return actions
+}
+
+function countTotalColumns(session: IStillSession): number {
+  const dataset = getDataSetSlot(session).dataset
+  if (dataset === null) return 0
+
+  return Object.values(dataset.tables).reduce((sum, table) => sum + table.columns.length, 0)
+}
+
+function buildBlueprintSummary(blueprint: ExecutionBlueprint | null): BlueprintSummary | null {
+  if (blueprint === null) return null
+
+  return {
+    userGoal: blueprint.userGoal,
+    currentCheckpointId: blueprint.currentCheckpointId,
+    totalCheckpoints: blueprint.checkpoints.length,
+    completedCheckpoints: blueprint.checkpoints.filter((checkpoint) => checkpoint.status === 'done').length,
+    openQuestions: blueprint.openQuestions,
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// stills.capabilities
+// ═══════════════════════════════════════════════════════════
 
 export const stillsCapabilities: StillDefinition<Record<string, never>, unknown> = {
   action: 'stills.capabilities',
@@ -18,29 +92,7 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
   example: {},
   validate: () => null,
   execute: (): StillResult => {
-    const all = getAllStills()
-    const actions: Array<{
-      name: string
-      type: string
-      brief: string
-      guard?: string
-      params?: Record<string, unknown>
-      example?: Record<string, unknown>
-    }> = []
-
-    for (const [, s] of all) {
-      actions.push({
-        name: s.action,
-        type: s.type,
-        brief: s.description,
-        ...(s.paramsSchema && Object.keys(s.paramsSchema).length > 0
-          ? { params: s.paramsSchema }
-          : {}),
-        ...(s.example && Object.keys(s.example).length > 0
-          ? { example: s.example }
-          : {}),
-      })
-    }
+    const actions = buildActionCatalog()
 
     return {
       ok: true,
@@ -54,7 +106,9 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
   },
 }
 
-// ─── stills.actionSpec ─────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// stills.actionSpec
+// ═══════════════════════════════════════════════════════════
 
 interface ActionSpecParams {
   action: string
@@ -68,9 +122,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
   paramsSchema: { action: 'string — 动作名' },
   example: { action: 'datatable.create' },
   validate: (params) => {
-    if (!params.action || typeof params.action !== 'string') {
-      return '缺少 action 参数'
-    }
+    if (!isNonEmptyString(params.action)) return missingParam('action')
     return null
   },
   execute: (_session: IStillSession, params: ActionSpecParams): StillResult => {
@@ -100,7 +152,9 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
   },
 }
 
-// ─── session.describe ──────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// session.describe
+// ═══════════════════════════════════════════════════════════
 
 export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = {
   action: 'session.describe',
@@ -112,28 +166,15 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
   validate: () => null,
   execute: (session: IStillSession): StillResult => {
     const slot = getDataSetSlot(session)
-    const ds = slot.dataset
+    const dataset = slot.dataset
+    const blueprintSummary = buildBlueprintSummary(session.blueprint)
 
-    const datasetSummary = ds
+    const datasetSummary = dataset
       ? {
-          dataSetName: ds.dataSetName,
-          tables: Object.keys(ds.tables).length,
-          totalColumns: Object.values(ds.tables).reduce(
-            (sum, t) => sum + t.columns.length, 0,
-          ),
-          relations: ds.tableRelations?.length ?? 0,
-        }
-      : null
-
-    const blueprintSummary = session.blueprint
-      ? {
-          userGoal: session.blueprint.userGoal,
-          currentCheckpointId: session.blueprint.currentCheckpointId,
-          totalCheckpoints: session.blueprint.checkpoints.length,
-          completedCheckpoints: session.blueprint.checkpoints.filter(
-            (cp) => cp.status === 'done',
-          ).length,
-          openQuestions: session.blueprint.openQuestions,
+          dataSetName: dataset.dataSetName,
+          tables: Object.keys(dataset.tables).length,
+          totalColumns: countTotalColumns(session),
+          relations: dataset.tableRelations?.length ?? 0,
         }
       : null
 
@@ -145,7 +186,7 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
         dataset: datasetSummary,
         blueprint: blueprintSummary,
         patchCount: session.patchLog.length,
-        hint: ds === null
+        hint: dataset === null
           ? '新会话，尚未开始建模'
           : session.blueprint === null
             ? '已有 DataSet，但尚无蓝图'
