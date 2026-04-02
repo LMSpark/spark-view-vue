@@ -2,6 +2,12 @@
 
 Java Spring Boot 后端，实现 `POST /api/ai/chat`，接收 SPARK View 前端的 AI 闭环请求，调用 LLM 生成页面配置，返回 `AIResponse`。
 
+## 数据目录约定
+
+- 页面配置与组件元数据位于 `spark-ai-server/data/`。
+- 当前正式页面配置路径是 `spark-ai-server/data/pages-config/`。
+- 仓库根目录若出现单独的 `data/` 目录，应视为本地运行态残留或误生成物，不作为现行结构依据。
+
 ## 前提条件
 
 - Java 17+

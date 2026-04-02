@@ -1,131 +1,64 @@
 # @spark-view/spark-page-config
 
-> SPARK 页面配置层 - 支持本地/远程配置加载、动态路由和配置验证
+SPARK 的页面配置加载层，负责把页面文件、脚本和样式组织成统一的页面配置对象，并对接当前的数据模型与脚本沙箱。
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Vue](https://img.shields.io/badge/Vue-3.4-green.svg)](https://vuejs.org/)
+## 当前定位
 
-## 特性
+- 页面配置的读取、缓存和装配入口
+- `rule.json`、`pagedata.json`、`script.js`、`style.css` 的统一加载层
+- 配置校验、脚本上下文类型与页面配置编译边界
 
-- **多源加载** - 本地（SPA）/远程（API）/混合模式
-- **配置缓存** - 内存缓存，可配置过期时间
-- **配置验证** - Schema 验证，确保配置正确
-- **脚本沙箱** - 安全执行页面脚本
-- **热更新** - 支持配置刷新
+## 当前主路径
 
-## 安装
+项目现行模式以后端托管页面配置为主，页面文件实际存储在：
 
-```bash
-pnpm add @spark-view/spark-page-config
+```text
+spark-ai-server/data/pages-config/
 ```
 
-## 快速开始
+前端通过作用域化页面配置 API 读取这些文件，而不是继续把 `public/pages-config/` 当作默认入口。
 
-### 1. 配置文件结构
+## 典型职责
 
-本地 SPA 模式（`source: 'local'`）下，页面配置存放于前端静态目录：
+- 读取页面结构配置并返回统一页面对象
+- 解析页面数据配置，编译为 DataSet 入口数据
+- 暴露脚本沙箱所需的类型定义与上下文契约
+- 管理页面配置缓存和刷新
 
-```
-public/pages-config/
-  <pageId>/
-      rule.json         # 页面规则（组件树）
-      pagedata.json     # 页面数据
-      script.js         # 页面脚本（可选）
-```
-
-> 生产部署默认使用远程模式（`source: 'remote'`），配置由后端 API 管理（`spark-ai-server/data/pages-config/`）。
-
-### 2. 页面规则 (rule.json)
-
-```json
-{
-  "type": "container",
-  "id": "root",
-  "children": [
-    {
-      "type": "r-table",
-      "id": "userGrid",
-      "dataKey": "Users@rows"
-    }
-  ]
-}
-```
-
-### 3. 使用配置加载器
+## 基本使用
 
 ```typescript
 import { createConfigLoader } from '@spark-view/spark-page-config'
 
-// 创建加载器
 const loader = createConfigLoader({
-  source: 'local',  // 'local' | 'remote' | 'hybrid'
-  fileStorage: 'localStorage'  // 'localStorage' | 'sessionStorage' | 'memory'
+  fileStorage: 'memory',
 })
 
-// 加载页面配置
-const pageConfig = await loader.loadPageConfig('home')
+const pageConfig = await loader.loadPageConfig('homepage')
 ```
 
-## 核心 API
+## 相关文件
 
-### ConfigLoader
+- `src/namespace.ts`：命名空间入口
+- `src/script-context-types.ts`：脚本沙箱上下文类型
+- `src/tests/`：配置加载与类型相关测试
 
-配置加载器
+## 与其他包的关系
 
-```typescript
-const loader = createConfigLoader({
-  source: 'local',           // 加载模式
-  fileStorage: 'localStorage', // 缓存存储次层
-  timeout: 10000             // 请求超时（毫秒，仅 remote 模式有效）
-})
-
-// 加载方法
-await loader.loadPageConfig(pageId)          // 加载页面配置（rule + data + script + css）
-await loader.loadRule(pageId)               // 加载页面规则
-await loader.loadPageData(pageId)            // 加载页面数据
-await loader.loadScript(pageId)             // 加载页面脚本
-await loader.loadCss(pageId)                // 加载页面样式
-
-// 缓存管理
-loader.clearCache()                          // 清空缓存
-loader.getCacheStats()                       // 缓存统计
-```
-
-### 配置验证
-
-```typescript
-import { validateRuleConfig } from '@spark-view/spark-page-config'
-
-// 验证页面规则（返回错误数组，空数组表示有效）
-const ruleErrors = validateRuleConfig(ruleConfig)
-if (ruleErrors.length > 0) {
-  console.error('规则配置无效:', ruleErrors)
-}
-```
-
-## 与其他 SPARK 包的关系
-
-本包依赖：
-- **[spark-data](../spark-data/API.md)** — DataSet / DataView / DataKey 数据模型
-- **[spark-utils](../spark-utils/README.md)** — Logger、能力系统基础设施
-
-## 依赖
-
-```json
-{
-  "@spark-view/spark-data": "workspace:*",
-  "@spark-view/spark-utils": "workspace:*"
-}
-```
+- 依赖 [../spark-data/README.md](../spark-data/README.md) 提供的数据模型
+- 依赖 [../spark-utils/README.md](../spark-utils/README.md) 提供的基础能力与工具
+- 被 `spark-component` 和应用层页面渲染链消费
 
 ## 开发命令
 
 ```bash
-pnpm run typecheck   # 类型检查
-pnpm run test        # 运行测试
-pnpm run build       # 构建包
+pnpm --filter @spark-view/spark-page-config run build
+pnpm --filter @spark-view/spark-page-config run typecheck
+pnpm --filter @spark-view/spark-page-config run test:run
 ```
 
-## License
+## 进一步阅读
 
-MIT
+- [../../docs/guides/CONFIG_SYSTEM.md](../../docs/guides/CONFIG_SYSTEM.md)
+- [../../docs/architecture/DATAFLOW_ARCHITECTURE.md](../../docs/architecture/DATAFLOW_ARCHITECTURE.md)
+- [../../docs/ai/README.md](../../docs/ai/README.md)

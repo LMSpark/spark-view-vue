@@ -1,32 +1,28 @@
-# Features 目录说明
+# features 目录说明
 
-## 概述
+`src/features/` 预留给前端应用层的功能分区或扩展模块。当前仓库里它还是空壳目录，用于保留后续按业务域拆分的落点。
 
-`features/` 目录包含 SPARK 组件系统的**功能扩展包**，用于集成第三方组件库。
+## 当前状态
 
-## 目录结构
+- 目前没有活跃的 feature 子目录。
+- 现有前端实现仍主要分布在 `src/components/`、`src/views/`、`src/services/`、`src/layout/`。
+- 当某块前端逻辑开始形成稳定业务域时，再考虑从这些目录中抽到 `features/` 下。
 
-```
-features/
-└── (暂无活跃 feature 包)
-```
+## 适合放进这里的内容
 
-## ⚙️ 开发指南
+- 明确面向某个业务域的页面组合与状态管理
+- 围绕某条业务链路组织的前端模块
+- 不适合再继续塞进通用 `components/` 或 `services/` 的应用层功能
 
-### 添加新 Feature 组件
+## 暂不建议放进这里的内容
 
-1. 在 `features/spark-xxx/` 创建组件
-2. 使用 `useSparkComponent` composable
-3. 在 `tests/` 中编写测试
+- 通用基础组件
+- 跨域复用服务
+- 运行时核心基础设施
+- 仅包含单个演示页面的小片段
 
-### 运行测试
+## 相关文档
 
-```bash
-pnpm run test                    # 运行所有测试
-```
-
-## 📚 相关文档
-
-- [数据流架构](../docs/architecture/DATAFLOW_ARCHITECTURE.md)
-- [组件开发指南](../docs/guides/COMPONENT_DEVELOPMENT.md)
-- [PageRenderer API](../packages/spark-component/API.md)
+- [../../docs/architecture/DATAFLOW_ARCHITECTURE.md](../../docs/architecture/DATAFLOW_ARCHITECTURE.md)
+- [../../docs/guides/COMPONENT_DEVELOPMENT.md](../../docs/guides/COMPONENT_DEVELOPMENT.md)
+- [../../packages/spark-component/API.md](../../packages/spark-component/API.md)

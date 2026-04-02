@@ -39,7 +39,7 @@
 
 - 常用 `type`：`feat`, `fix`, `chore`, `docs`, `refactor`, `perf`, `test`, `style`, `ci`, `build`, `revert`
 - 允许的 `scope`（仓库约定）：
-  - `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-component`, `spark-utils`, `spark-page-config`
+  - `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`
 
 示例：
 ```

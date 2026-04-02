@@ -55,15 +55,19 @@ pnpm run dev
 
 ```
 spark-view/
-├── packages/                 # 核心包
-│   ├── spark-app/           # 应用层基础设施
-│   ├── spark-component/     # 组件系统核心
-│   ├── spark-data/          # 数据管理
-│   ├── spark-utils/         # 工具函数
-│   └── spark-*/             # 其他功能包
-├── src/                     # 示例应用
-├── docs/                    # 文档
-└── tests/                   # 测试
+├── packages/                       # monorepo 工作区包
+│   ├── spark-ai/                   # AI 运行时
+│   ├── spark-app/                  # 应用层基础设施
+│   ├── spark-component/            # 组件系统核心
+│   ├── spark-data/                 # 数据管理
+│   ├── spark-page-config/          # 页面配置加载
+│   ├── spark-utils/                # 基础工具与能力键
+│   ├── vite-plugin-spark-catalog/  # 构建期目录生成插件
+│   └── vxe-table/                  # 表格插件工作区
+├── src/                            # 根应用前端源码
+├── spark-ai-server/                # Java 后端与页面配置存储
+├── docs/                           # 文档
+└── tests/                          # 根层测试
 ```
 
 ## 📖 核心概念
@@ -607,15 +611,18 @@ const pageConfig = {
 ```
 spark-view/
 ├── packages/
-│   ├── spark-app/          # 应用基础设施
-│   ├── spark-component/    # 组件系统
-│   ├── spark-data/         # 数据管理
-│   ├── spark-page-config/  # 页面配置
-│   └── spark-utils/        # 工具函数
-├── features/
-│   └── spark/              # SPARK 组件实现
-├── docs/                   # 文档
-└── tests/                  # 测试
+│   ├── spark-ai/                   # AI 运行时
+│   ├── spark-app/                  # 应用基础设施
+│   ├── spark-component/            # 组件系统
+│   ├── spark-data/                 # 数据管理
+│   ├── spark-page-config/          # 页面配置
+│   ├── spark-utils/                # 工具函数
+│   ├── vite-plugin-spark-catalog/  # 构建期目录生成
+│   └── vxe-table/                  # 插件工作区
+├── src/                            # 根应用源码
+├── spark-ai-server/                # Java 后端
+├── docs/                           # 文档
+└── tests/                          # 测试
 ```
 
 ## 常用命令

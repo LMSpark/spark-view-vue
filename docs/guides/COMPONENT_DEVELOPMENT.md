@@ -81,7 +81,7 @@ Spark.register('my-widget', () => import('./MyWidget.vue'))
 ### 方式二：批量注册（`createRegister` + glob，推荐）
 
 ```typescript
-// features/my-app/index.ts
+// src/features/my-app/index.ts
 import { Spark } from '@spark-view/spark-component'
 
 const reg = Spark.createRegister(import.meta.glob('./components/*.vue'))

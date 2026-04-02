@@ -2,9 +2,6 @@
 
 > SPARK 应用层基础设施 - 提供应用启动、认证、路由守卫、错误处理和日志系统
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Vue](https://img.shields.io/badge/Vue-3.4-green.svg)](https://vuejs.org/)
-
 ## 特性
 
 - ⚡ **SparkApp.start()** - 声明式应用启动（推荐）
@@ -73,7 +70,7 @@ await SparkApp.bootstrap({
 
 ## 核心功能
 
-### 认证服务
+### 认证 API
 
 ```typescript
 import { createAuthService } from '@spark-view/spark-app'
@@ -98,7 +95,7 @@ await auth.logout()
 const authResult = await auth.checkAuth()
 ```
 
-### 日志系统
+### 日志 API
 
 ```typescript
 import { createLogger } from '@spark-view/spark-app'

@@ -25,7 +25,9 @@ export default defineConfig({
     sparkComponentsPlugin({
       patterns: [
         './features/**/*.vue',
-        './src/components/**/*.vue'
+        './src/components/**/*.vue',
+        './src/views/**/*.vue',
+        './packages/*/src/components/**/*.vue'
       ],
       syncComponents: ['PageRenderer', 'SparkComponentRenderer', 'ErrorFallback'],
       sizeThreshold: 50  // KB，超过此大小的组件自动异步加载
@@ -524,8 +526,8 @@ async function loadEJ2Grid() {
 ### 路由预加载
 
 ```typescript
-// router/index.ts
-import { preloadSyncfusionForRoute } from '@/features/spark-ej2'
+// 示例：src/services/use-syncfusion-loader.ts
+import { preloadSyncfusionForRoute } from '@/services/use-syncfusion-loader'
 
 const routes = [{
   path: '/users',

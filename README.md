@@ -62,12 +62,20 @@ pnpm run dev
 
 ```
 packages/
-├── spark-app/           # 🏗️ 应用层基础设施（路由、认证、配置、插件系统）
-├── spark-component/     # ⚙️ 组件核心系统（注册表、能力管理、上下文、页面渲染器）
-├── spark-data/          # 📊 数据空间（DataSet、TreeManager、关系引擎）
-├── spark-page-config/   # 📄 页面配置系统（配置加载、路由集成）
-└── spark-utils/         # 🛠️ 共享工具（Logger、HTTP 客户端、类型定义）
+├── spark-ai/                    # 🤖 AI 运行时（SSE 事件、Stills 执行、SAP 协议适配）
+├── spark-app/                   # 🏗️ 应用层基础设施（路由、认证、配置、插件系统）
+├── spark-component/             # ⚙️ 组件核心系统（注册表、能力管理、上下文、页面渲染器）
+├── spark-data/                  # 📊 数据空间（DataSet、DataView、TreeManager、关系与聚合）
+├── spark-page-config/           # 📄 页面配置系统（配置加载、脚本沙箱、路由集成）
+├── spark-utils/                 # 🛠️ 共享工具（Logger、HTTP、能力键、基础类型）
+├── vite-plugin-spark-catalog/   # 🧱 构建期目录生成插件（VCM 提取、组件元数据整理）
+└── vxe-table/                   # 📋 表格插件工作区（VXE Table 集成与适配）
 ```
+
+- 运行时主线：`spark-app` + `spark-component` + `spark-data` + `spark-page-config`
+- AI 主线：`spark-ai` + `vite-plugin-spark-catalog` + `spark-ai-server`
+- 公共基础：`spark-utils`
+- 目录索引： [packages/README.md](packages/README.md) 、 [scripts/README.md](scripts/README.md) 、 [tools/README.md](tools/README.md)
 
 ## 快速开始
 
@@ -94,7 +102,7 @@ pnpm run lint
 pnpm run test
 ```
 
-推荐先从 [docs/guides/QUICKSTART.md](docs/guides/QUICKSTART.md) 开始，再按需查看数据管理、树能力和配置系统文档。
+推荐先从 [docs/README.md](docs/README.md) 看文档入口，再进入 [docs/guides/QUICKSTART.md](docs/guides/QUICKSTART.md) 上手。
 
 ## 首发最该展示的 3 个 demo
 
@@ -220,7 +228,7 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 3. 更新相关文档
 4. 提交前运行 `pnpm run typecheck && pnpm run lint && pnpm run test`
 5. 提交信息遵循 Conventional Commits（由 Husky + commitlint 强制校验），格式示例：`feat(spark-data): add X`。
-   - 允许的 scope：`deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-component`, `spark-utils`, `spark-page-config`。
+   - 允许的 scope：`deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`。
    - 详情与示例见 `CONTRIBUTING.md`（新增）。
 
 ## 📄 许可证

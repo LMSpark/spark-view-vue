@@ -62,8 +62,8 @@ export interface PageConfig {
 export interface ConfigLoaderOptions {
   /**
    * 配置源类型
-   * - 'local': 从 public/pages-config 加载（SPA 模式）
-   * - 'remote': 从服务器 API 加载
+  * - 'local': 从本地 pages-config 静态目录加载（兼容 / 开发模式）
+  * - 'remote': 从服务器 pages-config API 加载
    * - 'hybrid': 优先 remote，失败降级到 local
    */
   source: 'local' | 'remote' | 'hybrid'

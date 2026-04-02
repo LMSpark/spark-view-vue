@@ -7,9 +7,9 @@
  * ## 数据流
  * ```
  * loadRule(pageId)
- *   └── hybridLoad('/pageId/rule.json', '/page/pageId/rule')
- *         ├── local  → fileLoader.load<T>(path)  → localResult<T>
- *         ├── remote → fetchFromRemote<T>(path)  → remoteResult<T>
+ *   └── loadRequiredPageFile(pageId, 'rule.json')
+ *         ├── local  → fileLoader.load<T>(path)         → localResult<T>
+ *         ├── remote → request('/pages-config/...')     → compileRule(text)
  *         └── hybrid → remote first, fallback to local
  * ```
  *
@@ -30,8 +30,6 @@ import type {
 } from '../types'
 import {
   Logger,
-  SharedErrorCodes,
-  getSharedErrorMessage,
   createFileLoader,
   createRequest
 } from '@spark-view/spark-utils'
@@ -47,8 +45,11 @@ const pageLogger = Logger('PageConfig')
 
 const REQUEST_TIMEOUT = 10_000
 
-const ErrorCodes = SharedErrorCodes
-const getErrorMessage = getSharedErrorMessage
+type RemoteFileResponse = {
+  content?: unknown
+  timestamp?: unknown
+  notModified?: unknown
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -131,12 +132,12 @@ export class PageConfigLoader implements ConfigLoader {
 
   async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
     pageLogger.info('加载页面规则', { pageId, source: this.opts.source })
-    return this.hybridLoad(`/${pageId}/rule.json`, `/page/${pageId}/rule`, this.ruleLoader)
+    return this.loadRequiredPageFile(pageId, 'rule.json', this.ruleLoader, compileRule)
   }
 
   async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
     pageLogger.info('加载页面数据', { pageId, source: this.opts.source })
-    return this.hybridLoad(`/${pageId}/pagedata.json`, `/page/${pageId}/data`, this.dataLoader)
+    return this.loadRequiredPageFile(pageId, 'pagedata.json', this.dataLoader, parsePageData)
   }
 
   async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
@@ -152,18 +153,7 @@ export class PageConfigLoader implements ConfigLoader {
       pageLogger.debug('加载页面样式', { pageId, source: this.opts.source })
     }
 
-    if (this.opts.source === 'local') {
-      return this.localCssResult(pageId)
-    }
-    // remote 或 hybrid: 先尝试远程（CSS 是纯文本，使用 text 模式加载）
-    try {
-      const css = await this.remoteCss(pageId)
-      return { success: true, data: css, source: 'remote', timestamp: Date.now() }
-    } catch (e) {
-      if (this.opts.source === 'remote') throw e
-      pageLogger.debug('远程样式不可用，降级到本地', { pageId })
-      return this.localCssResult(pageId)
-    }
+    return this.loadOptionalPageFile(pageId, 'style.css', this.cssLoader, parseCss, '样式')
   }
 
   private async loadScriptInternal(pageId: string, logStart: boolean): Promise<ConfigLoadResult<PageScriptConfig>> {
@@ -171,18 +161,7 @@ export class PageConfigLoader implements ConfigLoader {
       pageLogger.debug('加载页面脚本', { pageId, source: this.opts.source })
     }
 
-    if (this.opts.source === 'local') {
-      return this.localScriptResult(pageId)
-    }
-    // remote 或 hybrid: 先尝试远程
-    try {
-      const script = await this.remoteScript(pageId)
-      return { success: true, data: script, source: 'remote', timestamp: Date.now() }
-    } catch (e) {
-      if (this.opts.source === 'remote') throw e
-      pageLogger.debug('远程脚本不可用，降级到本地', { pageId })
-      return this.localScriptResult(pageId)
-    }
+    return this.loadOptionalPageFile(pageId, 'script.js', this.scriptLoader, parseScript, '脚本')
   }
 
   async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
@@ -200,6 +179,9 @@ export class PageConfigLoader implements ConfigLoader {
       this.loadScriptInternal(pageId, false),
       this.loadCssInternal(pageId, false)
     ])
+
+    if (!scriptResult.success) return this.failFrom(scriptResult.error, scriptResult.reason)
+    if (!cssResult.success) return this.failFrom(cssResult.error, cssResult.reason)
 
     pageLogger.debug('页面附加资源加载完成', {
       pageId,
@@ -246,33 +228,60 @@ export class PageConfigLoader implements ConfigLoader {
   // ── 私有辅助 ──────────────────────────────────────────────────────
 
   /**
-   * 统一 local / remote / hybrid 分支。
-   * @param localPath   FileLoader 相对路径（如 `/pageId/rule.json`）
-   * @param remotePath  API 相对路径  （如 `/page/pageId/rule`）
-   * @param localLoader 指定派生加载器时，本地命中后直接返回编译缓存结果
+   * 加载必需页面文件（rule.json / pagedata.json）。
+   * - local: 直接走 FileLoader + 编译缓存
+   * - remote: 读取 /pages-config/{pageId}/{filename}，再编译
+   * - hybrid: 远程失败时降级本地
    */
-  private async hybridLoad<T>(
-    localPath: string,
-    remotePath: string,
-    localLoader?: DerivedLoader<T>
+  private async loadRequiredPageFile<T>(
+    pageId: string,
+    filename: string,
+    localLoader: DerivedLoader<T>,
+    transform: (content: string) => T,
   ): Promise<ConfigLoadResult<T>> {
-    const { source } = this.opts
-    const doLocal = () =>
-      localLoader
-        ? this.derivedResult(localLoader, localPath)
-        : this.localResult<T>(localPath)
-
-    if (source === 'local') return doLocal()
-    if (source === 'remote') return this.remoteResult<T>(remotePath)
-
-    // hybrid: 先 remote，失败降级 local
-    try {
-      pageLogger.debug('hybrid: 尝试远程', { remotePath })
-      return await this.remoteResult<T>(remotePath)
-    } catch {
-      pageLogger.debug('hybrid: 远程失败，降级本地', { localPath })
-      return doLocal()
+    const localPath = `/${pageId}/${filename}`
+    if (this.opts.source === 'local') {
+      return this.derivedResult(localLoader, localPath)
     }
+
+    const remoteResult = await this.remoteRequiredFileResult(pageId, filename, transform)
+    if (remoteResult.success || this.opts.source === 'remote') return remoteResult
+
+    pageLogger.debug('远程必需配置不可用，降级到本地', {
+      pageId,
+      filename,
+      reason: remoteResult.reason,
+      error: remoteResult.error,
+    })
+    return this.derivedResult(localLoader, localPath)
+  }
+
+  /**
+   * 加载可选页面文件（script.js / style.css）。
+   * `not-found` 视为空内容；其他远程错误在 hybrid 下回退本地，在 remote 下显式返回失败。
+   */
+  private async loadOptionalPageFile<T extends string>(
+    pageId: string,
+    filename: string,
+    localLoader: DerivedLoader<T>,
+    transform: (content: string) => T,
+    assetLabel: string,
+  ): Promise<ConfigLoadResult<T>> {
+    const localPath = `/${pageId}/${filename}`
+    if (this.opts.source === 'local') {
+      return this.localOptionalTextResult(pageId, assetLabel, localLoader, localPath)
+    }
+
+    const remoteResult = await this.remoteOptionalFileResult(pageId, filename, transform)
+    if (remoteResult.success || this.opts.source === 'remote') return remoteResult
+
+    pageLogger.debug(`远程${assetLabel}不可用，降级到本地`, {
+      pageId,
+      filename,
+      reason: remoteResult.reason,
+      error: remoteResult.error,
+    })
+    return this.localOptionalTextResult(pageId, assetLabel, localLoader, localPath)
   }
 
   /**
@@ -314,113 +323,95 @@ export class PageConfigLoader implements ConfigLoader {
     return this.localResultFromData(await loader.load(path), path)
   }
 
-  /** FileLoader 加载 → ConfigLoadResult */
-  private async localResult<T>(path: string): Promise<ConfigLoadResult<T>> {
-    return this.localResultFromData(await this.fileLoader.load<T>(path), path)
-  }
-
-  /** 远程 JSON fetch → ConfigLoadResult（失败时抛出，由 hybridLoad 捕获） */
-  private async remoteResult<T>(path: string): Promise<ConfigLoadResult<T>> {
-    const data = await this.fetchFromRemote<T>(path)
-    return { success: true, data, source: 'remote', timestamp: Date.now() }
-  }
-
   /** 文本型 loader 结果 → ConfigLoadResult（缺失文件视为 success:true, data:''） */
   private toLocalTextResult<T extends string>(r: { success: boolean; data?: T }): ConfigLoadResult<T> {
     return { success: true, data: (r.data ?? '') as T, source: 'local', timestamp: Date.now() }
   }
 
-  /**
-   * 从本地加载脚本（可选文件，失败返回 success:true, data:''）。
-   * 使用 scriptLoader（withTransform(parseScript)）：
-   *   - fileLoader 内部以 parseJSON:false 读取原始文本并缓存
-   *   - parseScript 变换结果（当前透传）单独缓存，timestamp 未变直接返回
-   */
-  private async localScriptResult(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
-    const r = await this.scriptLoader.load(`/${pageId}/script.js`)
-    if (!r.success) pageLogger.debug('页面无脚本文件，跳过', { pageId })
+  private async localOptionalTextResult<T extends string>(
+    pageId: string,
+    assetLabel: string,
+    loader: DerivedLoader<T>,
+    path: string,
+  ): Promise<ConfigLoadResult<T>> {
+    const r = await loader.load(path)
+    if (!r.success) pageLogger.debug(`页面无${assetLabel}文件，跳过`, { pageId })
     return this.toLocalTextResult(r)
   }
 
-  /**
-   * 本地加载 CSS：文件可选，缺失时静默返回空字符串。
-   * - style.css 存在 → 经 parseCss 变换后返回
-   * - 文件缺失   → success:true, data:''（CSS 为可选资源）
-   */
-  private async localCssResult(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
-    const r = await this.cssLoader.load(`/${pageId}/style.css`)
-    if (!r.success) pageLogger.debug('页面无样式文件，跳过', { pageId })
-    return this.toLocalTextResult(r)
-  }
-
-  /** 从远程加载脚本文本（失败时抛出） */
-  private async remoteScript(pageId: string): Promise<PageScriptConfig> {
-    const url = `/page/${pageId}/script`
-    pageLogger.debug('加载远程脚本', { pageId, url })
-
+  private async remoteRequiredFileResult<T>(
+    pageId: string,
+    filename: string,
+    transform: (content: string) => T,
+  ): Promise<ConfigLoadResult<T>> {
     try {
-      const text = await this.request.get<string>(url, undefined, { responseType: 'text' })
-      return text
-    } catch (err) {
-      const msg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
-      pageLogger.error('远程脚本加载失败', { pageId, error: String(err) })
-      throw new Error(`${msg}: ${this.opts.apiBaseUrl}${url}`)
+      const text = await this.readRemoteFile(pageId, filename)
+      return { success: true, data: transform(text), source: 'remote', timestamp: Date.now() }
+    } catch (error: unknown) {
+      return this.toRemoteFailureResult(error, pageId, filename)
     }
   }
 
-  /** 从远程加载 CSS 文本（失败时抛出）。CSS 是纯文本，不走 JSON 解析。 */
-  private async remoteCss(pageId: string): Promise<PageCssConfig> {
-    const url = `/page/${pageId}/css`
-    pageLogger.debug('加载远程样式', { pageId, url })
-
+  private async remoteOptionalFileResult<T extends string>(
+    pageId: string,
+    filename: string,
+    transform: (content: string) => T,
+  ): Promise<ConfigLoadResult<T>> {
     try {
-      const text = await this.request.get<string>(url, undefined, { responseType: 'text' })
-      return text
-    } catch (err) {
-      const msg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
-      pageLogger.error('远程样式加载失败', { pageId, error: String(err) })
-      throw new Error(`${msg}: ${this.opts.apiBaseUrl}${url}`)
-    }
-  }
-
-  /**
-   * 从远程 API 加载 JSON 配置。
-   * 支持标准封装格式 `{ code, data, message }` 和裸对象两种响应。
-   * 失败时抛出，由调用方（hybridLoad / remoteResult）处理或透传。
-   */
-  private async fetchFromRemote<T>(path: string): Promise<T> {
-    const url = path
-    pageLogger.debug('发送远程请求', { url: `${this.opts.apiBaseUrl}${path}` })
-
-    try {
-      const result = await this.request.request<unknown>({
-        url,
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      })
-
-      // 标准 API 封装格式 { code, data, message }
-      if (typeof result === 'object' && result !== null && 'code' in result) {
-        const r = result as Record<string, unknown>
-        if (r['code'] === 200 || r['code'] === 0) {
-          pageLogger.debug('远程加载成功', { url })
-          return r['data'] as T
-        }
-        const msg = (typeof r['message'] === 'string' ? r['message'] : null) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED)
-        pageLogger.error('API 返回错误', { url, code: r['code'], message: msg })
-        throw new Error(msg)
+      const text = await this.readRemoteFile(pageId, filename)
+      return { success: true, data: transform(text), source: 'remote', timestamp: Date.now() }
+    } catch (error: unknown) {
+      const failure = this.toRemoteFailureResult(error, pageId, filename)
+      if (failure.reason === 'not-found') {
+        return { success: true, data: transform(''), source: 'remote', timestamp: Date.now() }
       }
-
-      pageLogger.debug('远程加载成功', { url })
-      return result as T
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        const msg = getErrorMessage(ErrorCodes.NETWORK_TIMEOUT)
-        pageLogger.error('请求超时', { url, timeout: this.opts.timeout })
-        throw new Error(`${msg}: ${this.opts.apiBaseUrl}${url}`)
-      }
-      throw err
+      return failure as ConfigLoadResult<T>
     }
+  }
+
+  private toRemoteFailureResult(
+    error: unknown,
+    pageId: string,
+    filename: string,
+  ): ConfigLoadResult<never> {
+    const fileId = `${pageId}/${filename}`
+    if (this.isHttpStatus(error, 404)) {
+      return { success: false, reason: 'not-found', error: `${fileId} 不存在`, timestamp: Date.now() }
+    }
+    if (this.isHttpStatus(error, 401)) {
+      return { success: false, error: `加载 ${fileId} 未授权`, timestamp: Date.now() }
+    }
+    const message = error instanceof Error ? error.message : String(error)
+    return { success: false, error: message, timestamp: Date.now() }
+  }
+
+  private isHttpStatus(error: unknown, status: number): boolean {
+    if (error === null || error === undefined || typeof error !== 'object') return false
+    const candidate = error as { status?: unknown; response?: { status?: unknown } }
+    return candidate.status === status || candidate.response?.status === status
+  }
+
+  /**
+   * 读取远程页面配置文件。
+   * 当前后端约定返回 `{ content, timestamp, notModified }`。
+   */
+  private async readRemoteFile(pageId: string, filename: string): Promise<string> {
+    const encodedPageId = encodeURIComponent(pageId)
+    const encodedFileName = encodeURIComponent(filename)
+    const url = `/pages-config/${encodedPageId}/${encodedFileName}`
+    pageLogger.debug('读取远程页面配置文件', { pageId, filename, url })
+
+    const result = await this.request.request<RemoteFileResponse>({
+      url,
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    const content = result.content
+    if (typeof content !== 'string') {
+      throw new Error(`配置接口返回无效内容: ${pageId}/${filename}`)
+    }
+    return content
   }
 }
 

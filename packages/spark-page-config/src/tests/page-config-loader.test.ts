@@ -16,6 +16,7 @@ import { DataSet } from '@spark-view/spark-data'
 const mockFileLoader = {
   load: vi.fn(),
   loadBatch: vi.fn(),
+  on: vi.fn(() => vi.fn()),
   clearCache: vi.fn(),
   hasCache: vi.fn(),
   getCachedTimestamp: vi.fn(),
@@ -32,11 +33,31 @@ const mockFileLoader = {
   }))
 }
 
+const mockRequestClient = {
+  interceptors: {
+    request: {
+      use: vi.fn(() => vi.fn()),
+    },
+    response: {
+      use: vi.fn(() => vi.fn()),
+    },
+  },
+  request: vi.fn(),
+  requestFull: vi.fn(),
+  get: vi.fn(),
+  post: vi.fn(),
+  put: vi.fn(),
+  patch: vi.fn(),
+  delete: vi.fn(),
+  clearCache: vi.fn(),
+}
+
 vi.mock('@spark-view/spark-utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@spark-view/spark-utils')>()
   return {
     ...actual,
-    createFileLoader: vi.fn(() => mockFileLoader)
+    createFileLoader: vi.fn(() => mockFileLoader),
+    createRequest: vi.fn(() => mockRequestClient),
   }
 })
 
@@ -50,22 +71,27 @@ function fileFail(error: string): FileLoadResult<never> {
   return { success: false, error, fromCache: false }
 }
 
-function _mockFetch(status: number, body: unknown, asText = false): void {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    statusText: status === 200 ? 'OK' : 'Error',
-    json: () => Promise.resolve(body),
-    text: () => Promise.resolve(asText ? String(body) : JSON.stringify(body))
-  }))
-}
-
 // ── 测试 ──────────────────────────────────────────────────────────────────────
 
 describe('PageConfigLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.unstubAllGlobals()
+    mockFileLoader.load.mockReset()
+    mockFileLoader.loadBatch.mockReset()
+    mockFileLoader.on.mockReset()
+    mockFileLoader.on.mockImplementation(() => vi.fn())
+    mockRequestClient.request.mockReset()
+    mockRequestClient.requestFull.mockReset()
+    mockRequestClient.get.mockReset()
+    mockRequestClient.post.mockReset()
+    mockRequestClient.put.mockReset()
+    mockRequestClient.patch.mockReset()
+    mockRequestClient.delete.mockReset()
+    mockRequestClient.clearCache.mockReset()
+    mockRequestClient.interceptors.request.use.mockReset()
+    mockRequestClient.interceptors.request.use.mockImplementation(() => vi.fn())
+    mockRequestClient.interceptors.response.use.mockReset()
+    mockRequestClient.interceptors.response.use.mockImplementation(() => vi.fn())
     // 每次清理后重违 withTransform mock（clearAllMocks 会清除 mockImplementation）
     mockFileLoader.withTransform.mockImplementation(() => ({
       load: (path: string) => mockFileLoader.load(path),
@@ -162,34 +188,42 @@ describe('PageConfigLoader', () => {
     })
 
     it('loadPageConfig: data 失败 → 快速返回 false', async () => {
-      const rules = [{ type: 'div' }]
-      mockFileLoader.load
-        .mockResolvedValueOnce(fileOk(rules))
-        .mockResolvedValueOnce(fileFail('data missing'))
-        .mockResolvedValueOnce(fileOk(''))
-        .mockResolvedValueOnce(fileOk(''))              // css
+      mockFileLoader.load.mockImplementation((path: string) => {
+        if (path === '/order-page/rule.json') return Promise.resolve(fileOk([{ type: 'div' }]))
+        if (path === '/order-page/pagedata.json') return Promise.resolve(fileFail('data missing'))
+        if (path === '/order-page/script.js') return Promise.resolve(fileOk(''))
+        if (path === '/order-page/style.css') return Promise.resolve(fileOk(''))
+        return Promise.resolve(fileFail(`unexpected path: ${path}`))
+      })
+
       const r = await loader.loadPageConfig('order-page')
       expect(r.success).toBe(false)
       expect(r.error).toContain('data missing')
     })
 
     it('loadPageConfig: script 失败 → 仍然成功（空脚本）', async () => {
-      mockFileLoader.load
-        .mockResolvedValueOnce(fileOk([{ type: 'div' }]))
-        .mockResolvedValueOnce(fileOk({ x: 1 }))
-        .mockResolvedValueOnce(fileFail('no script'))
-        .mockResolvedValueOnce(fileOk('.app{}'))        // css
+      mockFileLoader.load.mockImplementation((path: string) => {
+        if (path === '/order-page/rule.json') return Promise.resolve(fileOk([{ type: 'div' }]))
+        if (path === '/order-page/pagedata.json') return Promise.resolve(fileOk({ x: 1 }))
+        if (path === '/order-page/script.js') return Promise.resolve(fileFail('no script'))
+        if (path === '/order-page/style.css') return Promise.resolve(fileOk('.app{}'))
+        return Promise.resolve(fileFail(`unexpected path: ${path}`))
+      })
+
       const r = await loader.loadPageConfig('order-page')
       expect(r.success).toBe(true)
       expect(r.data?.script).toBe('')
     })
 
     it('loadPageConfig: css 失败 → 仍然成功（空样式）', async () => {
-      mockFileLoader.load
-        .mockResolvedValueOnce(fileOk([{ type: 'div' }]))
-        .mockResolvedValueOnce(fileOk({ x: 1 }))
-        .mockResolvedValueOnce(fileOk('// script'))
-        .mockResolvedValueOnce(fileFail('no css file'))
+      mockFileLoader.load.mockImplementation((path: string) => {
+        if (path === '/order-page/rule.json') return Promise.resolve(fileOk([{ type: 'div' }]))
+        if (path === '/order-page/pagedata.json') return Promise.resolve(fileOk({ x: 1 }))
+        if (path === '/order-page/script.js') return Promise.resolve(fileOk('// script'))
+        if (path === '/order-page/style.css') return Promise.resolve(fileFail('no css file'))
+        return Promise.resolve(fileFail(`unexpected path: ${path}`))
+      })
+
       const r = await loader.loadPageConfig('order-page')
       expect(r.success).toBe(true)
       expect(r.data?.css).toBe('')
@@ -217,32 +251,54 @@ describe('PageConfigLoader', () => {
       loader = new PageConfigLoader({ source: 'remote', apiBaseUrl: '/api' })
     })
 
+    it('loadRule: 远程读取 pages-config 文件接口并编译规则', async () => {
+      mockRequestClient.request.mockResolvedValue({
+        content: JSON.stringify([{ type: 'div', props: { id: 'remote-root' } }]),
+        timestamp: 'ts-1',
+      })
+
+      const r = await loader.loadRule('remote-page')
+      expect(r.success).toBe(true)
+      expect(r.data?.[0]?.type).toBe('div')
+      expect(r.data?.[0]?.props).toEqual({ id: 'remote-root' })
+      expect(mockRequestClient.request).toHaveBeenCalledWith({
+        url: '/pages-config/remote-page/rule.json',
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
+    })
+
     it('loadScript: 远程 fetch 文本文件', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        text: () => Promise.resolve('function onLoad() { return 1 }')
-      }))
+      mockRequestClient.request.mockResolvedValue({
+        content: 'function onLoad() { return 1 }',
+        timestamp: 'ts-1',
+      })
+
       const r = await loader.loadScript('my-page')
       expect(r.success).toBe(true)
       expect(r.data).toContain('onLoad')
       expect(r.source).toBe('remote')
+      expect(mockRequestClient.request).toHaveBeenCalledWith({
+        url: '/pages-config/my-page/script.js',
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
     })
 
-    it('loadScript: 远程脚本 404 → 抛出', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404
-      }))
-      await expect(loader.loadScript('my-page')).rejects.toThrow()
+    it('loadScript: 远程脚本 404 → 返回空字符串（可选文件）', async () => {
+      mockRequestClient.request.mockRejectedValue({ status: 404 })
+
+      const r = await loader.loadScript('my-page')
+      expect(r.success).toBe(true)
+      expect(r.data).toBe('')
     })
 
     it('loadCss: 远程 CSS 文本', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        text: () => Promise.resolve('.app { color: blue }')
-      }))
+      mockRequestClient.request.mockResolvedValue({
+        content: '.app { color: blue }',
+        timestamp: 'ts-1',
+      })
+
       const r = await loader.loadCss('my-page')
       expect(r.success).toBe(true)
       expect(r.data).toBe('.app { color: blue }')
@@ -261,8 +317,11 @@ describe('PageConfigLoader', () => {
     })
 
     it('hybrid loadScript: 远程失败 → 降级本地', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no script remote')))
-      mockFileLoader.load.mockResolvedValue(fileOk('// local script'))
+      mockRequestClient.request.mockRejectedValue(new Error('no script remote'))
+      mockFileLoader.load.mockImplementation((path: string) => {
+        if (path === '/some-page/script.js') return Promise.resolve(fileOk('// local script'))
+        return Promise.resolve(fileFail(`unexpected path: ${path}`))
+      })
 
       const r = await loader.loadScript('some-page')
       expect(r.success).toBe(true)
@@ -270,9 +329,12 @@ describe('PageConfigLoader', () => {
     })
 
     it('hybrid loadCss: 远程失败 → 降级本地', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no css remote')))
-      mockFileLoader.load.mockResolvedValue(fileOk('.root{}')
-      )
+      mockRequestClient.request.mockRejectedValue(new Error('no css remote'))
+      mockFileLoader.load.mockImplementation((path: string) => {
+        if (path === '/some-page/style.css') return Promise.resolve(fileOk('.root{}'))
+        return Promise.resolve(fileFail(`unexpected path: ${path}`))
+      })
+
       const r = await loader.loadCss('some-page')
       expect(r.success).toBe(true)
       expect(r.data).toBe('.root{}')

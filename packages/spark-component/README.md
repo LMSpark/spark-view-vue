@@ -2,9 +2,6 @@
 
 > SPARK 组件系统核心 - 提供组件管理、能力系统和生命周期控制
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Vue](https://img.shields.io/badge/Vue-3.4-green.svg)](https://vuejs.org/)
-
 ## 特性
 
 - **组件注册** - 统一的组件注册和管理机制

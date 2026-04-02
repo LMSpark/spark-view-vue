@@ -169,7 +169,7 @@ TenantResolver.save('demo')       // 保存租户 ID
 
 ```bash
 node tools/mock-config-api.mjs
-# 默认端口 3456
+# 默认端口 3001
 ```
 
 测试远程模式：
@@ -178,18 +178,20 @@ node tools/mock-config-api.mjs
 {
   "pageConfig": {
     "source": "remote",
-    "apiBaseUrl": "http://localhost:3456/api"
+    "apiBaseUrl": "http://localhost:3001/api"
   }
 }
 ```
 
-Mock API 端点：
+Mock API 端点（配置类）：
 
 | 端点 | 说明 |
 |------|------|
-| `GET /api/pages/:pageId/config` | 页面配置 |
-| `GET /api/pages/:pageId/data` | 页面数据 |
-| `GET /api/pages/:pageId/script` | 页面脚本 |
+| `GET /api/config/default` | 默认应用配置 |
+| `GET /api/config/tenant/:tenantId` | 租户配置 |
+| `GET /api/tenants` | 租户列表 |
+
+> 说明：页面配置文件本身仍由 Java 后端管理，正式路径是 `spark-ai-server/data/pages-config/`，不通过这个 mock 工具提供。
 
 ---
 

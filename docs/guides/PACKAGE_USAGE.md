@@ -19,6 +19,7 @@
 # 按需选择安装的包
 pnpm add @spark-view/spark-utils
 pnpm add @spark-view/spark-data
+pnpm add @spark-view/spark-ai
 pnpm add @spark-view/spark-component
 pnpm add @spark-view/spark-app
 pnpm add @spark-view/spark-page-config
@@ -27,7 +28,7 @@ pnpm add @spark-view/spark-page-config
 或者一次性安装所有包：
 
 ```powershell
-pnpm add @spark-view/spark-utils @spark-view/spark-data @spark-view/spark-component @spark-view/spark-app @spark-view/spark-page-config
+pnpm add @spark-view/spark-utils @spark-view/spark-data @spark-view/spark-ai @spark-view/spark-component @spark-view/spark-app @spark-view/spark-page-config
 ```
 
 ### 包依赖关系（按需安装）
@@ -35,6 +36,7 @@ pnpm add @spark-view/spark-utils @spark-view/spark-data @spark-view/spark-compon
 ```
 spark-utils          — 无 @spark-view/* 依赖，基础工具
 spark-data           — 依赖 spark-utils
+spark-ai             — 依赖 spark-utils、spark-data
 spark-page-config    — 依赖 spark-utils
 spark-component      — 依赖 spark-utils、spark-data、spark-page-config
 spark-app            — 依赖 spark-component、spark-data、spark-utils
@@ -42,11 +44,14 @@ spark-app            — 依赖 spark-component、spark-data、spark-utils
 
 安装 `spark-component` 或 `spark-app` 时，pnpm 会自动解析安装以上所有依赖包。
 
+> 说明：`vite-plugin-spark-catalog` 属于构建期内部工作区，`packages/vxe-table/` 属于插件集成工作区；它们不在这里作为常规 `@spark-view/*` 运行时包推荐安装。
+
 ### 使用示例
 
 ```typescript
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
+import { createAiLoop } from '@spark-view/spark-ai'
 import { APP_SERVICES, Logger } from '@spark-view/spark-utils'
 ```
 
@@ -55,7 +60,7 @@ import { APP_SERVICES, Logger } from '@spark-view/spark-utils'
 ```powershell
 npm view @spark-view/spark-component version
 # 或查看所有包
-npm view @spark-view/spark-utils @spark-view/spark-data @spark-view/spark-component @spark-view/spark-app @spark-view/spark-page-config version
+npm view @spark-view/spark-utils @spark-view/spark-data @spark-view/spark-ai @spark-view/spark-component @spark-view/spark-app @spark-view/spark-page-config version
 ```
 
 ---
@@ -72,6 +77,7 @@ npm view @spark-view/spark-utils @spark-view/spark-data @spark-view/spark-compon
     "@spark-view/spark-component": "workspace:*",
     "@spark-view/spark-utils":     "workspace:*",
     "@spark-view/spark-data":      "workspace:*",
+    "@spark-view/spark-ai":        "workspace:*",
     "@spark-view/spark-app":       "workspace:*",
     "@spark-view/spark-page-config": "workspace:*"
   }
@@ -86,22 +92,25 @@ pnpm 会自动将 `workspace:*` 解析为本地对应包，**无需构建产物*
 
 适合将本仓库的包引入另一个独立项目，**稳定引用本地构建产物**。
 
-### 步骤
+### 步骤（file: 协议）
 
-**1. 构建所有包**（每次修改包源码后需重新构建）
+#### 1. 构建所有包
+
+每次修改包源码后需重新构建。
 
 ```powershell
 cd D:\SPARK_VIEW
 pnpm run build:packages
 ```
 
-**2. 在外部项目的 `package.json` 中声明依赖**
+#### 2. 在外部项目的 `package.json` 中声明依赖
 
 ```json
 {
   "dependencies": {
     "@spark-view/spark-utils":       "file:D:/SPARK_VIEW/packages/spark-utils",
     "@spark-view/spark-data":        "file:D:/SPARK_VIEW/packages/spark-data",
+    "@spark-view/spark-ai":          "file:D:/SPARK_VIEW/packages/spark-ai",
     "@spark-view/spark-component":   "file:D:/SPARK_VIEW/packages/spark-component",
     "@spark-view/spark-app":         "file:D:/SPARK_VIEW/packages/spark-app",
     "@spark-view/spark-page-config": "file:D:/SPARK_VIEW/packages/spark-page-config"
@@ -109,14 +118,16 @@ pnpm run build:packages
 }
 ```
 
-**3. 安装依赖**
+#### 3. 安装依赖
 
 ```powershell
 cd D:\YOUR_PROJECT
 pnpm install
 ```
 
-**4. 配置 TypeScript 路径**（`tsconfig.json` / `vite.config.ts`）
+#### 4. 配置 TypeScript 路径
+
+适用于 `tsconfig.json` 或 `vite.config.ts` 中的路径映射。
 
 ```json
 // tsconfig.json — compilerOptions.paths
@@ -124,6 +135,7 @@ pnpm install
   "paths": {
     "@spark-view/spark-utils":       ["D:/SPARK_VIEW/packages/spark-utils/dist/index.d.ts"],
     "@spark-view/spark-data":        ["D:/SPARK_VIEW/packages/spark-data/dist/types/index.d.ts"],
+    "@spark-view/spark-ai":          ["D:/SPARK_VIEW/packages/spark-ai/dist/index.d.ts"],
     "@spark-view/spark-component":   ["D:/SPARK_VIEW/packages/spark-component/dist/index.d.ts"],
     "@spark-view/spark-app":         ["D:/SPARK_VIEW/packages/spark-app/dist/types/index.d.ts"],
     "@spark-view/spark-page-config": ["D:/SPARK_VIEW/packages/spark-page-config/dist/index.d.ts"]
@@ -139,30 +151,34 @@ pnpm install
 
 适合**频繁修改包源码**并希望外部项目立即感知变更的场景。
 
-### 步骤
+### 步骤（pnpm link）
 
-**1. 在每个包目录注册全局 link**
+#### 1. 在每个包目录注册全局 link
 
 ```powershell
 cd D:\SPARK_VIEW\packages\spark-utils;       pnpm link --global
 cd D:\SPARK_VIEW\packages\spark-data;        pnpm link --global
+cd D:\SPARK_VIEW\packages\spark-ai;          pnpm link --global
 cd D:\SPARK_VIEW\packages\spark-component;   pnpm link --global
 cd D:\SPARK_VIEW\packages\spark-app;         pnpm link --global
 cd D:\SPARK_VIEW\packages\spark-page-config; pnpm link --global
 ```
 
-**2. 在外部项目中消费 link**
+#### 2. 在外部项目中消费 link
 
 ```powershell
 cd D:\YOUR_PROJECT
 pnpm link --global @spark-view/spark-utils
 pnpm link --global @spark-view/spark-data
+pnpm link --global @spark-view/spark-ai
 pnpm link --global @spark-view/spark-component
 pnpm link --global @spark-view/spark-app
 pnpm link --global @spark-view/spark-page-config
 ```
 
-**3. 开包监听模式（修改源码实时构建）**
+#### 3. 开包监听模式
+
+修改源码后实时构建。
 
 打开单独终端，在 SPARK_VIEW 项目中：
 
@@ -179,7 +195,7 @@ cd D:\SPARK_VIEW
 pnpm --filter "./packages/**" exec vite build --watch
 ```
 
-**4. 解除 link**
+#### 4. 解除 link
 
 ```powershell
 # 外部项目中解除（恢复为 npm 版本）
