@@ -36,7 +36,7 @@ interface RuleNodeSnapshot {
 
 type RenderContext = 'table' | 'form' | 'detail' | 'list' | 'tree'
 
-import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'
+import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES, CONTAINER_CONTEXT_MAP, NON_FIELD_R_TYPES } from './shared-constants'
 
 const EMPTY_SUMMARY: ConfigValidationSummary = {
   total: 0,
@@ -147,28 +147,9 @@ function extractTableNames(pageData: unknown): Set<string> {
   return names
 }
 
-const CONTAINER_CONTEXT_MAP: Record<string, RenderContext> = {
-  'r-table': 'table',
-  'r-form': 'form',
-  'r-detail': 'detail',
-  'r-list': 'list',
-  'r-tree': 'tree',
-}
-
-const NON_FIELD_R_TYPES = new Set([
-  'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree',
-  'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section', 'r-block',
-  'r-column-group',
-])
-
 function extractFieldName(node: Record<string, unknown>): string | null {
   if (typeof node['field'] === 'string' && node['field'].trim() !== '') {
     return node['field']
-  }
-  const meta = asRecord(node['meta'])
-  const data = asRecord(meta?.['data'])
-  if (typeof data?.['field'] === 'string' && data['field'].trim() !== '') {
-    return data['field']
   }
   return null
 }

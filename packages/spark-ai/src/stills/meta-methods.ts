@@ -2,8 +2,10 @@
  * Meta Methods — stills.capabilities / stills.actionSpec / session.describe
  */
 
-import type { StillDefinition, StillContext, StillResult } from '../types'
-import { getAllStills, getStill } from '../dispatcher'
+import type { StillDefinition, StillResult, IStillSession } from './types'
+import { noGuard } from './types'
+import { getAllStills, getStill } from './dispatcher'
+import { getDataSetSlot } from './dataset-domain'
 
 // ─── stills.capabilities ───────────────────────────────────
 
@@ -11,7 +13,8 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
   action: 'stills.capabilities',
   type: 'describe',
   description: '返回当前可用动作目录，按命名空间分组',
-  guard: { requireDataset: false },
+  guard: noGuard,
+  paramsSchema: {},
   example: {},
   validate: () => null,
   execute: (): StillResult => {
@@ -21,19 +24,21 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
       type: string
       brief: string
       guard?: string
+      params?: Record<string, unknown>
+      example?: Record<string, unknown>
     }> = []
 
     for (const [, s] of all) {
-      const guardHint = s.guard.requireSchemaLocked
-        ? 'schemaLocked'
-        : s.guard.requireSchemaUnlocked
-          ? 'schemaUnlocked'
-          : undefined
       actions.push({
         name: s.action,
         type: s.type,
         brief: s.description,
-        ...(guardHint ? { guard: guardHint } : {}),
+        ...(s.paramsSchema && Object.keys(s.paramsSchema).length > 0
+          ? { params: s.paramsSchema }
+          : {}),
+        ...(s.example && Object.keys(s.example).length > 0
+          ? { example: s.example }
+          : {}),
       })
     }
 
@@ -42,9 +47,9 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
       data: {
         actions,
         total: actions.length,
-        hint: '用 stills.actionSpec 查具体动作的参数格式',
+        hint: '每个动作的 params 即参数格式，example 即最小示例。可用 stills.actionSpec 查更详细说明。',
       },
-      summary: `返回 ${actions.length} 个可用动作`,
+      summary: `返回 ${actions.length} 个可用动作（含参数格式与示例）`,
     }
   },
 }
@@ -59,7 +64,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
   action: 'stills.actionSpec',
   type: 'describe',
   description: '返回指定动作的参数规格、guard、示例',
-  guard: { requireDataset: false },
+  guard: noGuard,
   paramsSchema: { action: 'string — 动作名' },
   example: { action: 'datatable.create' },
   validate: (params) => {
@@ -68,7 +73,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
     }
     return null
   },
-  execute: (_ctx: StillContext, params: ActionSpecParams): StillResult => {
+  execute: (_session: IStillSession, params: ActionSpecParams): StillResult => {
     const still = getStill(params.action)
     if (!still) {
       return {
@@ -101,12 +106,13 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
   action: 'session.describe',
   type: 'describe',
   description: '返回当前步骤、锁状态、dataset 摘要、blueprint 摘要',
-  guard: { requireDataset: false },
+  guard: noGuard,
+  paramsSchema: {},
   example: {},
   validate: () => null,
-  execute: (ctx: StillContext): StillResult => {
-    const { session } = ctx
-    const ds = session.dataset
+  execute: (session: IStillSession): StillResult => {
+    const slot = getDataSetSlot(session)
+    const ds = slot.dataset
 
     const datasetSummary = ds
       ? {
@@ -134,8 +140,8 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
     return {
       ok: true,
       data: {
-        currentStep: session.currentStep,
-        schemaLocked: session.schemaLocked,
+        currentStep: slot.currentStep,
+        schemaLocked: slot.schemaLocked,
         dataset: datasetSummary,
         blueprint: blueprintSummary,
         patchCount: session.patchLog.length,

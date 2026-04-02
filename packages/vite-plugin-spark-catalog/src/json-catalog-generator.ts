@@ -424,7 +424,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   const {
     featurePatterns = [],
     exclude = [],
-    outputPath = 'packages/spark-ai/src/component-catalog.json',
+    outputPath = 'packages/spark-ai/src/catalog/component-catalog.json',
     tsconfigPath = 'tsconfig.catalog.json',
     verbose = false,
   } = options

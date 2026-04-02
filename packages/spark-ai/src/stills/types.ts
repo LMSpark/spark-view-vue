@@ -1,30 +1,17 @@
 /**
  * Stills 类型系统 — Dataset Memory 渐进式构建引擎
  *
+ * IStillSession = 通用会话容器（域对象以 key-value 挂载在 domains 中）
  * StillDefinition = 一个原子动作的完整描述（描述、守卫、校验、执行）
- * StillContext = 执行时的只读上下文（blueprint + dataset + 状态）
- * DesignSessionV2 = 替代 v1 的会话持久化结构
+ * DomainProvider = 域注册契约
  */
 
 import type { IDataSetMetadata, TableRelation, ViewDependency } from '@spark-view/spark-data'
 
-// ─── 设计步骤 ───────────────────────────────────────────────
+// ─── StillGuard（函数式准入条件）────────────────────────────
 
-/** 6 步工作流步骤标识 */
-export type DesignStep = '①' | '②' | '③' | '④' | '⑤' | '⑥'
-
-// ─── StillGuard（声明式准入条件）────────────────────────────
-
-export interface StillGuard {
-  /** 是否需要 dataset 已初始化，默认 true */
-  requireDataset?: boolean
-  /** 是否需要 blueprint 已创建 */
-  requireBlueprint?: boolean
-  /** 是否需要 schema 未锁定 */
-  requireSchemaUnlocked?: boolean
-  /** 是否需要 schema 已锁定 */
-  requireSchemaLocked?: boolean
-}
+/** Guard 检查函数，返回 null 表示通过，返回对象表示被拒原因 */
+export type StillGuard = (session: IStillSession) => { code: string; msg: string } | null
 
 // ─── StillResult（动作执行结果）─────────────────────────────
 
@@ -32,22 +19,16 @@ export type StillResult<T = unknown> =
   | { ok: true; data: T; summary: string }
   | { ok: false; code: string; msg: string; fix: string }
 
-// ─── StillContext（执行上下文，传入 execute）────────────────
-
-export interface StillContext {
-  session: DesignSessionV2
-}
-
 // ─── StillDefinition（动作定义）─────────────────────────────
 
 export interface StillDefinition<TParams = unknown, TResult = unknown> {
-  /** SAP action 名，如 'datatable.create' */
+  /** action 名，如 'datatable.create' */
   action: string
-  /** SAP 块类型 */
+  /** 块类型 */
   type: 'request' | 'describe'
   /** 供 AI 查询的说明 */
   description: string
-  /** 声明式准入条件 */
+  /** 函数式准入条件 */
   guard: StillGuard
   /** 参数结构说明（供 stills.actionSpec 返回） */
   paramsSchema?: Record<string, unknown>
@@ -58,10 +39,10 @@ export interface StillDefinition<TParams = unknown, TResult = unknown> {
   /** 参数校验，返回 null 表示通过，否则返回错误消息 */
   validate: (params: TParams) => string | null
   /** 纯函数执行，可直接修改 session（dispatcher 负责持久化） */
-  execute: (ctx: StillContext, params: TParams) => StillResult<TResult>
+  execute: (session: IStillSession, params: TParams) => StillResult<TResult>
 }
 
-// ─── ExecutionBlueprint（蓝图）──────────────────────────────
+// ─── ExecutionBlueprint（蓝图，域无关）──────────────────────
 
 export interface BlueprintCheckpoint {
   id: string
@@ -90,40 +71,37 @@ export interface PatchEntry {
   summary: string
 }
 
-// ─── DesignSessionV2（会话状态）─────────────────────────────
+// ─── IStillSession（通用会话容器）───────────────────────────
 
-export interface DesignSessionV2 {
-  version: 2
-  currentStep: DesignStep
-  schemaLocked: boolean
+export interface IStillSession {
+  /** 蓝图（域无关，所有域共享编排） */
   blueprint: ExecutionBlueprint | null
-  dataset: IDataSetMetadata | null
+  /** 操作日志 */
   patchLog: PatchEntry[]
+  /** 各域 slot 的通用容器，key = 域名 */
+  domains: Record<string, unknown>
 }
 
-// ─── 工厂函数 ──────────────────────────────────────────────
+// ─── DomainProvider（域注册契约）────────────────────────────
 
-export function createSession(): DesignSessionV2 {
-  return {
-    version: 2,
-    currentStep: '①',
-    schemaLocked: false,
-    blueprint: null,
-    dataset: null,
-    patchLog: [],
-  }
+export interface DomainProvider {
+  /** 域名（作为 session.domains 的 key） */
+  name: string
+  /** 该域提供的全部 stills */
+  stills: StillDefinition[]
+  /** 创建域 slot 初始值 */
+  createSlot(): unknown
 }
 
-export function createEmptyDataset(name: string): IDataSetMetadata {
-  return {
-    dataSetName: name,
-    schemaVersion: 1,
-    tables: {},
-    tableRelations: [],
-    viewDependencies: [],
-    version: undefined,
-    pageId: undefined,
-  }
+// ─── Guard 工具函数 ─────────────────────────────────────────
+
+/** 无准入条件 */
+export const noGuard: StillGuard = () => null
+
+/** 仅要求 blueprint 已创建 */
+export function requireBlueprint(session: IStillSession): { code: string; msg: string } | null {
+  if (session.blueprint === null) return { code: 'NO_BLUEPRINT', msg: 'Blueprint 尚未创建，请先执行 blueprint.create' }
+  return null
 }
 
 // ─── 辅助类型（导出给 methods 使用）────────────────────────

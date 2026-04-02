@@ -3,7 +3,7 @@
 //   @@query:skill-list  分类名...  → 返回该分类下的技能列表与简介
 //   @@query:pattern    模式名...  → 返回指定模式的详细配置说明
 
-import type { ProposalType } from './design-session'
+import type { ProposalType } from '../session/design-session'
 
 export interface SkillCatalogEntry {
   name: string

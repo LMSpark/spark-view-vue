@@ -8,8 +8,7 @@
  * - executeStill(): 守卫检查 → 参数校验 → 执行 → 写日志
  */
 
-import type { StillDefinition, StillResult, DesignSessionV2, PatchEntry } from './types'
-import { checkGuard } from './guards'
+import type { StillDefinition, StillResult, IStillSession, PatchEntry } from './types'
 
 // ─── Registry ──────────────────────────────────────────────
 
@@ -43,7 +42,7 @@ export function clearRegistry(): void {
 export function executeStill(
   action: string,
   params: unknown,
-  session: DesignSessionV2,
+  session: IStillSession,
   requestId: string,
 ): StillResult {
   // 1. 查找动作
@@ -57,10 +56,10 @@ export function executeStill(
     }
   }
 
-  // 2. Guard 检查
-  const guardResult = checkGuard(still.guard, session)
+  // 2. Guard 检查（函数调用）
+  const guardResult = still.guard(session)
   if (guardResult !== null) {
-    return guardResult
+    return { ok: false, code: guardResult.code, msg: guardResult.msg, fix: guardResult.msg }
   }
 
   // 3. 参数校验
@@ -74,8 +73,8 @@ export function executeStill(
     }
   }
 
-  // 4. 执行
-  const result = still.execute({ session }, params)
+  // 4. 执行（直传 session）
+  const result = still.execute(session, params)
 
   // 5. 写入 patchLog（仅成功的 request 类型）
   if (result.ok && still.type === 'request') {

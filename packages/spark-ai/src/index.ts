@@ -1,5 +1,6 @@
 // ── Protocol (unified @@ parsing primitives) ─────────────────────────────────
 export {
+  extractBlocks,
   extractBlocks as extractProtocolBlocks,
   stripBlocks as stripProtocolBlocks,
   stripBlocksWithUnclosed as stripProtocolBlocksWithUnclosed,
@@ -42,7 +43,7 @@ export {
   triggerPageRefresh,
   initAILoop,
   getAILoop,
-} from './ai-loop'
+} from './runtime/ai-loop'
 export type {
   PageFiles,
   AIResponse,
@@ -51,10 +52,10 @@ export type {
   LogIssueSummary,
   LogBatchSummary,
   PageDiagnosticsReport,
-} from './ai-loop'
+} from './runtime/ai-loop'
 
 // ── Config Validator ────────────────────────────────────────────────────────
-export { validateGeneratedConfig } from './config-validator'
+export { validateGeneratedConfig } from './validation/config-validator'
 export type {
   GeneratedPageFiles,
   ConfigValidationCategory,
@@ -62,11 +63,11 @@ export type {
   ConfigValidationIssue,
   ConfigValidationSummary,
   ConfigValidationReport,
-} from './config-validator'
+} from './validation/config-validator'
 
 // ── Navigation Auto-Register ─────────────────────────────────────────────────
-export { registerPageNavigation, configureNavRegister } from './nav-register'
-export type { NavRegistrationOptions, NavRegistrationResult } from './nav-register'
+export { registerPageNavigation, configureNavRegister } from './runtime/nav-register'
+export type { NavRegistrationOptions, NavRegistrationResult } from './runtime/nav-register'
 
 // ── Page Cache ───────────────────────────────────────────────────────────────
 export {
@@ -74,13 +75,12 @@ export {
   clearPageCache,
   clearAllCache,
   getCacheStats,
-} from './page-cache'
+} from './runtime/page-cache'
 
 // ── Design Session ───────────────────────────────────────────────────────────
 export {
   typeLabel,
   typeIcon,
-  extractBlocks,
   extractProposals,
   stripProposalTags,
   extractComponentQueries,
@@ -88,23 +88,24 @@ export {
   buildGenerationPrompt,
   AUTO_QUERY_PREFIX,
   AUTO_SKILL_PREFIX,
-  DESIGN_SYSTEM_PROMPT,
   extractClarifyBlocks,
   extractCompareBlocks,
   extractSkillQueryRequests,
-} from './design-session'
+} from './session/design-session'
 export type {
   ProposalType,
   ProposalStatus,
   SessionPhase,
   DesignProposal,
-  ProtocolBlock,
   ValidationFeedback,
   ReviewChecklistItem,
   ClarifyBlock,
   CompareBlock,
   SkillQueryRequest,
-} from './design-session'
+} from './session/design-session'
+
+// ── Design System Prompt ───────────────────────────────────────────────
+export { DESIGN_SYSTEM_PROMPT } from './prompts/design-prompt'
 
 // ── Response Pipeline ────────────────────────────────────────────────────────
 export {
@@ -117,16 +118,16 @@ export {
   RegistryValidatorProcessor,
   AutoResponderProcessor,
   createStandardPipeline,
-} from './response-pipeline'
+} from './session/response-pipeline'
 export type {
   ComponentQuery,
   AutoMessage,
   PipelineContext,
   ResponseProcessor,
-} from './response-pipeline'
+} from './session/response-pipeline'
 
 // ── AI Component Catalog ─────────────────────────────────────────────────────
-export { COMPONENT_CATALOG } from './component-props-catalog'
+export { COMPONENT_CATALOG } from './catalog/component-props-catalog'
 export type {
   ComponentCatalog,
   ComponentEntry,
@@ -136,17 +137,17 @@ export type {
   PlatformConstraints,
   NestingRule,
   RootFieldEntry,
-} from './catalog-types'
+} from './catalog/types'
 
 // ── Shared Constants ─────────────────────────────────────────────────────────
-export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'
+export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './validation/shared-constants'
 
 // ── Skill Catalog (设计模式库) ──────────────────────────────────────────────
-export { SKILL_CATALOG, SKILL_CATEGORY_INDEX, resolveSkillQuery } from './skill-catalog'
-export type { SkillCatalogEntry, SkillCategory } from './skill-catalog'
+export { SKILL_CATALOG, SKILL_CATEGORY_INDEX, resolveSkillQuery } from './catalog/skill-catalog'
+export type { SkillCatalogEntry, SkillCategory } from './catalog/skill-catalog'
 
 // ── Nav Planner Prompt ───────────────────────────────────────────────────────
-export { NAV_PLANNER_SYSTEM_PROMPT } from './nav-planner-prompt'
+export { NAV_PLANNER_SYSTEM_PROMPT } from './prompts/nav-planner-prompt'
 
 // ── Session State（设计会话持久化状态 + 名册类型）───────────────────────────────
 export {
@@ -184,7 +185,7 @@ export {
   deserializeSession,
   // ── 全量校验 ──
   runFullValidation,
-} from './session-state'
+} from './session/session-state'
 export type {
   PassAStep,
   PassBStep,
@@ -202,28 +203,39 @@ export type {
   CascadeImpact,
   ApplyResult,
   FullValidationIssue,
-} from './session-state'
+} from './session/session-state'
 
-// ── Stills（SAP 协议动作引擎）────────────────────────────────────────────────
+// ── Stills（SAP 协議動作引擎）────────────────────────────────────────────────
 export {
   registerAllStills,
   registerStill,
   getStill,
   getAllStills,
   clearRegistry,
+  clearDomains,
   executeStill,
   createSession,
-  createEmptyDataset,
-  checkGuard,
 } from './stills'
 export type {
-  DesignSessionV2,
+  IStillSession,
   StillGuard,
   StillResult,
-  StillContext,
   StillDefinition,
   ExecutionBlueprint,
   BlueprintCheckpoint,
   PatchEntry,
+  DomainProvider,
   DesignStep as StillDesignStep,
+  DataSetSlot,
 } from './stills'
+
+// ── SAP Runtime Bridge（协议解析 → Stills 调度 → 响应格式化）───────────────────
+export {
+  formatResponseBlock,
+  dispatchBlock,
+  processSapBlocks,
+} from './sap-runtime'
+export type {
+  SapDispatchResult,
+  SapProcessingResult,
+} from './sap-runtime'

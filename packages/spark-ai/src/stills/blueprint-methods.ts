@@ -2,7 +2,8 @@
  * Blueprint Methods — blueprint.create / describe / advance / revise
  */
 
-import type { StillDefinition, StillContext, StillResult, BlueprintCheckpoint, ExecutionBlueprint } from '../types'
+import type { StillDefinition, StillResult, BlueprintCheckpoint, ExecutionBlueprint, IStillSession } from './types'
+import { noGuard, requireBlueprint } from './types'
 
 // ─── blueprint.create ──────────────────────────────────────
 
@@ -22,7 +23,7 @@ export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = 
   action: 'blueprint.create',
   type: 'request',
   description: '根据用户目标生成执行蓝图与 checkpoints',
-  guard: { requireDataset: false },
+  guard: noGuard,
   paramsSchema: {
     title: 'string — 蓝图标题',
     requirements: 'string — 需求描述',
@@ -47,8 +48,8 @@ export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = 
     }
     return null
   },
-  execute: (ctx: StillContext, params: BlueprintCreateParams): StillResult => {
-    if (ctx.session.blueprint !== null) {
+  execute: (session: IStillSession, params: BlueprintCreateParams): StillResult => {
+    if (session.blueprint !== null) {
       return {
         ok: false,
         code: 'BLUEPRINT_EXISTS',
@@ -73,8 +74,7 @@ export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = 
       checkpoints,
     }
 
-    ctx.session.blueprint = blueprint
-    ctx.session.currentStep = '③'
+    session.blueprint = blueprint
 
     const firstCp = checkpoints[0]
 
@@ -100,11 +100,12 @@ export const blueprintDescribe: StillDefinition<Record<string, never>, unknown> 
   action: 'blueprint.describe',
   type: 'describe',
   description: '返回当前蓝图、当前 checkpoint、未决问题',
-  guard: { requireDataset: false, requireBlueprint: true },
+  guard: requireBlueprint,
+  paramsSchema: {},
   example: {},
   validate: () => null,
-  execute: (ctx: StillContext): StillResult => {
-    const bp = ctx.session.blueprint
+  execute: (session: IStillSession): StillResult => {
+    const bp = session.blueprint
     if (bp === null) return { ok: false, code: 'NO_BLUEPRINT', msg: 'Blueprint 未创建', fix: '请先执行 blueprint.create' }
     const current = bp.checkpoints.find((cp) => cp.id === bp.currentCheckpointId)
     const done = bp.checkpoints.filter((cp) => cp.status === 'done').length
@@ -140,7 +141,7 @@ export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> 
   action: 'blueprint.advance',
   type: 'request',
   description: '标记当前 checkpoint 完成并推进下一步',
-  guard: { requireDataset: false, requireBlueprint: true },
+  guard: requireBlueprint,
   paramsSchema: {
     completedCheckpointId: 'string — 要标记完成的 checkpoint ID',
     note: 'string? — 完成备注',
@@ -152,8 +153,8 @@ export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> 
     }
     return null
   },
-  execute: (ctx: StillContext, params: BlueprintAdvanceParams): StillResult => {
-    const bp = ctx.session.blueprint
+  execute: (session: IStillSession, params: BlueprintAdvanceParams): StillResult => {
+    const bp = session.blueprint
     if (bp === null) return { ok: false, code: 'NO_BLUEPRINT', msg: 'Blueprint 未创建', fix: '请先执行 blueprint.create' }
     const cp = bp.checkpoints.find((c) => c.id === params.completedCheckpointId)
     if (!cp) {
@@ -212,19 +213,25 @@ export const blueprintRevise: StillDefinition<BlueprintReviseParams, unknown> = 
   action: 'blueprint.revise',
   type: 'request',
   description: '根据执行反馈修订 blueprint',
-  guard: { requireDataset: false, requireBlueprint: true },
+  guard: requireBlueprint,
   paramsSchema: {
     reason: 'string — 修订原因',
-    addCheckpoints: 'Array? — 新增 checkpoints',
+    addCheckpoints: 'Array<{ id, title, plannedActions, validation, insertAfter? }>? — 新增 checkpoints',
     removeCheckpointIds: 'string[]? — 移除的 checkpoint IDs',
     updateOpenQuestions: 'string[]? — 更新的未决问题',
+  },
+  example: {
+    reason: '发现需要额外的字典表',
+    addCheckpoints: [
+      { id: 'cp3', title: '字典表', plannedActions: ['datatable.create'], validation: '字典表建成', insertAfter: 'cp2' },
+    ],
   },
   validate: (params) => {
     if (!params.reason || typeof params.reason !== 'string') return '缺少 reason'
     return null
   },
-  execute: (ctx: StillContext, params: BlueprintReviseParams): StillResult => {
-    const bp = ctx.session.blueprint
+  execute: (session: IStillSession, params: BlueprintReviseParams): StillResult => {
+    const bp = session.blueprint
     if (bp === null) return { ok: false, code: 'NO_BLUEPRINT', msg: 'Blueprint 未创建', fix: '请先执行 blueprint.create' }
 
     // 移除 checkpoints

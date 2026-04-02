@@ -64,7 +64,7 @@ describe('SparkPageRenderer root props aggregation', () => {
         plugins: [Spark.createPlugin(), router],
       },
       slots: {
-        content: ({ rules }) => h('pre', { class: 'rules-json' }, JSON.stringify(rules)),
+        content: ({ rules }: { rules: unknown }) => h('pre', { class: 'rules-json' }, JSON.stringify(rules)),
       },
     })
 

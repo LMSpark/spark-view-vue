@@ -31,11 +31,11 @@
 
 import { createRequest, onPageConfigChange } from '@spark-view/spark-utils'
 import { clearPageCache } from './page-cache'
-import { validateGeneratedConfig } from './config-validator'
-import type { ConfigValidationReport } from './config-validator'
+import { validateGeneratedConfig } from '../validation/config-validator'
+import type { ConfigValidationReport } from '../validation/config-validator'
 import { configureNavRegister, registerPageNavigation } from './nav-register'
 import type { NavRegistrationResult } from './nav-register'
-import type { StreamCallbacks } from './protocol'
+import type { StreamCallbacks } from '../protocol'
 
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
 const http = createRequest({ timeout: 240_000 })

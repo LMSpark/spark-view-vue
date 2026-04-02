@@ -15,8 +15,8 @@ import type {
   CompareBlock,
   SkillQueryRequest,
 } from './design-session'
-import { resolveSkillQuery } from './skill-catalog'
-import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'
+import { resolveSkillQuery } from '../catalog/skill-catalog'
+import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES, CONTAINER_CONTEXT_MAP, NON_FIELD_R_TYPES } from '../validation/shared-constants'
 import type { PersistedDesignSession } from './session-state'
 import {
   getRegisteredTableNames,
@@ -173,19 +173,6 @@ export class ProposalValidatorProcessor implements ResponseProcessor {
 export class SchemaCheckerProcessor implements ResponseProcessor {
   name = 'SchemaChecker'
 
-  private static readonly CONTAINER_CONTEXT_MAP: Record<string, 'table' | 'form' | 'detail' | 'list' | 'tree'> = {
-    'r-table': 'table',
-    'r-form': 'form',
-    'r-detail': 'detail',
-    'r-list': 'list',
-    'r-tree': 'tree',
-  }
-
-  private static readonly NON_FIELD_R_TYPES = new Set([
-    'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree',
-    'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section', 'r-block',
-  ])
-
   process(ctx: PipelineContext): boolean {
     for (const proposal of ctx.proposals) {
       if (proposal.type === 'ui-structure') {
@@ -206,7 +193,7 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
   }
 
   private resolveNodeContext(typeName: string, inheritedContext: 'table' | 'form' | 'detail' | 'list' | 'tree' | null): 'table' | 'form' | 'detail' | 'list' | 'tree' | null {
-    return SchemaCheckerProcessor.CONTAINER_CONTEXT_MAP[typeName] ?? inheritedContext
+    return CONTAINER_CONTEXT_MAP[typeName] ?? inheritedContext
   }
 
   private extractFieldName(node: Record<string, unknown>): string | null {
@@ -217,7 +204,7 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
   }
 
   private isSparkFieldComponent(typeName: string): boolean {
-    return typeName.startsWith('r-') && !SchemaCheckerProcessor.NON_FIELD_R_TYPES.has(typeName)
+    return typeName.startsWith('r-') && !NON_FIELD_R_TYPES.has(typeName)
   }
 
   private walkNodes(

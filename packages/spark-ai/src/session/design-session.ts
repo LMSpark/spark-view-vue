@@ -1,7 +1,7 @@
-import { COMPONENT_CATALOG } from './component-props-catalog'
-import type { ComponentEntry, PropEntry } from './catalog-types'
-import { extractBlocks as _extractBlocks, stripBlocksWithUnclosed } from './protocol'
-import type { ProtocolBlock } from './protocol'
+import { COMPONENT_CATALOG } from '../catalog/component-props-catalog'
+import type { ComponentEntry, PropEntry } from '../catalog/types'
+import { extractBlocks, stripBlocksWithUnclosed } from '../protocol'
+import type { ProtocolBlock } from '../protocol'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,12 +44,6 @@ export interface DesignProposal {
   stage: string
   timestamp: Date
 }
-
-/**
- * @@ 协议提取的原始块
- * @deprecated 直接使用 protocol.ts 的 ProtocolBlock（完全兼容，额外含 raw 字段）
- */
-export type { ProtocolBlock } from './protocol'
 
 /** 验证反馈（结构化） */
 export interface ValidationFeedback {
@@ -109,16 +103,6 @@ export function typeIcon(type: ProposalType): string {
   return TYPE_ICONS[type]
 }
 
-// ── @@ 定界符协议解析（委托 protocol.ts） ────────────────────────────────────
-
-/**
- * 从文本中提取所有 @@ 协议块
- * @deprecated 优先使用 protocol.ts 的 extractBlocks + filter
- */
-export function extractBlocks(text: string): ProtocolBlock[] {
-  return _extractBlocks(text)
-}
-
 // ── 提案提取 ─────────────────────────────────────────────────────────────────
 
 const VALID_TYPES = new Set<ProposalType>([
@@ -169,7 +153,7 @@ export function extractProposals(
 ): { cleanContent: string; proposals: DesignProposal[] } {
   const blocks = extractBlocks(content)
   const proposals = proposalsFromBlocks(blocks, messageId)
-  const cleanContent = stripProtocolBlocks(content)
+  const cleanContent = stripBlocksWithUnclosed(content)
   return { cleanContent, proposals }
 }
 
@@ -177,11 +161,6 @@ export function extractProposals(
  * 从显示内容中去除 @@ 定界块（用于流式渲染期间的实时清理）
  */
 export function stripProposalTags(content: string): string {
-  return stripProtocolBlocks(content)
-}
-
-/** 内部：清理 @@ 协议标记（含流式未闭合块） */
-function stripProtocolBlocks(content: string): string {
   return stripBlocksWithUnclosed(content)
 }
 
@@ -486,5 +465,3 @@ export function buildGenerationPrompt(
   return sections.join('\n')
 }
 
-// ── Re-export prompt & query resolution ──────────────────────────────────────
-export { DESIGN_SYSTEM_PROMPT } from './design-prompt'

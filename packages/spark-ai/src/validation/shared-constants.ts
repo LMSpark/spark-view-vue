@@ -28,3 +28,27 @@ export const HTML_TYPES: ReadonlySet<string> = new Set([
  * 组件 type 不在 HTML_TYPES 中时，需匹配这些前缀之一才被视为有效。
  */
 export const VALID_TYPE_PREFIXES: readonly string[] = ['r-', 'el-', 'Render', 'spark-']
+
+/**
+ * 容器组件类型 → 渲染上下文映射
+ *
+ * config-validator 和 response-pipeline 共用同一映射。
+ */
+export const CONTAINER_CONTEXT_MAP: Record<string, 'table' | 'form' | 'detail' | 'list' | 'tree'> = {
+  'r-table': 'table',
+  'r-form': 'form',
+  'r-detail': 'detail',
+  'r-list': 'list',
+  'r-tree': 'tree',
+}
+
+/**
+ * 非字段 r-* 类型集合（容器/布局组件，不当作 field 处理）
+ *
+ * 单一来源：config-validator 和 response-pipeline 共用同一集合。
+ */
+export const NON_FIELD_R_TYPES: ReadonlySet<string> = new Set([
+  'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree',
+  'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section', 'r-block',
+  'r-column-group',
+])

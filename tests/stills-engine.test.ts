@@ -12,16 +12,23 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import {
   registerAllStills,
   clearRegistry,
+  clearDomains,
   executeStill,
   createSession,
   getAllStills,
+  getDataSetSlot,
 } from '../packages/spark-ai/src/stills'
-import type { DesignSessionV2, StillResult } from '../packages/spark-ai/src/stills'
+import type { IStillSession, StillResult, DataSetSlot } from '../packages/spark-ai/src/stills'
 
 // ─── helpers ────────────────────────────────────────────────
 
-let session: DesignSessionV2
+let session: IStillSession
 let reqSeq = 0
+
+/** Shortcut to the dataset domain slot */
+function slot(): DataSetSlot {
+  return getDataSetSlot(session)
+}
 
 function exec(action: string, params: unknown = {}): StillResult {
   reqSeq++
@@ -55,6 +62,7 @@ function expectDefined<T>(value: T | null | undefined): T {
 // ─── setup ──────────────────────────────────────────────────
 
 beforeEach(() => {
+  clearDomains()
   clearRegistry()
   registerAllStills()
   session = createSession()
@@ -124,7 +132,6 @@ describe('blueprint stills (P1)', () => {
     })
     expectOk(r)
     expect(session.blueprint).not.toBeNull()
-    expect(session.currentStep).toBe('③')
   })
 
   it('blueprint.describe after creation', () => {
@@ -168,9 +175,9 @@ describe('dataset stills (P2)', () => {
     createTestBlueprint()
     const r = exec('dataset.init', { dataSetName: 'LeaveSystem' })
     expectOk(r)
-    expect(session.dataset).not.toBeNull()
-    expect(session.dataset!.dataSetName).toBe('LeaveSystem')
-    expect(session.currentStep).toBe('④')
+    expect(slot().dataset).not.toBeNull()
+    expect(slot().dataset!.dataSetName).toBe('LeaveSystem')
+    expect(slot().currentStep).toBe('④')
   })
 
   it('dataset.describe shows state', () => {
@@ -199,7 +206,7 @@ describe('datatable stills (P2)', () => {
       ],
     })
     expectOk(r)
-    const usersTable = expectDefined(session.dataset?.tables['Users'])
+    const usersTable = expectDefined(slot().dataset?.tables['Users'])
     expect(usersTable.columns.length).toBe(2)
   })
 
@@ -225,7 +232,7 @@ describe('datatable stills (P2)', () => {
       columns: [{ name: 'email', type: 'string', label: '邮箱' }],
     })
     expectOk(r)
-    const usersTable = expectDefined(session.dataset?.tables['Users'])
+    const usersTable = expectDefined(slot().dataset?.tables['Users'])
     expect(usersTable.columns.length).toBe(2)
   })
 
@@ -240,7 +247,7 @@ describe('datatable stills (P2)', () => {
       updates: { label: '用户ID' },
     })
     expectOk(r)
-    const usersTable = expectDefined(session.dataset?.tables['Users'])
+    const usersTable = expectDefined(slot().dataset?.tables['Users'])
     const firstColumn = expectDefined(usersTable.columns[0])
     expect(firstColumn.label).toBe('用户ID')
   })
@@ -257,7 +264,7 @@ describe('datatable stills (P2)', () => {
         { name: 'parentId', type: 'string' },
       ],
     })
-    session.dataset!.tableRelations = [
+    slot().dataset!.tableRelations = [
       { parentTable: 'Parent', childTable: 'Child', parentField: 'id', childField: 'parentId' },
     ]
     const r = exec('datatable.removeColumn', { tableName: 'Parent', columnName: 'id' })
@@ -284,7 +291,7 @@ describe('datatable stills (P2)', () => {
         { name: 'label', type: 'string' },
       ],
     })
-    session.schemaLocked = true
+    slot().schemaLocked = true
     const r = exec('datatable.addRows', {
       tableName: 'Statuses',
       rows: [
@@ -293,7 +300,7 @@ describe('datatable stills (P2)', () => {
       ],
     })
     expectOk(r)
-    const statusesTable = expectDefined(session.dataset?.tables['Statuses'])
+    const statusesTable = expectDefined(slot().dataset?.tables['Statuses'])
     const rows = expectDefined(statusesTable.views.default.rows)
     expect(rows).toHaveLength(2)
   })
@@ -324,7 +331,7 @@ describe('relation stills (P2)', () => {
       childField: 'orderId',
     })
     expectOk(r)
-    expect(session.dataset!.tableRelations!.length).toBe(1)
+    expect(slot().dataset!.tableRelations!.length).toBe(1)
   })
 
   it('relation.add rejects nonexistent table', () => {
@@ -384,7 +391,7 @@ describe('relation stills (P2)', () => {
     })
     const r = exec('relation.remove', { parentTable: 'Orders', childTable: 'Items' })
     expectOk(r)
-    expect(session.dataset!.tableRelations!.length).toBe(0)
+    expect(slot().dataset!.tableRelations!.length).toBe(0)
   })
 
   it('relation.remove blocked by viewDependency', () => {
@@ -394,7 +401,7 @@ describe('relation stills (P2)', () => {
       parentField: 'id',
       childField: 'orderId',
     })
-    session.dataset!.viewDependencies = [
+    slot().dataset!.viewDependencies = [
       { parentTable: 'Orders', childTable: 'Items', dependencyType: 'currentRow' },
     ]
     const r = exec('relation.remove', { parentTable: 'Orders', childTable: 'Items' })
@@ -415,12 +422,12 @@ describe('schema stills (P3)', () => {
   it('schema.lock succeeds with PK', () => {
     const r = exec('schema.lock')
     expectOk(r)
-    expect(session.schemaLocked).toBe(true)
+    expect(slot().schemaLocked).toBe(true)
   })
 
   it('schema.lock fails without PK', () => {
     // Add table without PK
-    session.dataset!.tables['NoPK'] = {
+    slot().dataset!.tables['NoPK'] = {
       tableName: 'NoPK',
       columns: [{ name: 'x', type: 'string' }],
       views: {
@@ -444,7 +451,7 @@ describe('schema stills (P3)', () => {
     exec('schema.lock')
     const r = exec('schema.unlock', { reason: '需要加字段' })
     expectOk(r)
-    expect(session.schemaLocked).toBe(false)
+    expect(slot().schemaLocked).toBe(false)
   })
 })
 
@@ -469,7 +476,7 @@ describe('dataview stills (P4)', () => {
       config: { autoLoad: true, autoCurrentFirst: true, pageSize: 20 },
     })
     expectOk(r)
-    const ordersTable = expectDefined(session.dataset?.tables['Orders'])
+    const ordersTable = expectDefined(slot().dataset?.tables['Orders'])
     const view = ordersTable.views.default
     expect(view.autoLoad).toBe(true)
     expect(view.pageSize).toBe(20)
@@ -478,7 +485,7 @@ describe('dataview stills (P4)', () => {
   it('dataview.create adds custom view', () => {
     const r = exec('dataview.create', { tableName: 'Orders', viewId: 'grid' })
     expectOk(r)
-    const ordersTable = expectDefined(session.dataset?.tables['Orders'])
+    const ordersTable = expectDefined(slot().dataset?.tables['Orders'])
     expect(ordersTable.views['grid']).toBeDefined()
   })
 
@@ -501,7 +508,7 @@ describe('dataview stills (P4)', () => {
       aggregates: { price: { type: 'sum' } },
     })
     expectOk(r)
-    const ordersTable = expectDefined(session.dataset?.tables['Orders'])
+    const ordersTable = expectDefined(slot().dataset?.tables['Orders'])
     const view = ordersTable.views.default
     expect(view.aggregates).toEqual({ price: { type: 'sum' } })
   })
@@ -520,7 +527,7 @@ describe('dataview stills (P4)', () => {
       treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'id' },
     })
     expectOk(r)
-    const ordersTable = expectDefined(session.dataset?.tables['Orders'])
+    const ordersTable = expectDefined(slot().dataset?.tables['Orders'])
     expect(ordersTable.views.default.treeConfig?.idField).toBe('id')
   })
 
@@ -564,7 +571,7 @@ describe('dependency stills (P4)', () => {
       dependencyType: 'currentRow',
     })
     expectOk(r)
-    const viewDependencies = expectDefined(session.dataset?.viewDependencies)
+    const viewDependencies = expectDefined(slot().dataset?.viewDependencies)
     expect(viewDependencies.length).toBe(1)
     const firstDependency = expectDefined(viewDependencies[0])
     expect(firstDependency.dependencyType).toBe('currentRow')
@@ -588,7 +595,7 @@ describe('dependency stills (P4)', () => {
     exec('dependency.add', { parentTable: 'Orders', childTable: 'Items' })
     const r = exec('dependency.remove', { parentTable: 'Orders', childTable: 'Items' })
     expectOk(r)
-    expect(session.dataset!.viewDependencies!.length).toBe(0)
+    expect(slot().dataset!.viewDependencies!.length).toBe(0)
   })
 })
 
@@ -656,7 +663,7 @@ describe('dataset.validate', () => {
   })
 
   it('reports missing PKs', () => {
-    session.dataset!.tables['NoPK'] = {
+    slot().dataset!.tables['NoPK'] = {
       tableName: 'NoPK',
       columns: [{ name: 'x', type: 'string' }],
       views: {
@@ -677,7 +684,7 @@ describe('dataset.validate', () => {
       tableName: 'A',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
     })
-    session.dataset!.tableRelations = [
+    slot().dataset!.tableRelations = [
       { parentTable: 'A', childTable: 'Missing', parentField: 'id', childField: 'fk' },
     ]
     const r = exec('dataset.validate')
@@ -712,7 +719,7 @@ describe('dataset.export & reset', () => {
     expect(data.snapshot.dataSetName).toBe('Test')
     // mutating export should not affect session
     data.snapshot.dataSetName = 'Mutated'
-    expect(session.dataset!.dataSetName).toBe('Test')
+    expect(slot().dataset!.dataSetName).toBe('Test')
   })
 
   it('dataset.reset clears everything', () => {
@@ -724,9 +731,9 @@ describe('dataset.export & reset', () => {
     })
     const r = exec('dataset.reset')
     expectOk(r)
-    expect(session.dataset).toBeNull()
+    expect(slot().dataset).toBeNull()
     expect(session.blueprint).toBeNull()
-    expect(session.currentStep).toBe('①')
+    expect(slot().currentStep).toBe('①')
     // dataset.reset clears patchLog THEN dispatcher writes the reset entry
     // So patchLog has exactly 1 entry (the reset itself)
     expect(session.patchLog).toHaveLength(1)
@@ -833,7 +840,7 @@ describe('full leave-system scenario (E2E)', () => {
       ],
     })
 
-    expect(Object.keys(session.dataset!.tables).length).toBe(5)
+    expect(Object.keys(slot().dataset!.tables).length).toBe(5)
     exec('blueprint.advance', { completedCheckpointId: 'cp1' })
 
     // ── cp2: 关系 ──
@@ -842,7 +849,7 @@ describe('full leave-system scenario (E2E)', () => {
     exec('relation.add', { parentTable: 'LeaveTypes', childTable: 'LeaveBalances', parentField: 'id', childField: 'leaveTypeId' })
     exec('relation.add', { parentTable: 'LeaveTypes', childTable: 'ApprovalFlows', parentField: 'id', childField: 'leaveTypeId' })
 
-    expect(session.dataset!.tableRelations!.length).toBe(4)
+    expect(slot().dataset!.tableRelations!.length).toBe(4)
     exec('blueprint.advance', { completedCheckpointId: 'cp2' })
 
     // ── cp3: schema.lock ──
@@ -863,7 +870,7 @@ describe('full leave-system scenario (E2E)', () => {
     exec('dependency.add', { parentTable: 'LeaveRequests', childTable: 'ApprovalRecords', dependencyType: 'currentRow' })
     exec('dependency.add', { parentTable: 'LeaveTypes', childTable: 'LeaveBalances', dependencyType: 'currentRow' })
 
-    expect(session.dataset!.viewDependencies!.length).toBe(3)
+    expect(slot().dataset!.viewDependencies!.length).toBe(3)
     exec('blueprint.advance', { completedCheckpointId: 'cp5' })
 
     // ── cp6: validate + export ──

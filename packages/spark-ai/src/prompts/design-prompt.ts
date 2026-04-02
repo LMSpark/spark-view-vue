@@ -1,6 +1,6 @@
 // ── 设计模式系统提示词（决策引擎模式：宪法 → 工作流 → 命令接口 → 平台规则）──
 
-import { COMPONENT_CATALOG } from './component-props-catalog'
+import { COMPONENT_CATALOG } from '../catalog/component-props-catalog'
 
 // 从结构化目录动态构建组件列表（新增/移除组件时无需手动改提示词）
 const _reg = COMPONENT_CATALOG.registry

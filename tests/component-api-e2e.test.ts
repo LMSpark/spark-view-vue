@@ -13,7 +13,7 @@ import {
   generateDiffReport,
   formatDiffReport,
 } from '../packages/vite-plugin-spark-catalog/src/index'
-import { COMPONENT_CATALOG } from '../packages/spark-ai/src/component-props-catalog'
+import { COMPONENT_CATALOG } from '../packages/spark-ai/src/catalog/component-props-catalog'
 
 const ROOT = resolve('.')
 const FIELD_DIR = 'packages/spark-component/src/components/fields/data-components'

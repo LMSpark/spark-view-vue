@@ -104,7 +104,7 @@ export function generatePropsCatalog(
   jsonCatalog: FullComponentCatalog,
 ): void {
   const {
-    outputPath = 'packages/spark-ai/src/component-props-catalog.ts',
+    outputPath = 'packages/spark-ai/src/catalog/component-props-catalog.ts',
     verbose = false,
   } = options
 
@@ -126,7 +126,7 @@ export function generatePropsCatalog(
  * 生成时间：${new Date().toISOString()}
  * 条目数量：${sortedKeys.length}
  */
-import type { ComponentCatalog } from './catalog-types'
+import type { ComponentCatalog } from './types'
 
 /**
  * AI 配置目录（精简版）

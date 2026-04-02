@@ -90,3 +90,64 @@ export {
 
 export { extractColumnRules, isColumnRequired } from './column-validation'
 export type { ColumnValidationRule, ValidationRuleType } from './column-validation'
+
+// ===== DataSet 操作（运行时对象） =====
+
+export { DataSetOpError } from './dataset-ops'
+export {
+  // DataSet 级
+  dsCreateDataSet,
+  dsDescribeDataSet,
+  dsValidateDataSet,
+  dsExportDataSet,
+  // DataTable 级
+  dsAddTable,
+  dsDescribeTable,
+  dsAddColumns,
+  dsUpdateColumn,
+  dsRemoveColumn,
+  dsSetTableApi,
+  dsAddRows,
+  // DataView 级
+  dsAddView,
+  dsDescribeView,
+  dsConfigureView,
+  dsSetAggregates,
+  dsSetTreeConfig,
+  // Relation 级
+  dsAddRelation,
+  dsRemoveRelation,
+  dsListRelations,
+  // Dependency 级
+  dsAddDependency,
+  dsRemoveDependency,
+  // Schema 级
+  dsCheckSchemaLockable,
+} from './dataset-ops'
+
+// ===== Metadata 操作（纯 JSON 元数据） =====
+
+export type { MetadataOpResult } from './metadata-ops'
+export {
+  metaCreateDataSet,
+  metaDescribeDataSet,
+  metaValidateDataSet,
+  metaExportDataSet,
+  metaAddTable,
+  metaDescribeTable,
+  metaAddColumns,
+  metaUpdateColumn,
+  metaRemoveColumn,
+  metaSetTableApi,
+  metaAddRows,
+  metaAddView,
+  metaDescribeView,
+  metaConfigureView,
+  metaSetAggregates,
+  metaSetTreeConfig,
+  metaAddRelation,
+  metaRemoveRelation,
+  metaListRelations,
+  metaAddDependency,
+  metaRemoveDependency,
+} from './metadata-ops'
