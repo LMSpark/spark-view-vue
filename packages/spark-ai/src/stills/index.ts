@@ -6,7 +6,7 @@
  * 2. 提供 registerAllStills()，一次性完成框架 still 与 dataset domain 的注册。
  */
 
-import { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill } from './dispatcher'
+import { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill, findCandidateActions, scoreCandidateAction } from './dispatcher'
 import type {
   DomainState,
   StillGuard,
@@ -19,6 +19,7 @@ import type {
   PatchEntry,
   IStillSession,
   DomainProvider,
+  PostValidationWarning,
 } from './types'
 import { noGuard, requireBlueprint } from './types'
 import { registerDomain, getDomain, clearDomains, createSession } from './domain'
@@ -69,7 +70,7 @@ import type { BlueprintDomainState, BlueprintPhase } from './blueprint-domain'
 // Core Export
 // ═══════════════════════════════════════════════════════════
 
-export { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill }
+export { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill, findCandidateActions, scoreCandidateAction }
 export type {
   DomainState,
   StillGuard,
@@ -82,6 +83,7 @@ export type {
   PatchEntry,
   IStillSession,
   DomainProvider,
+  PostValidationWarning,
 }
 export { noGuard, requireBlueprint }
 
@@ -143,6 +145,15 @@ export {
 export type { BlueprintDomainState, BlueprintPhase }
 
 // ═══════════════════════════════════════════════════════════
+// PageConfig Domain
+// ═══════════════════════════════════════════════════════════
+
+import { pageConfigDomain } from './pageconfig-domain'
+export { pageConfigDomain }
+export { getPageConfigState, createPageConfigState } from './pageconfig-types'
+export type { PageConfigDomainState, PageConfigPhase, IPageConfigData, PageConfigExportResult, PageConfigValidationIssue } from './pageconfig-types'
+
+// ═══════════════════════════════════════════════════════════
 // Register All
 // ═══════════════════════════════════════════════════════════
 
@@ -161,10 +172,12 @@ const metaStills = [
  * 注册全部 stills 到全局 registry。
  * - dataset domain（24 个）通过 registerDomain 注册；
  * - blueprint domain（7 个）通过 registerDomain 注册；
+ * - pageconfig domain（18 个）通过 registerDomain 注册；
  * - meta stills（3 个）通过 registerAll 注册。
  */
 export function registerAllStills(): void {
   registerDomain(datasetDomain)
   registerDomain(blueprintDomain)
+  registerDomain(pageConfigDomain)
   registerAll(metaStills as unknown as StillDefinition[])
 }

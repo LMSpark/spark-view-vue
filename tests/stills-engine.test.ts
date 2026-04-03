@@ -72,8 +72,8 @@ beforeEach(() => {
 // ─── Tests ──────────────────────────────────────────────────
 
 describe('stills registry', () => {
-  it('registers 34 stills', () => {
-    expect(getAllStills().size).toBe(34)
+  it('registers 52 stills', () => {
+    expect(getAllStills().size).toBe(52)
   })
 
   it('all stills have required fields', () => {
@@ -91,7 +91,7 @@ describe('meta stills (P0)', () => {
   it('stills.capabilities returns action list', () => {
     const r = exec('stills.capabilities')
     expectOk(r)
-    expect((r.data as { actions: unknown[] }).actions.length).toBe(34)
+    expect((r.data as { actions: unknown[] }).actions.length).toBe(52)
   })
 
   it('stills.actionSpec returns spec for known action', () => {

@@ -16,9 +16,19 @@ import type { IDataSetMetadata, TableRelation, ViewDependency } from '@spark-vie
 /** Guard 检查函数，返回 null 表示通过，返回对象表示被拒原因 */
 export type StillGuard = (session: IStillSession) => { code: string; msg: string } | null
 
+/** 后置校验产生的警告（不阻断执行，但需要 LLM 关注修复）。 */
+export interface PostValidationWarning {
+  /** 校验规则标识 */
+  rule: string
+  /** 人类可读的问题描述 */
+  detail: string
+  /** 建议修复动作（可直接拼入 fix 提示） */
+  fix?: string
+}
+
 /** still 动作统一返回值。ok=true 产出数据，ok=false 产出结构化修复提示。 */
 export type StillResult<T = unknown> =
-  | { ok: true; data: T; summary: string }
+  | { ok: true; data: T; summary: string; warnings?: PostValidationWarning[] }
   | { ok: false; code: string; msg: string; fix: string }
 
 /** still 已知失败模式，用于把 fail-fast 边界显式暴露给 LLM。 */
@@ -57,6 +67,14 @@ export interface StillDefinition<TParams = unknown, TResult = unknown> {
   validate: (params: TParams) => string | null
   /** 纯函数执行，可直接修改 session（dispatcher 负责持久化） */
   execute: (session: IStillSession, params: TParams) => StillResult<TResult>
+  /**
+   * 后置校验钩子（可选）。
+   *
+   * dispatcher 在 execute 返回 ok=true 后调用，返回的 warnings 附着到 result。
+   * 用于跨实体一致性校验（如 FK 覆盖、options 视图完整性、聚合列交叉验证），
+   * 这些校验依赖 execute 的副作用结果，无法在 validate（纯参数校验）阶段运行。
+   */
+  postValidate?: (session: IStillSession, params: TParams) => PostValidationWarning[]
 }
 
 // ═══════════════════════════════════════════════════════════

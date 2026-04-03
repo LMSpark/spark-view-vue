@@ -116,7 +116,7 @@ function tokenizeAction(action: string): string[] {
   return action.toLowerCase().split(/[._-]+/u).filter((token) => token.length > 0)
 }
 
-function scoreCandidateAction(requestedAction: string, candidateAction: string): number {
+export function scoreCandidateAction(requestedAction: string, candidateAction: string): number {
   const requestedTokens = tokenizeAction(requestedAction)
   const candidateTokens = tokenizeAction(candidateAction)
   let score = 0
@@ -140,7 +140,7 @@ function scoreCandidateAction(requestedAction: string, candidateAction: string):
   return score
 }
 
-function findCandidateActions(action: string, max = 5): string[] {
+export function findCandidateActions(action: string, max = 5): string[] {
   return Array.from(_registry.keys())
     .map((candidate) => ({ candidate, score: scoreCandidateAction(action, candidate) }))
     .filter((item) => item.score > 0)
@@ -194,7 +194,15 @@ export function executeStill(
   // 4. 执行动作；request/describe 都走同一个入口，差异只体现在 type 与 patchLog 写入规则
   const result: StillResult = still.execute(session, params)
 
-  // 5. 只有成功的 request 动作才写 patchLog；describe 动作不产生变更日志
+  // 5. postValidate：execute 成功后运行跨实体一致性校验，warnings 附着到 result
+  if (result.ok && still.postValidate) {
+    const warnings = still.postValidate(session, params)
+    if (warnings.length > 0) {
+      result.warnings = warnings
+    }
+  }
+
+  // 6. 只有成功的 request 动作才写 patchLog；describe 动作不产生变更日志
   if (result.ok && still.type === 'request') {
     session.patchLog.push(createPatchEntry(action, requestId, result.summary))
   }

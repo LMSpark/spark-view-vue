@@ -19,6 +19,7 @@ import type {
   DomainState,
   DomainProvider,
   ViewDependency,
+  PostValidationWarning,
 } from './types'
 import { getDomainState } from './types'
 import type { DataColumn, CrudApi, IDataRow, AggregateColumnConfig, TreeConfig, IViewMetadata, DataTable, DataView } from '@spark-view/spark-data'
@@ -298,6 +299,95 @@ function collectOptionTablesWithoutRows(dataset: DataSet): string[] {
   return Object.values(dataset.tables)
     .filter((table) => table.getView('options') !== undefined && table.rows.length === 0)
     .map((table) => table.tableName)
+}
+
+// ═══════════════════════════════════════════════════════════
+// Post-validation helpers（供 postValidate 钩子使用）
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Options 视图配置校验：有 options 视图的表必须有 valueField + labelField；
+ * 含 parentId 列的表的 options 视图必须有 treeConfig。
+ * 下沉自 verify 脚本 collectOptionViewConfigIssues。
+ */
+function postValidateOptionViews(dataset: DataSet): PostValidationWarning[] {
+  const warnings: PostValidationWarning[] = []
+
+  for (const [tableName, table] of Object.entries(dataset.tables)) {
+    const optionsView = table.getView('options')
+    if (!optionsView) continue
+
+    if (optionsView.valueField === undefined) {
+      warnings.push({
+        rule: 'OPTIONS_VALUE_FIELD',
+        detail: `${tableName}.options 视图缺少 valueField`,
+        fix: `请 dataview.configure { tableName: "${tableName}", viewId: "options", valueField: "id" }`,
+      })
+    }
+    if (optionsView.labelField === undefined) {
+      warnings.push({
+        rule: 'OPTIONS_LABEL_FIELD',
+        detail: `${tableName}.options 视图缺少 labelField`,
+        fix: `请 dataview.configure { tableName: "${tableName}", viewId: "options", labelField: "name" }`,
+      })
+    }
+
+    const hasParentId = table.columns.some((column) => column.name === 'parentId')
+    if (hasParentId && optionsView.treeConfig === undefined) {
+      warnings.push({
+        rule: 'OPTIONS_TREE_CONFIG',
+        detail: `${tableName} 含 parentId 列，options 视图缺少 treeConfig`,
+        fix: `请 dataview.setTreeConfig { tableName: "${tableName}", viewId: "options", treeConfig: { idField: "id", parentIdField: "parentId", textField: "name" } }`,
+      })
+    }
+  }
+
+  return warnings
+}
+
+/**
+ * 聚合/计算列交叉验证：数值型计算列理应有对应的 sum 聚合。
+ * 下沉自 verify 脚本内联校验逻辑。
+ */
+function postValidateComputedAggregates(
+  dataset: DataSet,
+  tableName: string,
+  viewId: string,
+): PostValidationWarning[] {
+  const table = dataset.getTable(tableName)
+  if (!table) return []
+
+  const computedNumericColumns = table.columns.filter(
+    (col) => col.computeExpression !== undefined && NUMBER_COLUMN_TYPES.has(normalizeColumnType(col.type)),
+  )
+  if (computedNumericColumns.length === 0) return []
+
+  const resolvedViewId = viewId
+  const view = table.getView(resolvedViewId)
+  if (!view) return []
+
+  const aggregates = view.aggregates
+  if (Object.keys(aggregates).length === 0) {
+    return computedNumericColumns.map((col) => ({
+      rule: 'COMPUTED_AGGREGATE',
+      detail: `${tableName}.${col.name} 是数值计算列，但视图 ${resolvedViewId} 没有任何聚合配置`,
+      fix: `请 dataview.setAggregates 为数值计算列添加 sum 聚合`,
+    }))
+  }
+
+  const warnings: PostValidationWarning[] = []
+  for (const col of computedNumericColumns) {
+    const agg = aggregates[col.name]
+    if (!agg) {
+      warnings.push({
+        rule: 'COMPUTED_AGGREGATE',
+        detail: `${tableName}.${col.name} 是数值计算列，但未配置聚合`,
+        fix: `请在 dataview.setAggregates 中为 ${col.name} 添加 { type: "sum" }`,
+      })
+    }
+  }
+
+  return warnings
 }
 
 function createWorkingDataSet(dataSetName: string): DataSet {
@@ -1418,6 +1508,11 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
       return view.configure(config)
     }))
   },
+  postValidate: (session): PostValidationWarning[] => {
+    const DS = getDataSetState(session).data
+    if (!DS) return []
+    return postValidateOptionViews(DS)
+  },
 }
 
 // ─── dataview.setAggregates ────────────────────────────────
@@ -1454,6 +1549,11 @@ const dataviewSetAggregates: StillDefinition<SetAggregatesParams, unknown> = {
         throw new DataSetOpError('COLUMN_NOT_FOUND', toErrorMessage(error), '请先添加相关列')
       }
     })),
+  postValidate: (session, params): PostValidationWarning[] => {
+    const DS = getDataSetState(session).data
+    if (!DS) return []
+    return postValidateComputedAggregates(DS, params.tableName, params.viewId ?? 'default')
+  },
 }
 
 // ─── dataview.setTreeConfig ────────────────────────────────

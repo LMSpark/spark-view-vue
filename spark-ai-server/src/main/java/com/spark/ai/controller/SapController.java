@@ -3,6 +3,8 @@ package com.spark.ai.controller;
 import com.spark.ai.sap.SapAssistantService;
 import com.spark.ai.sap.SapAssistantService.SapChatResponse;
 import com.spark.ai.sap.SapOrchestrator;
+import com.spark.ai.sap.StillsSessionService;
+import com.spark.ai.sap.StillsSessionService.TurnResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,7 +23,14 @@ import java.util.Map;
  * <ul>
  *   <li>POST /api/sap/chat      — AI 助手对话（自动工具回路）</li>
  *   <li>POST /api/sap/execute   — 直接执行 SAP 协议块（无 AI，用于测试/调试）</li>
+ *   <li>POST /api/sap/stills/session      — 创建 Stills 会话</li>
+ *   <li>POST /api/sap/stills/turn         — 执行一轮 LLM 对话</li>
+ *   <li>POST /api/sap/stills/append       — 向会话追加消息</li>
+ *   <li>POST /api/sap/stills/conversation — 获取完整对话记录</li>
+ *   <li>POST /api/sap/stills/destroy      — 销毁会话</li>
  * </ul>
+ *
+ * <p>Stills 会话以 sessionId（UUID）为唯一凭据，SSE 天然做到一个连接对应一个浏览器会话。
  */
 @RestController
 @RequestMapping("/api/sap")
@@ -30,10 +40,14 @@ public class SapController {
 
     private final SapAssistantService assistantService;
     private final SapOrchestrator orchestrator;
+    private final StillsSessionService stillsSessionService;
 
-    public SapController(SapAssistantService assistantService, SapOrchestrator orchestrator) {
+    public SapController(SapAssistantService assistantService,
+                         SapOrchestrator orchestrator,
+                         StillsSessionService stillsSessionService) {
         this.assistantService = assistantService;
         this.orchestrator = orchestrator;
+        this.stillsSessionService = stillsSessionService;
     }
 
     /**
@@ -82,5 +96,173 @@ public class SapController {
 
     private static String truncate(String s, int maxLen) {
         return s.length() <= maxLen ? s : s.substring(0, maxLen) + "...";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Stills 会话管理（前端编排器的通信层后端）
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/sap/stills/session
+     * 创建 Stills 会话 — 设置 system prompt 和初始用户需求。
+     *
+     * <p>请求体：
+     * <pre>{"systemPrompt":"...", "userPrompt":"...", "windowSize":30}</pre>
+     *
+     * <p>响应体：
+     * <pre>{"sessionId":"uuid"}</pre>
+     */
+    @PostMapping("/stills/session")
+    public ResponseEntity<Map<String, Object>> createStillsSession(
+            @RequestBody Map<String, Object> request) {
+        String systemPrompt = getRequiredString(request, "systemPrompt");
+        if (systemPrompt == null) {
+            return badRequest("systemPrompt 不能为空");
+        }
+        String userPrompt = getRequiredString(request, "userPrompt");
+        if (userPrompt == null) {
+            return badRequest("userPrompt 不能为空");
+        }
+        int windowSize = request.get("windowSize") instanceof Number n ? n.intValue() : 30;
+
+        String sessionId = stillsSessionService.createSession(systemPrompt, userPrompt, windowSize);
+        return ResponseEntity.ok(Map.of("sessionId", sessionId));
+    }
+
+    /**
+     * POST /api/sap/stills/turn
+     * 执行一轮 LLM 对话 — 将当前对话历史（滑动窗口裁剪后）发给 LLM，返回回复。
+     *
+     * <p>请求体：{@code {"sessionId":"uuid"}}
+     * <p>响应体：{@code {"text":"...", "reasoning":"..."}}
+     */
+    @PostMapping("/stills/turn")
+    public ResponseEntity<Map<String, Object>> executeStillsTurn(
+            @RequestBody Map<String, String> request) {
+        String sessionId = request.get("sessionId");
+        if (sessionId == null || sessionId.isBlank()) {
+            return badRequest("sessionId 不能为空");
+        }
+
+        TurnResult result = stillsSessionService.executeTurn(sessionId);
+        if (result == null) {
+            return ResponseEntity.status(404).body(Map.of(
+                    "error", "会话不存在或 LLM 调用失败",
+                    "sessionId", sessionId));
+        }
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("text", result.getText());
+        if (result.getReasoning() != null) {
+            body.put("reasoning", result.getReasoning());
+        }
+        return ResponseEntity.ok(body);
+    }
+
+    /**
+     * POST /api/sap/stills/append
+     * 向会话追加消息（通常是工具执行结果，以 user 角色注入）。
+     *
+     * <p>请求体：{@code {"sessionId":"uuid", "role":"user", "content":"..."}}
+     */
+    @PostMapping("/stills/append")
+    public ResponseEntity<Map<String, Object>> appendStillsMessage(
+            @RequestBody Map<String, String> request) {
+        String sessionId = request.get("sessionId");
+        String role = request.get("role");
+        String content = request.get("content");
+
+        if (sessionId == null || sessionId.isBlank()) {
+            return badRequest("sessionId 不能为空");
+        }
+        if (content == null || content.isBlank()) {
+            return badRequest("content 不能为空");
+        }
+        if (role == null || role.isBlank()) {
+            role = "user";
+        }
+
+        boolean ok = stillsSessionService.appendMessage(sessionId, role, content);
+        if (!ok) {
+            return ResponseEntity.status(404).body(Map.of("error", "会话不存在"));
+        }
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    /**
+     * POST /api/sap/stills/conversation
+     * 获取完整对话记录（供下游 self-check 等后处理使用）。
+     *
+     * <p>请求体：{@code {"sessionId":"uuid"}}
+     * <p>响应体：{@code {"conversation":[{"role":"...","content":"..."},...]}}
+     */
+    @PostMapping("/stills/conversation")
+    public ResponseEntity<Map<String, Object>> getStillsConversation(
+            @RequestBody Map<String, String> request) {
+        String sessionId = request.get("sessionId");
+        if (sessionId == null || sessionId.isBlank()) {
+            return badRequest("sessionId 不能为空");
+        }
+
+        List<Map<String, String>> conversation =
+                stillsSessionService.getConversation(sessionId);
+        return ResponseEntity.ok(Map.of("conversation", conversation));
+    }
+
+    /**
+     * POST /api/sap/stills/destroy
+     * 销毁会话。
+     *
+     * <p>请求体：{@code {"sessionId":"uuid"}}
+     */
+    @PostMapping("/stills/destroy")
+    public ResponseEntity<Map<String, Object>> destroyStillsSession(
+            @RequestBody Map<String, String> request) {
+        String sessionId = request.get("sessionId");
+        if (sessionId == null || sessionId.isBlank()) {
+            return badRequest("sessionId 不能为空");
+        }
+
+        stillsSessionService.destroySession(sessionId);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    /**
+     * POST /api/sap/stills/destroy-batch
+     * 批量销毁会话（前端切换用户时调用，清理本次浏览器会话创建的所有 sessionId）。
+     *
+     * <p>请求体：{@code {"sessionIds":["uuid1","uuid2"]}}
+     * <p>响应体：{@code {"destroyed":2}}
+     */
+    @SuppressWarnings("unchecked")
+    @PostMapping("/stills/destroy-batch")
+    public ResponseEntity<Map<String, Object>> destroyStillsSessions(
+            @RequestBody Map<String, Object> request) {
+        Object raw = request.get("sessionIds");
+        if (!(raw instanceof List<?> list) || list.isEmpty()) {
+            return badRequest("sessionIds 不能为空");
+        }
+        List<String> sessionIds = ((List<Object>) list).stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .toList();
+        int destroyed = stillsSessionService.destroySessions(sessionIds);
+        return ResponseEntity.ok(Map.of("destroyed", destroyed));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 辅助
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static String getRequiredString(Map<String, Object> map, String key) {
+        Object val = map.get(key);
+        if (val instanceof String s && !s.isBlank()) {
+            return s;
+        }
+        return null;
+    }
+
+    private static ResponseEntity<Map<String, Object>> badRequest(String message) {
+        return ResponseEntity.badRequest().body(Map.of("error", message));
     }
 }

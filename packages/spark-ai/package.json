@@ -30,6 +30,7 @@
     }
   },
   "dependencies": {
+    "@spark-view/spark-component": "workspace:*",
     "@spark-view/spark-data": "workspace:*",
     "@spark-view/spark-utils": "workspace:*"
   },

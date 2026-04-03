@@ -96,6 +96,26 @@ export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './validation/shared
 // ── Nav Planner Prompt ───────────────────────────────────────────────────────
 export { NAV_PLANNER_SYSTEM_PROMPT } from './prompts/nav-planner-prompt'
 
+// ── System Prompts（提示词前端 SSoT）────────────────────────────────────────
+export { PAGE_SYSTEM_PROMPT } from './prompts/page-system-prompt'
+export {
+  SAP_SYSTEM_PROMPT,
+  STILLS_RUNTIME_PROMPT,
+  STILLS_BLUEPRINT_PROMPT,
+  STILLS_SYSTEM_PROMPT,
+} from './prompts/sap-prompts'
+export {
+  buildPageSystemPrompt,
+  getSystemPrompt,
+  detectRelevantSkillTypes,
+} from './prompts/prompt-builder'
+export type {
+  PromptBuildContext,
+  ISkillMetadataProvider,
+  BuildPagePromptOptions,
+  PromptMode,
+} from './prompts/prompt-builder'
+
 // ── Stills（SAP 协议动作引擎）────────────────────────────────────────────────
 export {
   registerAllStills,
@@ -109,6 +129,8 @@ export {
   registerDomain,
   getDomain,
   getDataSetState,
+  findCandidateActions,
+  scoreCandidateAction,
 } from './stills'
 export type {
   DomainState,
@@ -123,6 +145,7 @@ export type {
   DomainProvider,
   DesignPhase,
   DataSetDomainState,
+  PostValidationWarning,
 } from './stills'
 
 // ── SAP Runtime Bridge（协议解析 → Stills 调度 → 响应格式化）───────────────────
@@ -135,3 +158,26 @@ export type {
   SapDispatchResult,
   SapProcessingResult,
 } from './sap-runtime'
+
+// ── Session Orchestrator（会话级工具循环编排）──────────────────────────────────
+export {
+  runStillsLoop,
+  formatWarningsAsFollowUp,
+} from './runtime/session-orchestrator'
+export type {
+  DialogueTurn,
+  StillTurnResult,
+  LlmResponse,
+  SessionBackend,
+  MonitorContext,
+  SessionMonitor,
+  OrchestratorConfig,
+  OrchestratorResult,
+} from './runtime/session-orchestrator'
+
+// ── Monitors（可插拔编排监控器）──────────────────────────────────────────────
+export {
+  createRepeatDetectionMonitor,
+  createBlueprintOrchestrationMonitor,
+  createTerminalActionsMonitor,
+} from './runtime/monitors'
