@@ -11,6 +11,7 @@ import type {
   StillGuard,
   StillResult,
   StillDefinition,
+  BlueprintPlanItem,
   BlueprintCheckpoint,
   ExecutionBlueprint,
   PatchEntry,
@@ -49,7 +50,7 @@ import {
 } from './dataset-domain'
 import type { DataSetSlot, DesignStep } from './dataset-domain'
 import { stillsCapabilities, stillsActionSpec, sessionDescribe } from './meta-methods'
-import { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintRevise } from './blueprint-methods'
+import { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintItemAdvance, blueprintRevise } from './blueprint-methods'
 
 // ═══════════════════════════════════════════════════════════
 // Core Export
@@ -60,6 +61,7 @@ export type {
   StillGuard,
   StillResult,
   StillDefinition,
+  BlueprintPlanItem,
   BlueprintCheckpoint,
   ExecutionBlueprint,
   PatchEntry,
@@ -112,7 +114,7 @@ export {
 // ═══════════════════════════════════════════════════════════
 
 export { stillsCapabilities, stillsActionSpec, sessionDescribe }
-export { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintRevise }
+export { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintItemAdvance, blueprintRevise }
 
 // ═══════════════════════════════════════════════════════════
 // Register All
@@ -131,13 +133,14 @@ const frameworkStills = [
   blueprintCreate,
   blueprintDescribe,
   blueprintAdvance,
+  blueprintItemAdvance,
   blueprintRevise,
 ] as const
 
 /**
- * 注册全部 31 个 stills 到全局 registry。
+ * 注册全部 32 个 stills 到全局 registry。
  * - dataset domain（24 个）通过 registerDomain 注册；
- * - 框架级 stills（7 个）通过 registerAll 注册。
+ * - 框架级 stills（8 个）通过 registerAll 注册。
  */
 export function registerAllStills(): void {
   registerDomain(datasetDomain)

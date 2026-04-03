@@ -116,6 +116,7 @@ export type {
   StillResult,
   StillDefinition,
   ExecutionBlueprint,
+  BlueprintPlanItem,
   BlueprintCheckpoint,
   PatchEntry,
   DomainProvider,

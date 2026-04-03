@@ -108,19 +108,31 @@
 【3】蓝图工作流层
 ═══════════════════════════════════════════════════
 
-### 3.1 六步工作流
+### 3.1 七步工作流
 
 | 步 | 做什么 | 完成标准 |
 |---|---|---|
 | ① 状态感知 | `session.describe` 获取角色、状态、推荐下一步 | 角色与状态已知 |
 | ② 能力发现 | `stills.capabilities` 获取全部动作规格 | 知道可用动作与参数 |
 | ③ 蓝图生成 | 根据需求创建 blueprint（checkpoints + openQuestions） | blueprint 存在 |
-| ④ 单步执行 | 一个最小写动作 | 收到 `@@result` 或 `@@error` |
-| ⑤ 反馈迭代 | 推进或修订 blueprint | 已决定下一步 |
-| ⑥ 阶段验证 | 用引擎提供的验证动作检查进度 | checkpoint 可标 done |
+| ④ 蓝图优化 | `blueprint.describe` 审阅蓝图，必要时 `blueprint.revise` 补依赖/关联/分派信息 | 蓝图结构可执行 |
+| ⑤ 单步执行 | 一个最小写动作 | 收到 `@@result` 或 `@@error` |
+| ⑥ 反馈迭代 | 推进或修订 blueprint | 已决定下一步 |
+| ⑦ 阶段验证 | 用引擎提供的验证动作检查进度 | checkpoint 可标 done |
 
-步骤 ④⑤⑥ 循环直到所有 checkpoint 完成。
+步骤 ⑤⑥⑦ 循环直到所有 checkpoint 完成。
 执行顺序由 `session.describe` 的推荐下一步引导。
+
+蓝图创建后，不要立刻进入写动作，先做一轮蓝图优化：
+
+- 先 `blueprint.describe`，确认每个 checkpoint 是否足够小、是否可验证。
+- 若 checkpoint 之间存在明显前后依赖，补 `dependsOn`。
+- 若两个 checkpoint 强关联、后续可能一起回看，补 `relatedCheckpointIds`。
+- 若某个 checkpoint 适合交给子代理独立完成，补 `executionMode: "subagent"` 与 `subagentGoal`。
+- 蓝图优化只能重排、拆分、补依赖，不能删除原始业务动作覆盖范围。
+- 若把一个 checkpoint 拆成多个 checkpoint / plan item，拆分后的动作并集必须完整覆盖原 checkpoint 的全部 `plannedActions` 与完整性检查项。
+- 选项数据源若要求 `options` 视图，修订后仍必须保留 `dataview.create(options)` + `dataview.configure(options)`，不能把配置挪到 `default` 视图。
+- 优化完成后，再开始 `dataset.init` / `datatable.create` / `relation.add` 等写动作。
 
 ### 3.2 Blueprint 质量要求
 
@@ -129,6 +141,10 @@
 | 粒度小 | 宁可多步，不要多个写动作塞成一步 |
 | 可验证 | 每个 checkpoint 说明用什么动作验证 |
 | 具体 | `plannedActions` 是具体 SAP action 名（从 stills.capabilities 获取） |
+| 关联清晰 | 有前置依赖时补 `dependsOn`；强关联节点补 `relatedCheckpointIds` |
+| 可分派 | 适合子代理执行的 checkpoint 补 `executionMode: "subagent"` + `subagentGoal` |
+| 不丢覆盖 | revise 只能优化结构，不能把 default 视图配置、options 配置、treeConfig、computeExpression、aggregates、内联数据等要求改丢 |
+| 视图语义正确 | `default` 用于主绑定；选项数据源必须显式使用 `options` 视图，不能拿 `default` 代替 |
 | 诚实 | 不确定的项放 `openQuestions` |
 | 不越界 | blueprint 管步骤，不存业务数据 |
 

@@ -7,7 +7,13 @@
  * 3. 汇总当前会话状态。
  */
 
-import type { StillDefinition, StillResult, IStillSession, ExecutionBlueprint } from './types'
+import type {
+  StillDefinition,
+  StillResult,
+  IStillSession,
+  ExecutionBlueprint,
+  BlueprintExecutionMode,
+} from './types'
 import { noGuard } from './types'
 import { getAllStills, getStill } from './dispatcher'
 import { getDataSetSlot } from './dataset-domain'
@@ -29,6 +35,10 @@ interface ActionCatalogItem {
 interface BlueprintSummary {
   userGoal: string
   currentCheckpointId: string
+  currentCheckpointTitle: string | null
+  currentCheckpointPlannedActions: string[]
+  currentCheckpointDependsOn: string[]
+  currentExecutionMode: BlueprintExecutionMode | null
   totalCheckpoints: number
   completedCheckpoints: number
   openQuestions: string[]
@@ -73,9 +83,17 @@ function countTotalColumns(session: IStillSession): number {
 function buildBlueprintSummary(blueprint: ExecutionBlueprint | null): BlueprintSummary | null {
   if (blueprint === null) return null
 
+  const currentCheckpoint = blueprint.checkpoints.find(
+    (checkpoint) => checkpoint.id === blueprint.currentCheckpointId,
+  )
+
   return {
     userGoal: blueprint.userGoal,
     currentCheckpointId: blueprint.currentCheckpointId,
+    currentCheckpointTitle: currentCheckpoint?.title ?? null,
+    currentCheckpointPlannedActions: currentCheckpoint?.plannedActions ?? [],
+    currentCheckpointDependsOn: currentCheckpoint?.dependsOn ?? [],
+    currentExecutionMode: currentCheckpoint?.executionMode ?? null,
     totalCheckpoints: blueprint.checkpoints.length,
     completedCheckpoints: blueprint.checkpoints.filter((checkpoint) => checkpoint.status === 'done').length,
     openQuestions: blueprint.openQuestions,
@@ -95,7 +113,16 @@ function inferNextStep(
     return '按蓝图执行初始化动作'
   }
   if (blueprintSummary !== null && blueprintSummary.completedCheckpoints < blueprintSummary.totalCheckpoints) {
-    return `继续推进蓝图 checkpoint（${blueprintSummary.completedCheckpoints}/${blueprintSummary.totalCheckpoints}）`
+    const primaryAction = blueprintSummary.currentCheckpointPlannedActions[0]
+    const dependencyHint = blueprintSummary.currentCheckpointDependsOn.length > 0
+      ? `，依赖 ${blueprintSummary.currentCheckpointDependsOn.join(', ')}`
+      : ''
+    const executionHint = blueprintSummary.currentExecutionMode === 'subagent'
+      ? '，当前项建议拆给子代理执行'
+      : primaryAction
+        ? `，优先动作 ${primaryAction}`
+        : ''
+    return `继续推进蓝图 checkpoint（${blueprintSummary.completedCheckpoints}/${blueprintSummary.totalCheckpoints}）${executionHint}${dependencyHint}`
   }
   if (blueprintSummary !== null && blueprintSummary.completedCheckpoints === blueprintSummary.totalCheckpoints) {
     return '所有 checkpoint 已完成，执行验证与导出'

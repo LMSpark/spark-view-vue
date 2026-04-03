@@ -65,12 +65,12 @@ const USER_PROMPT = `请为"请假申请单"页面设计完整的数据模型（
    - 需要按天数汇总统计（聚合）
    - 主表 default 视图需配置 autoCurrentFirst: true（加载后自动选中首行）
 2. 假别字典（选项数据源）：编码、名称，含初始数据（年假/病假/事假/婚假/产假，编码唯一）
-   - 作为申请表"假别"字段的下拉选项（需 options 视图，配置 valueField + labelField）
+  - 作为申请表"假别"字段的下拉选项（需 options 视图，配置 valueField + labelField，不得复用 default 视图）
 3. 员工表（选项数据源）：工号、姓名、部门ID（关联部门表）、职务，含示例数据
-   - 作为申请表"申请人"字段的下拉选项（需 options 视图，配置 valueField + labelField）
+  - 作为申请表"申请人"字段的下拉选项（需 options 视图，配置 valueField + labelField，不得复用 default 视图）
 4. 部门表（树形数据源）：部门名称，含示例数据（总公司及下属部门，有层级关系）
    - 是自引用树结构（parentId 指向同表 id），必须有 relation.add 声明自引用关系
-   - 作为员工表"部门"字段的下拉树选项（需 options 视图，配置 valueField + labelField + treeConfig）
+  - 作为员工表"部门"字段的下拉树选项（需 options 视图，配置 valueField + labelField + treeConfig，不得复用 default 视图）
 
 注意：字典表作为下拉选项数据源，不需要配置 dependency（无级联过滤）。`
 
@@ -265,6 +265,56 @@ function parseBlockBody(body: string): unknown {
   }
 }
 
+function asDict(value: unknown): Record<string, unknown> {
+  return value as Record<string, unknown>
+}
+
+function getViews(table: unknown): Record<string, Record<string, unknown>> | undefined {
+  return asDict(table)['views'] as Record<string, Record<string, unknown>> | undefined
+}
+
+function autoCompleteBlueprintAfterExport(session: IStillSession, requestId: string): ReturnType<typeof executeStill> | null {
+  const blueprint = session.blueprint
+  if (blueprint === null) return null
+
+  const currentCheckpoint = blueprint.checkpoints.find(
+    (checkpoint) => checkpoint.id === blueprint.currentCheckpointId,
+  )
+  if (!currentCheckpoint) return null
+
+  if (blueprint.currentPlanItemId) {
+    const currentPlanItem = currentCheckpoint.planItems.find(
+      (planItem) => planItem.id === blueprint.currentPlanItemId,
+    )
+    if (currentPlanItem && currentPlanItem.status !== 'done' && currentPlanItem.action === 'dataset.export') {
+      return executeStill(
+        'blueprint.item.advance',
+        {
+          completedPlanItemId: currentPlanItem.id,
+          checkpointId: currentCheckpoint.id,
+          note: 'dataset.export 已完成，自动收尾蓝图',
+        },
+        session,
+        `${requestId}-auto-blueprint-item-advance`,
+      )
+    }
+  }
+
+  if (currentCheckpoint.status !== 'done' && currentCheckpoint.plannedActions.includes('dataset.export')) {
+    return executeStill(
+      'blueprint.advance',
+      {
+        completedCheckpointId: currentCheckpoint.id,
+        note: 'dataset.export 已完成，自动收尾蓝图',
+      },
+      session,
+      `${requestId}-auto-blueprint-advance`,
+    )
+  }
+
+  return null
+}
+
 // ═══════════════════════════════════════════════════════════
 // 主流程
 // ═══════════════════════════════════════════════════════════
@@ -282,7 +332,7 @@ async function main() {
   console.log('\n🔧 初始化 Stills 引擎...')
   registerAllStills()
   const session: IStillSession = createSession()
-  console.log('✅ 31 个 Stills 已注册，会话已创建\n')
+  console.log('✅ 32 个 Stills 已注册，会话已创建\n')
 
   // 3. 对话容器（多轮累积）
   const conversation: Array<{ role: string; content: string }> = [
@@ -393,6 +443,26 @@ async function main() {
 
       // dataset.export 成功 → 立即退出循环，任务完成
       if (block.action === 'dataset.export') {
+        const autoBlueprintResult = autoCompleteBlueprintAfterExport(session, block.id)
+        if (autoBlueprintResult !== null) {
+          if (!autoBlueprintResult.ok) {
+            throw new Error(`dataset.export 后自动收尾蓝图失败: [${autoBlueprintResult.code}] ${autoBlueprintResult.msg}`)
+          }
+          console.log(`  ✅ 自动收尾蓝图: ${autoBlueprintResult.summary}`)
+          turns.push({
+            round,
+            timestamp: new Date().toISOString(),
+            phase: 'stills-execute',
+            sapBlock: {
+              type: 'request',
+              action: autoBlueprintResult.summary.startsWith('推进 plan item:') ? 'blueprint.item.advance' : 'blueprint.advance',
+              id: `${block.id}-auto-blueprint-complete`,
+              params: autoBlueprintResult.summary,
+            },
+            stillsResult: { ok: true, data: autoBlueprintResult.data, summary: autoBlueprintResult.summary },
+            elapsed: 0,
+          })
+        }
         console.log(`  🏁 dataset.export 完成，退出循环`)
         // 记录对话轮次后直接 break
         turns.push({
@@ -451,10 +521,16 @@ async function main() {
     })
 
     // Step D: 注入结果回对话
+    const followUpInstruction = result.ok && block.action === 'blueprint.create'
+      ? '\n\n[系统编排要求]\n现在进入蓝图优化轮。下一轮先执行 blueprint.describe，审阅 checkpoints 的 dependsOn / relatedCheckpointIds / executionMode / subagentGoal；如缺失或不合理，先用 blueprint.revise 修正，然后再开始 dataset.init、datatable.create、relation.add 等写动作。蓝图优化只允许重排、拆分、补依赖，不允许删除原始业务动作覆盖范围。若拆分 checkpoint，拆分后的动作并集必须完整保留 default 视图配置、options 的 valueField/labelField、treeConfig、computeExpression、aggregates、datatable.addRows、dataset.validate、dataset.export。凡是需求写了 options 视图，就必须保留 dataview.create(options) + dataview.configure(options)，禁止把这些配置挪到 default 视图。'
+      : ''
+    if (followUpInstruction) {
+      console.log('  🧭 已注入蓝图优化要求')
+    }
     conversation.push({ role: 'assistant', content: aiReply })
     conversation.push({
       role: 'user',
-      content: `[系统工具执行结果]\n${resultText}`,
+      content: `[系统工具执行结果]\n${resultText}${followUpInstruction}`,
     })
   }
 
@@ -490,16 +566,15 @@ async function main() {
     // 构造精简的导出摘要（避免 token 过多）
     const exportedDs = selfCheckSlot.dataset
     const tablesSummary = Object.entries(exportedDs.tables).map(([name, t]) => {
-      const cols = t.columns.map((c: Record<string, unknown>) => {
-        let desc = `${c['name']}(${c['type']}`
-        if (c['isPrimaryKey']) desc += ',PK'
-        if (c['computeExpression']) desc += `,expr=${(c['computeExpression'] as string).slice(0, 40)}`
+      const cols = t.columns.map((c) => {
+        const column = asDict(c)
+        let desc = `${column['name']}(${column['type']}`
+        if (column['isPrimaryKey']) desc += ',PK'
+        if (column['computeExpression']) desc += `,expr=${(column['computeExpression'] as string).slice(0, 40)}`
         desc += ')'
         return desc
       }).join(', ')
-      const views = Object.entries(
-        (t as Record<string, unknown>)['views'] as Record<string, Record<string, unknown>> | undefined ?? {},
-      ).map(([vid, v]) => {
+      const views = Object.entries(getViews(t) ?? {}).map(([vid, v]) => {
         const flags: string[] = []
         if (v['autoCurrentFirst']) flags.push('autoCurrentFirst')
         if (v['autoLoad']) flags.push('autoLoad')
@@ -516,9 +591,10 @@ async function main() {
       return `  ${name}: 列=[${cols}] 视图=[${views}] API=[${api}]`
     }).join('\n')
 
-    const relsSummary = (exportedDs.tableRelations ?? []).map(
-      (r: Record<string, unknown>) => `  ${r['parentTable']}→${r['childTable']} (${r['parentField']}→${r['childField']})`,
-    ).join('\n')
+    const relsSummary = (exportedDs.tableRelations ?? []).map((r) => {
+      const relation = asDict(r)
+      return `  ${relation['parentTable']}→${relation['childTable']} (${relation['parentField']}→${relation['childField']})`
+    }).join('\n')
 
     const selfCheckPrompt = `以下是你刚才导出的 DataSet 的完整结构摘要，请仔细审查是否有遗漏或需要补充的内容。
 
@@ -640,6 +716,15 @@ ${USER_PROMPT}
     for (const cp of bp.checkpoints) {
       const icon = cp.status === 'done' ? '✅' : '⬜'
       console.log(`  ${icon} ${cp.id}: ${cp.title}`)
+      if (cp.dependsOn && cp.dependsOn.length > 0) {
+        console.log(`     依赖: ${cp.dependsOn.join(', ')}`)
+      }
+      if (cp.relatedCheckpointIds && cp.relatedCheckpointIds.length > 0) {
+        console.log(`     关联: ${cp.relatedCheckpointIds.join(', ')}`)
+      }
+      if (cp.executionMode === 'subagent') {
+        console.log(`     子代理: ${cp.subagentGoal ?? '未提供 subagentGoal'}`)
+      }
     }
     if (bp.openQuestions.length > 0) {
       console.log(`  ❓ 开放问题: ${bp.openQuestions.join('; ')}`)
@@ -650,7 +735,7 @@ ${USER_PROMPT}
   // 6. 自动化验证报告
   // ═══════════════════════════════════════════════════════════
 
-  const report = buildVerificationReport(slot.dataset, session.patchLog)
+  const report = buildVerificationReport(slot.dataset, session.patchLog, turns, session.blueprint)
   printVerificationReport(report)
 
   // 写入验证报告 JSON
@@ -687,6 +772,8 @@ interface VerificationReport {
 function buildVerificationReport(
   dataset: ReturnType<typeof getDataSetSlot>['dataset'],
   patchLog: Array<{ action: string; summary: string }>,
+  turns: DialogueTurn[],
+  blueprint: IStillSession['blueprint'],
 ): VerificationReport {
   const checks: VerifyCheck[] = []
 
@@ -724,7 +811,7 @@ function buildVerificationReport(
   const viewConfigured: string[] = []
   const viewNotConfigured: string[] = []
   for (const [name, t] of tables) {
-    const dv = (t as Record<string, unknown>).views as Record<string, Record<string, unknown>> | undefined
+    const dv = getViews(t)
     const def = dv?.['default']
     if (def && (def['autoLoad'] != null || def['autoCurrentFirst'] != null || def['sortExpression'] != null)) {
       viewConfigured.push(name)
@@ -747,7 +834,7 @@ function buildVerificationReport(
   const auxFkColumns: Array<{ table: string; col: string }> = []
   for (const [name, t] of tables) {
     for (const c of t.columns) {
-      const colName = typeof c === 'object' && c !== null ? (c as Record<string, unknown>)['name'] as string : ''
+      const colName = typeof c === 'object' && c !== null ? asDict(c)['name'] as string : ''
       if (!colName || !/Id$/.test(colName) || colName === 'id') continue
       // 自引用：parentId / managerId / supervisorId 通常指同表或通用辅助关系
       const isSelfRef = /^(parent|manager|supervisor)Id$/.test(colName)
@@ -796,12 +883,16 @@ function buildVerificationReport(
   const tablesWithNumericCols: string[] = []
   const tablesWithAggregates: string[] = []
   for (const [name, t] of tables) {
-    const hasNumeric = t.columns.some((c: Record<string, unknown>) =>
-      (c['type'] === 'number' || c['type'] === 'decimal' || c['type'] === 'int' || c['type'] === 'integer')
-      && !(c['isComputed'] === true || c['computeExpression'] != null),
-    )
+    const hasNumeric = t.columns.some((c) => {
+      const column = asDict(c)
+      return (column['type'] === 'number'
+        || column['type'] === 'decimal'
+        || column['type'] === 'int'
+        || column['type'] === 'integer')
+        && !(column['isComputed'] === true || column['computeExpression'] != null)
+    })
     if (hasNumeric) tablesWithNumericCols.push(name)
-    const dv = (t as Record<string, unknown>).views as Record<string, Record<string, unknown>> | undefined
+    const dv = getViews(t)
     const def = dv?.['default']
     if (def?.['aggregates'] && Object.keys(def['aggregates'] as object).length > 0) {
       tablesWithAggregates.push(name)
@@ -820,7 +911,7 @@ function buildVerificationReport(
   const invalidComputedCols: string[] = []
   for (const [name, t] of tables) {
     for (const c of t.columns) {
-      const col = c as Record<string, unknown>
+      const col = asDict(c)
       const expr = col['computeExpression'] as string | undefined
       if (expr) {
         computedCols.push(`${name}.${col['name']}`)
@@ -846,15 +937,14 @@ function buildVerificationReport(
   let mainTableName = ''
   let maxFkCount = -1
   for (const [name, t] of tables) {
-    const fkCount = t.columns.filter((c: Record<string, unknown>) => {
-      const cn = c['name'] as string
+    const fkCount = t.columns.filter((c) => {
+      const cn = asDict(c)['name'] as string
       return cn && /Id$/.test(cn) && cn !== 'id'
     }).length
     if (fkCount > maxFkCount) { maxFkCount = fkCount; mainTableName = name }
   }
-  const mainTableView = mainTableName
-    ? ((tables.find(([n]) => n === mainTableName)?.[1] as Record<string, unknown>)?.views as Record<string, Record<string, unknown>> | undefined)?.['default']
-    : undefined
+  const mainTable = mainTableName ? tables.find(([n]) => n === mainTableName)?.[1] : undefined
+  const mainTableView = mainTable ? getViews(mainTable)?.['default'] : undefined
   const hasAutoCurrentFirst = mainTableView?.['autoCurrentFirst'] === true
   checks.push({
     id: 'main-table-auto-current-first',
@@ -872,13 +962,13 @@ function buildVerificationReport(
   const treeTablesMissing: string[] = []
   for (const [name, t] of tables) {
     // 检查是否有 parentId 列（自引用树结构的标志）
-    const hasParentId = t.columns.some((c: Record<string, unknown>) => {
-      const cn = c['name'] as string
+    const hasParentId = t.columns.some((c) => {
+      const cn = asDict(c)['name'] as string
       return cn === 'parentId'
     })
     if (!hasParentId) continue
     treeTables.push(name)
-    const dv = (t as Record<string, unknown>).views as Record<string, Record<string, unknown>> | undefined
+    const dv = getViews(t)
     const optionsView = dv?.['options']
     if (optionsView?.['treeConfig'] != null) {
       treeTablesWithConfig.push(name)
@@ -900,7 +990,7 @@ function buildVerificationReport(
   // ── Check 8: 枚举/配置表有内联数据
   const tablesWithRows: Array<{ name: string; count: number }> = []
   for (const [name, t] of tables) {
-    const dv = (t as Record<string, unknown>).views as Record<string, Record<string, unknown>> | undefined
+    const dv = getViews(t)
     const def = dv?.['default']
     const rows = def?.['rows'] as unknown[] | undefined
     if (rows && rows.length > 0) {
@@ -932,6 +1022,53 @@ function buildVerificationReport(
     label: 'dataset.export 已调用',
     pass: exportCalled,
     detail: exportCalled ? '✓' : '未调用 export',
+  })
+
+  // ── Check 11: blueprint.create 后，在首个非 blueprint 写动作前做过一次蓝图优化
+  const blueprintCreateTurnIndex = turns.findIndex((turn) =>
+    turn.phase === 'stills-execute'
+    && turn.stillsResult?.ok === true
+    && turn.sapBlock?.action === 'blueprint.create')
+  const firstNonBlueprintWriteTurnIndex = turns.findIndex((turn, index) =>
+    index > blueprintCreateTurnIndex
+    && turn.phase === 'stills-execute'
+    && turn.sapBlock?.type === 'request'
+    && turn.sapBlock.action !== 'blueprint.create'
+    && !turn.sapBlock.action.startsWith('blueprint.'))
+  const optimizationWindow = blueprintCreateTurnIndex >= 0
+    ? turns.slice(
+      blueprintCreateTurnIndex + 1,
+      firstNonBlueprintWriteTurnIndex >= 0 ? firstNonBlueprintWriteTurnIndex : undefined,
+    )
+    : []
+  const optimizationActions = optimizationWindow
+    .filter((turn) =>
+      turn.phase === 'stills-execute'
+      && turn.stillsResult?.ok === true
+      && (turn.sapBlock?.action === 'blueprint.describe' || turn.sapBlock?.action === 'blueprint.revise'))
+    .map((turn) => turn.sapBlock?.action ?? '')
+  checks.push({
+    id: 'blueprint-optimized-before-write',
+    label: 'blueprint.create 后先优化蓝图',
+    pass: optimizationActions.length > 0,
+    detail: optimizationActions.length > 0
+      ? optimizationActions.join(' → ')
+      : '首个写动作前缺少 blueprint.describe / blueprint.revise',
+  })
+
+  const completedCheckpointCount = blueprint?.checkpoints.filter((checkpoint) => checkpoint.status === 'done').length ?? 0
+  const totalCheckpointCount = blueprint?.checkpoints.length ?? 0
+  const pendingCheckpoints = blueprint?.checkpoints
+    .filter((checkpoint) => checkpoint.status !== 'done')
+    .map((checkpoint) => checkpoint.id)
+    ?? []
+  checks.push({
+    id: 'blueprint-fully-completed',
+    label: 'blueprint 全部完成',
+    pass: blueprint !== null && totalCheckpointCount > 0 && pendingCheckpoints.length === 0,
+    detail: pendingCheckpoints.length === 0
+      ? `${completedCheckpointCount}/${totalCheckpointCount} checkpoints 已完成`
+      : `未完成: ${pendingCheckpoints.join(', ')}`,
   })
 
   const passed = checks.filter(c => c.pass).length

@@ -72,8 +72,8 @@ beforeEach(() => {
 // ─── Tests ──────────────────────────────────────────────────
 
 describe('stills registry', () => {
-  it('registers 31 stills', () => {
-    expect(getAllStills().size).toBe(31)
+  it('registers 32 stills', () => {
+    expect(getAllStills().size).toBe(32)
   })
 
   it('all stills have required fields', () => {
@@ -91,7 +91,7 @@ describe('meta stills (P0)', () => {
   it('stills.capabilities returns action list', () => {
     const r = exec('stills.capabilities')
     expectOk(r)
-    expect((r.data as { actions: unknown[] }).actions.length).toBe(31)
+    expect((r.data as { actions: unknown[] }).actions.length).toBe(32)
   })
 
   it('stills.actionSpec returns spec for known action', () => {
@@ -138,10 +138,45 @@ describe('blueprint stills (P1)', () => {
     exec('blueprint.create', {
       title: '测试',
       requirements: '测试需求',
-      checkpoints: [{ id: 'cp1', title: '步骤1', plannedActions: ['test'], validation: 'test' }],
+      checkpoints: [{
+        id: 'cp1',
+        title: '步骤1',
+        plannedActions: ['test'],
+        validation: 'test',
+        executionMode: 'subagent',
+        subagentGoal: '单独处理步骤1',
+      }],
     })
     const r = exec('blueprint.describe')
     expectOk(r)
+    const data = r.data as {
+      currentCheckpoint: {
+        executionMode: string
+        subagentGoal: string
+      }
+      checkpoints: Array<{
+        executionMode: string
+        subagentGoal: string
+      }>
+    }
+    expect(data.currentCheckpoint.executionMode).toBe('subagent')
+    expect(data.currentCheckpoint.subagentGoal).toBe('单独处理步骤1')
+    expect(data.checkpoints[0]?.executionMode).toBe('subagent')
+  })
+
+  it('blueprint.create validates subagent checkpoints', () => {
+    const r = exec('blueprint.create', {
+      title: '测试',
+      requirements: '测试需求',
+      checkpoints: [{
+        id: 'cp1',
+        title: '步骤1',
+        plannedActions: ['test'],
+        validation: 'test',
+        executionMode: 'subagent',
+      }],
+    })
+    expectFail(r, 'INVALID_PARAMS')
   })
 
   it('blueprint.advance marks checkpoint done', () => {
@@ -150,15 +185,53 @@ describe('blueprint stills (P1)', () => {
       requirements: '测试需求',
       checkpoints: [
         { id: 'cp1', title: '步骤1', plannedActions: ['a'], validation: 'v1' },
-        { id: 'cp2', title: '步骤2', plannedActions: ['b'], validation: 'v2' },
+        {
+          id: 'cp2',
+          title: '步骤2',
+          plannedActions: ['b'],
+          validation: 'v2',
+          dependsOn: ['cp1'],
+          relatedCheckpointIds: ['cp1'],
+          executionMode: 'subagent',
+          subagentGoal: '独立补齐步骤2',
+        },
       ],
     })
     const r = exec('blueprint.advance', { completedCheckpointId: 'cp1' })
     expectOk(r)
     const blueprint = expectDefined(session.blueprint)
     const checkpoint = expectDefined(blueprint.checkpoints[0])
+    const nextCheckpoint = expectDefined(blueprint.checkpoints[1])
     expect(checkpoint.status).toBe('done')
     expect(blueprint.currentCheckpointId).toBe('cp2')
+    expect(nextCheckpoint.dependsOn).toEqual(['cp1'])
+    expect(nextCheckpoint.executionMode).toBe('subagent')
+  })
+
+  it('blueprint.item.advance marks plan item done', () => {
+    exec('blueprint.create', {
+      title: '测试',
+      requirements: '测试需求',
+      checkpoints: [
+        {
+          id: 'cp1',
+          title: '步骤1',
+          plannedActions: [],
+          validation: 'v1',
+          planItems: [
+            { id: 'cp1.item1', title: '建表', action: 'datatable.create' },
+            { id: 'cp1.item2', title: '建关系', action: 'relation.add', dependsOn: ['cp1.item1'] },
+          ],
+        },
+      ],
+    })
+    const r = exec('blueprint.item.advance', { completedPlanItemId: 'cp1.item1', note: '建表完成' })
+    expectOk(r)
+    const blueprint = expectDefined(session.blueprint)
+    expect(blueprint.currentCheckpointId).toBe('cp1')
+    expect(blueprint.currentPlanItemId).toBe('cp1.item2')
+    expect(blueprint.checkpoints[0]?.planItems[0]?.status).toBe('done')
+    expect(blueprint.checkpoints[0]?.status).toBe('pending')
   })
 })
 

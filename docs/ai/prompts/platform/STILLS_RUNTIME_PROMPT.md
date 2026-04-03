@@ -75,7 +75,12 @@ type：describe（查询）/ request（执行）。
 
 引擎支持蓝图工作流（blueprint）。当 session.describe 指示需要蓝图时：
 - 先创建 blueprint，再执行写动作
+- blueprint.create 后，先做一轮蓝图优化：先 blueprint.describe，必要时 blueprint.revise，再开始 dataset.init / datatable.create 等写动作
+- 蓝图优化只允许做结构优化：补依赖、补关联、补 executionMode / subagentGoal、把大 checkpoint 拆成 plan items 或更小 checkpoint
+- 结构优化不得削弱业务覆盖范围；如果拆分 checkpoint，拆分后的动作并集必须完整保留原 checkpoint 的全部 plannedActions 与完整性检查项
 - blueprint 管步骤，不存业务数据
+- checkpoint 优先补充 dependsOn / relatedCheckpointIds，明确前后依赖与强关联项
+- 若某 checkpoint 准备交给子代理执行，补 executionMode: "subagent" + subagentGoal
 - 不确定的项放 openQuestions
 - 不替用户决定关键业务事实 —— 必须确认后再执行
 
@@ -94,6 +99,7 @@ type：describe（查询）/ request（执行）。
      如果一张表既做列表展示又做下拉选项数据源，应创建多个视图：
        - default 视图：列表展示（排序, 分页, autoCurrentFirst）
        - options 视图：下拉选项（必须配置 valueField + labelField）
+      ⚠️ 选项数据源必须使用 `options` 视图，禁止把 valueField / labelField / treeConfig 直接配置到 default 视图上冒充 options 视图。
      ⚠️ autoLoad 说明：绑定到 UI 组件的视图会自动加载，不必显式设置 autoLoad。
         autoLoad 仅用于不绑定 UI 但需要预加载数据的视图。
      ⚠️ autoCurrentFirst 更重要：加载完成后自动选中第一行为 currentRow。
@@ -126,6 +132,17 @@ type：describe（查询）/ request（执行）。
   5. 内联数据唯一性
      枚举/字典表的内联数据（datatable.addRows）中，编码字段（code）值必须全局唯一。
      不允许两行使用相同的 code。
+
+  6. 蓝图优化不得丢动作
+     blueprint.revise 的职责是调整执行结构，不是减少业务动作。
+     如果原蓝图里有：
+       - default 视图排序 / autoCurrentFirst
+       - options 视图 valueField + labelField
+       - treeConfig
+       - computeExpression
+       - aggregates
+       - datatable.addRows 内联数据
+     那么修订后的 blueprint / planItems 必须仍然完整覆盖这些动作。
 
 ══ DataSet 建模完整性 ══
 
