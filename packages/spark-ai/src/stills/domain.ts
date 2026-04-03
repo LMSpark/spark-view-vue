@@ -56,5 +56,17 @@ export function createSession(): IStillSession {
     session.domains[name] = domain.createState()
   }
 
+  // session.blueprint getter/setter 代理到 domains['blueprint'].data，向后兼容。
+  // 所有已有代码继续读写 session.blueprint，实际操作的是 blueprint 域 state。
+  if (session.domains['blueprint'] !== undefined) {
+    const blueprintState = session.domains['blueprint']
+    Object.defineProperty(session, 'blueprint', {
+      get() { return blueprintState.data },
+      set(value) { blueprintState.data = value },
+      enumerable: true,
+      configurable: false,
+    })
+  }
+
   return session
 }

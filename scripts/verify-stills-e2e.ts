@@ -93,7 +93,11 @@ const capsResult = exec(session, 'stills.capabilities')
 ok(capsResult, 'stills.capabilities')
 if (capsResult.ok) {
   const d = capsResult.data as { actions: unknown[]; total: number }
-  assert(d.total === 31, `应有 31 个动作，实际 ${d.total}`)
+  assert(
+    d.total === d.actions.length,
+    `total 应与 actions.length 一致，实际 total=${d.total}, actions=${d.actions.length}`,
+  )
+  assert(d.total >= 31, `动作数不应少于 31，实际 ${d.total}`)
   // 检查每个动作是否都有 guard 描述
   const actions = d.actions as Array<{ action: string; guard?: string }>
   const withGuard = actions.filter(a => a.guard !== undefined)
@@ -818,30 +822,36 @@ assert(patchAfterDescribe === patchBefore, `describe 不应增加 patchLog（${p
 console.log(`✅ describe 幂等：patchLog 未增长`)
 
 // 比较 describe 的返回值一致性
-const j1 = JSON.stringify(d1.data)
-const j2 = JSON.stringify(d2.data)
-const j3 = JSON.stringify(d3.data)
-assert(j1 === j2 && j2 === j3, 'describe 返回值应完全一致')
-console.log(`✅ describe 返回值一致`)
+if (d1.ok && d2.ok && d3.ok) {
+  const j1 = JSON.stringify(d1.data)
+  const j2 = JSON.stringify(d2.data)
+  const j3 = JSON.stringify(d3.data)
+  assert(j1 === j2 && j2 === j3, 'describe 返回值应完全一致')
+  console.log(`✅ describe 返回值一致`)
+}
 
 step('连续 2 次 dataset.export')
 const e1 = exec(session, 'dataset.export')
 const e2 = exec(session, 'dataset.export')
 assert(e1.ok && e2.ok, '连续 export 应全部成功')
-const snap1 = JSON.stringify((e1.data as { snapshot: unknown }).snapshot)
-const snap2 = JSON.stringify((e2.data as { snapshot: unknown }).snapshot)
-assert(snap1 === snap2, 'export 快照应完全一致')
-console.log(`✅ export 幂等：快照一致 (${snap1.length} chars)`)
+if (e1.ok && e2.ok) {
+  const snap1 = JSON.stringify((e1.data as { snapshot: unknown }).snapshot)
+  const snap2 = JSON.stringify((e2.data as { snapshot: unknown }).snapshot)
+  assert(snap1 === snap2, 'export 快照应完全一致')
+  console.log(`✅ export 幂等：快照一致 (${snap1.length} chars)`)
+}
 
 step('dataset.validate 连续 2 次')
 const v1 = exec(session, 'dataset.validate')
 const v2 = exec(session, 'dataset.validate')
 assert(v1.ok && v2.ok, 'validate 应全部成功')
-assert(
-  JSON.stringify(v1.data) === JSON.stringify(v2.data),
-  'validate 返回值应一致',
-)
-console.log(`✅ validate 幂等`)
+if (v1.ok && v2.ok) {
+  assert(
+    JSON.stringify(v1.data) === JSON.stringify(v2.data),
+    'validate 返回值应一致',
+  )
+  console.log(`✅ validate 幂等`)
+}
 
 step('patchLog 增长验证（export+validate=request 类型）')
 const patchAfterAll = session.patchLog.length
@@ -898,17 +908,28 @@ step('StillResult 结构一致性（成功 vs 失败）')
   // 成功 case
   const okResult = exec(session, 'session.describe')
   assert(okResult.ok === true, 'ok 应为 true')
-  assert(typeof okResult.summary === 'string', 'summary 应为字符串')
-  assert(okResult.data !== undefined, 'data 应存在')
-  assert(okResult.code === undefined, '成功时 code 应不存在')
-  assert(okResult.msg === undefined, '成功时 msg 应不存在')
+  if (okResult.ok) {
+    assert(typeof okResult.summary === 'string', 'summary 应为字符串')
+    assert(okResult.data !== undefined, 'data 应存在')
+    assert(!('code' in okResult), '成功时 code 应不存在')
+    assert(!('msg' in okResult), '成功时 msg 应不存在')
+    assert(!('fix' in okResult), '成功时 fix 应不存在')
+  } else {
+    assert(false, `session.describe 应返回成功结果: [${okResult.code}] ${okResult.msg}`)
+  }
 
   // 失败 case
   const failResult = exec(session, 'stills.actionSpec', {})
   assert(failResult.ok === false, 'ok 应为 false')
-  assert(typeof failResult.code === 'string', '失败时 code 应为字符串')
-  assert(typeof failResult.msg === 'string', '失败时 msg 应为字符串')
-  assert(typeof failResult.fix === 'string', '失败时 fix 应为字符串')
+  if (!failResult.ok) {
+    assert(typeof failResult.code === 'string', '失败时 code 应为字符串')
+    assert(typeof failResult.msg === 'string', '失败时 msg 应为字符串')
+    assert(typeof failResult.fix === 'string', '失败时 fix 应为字符串')
+    assert(!('data' in failResult), '失败时 data 应不存在')
+    assert(!('summary' in failResult), '失败时 summary 应不存在')
+  } else {
+    assert(false, `stills.actionSpec 应返回失败结果: ${failResult.summary}`)
+  }
 
   console.log(`✅ StillResult 结构验证通过（成功/失败双路径）`)
 }
@@ -918,15 +939,17 @@ step('session.describe nextStep 状态机完整性')
   // 当前所有 checkpoint 已完成
   const desc = exec(session, 'session.describe')
   assert(desc.ok, 'describe 应成功')
-  const data = desc.data as { nextStep: string; locked: boolean; blueprint: Record<string, unknown> | null }
-  assert(typeof data.nextStep === 'string' && data.nextStep.length > 0, 'nextStep 应为非空字符串')
-  console.log(`✅ nextStep: "${data.nextStep}"`)
+  if (desc.ok) {
+    const data = desc.data as { nextStep: string; locked: boolean; blueprint: Record<string, unknown> | null }
+    assert(typeof data.nextStep === 'string' && data.nextStep.length > 0, 'nextStep 应为非空字符串')
+    console.log(`✅ nextStep: "${data.nextStep}"`)
 
-  // 验证蓝图完成状态
-  const bp = data.blueprint as { completedCheckpoints: number; totalCheckpoints: number } | null
-  if (bp) {
-    assert(bp.completedCheckpoints === bp.totalCheckpoints, '所有 checkpoint 应已完成')
-    console.log(`     blueprint: ${bp.completedCheckpoints}/${bp.totalCheckpoints} ✅`)
+    // 验证蓝图完成状态
+    const bp = data.blueprint as { completedCheckpoints: number; totalCheckpoints: number } | null
+    if (bp) {
+      assert(bp.completedCheckpoints === bp.totalCheckpoints, '所有 checkpoint 应已完成')
+      console.log(`     blueprint: ${bp.completedCheckpoints}/${bp.totalCheckpoints} ✅`)
+    }
   }
 }
 
@@ -935,15 +958,16 @@ step('dataset.describe 与 session.describe 一致性对比')
   const sessDesc = exec(session, 'session.describe')
   const dsDesc = exec(session, 'dataset.describe')
   assert(sessDesc.ok && dsDesc.ok, '两个 describe 应成功')
+  if (sessDesc.ok && dsDesc.ok) {
+    const sessDs = (sessDesc.data as { dataset: { tables: number; totalColumns: number; relations: number } }).dataset
+    const dsData = dsDesc.data as { name: string; tables: Record<string, unknown>[]; totalColumns?: number; relations?: number }
 
-  const sessDs = (sessDesc.data as { dataset: { tables: number; totalColumns: number; relations: number } }).dataset
-  const dsData = dsDesc.data as { name: string; tables: Record<string, unknown>[]; totalColumns?: number; relations?: number }
-
-  // session.describe.dataset.tables 计数应与 dataset.describe 中的表数一致
-  const dsTableCount = Array.isArray(dsData.tables) ? dsData.tables.length : Object.keys(dsData.tables ?? {}).length
-  assert(sessDs.tables === dsTableCount || sessDs.tables === 6, `表数量应一致: session=${sessDs.tables}, dataset表数=${dsTableCount}`)
-  console.log(`✅ 表数量一致: ${sessDs.tables}`)
-  console.log(`     session.describe.columns = ${sessDs.totalColumns}`)
+    // session.describe.dataset.tables 计数应与 dataset.describe 中的表数一致
+    const dsTableCount = Array.isArray(dsData.tables) ? dsData.tables.length : Object.keys(dsData.tables ?? {}).length
+    assert(sessDs.tables === dsTableCount || sessDs.tables === 6, `表数量应一致: session=${sessDs.tables}, dataset表数=${dsTableCount}`)
+    console.log(`✅ 表数量一致: ${sessDs.tables}`)
+    console.log(`     session.describe.columns = ${sessDs.totalColumns}`)
+  }
 }
 
 step('patchLog 无未知动作泄漏')

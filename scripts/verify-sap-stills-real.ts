@@ -19,9 +19,9 @@
  *   data/sap-stills-metadata.json   — 最终 IDataSetMetadata
  */
 
-import { registerAllStills, createSession, executeStill } from '../packages/spark-ai/src/index.js'
+import { registerAllStills, createSession, executeStill, getStill, getAllStills } from '../packages/spark-ai/src/index.js'
 import { getDataSetState } from '../packages/spark-ai/src/stills/dataset-domain.js'
-import type { IStillSession } from '../packages/spark-ai/src/stills/types.js'
+import type { IStillSession, StillDefinition } from '../packages/spark-ai/src/stills/types.js'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -53,6 +53,27 @@ const PROTOCOL_ONLY_INSTRUCTION = `
 
 禁止输出任何自然语言文字（包括解释、总结、过渡语句、思考过程）。
 除非明确收到"请总结"指令，否则你的回复中只有协议块。
+`.trim()
+
+const REVIEW_ONLY_INSTRUCTION = `
+
+══ 审查输出格式（严格执行）══
+
+你当前处于“只做审查”的阶段：
+
+1. 只输出自然语言中文结论，禁止输出任何 SAP 协议块。
+2. 禁止输出 @@request / @@describe / @@result / @@error / @@end。
+3. 只允许依据“原始需求回顾”和“导出结果摘要”里的显式事实做判断，禁止补充习惯性设计、隐含业务假设或额外数据资源。
+4. 如果摘要里已经列出 relation，就视为该 relation 已存在；禁止再要求列级重复声明、隐式 metadata 或其他未展示结构。
+5. 如果通过，以“✅ 审查通过：”开头。
+6. 如果失败，以“❌ 审查失败：”开头，并逐条列出问题。
+`.trim()
+
+const SUMMARY_ONLY_INSTRUCTION = `
+
+══ 总结输出格式（严格执行）══
+
+你当前只需要输出中文自然语言总结，禁止输出任何 SAP 协议块。
 `.trim()
 
 const USER_PROMPT = `请为"请假申请单"页面设计完整的数据模型（DataSet），覆盖该页面所需的全部数据资源。
@@ -87,7 +108,9 @@ function loadStillsSystemPrompt(): string {
   return match[1].trim()
 }
 
-const STILLS_SYSTEM_PROMPT = loadStillsSystemPrompt() + '\n\n' + PROTOCOL_ONLY_INSTRUCTION
+const STILLS_PROTOCOL_SYSTEM_PROMPT = loadStillsSystemPrompt() + '\n\n' + PROTOCOL_ONLY_INSTRUCTION
+const STILLS_REVIEW_SYSTEM_PROMPT = `${loadStillsSystemPrompt()}\n\n${REVIEW_ONLY_INSTRUCTION}`
+const STILLS_SUMMARY_SYSTEM_PROMPT = `${loadStillsSystemPrompt()}\n\n${SUMMARY_ONLY_INSTRUCTION}`
 
 // ═══════════════════════════════════════════════════════════
 // 类型定义
@@ -121,6 +144,7 @@ interface DialogueTurn {
     code?: string
     msg?: string
     fix?: string
+    correction?: SapImmediateCorrection
     summary?: string
   }
   // 耗时
@@ -135,6 +159,24 @@ interface FullDialogue {
   turns: DialogueTurn[]
   finalSummary: string
   totalElapsed: number
+}
+
+interface RuntimeAbortState {
+  aborted: boolean
+  reason: string
+}
+
+interface SapImmediateCorrection {
+  requestedAction: string
+  suggestedAction: string | null
+  suggestedType: 'request' | 'describe' | null
+  guard: string | null
+  paramsSchema: Record<string, unknown> | null
+  example: Record<string, unknown> | null
+  usageRules: string[]
+  failureModes: Array<{ code: string; when: string; fix: string }>
+  candidateActions?: string[]
+  suggestedProtocolBlock: string | null
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -269,50 +311,438 @@ function asDict(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>
 }
 
+function formatSapProtocolBlock(
+  type: 'request' | 'describe',
+  action: string,
+  requestId: string,
+  params: unknown,
+): string {
+  return `@@${type}:${action}#${requestId}\n${JSON.stringify(params, null, 2)}\n@@end`
+}
+
+function tokenizeAction(action: string): string[] {
+  return action.toLowerCase().split(/[._-]+/u).filter((token) => token.length > 0)
+}
+
+function scoreActionCandidate(requestedAction: string, candidateAction: string): number {
+  const requestedTokens = tokenizeAction(requestedAction)
+  const candidateTokens = tokenizeAction(candidateAction)
+  let score = 0
+
+  if (candidateAction.startsWith(requestedAction) || requestedAction.startsWith(candidateAction)) {
+    score += 20
+  }
+
+  const [requestedNamespace] = requestedTokens
+  const [candidateNamespace] = candidateTokens
+  if (requestedNamespace && candidateNamespace && requestedNamespace === candidateNamespace) {
+    score += 10
+  }
+
+  for (const token of requestedTokens) {
+    if (candidateTokens.includes(token)) score += 3
+  }
+
+  return score
+}
+
+function findCandidateActions(requestedAction: string, max = 5): string[] {
+  return Array.from(getAllStills().keys())
+    .map((candidate) => ({ candidate, score: scoreActionCandidate(requestedAction, candidate) }))
+    .filter((item) => item.score > 0)
+    .sort((left, right) => right.score - left.score || left.candidate.localeCompare(right.candidate))
+    .slice(0, max)
+    .map((item) => item.candidate)
+}
+
+function buildCorrectionFromStill(
+  action: string,
+  still: StillDefinition | undefined,
+  requestId: string,
+  candidates: string[] = [],
+  compilerFix?: string,
+): SapImmediateCorrection {
+  const fixBlocks = compilerFix ? extractSapBlocks(compilerFix) : []
+  const suggestedBlockText = fixBlocks.length > 0 ? fixBlocks.map((block) => block.raw).join('\n\n') : null
+  const firstFixBlock = fixBlocks[0]
+  const fixSuggestedAction = firstFixBlock?.action ?? null
+  const fixSuggestedStill = fixSuggestedAction ? getStill(fixSuggestedAction) : undefined
+
+  if (!still) {
+    const suggestedAction = fixSuggestedAction ?? candidates[0] ?? null
+    const suggestedStill = fixSuggestedStill ?? (suggestedAction ? getStill(suggestedAction) : undefined)
+    return {
+      requestedAction: action,
+      suggestedAction,
+      suggestedType: firstFixBlock?.type === 'request' || firstFixBlock?.type === 'describe'
+        ? firstFixBlock.type
+        : (suggestedStill?.type ?? null),
+      guard: suggestedStill?.guardDescription ?? null,
+      paramsSchema: suggestedStill?.paramsSchema ?? null,
+      example: suggestedStill?.example ?? null,
+      usageRules: suggestedStill?.usageRules ?? [],
+      failureModes: suggestedStill?.failureModes ?? [],
+      candidateActions: candidates,
+      suggestedProtocolBlock: suggestedBlockText ?? (suggestedStill
+        ? formatSapProtocolBlock(suggestedStill.type, suggestedStill.action, `${requestId}-retry`, suggestedStill.example ?? {})
+        : null),
+    }
+  }
+
+  const suggestedAction = fixSuggestedAction ?? still.action
+  const suggestedStill = fixSuggestedStill ?? still
+
+  return {
+    requestedAction: action,
+    suggestedAction,
+    suggestedType: firstFixBlock?.type === 'request' || firstFixBlock?.type === 'describe'
+      ? firstFixBlock.type
+      : suggestedStill.type,
+    guard: suggestedStill.guardDescription ?? null,
+    paramsSchema: suggestedStill.paramsSchema ?? null,
+    example: suggestedStill.example ?? null,
+    usageRules: suggestedStill.usageRules ?? [],
+    failureModes: suggestedStill.failureModes ?? [],
+    suggestedProtocolBlock: suggestedBlockText ?? formatSapProtocolBlock(suggestedStill.type, suggestedStill.action, `${requestId}-retry`, suggestedStill.example ?? {}),
+  }
+}
+
 function getViews(table: unknown): Record<string, Record<string, unknown>> | undefined {
   return asDict(table)['views'] as Record<string, Record<string, unknown>> | undefined
 }
 
-function autoCompleteBlueprintAfterExport(session: IStillSession, requestId: string): ReturnType<typeof executeStill> | null {
-  const blueprint = session.blueprint
-  if (blueprint === null) return null
+function hasPendingBlueprintWork(blueprint: IStillSession['blueprint']): boolean {
+  if (!blueprint) return false
+  return blueprint.checkpoints.some((checkpoint) => checkpoint.status !== 'done')
+}
 
-  const currentCheckpoint = blueprint.checkpoints.find(
-    (checkpoint) => checkpoint.id === blueprint.currentCheckpointId,
-  )
-  if (!currentCheckpoint) return null
+function hasSuccessfulStill(turns: DialogueTurn[], action: string): boolean {
+  return turns.some((turn) => turn.phase === 'stills-execute'
+    && turn.sapBlock?.action === action
+    && turn.stillsResult?.ok === true)
+}
 
-  if (blueprint.currentPlanItemId) {
-    const currentPlanItem = currentCheckpoint.planItems.find(
-      (planItem) => planItem.id === blueprint.currentPlanItemId,
-    )
-    if (currentPlanItem && currentPlanItem.status !== 'done' && currentPlanItem.action === 'dataset.export') {
-      return executeStill(
-        'blueprint.item.advance',
-        {
-          completedPlanItemId: currentPlanItem.id,
-          checkpointId: currentCheckpoint.id,
-          note: 'dataset.export 已完成，自动收尾蓝图',
-        },
-        session,
-        `${requestId}-auto-blueprint-item-advance`,
-      )
+function isSapProtocolText(text: string): boolean {
+  return /@@(?:request|describe|result|error):/u.test(text)
+}
+
+function isCompatibleValue(columnType: unknown, value: unknown): boolean {
+  if (value === null || value === undefined) return true
+
+  switch (columnType) {
+    case 'string':
+    case 'date':
+    case 'datetime':
+    case 'time':
+      return typeof value === 'string'
+    case 'number':
+    case 'decimal':
+    case 'int':
+    case 'integer':
+    case 'float':
+    case 'double':
+      return typeof value === 'number'
+    case 'boolean':
+      return typeof value === 'boolean'
+    case 'json':
+    case 'object':
+      return typeof value === 'object'
+    default:
+      return true
+  }
+}
+
+function normalizeAggregateEntries(aggregates: unknown): Array<{ field: string; aggregate: string }> {
+  if (Array.isArray(aggregates)) {
+    return aggregates.map((aggregate) => {
+      const dict = asDict(aggregate)
+      return {
+        field: String(dict['field'] ?? ''),
+        aggregate: String(dict['aggregate'] ?? dict['aggregator'] ?? dict['type'] ?? ''),
+      }
+    })
+  }
+
+  if (aggregates && typeof aggregates === 'object') {
+    return Object.entries(aggregates as Record<string, unknown>).map(([field, aggregate]) => {
+      const dict = asDict(aggregate)
+      return {
+        field,
+        aggregate: String(dict['aggregate'] ?? dict['aggregator'] ?? dict['type'] ?? ''),
+      }
+    })
+  }
+
+  return []
+}
+
+function formatAggregateSummary(aggregates: unknown): string {
+  return normalizeAggregateEntries(aggregates)
+    .filter((aggregate) => aggregate.field.length > 0)
+    .map((aggregate) => `${aggregate.field}:${aggregate.aggregate}`)
+    .join(',')
+}
+
+function buildSeedRowsTemplate(tableName: string, table: { columns: unknown[] } | undefined, requestId: string): string | null {
+  if (!table) return null
+
+  const exampleRow: Record<string, unknown> = {}
+  for (const columnValue of table.columns) {
+    const column = asDict(columnValue)
+    const columnName = String(column['name'] ?? '')
+    if (!columnName || column['computeExpression'] != null) continue
+
+    if (columnName === 'parentId') {
+      exampleRow[columnName] = null
+      continue
+    }
+
+    switch (String(column['type'] ?? 'string')) {
+      case 'number':
+      case 'decimal':
+      case 'int':
+      case 'integer':
+      case 'float':
+      case 'double':
+        exampleRow[columnName] = 1
+        break
+      case 'boolean':
+        exampleRow[columnName] = false
+        break
+      case 'date':
+        exampleRow[columnName] = '2024-01-01'
+        break
+      case 'datetime':
+        exampleRow[columnName] = '2024-01-01T00:00:00Z'
+        break
+      default:
+        exampleRow[columnName] = `<${columnName}>`
+        break
     }
   }
 
-  if (currentCheckpoint.status !== 'done' && currentCheckpoint.plannedActions.includes('dataset.export')) {
-    return executeStill(
-      'blueprint.advance',
-      {
-        completedCheckpointId: currentCheckpoint.id,
-        note: 'dataset.export 已完成，自动收尾蓝图',
-      },
-      session,
-      `${requestId}-auto-blueprint-advance`,
-    )
+  return formatSapProtocolBlock('request', 'datatable.addRows', `${requestId}-seed-${tableName.toLowerCase()}`, {
+    tableName,
+    rows: [exampleRow],
+  })
+}
+
+function formatSortSummary(view: Record<string, unknown>): string {
+  const sortExpression = typeof view['sortExpression'] === 'string' ? view['sortExpression'] : ''
+  if (sortExpression) return sortExpression
+
+  const sortConfig = view['sort'] && typeof view['sort'] === 'object'
+    ? view['sort'] as Record<string, unknown>
+    : {}
+  const field = typeof sortConfig['field'] === 'string' ? sortConfig['field'] : ''
+  const order = typeof sortConfig['order'] === 'string' ? sortConfig['order'] : ''
+
+  if (field && order) return `${field}:${order}`
+  if (field) return field
+  return ''
+}
+
+function describeBlueprintCheckpoint(checkpoint: Record<string, unknown>): string {
+  const plannedActions = Array.isArray(checkpoint['plannedActions']) ? checkpoint['plannedActions'].join(' ') : ''
+  const planItems = Array.isArray(checkpoint['planItems'])
+    ? checkpoint['planItems']
+      .map((item) => {
+        const dict = asDict(item)
+        return [dict['title'], dict['action'], dict['note'], dict['subagentGoal']].filter(Boolean).join(' ')
+      })
+      .join(' ')
+    : ''
+  return [
+    checkpoint['id'],
+    checkpoint['title'],
+    checkpoint['validation'],
+    checkpoint['subagentGoal'],
+    plannedActions,
+    planItems,
+  ].filter(Boolean).join(' ')
+}
+
+function collectBlueprintCoverageIssues(blueprint: IStillSession['blueprint']): string[] {
+  if (!blueprint) return ['蓝图不存在']
+
+  const checkpoints = blueprint.checkpoints.map((checkpoint) => ({
+    id: checkpoint.id,
+    dependsOn: checkpoint.dependsOn ?? [],
+    text: describeBlueprintCheckpoint(asDict(checkpoint)),
+  }))
+  const allText = checkpoints.map((checkpoint) => checkpoint.text).join('\n')
+  const issues: string[] = []
+
+  if (!/applicantId|申请人ID|Employee→LeaveApplication/u.test(allText)) {
+    issues.push('蓝图未显式覆盖 LeaveApplication.applicantId 与 Employee 的关系')
+  }
+  if (!/leaveTypeId|假别ID|LeaveType→LeaveApplication/u.test(allText)) {
+    issues.push('蓝图未显式覆盖 LeaveApplication.leaveTypeId 与 LeaveType 的关系')
+  }
+  if (!/departmentId|部门ID|Department→Employee/u.test(allText)) {
+    issues.push('蓝图未显式覆盖 Employee.departmentId 与 Department 的关系')
+  }
+  if (!/parentId|自引用|Department→Department/u.test(allText)) {
+    issues.push('蓝图未显式覆盖 Department.parentId 自引用关系')
+  }
+  if (!/options/u.test(allText) || !/LeaveType/u.test(allText) || !/Employee/u.test(allText) || !/Department/u.test(allText)) {
+    issues.push('蓝图未完整覆盖 LeaveType / Employee / Department 的 options 视图')
+  }
+  if (!/valueField/u.test(allText) || !/labelField/u.test(allText)) {
+    issues.push('蓝图未显式要求 options 视图配置 valueField 和 labelField')
+  }
+  if (!/treeConfig/u.test(allText)) {
+    issues.push('蓝图未显式要求 Department.options 配置 treeConfig')
+  }
+  if (!/leaveDays|请假天数/u.test(allText) || !/computeExpression|计算列/u.test(allText)) {
+    issues.push('蓝图未显式覆盖 leaveDays 计算列')
+  }
+  if (!/dataview\.setAggregates|聚合/u.test(allText)) {
+    issues.push('蓝图未显式覆盖主表聚合配置')
+  }
+  if (!/datatable\.addRows|内联|示例数据/u.test(allText)) {
+    issues.push('蓝图未显式覆盖种子数据写入')
+  }
+  if (!/dataset\.validate|最终校验/u.test(allText)) {
+    issues.push('蓝图未显式覆盖 dataset.validate')
+  }
+  if (!/dataset\.export|导出/u.test(allText)) {
+    issues.push('蓝图未显式覆盖 dataset.export')
   }
 
-  return null
+  const aggregateCheckpoint = checkpoints.find((checkpoint) => /dataview\.setAggregates|聚合/u.test(checkpoint.text))
+  const computeCheckpoint = checkpoints.find((checkpoint) => /datatable\.addColumns|computeExpression|计算列/u.test(checkpoint.text))
+  if (aggregateCheckpoint && computeCheckpoint) {
+    const aggregateIndex = checkpoints.findIndex((checkpoint) => checkpoint.id === aggregateCheckpoint.id)
+    const computeIndex = checkpoints.findIndex((checkpoint) => checkpoint.id === computeCheckpoint.id)
+    const aggregateDependsOnCompute = aggregateCheckpoint.dependsOn.includes(computeCheckpoint.id)
+    if (aggregateIndex < computeIndex && !aggregateDependsOnCompute) {
+      issues.push(`蓝图将聚合 checkpoint ${aggregateCheckpoint.id} 排在计算列 checkpoint ${computeCheckpoint.id} 之前`)
+    }
+  }
+
+  return issues
+}
+
+function collectCoreFkCoverageIssues(dataset: ReturnType<typeof getDataSetState>['data']): string[] {
+  if (!dataset) return []
+
+  const relations: Array<{ childTable: string; childField: string }> =
+    (dataset.tableRelations as Array<{ childTable: string; childField: string }>) ?? []
+  const missingCoreFks: string[] = []
+
+  for (const [tableName, table] of Object.entries(dataset.tables)) {
+    for (const column of table.columns) {
+      const columnName = String(asDict(column)['name'] ?? '')
+      if (!columnName || !/Id$/u.test(columnName) || columnName === 'id') continue
+      if (/^(parent|manager|supervisor)Id$/u.test(columnName)) continue
+      if (/^(next|specific|current|previous)/u.test(columnName)) continue
+      const hasRelation = relations.some((relation) => relation.childTable === tableName && relation.childField === columnName)
+      if (!hasRelation) missingCoreFks.push(`${tableName}.${columnName}`)
+    }
+  }
+
+  return missingCoreFks
+}
+
+function collectTableRowConsistencyIssues(tableName: string, table: { columns: unknown[] } | undefined, views: Record<string, Record<string, unknown>> | undefined): string[] {
+  if (!table) return [`${tableName} 不存在`]
+
+  const columnMap = new Map(
+    table.columns.map((column) => {
+      const dict = asDict(column)
+      return [String(dict['name']), dict] as const
+    }),
+  )
+  const primaryKeys = [...columnMap.values()]
+    .filter((column) => column['isPrimaryKey'] === true)
+    .map((column) => String(column['name']))
+  const rows = (views?.['default']?.['rows'] as unknown[] | undefined) ?? []
+  const issues: string[] = []
+
+  if (rows.length === 0) {
+    issues.push(`${tableName}.default 缺少种子数据`)
+    return issues
+  }
+
+  rows.forEach((rowValue, rowIndex) => {
+    const row = asDict(rowValue)
+    for (const key of Object.keys(row)) {
+      if (key === '_pk') continue
+      if (!columnMap.has(key)) {
+        issues.push(`${tableName}.rows[${rowIndex}].${key} 未声明为列`)
+      }
+    }
+    for (const primaryKey of primaryKeys) {
+      if (!(primaryKey in row) || row[primaryKey] === null || row[primaryKey] === undefined || row[primaryKey] === '') {
+        issues.push(`${tableName}.rows[${rowIndex}] 缺少主键列 ${primaryKey}`)
+      }
+    }
+    for (const [columnName, column] of columnMap.entries()) {
+      if (!(columnName in row)) {
+        if (column['computeExpression'] == null) {
+          issues.push(`${tableName}.rows[${rowIndex}] 缺少列 ${columnName}`)
+        }
+        continue
+      }
+      if (!isCompatibleValue(column['type'], row[columnName])) {
+        issues.push(
+          `${tableName}.rows[${rowIndex}].${columnName} 类型不匹配: 值=${JSON.stringify(row[columnName])}, 列类型=${String(column['type'])}`,
+        )
+      }
+    }
+  })
+
+  return issues
+}
+
+function collectOptionViewConfigIssues(dataset: ReturnType<typeof getDataSetState>['data'] | null): string[] {
+  if (!dataset) return []
+
+  const issues: string[] = []
+  for (const [tableName, table] of Object.entries(dataset.tables)) {
+    const optionsView = getViews(table)?.['options']
+    if (!optionsView) continue
+
+    if (!optionsView['valueField']) issues.push(`${tableName}.options 缺少 valueField`)
+    if (!optionsView['labelField']) issues.push(`${tableName}.options 缺少 labelField`)
+
+    const hasParentId = table.columns.some((column) => String(asDict(column)['name'] ?? '') === 'parentId')
+    if (hasParentId && optionsView['treeConfig'] == null) {
+      issues.push(`${tableName}.options 缺少 treeConfig`)
+    }
+  }
+
+  return issues
+}
+
+function buildOptionsRepairTemplate(tableName: string, table: { columns: unknown[] } | undefined, issue: string, requestId: string): string | null {
+  if (!table) return null
+
+  const columnNames = table.columns.map((column) => String(asDict(column)['name'] ?? ''))
+  const labelField = columnNames.includes('name') ? 'name' : (columnNames.find((name) => name && name !== 'id') ?? 'id')
+  const valueField = columnNames.includes('code') ? 'code' : (columnNames.includes('id') ? 'id' : labelField)
+
+  if (issue.includes('treeConfig')) {
+    return formatSapProtocolBlock('request', 'dataview.setTreeConfig', `${requestId}-fix-tree`, {
+      tableName,
+      viewId: 'options',
+      treeConfig: {
+        idField: 'id',
+        parentIdField: 'parentId',
+        textField: labelField,
+      },
+    })
+  }
+
+  return formatSapProtocolBlock('request', 'dataview.configure', `${requestId}-fix-options`, {
+    tableName,
+    viewId: 'options',
+    config: {
+      valueField,
+      labelField,
+    },
+  })
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -342,7 +772,11 @@ async function main() {
   let round = 0
   let finalSummary = ''
   let consecutiveErrors = 0
-  let lastErrorAction = ''
+  let lastErrorSignature = ''
+  let lastSapSignature = ''
+  let repeatedSapSignatureCount = 0
+  let exportCompleted = false
+  const runtimeAbort: RuntimeAbortState = { aborted: false, reason: '' }
 
   console.log('═══════════════════════════════════════════════════════════')
   console.log(`  SAP 协议 + Stills 引擎 — 直连 DeepSeek (${DEEPSEEK_MODEL})`)
@@ -369,7 +803,7 @@ async function main() {
     // Step A: 调用 LLM（滑动窗口）
     const windowed = getWindowedConversation()
     const allMessages: Array<{ role: string; content: string }> = [
-      { role: 'system', content: STILLS_SYSTEM_PROMPT },
+      { role: 'system', content: STILLS_PROTOCOL_SYSTEM_PROMPT },
       ...windowed,
     ]
     const trimmed = conversation.length - windowed.length
@@ -390,7 +824,7 @@ async function main() {
       conversation.push({ role: 'assistant', content: aiReply })
       conversation.push({
         role: 'user',
-        content: '[系统协议提醒]\n你必须只输出 SAP 协议块（@@describe 或 @@request），不要输出自然语言。请继续执行下一步操作。',
+        content: `[系统协议提醒]\n你必须只输出一个 SAP 协议块（@@describe 或 @@request），不要输出自然语言。可直接按以下模板重试：\n${formatSapProtocolBlock('describe', 'session.describe', `retry-${round}`, {})}\n或\n${formatSapProtocolBlock('describe', 'stills.capabilities', `retry-${round}-capabilities`, {})}`,
       })
       turns.push({
         round,
@@ -409,7 +843,7 @@ async function main() {
       conversation.push({ role: 'assistant', content: aiReply })
       conversation.push({
         role: 'user',
-        content: '[系统协议错误]\n一次只允许输出 1 个 SAP 协议块。请只输出一个 @@request:<action>#<id> 或 @@describe:<action>#<id>。',
+        content: `[系统协议错误]\n一次只允许输出 1 个 SAP 协议块。请只输出一个块，并可直接按以下模板重试：\n${formatSapProtocolBlock('describe', 'session.describe', `retry-${round}`, {})}`,
       })
       turns.push({
         round,
@@ -432,67 +866,65 @@ async function main() {
     const execStart = Date.now()
     const result = executeStill(block.action, params, session, block.id)
     const execElapsed = Date.now() - execStart
+    const currentStill = getStill(block.action)
+    const currentSapSignature = `${block.action}:${JSON.stringify(params)}:${result.ok ? 'ok' : result.code}`
+    if (currentSapSignature === lastSapSignature) {
+      repeatedSapSignatureCount++
+    } else {
+      lastSapSignature = currentSapSignature
+      repeatedSapSignatureCount = 1
+    }
 
     // 构造 @@result / @@error 文本
     let resultText: string
+    let errorCorrection: SapImmediateCorrection | undefined
     if (result.ok) {
       resultText = `@@result:${block.action}#${block.id}\n${JSON.stringify(result.data)}\n@@end`
       console.log(`  ✅ 成功 (${execElapsed}ms): ${result.summary}`)
       consecutiveErrors = 0
-      lastErrorAction = ''
+      lastErrorSignature = ''
 
       // dataset.export 成功 → 立即退出循环，任务完成
       if (block.action === 'dataset.export') {
-        const autoBlueprintResult = autoCompleteBlueprintAfterExport(session, block.id)
-        if (autoBlueprintResult !== null) {
-          if (!autoBlueprintResult.ok) {
-            throw new Error(`dataset.export 后自动收尾蓝图失败: [${autoBlueprintResult.code}] ${autoBlueprintResult.msg}`)
-          }
-          console.log(`  ✅ 自动收尾蓝图: ${autoBlueprintResult.summary}`)
-          turns.push({
-            round,
-            timestamp: new Date().toISOString(),
-            phase: 'stills-execute',
-            sapBlock: {
-              type: 'request',
-              action: autoBlueprintResult.summary.startsWith('推进 plan item:') ? 'blueprint.item.advance' : 'blueprint.advance',
-              id: `${block.id}-auto-blueprint-complete`,
-              params: autoBlueprintResult.summary,
-            },
-            stillsResult: { ok: true, data: autoBlueprintResult.data, summary: autoBlueprintResult.summary },
-            elapsed: 0,
-          })
-        }
-        console.log(`  🏁 dataset.export 完成，退出循环`)
-        // 记录对话轮次后直接 break
-        turns.push({
-          round,
-          timestamp: new Date().toISOString(),
-          phase: 'stills-execute',
-          aiText: stripSapBlocks(aiReply) || undefined,
-          aiReasoning: reasoning || undefined,
-          sapBlock: {
-            type: block.type,
-            action: block.action,
-            id: block.id,
-            params,
-          },
-          stillsResult: { ok: true, data: result.data, summary: result.summary },
-          elapsed: Date.now() - roundStart,
-        })
-        finalSummary = '（任务完成，已导出 DataSet）'
-        break
+        exportCompleted = true
+        console.log('  📦 dataset.export 已完成，继续等待模型显式完成蓝图收尾')
       }
     } else {
-      resultText = `@@error:${block.action}#${block.id}\n${JSON.stringify({ code: result.code, msg: result.msg, fix: result.fix })}\n@@end`
+      const candidateActions = result.code === 'UNKNOWN_ACTION' ? findCandidateActions(block.action) : []
+      let correction = buildCorrectionFromStill(block.action, currentStill, block.id, candidateActions, result.fix)
+      if (block.action === 'blueprint.revise' && /请先 blueprint\.describe/u.test(result.fix)) {
+        const describeStill = getStill('blueprint.describe')
+        correction = {
+          ...correction,
+          suggestedAction: 'blueprint.describe',
+          suggestedType: 'describe',
+          guard: describeStill?.guardDescription ?? null,
+          paramsSchema: describeStill?.paramsSchema ?? {},
+          example: describeStill?.example ?? {},
+          usageRules: describeStill?.usageRules ?? correction.usageRules,
+          failureModes: describeStill?.failureModes ?? correction.failureModes,
+          suggestedProtocolBlock: formatSapProtocolBlock('describe', 'blueprint.describe', `${block.id}-retry-describe`, {}),
+        }
+      }
+      errorCorrection = correction
+      resultText = `@@error:${block.action}#${block.id}\n${JSON.stringify({
+        code: result.code,
+        msg: result.msg,
+        fix: result.fix,
+        correction,
+      }, null, 2)}\n@@end`
       console.log(`  ❌ 失败: [${result.code}] ${result.msg}`)
       console.log(`     修复: ${result.fix}`)
+      if (correction.suggestedProtocolBlock) {
+        console.log(`     模板: ${correction.suggestedProtocolBlock}`)
+      }
 
-      if (lastErrorAction === block.action) {
+      const currentErrorSignature = `${block.action}:${result.code}`
+      if (lastErrorSignature === currentErrorSignature) {
         consecutiveErrors++
       } else {
         consecutiveErrors = 1
-        lastErrorAction = block.action
+        lastErrorSignature = currentErrorSignature
       }
 
       if (consecutiveErrors >= 3) {
@@ -516,13 +948,185 @@ async function main() {
       },
       stillsResult: result.ok
         ? { ok: true, data: result.data, summary: result.summary }
-        : { ok: false, code: result.code, msg: result.msg, fix: result.fix },
+        : { ok: false, code: result.code, msg: result.msg, fix: result.fix, correction: errorCorrection },
       elapsed: Date.now() - roundStart,
     })
 
+    let runtimeAbortReason = ''
+    if (repeatedSapSignatureCount >= 3) {
+      runtimeAbortReason = `检测到相同协议动作连续重复 ${repeatedSapSignatureCount} 次: ${block.action}`
+    }
+    if (!runtimeAbortReason && result.ok && block.action === 'dataset.validate') {
+      const validateData = asDict(result.data)
+      if (validateData['valid'] === false) {
+        runtimeAbortReason = `dataset.validate 未通过，说明当前 stills 约束未能把错误在更早阶段拦住`
+      }
+    }
+    if (!runtimeAbortReason && result.ok && block.action === 'schema.lock') {
+      const missingCoreFks = collectCoreFkCoverageIssues(getDataSetState(session).data)
+      if (missingCoreFks.length > 0) {
+        runtimeAbortReason = `schema.lock 成功后仍缺少核心关系: ${missingCoreFks.join(', ')}`
+      }
+    }
+    if (!runtimeAbortReason && result.ok && block.action === 'datatable.addRows') {
+      const currentTableName = String(asDict(params)['tableName'] ?? '')
+      const currentDataset = getDataSetState(session).data
+      const currentTable = currentTableName ? currentDataset?.tables[currentTableName] : undefined
+      const currentViews = currentTable ? getViews(currentTable) : undefined
+      const rowIssues = currentTableName && currentViews?.['options']
+        ? collectTableRowConsistencyIssues(currentTableName, currentTable, currentViews)
+        : []
+      if (rowIssues.length > 0) {
+        runtimeAbortReason = `datatable.addRows 成功后仍写入了不一致种子数据: ${rowIssues.join('；')}`
+      }
+    }
+    if (!runtimeAbortReason && result.ok && (block.action === 'dataview.configure' || block.action === 'dataview.setTreeConfig' || block.action === 'dataview.setAggregates')) {
+      const rawParams = asDict(params)
+      if (typeof rawParams['viewName'] === 'string' && rawParams['viewId'] === undefined) {
+        runtimeAbortReason = `${block.action} 使用了非法参数 viewName，说明具体 still 对协议误用拦截不足`
+      }
+    }
+
+    if (runtimeAbortReason) {
+      runtimeAbort.aborted = true
+      runtimeAbort.reason = runtimeAbortReason
+      finalSummary = `运行中止：${runtimeAbortReason}`
+      console.log(`  🛑 运行中监控触发终止: ${runtimeAbortReason}`)
+      break
+    }
+
     // Step D: 注入结果回对话
-    const followUpInstruction = result.ok && block.action === 'blueprint.create'
-      ? '\n\n[系统编排要求]\n现在进入蓝图优化轮。下一轮先执行 blueprint.describe，审阅 checkpoints 的 dependsOn / relatedCheckpointIds / executionMode / subagentGoal；如缺失或不合理，先用 blueprint.revise 修正，然后再开始 dataset.init、datatable.create、relation.add 等写动作。蓝图优化只允许重排、拆分、补依赖，不允许删除原始业务动作覆盖范围。若拆分 checkpoint，拆分后的动作并集必须完整保留 default 视图配置、options 的 valueField/labelField、treeConfig、computeExpression、aggregates、datatable.addRows、dataset.validate、dataset.export。凡是需求写了 options 视图，就必须保留 dataview.create(options) + dataview.configure(options)，禁止把这些配置挪到 default 视图。'
+    const followUpInstructions: string[] = []
+    if (!result.ok) {
+      const candidateActions = result.code === 'UNKNOWN_ACTION' ? findCandidateActions(block.action) : []
+      const correction = buildCorrectionFromStill(block.action, currentStill, block.id, candidateActions, result.fix)
+      const candidateText = correction.candidateActions && correction.candidateActions.length > 0
+        ? `\n候选动作: ${correction.candidateActions.join(', ')}`
+        : ''
+      const ruleText = correction.usageRules.length > 0
+        ? `\n关键规则:\n- ${correction.usageRules.join('\n- ')}`
+        : ''
+      const protocolText = correction.suggestedProtocolBlock
+        ? `\n正确协议块示例:\n${correction.suggestedProtocolBlock}`
+        : ''
+      followUpInstructions.push(`[系统即时纠错]\n上一条动作 ${block.action} 执行失败（${result.code}）。下一轮必须按下列纠正信息直接改正，不要重复原错误指令。\n建议动作: ${correction.suggestedAction ?? '先执行 stills.capabilities 重新选动作'}${correction.guard ? `\n前置条件: ${correction.guard}` : ''}${candidateText}${protocolText}${ruleText}`)
+    }
+    if (result.ok && block.action === 'blueprint.create') {
+      followUpInstructions.push('[系统编排要求]\n现在进入蓝图优化轮。下一轮先执行 blueprint.describe，审阅 checkpoints 的 dependsOn / relatedCheckpointIds / executionMode / subagentGoal；如缺失或不合理，先用 blueprint.revise 修正，然后再开始 dataset.init、datatable.create、relation.add 等写动作。蓝图优化只允许重排、拆分、补依赖，不允许删除原始业务动作覆盖范围。若拆分 checkpoint，拆分后的动作并集必须完整保留 default 视图配置、options 的 valueField/labelField、treeConfig、computeExpression、aggregates、datatable.addRows、dataset.validate、dataset.export。凡是需求写了 options 视图，就必须保留 dataview.create(options) + dataview.configure(options)，禁止把这些配置挪到 default 视图。')
+    }
+    if (result.ok && (block.action === 'blueprint.create' || block.action === 'blueprint.revise')) {
+      const blueprintIssues = collectBlueprintCoverageIssues(session.blueprint)
+      if (blueprintIssues.length > 0) {
+        followUpInstructions.push(`[系统蓝图校验失败]\n当前蓝图仍有关键遗漏：\n- ${blueprintIssues.join('\n- ')}\n下一轮必须先执行 blueprint.revise 修复这些问题；在蓝图修复前，禁止执行 dataset.init、datatable.create、relation.add、schema.lock 等写动作。`)
+      }
+    }
+    if (result.ok && block.action === 'schema.lock') {
+      const missingCoreFks = collectCoreFkCoverageIssues(getDataSetState(session).data)
+      if (missingCoreFks.length > 0) {
+        followUpInstructions.push(`[系统关系校验失败]\n当前 schema.lock 后仍缺少核心关系：\n- ${missingCoreFks.join('\n- ')}\n下一轮优先执行 relation.add 补齐这些关系；如蓝图未覆盖，请先 blueprint.revise 再补关系。`)
+      }
+    }
+    if (result.ok && block.action === 'datatable.addRows') {
+      const currentTableName = String(asDict(params)['tableName'] ?? '')
+      const currentDataset = getDataSetState(session).data
+      const currentTable = currentTableName ? currentDataset?.tables[currentTableName] : undefined
+      const currentViews = currentTable ? getViews(currentTable) : undefined
+      const rowIssues = currentTableName && currentViews?.['options']
+        ? collectTableRowConsistencyIssues(currentTableName, currentTable, currentViews)
+        : []
+      if (rowIssues.length > 0) {
+        followUpInstructions.push(`[系统种子数据一致性校验失败]\n当前表 ${currentTableName} 的种子数据与列定义不一致：\n- ${rowIssues.join('\n- ')}\n下一轮优先修正字段名、主键列和值类型；必要时先 schema.unlock，再用 datatable.updateColumn / datatable.addColumns / datatable.removeColumn 调整结构后继续。`)
+      }
+
+      const remainingSeedTables = Object.entries(currentDataset?.tables ?? {})
+        .filter(([_, table]) => getViews(table)?.['options'] != null)
+        .filter(([_, table]) => ((getViews(table)?.['default']?.['rows'] as unknown[] | undefined) ?? []).length === 0)
+        .map(([tableName]) => tableName)
+
+      if (remainingSeedTables.length > 0) {
+        const nextTableName = remainingSeedTables[0]
+        const nextTable = nextTableName ? currentDataset?.tables[nextTableName] : undefined
+        const nextSeedTemplate = nextTableName ? buildSeedRowsTemplate(nextTableName, nextTable, block.id) : null
+        followUpInstructions.push(`[系统种子数据未完成]\n当前仍缺少内联数据的 options 源表: ${remainingSeedTables.join(', ')}。下一轮不要提前推进 blueprint，先继续补齐下一张表的数据。${nextSeedTemplate ? `\n建议先执行：\n${nextSeedTemplate}` : ''}`)
+      }
+    }
+    if (result.ok && block.action === 'dependency.add') {
+      const currentDataset = getDataSetState(session).data
+      const currentDependencies = currentDataset?.viewDependencies ?? []
+      const latestDependency = currentDependencies.at(-1)
+      const parentTable = String(latestDependency?.parentTable ?? '')
+      const childTable = String(latestDependency?.childTable ?? '')
+
+      if (parentTable && childTable) {
+        followUpInstructions.push(`[系统 dependency 校验失败]\n当前页面没有级联过滤需求，options 数据源不应额外配置 dependency。下一轮必须先移除刚添加的依赖，例如：\n@@request:dependency.remove#${block.id}-remove-dependency\n{\n  "parentTable": "${parentTable}",\n  "childTable": "${childTable}"\n}\n@@end`)
+      }
+    }
+    if (result.ok && (block.action === 'datatable.create' || block.action === 'datatable.addColumns' || block.action === 'datatable.updateColumn')) {
+      const dataState = getDataSetState(session)
+      const leaveApplication = dataState.data?.tables['LeaveApplication']
+      const leaveDaysColumn = leaveApplication?.columns
+        .map((column) => asDict(column))
+        .find((column) => String(column['name'] ?? '') === 'leaveDays')
+
+      if (!leaveDaysColumn || leaveDaysColumn['computeExpression'] == null) {
+        const nextAction = dataState.locked ? 'schema.unlock' : (leaveDaysColumn ? 'datatable.updateColumn' : 'datatable.addColumns')
+        const nextBlock = dataState.locked
+          ? `@@request:schema.unlock#${block.id}-fix-leavedays\n{}\n@@end`
+          : leaveDaysColumn
+            ? `@@request:datatable.updateColumn#${block.id}-fix-leavedays\n{\n  "tableName": "LeaveApplication",\n  "columnName": "leaveDays",\n  "updates": {\n    "type": "number",\n    "label": "请假天数",\n    "computeExpression": "Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000) + 1"\n  }\n}\n@@end`
+            : `@@request:datatable.addColumns#${block.id}-fix-leavedays\n{\n  "tableName": "LeaveApplication",\n  "columns": [\n    {\n      "name": "leaveDays",\n      "type": "number",\n      "label": "请假天数",\n      "computeExpression": "Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000) + 1"\n    }\n  ]\n}\n@@end`
+
+        followUpInstructions.push(`[系统计算列校验失败]\nLeaveApplication.leaveDays ${leaveDaysColumn ? '缺少 computeExpression，当前仍是普通列' : '尚未创建为计算列'}。下一轮必须先执行 ${nextAction} 修正该字段，例如：\n${nextBlock}`)
+      }
+    }
+    if (result.ok && (block.action === 'dataview.create' || block.action === 'dataview.configure' || block.action === 'dataview.setTreeConfig')) {
+      const currentDataset = getDataSetState(session).data
+      const optionViewIssues = collectOptionViewConfigIssues(currentDataset)
+
+      if (optionViewIssues.length > 0) {
+        const firstIssue = optionViewIssues[0]
+        const tableName = firstIssue.split('.options')[0] ?? ''
+        const table = tableName ? currentDataset?.tables[tableName] : undefined
+        const repairTemplate = tableName ? buildOptionsRepairTemplate(tableName, table, firstIssue, block.id) : null
+        followUpInstructions.push(`[系统 options 视图校验失败]\n当前仍有未完成的 options 视图配置：\n- ${optionViewIssues.join('\n- ')}\n下一轮必须先补齐这些配置，再继续后续步骤。${repairTemplate ? `\n建议先执行：\n${repairTemplate}` : ''}`)
+      }
+    }
+    if (result.ok && block.action === 'dataview.setAggregates') {
+      const currentDataset = getDataSetState(session).data
+      const mainTable = currentDataset?.tables['LeaveApplication']
+      const computedNumericFields = (mainTable?.columns ?? [])
+        .map((column) => asDict(column))
+        .filter((column) => {
+          const columnType = column['type']
+          return column['computeExpression'] != null
+            && (columnType === 'number' || columnType === 'decimal' || columnType === 'int' || columnType === 'integer')
+        })
+        .map((column) => String(column['name']))
+      const mainAggregates = normalizeAggregateEntries(getViews(mainTable)?.['default']?.['aggregates'])
+      const aggregatedComputedFields = mainAggregates
+        .filter((aggregate) => aggregate.aggregate === 'sum')
+        .map((aggregate) => aggregate.field)
+        .filter((field) => computedNumericFields.includes(field))
+
+      if (computedNumericFields.length > 0 && aggregatedComputedFields.length === 0) {
+        followUpInstructions.push(`[系统聚合校验失败]\n主表计算列 ${computedNumericFields.join(', ')} 尚未被 default 视图配置 sum 聚合。下一轮必须先改正聚合配置，例如：\n@@request:dataview.setAggregates#${block.id}-fix-aggregates\n{\n  "tableName": "LeaveApplication",\n  "viewId": "default",\n  "aggregates": [\n    { "field": "leaveDays", "type": "sum", "label": "总请假天数" }\n  ]\n}\n@@end`)
+      }
+    }
+    if (result.ok && block.action === 'dataset.export' && hasPendingBlueprintWork(session.blueprint)) {
+      followUpInstructions.push('[系统编排要求]\ndataset.export 已成功。若蓝图仍有未完成的 plan item / checkpoint，下一轮只允许使用 blueprint.item.advance 或 blueprint.advance 完成收尾；禁止再次修改 DataSet 结构、视图、API、种子数据。')
+    }
+    if (result.ok && session.blueprint && !hasPendingBlueprintWork(session.blueprint)) {
+      const missingTerminalActions = [
+        !hasSuccessfulStill(turns, 'dataset.validate') ? 'dataset.validate' : null,
+        !hasSuccessfulStill(turns, 'dataset.export') ? 'dataset.export' : null,
+      ].filter((action): action is string => action !== null)
+
+      if (missingTerminalActions.length > 0) {
+        followUpInstructions.push(`[系统终态校验失败]\n蓝图已全部完成，但以下必需动作尚未成功执行：${missingTerminalActions.join(', ')}。下一轮禁止继续 session.describe 或自然语言总结；请先直接执行：\n@@request:${missingTerminalActions[0]}#${block.id}-terminal-fix\n{}\n@@end\n完成后再继续剩余终态动作。`)
+      }
+    }
+    const followUpInstruction = followUpInstructions.length > 0
+      ? `\n\n${followUpInstructions.join('\n\n')}`
       : ''
     if (followUpInstruction) {
       console.log('  🧭 已注入蓝图优化要求')
@@ -532,17 +1136,23 @@ async function main() {
       role: 'user',
       content: `[系统工具执行结果]\n${resultText}${followUpInstruction}`,
     })
+
+    if (exportCompleted && !hasPendingBlueprintWork(session.blueprint)) {
+      console.log('  🏁 DataSet 已导出且蓝图已由模型显式完成，退出循环')
+      finalSummary = '（任务完成，已导出 DataSet 且蓝图完成）'
+      break
+    }
   }
 
   // 如果内循环结束时还没有 finalSummary（达到 MAX_ROUNDS 或错误退出），请求一次总结
-  if (!finalSummary && round >= MAX_ROUNDS) {
+  if (!runtimeAbort.aborted && !finalSummary && round >= MAX_ROUNDS) {
     console.log('\n⏱️  达到最大轮次，请求 AI 总结...')
     conversation.push({
       role: 'user',
       content: '你已完成数据模型设计工作。请总结本次设计的成果：包含哪些表、关系、视图，以及整体结构。',
     })
     const allMessages: Array<{ role: string; content: string }> = [
-      { role: 'system', content: STILLS_SYSTEM_PROMPT },
+      { role: 'system', content: STILLS_SUMMARY_SYSTEM_PROMPT },
       ...conversation,
     ]
     const { text: summary } = await streamChat(allMessages)
@@ -560,12 +1170,14 @@ async function main() {
   // ═══════════════════════════════════════════════════════════
 
   const selfCheckState = getDataSetState(session)
-  if (selfCheckState.data && finalSummary) {
+  if (!runtimeAbort.aborted && selfCheckState.data && finalSummary) {
     console.log('\n🔍 AI 自检：将导出结果回传 LLM 审查...')
 
     // 构造精简的导出摘要（避免 token 过多）
     const exportedDs = selfCheckState.data
     const tablesSummary = Object.entries(exportedDs.tables).map(([name, t]) => {
+      const defaultRows = (getViews(t)?.['default']?.['rows'] as unknown[] | undefined) ?? []
+      const tableRowSummary = defaultRows.length > 0 ? `${defaultRows.length} 行种子数据` : '0 行种子数据'
       const cols = t.columns.map((c) => {
         const column = asDict(c)
         let desc = `${column['name']}(${column['type']}`
@@ -576,19 +1188,21 @@ async function main() {
       }).join(', ')
       const views = Object.entries(getViews(t) ?? {}).map(([vid, v]) => {
         const flags: string[] = []
-        if (v['autoCurrentFirst']) flags.push('autoCurrentFirst')
-        if (v['autoLoad']) flags.push('autoLoad')
+        if (v['autoCurrentFirst']) flags.push('autoCurrentFirst=true')
+        if (v['autoLoad']) flags.push('autoLoad=true')
         if (v['valueField']) flags.push(`valueField=${v['valueField']}`)
         if (v['labelField']) flags.push(`labelField=${v['labelField']}`)
         if (v['treeConfig']) flags.push('treeConfig')
-        if (v['aggregates']) flags.push(`aggregates=${Object.keys(v['aggregates'] as object).join(',')}`)
-        if (v['sortExpression']) flags.push(`sort=${v['sortExpression']}`)
+        const aggregateSummary = formatAggregateSummary(v['aggregates'])
+        if (aggregateSummary) flags.push(`aggregates=${aggregateSummary}`)
+        const sortSummary = formatSortSummary(v)
+        if (sortSummary) flags.push(`sort=${sortSummary}`)
         const rowCount = Array.isArray(v['rows']) ? (v['rows'] as unknown[]).length : 0
         if (rowCount > 0) flags.push(`${rowCount}行内联`)
         return `${vid}(${flags.join(', ')})`
       }).join('; ')
       const api = t.api ? Object.keys(t.api).join(',') : '无'
-      return `  ${name}: 列=[${cols}] 视图=[${views}] API=[${api}]`
+      return `  ${name}: 数据=[${tableRowSummary}] 列=[${cols}] 视图=[${views}] API=[${api}]`
     }).join('\n')
 
     const relsSummary = (exportedDs.tableRelations ?? []).map((r) => {
@@ -596,7 +1210,12 @@ async function main() {
       return `  ${relation['parentTable']}→${relation['childTable']} (${relation['parentField']}→${relation['childField']})`
     }).join('\n')
 
-    const selfCheckPrompt = `以下是你刚才导出的 DataSet 的完整结构摘要，请仔细审查是否有遗漏或需要补充的内容。
+    const depsSummary = (exportedDs.viewDependencies ?? []).map((dependencyValue) => {
+      const dependency = asDict(dependencyValue)
+      return `  ${dependency['parentTable']}→${dependency['childTable']} (${dependency['dependencyType'] ?? 'unknown'})`
+    }).join('\n')
+
+    const selfCheckPrompt = `以下是你刚才导出的 DataSet 的完整结构摘要，请严格按显式需求审查，不要脑补额外设计。
 
 ═══ 导出结果摘要 ═══
 DataSet: ${exportedDs.dataSetName}
@@ -607,8 +1226,37 @@ ${tablesSummary}
 关系:
 ${relsSummary || '  无'}
 
+依赖:
+${depsSummary || '  无'}
+
 ═══ 原始需求回顾 ═══
 ${USER_PROMPT}
+
+═══ 主表字段映射（显式事实）═══
+对本次导出结果，以下字段映射已经成立，审查时必须直接按此理解，不得另行脑补别名字段：
+1. “申请编号”对应主表列 id，其 label 为“申请编号”；这已经满足业务上的申请编号字段，不需要额外的 applicationNo / applyNumber / applicationNumber 列。
+2. “申请人”对应主表列 applicantId。
+3. “假别”对应主表列 leaveTypeId。
+4. “状态”对应主表列 status；如果列摘要中已出现 status(...)，就必须判定该字段已存在。
+
+═══ 选项映射事实（显式事实）═══
+对本次导出结果，以下“主表字段 ← 源表 options 视图”的映射已经成立，审查时必须直接按此理解：
+1. applicantId ← Employee.options(valueField=id, labelField=name)。如果关系列表中已出现 Employee→LeaveApplication (id→applicantId)，且 Employee 的 options 视图已配置 valueField=id、labelField=name，则“申请人”字段的选项映射已经满足，不得再声称缺少“申请人映射关系”。
+2. leaveTypeId ← LeaveType.options(valueField=id, labelField=name)。如果关系列表中已出现 LeaveType→LeaveApplication (id→leaveTypeId)，且 LeaveType 的 options 视图已配置 valueField=id、labelField=name，则“假别”字段的选项映射已经满足。
+3. departmentId ← Department.options(valueField=id, labelField=name, treeConfig)。如果关系列表中已出现 Department→Employee (id→departmentId)，且 Department 的 options 视图已配置 valueField=id、labelField=name、treeConfig，则“部门”字段的树形选项映射已经满足。
+
+═══ 审查边界（严格执行）═══
+1. 只能依据“原始需求回顾”中的显式要求和“导出结果摘要”中的显式事实判断，不得补充行业习惯、默认约定或你主观认为“通常还需要”的表。
+2. 主表中的“状态”字段只要求该字段存在；如果原始需求没有明确要求 status/状态字典表、options 视图或 relation，就不得判定缺少 LeaveStatus、Statuses 一类额外表。
+3. 如果“关系”列表中已经出现某个 parentTable→childTable (parentField→childField)，就视为该 relation 已满足；不得再声称该外键“缺少 relation 声明”。
+4. 只有 LeaveType、Employee、Department 被明确要求作为选项数据源；不得把其他字段擅自提升为必须的字典表或 options 视图。
+5. 只有真正违反显式需求的项才算失败；可选优化建议不要判定为“遗漏”。
+6. 同一张表的多个视图共享同一份表数据；如果摘要里已经写明某表存在“X 行种子数据”，就不得因为 options 视图没有重复标注 rows 而判定“缺少初始数据”。
+7. 除非原始需求明确要求排序，否则不得把“缺少排序配置”判定为失败；autoCurrentFirst 的显式存在本身已经满足该项需求。
+8. 主表 LeaveApplication 不需要单独的 options 视图；leaveTypeId / applicantId 使用的是 LeaveType / Employee / Department 这些源表的 options 视图，而不是主表自身的 options 视图。
+9. 如果摘要中的某个 default 视图已经出现 sort=... 或明确列出 autoCurrentFirst=true，则不得再声称该视图“缺少排序”“未开启 autoCurrentFirst”或“无法确定首行”。
+10. 如果某个视图摘要中已经出现 aggregates=leaveDays:sum 或其他 aggregates=字段:sum 形式，就必须判定该字段的 sum 聚合已经配置完成；不得再声称“缺少聚合配置”。
+11. 如果列摘要中已经出现 leaveDays(number,expr=...)，且视图摘要中同时出现 aggregates=leaveDays:sum，就必须判定“请假天数为 JS 计算列且已按天数聚合”这两项都已满足。
 
 ═══ 审查要求 ═══
 请逐项核对：
@@ -616,8 +1264,9 @@ ${USER_PROMPT}
 2. 外键列是否都有对应的 relation？
 3. 树形表的 options 视图是否有 treeConfig？
 4. 主表是否配置了 autoCurrentFirst？
-5. 计算列表达式是否为纯 JS（非 SQL）？
+5. 计算列表达式是否为纯 JS（非 SQL），并且像 leaveDays 这类显式要求汇总的字段是否已经在摘要里出现 aggregates=...:sum？
 6. 选项表是否有内联数据？
+7. 是否存在多余的 viewDependency？本页的 options 数据源不应额外配置 dependency。
 
 如果一切完整无误，请回复"✅ 审查通过，无遗漏"。
 如果有遗漏，请逐条列出需要补充的内容（不需要执行协议操作，只列出遗漏项即可）。`
@@ -626,7 +1275,7 @@ ${USER_PROMPT}
     conversation.push({ role: 'user', content: selfCheckPrompt })
 
     const selfCheckMessages: Array<{ role: string; content: string }> = [
-      { role: 'system', content: STILLS_SYSTEM_PROMPT },
+      { role: 'system', content: STILLS_REVIEW_SYSTEM_PROMPT },
       ...getWindowedConversation(),
     ]
 
@@ -796,15 +1445,30 @@ function buildVerificationReport(
   })
 
   // ── Check 2: 每张表都有 API
-  const tablesWithApi = tables.filter(([, t]) => t.api != null)
-  const tablesNoApi = tables.filter(([, t]) => t.api == null).map(([n]) => n)
+  let mainTableName = ''
+  let maxFkCount = -1
+  for (const [name, t] of tables) {
+    const fkCount = t.columns.filter((c) => {
+      const cn = asDict(c)['name'] as string
+      return cn && /Id$/u.test(cn) && cn !== 'id'
+    }).length
+    if (fkCount > maxFkCount) {
+      maxFkCount = fkCount
+      mainTableName = name
+    }
+  }
+  const mainTable = mainTableName ? tables.find(([n]) => n === mainTableName)?.[1] : undefined
+  const mainApi = mainTable?.api as Record<string, unknown> | undefined
+  const missingCrudMethods = ['list', 'create', 'update', 'delete'].filter((method) => !mainApi?.[method])
   checks.push({
-    id: 'all-tables-have-api',
-    label: '每张表都有 API 端点',
-    pass: tablesNoApi.length === 0,
-    detail: tablesNoApi.length === 0
-      ? `${tablesWithApi.length}/${tables.length} 全部配置`
-      : `缺失: ${tablesNoApi.join(', ')}`,
+    id: 'main-table-crud-api',
+    label: '主表 CRUD API 完整',
+    pass: Boolean(mainTableName) && missingCrudMethods.length === 0,
+    detail: mainTableName
+      ? missingCrudMethods.length === 0
+        ? `${mainTableName} 已配置 list/create/update/delete`
+        : `${mainTableName} 缺少: ${missingCrudMethods.join(', ')}`
+      : '未识别主表',
   })
 
   // ── Check 3: 每张表的 default 视图已配置（有 autoLoad / autoCurrentFirst / sortExpression 之一即可）
@@ -870,39 +1534,34 @@ function buildVerificationReport(
   const uniqueRelPairs = [...new Set(relations.map(r => `${r.parentTable}→${r.childTable}`))]
   // 在单页面场景下，字典表→主表通常不需要 dependency（只是选项数据源）
   // 合理的 dependency 数量应 ≤ 关系数量，且 0 也可以是正确的（无级联需求时）
-  const coverageRate = uniqueRelPairs.length > 0 ? depsCount / uniqueRelPairs.length : 0
   checks.push({
     id: 'deps-reasonable',
     label: 'dependency 合理（无多余级联）',
-    pass: coverageRate <= 1,  // 不应超过关系总数
+    pass: depsCount === 0,
     detail: `${depsCount} 依赖 / ${uniqueRelPairs.length} 关系` +
-      (depsCount === 0 ? ' (无级联需求，正确)' : ` (覆盖率 ${(coverageRate * 100).toFixed(0)}%)`),
+      (depsCount === 0 ? ' (无级联需求，正确)' : ' (检测到多余 dependency)'),
   })
 
-  // ── Check 6: 有数值列的视图配置了聚合
-  const tablesWithNumericCols: string[] = []
-  const tablesWithAggregates: string[] = []
-  for (const [name, t] of tables) {
-    const hasNumeric = t.columns.some((c) => {
-      const column = asDict(c)
-      return (column['type'] === 'number'
-        || column['type'] === 'decimal'
-        || column['type'] === 'int'
-        || column['type'] === 'integer')
-        && !(column['isComputed'] === true || column['computeExpression'] != null)
+  // ── Check 6: 主表计算列已做聚合（leaveDays / 其他计算数值列）
+  const computedNumericFields = (mainTable?.columns ?? [])
+    .map((c) => asDict(c))
+    .filter((column) => {
+      const columnType = column['type']
+      return column['computeExpression'] != null
+        && (columnType === 'number' || columnType === 'decimal' || columnType === 'int' || columnType === 'integer')
     })
-    if (hasNumeric) tablesWithNumericCols.push(name)
-    const dv = getViews(t)
-    const def = dv?.['default']
-    if (def?.['aggregates'] && Object.keys(def['aggregates'] as object).length > 0) {
-      tablesWithAggregates.push(name)
-    }
-  }
+    .map((column) => String(column['name']))
+  const rawAggregates = getViews(mainTable)?.['default']?.['aggregates']
+  const mainAggregates = normalizeAggregateEntries(rawAggregates)
+  const aggregatedComputedFields = mainAggregates
+    .filter((aggregate) => aggregate.aggregate === 'sum')
+    .map((aggregate) => aggregate.field)
+    .filter((field) => computedNumericFields.includes(field))
   checks.push({
-    id: 'numeric-have-aggregates',
-    label: '数值表配置了聚合',
-    pass: tablesWithAggregates.length > 0,
-    detail: `数值表: ${tablesWithNumericCols.join(', ') || '无'} | 有聚合: ${tablesWithAggregates.join(', ') || '无'}`,
+    id: 'computed-field-aggregated',
+    label: '主表计算列已聚合',
+    pass: computedNumericFields.length > 0 && aggregatedComputedFields.length > 0,
+    detail: `计算列: ${computedNumericFields.join(', ') || '无'} | 已聚合: ${aggregatedComputedFields.join(', ') || '无'}`,
   })
 
   // ── Check 7: 计算列存在且为合法 JS 表达式（不含 SQL 函数）
@@ -933,17 +1592,6 @@ function buildVerificationReport(
   })
 
   // ── Check 7b: 主表 default 视图有 autoCurrentFirst
-  // 找主表：有最多 xxxId 外键列的表（被最多字典/选项表引用的表）
-  let mainTableName = ''
-  let maxFkCount = -1
-  for (const [name, t] of tables) {
-    const fkCount = t.columns.filter((c) => {
-      const cn = asDict(c)['name'] as string
-      return cn && /Id$/.test(cn) && cn !== 'id'
-    }).length
-    if (fkCount > maxFkCount) { maxFkCount = fkCount; mainTableName = name }
-  }
-  const mainTable = mainTableName ? tables.find(([n]) => n === mainTableName)?.[1] : undefined
   const mainTableView = mainTable ? getViews(mainTable)?.['default'] : undefined
   const hasAutoCurrentFirst = mainTableView?.['autoCurrentFirst'] === true
   checks.push({
@@ -987,26 +1635,86 @@ function buildVerificationReport(
         : `缺失: ${treeTablesMissing.join(', ')}`,
   })
 
-  // ── Check 8: 枚举/配置表有内联数据
-  const tablesWithRows: Array<{ name: string; count: number }> = []
+  // ── Check 8: options 源表必须单独配置 options 视图，且 value/label 字段完整
+  const optionTables: string[] = []
+  const optionIssues: string[] = []
   for (const [name, t] of tables) {
-    const dv = getViews(t)
-    const def = dv?.['default']
-    const rows = def?.['rows'] as unknown[] | undefined
-    if (rows && rows.length > 0) {
-      tablesWithRows.push({ name, count: rows.length })
-    }
+    const optionsView = getViews(t)?.['options']
+    if (!optionsView) continue
+    optionTables.push(name)
+    if (optionsView['viewId'] !== 'options') optionIssues.push(`${name}.options.viewId 应为 options`)
+    if (!optionsView['valueField']) optionIssues.push(`${name}.options 缺少 valueField`)
+    if (!optionsView['labelField']) optionIssues.push(`${name}.options 缺少 labelField`)
   }
   checks.push({
-    id: 'config-tables-have-rows',
-    label: '配置表有内联数据',
-    pass: tablesWithRows.length > 0,
-    detail: tablesWithRows.length > 0
-      ? tablesWithRows.map(r => `${r.name}(${r.count}行)`).join(', ')
-      : '无内联数据',
+    id: 'options-views-configured',
+    label: '选项源表单独配置 options 视图',
+    pass: optionTables.length >= 3 && optionIssues.length === 0,
+    detail: optionIssues.length === 0
+      ? `${optionTables.length} 张表已配置 options: ${optionTables.join(', ') || '无'}`
+      : optionIssues.join('; '),
   })
 
-  // ── Check 9: validate 已调用
+  // ── Check 9: options 源表必须有种子数据，且行字段/类型与列定义一致
+  const rowIssues: string[] = []
+  const optionSeedSummaries: string[] = []
+  for (const [name, t] of tables) {
+    const hasOptionsView = getViews(t)?.['options'] != null
+    if (!hasOptionsView) continue
+
+    const columnMap = new Map(
+      t.columns.map((column) => {
+        const dict = asDict(column)
+        return [String(dict['name']), dict] as const
+      }),
+    )
+    const primaryKeys = [...columnMap.values()]
+      .filter((column) => column['isPrimaryKey'] === true)
+      .map((column) => String(column['name']))
+    const rows = (getViews(t)?.['default']?.['rows'] as unknown[] | undefined) ?? []
+
+    if (rows.length === 0) {
+      rowIssues.push(`${name}.default 缺少种子数据`)
+      continue
+    }
+    optionSeedSummaries.push(`${name}(${rows.length}行)`)
+
+    rows.forEach((rowValue, rowIndex) => {
+      const row = asDict(rowValue)
+      for (const key of Object.keys(row)) {
+        if (key === '_pk') continue
+        if (!columnMap.has(key)) {
+          rowIssues.push(`${name}.rows[${rowIndex}].${key} 未声明为列`)
+        }
+      }
+      for (const primaryKey of primaryKeys) {
+        if (!(primaryKey in row) || row[primaryKey] === null || row[primaryKey] === undefined || row[primaryKey] === '') {
+          rowIssues.push(`${name}.rows[${rowIndex}] 缺少主键列 ${primaryKey}`)
+        }
+      }
+      for (const [columnName, column] of columnMap.entries()) {
+        if (!(columnName in row)) {
+          if (column['computeExpression'] == null) {
+            rowIssues.push(`${name}.rows[${rowIndex}] 缺少列 ${columnName}`)
+          }
+          continue
+        }
+        if (!isCompatibleValue(column['type'], row[columnName])) {
+          rowIssues.push(
+            `${name}.rows[${rowIndex}].${columnName} 类型不匹配: 值=${JSON.stringify(row[columnName])}, 列类型=${String(column['type'])}`,
+          )
+        }
+      }
+    })
+  }
+  checks.push({
+    id: 'option-seed-data-consistent',
+    label: '选项源表种子数据与列定义一致',
+    pass: rowIssues.length === 0,
+    detail: rowIssues.length === 0 ? optionSeedSummaries.join(', ') : rowIssues.join('; '),
+  })
+
+  // ── Check 10: validate 已调用
   const validateCalled = patchLog.some(e => e.action === 'dataset.validate')
   checks.push({
     id: 'validate-called',
@@ -1015,7 +1723,7 @@ function buildVerificationReport(
     detail: validateCalled ? '✓' : '未调用 validate',
   })
 
-  // ── Check 10: export 已调用
+  // ── Check 11: export 已调用
   const exportCalled = patchLog.some(e => e.action === 'dataset.export')
   checks.push({
     id: 'export-called',
@@ -1024,7 +1732,7 @@ function buildVerificationReport(
     detail: exportCalled ? '✓' : '未调用 export',
   })
 
-  // ── Check 11: blueprint.create 后，在首个非 blueprint 写动作前做过一次蓝图优化
+  // ── Check 12: blueprint.create 后，在首个非 blueprint 写动作前做过一次蓝图优化
   const blueprintCreateTurnIndex = turns.findIndex((turn) =>
     turn.phase === 'stills-execute'
     && turn.stillsResult?.ok === true
@@ -1056,6 +1764,45 @@ function buildVerificationReport(
       : '首个写动作前缺少 blueprint.describe / blueprint.revise',
   })
 
+  // ── Check 13: 自检必须输出自然语言，不得退化为 SAP 协议块
+  const selfCheckTurn = [...turns].reverse().find((turn) => turn.phase === 'self-check')
+  const selfCheckText = selfCheckTurn?.aiText?.trim() ?? ''
+  checks.push({
+    id: 'self-check-natural-language',
+    label: '自检输出自然语言结论',
+    pass: selfCheckText.length > 0 && !isSapProtocolText(selfCheckText),
+    detail: selfCheckText.length === 0
+      ? '未执行 self-check'
+      : isSapProtocolText(selfCheckText)
+        ? `输出了协议块: ${selfCheckText.slice(0, 80)}`
+        : selfCheckText.slice(0, 120),
+  })
+
+  // ── Check 14: 自检结论必须与硬校验结果一致
+  const hardFailureCount = checks.filter((check) => !check.pass).length
+  const selfCheckClaimsPass = /审查通过|无遗漏|完整无误/u.test(selfCheckText)
+  const selfCheckClaimsFail = /审查失败/u.test(selfCheckText)
+  checks.push({
+    id: 'self-check-consistent',
+    label: '自检结论与硬校验一致',
+    pass: hardFailureCount === 0 ? !selfCheckClaimsFail : !selfCheckClaimsPass,
+    detail: hardFailureCount === 0
+      ? `硬校验失败数=${hardFailureCount}，自检输出=${selfCheckText.slice(0, 80) || '空'}`
+      : `硬校验失败数=${hardFailureCount}，自检输出=${selfCheckText.slice(0, 80) || '空'}`,
+  })
+
+  // ── Check 15: 蓝图完成不得依赖脚本自动补全
+  const autoBlueprintTurns = turns.filter((turn) => turn.sapBlock?.id?.includes('auto-blueprint'))
+  checks.push({
+    id: 'blueprint-no-auto-complete',
+    label: '蓝图完成无脚本代补',
+    pass: autoBlueprintTurns.length === 0,
+    detail: autoBlueprintTurns.length === 0
+      ? '✓'
+      : autoBlueprintTurns.map((turn) => `${turn.sapBlock?.action}#${turn.sapBlock?.id}`).join(', '),
+  })
+
+  // ── Check 16: blueprint 全部完成
   const completedCheckpointCount = blueprint?.checkpoints.filter((checkpoint) => checkpoint.status === 'done').length ?? 0
   const totalCheckpointCount = blueprint?.checkpoints.length ?? 0
   const pendingCheckpoints = blueprint?.checkpoints

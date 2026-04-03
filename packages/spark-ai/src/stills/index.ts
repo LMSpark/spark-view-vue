@@ -11,6 +11,7 @@ import type {
   DomainState,
   StillGuard,
   StillResult,
+  StillFailureMode,
   StillDefinition,
   BlueprintPlanItem,
   BlueprintCheckpoint,
@@ -51,7 +52,18 @@ import {
 } from './dataset-domain'
 import type { DataSetDomainState, DesignPhase } from './dataset-domain'
 import { stillsCapabilities, stillsActionSpec, sessionDescribe } from './meta-methods'
-import { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintItemAdvance, blueprintRevise } from './blueprint-methods'
+import {
+  blueprintDomain,
+  getBlueprintState,
+  blueprintCreate,
+  blueprintDescribe,
+  blueprintAdvance,
+  blueprintItemAdvance,
+  blueprintRevise,
+  blueprintValidateCoverage,
+  blueprintSelfCheck,
+} from './blueprint-domain'
+import type { BlueprintDomainState, BlueprintPhase } from './blueprint-domain'
 
 // ═══════════════════════════════════════════════════════════
 // Core Export
@@ -62,6 +74,7 @@ export type {
   DomainState,
   StillGuard,
   StillResult,
+  StillFailureMode,
   StillDefinition,
   BlueprintPlanItem,
   BlueprintCheckpoint,
@@ -116,35 +129,42 @@ export {
 // ═══════════════════════════════════════════════════════════
 
 export { stillsCapabilities, stillsActionSpec, sessionDescribe }
-export { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintItemAdvance, blueprintRevise }
+export {
+  blueprintDomain,
+  getBlueprintState,
+  blueprintCreate,
+  blueprintDescribe,
+  blueprintAdvance,
+  blueprintItemAdvance,
+  blueprintRevise,
+  blueprintValidateCoverage,
+  blueprintSelfCheck,
+}
+export type { BlueprintDomainState, BlueprintPhase }
 
 // ═══════════════════════════════════════════════════════════
 // Register All
 // ═══════════════════════════════════════════════════════════
 
 /**
- * 不隶属于任何业务 domain 的框架级 still。
+ * 不隶属于任何业务 domain 的框架级 still（仅 meta 动作）。
  *
- * 这里保留原始异构 still 元组；注册时再做一次受控类型擦除，
- * 避免 StillDefinition<TParams> 的逆变参数把数组类型逼成一长串联合类型。
+ * 蓝图动作已移入 blueprintDomain，通过 registerDomain 注册。
  */
-const frameworkStills = [
+const metaStills = [
   stillsCapabilities,
   stillsActionSpec,
   sessionDescribe,
-  blueprintCreate,
-  blueprintDescribe,
-  blueprintAdvance,
-  blueprintItemAdvance,
-  blueprintRevise,
 ] as const
 
 /**
- * 注册全部 32 个 stills 到全局 registry。
+ * 注册全部 stills 到全局 registry。
  * - dataset domain（24 个）通过 registerDomain 注册；
- * - 框架级 stills（8 个）通过 registerAll 注册。
+ * - blueprint domain（7 个）通过 registerDomain 注册；
+ * - meta stills（3 个）通过 registerAll 注册。
  */
 export function registerAllStills(): void {
   registerDomain(datasetDomain)
-  registerAll(frameworkStills as unknown as StillDefinition[])
+  registerDomain(blueprintDomain)
+  registerAll(metaStills as unknown as StillDefinition[])
 }

@@ -21,6 +21,13 @@ export type StillResult<T = unknown> =
   | { ok: true; data: T; summary: string }
   | { ok: false; code: string; msg: string; fix: string }
 
+/** still 已知失败模式，用于把 fail-fast 边界显式暴露给 LLM。 */
+export interface StillFailureMode {
+  code: string
+  when: string
+  fix: string
+}
+
 // ═══════════════════════════════════════════════════════════
 // Still Definition
 // ═══════════════════════════════════════════════════════════
@@ -36,12 +43,16 @@ export interface StillDefinition<TParams = unknown, TResult = unknown> {
   guard: StillGuard
   /** 人类可读的 guard 描述（供 stills.capabilities / stills.actionSpec 返回给 AI） */
   guardDescription?: string
+  /** 使用约束 / 关键规则（供 stills.actionSpec 返回，减少 AI 猜测） */
+  usageRules?: string[]
   /** 参数结构说明（供 stills.actionSpec 返回） */
   paramsSchema?: Record<string, unknown>
   /** 返回结构说明 */
   resultSchema?: Record<string, unknown>
   /** 最小参数示例 */
   example?: Record<string, unknown>
+  /** 常见失败模式（供 stills.actionSpec 返回） */
+  failureModes?: StillFailureMode[]
   /** 参数校验，返回 null 表示通过，否则返回错误消息 */
   validate: (params: TParams) => string | null
   /** 纯函数执行，可直接修改 session（dispatcher 负责持久化） */

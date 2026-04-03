@@ -22,11 +22,39 @@ import type {
 } from './types'
 import { getDomainState } from './types'
 import type { DataColumn, CrudApi, IDataRow, AggregateColumnConfig, TreeConfig, IViewMetadata, DataTable, DataView } from '@spark-view/spark-data'
-import { DataSet } from '@spark-view/spark-data'
+import { DataSet, INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
 
 type ProjectedPayload<T> = { data: T; summary: string }
 type StillFailure = { ok: false; code: string; msg: string; fix: string }
 type DatasetValidationIssue = { rule: string; pass: boolean; detail?: string }
+
+const STRING_COLUMN_TYPES = new Set(['string', 'varchar', 'text'])
+const NUMBER_COLUMN_TYPES = new Set(['number', 'int', 'integer', 'decimal', 'float', 'double'])
+const BOOLEAN_COLUMN_TYPES = new Set(['boolean', 'bool'])
+const DATE_COLUMN_TYPES = new Set(['date', 'datetime'])
+const TIME_COLUMN_TYPES = new Set(['time'])
+const OBJECT_COLUMN_TYPES = new Set(['object'])
+const ARRAY_COLUMN_TYPES = new Set(['array'])
+const ENUM_COLUMN_TYPES = new Set(['enum'])
+const HTTP_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
+const INTERNAL_ROW_META_FIELDS = new Set<string>(['_pk', INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD])
+const CRUD_API_ENDPOINT_KEYS = [
+  'create',
+  'retrieve',
+  'update',
+  'delete',
+  'list',
+  'import',
+  'export',
+  'node',
+  'children',
+  'path',
+  'subtree',
+  'move',
+  'search',
+  'nested',
+  'nestedSearch',
+] as const
 
 // ═══════════════════════════════════════════════════════════
 // 域状态与通用帮助函数
@@ -83,6 +111,193 @@ function isNonEmptyArray<T>(value: unknown): value is T[] {
 
 function isNonEmptyRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && Object.keys(value).length > 0
+}
+
+function isHttpEndpointConfig(value: unknown): value is { url: string; method?: string } {
+  if (!isNonEmptyRecord(value)) return false
+  if (!isNonEmptyString(value['url'])) return false
+  const method = value['method']
+  return method === undefined || (typeof method === 'string' && HTTP_METHODS.has(method))
+}
+
+function validateCrudApiConfig(api: CrudApi): string | null {
+  if (!isNonEmptyRecord(api)) return missingParam('api')
+
+  let hasRecognizedEndpoint = false
+  for (const key of CRUD_API_ENDPOINT_KEYS) {
+    const endpoint = api[key]
+    if (endpoint === undefined) continue
+    hasRecognizedEndpoint = true
+    if (!isHttpEndpointConfig(endpoint)) {
+      return `api.${key} 必须包含 url，method 只能是 GET/POST/PUT/PATCH/DELETE`
+    }
+  }
+
+  if (api['batch'] !== undefined) {
+    hasRecognizedEndpoint = true
+    if (!isNonEmptyRecord(api['batch'])) {
+      return 'api.batch 必须是对象'
+    }
+    for (const key of ['create', 'update', 'delete'] as const) {
+      const endpoint = api['batch'][key]
+      if (endpoint !== undefined && !isHttpEndpointConfig(endpoint)) {
+        return `api.batch.${key} 必须包含 url，method 只能是 GET/POST/PUT/PATCH/DELETE`
+      }
+    }
+  }
+
+  if (!hasRecognizedEndpoint) {
+    return 'api 至少包含一个合法端点键（如 list/create/update/delete，或 tree/batch 端点）'
+  }
+
+  return null
+}
+
+function rejectLegacyViewNameParam<T extends object>(params: T): string | null {
+  return isNonEmptyString((params as Record<string, unknown>)['viewName']) ? '使用 viewId，不支持 viewName 参数' : null
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isMissingValue(value: unknown): value is null | undefined {
+  return value === null || value === undefined
+}
+
+function isColumnRequired(column: DataColumn): boolean {
+  return column.isPrimaryKey === true || column.required === true || column.allowDBNull === false
+}
+
+function describeValueType(value: unknown): string {
+  if (value === null) return 'null'
+  if (Array.isArray(value)) return 'array'
+  if (value instanceof Date) return 'date'
+  return typeof value
+}
+
+function normalizeColumnType(type: DataColumn['type']): string {
+  return String(type).toLowerCase()
+}
+
+function isValueCompatibleWithColumnType(type: DataColumn['type'], value: unknown): boolean {
+  const normalizedType = normalizeColumnType(type)
+
+  if (STRING_COLUMN_TYPES.has(normalizedType)) return typeof value === 'string'
+  if (NUMBER_COLUMN_TYPES.has(normalizedType)) return typeof value === 'number' && Number.isFinite(value)
+  if (BOOLEAN_COLUMN_TYPES.has(normalizedType)) return typeof value === 'boolean'
+  if (DATE_COLUMN_TYPES.has(normalizedType)) return typeof value === 'string' || value instanceof Date
+  if (TIME_COLUMN_TYPES.has(normalizedType)) return typeof value === 'string'
+  if (OBJECT_COLUMN_TYPES.has(normalizedType)) return isPlainObject(value)
+  if (ARRAY_COLUMN_TYPES.has(normalizedType)) return Array.isArray(value)
+  if (ENUM_COLUMN_TYPES.has(normalizedType)) return typeof value === 'string' || typeof value === 'number'
+
+  return true
+}
+
+function formatValidationIssueSummary(issues: DatasetValidationIssue[], maxItems = 3): string {
+  return issues
+    .filter((issue) => !issue.pass)
+    .slice(0, maxItems)
+    .map((issue) => issue.detail ?? issue.rule)
+    .join('；')
+}
+
+function collectRowConsistencyIssues(
+  tableName: string,
+  columns: readonly DataColumn[],
+  rows: readonly IDataRow[],
+  baselineRows: readonly IDataRow[] = [],
+): DatasetValidationIssue[] {
+  const issues: DatasetValidationIssue[] = []
+  const userColumns = columns.filter((column) => !column.isComputed)
+  const columnMap = new Map(userColumns.map((column) => [column.name, column]))
+  const declaredNames = new Set(columnMap.keys())
+  const primaryKeyColumns = userColumns.filter((column) => column.isPrimaryKey === true)
+  const seenPrimaryKeys = new Map<string, number>()
+
+  const rememberPrimaryKey = (row: IDataRow, rowIndex: number): void => {
+    if (primaryKeyColumns.length === 0) return
+    const keyParts = primaryKeyColumns.map((column) => row[column.name])
+    if (keyParts.some((value) => isMissingValue(value))) return
+    const key = keyParts.map((value) => JSON.stringify(value)).join('::')
+    if (!seenPrimaryKeys.has(key)) {
+      seenPrimaryKeys.set(key, rowIndex)
+      return
+    }
+
+    const previousIndex = seenPrimaryKeys.get(key) ?? 0
+    issues.push({
+      rule: `表 ${tableName} 主键唯一`,
+      pass: false,
+      detail: `表 ${tableName} 第 ${rowIndex + 1} 行与第 ${previousIndex + 1} 行主键重复`,
+    })
+  }
+
+  baselineRows.forEach(rememberPrimaryKey)
+
+  rows.forEach((row, rowIndex) => {
+    const unknownKeys = Object.keys(row).filter((key) => !INTERNAL_ROW_META_FIELDS.has(key) && !declaredNames.has(key))
+    if (unknownKeys.length > 0) {
+      issues.push({
+        rule: `表 ${tableName} 行字段必须已声明`,
+        pass: false,
+        detail: `表 ${tableName} 第 ${rowIndex + 1} 行包含未声明字段: ${unknownKeys.join(', ')}`,
+      })
+    }
+
+    for (const column of userColumns) {
+      const value = row[column.name]
+      if (isMissingValue(value)) {
+        if (isColumnRequired(column)) {
+          issues.push({
+            rule: `表 ${tableName} 必填字段完整`,
+            pass: false,
+            detail: `表 ${tableName} 第 ${rowIndex + 1} 行缺少字段 ${column.name}`,
+          })
+        }
+        continue
+      }
+
+      if (!isValueCompatibleWithColumnType(column.type, value)) {
+        issues.push({
+          rule: `表 ${tableName} 字段类型匹配`,
+          pass: false,
+          detail: `表 ${tableName} 第 ${rowIndex + 1} 行字段 ${column.name} 类型不匹配：期望 ${column.type}，实际 ${describeValueType(value)}`,
+        })
+      }
+    }
+
+    rememberPrimaryKey(row, baselineRows.length + rowIndex)
+  })
+
+  return issues
+}
+
+function collectRelationCompatibilityIssues(dataset: DataSet): DatasetValidationIssue[] {
+  const issues: DatasetValidationIssue[] = []
+
+  for (const relation of dataset.tableRelations ?? []) {
+    const parentColumn = dataset.getTable(relation.parentTable)?.columns.find((column) => column.name === relation.parentField)
+    const childColumn = dataset.getTable(relation.childTable)?.columns.find((column) => column.name === relation.childField)
+    if (!parentColumn || !childColumn) continue
+
+    if (normalizeColumnType(parentColumn.type) !== normalizeColumnType(childColumn.type)) {
+      issues.push({
+        rule: `关系 ${relation.parentTable}→${relation.childTable} 字段类型一致`,
+        pass: false,
+        detail: `关系 ${relation.parentTable}.${relation.parentField}(${parentColumn.type}) 与 ${relation.childTable}.${relation.childField}(${childColumn.type}) 类型不一致`,
+      })
+    }
+  }
+
+  return issues
+}
+
+function collectOptionTablesWithoutRows(dataset: DataSet): string[] {
+  return Object.values(dataset.tables)
+    .filter((table) => table.getView('options') !== undefined && table.rows.length === 0)
+    .map((table) => table.tableName)
 }
 
 function createWorkingDataSet(dataSetName: string): DataSet {
@@ -203,7 +418,11 @@ function validateDatasetInstance(
         issues.push({ rule: `表 ${name} 计算列 ${column.name} 表达式有效`, pass: true })
       }
     }
+
+    issues.push(...collectRowConsistencyIssues(name, table.columns, table.rows))
   }
+
+  issues.push(...collectRelationCompatibilityIssues(dataset))
 
   const relationKeys = (dataset.tableRelations ?? []).map((relation) => `${relation.parentTable}→${relation.childTable}`)
   const uniqueRelationKeys = new Set(relationKeys)
@@ -214,6 +433,7 @@ function validateDatasetInstance(
   })
 
   const valid = issues.every((issue) => issue.pass)
+  const failedIssueCount = issues.filter((issue) => !issue.pass).length
   const totalColumns = countColumns(dataset)
   const computedColumns = countColumns(dataset, (column) => column.computeExpression !== undefined)
   const tableCount = listTableNames(dataset).length
@@ -232,7 +452,9 @@ function validateDatasetInstance(
       checks: issues,
       issues: issues.filter((issue) => !issue.pass),
     },
-    summary: `校验${valid ? '通过' : '未通过'}：${issues.length} 个问题`,
+    summary: valid
+      ? `校验通过：${issues.length} 项检查，0 个问题`
+      : `校验未通过：${failedIssueCount} 个问题`,
   }
 }
 
@@ -494,8 +716,25 @@ const datasetValidate: StillDefinition<Record<string, never>, unknown> = {
   description: '全量结构校验，返回 issues[]',
   guard: guardDatasetOnly,
   guardDescription: guardDatasetOnlyDesc,
+  usageRules: [
+    '执行成功只代表校验动作本身完成；是否通过要继续检查返回值里的 data.valid。',
+    '适合在 schema.lock 之后、dataset.export 之前做全量验收；若 valid=false，先修 issues 再继续。',
+  ],
   paramsSchema: {},
+  resultSchema: {
+    valid: 'boolean — 是否通过全量校验',
+    issues: 'Array<{ scope: string; code: string; detail?: string }> — 校验问题清单',
+    summary: 'object — 校验汇总信息',
+    hint: 'string — 下一步建议',
+  },
   example: {},
+  failureModes: [
+    {
+      code: 'NO_DATASET',
+      when: '当前会话尚未初始化 DataSet 就执行 dataset.validate',
+      fix: '先 dataset.init，再继续建模与校验',
+    },
+  ],
   validate: () => null,
   execute: (session): StillResult => {
     const state = getDataSetState(session)
@@ -739,18 +978,38 @@ const datatableSetApi: StillDefinition<SetApiParams, unknown> = {
   description: '设置表的 CrudApi 配置',
   guard: guardSchemaLocked,
   guardDescription: guardSchemaLockedDesc,
+  usageRules: [
+    'api 不是单个 {url, method}；必须按 list/create/update/delete 等端点键组织。',
+    '至少提供一个合法端点；每个端点都必须包含 url，method 只能是标准 HTTP 方法。',
+  ],
   paramsSchema: {
     tableName: 'string',
     api: 'CrudApi — { list?, create?, update?, delete?, ... }',
+  },
+  resultSchema: {
+    status: '"ok"',
+    tableName: 'string',
+    endpoints: 'string[] — 本次成功配置的 API 端点键',
   },
   example: {
     tableName: 'Orders',
     api: { list: { url: '/api/orders', method: 'GET' }, create: { url: '/api/orders', method: 'POST' } },
   },
+  failureModes: [
+    {
+      code: 'INVALID_PARAMS',
+      when: 'api 没有 list/create/update/delete 等合法端点键，或端点缺少 url',
+      fix: '改成标准 CrudApi 结构，例如 api.list / api.create / api.update / api.delete',
+    },
+    {
+      code: 'TABLE_NOT_FOUND',
+      when: 'tableName 不存在',
+      fix: '先 datatable.create 建表，或核对 tableName',
+    },
+  ],
   validate: (params) => {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
-    if (!isNonEmptyRecord(params.api)) return missingParam('api')
-    return null
+    return validateCrudApiConfig(params.api)
   },
   execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
       const table = requireTable(DS, params.tableName)
@@ -773,14 +1032,38 @@ const datatableAddRows: StillDefinition<AddRowsParams, unknown> = {
   description: '写入内联静态行（枚举/配置表用）',
   guard: guardBlueprintAndDataset,
   guardDescription: guardBlueprintAndDatasetDesc,
+  usageRules: [
+    '只给静态枚举表、配置表或 seed 数据表写入内联 rows；不要用它模拟远程列表接口结果。',
+    'rows 中的字段必须全部已声明；必填字段不能缺失；主键不能重复；值类型必须匹配列定义。',
+  ],
   paramsSchema: {
     tableName: 'string',
     rows: 'Array<Record<string, unknown>> — 行数据对象数组',
+  },
+  resultSchema: {
+    status: '"ok"',
+    tableName: 'string',
+    addedRows: 'number',
+    totalRows: 'number',
+    remainingOptionTablesWithoutRows: 'string[] — 仍未写入种子数据的 options 视图表',
+    hint: 'string — 剩余种子数据待办提示',
   },
   example: {
     tableName: 'Statuses',
     rows: [{ id: '1', label: '待审批' }, { id: '2', label: '已通过' }],
   },
+  failureModes: [
+    {
+      code: 'TABLE_NOT_FOUND',
+      when: 'tableName 指向不存在的表',
+      fix: '先 datatable.create 建表，或核对 tableName',
+    },
+    {
+      code: 'INVALID_ROW_DATA',
+      when: '行数据出现未声明字段、缺失必填值、主键重复或值类型不匹配',
+      fix: '按列定义修正字段名、必填值、主键和值类型后重试',
+    },
+  ],
   validate: (params) => {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
     if (!isNonEmptyArray<IDataRow>(params.rows)) return missingParam('rows')
@@ -788,10 +1071,29 @@ const datatableAddRows: StillDefinition<AddRowsParams, unknown> = {
   },
   execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
       const table = requireTable(DS, params.tableName)
+      const rowIssues = collectRowConsistencyIssues(params.tableName, table.columns, params.rows, table.rows)
+      if (rowIssues.length > 0) {
+        throw new DataSetOpError(
+          'INVALID_ROW_DATA',
+          formatValidationIssueSummary(rowIssues),
+          '请按列定义修正字段名、必填值、主键和值类型后重试',
+        )
+      }
       const totalRows = table.addRows(params.rows)
+      const remainingOptionTablesWithoutRows = collectOptionTablesWithoutRows(DS)
+      const hint = remainingOptionTablesWithoutRows.length > 0
+        ? `仍有 options 视图表缺少种子数据: ${remainingOptionTablesWithoutRows.join(', ')}`
+        : '当前 options 视图表的种子数据已补齐'
       return {
-        data: { status: 'ok', tableName: params.tableName, addedRows: params.rows.length, totalRows },
-        summary: `写入 ${params.rows.length} 行到 ${params.tableName}`,
+        data: {
+          status: 'ok',
+          tableName: params.tableName,
+          addedRows: params.rows.length,
+          totalRows,
+          remainingOptionTablesWithoutRows,
+          hint,
+        },
+        summary: `写入 ${params.rows.length} 行到 ${params.tableName}${remainingOptionTablesWithoutRows.length > 0 ? `；仍缺种子: ${remainingOptionTablesWithoutRows.join(', ')}` : ''}`,
       }
     })),
 }
@@ -903,8 +1205,29 @@ const schemaLock: StillDefinition<Record<string, never>, unknown> = {
   description: '锁定结构（禁止增删表/列/关系，允许 dataview / dependency / api 配置）',
   guard: guardSchemaUnlocked,
   guardDescription: guardSchemaUnlockedDesc,
+  usageRules: [
+    '只在核心表结构、主键和主要关系都准备好之后再锁定。',
+    '锁定后不再新增或删除表/列/关系；如果必须改结构，先 schema.unlock 说明原因。',
+  ],
   paramsSchema: {},
+  resultSchema: {
+    locked: 'true',
+    tableCount: 'number',
+    relationCount: 'number',
+  },
   example: {},
+  failureModes: [
+    {
+      code: 'EMPTY_SCHEMA',
+      when: '当前 DataSet 还没有任何表',
+      fix: '先用 datatable.create 建立至少一张表',
+    },
+    {
+      code: 'MISSING_PK',
+      when: '仍有表缺少主键列时尝试锁定 schema',
+      fix: '先补齐 isPrimaryKey=true 的列，再执行 schema.lock',
+    },
+  ],
   validate: () => null,
   execute: (session): StillResult => withDS(session, (DS) => {
     const preflight = inspectSchemaInstance(DS)
@@ -1032,7 +1355,7 @@ function extractViewConfig(params: DataviewConfigureParams): Partial<IViewMetada
   if (isNonEmptyRecord(params.config)) {
     return params.config
   }
-  const structuralKeys = new Set(['tableName', 'viewId', 'config'])
+  const structuralKeys = new Set(['tableName', 'viewId', 'viewName', 'config'])
   const extracted: Record<string, unknown> = {}
   for (const [k, v] of Object.entries(params)) {
     if (!structuralKeys.has(k)) {
@@ -1048,6 +1371,10 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
   description: '配置视图属性（autoLoad / autoCurrentFirst / pageSize / rows 等）',
   guard: guardSchemaLocked,
   guardDescription: guardSchemaLockedDesc,
+  usageRules: [
+    '只使用 viewId 指定视图；viewName 是旧参数别名，当前会被直接拒绝。',
+    '至少提供一个真正的视图配置字段，不能只传 tableName / viewId 这种结构字段。',
+  ],
   paramsSchema: {
     tableName: 'string', viewId: 'string? — 默认 default',
     note: 'string? — 视图用途备注（如 "主列表" / "下拉选项数据源"）',
@@ -1057,9 +1384,28 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
     valueField: 'string? — 值字段（用于下拉选项的 value）',
     labelField: 'string? — 标签字段（用于下拉选项的显示文本）',
   },
+  resultSchema: {
+    tableName: 'string',
+    viewId: 'string',
+    config: 'IViewMetadata — 更新后的视图配置快照',
+  },
   example: { tableName: 'Orders', note: '订单主列表', autoLoad: true, autoCurrentFirst: true, pageSize: 20 },
+  failureModes: [
+    {
+      code: 'INVALID_PARAMS',
+      when: '传了 viewName 旧参数，或没有任何有效配置字段',
+      fix: '改用 viewId，并补充 autoLoad / pageSize / rows / note 等配置字段',
+    },
+    {
+      code: 'VIEW_NOT_FOUND',
+      when: '指定的 tableName/viewId 找不到对应视图',
+      fix: '先 dataview.describe 或 dataview.create，确认视图存在后再配置',
+    },
+  ],
   validate: (params) => {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    const aliasError = rejectLegacyViewNameParam(params)
+    if (aliasError) return aliasError
     const config = extractViewConfig(params)
     if (!config) return '缺少配置属性（autoLoad / pageSize / autoCurrentFirst 等）'
     return null
@@ -1095,6 +1441,8 @@ const dataviewSetAggregates: StillDefinition<SetAggregatesParams, unknown> = {
   example: { tableName: 'Orders', aggregates: { price: { type: 'sum' }, score: { type: 'avg' } } },
   validate: (params) => {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    const aliasError = rejectLegacyViewNameParam(params)
+    if (aliasError) return aliasError
     if (!isNonEmptyRecord(params.aggregates)) return missingParam('aggregates')
     return null
   },
@@ -1132,6 +1480,8 @@ const dataviewSetTreeConfig: StillDefinition<SetTreeConfigParams, unknown> = {
   },
   validate: (params) => {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
+    const aliasError = rejectLegacyViewNameParam(params)
+    if (aliasError) return aliasError
     if (!isNonEmptyString(params.treeConfig.idField)) return 'treeConfig 缺少 idField'
     if (!isNonEmptyString(params.treeConfig.parentIdField)) return 'treeConfig 缺少 parentIdField'
     return null

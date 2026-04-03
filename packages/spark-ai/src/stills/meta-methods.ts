@@ -29,6 +29,8 @@ interface ActionCatalogItem {
   type: string
   description: string
   guard?: string
+  rules?: string[]
+  failureCodes?: string[]
   params?: Record<string, unknown>
   example?: Record<string, unknown>
 }
@@ -62,6 +64,10 @@ function buildActionCatalog(): ActionCatalogItem[] {
       type: still.type,
       description: still.description,
       ...(still.guardDescription ? { guard: still.guardDescription } : {}),
+      ...(still.usageRules && still.usageRules.length > 0 ? { rules: still.usageRules } : {}),
+      ...(still.failureModes && still.failureModes.length > 0
+        ? { failureCodes: still.failureModes.map((failureMode) => failureMode.code) }
+        : {}),
       ...(still.paramsSchema && Object.keys(still.paramsSchema).length > 0
         ? { params: still.paramsSchema }
         : {}),
@@ -151,7 +157,7 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
       data: {
         actions,
         total: actions.length,
-        hint: '每个动作的 params 即参数格式，example 即最小示例。可用 stills.actionSpec 查更详细说明。',
+        hint: '每个动作的 params 即参数格式，example 即最小示例；rules / failureCodes 是关键约束。高风险动作可用 stills.actionSpec 查完整规格。',
       },
       summary: `返回 ${actions.length} 个可用动作（含参数格式与示例）`,
     }
@@ -169,7 +175,7 @@ interface ActionSpecParams {
 export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
   action: 'stills.actionSpec',
   type: 'describe',
-  description: '返回指定动作的参数规格、guard、示例',
+  description: '返回指定动作的参数规格、guard、使用规则、失败模式与示例',
   guard: noGuard,
   paramsSchema: { action: 'string — 动作名' },
   example: { action: 'datatable.create' },
@@ -195,9 +201,11 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
         type: still.type,
         description: still.description,
         guard: still.guardDescription ?? null,
+        usageRules: still.usageRules ?? [],
         paramsSchema: still.paramsSchema ?? null,
         resultSchema: still.resultSchema ?? null,
         example: still.example ?? null,
+        failureModes: still.failureModes ?? [],
       },
       summary: `返回动作 ${still.action} 的规格`,
     }
@@ -211,8 +219,13 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
 export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = {
   action: 'session.describe',
   type: 'describe',
-  description: '返回当前角色、状态、推荐下一步',
+  description: '会话全局监控：返回所有域状态、执行追踪（patchLog）、推荐下一步',
   guard: noGuard,
+  usageRules: [
+    '会话层负责全局监控：聚合所有域的 phase/health，追踪 patchLog 执行进度。',
+    '各域自检请调用域自身 still（blueprint.selfCheck / dataset.validate）。',
+    '蓝图域只输出计划，会话层监控计划执行。',
+  ],
   paramsSchema: {},
   example: {},
   validate: () => null,
@@ -221,11 +234,23 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
     const dataset = datasetState.data
     const blueprintSummary = buildBlueprintSummary(session.blueprint)
 
-    // 聚合所有已注册域的 roleHint
+    // ── 聚合所有已注册域的角色与状态 ──
     const roles: string[] = []
-    const datasetDomain = getDomain('dataset')
-    if (datasetDomain?.roleHint) {
-      roles.push(datasetDomain.roleHint)
+    const domainsSummary: Record<string, { phase: string; initialized: boolean; roleHint?: string }> = {}
+    for (const [domainName, domainState] of Object.entries(session.domains)) {
+      const domainDef = getDomain(domainName)
+      if (domainDef?.roleHint) roles.push(domainDef.roleHint)
+      domainsSummary[domainName] = {
+        phase: domainState.phase,
+        initialized: domainState.data !== null,
+        ...(domainDef?.roleHint ? { roleHint: domainDef.roleHint } : {}),
+      }
+    }
+
+    // ── 执行追踪（patchLog）── 会话层全局职责 ──
+    const actionCounts: Record<string, number> = {}
+    for (const entry of session.patchLog) {
+      actionCounts[entry.action] = (actionCounts[entry.action] ?? 0) + 1
     }
 
     const datasetSummary = dataset
@@ -244,14 +269,16 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
       ok: true,
       data: {
         role: roles.length > 0 ? roles.join('；') : '通用 Stills 助手',
-        phase: datasetState.phase,
-        locked: datasetState.locked,
+        domains: domainsSummary,
+        executionTrace: {
+          totalActions: session.patchLog.length,
+          actionCounts,
+        },
         dataset: datasetSummary,
         blueprint: blueprintSummary,
-        patchCount: session.patchLog.length,
         nextStep,
       },
-      summary: '返回当前会话状态',
+      summary: '返回会话全局状态（含域状态 + 执行追踪）',
     }
   },
 }
