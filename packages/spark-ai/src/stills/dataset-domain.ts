@@ -1,14 +1,14 @@
 /**
  * DataSet Domain
  *
- * 这个文件只负责三类事情：
- * 1. 定义 dataset 域在 still session 中的状态槽位；
+ * 1. 定义 dataset 域在 still session 中的状态；
  * 2. 按 namespace 注册数据建模 action；
- * 3. 将真正的数据建模变更委托给 spark-data 提供的 meta* 包装层。
+ * 3. 直接把建模操作委托给 DataSet / DataTable / DataView 运行时对象。
  *
- * meta* 对外仍然收发 IDataSetMetadata，
- * 对内会投影到 DataSet/DataTable/DataView 运行时对象并直接复用 dataset-ops。
- * 这里本身不直接操作运行时实例，也不承担 UI 交互逻辑。
+ * 设计原则：
+ * - session state 持有真实 DataSet 实例，而不是元数据投影；
+ * - still 层只负责编排、guard、参数校验、错误映射；
+ * - 导出/序列化通过 DataSet.toData() / toJSON() 完成。
  */
 
 import type {
@@ -16,69 +16,55 @@ import type {
   StillGuard,
   StillResult,
   StillDefinition,
+  DomainState,
   DomainProvider,
-  IDataSetMetadata,
   ViewDependency,
 } from './types'
-import type { DataColumn, CrudApi, IDataRow, AggregateColumnConfig, TreeConfig, IViewMetadata } from '@spark-view/spark-data'
-import {
-  metaCreateDataSet,
-  metaDescribeDataSet,
-  metaValidateDataSet,
-  metaExportDataSet,
-  metaAddTable,
-  metaDescribeTable,
-  metaAddColumns,
-  metaUpdateColumn,
-  metaRemoveColumn,
-  metaSetTableApi,
-  metaAddRows,
-  metaAddView,
-  metaDescribeView,
-  metaConfigureView,
-  metaSetAggregates,
-  metaSetTreeConfig,
-  metaAddRelation,
-  metaRemoveRelation,
-  metaListRelations,
-  metaAddDependency,
-  metaRemoveDependency,
-} from '@spark-view/spark-data'
+import { getDomainState } from './types'
+import type { DataColumn, CrudApi, IDataRow, AggregateColumnConfig, TreeConfig, IViewMetadata, DataTable, DataView } from '@spark-view/spark-data'
+import { DataSet } from '@spark-view/spark-data'
+
+type ProjectedPayload<T> = { data: T; summary: string }
+type StillFailure = { ok: false; code: string; msg: string; fix: string }
+type DatasetValidationIssue = { rule: string; pass: boolean; detail?: string }
 
 // ═══════════════════════════════════════════════════════════
 // 域状态与通用帮助函数
 // ═══════════════════════════════════════════════════════════
 
 /**
- * 6 步设计流程序号。
- * 本文件只负责保存当前位置，不重新定义各步骤的业务含义。
+ * 数据建模域的生命周期阶段。
+ *
+ * 与蓝图 checkpoint 对齐：
+ * - discover   — 初始态，了解可用能力
+ * - blueprint  — 蓝图已创建，dataset 尚未初始化
+ * - design     — dataset 已初始化，schema 未锁定（建表/列/关系）
+ * - configure  — schema 已锁定（视图/API/依赖配置）
+ * - validate   — 校验阶段
+ * - export     — 导出完成
  */
-export type DesignStep = '①' | '②' | '③' | '④' | '⑤' | '⑥'
+export type DesignPhase = 'discover' | 'blueprint' | 'design' | 'configure' | 'validate' | 'export'
 
-/** DataSet 域在 session.domains['dataset'] 中保存的槽位结构。 */
-export interface DataSetSlot {
-  /** 当前正在编辑的元数据快照；未初始化时为 null。 */
-  dataset: IDataSetMetadata | null
-  /** true 表示进入“结构冻结”阶段，只允许改视图/API/依赖等后置配置。 */
-  schemaLocked: boolean
-  /** 供外层 still 工作流 UI 展示当前阶段。 */
-  currentStep: DesignStep
+/** DataSet 域在 session.domains['dataset'] 中保存的会话状态。 */
+export interface DataSetDomainState extends DomainState<DataSet | null, DesignPhase> {
+  /** schema 是否已锁定（锁定后禁止结构变更，允许视图/API/依赖配置） */
+  locked: boolean
 }
 
-/** 类型安全的域 slot 访问器。 */
-export function getDataSetSlot(session: IStillSession): DataSetSlot {
-  return session.domains['dataset'] as DataSetSlot
+/** 类型安全的 dataset 域 state 访问器。 */
+export function getDataSetState(session: IStillSession): DataSetDomainState {
+  return getDomainState<DataSetDomainState>(session, 'dataset')
 }
 
 /**
- * 统一的初始 slot 工厂。
- * createSlot 与 dataset.reset 共用它，避免默认值出现双份定义后漂移。
+ * 统一的初始 state 工厂。
+ * createState 与 dataset.reset 共用它，避免默认值出现双份定义后漂移。
  */
-function createDataSetSlot(): DataSetSlot {
+function createDataSetState(): DataSetDomainState {
   return {
-    dataset: null,
-    schemaLocked: false,
-    currentStep: '①',
+    data: null,
+    locked: false,
+    phase: 'discover',
   }
 }
 
@@ -97,6 +83,198 @@ function isNonEmptyArray<T>(value: unknown): value is T[] {
 
 function isNonEmptyRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && Object.keys(value).length > 0
+}
+
+function createWorkingDataSet(dataSetName: string): DataSet {
+  return new DataSet({ dataSetName, tables: {}, tableRelations: [], viewDependencies: [] })
+}
+
+function inspectSchemaInstance(dataset: DataSet): {
+  tableCount: number
+  relationCount: number
+  missingPrimaryKeys: string[]
+} {
+  const tableNames = Object.keys(dataset.tables)
+  const missingPrimaryKeys = tableNames.filter(
+    (tableName) => !(dataset.tables[tableName]?.columns.some((column) => column.isPrimaryKey) ?? false),
+  )
+
+  return {
+    tableCount: tableNames.length,
+    relationCount: dataset.tableRelations?.length ?? 0,
+    missingPrimaryKeys,
+  }
+}
+
+function listTableNames(dataset: DataSet): string[] {
+  return Object.keys(dataset.tables)
+}
+
+function countColumns(dataset: DataSet, predicate?: (column: DataColumn) => boolean): number {
+  return Object.values(dataset.tables).reduce(
+    (sum, table) => sum + table.columns.filter((column) => predicate?.(column) ?? true).length,
+    0,
+  )
+}
+
+function describeDatasetInstance(
+  dataset: DataSet,
+): ProjectedPayload<{
+  dataSetName: string
+  tables: string[]
+  tableCount: number
+  totalColumns: number
+  computedColumns: number
+  relations: number
+  viewDependencies: number
+}> {
+  const tableNames = listTableNames(dataset)
+  const totalColumns = countColumns(dataset)
+  const computedColumns = countColumns(dataset, (column) => column.computeExpression !== undefined)
+  const userColumns = countColumns(dataset, (column) => !column.isComputed)
+
+  return {
+    data: {
+      dataSetName: dataset.dataSetName,
+      tables: tableNames,
+      tableCount: tableNames.length,
+      totalColumns,
+      computedColumns,
+      relations: dataset.tableRelations?.length ?? 0,
+      viewDependencies: dataset.viewDependencies?.length ?? 0,
+    },
+    summary: `DataSet ${dataset.dataSetName}: ${tableNames.length} 表, ${userColumns} 列, ${dataset.tableRelations?.length ?? 0} 关系`,
+  }
+}
+
+function validateDatasetInstance(
+  dataset: DataSet,
+): ProjectedPayload<{
+  status: 'ok'
+  valid: boolean
+  dataSetName: string
+  summary: {
+    tables: number
+    totalColumns: number
+    computedColumns: number
+    relations: number
+  }
+  checks: DatasetValidationIssue[]
+  issues: DatasetValidationIssue[]
+}> {
+  const issues: DatasetValidationIssue[] = []
+
+  for (const [name, table] of Object.entries(dataset.tables)) {
+    const hasPrimaryKey = table.columns.some((column) => column.isPrimaryKey)
+    issues.push({
+      rule: `表 ${name} 至少一个主键`,
+      pass: hasPrimaryKey,
+      ...(!hasPrimaryKey ? { detail: `表 ${name} 缺少主键列` } : {}),
+    })
+  }
+
+  for (const relation of dataset.tableRelations ?? []) {
+    const parentExists = dataset.getTable(relation.parentTable) !== undefined
+    const childExists = dataset.getTable(relation.childTable) !== undefined
+    const tablesPass = parentExists && childExists
+    issues.push({
+      rule: `关系 ${relation.parentTable}→${relation.childTable} 引用表存在`,
+      pass: tablesPass,
+      ...(!tablesPass ? { detail: `${!parentExists ? relation.parentTable : relation.childTable} 不存在` } : {}),
+    })
+
+    if (!tablesPass || !relation.parentField) continue
+
+    const parentHasField = dataset.getTable(relation.parentTable)?.columns.some((column) => column.name === relation.parentField) ?? false
+    const childHasField = relation.childField
+      ? (dataset.getTable(relation.childTable)?.columns.some((column) => column.name === relation.childField) ?? false)
+      : true
+    const fieldsPass = parentHasField && childHasField
+    issues.push({
+      rule: `关系 ${relation.parentTable}→${relation.childTable} 引用字段存在`,
+      pass: fieldsPass,
+      ...(!fieldsPass ? { detail: '关联字段在对应表中未找到' } : {}),
+    })
+  }
+
+  for (const [name, table] of Object.entries(dataset.tables)) {
+    for (const column of table.columns) {
+      if (column.computeExpression !== undefined) {
+        issues.push({ rule: `表 ${name} 计算列 ${column.name} 表达式有效`, pass: true })
+      }
+    }
+  }
+
+  const relationKeys = (dataset.tableRelations ?? []).map((relation) => `${relation.parentTable}→${relation.childTable}`)
+  const uniqueRelationKeys = new Set(relationKeys)
+  issues.push({
+    rule: '无重复关系',
+    pass: relationKeys.length === uniqueRelationKeys.size,
+    ...(relationKeys.length !== uniqueRelationKeys.size ? { detail: '存在重复的表间关系' } : {}),
+  })
+
+  const valid = issues.every((issue) => issue.pass)
+  const totalColumns = countColumns(dataset)
+  const computedColumns = countColumns(dataset, (column) => column.computeExpression !== undefined)
+  const tableCount = listTableNames(dataset).length
+
+  return {
+    data: {
+      status: 'ok',
+      valid,
+      dataSetName: dataset.dataSetName,
+      summary: {
+        tables: tableCount,
+        totalColumns,
+        computedColumns,
+        relations: dataset.tableRelations?.length ?? 0,
+      },
+      checks: issues,
+      issues: issues.filter((issue) => !issue.pass),
+    },
+    summary: `校验${valid ? '通过' : '未通过'}：${issues.length} 个问题`,
+  }
+}
+
+function toErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+function mapRelationAddError(error: unknown): DataSetOpError {
+  const message = toErrorMessage(error)
+  if (message.includes('not found')) {
+    const code = message.includes('field') ? 'COLUMN_NOT_FOUND' : 'TABLE_NOT_FOUND'
+    return new DataSetOpError(code, message, '请查 datatable.describe')
+  }
+  if (message.includes('already exists')) {
+    return new DataSetOpError('RELATION_EXISTS', '相同关系已存在', '跳过此步骤')
+  }
+  return new DataSetOpError('UNKNOWN', message, '')
+}
+
+function mapRelationRemoveError(error: unknown, parentTable: string, childTable: string): DataSetOpError {
+  const message = toErrorMessage(error)
+  if (message.includes('not found')) {
+    return new DataSetOpError('RELATION_NOT_FOUND', '关系不存在', '请查 relation.list')
+  }
+  if (message.includes('referenced')) {
+    return new DataSetOpError('RELATION_IN_USE', `关系 ${parentTable}→${childTable} 被 viewDependency 引用`, '先 dependency.remove 再删关系')
+  }
+  return new DataSetOpError('UNKNOWN', message, '')
+}
+
+function mapDependencyAddError(error: unknown): DataSetOpError {
+  const message = toErrorMessage(error)
+  if (message.includes('not found')) {
+    return new DataSetOpError('TABLE_NOT_FOUND', message, '请确认表名')
+  }
+  if (message.includes('No tableRelation')) {
+    return new DataSetOpError('NO_RELATION', message, '请先 relation.add')
+  }
+  if (message.includes('already exists')) {
+    return new DataSetOpError('DEPENDENCY_EXISTS', '相同依赖已存在', '跳过此步骤')
+  }
+  return new DataSetOpError('UNKNOWN', message, '')
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -125,14 +303,14 @@ function dsGuard(checks: DsGuardOptions = {}): StillGuard {
     if (checks.requireBlueprint === true && session.blueprint === null) {
       return { code: 'NO_BLUEPRINT', msg: 'Blueprint 尚未创建，请先执行 blueprint.create' }
     }
-    const slot = getDataSetSlot(session)
-    if (checks.requireDataset !== false && slot.dataset === null) {
+    const state = getDataSetState(session)
+    if (checks.requireDataset !== false && state.data === null) {
       return { code: 'NO_DATASET', msg: 'Dataset 尚未初始化，请先执行 dataset.init' }
     }
-    if (checks.requireSchemaUnlocked === true && slot.schemaLocked) {
+    if (checks.requireSchemaUnlocked === true && state.locked) {
       return { code: 'SCHEMA_LOCKED', msg: 'Schema 已锁定，不允许此操作。如需修改请先 schema.unlock' }
     }
-    if (checks.requireSchemaLocked === true && !slot.schemaLocked) {
+    if (checks.requireSchemaLocked === true && !state.locked) {
       return { code: 'SCHEMA_NOT_LOCKED', msg: 'Schema 尚未锁定。视图/API/依赖配置需在 schema.lock 之后执行' }
     }
     return null
@@ -163,19 +341,81 @@ const guardDatasetOnlyDesc = '需要 dataset 已创建'
 const guardNone = dsGuard({ requireDataset: false })
 
 // ═══════════════════════════════════════════════════════════
-// 统一读取当前 dataset 元数据
+// 统一读取当前工作 DataSet
 // ═══════════════════════════════════════════════════════════
 
 /**
- * 从 session 读取 dataset 元数据。
+ * 从 session 读取 runtime DataSet。
  * 失败时直接返回 StillResult，方便 execute 里早返回并保持错误结构一致。
  */
-function requireDataset(session: IStillSession): { ds: IDataSetMetadata } | { error: StillResult } {
-  const slot = getDataSetSlot(session)
-  if (slot.dataset === null) {
+function requireDataset(session: IStillSession): { ds: DataSet } | { error: StillFailure } {
+  const state = getDataSetState(session)
+  if (state.data === null) {
     return { error: { ok: false, code: 'NO_DATASET', msg: 'Dataset 未初始化', fix: '请先执行 dataset.init' } }
   }
-  return { ds: slot.dataset }
+  return { ds: state.data }
+}
+
+function withDS<T>(session: IStillSession, operation: (DS: DataSet) => StillResult<T>): StillResult<T> {
+  const required = requireDataset(session)
+  if ('error' in required) return required.error
+  const DS = required.ds
+  return operation(DS)
+}
+
+/** 领域操作错误，携带结构化修复提示 */
+class DataSetOpError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+    public readonly fix: string,
+  ) {
+    super(message)
+    this.name = 'DataSetOpError'
+  }
+}
+
+function requireTable(ds: DataSet, tableName: string): DataTable {
+  const table = ds.getTable(tableName)
+  if (!table) {
+    throw new DataSetOpError('TABLE_NOT_FOUND', `表 ${tableName} 不存在`, '请先 datatable.create 建表')
+  }
+  return table
+}
+
+function requireView(ds: DataSet, tableName: string, viewId?: string): { table: DataTable; view: DataView; vid: string } {
+  const table = requireTable(ds, tableName)
+  const vid = viewId ?? 'default'
+  const view = table.getView(vid)
+  if (!view) {
+    throw new DataSetOpError(
+      'VIEW_NOT_FOUND',
+      `视图 ${vid} 不存在`,
+      vid === 'default' ? '请先 datatable.create 建表' : '请先 dataview.create 创建视图',
+    )
+  }
+  return { table, view, vid }
+}
+
+function toStillError(error: unknown): StillFailure {
+  if (error instanceof DataSetOpError) {
+    return { ok: false, code: error.code, msg: error.message, fix: error.fix }
+  }
+  return {
+    ok: false,
+    code: 'OP_FAILED',
+    msg: error instanceof Error ? error.message : 'Operation failed',
+    fix: '请检查输入参数',
+  }
+}
+
+function executeDSOperation<T>(operation: () => ProjectedPayload<T>): StillResult<T> {
+  try {
+    const result = operation()
+    return { ok: true, data: result.data, summary: result.summary }
+  } catch (error) {
+    return toStillError(error)
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -189,7 +429,7 @@ interface DatasetInitParams { dataSetName: string }
 const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
   action: 'dataset.init',
   type: 'request',
-  description: '创建空 IDataSetMetadata（设 dataSetName）',
+  description: '创建空 DataSet 实例（设 dataSetName）',
   guard: guardBlueprintOnly,
   guardDescription: guardBlueprintOnlyDesc,
   paramsSchema: { dataSetName: 'string — DataSet 名称' },
@@ -199,16 +439,24 @@ const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
     return null
   },
   execute: (session, params): StillResult => {
-    const slot = getDataSetSlot(session)
-    if (slot.dataset !== null) {
+    const state = getDataSetState(session)
+    if (state.data !== null) {
       return { ok: false, code: 'DATASET_EXISTS', msg: 'Dataset 已存在', fix: '如需重建请先 dataset.reset' }
     }
-    slot.dataset = metaCreateDataSet(params.dataSetName)
+    state.data = createWorkingDataSet(params.dataSetName)
+    const snapshot = state.data.toData()
     // 与外层设计工作流保持一致：dataset 初始化完成后进入结构设计阶段。
-    slot.currentStep = '④'
+    state.phase = 'design'
     return {
       ok: true,
-      data: { status: 'ok', dataSetName: params.dataSetName, schemaVersion: 1, tables: {}, tableRelations: [], viewDependencies: [] },
+      data: {
+        status: 'ok',
+        dataSetName: snapshot.dataSetName,
+        schemaVersion: snapshot.schemaVersion ?? 2,
+        tables: snapshot.tables,
+        tableRelations: snapshot.tableRelations ?? [],
+        viewDependencies: snapshot.viewDependencies ?? [],
+      },
       summary: `创建 DataSet: ${params.dataSetName}`,
     }
   },
@@ -226,10 +474,15 @@ const datasetDescribe: StillDefinition<Record<string, never>, unknown> = {
   example: {},
   validate: () => null,
   execute: (session): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    const slot = getDataSetSlot(session)
-    return metaDescribeDataSet(r.ds, { schemaLocked: slot.schemaLocked })
+    const state = getDataSetState(session)
+    return withDS(session, (DS) => {
+      const info = describeDatasetInstance(DS)
+      return {
+        ok: true,
+        data: { ...info.data, locked: state.locked },
+        summary: info.summary,
+      }
+    })
   },
 }
 
@@ -245,10 +498,22 @@ const datasetValidate: StillDefinition<Record<string, never>, unknown> = {
   example: {},
   validate: () => null,
   execute: (session): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    const slot = getDataSetSlot(session)
-    return metaValidateDataSet(r.ds, { schemaLocked: slot.schemaLocked })
+    const state = getDataSetState(session)
+    return withDS(session, (DS) => {
+      const result = validateDatasetInstance(DS)
+      const hint = result.data.valid
+        ? (state.locked ? '校验通过' : '校验通过，无问题。请执行 schema.lock 锁定 schema')
+        : '存在校验问题，请先修复'
+      return {
+        ok: true,
+        data: {
+          ...result.data,
+          summary: { ...result.data.summary, locked: state.locked },
+          hint,
+        },
+        summary: result.summary,
+      }
+    })
   },
 }
 
@@ -257,17 +522,13 @@ const datasetValidate: StillDefinition<Record<string, never>, unknown> = {
 const datasetExport: StillDefinition<Record<string, never>, unknown> = {
   action: 'dataset.export',
   type: 'request',
-  description: '导出完整 IDataSetMetadata 快照',
+  description: '导出当前 DataSet 的序列化快照',
   guard: guardBlueprintAndDataset,
   guardDescription: guardBlueprintAndDatasetDesc,
   paramsSchema: {},
   example: {},
   validate: () => null,
-  execute: (session): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaExportDataSet(r.ds)
-  },
+  execute: (session): StillResult => withDS(session, (DS) => executeDSOperation(() => DS.exportSnapshot())),
 }
 
 // ─── dataset.reset ─────────────────────────────────────────
@@ -281,8 +542,8 @@ const datasetReset: StillDefinition<Record<string, never>, unknown> = {
   example: {},
   validate: () => null,
   execute: (session): StillResult => {
-    const slot = getDataSetSlot(session)
-    Object.assign(slot, createDataSetSlot())
+    const state = getDataSetState(session)
+    Object.assign(state, createDataSetState())
     session.blueprint = null
     session.patchLog = []
     return {
@@ -324,11 +585,24 @@ const datatableCreate: StillDefinition<DatatableCreateParams, unknown> = {
     }
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaAddTable(r.ds, params.tableName, params.columns)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      try {
+        DS.addTable(params.tableName, params.columns)
+      } catch {
+        throw new DataSetOpError('TABLE_EXISTS', `表 ${params.tableName} 已存在`, '使用 datatable.addColumns 向已有表追加列')
+      }
+      const computedCols = params.columns.filter(c => c.computeExpression !== undefined)
+      return {
+        data: {
+          status: 'ok',
+          tableName: params.tableName,
+          columnCount: params.columns.length,
+          columns: params.columns.map(c => c.name),
+          ...(computedCols.length > 0 ? { computedColumns: computedCols.map(c => c.name) } : {}),
+        },
+        summary: `建表 ${params.tableName}（${params.columns.length} 列）`,
+      }
+    })),
 }
 
 // ─── datatable.describe ────────────────────────────────────
@@ -347,11 +621,7 @@ const datatableDescribe: StillDefinition<DatatableDescribeParams, unknown> = {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaDescribeTable(r.ds, params.tableName)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => requireTable(DS, params.tableName).describe())),
 }
 
 // ─── datatable.addColumns ──────────────────────────────────
@@ -371,11 +641,14 @@ const datatableAddColumns: StillDefinition<AddColumnsParams, unknown> = {
     if (!isNonEmptyArray<DataColumn>(params.columns)) return missingParam('columns')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaAddColumns(r.ds, params.tableName, params.columns)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      const table = requireTable(DS, params.tableName)
+      const { added, skipped } = table.addColumns(params.columns)
+      return {
+        data: { status: 'ok', tableName: params.tableName, added, skipped, totalColumns: table.columns.length },
+        summary: `追加 ${added.length} 列到 ${params.tableName}${skipped.length > 0 ? `（跳过 ${skipped.length} 个重名列）` : ''}`,
+      }
+    })),
 }
 
 // ─── datatable.updateColumn ────────────────────────────────
@@ -401,9 +674,19 @@ const datatableUpdateColumn: StillDefinition<UpdateColumnParams, unknown> = {
     return null
   },
   execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaUpdateColumn(r.ds, params.tableName, params.columnName, params.updates)
+    const { name: _ignoredName, ...safeUpdates } = params.updates
+    return withDS(session, (DS) => executeDSOperation(() => {
+      const table = requireTable(DS, params.tableName)
+      try {
+        const updatedFields = table.updateColumn(params.columnName, params.updates)
+        return {
+          data: { status: 'ok', tableName: params.tableName, columnName: params.columnName, updatedFields },
+          summary: `更新 ${params.tableName}.${params.columnName}: ${Object.keys(safeUpdates).join(', ')}`,
+        }
+      } catch {
+        throw new DataSetOpError('COLUMN_NOT_FOUND', `列 ${params.columnName} 不存在`, '请查 datatable.describe')
+      }
+    }))
   },
 }
 
@@ -424,11 +707,26 @@ const datatableRemoveColumn: StillDefinition<RemoveColumnParams, unknown> = {
     if (!isNonEmptyString(params.columnName)) return missingParam('columnName')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaRemoveColumn(r.ds, params.tableName, params.columnName)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      const table = requireTable(DS, params.tableName)
+      // 关系引用校验（跨实体逻辑）
+      const relImpact = (DS.tableRelations ?? []).filter(
+        rel => (rel.parentTable === params.tableName && rel.parentField === params.columnName)
+            || (rel.childTable === params.tableName && rel.childField === params.columnName),
+      )
+      if (relImpact.length > 0) {
+        throw new DataSetOpError('COLUMN_IN_USE', `列 ${params.columnName} 被 ${relImpact.length} 条关系引用`, '请先 relation.remove 相关关系后再删除此列')
+      }
+      try {
+        table.removeColumn(params.columnName)
+      } catch {
+        throw new DataSetOpError('COLUMN_NOT_FOUND', `列 ${params.columnName} 不存在`, '请查 datatable.describe')
+      }
+      return {
+        data: { status: 'ok', tableName: params.tableName, columnName: params.columnName, remainingColumns: table.columns.length },
+        summary: `删除列 ${params.tableName}.${params.columnName}`,
+      }
+    })),
 }
 
 // ─── datatable.setApi ──────────────────────────────────────
@@ -454,11 +752,15 @@ const datatableSetApi: StillDefinition<SetApiParams, unknown> = {
     if (!isNonEmptyRecord(params.api)) return missingParam('api')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaSetTableApi(r.ds, params.tableName, params.api)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      const table = requireTable(DS, params.tableName)
+      table.setApi(params.api)
+      const endpoints = Object.keys(params.api).filter(k => params.api[k as keyof CrudApi] !== undefined)
+      return {
+        data: { status: 'ok', tableName: params.tableName, endpoints },
+        summary: `设置 ${params.tableName} API: ${endpoints.join(', ')}`,
+      }
+    })),
 }
 
 // ─── datatable.addRows ─────────────────────────────────────
@@ -484,11 +786,14 @@ const datatableAddRows: StillDefinition<AddRowsParams, unknown> = {
     if (!isNonEmptyArray<IDataRow>(params.rows)) return missingParam('rows')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaAddRows(r.ds, params.tableName, params.rows)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      const table = requireTable(DS, params.tableName)
+      const totalRows = table.addRows(params.rows)
+      return {
+        data: { status: 'ok', tableName: params.tableName, addedRows: params.rows.length, totalRows },
+        summary: `写入 ${params.rows.length} 行到 ${params.tableName}`,
+      }
+    })),
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -524,11 +829,22 @@ const relationAdd: StillDefinition<RelationAddParams, unknown> = {
     if (!isNonEmptyString(params.childField)) return missingParam('childField')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaAddRelation(r.ds, params)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      try {
+        DS.addRelation(params)
+      } catch (error) {
+        throw mapRelationAddError(error)
+      }
+      return {
+        data: {
+          status: 'ok',
+          parentTable: params.parentTable, childTable: params.childTable,
+          parentField: params.parentField, childField: params.childField,
+          relationCount: DS.tableRelations?.length ?? 0,
+        },
+        summary: `添加关系 ${params.parentTable}→${params.childTable}`,
+      }
+    })),
 }
 
 // ─── relation.remove ───────────────────────────────────────
@@ -548,11 +864,17 @@ const relationRemove: StillDefinition<RelationRemoveParams, unknown> = {
     if (!isNonEmptyString(params.childTable)) return missingParam('childTable')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaRemoveRelation(r.ds, params.parentTable, params.childTable)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      try {
+        DS.removeRelation(params.parentTable, params.childTable)
+      } catch (error) {
+        throw mapRelationRemoveError(error, params.parentTable, params.childTable)
+      }
+      return {
+        data: { status: 'ok', parentTable: params.parentTable, childTable: params.childTable, relationCount: DS.tableRelations?.length ?? 0 },
+        summary: `删除关系 ${params.parentTable}→${params.childTable}`,
+      }
+    })),
 }
 
 // ─── relation.list ─────────────────────────────────────────
@@ -566,11 +888,7 @@ const relationList: StillDefinition<Record<string, never>, unknown> = {
   paramsSchema: {},
   example: {},
   validate: () => null,
-  execute: (session): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaListRelations(r.ds)
-  },
+  execute: (session): StillResult => withDS(session, (DS) => executeDSOperation(() => DS.listRelations())),
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -588,34 +906,33 @@ const schemaLock: StillDefinition<Record<string, never>, unknown> = {
   paramsSchema: {},
   example: {},
   validate: () => null,
-  execute: (session): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    const ds = r.ds
-    const tables = Object.keys(ds.tables)
+  execute: (session): StillResult => withDS(session, (DS) => {
+    const preflight = inspectSchemaInstance(DS)
 
-    // 锁定前做两层硬校验：
-    // 1. 至少存在一张表，避免生成空壳 schema；
-    // 2. 每张表都必须具备主键，确保后续 CRUD、选中态和级联能稳定定位行。
-    if (tables.length === 0) {
+    if (preflight.tableCount === 0) {
       return { ok: false, code: 'EMPTY_SCHEMA', msg: '没有任何表，无法锁定', fix: '请先 datatable.create' }
     }
-    const noPk = tables.filter((t) => !(ds.tables[t]?.columns.some((c) => c.isPrimaryKey) ?? false))
-    if (noPk.length > 0) {
+    if (preflight.missingPrimaryKeys.length > 0) {
       return {
         ok: false, code: 'MISSING_PK',
-        msg: `以下表缺少主键列: ${noPk.join(', ')}`,
+        msg: `以下表缺少主键列: ${preflight.missingPrimaryKeys.join(', ')}`,
         fix: '请 datatable.addColumns 添加 isPrimaryKey=true 的列',
       }
     }
-    const slot = getDataSetSlot(session)
-    slot.schemaLocked = true
+
+    const state = getDataSetState(session)
+    state.locked = true
+    state.phase = 'configure'
     return {
       ok: true,
-      data: { schemaLocked: true, tableCount: tables.length, relationCount: (ds.tableRelations ?? []).length },
-      summary: `结构已锁定（${tables.length} 表, ${(ds.tableRelations ?? []).length} 关系）`,
+      data: {
+        locked: true,
+        tableCount: preflight.tableCount,
+        relationCount: preflight.relationCount,
+      },
+      summary: `结构已锁定（${preflight.tableCount} 表, ${preflight.relationCount} 关系）`,
     }
-  },
+  }),
 }
 
 // ─── schema.unlock ─────────────────────────────────────────
@@ -632,11 +949,12 @@ const schemaUnlock: StillDefinition<SchemaUnlockParams, unknown> = {
   example: { reason: '需要添加新字段' },
   validate: () => null,
   execute: (session, params): StillResult => {
-    const slot = getDataSetSlot(session)
-    slot.schemaLocked = false
+    const state = getDataSetState(session)
+    state.locked = false
+    state.phase = 'design'
     return {
       ok: true,
-      data: { schemaLocked: false, reason: params.reason ?? '未说明' },
+      data: { locked: false, reason: params.reason ?? '未说明' },
       summary: `结构已解锁${params.reason ? `（原因: ${params.reason}）` : ''}`,
     }
   },
@@ -663,11 +981,13 @@ const dataviewCreate: StillDefinition<DataviewCreateParams, unknown> = {
     if (!isNonEmptyString(params.viewId)) return missingParam('viewId')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaAddView(r.ds, params.tableName, params.viewId)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      const table = requireTable(DS, params.tableName)
+      if (table.getView(params.viewId)) {
+        throw new DataSetOpError('VIEW_EXISTS', `视图 ${params.viewId} 已存在`, '请用 dataview.configure 配置')
+      }
+      return table.addView(params.viewId)
+    })),
 }
 
 // ─── dataview.describe ─────────────────────────────────────
@@ -686,11 +1006,10 @@ const dataviewDescribe: StillDefinition<DataviewDescribeParams, unknown> = {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaDescribeView(r.ds, params.tableName, params.viewId)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      const { view } = requireView(DS, params.tableName, params.viewId)
+      return view.describeView()
+    })),
 }
 
 // ─── dataview.configure ────────────────────────────────────
@@ -746,11 +1065,12 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
     return null
   },
   execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
     const config = extractViewConfig(params)
     if (!config) return { ok: false, code: 'INVALID_PARAMS', msg: '缺少配置属性', fix: '提供 autoLoad / pageSize 等属性' }
-    return metaConfigureView(r.ds, params.tableName, params.viewId, config)
+    return withDS(session, (DS) => executeDSOperation(() => {
+      const { view } = requireView(DS, params.tableName, params.viewId)
+      return view.configure(config)
+    }))
   },
 }
 
@@ -778,11 +1098,14 @@ const dataviewSetAggregates: StillDefinition<SetAggregatesParams, unknown> = {
     if (!isNonEmptyRecord(params.aggregates)) return missingParam('aggregates')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaSetAggregates(r.ds, params.tableName, params.viewId, params.aggregates)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      const { view } = requireView(DS, params.tableName, params.viewId)
+      try {
+        return view.configureAggregates(params.aggregates)
+      } catch (error) {
+        throw new DataSetOpError('COLUMN_NOT_FOUND', toErrorMessage(error), '请先添加相关列')
+      }
+    })),
 }
 
 // ─── dataview.setTreeConfig ────────────────────────────────
@@ -813,11 +1136,14 @@ const dataviewSetTreeConfig: StillDefinition<SetTreeConfigParams, unknown> = {
     if (!isNonEmptyString(params.treeConfig.parentIdField)) return 'treeConfig 缺少 parentIdField'
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaSetTreeConfig(r.ds, params.tableName, params.viewId, params.treeConfig)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      const { view } = requireView(DS, params.tableName, params.viewId)
+      try {
+        return view.configureTree(params.treeConfig)
+      } catch (error) {
+        throw new DataSetOpError('COLUMN_NOT_FOUND', toErrorMessage(error), '请检查列名')
+      }
+    })),
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -863,11 +1189,24 @@ const dependencyAdd: StillDefinition<DependencyAddParams, unknown> = {
     }
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaAddDependency(r.ds, params)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      try {
+        DS.addDependency(params)
+      } catch (error) {
+        throw mapDependencyAddError(error)
+      }
+      const deps = DS.viewDependencies ?? []
+      const dep = deps[deps.length - 1]
+      return {
+        data: {
+          status: 'ok',
+          parentTable: params.parentTable, childTable: params.childTable,
+          dependencyType: dep?.dependencyType ?? 'currentRow',
+          dependencyCount: deps.length,
+        },
+        summary: `添加依赖 ${params.parentTable}→${params.childTable}（${params.dependencyType ?? 'currentRow'}）`,
+      }
+    })),
 }
 
 // ─── dependency.remove ─────────────────────────────────────
@@ -895,11 +1234,17 @@ const dependencyRemove: StillDefinition<DependencyRemoveParams, unknown> = {
     if (!isNonEmptyString(params.childTable)) return missingParam('childTable')
     return null
   },
-  execute: (session, params): StillResult => {
-    const r = requireDataset(session)
-    if ('error' in r) return r.error
-    return metaRemoveDependency(r.ds, params.parentTable, params.childTable)
-  },
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
+      try {
+        DS.removeDependency(params.parentTable, params.childTable)
+      } catch {
+        throw new DataSetOpError('DEPENDENCY_NOT_FOUND', '依赖不存在', '请确认参数')
+      }
+      return {
+        data: { status: 'ok', parentTable: params.parentTable, childTable: params.childTable, dependencyCount: DS.viewDependencies?.length ?? 0 },
+        summary: `删除依赖 ${params.parentTable}→${params.childTable}`,
+      }
+    })),
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -951,6 +1296,7 @@ const dependencyStills = [
 /**
  * 暴露顺序就是 still 面板和命令发现时看到的顺序。
  * 这里按 namespace 分组拼装，后续增删 action 时不必在人肉统计里找位置。
+ * 注册表层不会按静态类型直接调用各 still 的 params，因此这里显式擦除具体参数泛型。
  */
 const allDatasetStills = [
   ...datasetStills,
@@ -962,11 +1308,11 @@ const allDatasetStills = [
 ] as unknown as StillDefinition[]
 
 /** DataSet 域 — 24 个数据建模 action */
-export const datasetDomain: DomainProvider = {
+export const datasetDomain: DomainProvider<DataSetDomainState> = {
   name: 'dataset',
   roleHint: 'SPARK View 数据建模专家——负责 DataSet 结构设计（表、列、关系、视图、依赖）',
   stills: allDatasetStills,
-  createSlot: createDataSetSlot,
+  createState: createDataSetState,
 }
 
 // ═══════════════════════════════════════════════════════════

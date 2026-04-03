@@ -108,9 +108,10 @@ export {
   createSession,
   registerDomain,
   getDomain,
-  getDataSetSlot,
+  getDataSetState,
 } from './stills'
 export type {
+  DomainState,
   IStillSession,
   StillGuard,
   StillResult,
@@ -120,8 +121,8 @@ export type {
   BlueprintCheckpoint,
   PatchEntry,
   DomainProvider,
-  DesignStep,
-  DataSetSlot,
+  DesignPhase,
+  DataSetDomainState,
 } from './stills'
 
 // ── SAP Runtime Bridge（协议解析 → Stills 调度 → 响应格式化）───────────────────

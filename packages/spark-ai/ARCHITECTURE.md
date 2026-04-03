@@ -287,7 +287,7 @@ Stills 是 SAP 协议驱动的**原子动作系统**。
 
 **域注册**：`registerDomain(provider)` 双写——①写入域注册表；②把域内 stills 批量注册到 dispatcher。
 
-**会话工厂**：`createSession()` 创建空 `IStillSession`，遍历所有已注册域调用 `createSlot()` 初始化各域 slot。
+**会话工厂**：`createSession()` 创建空 `IStillSession`，遍历所有已注册域调用 `createState()` 初始化各域 state。
 
 **DataSet 域**（24 stills，6 命名空间）：
 

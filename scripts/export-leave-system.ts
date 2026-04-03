@@ -7,7 +7,7 @@
  *   data/enterprise-leave-system.stills.json     — Stills 流水线全量数据（blueprint + patchLog + 域状态）
  */
 import { registerAllStills, createSession, executeStill } from '../packages/spark-ai/src/index.js'
-import { getDataSetSlot } from '../packages/spark-ai/src/stills/dataset-domain.js'
+import { getDataSetState } from '../packages/spark-ai/src/stills/dataset-domain.js'
 import * as fs from 'fs'
 
 registerAllStills()
@@ -182,7 +182,7 @@ const blueprintDescribe = run('blueprint.describe')
 const validateResult = run('dataset.validate')
 
 // Stills 完整流水线数据
-const slot = getDataSetSlot(session)
+const datasetState = getDataSetState(session)
 const stillsPipeline = {
   // 元信息
   exportedAt: new Date().toISOString(),
@@ -199,8 +199,8 @@ const stillsPipeline = {
 
   // 4. 域状态
   domain: {
-    schemaLocked: slot.schemaLocked,
-    currentStep: slot.currentStep,
+    locked: datasetState.locked,
+    phase: datasetState.phase,
   },
 
   // 5. DataSet 元数据快照
@@ -228,5 +228,5 @@ fs.writeFileSync(stillsPath, stillsJson, 'utf-8')
 console.log(`✅ stills.json    → ${stillsPath} (${stillsJson.length} chars)`)
 console.log(`   patchLog 条数: ${session.patchLog.length}`)
 console.log(`   blueprint checkpoints: ${session.blueprint?.checkpoints.length ?? 0}`)
-console.log(`   schemaLocked: ${slot.schemaLocked}`)
-console.log(`   currentStep: ${slot.currentStep}`)
+console.log(`   locked: ${datasetState.locked}`)
+console.log(`   phase: ${datasetState.phase}`)

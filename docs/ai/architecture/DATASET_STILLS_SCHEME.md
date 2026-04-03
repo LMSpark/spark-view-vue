@@ -152,12 +152,12 @@ interface DesignSessionV2 {
 
   // ── 工作流 ──
   currentPass: 'A' | 'B'
-  currentStep: DesignStep
-  schemaLocked: boolean           // A4 后 true
+  phase: DesignPhase
+  locked: boolean                 // A4 后 true
   blueprint: ExecutionBlueprint | null
 
   // ── 单一事实源 ──
-  dataset: IDataSetMetadata | null  // null = 尚未 init
+  data: IDataSetMetadata | null     // null = 尚未 init
 
   // ── 变更日志 ──
   patchLog: PatchEntry[]          // 每次 still 执行记录
@@ -255,7 +255,7 @@ interface StillGuard {
   requireBlueprint?: boolean        // true → 必须先有 blueprint
   requireSchemaUnlocked?: boolean   // true → 锁后拒绝
   requireSchemaLocked?: boolean     // true → 未锁拒绝
-  allowedSteps?: DesignStep[]       // 空 → 不限步骤
+  allowedSteps?: DesignPhase[]       // 空 → 不限步骤
 }
 ```
 
@@ -264,10 +264,9 @@ interface StillGuard {
 ```typescript
 interface StillContext {
   blueprint: ExecutionBlueprint | null
-  dataset: IDataSetMetadata | null   // 可读可写
-  schemaLocked: boolean
-  currentStep: DesignStep
-}
+  data: IDataSetMetadata | null      // 可读可写
+  locked: boolean
+  phase: DesignPhase
 
 type StillResult<T = unknown> =
   | { ok: true; data: T; summary: string }
@@ -401,7 +400,7 @@ registerDataTableMethods(stills)
 |------|------|-------|------|
 | `stills.capabilities` | describe | — | 返回当前可用动作、按步骤/锁状态过滤后的动作目录 |
 | `stills.actionSpec` | describe | — | 返回指定动作的 `description` / `guard` / `paramsSchema` / `resultSchema` / `example` |
-| `session.describe` | describe | — | 返回当前 `step` / `schemaLocked` / `dataset` 摘要 / `blueprint` 摘要 / 推荐下一步 |
+| `session.describe` | describe | — | 返回当前 `step` / `locked` / `dataset` 摘要 / `blueprint` 摘要 / 推荐下一步 |
 | `blueprint.create` | request | — | 根据用户目标生成执行蓝图与 checkpoints |
 | `blueprint.describe` | describe | — | 返回当前蓝图、当前 checkpoint、未决问题 |
 | `blueprint.advance` | request | requireBlueprint | 标记当前 checkpoint 完成并推进下一步 |
@@ -695,8 +694,8 @@ packages/spark-ai/src/stills/
 | 概念 | 保留原因 |
 |------|---------|
 | `UIRegistry` | 属于 rule.json 领域，不在 Dataset Memory 范畴 |
-| `currentPass` / `currentStep` | 工作流步骤控制仍然需要 |
-| `DesignStep`（A1-A4/B1-B6） | 步骤枚举本身不变 |
+| `currentPass` / `step` | 工作流步骤控制仍然需要 |
+| `DesignPhase`（discover/blueprint/design/configure/validate/export） | 步骤枚举已重命名为自描述英文标签 |
 | SAP 协议格式（`@@request/@@result/@@error`） | 完全复用，零改动 |
 | 前端 `SapChatPanel` 协议提取逻辑 | 复用，只加 action 前缀路由 |
 

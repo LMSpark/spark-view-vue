@@ -70,6 +70,8 @@ interface DataViewEventMap extends Record<string, any[]> {
 /** rowsChanged 事件防抖延迟（毫秒，约 1 帧） */
 const ROWS_CHANGED_DEBOUNCE_MS = 16
 
+type DataViewServiceResult<T> = { data: T; summary: string }
+
 // ─────────────────────────────────────────────
 // DataView 类
 // ─────────────────────────────────────────────
@@ -1290,6 +1292,91 @@ export class DataView implements IDataSource {
     if (vc.aggregates !== undefined) (this as { aggregates: Record<string, AggregateColumnConfig> }).aggregates = vc.aggregates
     this.page = vc.page ?? 1
     this.pageSize = vc.pageSize ?? 20
+  }
+
+  describeView(): DataViewServiceResult<{
+    tableName: string
+    viewId: string
+    config: IViewMetadata
+    viewIds: string[]
+  }> {
+    const table = this.checkDataTableAttached()
+    return {
+      data: {
+        tableName: this.tableName,
+        viewId: this.viewId,
+        config: this.toData(),
+        viewIds: Object.keys(table.views),
+      },
+      summary: `视图 ${this.tableName}:${this.viewId}`,
+    }
+  }
+
+  configure(config: Partial<IViewMetadata>): DataViewServiceResult<{
+    tableName: string
+    viewId: string
+    config: IViewMetadata
+  }> {
+    this.applyViewConfig(config)
+    return {
+      data: {
+        tableName: this.tableName,
+        viewId: this.viewId,
+        config: this.toData(),
+      },
+      summary: `配置视图 ${this.tableName}:${this.viewId}（${Object.keys(config).join(', ')}）`,
+    }
+  }
+
+  configureAggregates(aggregates: Record<string, AggregateColumnConfig>): DataViewServiceResult<{
+    tableName: string
+    viewId: string
+    aggregates: Record<string, AggregateColumnConfig>
+    aggregateCount: number
+  }> {
+    const table = this.checkDataTableAttached()
+    const columnNames = new Set(table.columns.map((column) => column.name))
+    const missingFields = Object.entries(aggregates)
+      .map(([key, config]) => config.field ?? key)
+      .filter((field) => !columnNames.has(field))
+
+    if (missingFields.length > 0) {
+      throw new Error(`Aggregate fields not found: ${missingFields.join(', ')}`)
+    }
+
+    this.applyViewConfig({ aggregates })
+    return {
+      data: {
+        tableName: this.tableName,
+        viewId: this.viewId,
+        aggregates,
+        aggregateCount: Object.keys(aggregates).length,
+      },
+      summary: `设置 ${Object.keys(aggregates).length} 个聚合列`,
+    }
+  }
+
+  configureTree(treeConfig: TreeConfig): DataViewServiceResult<{
+    tableName: string
+    viewId: string
+    treeConfig: TreeConfig
+  }> {
+    const table = this.checkDataTableAttached()
+    const columnNames = new Set(table.columns.map((column) => column.name))
+    const { idField, parentIdField } = treeConfig
+
+    if (idField === undefined || !columnNames.has(idField)) {
+      throw new Error(`Tree idField "${idField ?? ''}" not found`)
+    }
+    if (parentIdField === undefined || !columnNames.has(parentIdField)) {
+      throw new Error(`Tree parentIdField "${parentIdField ?? ''}" not found`)
+    }
+
+    this.treeConfig = treeConfig
+    return {
+      data: { tableName: this.tableName, viewId: this.viewId, treeConfig },
+      summary: `设置树配置 ${this.tableName}:${this.viewId}（mode=${treeConfig.treeMode ?? 'flat'}）`,
+    }
   }
 
   /** 对已有 rows 应用 autoCurrentFirst / autoSelectFirst 初始化选中状态（静态数据路径用） */

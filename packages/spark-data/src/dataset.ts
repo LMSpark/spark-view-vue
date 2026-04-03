@@ -6,7 +6,7 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, FilterExpression, IDataRow, DataColumn, ColumnType, ViewChangeHandlers } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, DependencyType, FilterExpression, IDataRow, DataColumn, ColumnType, ViewChangeHandlers } from './types'
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
@@ -76,6 +76,7 @@ function resolveRouteTemplateParams(routeLike: unknown): {
   return result
 }
 
+type DataSetServiceResult<T> = { data: T; summary: string }
 /**
  * @internal 自动推导视图联动
  *
@@ -605,6 +606,157 @@ export class DataSet implements IDataSet {
       version: config.version,
       pageId: config.pageId,
     })
+  }
+
+  // ===== 结构变更 =====
+
+  /**
+   * 动态添加一张表（含 default 视图）。
+   * @returns 新建的 DataTable 实例
+   * @throws 表名已存在时抛 Error
+   */
+  addTable(tableName: string, columns: DataColumn[]): DataTable {
+    if (this.tables[tableName]) {
+      throw new Error(`Table "${tableName}" already exists in DataSet "${this.dataSetName}"`)
+    }
+
+    const table = new DataTable(tableName, columns)
+    this.tables[tableName] = table
+    table.setDataSet(this)
+    return table
+  }
+
+  /**
+   * 添加 TableRelation（父子表关系）。
+   * @throws 引用的表/字段不存在或关系已重复时抛 Error
+   */
+  addRelation(params: {
+    parentTable: string
+    childTable: string
+    parentField: string
+    childField: string
+    relationName?: string
+  }): void {
+    this.tableRelations ??= []
+
+    const parentTable = this.getTable(params.parentTable)
+    const childTable = this.getTable(params.childTable)
+    if (!parentTable) throw new Error(`Parent table "${params.parentTable}" not found`)
+    if (!childTable) throw new Error(`Child table "${params.childTable}" not found`)
+
+    if (!parentTable.columns.some((c) => c.name === params.parentField)) {
+      throw new Error(`Parent field "${params.parentField}" not found in table "${params.parentTable}"`)
+    }
+    if (!childTable.columns.some((c) => c.name === params.childField)) {
+      throw new Error(`Child field "${params.childField}" not found in table "${params.childTable}"`)
+    }
+
+    const dup = this.tableRelations.some(
+      (r) =>
+        r.parentTable === params.parentTable &&
+        r.childTable === params.childTable &&
+        r.parentField === params.parentField &&
+        r.childField === params.childField,
+    )
+    if (dup) throw new Error(`Relation ${params.parentTable}→${params.childTable} already exists`)
+
+    const relation: TableRelation = {
+      parentTable: params.parentTable,
+      childTable: params.childTable,
+      parentField: params.parentField,
+      childField: params.childField,
+      ...(params.relationName ? { relationName: params.relationName } : {}),
+    }
+    this.tableRelations.push(relation)
+  }
+
+  /**
+   * 删除 TableRelation。
+   * @throws 关系不存在或被 viewDependency 引用时抛 Error
+   */
+  removeRelation(parentTable: string, childTable: string): void {
+    this.tableRelations ??= []
+
+    const idx = this.tableRelations.findIndex(
+      (r) => r.parentTable === parentTable && r.childTable === childTable,
+    )
+    if (idx < 0) throw new Error(`Relation ${parentTable}→${childTable} not found`)
+
+    const blocking = (this.viewDependencies ?? []).some(
+      (d) => d.parentTable === parentTable && d.childTable === childTable,
+    )
+    if (blocking) {
+      throw new Error(`Relation ${parentTable}→${childTable} is referenced by viewDependency, remove dependency first`)
+    }
+
+    this.tableRelations.splice(idx, 1)
+  }
+
+  /**
+   * 添加 ViewDependency（视图联动依赖）。
+   * @throws 表不存在、底层 relation 缺失、或重复时抛 Error
+   */
+  addDependency(params: {
+    parentTable: string
+    childTable: string
+    dependencyType?: DependencyType | undefined
+    autoLoad?: boolean
+  }): void {
+    if (!this.getTable(params.parentTable)) throw new Error(`Parent table "${params.parentTable}" not found`)
+    if (!this.getTable(params.childTable)) throw new Error(`Child table "${params.childTable}" not found`)
+
+    const hasRelation = (this.tableRelations ?? []).some(
+      (r) => r.parentTable === params.parentTable && r.childTable === params.childTable,
+    )
+    if (!hasRelation) {
+      throw new Error(`No tableRelation for ${params.parentTable}→${params.childTable}, add relation first`)
+    }
+
+    this.viewDependencies ??= []
+
+    const dup = this.viewDependencies.some(
+      (d) => d.parentTable === params.parentTable && d.childTable === params.childTable,
+    )
+    if (dup) throw new Error(`Dependency ${params.parentTable}→${params.childTable} already exists`)
+
+    const dep: ViewDependency = {
+      parentTable: params.parentTable,
+      childTable: params.childTable,
+      dependencyType: params.dependencyType ?? 'currentRow',
+      ...(params.autoLoad !== undefined ? { autoLoad: params.autoLoad } : {}),
+    }
+    this.viewDependencies.push(dep)
+  }
+
+  /**
+   * 删除 ViewDependency。
+   * @throws 依赖不存在时抛 Error
+   */
+  removeDependency(parentTable: string, childTable: string): void {
+    this.viewDependencies ??= []
+
+    const idx = this.viewDependencies.findIndex(
+      (d) => d.parentTable === parentTable && d.childTable === childTable,
+    )
+    if (idx < 0) throw new Error(`Dependency ${parentTable}→${childTable} not found`)
+
+    this.viewDependencies.splice(idx, 1)
+  }
+
+  exportSnapshot(): DataSetServiceResult<{ status: 'ok'; snapshot: Record<string, unknown> }> {
+    const snapshot = JSON.parse(JSON.stringify(this.toData())) as Record<string, unknown>
+    return {
+      data: { status: 'ok', snapshot },
+      summary: `导出 DataSet: ${this.dataSetName}`,
+    }
+  }
+
+  listRelations(): DataSetServiceResult<{ relations: TableRelation[]; count: number }> {
+    const relations = (this.tableRelations ?? []).map((relation) => ({ ...relation }))
+    return {
+      data: { relations, count: relations.length },
+      summary: `${relations.length} 条关系`,
+    }
   }
 
   // ===== 数据访问 =====

@@ -8,6 +8,7 @@
 
 import { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill } from './dispatcher'
 import type {
+  DomainState,
   StillGuard,
   StillResult,
   StillDefinition,
@@ -22,7 +23,7 @@ import { noGuard, requireBlueprint } from './types'
 import { registerDomain, getDomain, clearDomains, createSession } from './domain'
 import {
   datasetDomain,
-  getDataSetSlot,
+  getDataSetState,
   datasetInit,
   datasetDescribe,
   datasetValidate,
@@ -48,7 +49,7 @@ import {
   dependencyAdd,
   dependencyRemove,
 } from './dataset-domain'
-import type { DataSetSlot, DesignStep } from './dataset-domain'
+import type { DataSetDomainState, DesignPhase } from './dataset-domain'
 import { stillsCapabilities, stillsActionSpec, sessionDescribe } from './meta-methods'
 import { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintItemAdvance, blueprintRevise } from './blueprint-methods'
 
@@ -58,6 +59,7 @@ import { blueprintCreate, blueprintDescribe, blueprintAdvance, blueprintItemAdva
 
 export { registerStill, registerAll, getStill, getAllStills, clearRegistry, executeStill }
 export type {
+  DomainState,
   StillGuard,
   StillResult,
   StillDefinition,
@@ -80,8 +82,8 @@ export { registerDomain, getDomain, clearDomains, createSession }
 // Dataset Domain
 // ═══════════════════════════════════════════════════════════
 
-export { datasetDomain, getDataSetSlot }
-export type { DataSetSlot, DesignStep }
+export { datasetDomain, getDataSetState }
+export type { DataSetDomainState, DesignPhase }
 export {
   datasetInit,
   datasetDescribe,

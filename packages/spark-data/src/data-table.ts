@@ -23,6 +23,8 @@ import { type CrudService, createCrudService } from './crud-service'
 import { normalizeTableMetadata } from './metadata'
 import { assertNoSeparator, resolveApi } from './core/utils'
 
+type DataTableServiceResult<T> = { data: T; summary: string }
+
 /**
  * DataTable - 管理单表的结构定义与配置
  *
@@ -218,6 +220,128 @@ export class DataTable {
       views: viewsData,
       ...(this.api !== undefined ? { api: this.api } : {}),
       ...(this.crudConfig !== undefined ? { crudConfig: this.crudConfig } : {}),
+    }
+  }
+
+  // ===== 结构变更 =====
+
+  /**
+   * 向表追加列（同名列跳过不覆盖）。
+   * @returns `{ added, skipped }` — 分别列出实际追加和因同名跳过的列名
+   */
+  addColumns(columns: DataColumn[]): { added: string[]; skipped: string[] } {
+    const existingNames = new Set(this.columns.map((c) => c.name))
+    const added: string[] = []
+    const skipped: string[] = []
+
+    for (const col of columns) {
+      if (existingNames.has(col.name)) {
+        skipped.push(col.name)
+      } else {
+        this.columns.push(col)
+        existingNames.add(col.name)
+        added.push(col.name)
+      }
+    }
+
+    return { added, skipped }
+  }
+
+  /**
+   * 修改单列属性（不允许改 name）。
+   * @returns 被变更的字段名列表
+   * @throws 列不存在时抛 Error
+   */
+  updateColumn(columnName: string, updates: Partial<DataColumn>): string[] {
+    const col = this.columns.find((c) => c.name === columnName)
+    if (!col) {
+      throw new Error(`Column "${columnName}" not found in table "${this.tableName}"`)
+    }
+
+    const { name: _name, ...safeUpdates } = updates
+    Object.assign(col, safeUpdates)
+    return Object.keys(safeUpdates)
+  }
+
+  /**
+   * 删除列。
+   * @throws 列不存在时抛 Error
+   */
+  removeColumn(columnName: string): void {
+    const idx = this.columns.findIndex((c) => c.name === columnName)
+    if (idx < 0) {
+      throw new Error(`Column "${columnName}" not found in table "${this.tableName}"`)
+    }
+    this.columns.splice(idx, 1)
+  }
+
+  /**
+   * 写入内联静态行到 DataTable.rows 并同步到 default 视图。
+   *
+   * 追加模式：新行 append 到 table.rows 尾部，default 视图用完整 rows 替换。
+   * @returns 追加后的总行数
+   */
+  addRows(rows: IDataRow[]): number {
+    const nextRows = [...this.rows, ...rows]
+    this.rows = nextRows
+
+    const defaultView = this.getView('default')
+    if (defaultView) {
+      defaultView.replaceRows([...nextRows])
+    }
+
+    return nextRows.length
+  }
+
+  addView(viewId: string): DataTableServiceResult<{ tableName: string; viewId: string; viewCount: number }> {
+    if (this.getView(viewId)) {
+      throw new Error(`View "${viewId}" already exists in table "${this.tableName}"`)
+    }
+
+    this.getOrCreateView(viewId)
+    return {
+      data: { tableName: this.tableName, viewId, viewCount: Object.keys(this.views).length },
+      summary: `创建视图 ${this.tableName}:${viewId}`,
+    }
+  }
+
+  describe(): DataTableServiceResult<{
+    tableName: string
+    columns: Array<{
+      name: string
+      type: DataColumn['type']
+      isPrimaryKey: boolean
+      label: string | undefined
+      computeExpression: string | undefined
+    }>
+    columnCount: number
+    api: CrudApi | null
+    viewCount: number
+    views: string[]
+    relations: string[]
+  }> {
+    const relations = (this.dataSet?.tableRelations ?? []).filter(
+      (relation) => relation.parentTable === this.tableName || relation.childTable === this.tableName,
+    )
+    const userColumns = this.columns.filter((column) => !column.isComputed)
+
+    return {
+      data: {
+        tableName: this.tableName,
+        columns: userColumns.map((column) => ({
+          name: column.name,
+          type: column.type,
+          isPrimaryKey: column.isPrimaryKey ?? false,
+          label: column.label,
+          computeExpression: column.computeExpression,
+        })),
+        columnCount: userColumns.length,
+        api: this.api ?? null,
+        viewCount: Object.keys(this.views).length,
+        views: Object.keys(this.views),
+        relations: relations.map((relation) => `${relation.parentTable}→${relation.childTable}`),
+      },
+      summary: `表 ${this.tableName} 详情`,
     }
   }
 

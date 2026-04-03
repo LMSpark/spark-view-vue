@@ -20,7 +20,7 @@
  */
 
 import { registerAllStills, createSession, executeStill } from '../packages/spark-ai/src/index.js'
-import { getDataSetSlot } from '../packages/spark-ai/src/stills/dataset-domain.js'
+import { getDataSetState } from '../packages/spark-ai/src/stills/dataset-domain.js'
 import type { IStillSession } from '../packages/spark-ai/src/stills/types.js'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -559,12 +559,12 @@ async function main() {
   // 4b. AI 自检：将导出结果回传 LLM，让其审查是否有遗漏
   // ═══════════════════════════════════════════════════════════
 
-  const selfCheckSlot = getDataSetSlot(session)
-  if (selfCheckSlot.dataset && finalSummary) {
+  const selfCheckState = getDataSetState(session)
+  if (selfCheckState.data && finalSummary) {
     console.log('\n🔍 AI 自检：将导出结果回传 LLM 审查...')
 
     // 构造精简的导出摘要（避免 token 过多）
-    const exportedDs = selfCheckSlot.dataset
+    const exportedDs = selfCheckState.data
     const tablesSummary = Object.entries(exportedDs.tables).map(([name, t]) => {
       const cols = t.columns.map((c) => {
         const column = asDict(c)
@@ -675,26 +675,26 @@ ${USER_PROMPT}
   console.log(`\n📄 对话记录 → ${dialoguePath}`)
 
   // 5b. 最终 DataSet 元数据
-  const slot = getDataSetSlot(session)
-  if (slot.dataset) {
+  const datasetState = getDataSetState(session)
+  if (datasetState.data) {
     const metadataPath = path.join(dataDir, 'sap-stills-metadata.json')
-    fs.writeFileSync(metadataPath, JSON.stringify(slot.dataset, null, 2), 'utf-8')
+    fs.writeFileSync(metadataPath, JSON.stringify(datasetState.data, null, 2), 'utf-8')
     console.log(`📄 DataSet 元数据 → ${metadataPath}`)
 
     // 统计信息
-    const tables = Object.keys(slot.dataset.tables)
+    const tables = Object.keys(datasetState.data.tables)
     const totalColumns = tables.reduce(
-      (sum, t) => sum + (slot.dataset!.tables[t]?.columns.length ?? 0),
+      (sum, t) => sum + (datasetState.data!.tables[t]?.columns.length ?? 0),
       0,
     )
-    const relations = slot.dataset.tableRelations?.length ?? 0
+    const relations = datasetState.data.tableRelations?.length ?? 0
 
     console.log(`\n═══ 设计成果 ═══`)
     console.log(`  表: ${tables.length} (${tables.join(', ')})`)
     console.log(`  列: ${totalColumns}`)
     console.log(`  关系: ${relations}`)
-    console.log(`  Schema 锁定: ${slot.schemaLocked}`)
-    console.log(`  设计步骤: ${slot.currentStep}`)
+    console.log(`  Schema 锁定: ${datasetState.locked}`)
+    console.log(`  设计阶段: ${datasetState.phase}`)
   } else {
     console.log('\n⚠️  会话中未创建 DataSet（AI 可能未完成建模流程）')
   }
@@ -735,7 +735,7 @@ ${USER_PROMPT}
   // 6. 自动化验证报告
   // ═══════════════════════════════════════════════════════════
 
-  const report = buildVerificationReport(slot.dataset, session.patchLog, turns, session.blueprint)
+  const report = buildVerificationReport(datasetState.data, session.patchLog, turns, session.blueprint)
   printVerificationReport(report)
 
   // 写入验证报告 JSON
@@ -770,7 +770,7 @@ interface VerificationReport {
 }
 
 function buildVerificationReport(
-  dataset: ReturnType<typeof getDataSetSlot>['dataset'],
+  dataset: ReturnType<typeof getDataSetState>['data'],
   patchLog: Array<{ action: string; summary: string }>,
   turns: DialogueTurn[],
   blueprint: IStillSession['blueprint'],

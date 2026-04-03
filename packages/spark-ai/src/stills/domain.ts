@@ -1,8 +1,8 @@
 /**
  * Domain Registry — 域注册 + 会话工厂
  *
- * 各域通过 registerDomain() 注册自身的 stills 和 session slot。
- * createSession() 自动为每个已注册域创建 slot。
+ * 各域通过 registerDomain() 注册自身的 stills 和 session state。
+ * createSession() 自动为每个已注册域创建 state。
  */
 
 import type { IStillSession, DomainProvider } from './types'
@@ -18,7 +18,7 @@ const _domains = new Map<string, DomainProvider>()
  * 注册一个域。
  *
  * 域注册是双写操作：
- * 1. 写入 domain 注册表，供 createSession() 创建 slot；
+ * 1. 写入 domain 注册表，供 createSession() 创建 state；
  * 2. 将域内 stills 注册到 dispatcher 的 action registry。
  */
 export function registerDomain(domain: DomainProvider): void {
@@ -48,12 +48,12 @@ function createBaseSession(): IStillSession {
   }
 }
 
-/** 创建会话：初始化框架字段 + 每个已注册域的 slot */
+/** 创建会话：初始化框架字段 + 每个已注册域的 state */
 export function createSession(): IStillSession {
   const session = createBaseSession()
 
   for (const [name, domain] of _domains) {
-    session.domains[name] = domain.createSlot()
+    session.domains[name] = domain.createState()
   }
 
   return session

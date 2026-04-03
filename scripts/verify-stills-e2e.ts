@@ -11,7 +11,7 @@ import {
   registerAllStills,
   createSession,
   executeStill,
-  getDataSetSlot,
+  getDataSetState,
   type IStillSession,
   type StillResult,
 } from '../packages/spark-ai/src/index.js'
@@ -153,7 +153,7 @@ const bpResult = exec(session, 'blueprint.create', {
       id: 'cp-lock',
       title: '结构锁定',
       plannedActions: ['schema.lock'],
-      validation: 'schemaLocked=true',
+      validation: 'locked=true',
     },
     {
       id: 'cp-views',
@@ -305,8 +305,8 @@ ok(exec(session, 'datatable.create', {
 }), 'ApprovalFlows')
 
 // 验证建表结果
-const slot = getDataSetSlot(session)
-const tableCount = Object.keys(slot.dataset!.tables).length
+const datasetState = getDataSetState(session)
+const tableCount = Object.keys(datasetState.data!.tables).length
 assert(tableCount === 6, `应有 6 张表，实际 ${tableCount}`)
 console.log(`  📊 建表完成: ${tableCount} 张表`)
 
@@ -388,7 +388,7 @@ round('结构锁定 — guard 翻转验证')
 
 step('schema.lock')
 ok(exec(session, 'schema.lock'), 'schema.lock')
-assert(getDataSetSlot(session).schemaLocked === true, 'schemaLocked 应为 true')
+assert(getDataSetState(session).locked === true, 'locked 应为 true')
 
 step('datatable.create（应被 guard 拒绝 — schema 已锁定）')
 const guardTest2 = exec(session, 'datatable.create', {
@@ -424,7 +424,7 @@ ok(exec(session, 'relation.add', {
 step('schema.lock（重新锁定，6 条关系）')
 ok(exec(session, 'schema.lock'), 'schema.lock again')
 
-const finalRelCount = getDataSetSlot(session).dataset!.tableRelations!.length
+const finalRelCount = getDataSetState(session).data!.tableRelations!.length
 assert(finalRelCount === 6, `应有 6 条关系，实际 ${finalRelCount}`)
 console.log(`  📊 最终关系数: ${finalRelCount}`)
 
@@ -548,7 +548,7 @@ ok(exec(session, 'dependency.add', {
   dependencyType: 'currentRow',
 }), 'LeaveTypes→ApprovalFlows dep')
 
-const depCount = getDataSetSlot(session).dataset!.viewDependencies!.length
+const depCount = getDataSetState(session).data!.viewDependencies!.length
 assert(depCount === 4, `应有 4 条依赖，实际 ${depCount}`)
 console.log(`  📊 依赖数: ${depCount}`)
 
@@ -918,7 +918,7 @@ step('session.describe nextStep 状态机完整性')
   // 当前所有 checkpoint 已完成
   const desc = exec(session, 'session.describe')
   assert(desc.ok, 'describe 应成功')
-  const data = desc.data as { nextStep: string; schemaLocked: boolean; blueprint: Record<string, unknown> | null }
+  const data = desc.data as { nextStep: string; locked: boolean; blueprint: Record<string, unknown> | null }
   assert(typeof data.nextStep === 'string' && data.nextStep.length > 0, 'nextStep 应为非空字符串')
   console.log(`✅ nextStep: "${data.nextStep}"`)
 
@@ -978,16 +978,16 @@ if (warnings.length > 0) {
   for (const w of warnings) console.log(`    - ${w}`)
 }
 
-const ds = getDataSetSlot(session)
+const ds = getDataSetState(session)
 console.log('\n  📊 DataSet Summary:')
-console.log(`    Name:       ${ds.dataset!.dataSetName}`)
-console.log(`    Tables:     ${Object.keys(ds.dataset!.tables).length}`)
-console.log(`    Relations:  ${ds.dataset!.tableRelations!.length}`)
-console.log(`    Views:      ${ds.dataset!.viewDependencies!.length} dependencies`)
-console.log(`    Schema:     ${ds.schemaLocked ? 'LOCKED 🔒' : 'UNLOCKED 🔓'}`)
+console.log(`    Name:       ${ds.data!.dataSetName}`)
+console.log(`    Tables:     ${Object.keys(ds.data!.tables).length}`)
+console.log(`    Relations:  ${ds.data!.tableRelations!.length}`)
+console.log(`    Views:      ${ds.data!.viewDependencies!.length} dependencies`)
+console.log(`    Schema:     ${ds.locked ? 'LOCKED 🔒' : 'UNLOCKED 🔓'}`)
 console.log(`    Blueprint:  ${session.blueprint!.checkpoints.filter(cp => cp.status === 'done').length}/${session.blueprint!.checkpoints.length} checkpoints ✅`)
 
-const totalCols = Object.values(ds.dataset!.tables).reduce(
+const totalCols = Object.values(ds.data!.tables).reduce(
   (sum, t) => sum + ((t as { columns?: unknown[] }).columns?.length ?? 0), 0,
 )
 console.log(`    Columns:    ${totalCols}`)

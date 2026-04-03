@@ -8,6 +8,7 @@
  */
 
 import type {
+  DomainState,
   StillDefinition,
   StillResult,
   IStillSession,
@@ -16,7 +17,7 @@ import type {
 } from './types'
 import { noGuard } from './types'
 import { getAllStills, getStill } from './dispatcher'
-import { getDataSetSlot } from './dataset-domain'
+import { getDataSetState } from './dataset-domain'
 import { getDomain } from './domain'
 
 // ═══════════════════════════════════════════════════════════
@@ -74,7 +75,7 @@ function buildActionCatalog(): ActionCatalogItem[] {
 }
 
 function countTotalColumns(session: IStillSession): number {
-  const dataset = getDataSetSlot(session).dataset
+  const dataset = getDataSetState(session).data
   if (dataset === null) return 0
 
   return Object.values(dataset.tables).reduce((sum, table) => sum + table.columns.length, 0)
@@ -103,13 +104,13 @@ function buildBlueprintSummary(blueprint: ExecutionBlueprint | null): BlueprintS
 /** 根据当前会话状态推导推荐下一步。 */
 function inferNextStep(
   session: IStillSession,
-  slot: { dataset: unknown; schemaLocked: boolean },
+  datasetState: DomainState,
   blueprintSummary: BlueprintSummary | null,
 ): string {
   if (session.blueprint === null) {
     return 'stills.capabilities → 了解可用动作，然后 blueprint.create → 创建蓝图'
   }
-  if (slot.dataset === null) {
+  if (datasetState.data === null) {
     return '按蓝图执行初始化动作'
   }
   if (blueprintSummary !== null && blueprintSummary.completedCheckpoints < blueprintSummary.totalCheckpoints) {
@@ -216,8 +217,8 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
   example: {},
   validate: () => null,
   execute: (session: IStillSession): StillResult => {
-    const slot = getDataSetSlot(session)
-    const dataset = slot.dataset
+    const datasetState = getDataSetState(session)
+    const dataset = datasetState.data
     const blueprintSummary = buildBlueprintSummary(session.blueprint)
 
     // 聚合所有已注册域的 roleHint
@@ -237,14 +238,14 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
       : null
 
     // 推荐下一步 — 基于当前状态推导
-    const nextStep = inferNextStep(session, slot, blueprintSummary)
+    const nextStep = inferNextStep(session, datasetState, blueprintSummary)
 
     return {
       ok: true,
       data: {
         role: roles.length > 0 ? roles.join('；') : '通用 Stills 助手',
-        currentStep: slot.currentStep,
-        schemaLocked: slot.schemaLocked,
+        phase: datasetState.phase,
+        locked: datasetState.locked,
         dataset: datasetSummary,
         blueprint: blueprintSummary,
         patchCount: session.patchLog.length,
