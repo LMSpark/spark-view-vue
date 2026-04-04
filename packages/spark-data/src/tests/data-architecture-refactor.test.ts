@@ -15,7 +15,7 @@ describe('Data Architecture Refactor', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' }, { name: 'name', type: 'string' }],
-          rows: [{ id: 1, name: 'Alice' }],
+          views: { default: { rows: [{ id: 1, name: 'Alice' }] } },
           api: {
             list: { url: '/api/users', method: 'GET' },
             create: { url: '/api/users', method: 'POST' }
@@ -49,7 +49,7 @@ describe('Data Architecture Refactor', () => {
         Products: {
           tableName: 'Products',
           columns: [{ name: 'id', type: 'number' }],
-          rows: []
+          views: { default: { rows: [] } }
         }
       }
     })
@@ -78,6 +78,7 @@ describe('Data Architecture Refactor', () => {
         Orders: {
           tableName: 'Orders',
           columns: [],
+          views: { default: {} },
           api: { list: { url: '/api/orders', method: 'GET' } }
         }
       }

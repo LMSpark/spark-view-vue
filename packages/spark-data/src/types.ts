@@ -350,7 +350,12 @@ export interface DataColumn {
   computeExpression?: string
 }
 
-/** CRUD API配置（继承 TreeApi，树接口族直接平铺在此） */
+/**
+ * CRUD 操作到端点的映射定义。
+ *
+ * 语义：描述“每个操作对应哪个接口”。
+ * 这里只定义各 CRUD / Tree 操作对应的 URL、HTTP 方法和端点级参数，不包含重试、校验、转换等运行策略。
+ */
 export interface CrudApi extends TreeApi {
   create?: HttpEndpoint
   retrieve?: HttpEndpoint
@@ -370,6 +375,14 @@ export interface CrudApi extends TreeApi {
   }
   import?: HttpEndpoint
   export?: HttpEndpoint
+}
+
+/** 单条记录拉取选项。 */
+export interface RetrieveRecordOptions {
+  /** 是否将拉取结果同步回本地 rows。默认 true。 */
+  syncToRows?: boolean
+  /** 是否将拉取结果设为当前行。默认 false。 */
+  setCurrentRow?: boolean
 }
 
 /** HTTP端点定义 */
@@ -858,6 +871,52 @@ export interface IDataSet {
   getTableChildRelations(parentTable: string): TableRelation[]
   /** 查询以指定表为子的所有表关系（表级索引） */
   getTableParentRelations(childTable: string): TableRelation[]
+  /** 动态添加数据表 */
+  addTable(tableName: string, columns: DataColumn[]): DataTable
+  /** 删除未被关系或依赖引用的数据表 */
+  removeTable(tableName: string): void
+  /** 添加表关系 */
+  addRelation(params: {
+    parentTable: string
+    childTable: string
+    parentField: string
+    childField: string
+    relationName?: string
+  }): void
+  /** 更新表关系 */
+  updateRelation(
+    selector: {
+      parentTable: string
+      childTable: string
+      parentField?: string
+      childField?: string
+    },
+    updates: Partial<TableRelation>,
+  ): TableRelation
+  /** 删除表关系 */
+  removeRelation(selector: {
+    parentTable: string
+    childTable: string
+    parentField?: string
+    childField?: string
+  }): void
+  /** 删除表关系（向后兼容的 pair 形式） */
+  removeRelation(parentTable: string, childTable: string): void
+  /** 添加视图依赖 */
+  addDependency(params: {
+    parentTable: string
+    childTable: string
+    dependencyType?: DependencyType | undefined
+    autoLoad?: boolean
+  }): void
+  /** 更新视图依赖 */
+  updateDependency(
+    parentTable: string,
+    childTable: string,
+    updates: Partial<ViewDependency>,
+  ): ViewDependency
+  /** 删除视图依赖 */
+  removeDependency(parentTable: string, childTable: string): void
   /** 获取数据表 */
   getTable(name: string): DataTable | undefined
   /** 获取数据视图（委托到 DataTable） */
@@ -948,7 +1007,10 @@ export interface BatchResult {
 }
 
 /**
- * CRUD操作配置 - 集成权限快照利用
+ * CRUD 通用运行策略配置。
+ *
+ * 语义：描述“调用端点时应用什么策略”。
+ * 这里定义超时、重试、权限校验、数据校验，以及请求/响应转换等运行期策略，不负责声明端点映射。
  */
 export interface CrudOperationConfig {
   timeout?: number

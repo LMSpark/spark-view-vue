@@ -16,19 +16,24 @@
  */
 
 import { DataView } from './data-view'
-import type { IDataRow, DataColumn, CrudApi, ITableMetadata, CrudOperationConfig } from './types'
+import type {
+  IDataRow,
+  DataColumn,
+  CrudApi,
+  ITableMetadata,
+  CrudOperationConfig,
+} from './types'
 import type { DataSet } from './dataset'
-import { type DataValidator, createValidator, createSchema } from './validation'
+import { DataValidator } from './validation'
 import { type CrudService, createCrudService } from './crud-service'
 import { normalizeTableMetadata } from './metadata'
 import { assertNoSeparator, resolveApi } from './core/utils'
-
-type DataTableServiceResult<T> = { data: T; summary: string }
 
 /**
  * DataTable - 管理单表的结构定义与配置
  *
  * 说明：管理表结构（columns）、视图集合（DataView）、CRUD 配置（api, crudConfig）；
+ * 其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。
  * 数据操作由 DataView 负责。
  */
 export class DataTable {
@@ -45,10 +50,20 @@ export class DataTable {
   /** 列定义 */
   columns: DataColumn[]
 
-  /** CRUD API配置（含 tree 子字段存放树接口族） */
+  /**
+    * 远端 CRUD 操作到端点的映射定义。
+   *
+    * 语义：描述“每个操作对应哪个接口”。
+    * 这里存放 list/create/retrieve/update/delete/batch/tree 等操作对应的 URL、HTTP 方法及端点级参数。
+   */
   api?: CrudApi
 
-  /** CRUD 操作配置（全局默认配置） */
+  /**
+    * CRUD 通用运行策略配置。
+   *
+    * 语义：描述“调用端点时应用什么策略”。
+    * 这里存放 timeout、retryCount、validateData、权限跳过、请求/响应转换等与端点无关的运行参数。
+   */
   crudConfig?: CrudOperationConfig
 
   // ===== CrudService 缓存 =====
@@ -100,15 +115,43 @@ export class DataTable {
     assertNoSeparator(tableName, 'tableName')
     this.tableName = tableName
     this.columns = columns
+
     // 保存原始用户列数（dataTable setter 会注入 _pk 计算列变更 columns.length）
     const hasUserColumns = columns.length > 0
     const defaultView = DataView.create(tableName, 'default')
-    defaultView.dataTable = this   // 提前设置引用，使 view.primaryKey getter 可访问列定义
+    // 提前设置引用，使 view.primaryKey getter 可访问列定义。
+    defaultView.dataTable = this
     this.views['default'] = defaultView
+
     // 初始化数据校验器（仅对用户定义列创建，排除框架计算列）
     if (hasUserColumns) {
-      const schemaColumns = this.columns.filter(c => !c.isComputed)
-      this.validator = createValidator(createSchema(schemaColumns))
+      const schemaColumns: DataColumn[] = []
+      for (const column of this.columns) {
+        if (column.isComputed === true) continue
+        schemaColumns.push(column)
+      }
+      this.validator = new DataValidator({ columns: schemaColumns })
+    }
+  }
+
+  /**
+   * 列结构变更后刷新运行时派生状态。
+   *
+   * 作用：
+   * - 重建 validator，使校验规则与最新列定义一致。
+   * - 重新把 dataTable 绑定到所有视图，刷新列缓存、主键列等派生信息。
+   */
+  private _refreshColumnRuntime(): void {
+    const schemaColumns = this.columns.filter((column) => column.isComputed !== true)
+
+    if (schemaColumns.length > 0) {
+      this.validator = new DataValidator({ columns: schemaColumns })
+    } else {
+      delete this.validator
+    }
+
+    for (const view of Object.values(this.views)) {
+      view.dataTable = this
     }
   }
 
@@ -174,7 +217,7 @@ export class DataTable {
   }
 
   /**
-   * 遍历所有视图（包含 default 和命名视图）——DataSet 的内部实现岁选择此入口，
+   * 遍历所有视图（包含 default 和命名视图）——DataSet 的内部实现可选择此入口，
    * 避免直接访问 `views` 属性（封装内部集合）。
    */
   forEachView(cb: (view: DataView) => void): void {
@@ -186,7 +229,7 @@ export class DataTable {
   // ===== 配置管理 =====
 
   /**
-   * 设置 CRUD API 配置（支持字符串简写和 `true` 约定模式）
+    * 设置 CRUD 端点映射配置（支持字符串简写和 `true` 约定模式）
    * @param api - CRUD 端点配置（完整对象 / 字符串基础路径 / `true` 约定）
    * @remarks 配置变更时自动清除 CrudService 缓存，下次访问时重建
    */
@@ -198,10 +241,12 @@ export class DataTable {
   }
 
   /**
-   * 设置 CRUD 操作配置（权限、超时、重试等）
-   * @param config - CRUD 操作配置
+   * 设置 CRUD 通用运行策略（权限、超时、重试、转换等）
+   * @param config - CRUD 通用运行策略配置
    */
-  setCrudConfig(config: CrudOperationConfig): void { this.crudConfig = config }
+  setCrudConfig(config: CrudOperationConfig): void {
+    this.crudConfig = config
+  }
 
   // ===== 序列化 / 反序列化 =====
 
@@ -244,6 +289,10 @@ export class DataTable {
       }
     }
 
+    if (added.length > 0) {
+      this._refreshColumnRuntime()
+    }
+
     return { added, skipped }
   }
 
@@ -260,6 +309,7 @@ export class DataTable {
 
     const { name: _name, ...safeUpdates } = updates
     Object.assign(col, safeUpdates)
+    this._refreshColumnRuntime()
     return Object.keys(safeUpdates)
   }
 
@@ -273,6 +323,7 @@ export class DataTable {
       throw new Error(`Column "${columnName}" not found in table "${this.tableName}"`)
     }
     this.columns.splice(idx, 1)
+    this._refreshColumnRuntime()
   }
 
   /**
@@ -293,56 +344,19 @@ export class DataTable {
     return nextRows.length
   }
 
-  addView(viewId: string): DataTableServiceResult<{ tableName: string; viewId: string; viewCount: number }> {
+  /**
+   * 创建命名视图。
+   *
+   * @param viewId - 视图 ID
+   * @returns 新创建的 DataView
+   * @throws 当视图已存在时抛 Error
+   */
+  addView(viewId: string): DataView {
     if (this.getView(viewId)) {
       throw new Error(`View "${viewId}" already exists in table "${this.tableName}"`)
     }
 
-    this.getOrCreateView(viewId)
-    return {
-      data: { tableName: this.tableName, viewId, viewCount: Object.keys(this.views).length },
-      summary: `创建视图 ${this.tableName}:${viewId}`,
-    }
-  }
-
-  describe(): DataTableServiceResult<{
-    tableName: string
-    columns: Array<{
-      name: string
-      type: DataColumn['type']
-      isPrimaryKey: boolean
-      label: string | undefined
-      computeExpression: string | undefined
-    }>
-    columnCount: number
-    api: CrudApi | null
-    viewCount: number
-    views: string[]
-    relations: string[]
-  }> {
-    const relations = (this.dataSet?.tableRelations ?? []).filter(
-      (relation) => relation.parentTable === this.tableName || relation.childTable === this.tableName,
-    )
-    const userColumns = this.columns.filter((column) => !column.isComputed)
-
-    return {
-      data: {
-        tableName: this.tableName,
-        columns: userColumns.map((column) => ({
-          name: column.name,
-          type: column.type,
-          isPrimaryKey: column.isPrimaryKey ?? false,
-          label: column.label,
-          computeExpression: column.computeExpression,
-        })),
-        columnCount: userColumns.length,
-        api: this.api ?? null,
-        viewCount: Object.keys(this.views).length,
-        views: Object.keys(this.views),
-        relations: relations.map((relation) => `${relation.parentTable}→${relation.childTable}`),
-      },
-      summary: `表 ${this.tableName} 详情`,
-    }
+    return this.getOrCreateView(viewId)
   }
 
   // ===== 销毁与内存管理 =====

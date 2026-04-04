@@ -92,9 +92,12 @@ function makeTestDS(
             ...(c.computeExpression ? { computeExpression: c.computeExpression } : {}),
           })),
         ],
-        rows: orderRows ?? DEFAULT_ORDERS,
-        // 聚合配置属于视图层，挂在扁平化的 ITableMetadata（等价于 views.default.aggregates）
-        ...(Object.keys(aggregates).length > 0 ? { aggregates } : {}),
+        views: {
+          default: {
+            rows: orderRows ?? DEFAULT_ORDERS,
+            ...(Object.keys(aggregates).length > 0 ? { aggregates } : {}),
+          },
+        },
       },
       Items: {
         tableName: 'Items',
@@ -104,7 +107,11 @@ function makeTestDS(
           { name: 'name', type: 'string' },
           { name: 'amount', type: 'number' },
         ],
-        rows: itemRows ?? DEFAULT_ITEMS,
+        views: {
+          default: {
+            rows: itemRows ?? DEFAULT_ITEMS,
+          },
+        },
       },
     },
     tableRelations: [{

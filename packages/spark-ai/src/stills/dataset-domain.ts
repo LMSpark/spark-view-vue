@@ -22,7 +22,7 @@ import type {
   PostValidationWarning,
 } from './types'
 import { getDomainState } from './types'
-import type { DataColumn, CrudApi, IDataRow, AggregateColumnConfig, TreeConfig, IViewMetadata, DataTable, DataView } from '@spark-view/spark-data'
+import type { DataColumn, CrudApi, IDataRow, AggregateColumnConfig, TreeConfig, IViewMetadata, DataTable, DataView, TableRelation } from '@spark-view/spark-data'
 import { DataSet, INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
 
 type ProjectedPayload<T> = { data: T; summary: string }
@@ -452,6 +452,167 @@ function describeDatasetInstance(
   }
 }
 
+function cloneJsonValue<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T
+}
+
+function projectDataSetSnapshot(dataset: DataSet): ProjectedPayload<{
+  status: 'ok'
+  snapshot: Record<string, unknown>
+}> {
+  return {
+    data: {
+      status: 'ok',
+      snapshot: cloneJsonValue(dataset.toData()) as unknown as Record<string, unknown>,
+    },
+    summary: `导出 DataSet: ${dataset.dataSetName}`,
+  }
+}
+
+function projectRelationList(dataset: DataSet): ProjectedPayload<{
+  relations: TableRelation[]
+  count: number
+}> {
+  const relations = (dataset.tableRelations ?? []).map((relation) => ({ ...relation }))
+  return {
+    data: { relations, count: relations.length },
+    summary: `${relations.length} 条关系`,
+  }
+}
+
+function describeTableInstance(table: DataTable): ProjectedPayload<{
+  tableName: string
+  columns: Array<{
+    name: string
+    type: DataColumn['type']
+    isPrimaryKey: boolean
+    label: string | undefined
+    computeExpression: string | undefined
+  }>
+  columnCount: number
+  api: CrudApi | null
+  viewCount: number
+  views: string[]
+  relations: string[]
+}> {
+  const relations = (table.dataSet?.tableRelations ?? []).filter(
+    (relation) => relation.parentTable === table.tableName || relation.childTable === table.tableName,
+  )
+  const userColumns = table.columns.filter((column) => !column.isComputed)
+
+  return {
+    data: {
+      tableName: table.tableName,
+      columns: userColumns.map((column) => ({
+        name: column.name,
+        type: column.type,
+        isPrimaryKey: column.isPrimaryKey ?? false,
+        label: column.label,
+        computeExpression: column.computeExpression,
+      })),
+      columnCount: userColumns.length,
+      api: table.api ?? null,
+      viewCount: Object.keys(table.views).length,
+      views: Object.keys(table.views),
+      relations: relations.map((relation) => `${relation.parentTable}→${relation.childTable}`),
+    },
+    summary: `表 ${table.tableName} 详情`,
+  }
+}
+
+function projectViewCreation(table: DataTable, viewId: string): ProjectedPayload<{
+  tableName: string
+  viewId: string
+  viewCount: number
+}> {
+  return {
+    data: {
+      tableName: table.tableName,
+      viewId,
+      viewCount: Object.keys(table.views).length,
+    },
+    summary: `创建视图 ${table.tableName}:${viewId}`,
+  }
+}
+
+function describeViewInstance(view: DataView): ProjectedPayload<{
+  tableName: string
+  viewId: string
+  config: IViewMetadata
+  viewIds: string[]
+}> {
+  const table = view.dataTable
+  if (!table) {
+    throw new DataSetOpError('VIEW_NOT_ATTACHED', `视图 ${view.tableName}:${view.viewId} 尚未绑定 DataTable`, '请通过 DataTable.getOrCreateView() 创建视图')
+  }
+
+  return {
+    data: {
+      tableName: view.tableName,
+      viewId: view.viewId,
+      config: view.toData(),
+      viewIds: Object.keys(table.views),
+    },
+    summary: `视图 ${view.tableName}:${view.viewId}`,
+  }
+}
+
+function projectViewConfiguration(
+  view: DataView,
+  changedKeys: string[],
+): ProjectedPayload<{
+  tableName: string
+  viewId: string
+  config: IViewMetadata
+}> {
+  return {
+    data: {
+      tableName: view.tableName,
+      viewId: view.viewId,
+      config: view.toData(),
+    },
+    summary: `配置视图 ${view.tableName}:${view.viewId}（${changedKeys.join(', ')}）`,
+  }
+}
+
+function projectAggregateConfiguration(
+  view: DataView,
+  aggregates: Record<string, AggregateColumnConfig>,
+): ProjectedPayload<{
+  tableName: string
+  viewId: string
+  aggregates: Record<string, AggregateColumnConfig>
+  aggregateCount: number
+}> {
+  return {
+    data: {
+      tableName: view.tableName,
+      viewId: view.viewId,
+      aggregates,
+      aggregateCount: Object.keys(aggregates).length,
+    },
+    summary: `设置 ${Object.keys(aggregates).length} 个聚合列`,
+  }
+}
+
+function projectTreeConfiguration(
+  view: DataView,
+  treeConfig: TreeConfig,
+): ProjectedPayload<{
+  tableName: string
+  viewId: string
+  treeConfig: TreeConfig
+}> {
+  return {
+    data: {
+      tableName: view.tableName,
+      viewId: view.viewId,
+      treeConfig,
+    },
+    summary: `设置树配置 ${view.tableName}:${view.viewId}（mode=${treeConfig.treeMode ?? 'flat'}）`,
+  }
+}
+
 function validateDatasetInstance(
   dataset: DataSet,
 ): ProjectedPayload<{
@@ -857,7 +1018,7 @@ const datasetExport: StillDefinition<Record<string, never>, unknown> = {
   paramsSchema: {},
   example: {},
   validate: () => null,
-  execute: (session): StillResult => withDS(session, (DS) => executeDSOperation(() => DS.exportSnapshot())),
+  execute: (session): StillResult => withDS(session, (DS) => executeDSOperation(() => projectDataSetSnapshot(DS))),
 }
 
 // ─── dataset.reset ─────────────────────────────────────────
@@ -950,7 +1111,7 @@ const datatableDescribe: StillDefinition<DatatableDescribeParams, unknown> = {
     if (!isNonEmptyString(params.tableName)) return missingParam('tableName')
     return null
   },
-  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => requireTable(DS, params.tableName).describe())),
+  execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => describeTableInstance(requireTable(DS, params.tableName)))),
 }
 
 // ─── datatable.addColumns ──────────────────────────────────
@@ -1280,7 +1441,7 @@ const relationList: StillDefinition<Record<string, never>, unknown> = {
   paramsSchema: {},
   example: {},
   validate: () => null,
-  execute: (session): StillResult => withDS(session, (DS) => executeDSOperation(() => DS.listRelations())),
+  execute: (session): StillResult => withDS(session, (DS) => executeDSOperation(() => projectRelationList(DS))),
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1399,7 +1560,8 @@ const dataviewCreate: StillDefinition<DataviewCreateParams, unknown> = {
       if (table.getView(params.viewId)) {
         throw new DataSetOpError('VIEW_EXISTS', `视图 ${params.viewId} 已存在`, '请用 dataview.configure 配置')
       }
-      return table.addView(params.viewId)
+      table.addView(params.viewId)
+      return projectViewCreation(table, params.viewId)
     })),
 }
 
@@ -1421,7 +1583,7 @@ const dataviewDescribe: StillDefinition<DataviewDescribeParams, unknown> = {
   },
   execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
       const { view } = requireView(DS, params.tableName, params.viewId)
-      return view.describeView()
+      return describeViewInstance(view)
     })),
 }
 
@@ -1505,7 +1667,8 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
     if (!config) return { ok: false, code: 'INVALID_PARAMS', msg: '缺少配置属性', fix: '提供 autoLoad / pageSize 等属性' }
     return withDS(session, (DS) => executeDSOperation(() => {
       const { view } = requireView(DS, params.tableName, params.viewId)
-      return view.configure(config)
+      view.configure(config)
+      return projectViewConfiguration(view, Object.keys(config))
     }))
   },
   postValidate: (session): PostValidationWarning[] => {
@@ -1544,7 +1707,8 @@ const dataviewSetAggregates: StillDefinition<SetAggregatesParams, unknown> = {
   execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
       const { view } = requireView(DS, params.tableName, params.viewId)
       try {
-        return view.configureAggregates(params.aggregates)
+        view.setAggregates(params.aggregates)
+        return projectAggregateConfiguration(view, params.aggregates)
       } catch (error) {
         throw new DataSetOpError('COLUMN_NOT_FOUND', toErrorMessage(error), '请先添加相关列')
       }
@@ -1589,7 +1753,8 @@ const dataviewSetTreeConfig: StillDefinition<SetTreeConfigParams, unknown> = {
   execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
       const { view } = requireView(DS, params.tableName, params.viewId)
       try {
-        return view.configureTree(params.treeConfig)
+        view.setTreeConfig(params.treeConfig)
+        return projectTreeConfiguration(view, params.treeConfig)
       } catch (error) {
         throw new DataSetOpError('COLUMN_NOT_FOUND', toErrorMessage(error), '请检查列名')
       }

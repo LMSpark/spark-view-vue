@@ -2,6 +2,7 @@
  * CrudDelegate — CRUD 操作委托
  *
  * 从 DataView 提取的 CRUD 职责：
+ * - 单条读取（retrieve）
  * - 单条 CRUD（create/update/delete）
  * - 批量 CRUD（batchCreate/batchUpdate/batchDelete）
  * - 导入/导出（importData/exportData）
@@ -155,6 +156,15 @@ export class CrudDelegate {
   // ─────────────────────────────────────────────
   // 单条 CRUD
   // ─────────────────────────────────────────────
+
+  /** 查询单条记录，不修改本地 rows。 */
+  async retrieveRecord(pk: Record<string, unknown>): Promise<CrudResult<IDataRow>> {
+    if (!this.fireBefore('retrieve', pk)) return this.cancelledResult('retrieve')
+
+    const result = await this.ensureCrudService().retrieve<IDataRow>(pk, this.getCrudConfig())
+    this.fireAfter('retrieve', pk, result)
+    return result
+  }
 
   /** 新增记录，成功后追加至 rows */
   async createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {

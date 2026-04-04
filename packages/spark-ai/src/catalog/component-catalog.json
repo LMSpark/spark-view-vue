@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-02T05:11:48.080Z",
+  "buildTime": "2026-04-04T16:31:52.114Z",
   "componentCount": 96,
   "registry": {
     "containers": [
@@ -9091,6 +9091,20 @@
             "variants": [
               "false",
               "true"
+            ]
+          }
+        },
+        {
+          "name": "mode",
+          "type": "\"sap\" | \"stills\"",
+          "required": false,
+          "default": "\"sap\"",
+          "schema": {
+            "kind": "enum",
+            "type": "\"sap\" | \"stills\"",
+            "variants": [
+              "\"sap\"",
+              "\"stills\""
             ]
           }
         }

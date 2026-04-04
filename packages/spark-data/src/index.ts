@@ -21,6 +21,7 @@ export { SparkData } from './spark-data'
 export { DataSet } from './dataset'
 export { DataTable } from './data-table'
 export { DataView } from './data-view'
+export { DataSetCrudTool } from './dataset-crud-tool'
 
 // ===== DataKey 统一解析 =====
 

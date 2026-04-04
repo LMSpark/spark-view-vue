@@ -1,0 +1,107 @@
+import { describe, expect, it } from 'vitest'
+
+import { DataSet } from '@spark-view/spark-data'
+
+describe('DataSet relation rebuild', () => {
+  it('fromPageData 在关系图就绪后补挂级联订阅', () => {
+    const ds = DataSet.fromPageData({
+      dataset: {
+        dataSetName: 'PageDataSet',
+        tables: {
+          Departments: {
+            columns: [{ name: 'id', type: 'number' }],
+            views: {
+              default: {
+                rows: [{ id: 1 }, { id: 2 }],
+              },
+            },
+          },
+          Employees: {
+            columns: [
+              { name: 'id', type: 'number' },
+              { name: 'deptId', type: 'number' },
+            ],
+            views: {
+              default: {
+                rows: [
+                  { id: 101, deptId: 1 },
+                  { id: 102, deptId: 2 },
+                ],
+              },
+            },
+          },
+        },
+        tableRelations: [
+          { parentTable: 'Departments', childTable: 'Employees', childField: 'deptId' },
+        ],
+      },
+    })
+
+    const parent = ds.getView('Departments', 'default')
+    const child = ds.getView('Employees', 'default')
+
+    expect(parent).toBeDefined()
+    expect(child).toBeDefined()
+    expect(child?.rows).toHaveLength(2)
+
+    parent?.selection.setCurrentRow(parent.rows[1] ?? null)
+
+  expect(child?.rows).toHaveLength(1)
+  expect(child?.rows[0]).toMatchObject({ id: 102, deptId: 2 })
+  })
+
+  it('运行期 addRelation/addDependency 会重建内部关系图', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'RuntimeRelationDataSet',
+      tables: {
+        Departments: {
+          tableName: 'Departments',
+          columns: [{ name: 'id', type: 'number' }],
+          views: {
+            default: {
+              rows: [{ id: 1 }, { id: 2 }],
+            },
+          },
+        },
+        Employees: {
+          tableName: 'Employees',
+          columns: [
+            { name: 'id', type: 'number' },
+            { name: 'deptId', type: 'number' },
+          ],
+          views: {
+            default: {
+              rows: [
+                { id: 101, deptId: 1 },
+                { id: 102, deptId: 2 },
+              ],
+            },
+          },
+        },
+      },
+    })
+
+    ds.addRelation({
+      parentTable: 'Departments',
+      childTable: 'Employees',
+      parentField: 'id',
+      childField: 'deptId',
+    })
+    ds.addDependency({
+      parentTable: 'Departments',
+      childTable: 'Employees',
+    })
+
+    const parent = ds.getView('Departments', 'default')
+    const child = ds.getView('Employees', 'default')
+
+    expect(parent).toBeDefined()
+    expect(child).toBeDefined()
+    expect(child?.rows).toHaveLength(2)
+
+    parent?.selection.setCurrentRow(parent.rows[0] ?? null)
+
+    expect(child?.rows).toHaveLength(1)
+    expect(child?.rows[0]).toMatchObject({ id: 101, deptId: 1 })
+  })
+})

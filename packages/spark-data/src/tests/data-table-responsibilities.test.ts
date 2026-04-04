@@ -41,8 +41,8 @@ describe('DataTable responsibilities (refactor verification)', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
-        Departments: { tableName: 'Departments', columns: [{ name: 'id', type: 'number' }], rows: [{ id: 1 }] },
-        Users: { tableName: 'Users', columns: [{ name: 'id', type: 'number' }], rows: [{ id: 101, deptId: 1 }] }
+        Departments: { tableName: 'Departments', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [{ id: 1 }] } } },
+        Users: { tableName: 'Users', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [{ id: 101, deptId: 1 }] } } }
       },
       tableRelations: [
         { parentTable: 'Departments', childTable: 'Users', childField: 'deptId' }
@@ -77,7 +77,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' }],
-          rows: [{ id: 1 } as any]
+          views: { default: { rows: [{ id: 1 } as any] } }
         }
       }
     })
@@ -146,7 +146,7 @@ describe('Event system', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
-        Orders: { tableName: 'Orders', columns: [{ name: 'id', type: 'number' }] }
+        Orders: { tableName: 'Orders', columns: [{ name: 'id', type: 'number' }], views: { default: {} } }
       }
     })
 
@@ -164,8 +164,8 @@ describe('Event system', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
-        Departments: { tableName: 'Departments', columns: [{ name: 'id', type: 'number' }], rows: [{ id: 1 }, { id: 2 }] },
-        Employees: { tableName: 'Employees', columns: [{ name: 'id', type: 'number' }, { name: 'deptId', type: 'number' }], rows: [{ id: 101, deptId: 1 }, { id: 102, deptId: 2 }] }
+        Departments: { tableName: 'Departments', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [{ id: 1 }, { id: 2 }] } } },
+        Employees: { tableName: 'Employees', columns: [{ name: 'id', type: 'number' }, { name: 'deptId', type: 'number' }], views: { default: { rows: [{ id: 101, deptId: 1 }, { id: 102, deptId: 2 }] } } }
       },
       tableRelations: [
         { parentTable: 'Departments', childTable: 'Employees', childField: 'deptId' }
@@ -189,7 +189,7 @@ describe('Event system', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
-        Items: { tableName: 'Items', columns: [{ name: 'id', type: 'number' }], rows: [{ id: 1 }] }
+        Items: { tableName: 'Items', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [{ id: 1 }] } } }
       }
     })
 

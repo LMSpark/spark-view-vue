@@ -16,8 +16,9 @@ function createStagedView(rows: IDataRow[] = [{ id: 1, name: 'Alice' }, { id: 2,
           { name: 'id', type: 'number', isPrimaryKey: true },
           { name: 'name', type: 'string' },
         ],
-        rows,
-        commitMode: 'staged',
+        views: {
+          default: { rows, commitMode: 'staged' },
+        },
       },
     },
   })
@@ -36,7 +37,9 @@ function createImmediateView(rows: IDataRow[] = [{ id: 1, name: 'Alice' }]) {
           { name: 'id', type: 'number', isPrimaryKey: true },
           { name: 'name', type: 'string' },
         ],
-        rows,
+        views: {
+          default: { rows },
+        },
       },
     },
   })
@@ -102,8 +105,9 @@ describe('commitMode: basic field semantics', () => {
         T: {
           tableName: 'T',
           columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
-          rows: [],
-          autoCommit: true,
+          views: {
+            default: { rows: [], autoCommit: true },
+          },
         },
       },
     })
@@ -117,8 +121,9 @@ describe('commitMode: basic field semantics', () => {
         T: {
           tableName: 'T',
           columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
-          rows: [],
-          autoCommit: false,
+          views: {
+            default: { rows: [], autoCommit: false },
+          },
         },
       },
     })
@@ -132,9 +137,9 @@ describe('commitMode: basic field semantics', () => {
         T: {
           tableName: 'T',
           columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
-          rows: [],
-          commitMode: 'staged',
-          autoCommit: true, // should be ignored
+          views: {
+            default: { rows: [], commitMode: 'staged', autoCommit: true }, // should be ignored
+          },
         },
       },
     })
@@ -176,7 +181,7 @@ describe('commitMode=staged: dirty tracking lifecycle', () => {
 
     const result = await view.editRowById(1, { name: 'Alice Updated' })
     expect(result).toBe(true)
-    expect(view.rows.find(r => r.id === 1)?.name).toBe('Alice Updated')
+    expect(view.rows.find(r => r['id'] === 1)?.['name']).toBe('Alice Updated')
 
     // Dirty tracking active
     expect(view.dirtyTracking.isDirty(1)).toBe(true)
@@ -189,7 +194,7 @@ describe('commitMode=staged: dirty tracking lifecycle', () => {
 
     const result = await view.removeRow(1)
     expect(result).toBe(true)
-    expect(view.rows.find(r => r.id === 1)).toBeUndefined()
+    expect(view.rows.find(r => r['id'] === 1)).toBeUndefined()
 
     // Dirty tracking active
     expect(view.dirtyTracking.isPendingDelete(1)).toBe(true)

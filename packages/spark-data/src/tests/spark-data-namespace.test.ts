@@ -16,10 +16,14 @@ describe('SparkData Namespace', () => {
             { name: 'id', type: 'number' },
             { name: 'name', type: 'string' }
           ],
-          rows: [
-            { id: 1, name: 'Alice' },
-            { id: 2, name: 'Bob' }
-          ]
+          views: {
+            default: {
+              rows: [
+                { id: 1, name: 'Alice' },
+                { id: 2, name: 'Bob' }
+              ]
+            }
+          }
         }
       }
     })
@@ -60,7 +64,7 @@ describe('SparkData Namespace', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' }],
-          rows: [{ id: 1 }]
+          views: { default: { rows: [{ id: 1 }] } }
         }
       }
     })

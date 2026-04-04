@@ -76,7 +76,6 @@ function resolveRouteTemplateParams(routeLike: unknown): {
   return result
 }
 
-type DataSetServiceResult<T> = { data: T; summary: string }
 /**
  * @internal 自动推导视图联动
  *
@@ -272,10 +271,8 @@ export class DataSet implements IDataSet {
     this.version = config.version
     this.pageId = config.pageId
 
-    // ① 自动推导 viewDependencies（未提供时从 tableRelations 生成默认值）
-    this.viewDependencies = this.tableRelations?.length
-      ? deriveViewDependencies(this.tableRelations, config.viewDependencies)
-      : undefined
+    // ① 先保留原始 viewDependencies；关系图在所有表实例就绪后统一重建。
+    this.viewDependencies = config.viewDependencies
 
     // ② 构建表级索引（聚合函数在视图编译时查询，需先于表构建就绪）
     if (this.tableRelations?.length) {
@@ -295,18 +292,10 @@ export class DataSet implements IDataSet {
       this.tables[name] = table
     }
 
-    // ③ 展开为内部扁平关系 + 构建视图级索引
-    if (this.tableRelations?.length && this.viewDependencies?.length) {
-      this._resolvedRelations = expandRelations(this.tableRelations, this.viewDependencies, this)
-      this._buildViewRelationIndex()
-    }
-
-    // 后置重算：聚合表达式需要完整 DataSet（所有表 + 规范化关系），
-    // 构造过程中各 view 的 set dataTable 只编译了无聚合部分（因为 relations 尚未就绪）。
-    // 关系就绪后委托 DataTable.onDataSetRelationsReady()，由其通知各视图重编译并重算聚合行。
-    for (const table of Object.values(this.tables)) {
-      table.onDataSetRelationsReady()
-    }
+    // ③ 所有表实例就绪后统一重建运行时关系图。
+    // 构造过程中各 view 已绑定 dataTable，但此时 cascade 订阅尚未拿到 resolved relations；
+    // 关系图完成后需要统一回调各 view 刷新 cascade 与聚合解析。
+    this._rebuildRelations(true)
   }
 
   /**
@@ -491,6 +480,25 @@ export class DataSet implements IDataSet {
     }
   }
 
+  /** @internal 在结构变化后重绑所有活跃订阅，避免悬空闭包持有已删除视图。 */
+  private _rebindActiveSubscriptions(): void {
+    for (const entry of this._activeViewSubs) {
+      for (const u of entry.unsubs) u()
+      entry.unsubs.length = 0
+      for (const table of Object.values(this.tables)) {
+        table.forEachView(view => this._subscribeViewChange(entry, view))
+      }
+    }
+
+    for (const entry of this._activeOnSubs) {
+      for (const u of entry.unsubs) u()
+      entry.unsubs.length = 0
+      for (const table of Object.values(this.tables)) {
+        table.forEachView(view => this._subscribeOnView(entry, view))
+      }
+    }
+  }
+
   /**
    * 触发所有标记了 `autoLoad: true` 的 default 视图自动加载。
    *
@@ -576,6 +584,30 @@ export class DataSet implements IDataSet {
     }
   }
 
+  /** @internal 重建运行时关系图与索引，并通知各视图刷新级联订阅/聚合解析。 */
+  private _rebuildRelations(deriveDependencies: boolean): void {
+    if (deriveDependencies) {
+      this.viewDependencies = this.tableRelations?.length
+        ? deriveViewDependencies(this.tableRelations, this.viewDependencies)
+        : undefined
+    }
+
+    this._buildTableRelationIndex()
+
+    if (this.tableRelations?.length && this.viewDependencies?.length) {
+      this._resolvedRelations = expandRelations(this.tableRelations, this.viewDependencies, this)
+      this._buildViewRelationIndex()
+    } else {
+      this._resolvedRelations = undefined
+      this._childRelIdx.clear()
+      this._parentRelIdx.clear()
+    }
+
+    for (const table of Object.values(this.tables)) {
+      table.onDataSetRelationsReady()
+    }
+  }
+
   // ===== 工厂方法 =====
 
   /**
@@ -623,7 +655,104 @@ export class DataSet implements IDataSet {
     const table = new DataTable(tableName, columns)
     this.tables[tableName] = table
     table.setDataSet(this)
+    table.forEachView(view => this._subscribeNewView(view))
     return table
+  }
+
+  /**
+   * 删除未被关系或依赖引用的数据表。
+   * fail-fast：若仍被 tableRelation / viewDependency 引用，则拒绝删除。
+   */
+  removeTable(tableName: string): void {
+    const table = this.tables[tableName]
+    if (!table) throw new Error(`Table "${tableName}" not found in DataSet "${this.dataSetName}"`)
+
+    const relatedRelation = (this.tableRelations ?? []).find(
+      rel => rel.parentTable === tableName || rel.childTable === tableName,
+    )
+    if (relatedRelation) {
+      throw new Error(`Table "${tableName}" is referenced by tableRelation, remove relation first`)
+    }
+
+    const relatedDependency = (this.viewDependencies ?? []).find(
+      dep => dep.parentTable === tableName || dep.childTable === tableName,
+    )
+    if (relatedDependency) {
+      throw new Error(`Table "${tableName}" is referenced by viewDependency, remove dependency first`)
+    }
+
+    table.destroy()
+    table.dataSet = undefined
+    const { [tableName]: _removed, ...rest } = this.tables
+    this.tables = rest
+    this._rebindActiveSubscriptions()
+  }
+
+  private _resolveRelationIndex(selector: {
+    parentTable: string
+    childTable: string
+    parentField?: string
+    childField?: string
+  }): number {
+    this.tableRelations ??= []
+    const matches = this.tableRelations
+      .map((relation, index) => ({ relation, index }))
+      .filter(({ relation }) => {
+        if (relation.parentTable !== selector.parentTable || relation.childTable !== selector.childTable) return false
+        if (selector.parentField !== undefined && relation.parentField !== selector.parentField) return false
+        if (selector.childField !== undefined && relation.childField !== selector.childField) return false
+        return true
+      })
+
+    if (matches.length === 0) {
+      throw new Error(`Relation ${selector.parentTable}→${selector.childTable} not found`)
+    }
+    if (matches.length > 1) {
+      throw new Error(`Relation ${selector.parentTable}→${selector.childTable} is ambiguous, specify parentField/childField`)
+    }
+    const match = matches[0]
+    if (!match) {
+      throw new Error(`Relation ${selector.parentTable}→${selector.childTable} not found`)
+    }
+    return match.index
+  }
+
+  private _normalizeRelationSelector(
+    selectorOrParentTable: string | {
+      parentTable: string
+      childTable: string
+      parentField?: string
+      childField?: string
+    },
+    childTable?: string,
+  ): {
+    parentTable: string
+    childTable: string
+    parentField?: string
+    childField?: string
+  } {
+    if (typeof selectorOrParentTable === 'string') {
+      if (!childTable) throw new Error('childTable is required when removeRelation uses pair signature')
+      return { parentTable: selectorOrParentTable, childTable }
+    }
+    return selectorOrParentTable
+  }
+
+  private _resolveDependencyIndex(parentTable: string, childTable: string): number {
+    this.viewDependencies ??= []
+    const idx = this.viewDependencies.findIndex(
+      dep => dep.parentTable === parentTable && dep.childTable === childTable,
+    )
+    if (idx < 0) throw new Error(`Dependency ${parentTable}→${childTable} not found`)
+    return idx
+  }
+
+  private _assertRelationField(tableName: string, fieldName: string, role: 'Parent' | 'Child'): void {
+    const table = this.getTable(tableName)
+    if (!table) throw new Error(`${role} table "${tableName}" not found`)
+    if (!table.columns.some(column => column.name === fieldName)) {
+      throw new Error(`${role} field "${fieldName}" not found in table "${tableName}"`)
+    }
   }
 
   /**
@@ -668,28 +797,118 @@ export class DataSet implements IDataSet {
       ...(params.relationName ? { relationName: params.relationName } : {}),
     }
     this.tableRelations.push(relation)
+    this._rebuildRelations(false)
+  }
+
+  /**
+   * 更新 TableRelation。
+   * 若存在多个同 parentTable→childTable 的关系，必须显式指定 parentField/childField 消歧。
+   */
+  updateRelation(
+    selector: {
+      parentTable: string
+      childTable: string
+      parentField?: string
+      childField?: string
+    },
+    updates: Partial<TableRelation>,
+  ): TableRelation {
+    this.tableRelations ??= []
+
+    const idx = this._resolveRelationIndex(selector)
+    const current = this.tableRelations[idx]
+    if (!current) {
+      throw new Error(`Relation ${selector.parentTable}→${selector.childTable} not found`)
+    }
+    const nextParentTable = updates.parentTable ?? current.parentTable
+    const nextChildTable = updates.childTable ?? current.childTable
+    const nextParentField = updates.parentField ?? current.parentField
+    const nextChildField = updates.childField ?? current.childField
+
+    if (!nextParentField) {
+      throw new Error(`Parent field is required for relation ${current.parentTable}→${current.childTable}`)
+    }
+    if (!nextChildField) {
+      throw new Error(`Child field is required for relation ${current.parentTable}→${current.childTable}`)
+    }
+
+    const next: TableRelation = {
+      ...current,
+      ...updates,
+      parentTable: nextParentTable,
+      childTable: nextChildTable,
+      parentField: nextParentField,
+      childField: nextChildField,
+    }
+
+    this._assertRelationField(next.parentTable, nextParentField, 'Parent')
+    this._assertRelationField(next.childTable, nextChildField, 'Child')
+
+    const pairChanged = next.parentTable !== current.parentTable || next.childTable !== current.childTable
+    if (pairChanged) {
+      const blocking = (this.viewDependencies ?? []).some(
+        dep => dep.parentTable === current.parentTable && dep.childTable === current.childTable,
+      )
+      if (blocking) {
+        throw new Error(`Relation ${current.parentTable}→${current.childTable} is referenced by viewDependency, update dependency first`)
+      }
+    }
+
+    const duplicate = this.tableRelations.some((relation, relationIndex) => {
+      if (relationIndex === idx) return false
+      return relation.parentTable === next.parentTable
+        && relation.childTable === next.childTable
+        && relation.parentField === next.parentField
+        && relation.childField === next.childField
+    })
+    if (duplicate) {
+      throw new Error(`Relation ${next.parentTable}→${next.childTable} already exists`)
+    }
+
+    this.tableRelations[idx] = next
+    this._rebuildRelations(false)
+    return next
   }
 
   /**
    * 删除 TableRelation。
    * @throws 关系不存在或被 viewDependency 引用时抛 Error
    */
-  removeRelation(parentTable: string, childTable: string): void {
+  removeRelation(selector: {
+    parentTable: string
+    childTable: string
+    parentField?: string
+    childField?: string
+  }): void
+  removeRelation(parentTable: string, childTable: string): void
+  removeRelation(
+    selectorOrParentTable: string | {
+      parentTable: string
+      childTable: string
+      parentField?: string
+      childField?: string
+    },
+    childTable?: string,
+  ): void {
     this.tableRelations ??= []
 
-    const idx = this.tableRelations.findIndex(
-      (r) => r.parentTable === parentTable && r.childTable === childTable,
-    )
-    if (idx < 0) throw new Error(`Relation ${parentTable}→${childTable} not found`)
+    const selector = this._normalizeRelationSelector(selectorOrParentTable, childTable)
+
+    const idx = this._resolveRelationIndex(selector)
+    const relation = this.tableRelations[idx]
+    if (!relation) {
+      throw new Error(`Relation ${selector.parentTable}→${selector.childTable} not found`)
+    }
 
     const blocking = (this.viewDependencies ?? []).some(
-      (d) => d.parentTable === parentTable && d.childTable === childTable,
+      (d) => d.parentTable === relation.parentTable && d.childTable === relation.childTable,
     )
     if (blocking) {
-      throw new Error(`Relation ${parentTable}→${childTable} is referenced by viewDependency, remove dependency first`)
+      throw new Error(`Relation ${relation.parentTable}→${relation.childTable} is referenced by viewDependency, remove dependency first`)
     }
 
     this.tableRelations.splice(idx, 1)
+    this._rebuildRelations(false)
   }
 
   /**
@@ -726,6 +945,53 @@ export class DataSet implements IDataSet {
       ...(params.autoLoad !== undefined ? { autoLoad: params.autoLoad } : {}),
     }
     this.viewDependencies.push(dep)
+    this._rebuildRelations(false)
+  }
+
+  /**
+   * 更新 ViewDependency。
+   * fail-fast：目标 parentTable→childTable 必须已有底层 tableRelation。
+   */
+  updateDependency(
+    parentTable: string,
+    childTable: string,
+    updates: Partial<ViewDependency>,
+  ): ViewDependency {
+    this.viewDependencies ??= []
+
+    const idx = this._resolveDependencyIndex(parentTable, childTable)
+    const current = this.viewDependencies[idx]
+    if (!current) {
+      throw new Error(`Dependency ${parentTable}→${childTable} not found`)
+    }
+    const next: ViewDependency = {
+      ...current,
+      ...updates,
+      parentTable: updates.parentTable ?? current.parentTable,
+      childTable: updates.childTable ?? current.childTable,
+    }
+
+    if (!this.getTable(next.parentTable)) throw new Error(`Parent table "${next.parentTable}" not found`)
+    if (!this.getTable(next.childTable)) throw new Error(`Child table "${next.childTable}" not found`)
+
+    const hasRelation = (this.tableRelations ?? []).some(
+      relation => relation.parentTable === next.parentTable && relation.childTable === next.childTable,
+    )
+    if (!hasRelation) {
+      throw new Error(`No tableRelation for ${next.parentTable}→${next.childTable}, update relation first`)
+    }
+
+    const duplicate = this.viewDependencies.some((dep, depIndex) => {
+      if (depIndex === idx) return false
+      return dep.parentTable === next.parentTable && dep.childTable === next.childTable
+    })
+    if (duplicate) {
+      throw new Error(`Dependency ${next.parentTable}→${next.childTable} already exists`)
+    }
+
+    this.viewDependencies[idx] = next
+    this._rebuildRelations(false)
+    return next
   }
 
   /**
@@ -741,22 +1007,7 @@ export class DataSet implements IDataSet {
     if (idx < 0) throw new Error(`Dependency ${parentTable}→${childTable} not found`)
 
     this.viewDependencies.splice(idx, 1)
-  }
-
-  exportSnapshot(): DataSetServiceResult<{ status: 'ok'; snapshot: Record<string, unknown> }> {
-    const snapshot = JSON.parse(JSON.stringify(this.toData())) as Record<string, unknown>
-    return {
-      data: { status: 'ok', snapshot },
-      summary: `导出 DataSet: ${this.dataSetName}`,
-    }
-  }
-
-  listRelations(): DataSetServiceResult<{ relations: TableRelation[]; count: number }> {
-    const relations = (this.tableRelations ?? []).map((relation) => ({ ...relation }))
-    return {
-      data: { relations, count: relations.length },
-      summary: `${relations.length} 条关系`,
-    }
+    this._rebuildRelations(false)
   }
 
   // ===== 数据访问 =====

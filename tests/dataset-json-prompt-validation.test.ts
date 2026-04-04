@@ -1,5 +1,5 @@
 /**
- * DataSet JSON 提示词验证测试
+ * 根测试层 DataSet JSON 提示词验证测试
  *
  * 把 docs/ai/prompts/data/DATASET_JSON_PROMPT.md 中的所有完整验证案例 JSON
  * 用 DataSet.fromPageData() 实例化，自动验证：
@@ -10,6 +10,7 @@
  *  5. 视图聚合（summaryRow）正确
  *
  * 本文件是提示词质量门：任何提示词修改必须保证此文件全部通过。
+ * 它属于仓库级 AI 质量门，不属于 packages/spark-data 的运行时职责。
  */
 
 import { describe, it, expect } from 'vitest'

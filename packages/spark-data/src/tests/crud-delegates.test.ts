@@ -57,7 +57,13 @@ describe('M5: CrudService shared HTTP client', () => {
   it('DataSet.setSharedHttpClient should be accessible', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'Test',
-      tables: { T: { tableName: 'T', columns: [], rows: [] } },
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [],
+          views: { default: { rows: [] } },
+        },
+      },
     })
     const mockClient = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn(), request: vi.fn() }
     ds.setSharedHttpClient(mockClient as any)
@@ -73,9 +79,7 @@ describe('M5: CrudService shared HTTP client', () => {
           tableName: 'T',
           columns: [],
           api: { list: { url: '/api/t', method: 'GET' } },
-          views: undefined,
-          loading: undefined,
-          error: undefined,
+          views: { default: {} },
         },
       },
     })
@@ -102,9 +106,7 @@ describe('M5: CrudService shared HTTP client', () => {
           tableName: 'T',
           columns: [],
           api: { list: { url: '/tenants/{tenantId}/projects/{projectId}/navigation/nodes', method: 'GET' } },
-          views: undefined,
-          loading: undefined,
-          error: undefined,
+          views: { default: {} },
         },
       },
     })
@@ -127,7 +129,9 @@ describe('M5: CrudService shared HTTP client', () => {
     const result = await service.list()
     expect(result.success).toBe(true)
     expect(mockClient.get).toHaveBeenCalledOnce()
-    expect(mockClient.get.mock.calls[0][0]).toBe('/tenants/tenant-a/projects/proj-1/navigation/nodes')
+    const firstGetCall = mockClient.get.mock.calls[0]
+    expect(firstGetCall).toBeDefined()
+    expect(firstGetCall?.[0]).toBe('/tenants/tenant-a/projects/proj-1/navigation/nodes')
   })
 
   it('DataTable.crudService should prepend project scope for platform-relative URLs', async () => {
@@ -147,9 +151,7 @@ describe('M5: CrudService shared HTTP client', () => {
           tableName: 'T',
           columns: [],
           api: { list: { url: '/navigation/nodes', method: 'GET' } },
-          views: undefined,
-          loading: undefined,
-          error: undefined,
+          views: { default: {} },
         },
       },
     })
@@ -172,7 +174,9 @@ describe('M5: CrudService shared HTTP client', () => {
     const result = await service.list()
     expect(result.success).toBe(true)
     expect(mockClient.get).toHaveBeenCalledOnce()
-    expect(mockClient.get.mock.calls[0][0]).toBe('/tenants/tenant-a/projects/proj-1/navigation/nodes')
+    const firstGetCall = mockClient.get.mock.calls[0]
+    expect(firstGetCall).toBeDefined()
+    expect(firstGetCall?.[0]).toBe('/tenants/tenant-a/projects/proj-1/navigation/nodes')
   })
 
   it('DataTable.crudService should fail-fast when URL template params are unresolved', async () => {
@@ -192,9 +196,7 @@ describe('M5: CrudService shared HTTP client', () => {
           tableName: 'T',
           columns: [],
           api: { list: { url: '/tenants/{tenantId}/projects/{projectId}/navigation/nodes', method: 'GET' } },
-          views: undefined,
-          loading: undefined,
-          error: undefined,
+          views: { default: {} },
         },
       },
     })
@@ -226,9 +228,7 @@ describe('M5: CrudService shared HTTP client', () => {
           tableName: 'T',
           columns: [],
           api: { list: { url: '/navigation/nodes', method: 'GET' } },
-          views: undefined,
-          loading: undefined,
-          error: undefined,
+          views: { default: {} },
         },
       },
     })
@@ -261,9 +261,7 @@ describe('M5: CrudService shared HTTP client', () => {
           tableName: 'T',
           columns: [],
           api: { list: { url: '/tenants/{tenantId}/projects/{projectId}/navigation/nodes', method: 'GET' } },
-          views: undefined,
-          loading: undefined,
-          error: undefined,
+          views: { default: {} },
         },
       },
     })
@@ -280,7 +278,9 @@ describe('M5: CrudService shared HTTP client', () => {
     const result = await service.list()
     expect(result.success).toBe(true)
     expect(mockClient.get).toHaveBeenCalledOnce()
-    expect(mockClient.get.mock.calls[0][0]).toBe('/tenants/tenant-from-page/projects/project-from-page/navigation/nodes')
+    const firstGetCall = mockClient.get.mock.calls[0]
+    expect(firstGetCall).toBeDefined()
+    expect(firstGetCall?.[0]).toBe('/tenants/tenant-from-page/projects/project-from-page/navigation/nodes')
   })
 })
 
@@ -326,6 +326,91 @@ describe('S1: DataView public delegate accessors', () => {
   it('view.crud should return CrudDelegate', () => {
     const view = new DataView('TestTable', 'default')
     expect(view.crud).toBeInstanceOf(CrudDelegate)
+  })
+
+  it('view.crud.retrieveRecord should delegate to CrudService.retrieve', async () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'RetrieveDS',
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
+          api: { retrieve: { url: '/api/t/{id}', method: 'GET' } },
+          views: { default: { rows: [{ id: 1 }] } },
+        },
+      },
+    })
+    const view = ds.getView('T', 'default')!
+    const table = view.dataTable!
+    const mockCrud = {
+      retrieve: vi.fn(async (pk: Record<string, unknown>) => ({
+        success: true,
+        data: { id: pk['id'], name: 'Loaded' },
+      })),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      list: vi.fn(),
+      batchCreate: vi.fn(),
+      batchUpdate: vi.fn(),
+      batchDelete: vi.fn(),
+      importData: vi.fn(),
+      exportData: vi.fn(),
+      getHttpClient: vi.fn(),
+    }
+
+    const tableInternal = table as any
+    const viewInternal = view as any
+    tableInternal._crudService = mockCrud
+    viewInternal._crudDelegate = undefined
+
+    const result = await view.crud.retrieveRecord({ id: 1 })
+
+    expect(result.success).toBe(true)
+    expect(mockCrud.retrieve).toHaveBeenCalledWith({ id: 1 }, undefined)
+  })
+
+  it('view.retrieveRecordById should sync fetched row back into local rows', async () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'RetrieveSyncDS',
+      tables: {
+        T: {
+          tableName: 'T',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'name', type: 'string' },
+          ],
+          api: { retrieve: { url: '/api/t/{id}', method: 'GET' } },
+          views: { default: { rows: [{ id: 1, name: 'Old' }] } },
+        },
+      },
+    })
+    const view = ds.getView('T', 'default')!
+    const table = view.dataTable!
+    const mockCrud = {
+      retrieve: vi.fn(async () => ({ success: true, data: { id: 1, name: 'Fresh' } })),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      list: vi.fn(),
+      batchCreate: vi.fn(),
+      batchUpdate: vi.fn(),
+      batchDelete: vi.fn(),
+      importData: vi.fn(),
+      exportData: vi.fn(),
+      getHttpClient: vi.fn(),
+    }
+
+    const tableInternal = table as any
+    const viewInternal = view as any
+    tableInternal._crudService = mockCrud
+    viewInternal._crudDelegate = undefined
+
+    const result = await view.retrieveRecordById(1, { setCurrentRow: true })
+
+    expect(result.success).toBe(true)
+    expect(view.rows[0]?.['name']).toBe('Fresh')
+    expect(view.currentRow?.['name']).toBe('Fresh')
   })
 
   it('delegate accessors should be stable (same instance)', () => {

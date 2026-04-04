@@ -13,7 +13,7 @@ import type {
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult, NestedTreeNode,
   TreeConfig, AggregateColumnConfig, CrudApi,
-  CommitMode,
+  CommitMode, RetrieveRecordOptions,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -69,8 +69,6 @@ interface DataViewEventMap extends Record<string, any[]> {
 
 /** rowsChanged 事件防抖延迟（毫秒，约 1 帧） */
 const ROWS_CHANGED_DEBOUNCE_MS = 16
-
-type DataViewServiceResult<T> = { data: T; summary: string }
 
 // ─────────────────────────────────────────────
 // DataView 类
@@ -319,8 +317,12 @@ export class DataView implements IDataSource {
     return api[operation] !== undefined
   }
 
-  /** @internal DataSet 关系规范化完成后由 DataTable 调用——重编译计算列（含聚合 resolver）并重算 */
+  /** @internal DataSet 关系规范化完成后由 DataTable 调用——重挂级联订阅并重编译计算列（含聚合 resolver） */
   onDataSetRelationsReady(): void {
+    // DataTable.setDataSet() 发生在 DataSet 展开视图级关系之前，
+    // 关系图就绪后需要重新挂载一次 cascade 订阅，确保 currentRow 联动真正生效。
+    this.cascade.setupCascade()
+
     const hasComputedCols = this._computedDelegate.names.size > 0
     const hasAgg = Object.keys(this.aggregates).length > 0
     if (hasComputedCols) {
@@ -469,6 +471,38 @@ export class DataView implements IDataSource {
   /** 按 ID 从整棵 rows 树查找节点 */
   private getRowById(id: string | number): IDataRow | null {
     return this.getRowByIdMap().get(id) ?? null
+  }
+
+  private _syncRetrievedRow(
+    row: IDataRow,
+    options?: RetrieveRecordOptions,
+    fallbackId?: string | number,
+  ): void {
+    if (options?.syncToRows === false) {
+      if (options.setCurrentRow) {
+        const resolvedPk = this.getPkKey(row) ?? fallbackId
+        if (resolvedPk !== undefined) this.setCurrentRowById(resolvedPk)
+      }
+      return
+    }
+
+    const resolvedPk = this.getPkKey(row) ?? fallbackId
+    let syncedPk = resolvedPk
+
+    if (resolvedPk !== undefined) {
+      const updated = this.updateRowById(resolvedPk, row)
+      if (!updated) {
+        this.appendRow(row)
+        syncedPk = this.getPkKey(row) ?? resolvedPk
+      }
+    } else {
+      this.appendRow(row)
+      syncedPk = this.getPkKey(row)
+    }
+
+    if (options?.setCurrentRow && syncedPk !== undefined) {
+      this.setCurrentRowById(syncedPk)
+    }
   }
 
   private collectTreeSeedRowsFromRows(): FlatTreeNode[] {
@@ -821,6 +855,42 @@ export class DataView implements IDataSource {
       this.events.emit('requestStateChanged', this.requestState)
       throw error
     }
+  }
+
+  /**
+   * 按服务端 PK 拉取单条记录。
+   * 默认会将结果同步回本地 rows；可选设为当前行。
+   */
+  async retrieveRecord(
+    pk: Record<string, unknown>,
+    options?: RetrieveRecordOptions,
+  ): Promise<CrudResult<IDataRow>> {
+    this.checkDestroyed()
+    const result = await this.crudDelegate.retrieveRecord(pk)
+    if (result.success && result.data) {
+      this._syncRetrievedRow(result.data, options)
+    }
+    return result
+  }
+
+  /**
+   * 按本地主键值拉取单条记录。
+   * 若本地已存在该行，会优先构造真实服务端 PK；否则回退到 `{ [primaryKey]: id }`。
+   */
+  async retrieveRecordById(
+    id: string | number,
+    options?: RetrieveRecordOptions,
+  ): Promise<CrudResult<IDataRow>> {
+    this.checkDestroyed()
+    const localRow = this.getRowById(id)
+    const serverPk = localRow
+      ? this.buildServerPk(localRow)
+      : { [this.primaryKey]: id }
+    const result = await this.crudDelegate.retrieveRecord(serverPk)
+    if (result.success && result.data) {
+      this._syncRetrievedRow(result.data, options, id)
+    }
+    return result
   }
 
   private buildTreeModeParams(params?: QueryParams, treeMode?: 'flat' | 'nested'): QueryParams {
@@ -1294,46 +1364,11 @@ export class DataView implements IDataSource {
     this.pageSize = vc.pageSize ?? 20
   }
 
-  describeView(): DataViewServiceResult<{
-    tableName: string
-    viewId: string
-    config: IViewMetadata
-    viewIds: string[]
-  }> {
-    const table = this.checkDataTableAttached()
-    return {
-      data: {
-        tableName: this.tableName,
-        viewId: this.viewId,
-        config: this.toData(),
-        viewIds: Object.keys(table.views),
-      },
-      summary: `视图 ${this.tableName}:${this.viewId}`,
-    }
-  }
-
-  configure(config: Partial<IViewMetadata>): DataViewServiceResult<{
-    tableName: string
-    viewId: string
-    config: IViewMetadata
-  }> {
+  configure(config: Partial<IViewMetadata>): void {
     this.applyViewConfig(config)
-    return {
-      data: {
-        tableName: this.tableName,
-        viewId: this.viewId,
-        config: this.toData(),
-      },
-      summary: `配置视图 ${this.tableName}:${this.viewId}（${Object.keys(config).join(', ')}）`,
-    }
   }
 
-  configureAggregates(aggregates: Record<string, AggregateColumnConfig>): DataViewServiceResult<{
-    tableName: string
-    viewId: string
-    aggregates: Record<string, AggregateColumnConfig>
-    aggregateCount: number
-  }> {
+  setAggregates(aggregates: Record<string, AggregateColumnConfig>): void {
     const table = this.checkDataTableAttached()
     const columnNames = new Set(table.columns.map((column) => column.name))
     const missingFields = Object.entries(aggregates)
@@ -1345,22 +1380,9 @@ export class DataView implements IDataSource {
     }
 
     this.applyViewConfig({ aggregates })
-    return {
-      data: {
-        tableName: this.tableName,
-        viewId: this.viewId,
-        aggregates,
-        aggregateCount: Object.keys(aggregates).length,
-      },
-      summary: `设置 ${Object.keys(aggregates).length} 个聚合列`,
-    }
   }
 
-  configureTree(treeConfig: TreeConfig): DataViewServiceResult<{
-    tableName: string
-    viewId: string
-    treeConfig: TreeConfig
-  }> {
+  setTreeConfig(treeConfig: TreeConfig): void {
     const table = this.checkDataTableAttached()
     const columnNames = new Set(table.columns.map((column) => column.name))
     const { idField, parentIdField } = treeConfig
@@ -1373,10 +1395,6 @@ export class DataView implements IDataSource {
     }
 
     this.treeConfig = treeConfig
-    return {
-      data: { tableName: this.tableName, viewId: this.viewId, treeConfig },
-      summary: `设置树配置 ${this.tableName}:${this.viewId}（mode=${treeConfig.treeMode ?? 'flat'}）`,
-    }
   }
 
   /** 对已有 rows 应用 autoCurrentFirst / autoSelectFirst 初始化选中状态（静态数据路径用） */

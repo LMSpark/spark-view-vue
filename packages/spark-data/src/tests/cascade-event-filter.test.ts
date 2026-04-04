@@ -20,12 +20,12 @@ function makeDs(dependencyType: string) {
       Orders: {
         tableName: 'Orders',
         columns: [{ name: 'id', type: 'number' }],
-        rows: []
+        views: { default: { rows: [] } }
       },
       Items: {
         tableName: 'Items',
         columns: [{ name: 'id', type: 'number' }, { name: 'orderId', type: 'number' }],
-        rows: [],
+        views: { default: { rows: [] } },
         api: { list: { url: '/test/items', method: 'GET' } }
       }
     },

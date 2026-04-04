@@ -7,8 +7,8 @@ describe('DataView.requestData orchestration', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'OrchDS',
       tables: {
-        Parents: { tableName: 'Parents', columns: [{ name: 'id', type: 'number' }], rows: [] },
-        Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }], rows: [] }
+        Parents: { tableName: 'Parents', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [] } } },
+        Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [] } } }
       },
       tableRelations: [
         { parentTable: 'Parents', childTable: 'Children', childField: 'parentId' }
@@ -52,8 +52,8 @@ describe('DataView.requestData orchestration', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'OrchDS2',
       tables: {
-        Parents: { tableName: 'Parents', columns: [{ name: 'id', type: 'number' }], rows: [] },
-        Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }], rows: [] }
+        Parents: { tableName: 'Parents', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [] } } },
+        Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [] } } }
       },
       tableRelations: [
         { parentTable: 'Parents', childTable: 'Children', childField: 'parentId' }
@@ -88,8 +88,8 @@ describe('DataView.requestData orchestration', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'OrchDS3',
       tables: {
-        Parents: { tableName: 'Parents', columns: [{ name: 'uuid', type: 'string', isPrimaryKey: true }], rows: [] },
-        Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }, { name: 'parentUuid', type: 'string' }], rows: [] }
+        Parents: { tableName: 'Parents', columns: [{ name: 'uuid', type: 'string', isPrimaryKey: true }], views: { default: { rows: [] } } },
+        Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }, { name: 'parentUuid', type: 'string' }], views: { default: { rows: [] } } }
       },
       tableRelations: [
         {
@@ -133,9 +133,9 @@ describe('DataView.requestData orchestration', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'ThreeLevel',
       tables: {
-        A: { tableName: 'A', columns: [{ name: 'id', type: 'number' }], rows: [] },
-        B: { tableName: 'B', columns: [{ name: 'id', type: 'number' }, { name: 'aId', type: 'number' }], rows: [], api: { list: { url: '/test/b', method: 'GET' } } },
-        C: { tableName: 'C', columns: [{ name: 'id', type: 'number' }, { name: 'bId', type: 'number' }], rows: [], api: { list: { url: '/test/c', method: 'GET' } } }
+        A: { tableName: 'A', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [] } } },
+        B: { tableName: 'B', columns: [{ name: 'id', type: 'number' }, { name: 'aId', type: 'number' }], views: { default: { rows: [] } }, api: { list: { url: '/test/b', method: 'GET' } } },
+        C: { tableName: 'C', columns: [{ name: 'id', type: 'number' }, { name: 'bId', type: 'number' }], views: { default: { rows: [] } }, api: { list: { url: '/test/c', method: 'GET' } } }
       },
       tableRelations: [
         { parentTable: 'A', childTable: 'B', childField: 'aId' },
@@ -197,7 +197,7 @@ describe('DataView.requestData orchestration', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'StateDS',
       tables: {
-        T: { tableName: 'T', columns: [{ name: 'id', type: 'number' }], rows: [] }
+        T: { tableName: 'T', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [] } } }
       }
     })
 
@@ -222,7 +222,7 @@ describe('DataView.requestData orchestration', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'IdempotentDS',
       tables: {
-        T: { tableName: 'T', columns: [{ name: 'id', type: 'number' }], rows: [] }
+        T: { tableName: 'T', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [] } } }
       }
     })
 

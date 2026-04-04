@@ -250,7 +250,7 @@ export interface ICascadeHost extends IViewIdentity {
 
 /** CRUD 操作类型 */
 export type CrudOperation =
-  | 'create' | 'update' | 'delete'
+  | 'retrieve' | 'create' | 'update' | 'delete'
   | 'batchCreate' | 'batchUpdate' | 'batchDelete'
   | 'import'
 

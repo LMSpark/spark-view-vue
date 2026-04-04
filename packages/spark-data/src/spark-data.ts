@@ -6,6 +6,7 @@ import { DataSet } from './dataset'
 import { TreeManager } from './tree-manager'
 import { DataTable } from './data-table'
 import { DataView } from './data-view'
+import { DataSetCrudTool } from './dataset-crud-tool'
 import { CrudService } from './crud-service'
 import * as DataKeyModule from './core/data-key'
 import * as ColumnValidationModule from './column-validation'
@@ -146,6 +147,14 @@ export namespace SparkData {
     // 所有视图配置字段由 applyViewConfig 集中赋值，单一来源
     view.applyViewConfig(config)
     return view
+  }
+
+  /**
+   * 创建 DataSet CRUD 工具类实例。
+   * 该工具类以 DataSet 为中心，统一提供表、视图、行、关系、依赖的 CRUD facade。
+   */
+  export function createDataSetCrudTool(dataSetName: string): DataSetCrudTool {
+    return new DataSetCrudTool(dataSetName)
   }
 
   // ===== 关系快捷创建 =====

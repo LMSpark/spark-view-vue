@@ -50,13 +50,13 @@ describe('S2: checkDataTableAttached guard', () => {
         Users: {
           tableName: 'Users',
           columns: [{ name: 'id', type: 'number' }],
-          rows: [],
+          views: { default: { rows: [] } },
         },
       },
     })
     const view = ds.getView('Users', 'default')!
     // 不应抛错；dataSet 可能被外部代理包装，只检查 dataSetName 等价
-    expect(view.dataSet.dataSetName).toBe('Test')
+    expect(view.dataSet?.dataSetName).toBe('Test')
     expect(view.crudService).toBeUndefined()  // 未配置 api
     expect(view.crudConfig).toBeUndefined()
   })
@@ -112,10 +112,14 @@ describe('L3: updateRowById rejects primary key mutation', () => {
             { name: 'id', type: 'number', isPrimaryKey: true },
             { name: 'name', type: 'string' },
           ],
-          rows: [
-            { id: 1, name: 'A' },
-            { id: 2, name: 'B' },
-          ],
+          views: {
+            default: {
+              rows: [
+                { id: 1, name: 'A' },
+                { id: 2, name: 'B' },
+              ],
+            },
+          },
         },
       },
     })
@@ -158,7 +162,7 @@ describe('L3: updateRowById rejects primary key mutation', () => {
             { name: 'itemId', type: 'number', isPrimaryKey: true },
             { name: 'name', type: 'string' },
           ],
-          rows: [{ tenantId: 'A', itemId: 1, name: 'Item1' }],
+          views: { default: { rows: [{ tenantId: 'A', itemId: 1, name: 'Item1' }] } },
         },
       },
     })

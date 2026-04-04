@@ -28,6 +28,7 @@ function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
         },
         views: {
           default: {
+            rows: [],
             treeConfig: {
               idField: 'id',
               parentIdField: 'parentId',
@@ -35,7 +36,6 @@ function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
             },
           },
         },
-        rows: [],
       },
     },
   })
@@ -66,6 +66,7 @@ function createScopedRelativeTreeDataSet(mockHttpClient: unknown): DataSet {
         },
         views: {
           default: {
+            rows: [],
             treeConfig: {
               idField: 'id',
               parentIdField: 'parentId',
@@ -73,7 +74,6 @@ function createScopedRelativeTreeDataSet(mockHttpClient: unknown): DataSet {
             },
           },
         },
-        rows: [],
       },
     },
   })

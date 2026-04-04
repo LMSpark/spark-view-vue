@@ -330,12 +330,16 @@ describe('DataKey 统一解析器', () => {
               { name: 'id', type: 'number' },
               { name: 'name', type: 'string' }
             ],
-            rows: [
-              { id: 1, name: '张三' },
-              { id: 2, name: '李四' }
-            ],
-            autoCurrentFirst: false,
-            autoSelectFirst: false
+            views: {
+              default: {
+                rows: [
+                  { id: 1, name: '张三' },
+                  { id: 2, name: '李四' }
+                ],
+                autoCurrentFirst: false,
+                autoSelectFirst: false
+              }
+            }
           },
           Orders: {
             tableName: 'Orders',
@@ -343,7 +347,7 @@ describe('DataKey 统一解析器', () => {
               { name: 'id', type: 'number' },
               { name: 'userId', type: 'number' }
             ],
-            rows: []
+            views: { default: { rows: [] } }
           }
         }
       })
