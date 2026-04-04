@@ -19,6 +19,9 @@ describe('DataSetCrudTool', () => {
         { name: 'id', type: 'number', isPrimaryKey: true },
         { name: 'name', type: 'string' },
       ],
+      resourceType: 'database-table',
+      resourceId: 'crm.users',
+      businessCategory: 'master',
       views: {
         default: {
           rows: [{ id: 1, name: 'Alice' }],
@@ -26,6 +29,10 @@ describe('DataSetCrudTool', () => {
         },
       },
     })
+
+    expect(tool.getTable('Users')?.resourceType).toBe('database-table')
+    expect(tool.getTable('Users')?.resourceId).toBe('crm.users')
+    expect(tool.getTable('Users')?.businessCategory).toBe('master')
 
     tool.createView('Users', 'grid', { pageSize: 50 })
     expect(tool.getView('Users', 'grid')?.pageSize).toBe(50)
@@ -75,6 +82,36 @@ describe('DataSetCrudTool', () => {
     tool.deleteColumn('Users', 'email')
     expect(tool.getColumn('Users', 'email')).toBeUndefined()
     expect(view.getColumn('email')).toBeUndefined()
+  })
+
+  it('should support table semantic metadata planning fields', () => {
+    const tool = new DataSetCrudTool('MetaDS')
+
+    tool.createTable({
+      tableName: 'StatusOptions',
+      columns: [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+        { name: 'label', type: 'string' },
+      ],
+      resourceType: 'static-data',
+      resourceId: 'common.order-status',
+    })
+
+    tool.updateTable('StatusOptions', {
+      resourceType: 'logical-view',
+      resourceId: null,
+      businessCategory: 'reference',
+    })
+
+    const table = tool.getTable('StatusOptions')
+    expect(table?.resourceType).toBe('logical-view')
+    expect(table?.resourceId).toBeUndefined()
+    expect(table?.businessCategory).toBe('reference')
+
+    const exported = tool.toData().tables['StatusOptions']
+    expect(exported?.resourceType).toBe('logical-view')
+    expect(exported?.resourceId).toBeUndefined()
+    expect(exported?.businessCategory).toBe('reference')
   })
 
   it('should support relation and dependency CRUD including ambiguous pair disambiguation', () => {

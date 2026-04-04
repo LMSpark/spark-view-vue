@@ -351,6 +351,64 @@ export interface DataColumn {
 }
 
 /**
+ * 表资源类型。
+ *
+ * 用来描述 DataTable 背后的资源来源或承载形态，回答“这张表的数据以什么资源存在、从哪里来”。
+ * 它是语义标签，不直接驱动 CRUD/级联行为。
+ * 真正的运行时行为仍由 `api`、`tableRelations`、`viewDependencies` 等字段决定。
+ *
+ * 推荐值：
+ * - `database-table`   — 直接映射数据库表
+ * - `database-view`    — 直接映射数据库视图
+ * - `third-party-api`  — 数据由外部第三方 API 提供
+ * - `static-data`      — 数据以内联/本地静态资源形式存在，是当前约定下唯一允许直接声明 rows 的资源类型
+ * - `dictionary`       — 明确对应字典/枚举/选项型资源
+ * - `logical-view`     — 应用层拼装出的逻辑视图/投影视图
+ *
+ * 保留 `(string & {})` 扩展口，允许业务侧继续定义更细的资源类型。
+ */
+export type TableResourceType =
+  | 'database-table'
+  | 'database-view'
+  | 'third-party-api'
+  | 'static-data'
+  | 'dictionary'
+  | 'logical-view'
+  | (string & {})
+
+/**
+ * 表业务分类。
+ *
+ * 用来描述 DataTable 在当前业务模型或页面中的角色，回答“这张表在业务里扮演什么角色”。
+ * 它同样是语义标签，不代替 `tableRelations` / `viewDependencies` 这类运行时结构定义。
+ *
+ * 推荐值：
+ * - `master`    — 主表
+ * - `child`     — 从表 / 明细表
+ * - `reference` — 引用表 / 参考表 / 查找表
+ */
+export type TableBusinessCategory =
+  | 'master'
+  | 'child'
+  | 'reference'
+  | (string & {})
+
+/**
+ * 表级语义元数据。
+ *
+ * 这组字段不表达运行时行为，而是补充表的“资源身份”和“业务角色”。
+ * 适合给 AI 规划、管理后台、建模工具、导出元数据时消费。
+ */
+export interface TableSemanticMetadata {
+  /** 资源类型：标记该表背后对应的资源来源或承载形态，并决定该表是否允许直接声明静态 rows。 */
+  resourceType?: TableResourceType
+  /** 资源 ID：对应外部系统中的稳定标识，如库表名、字典编码、第三方资源编码或静态资源标识。 */
+  resourceId?: string
+  /** 业务分类：标记当前表在业务模型中的角色，如主表/从表/引用表。 */
+  businessCategory?: TableBusinessCategory
+}
+
+/**
  * CRUD 操作到端点的映射定义。
  *
  * 语义：描述“每个操作对应哪个接口”。
@@ -407,6 +465,12 @@ export interface HttpEndpoint {
 export interface IViewMetadata {
   tableName?: string
   viewId?: string
+  /**
+   * 视图行数据。
+   *
+   * 当前建模约定：仅当表的 resourceType = 'static-data' 时，才应在配置中直接声明 rows；
+   * 其他资源类型应把数据视为远端来源，通过 requestData/loadFromServer 等机制获取。
+   */
   rows?: IDataRow[]
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
@@ -495,7 +559,7 @@ export interface IViewMetadata {
  * 所有视图配置均进入 `views`，包括 `default`；
  * 不再将 default 视图字段扁平提升到表级。
  */
-export interface ITableMetadata {
+export interface ITableMetadata extends TableSemanticMetadata {
   tableName: string
   columns: DataColumn[]
   /**

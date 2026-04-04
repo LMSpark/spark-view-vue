@@ -33,6 +33,9 @@ export function normalizeTableMetadata(
   return {
     tableName,
     columns: input.columns,
+    ...(input.resourceType !== undefined ? { resourceType: input.resourceType } : {}),
+    ...(input.resourceId !== undefined ? { resourceId: input.resourceId } : {}),
+    ...(input.businessCategory !== undefined ? { businessCategory: input.businessCategory } : {}),
     ...(input.api !== undefined ? { api: input.api } : {}),
     ...(input.crudConfig !== undefined ? { crudConfig: input.crudConfig } : {}),
     views: normalizedViews,

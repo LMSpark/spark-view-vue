@@ -2,7 +2,7 @@
  * DataTable — 数据表（表结构定义、配置管理、视图容器）
  *
  * 职责（按功能分区）：
- *  - 表元数据：管理 tableName、columns、api、crudConfig（不含具体数据）
+ *  - 表元数据：管理 tableName、columns、resourceType/resourceId/businessCategory、api、crudConfig（不含具体数据）
  *  - 视图容器：维护 default 与命名视图的集合（不遍历、不协调、不关心运行时状态）
  *  - 配置中心：提供 api 和 crudConfig 给 DataView 使用
  *  - 序列化：提供 toData()/fromTableData 用于持久化与恢复
@@ -22,6 +22,8 @@ import type {
   CrudApi,
   ITableMetadata,
   CrudOperationConfig,
+  TableResourceType,
+  TableBusinessCategory,
 } from './types'
 import type { DataSet } from './dataset'
 import { DataValidator } from './validation'
@@ -32,7 +34,8 @@ import { assertNoSeparator, resolveApi } from './core/utils'
 /**
  * DataTable - 管理单表的结构定义与配置
  *
- * 说明：管理表结构（columns）、视图集合（DataView）、CRUD 配置（api, crudConfig）；
+ * 说明：管理表结构（columns）、资源语义（resourceType/resourceId/businessCategory）、
+ * 视图集合（DataView）、CRUD 配置（api, crudConfig）；
  * 其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。
  * 数据操作由 DataView 负责。
  */
@@ -49,6 +52,34 @@ export class DataTable {
 
   /** 列定义 */
   columns: DataColumn[]
+
+  /**
+  * 资源类型：描述该表背后真实对应的资源形态。
+  * 例如数据库表、数据库视图、第三方 API、静态数据、字典表、逻辑视图等。
+   *
+  * 当前建模约定下，只有 resourceType = 'static-data' 的表才应直接声明 rows；
+  * 其他资源类型默认视为远端数据来源。
+   */
+  resourceType?: TableResourceType
+
+  /**
+   * 资源 ID：描述该表在外部资源系统中的稳定标识。
+   *
+   * 示例：
+   * - 数据库表：`crm.customer`
+   * - 数据库视图：`vw_order_summary`
+   * - 第三方 API：`sap.business-partner`
+   * - 字典：`common.order-status`
+   */
+  resourceId?: string
+
+  /**
+   * 业务分类：描述该表在当前业务模型中的角色。
+   * 例如主表、从表、引用表、静态数据表。
+   *
+   * 注意：该字段仅用于语义建模，不代替 tableRelations / viewDependencies。
+   */
+  businessCategory?: TableBusinessCategory
 
   /**
     * 远端 CRUD 操作到端点的映射定义。
@@ -94,11 +125,12 @@ export class DataTable {
   // ===== 视图容器 =====
 
   /**
-   * 内联静态行（来自 pagedata.json 配置）——级联内存过滤的 source of truth。
+  * 内联静态行（来自 pagedata.json 配置）——级联内存过滤的 source of truth。
    *
    * 与 DataView.rows 不同：DataView.rows 是当前视图（可能已过滤）的行；
    * 此字段存储全量原始行，供无 API 的内存级联过滤重复使用。
-   * 有 API 的表此字段保持空数组（数据由服务端提供）。
+  * 按当前建模约定，该字段主要仅用于 resourceType = 'static-data' 的表；
+  * 其他资源类型应视为远端数据来源，此字段通常保持空数组。
    */
   rows: IDataRow[] = []
 
@@ -263,6 +295,9 @@ export class DataTable {
       tableName: this.tableName,
       columns: this.columns.filter(c => !c.isComputed),
       views: viewsData,
+      ...(this.resourceType !== undefined ? { resourceType: this.resourceType } : {}),
+      ...(this.resourceId !== undefined ? { resourceId: this.resourceId } : {}),
+      ...(this.businessCategory !== undefined ? { businessCategory: this.businessCategory } : {}),
       ...(this.api !== undefined ? { api: this.api } : {}),
       ...(this.crudConfig !== undefined ? { crudConfig: this.crudConfig } : {}),
     }
@@ -400,6 +435,9 @@ export class DataTable {
       const resolved = resolveApi(normalized.api, normalized.tableName)
       if (resolved !== undefined) t.api = resolved
     }
+    if (normalized.resourceType !== undefined) t.resourceType = normalized.resourceType
+    if (normalized.resourceId !== undefined) t.resourceId = normalized.resourceId
+    if (normalized.businessCategory !== undefined) t.businessCategory = normalized.businessCategory
     if (normalized.crudConfig !== undefined) t.crudConfig = normalized.crudConfig
 
     const def = t.getOrCreateView('default')

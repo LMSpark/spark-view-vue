@@ -13,12 +13,15 @@ import type {
   TableRelation,
   ViewDependency,
   DependencyType,
+  TableSemanticMetadata,
+  TableResourceType,
+  TableBusinessCategory,
 } from './types'
 
 /**
  * 创建数据表时的输入参数。
  */
-export interface DataSetCrudToolCreateTableOptions {
+export interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
   /**
    * 表名。
    * 在同一个 DataSet 内必须唯一，后续所有表级 CRUD 都以它为入口。
@@ -70,6 +73,21 @@ export interface DataSetCrudToolUpdateTableOptions {
    * 传入 null 表示显式移除已有 crudConfig。
    */
   crudConfig?: CrudOperationConfig | null
+  /**
+   * 新的资源类型。
+   * 传入 null 表示显式清空已有 resourceType。
+   */
+  resourceType?: TableResourceType | null
+  /**
+   * 新的资源 ID。
+   * 传入 null 表示显式清空已有 resourceId。
+   */
+  resourceId?: string | null
+  /**
+   * 新的业务分类。
+   * 传入 null 表示显式清空已有 businessCategory。
+   */
+  businessCategory?: TableBusinessCategory | null
   /**
    * default 视图需要替换的整批行数据。
    */
@@ -257,7 +275,7 @@ export class DataSetCrudTool {
   }
 
   /**
-   * 创建数据表并按需初始化 API、CRUD 配置和视图。
+  * 创建数据表并按需初始化资源语义、API、CRUD 配置和视图。
    *
    * @param options 建表参数。
    * @returns 新创建的数据表实例。
@@ -265,6 +283,8 @@ export class DataSetCrudTool {
    */
   createTable(options: DataSetCrudToolCreateTableOptions): DataTable {
     const table = this.dataSet.addTable(options.tableName, options.columns)
+
+    this.applyTableSemanticMetadata(table, options)
 
     if (options.api !== undefined) {
       table.setApi(options.api)
@@ -286,7 +306,7 @@ export class DataSetCrudTool {
   }
 
   /**
-   * 更新数据表结构及运行配置。
+  * 更新数据表结构、资源语义及运行配置。
    *
    * @param tableName 表名。
    * @param updates 更新内容。
@@ -320,6 +340,7 @@ export class DataSetCrudTool {
         table.setCrudConfig(updates.crudConfig)
       }
     }
+    this.applyTableSemanticMetadataUpdates(table, updates)
     if (updates.defaultRows !== undefined) {
       table.rows = [...updates.defaultRows]
       table.getView('default')?.replaceRows([...updates.defaultRows])
@@ -740,6 +761,57 @@ export class DataSetCrudTool {
     if (viewId !== 'default' || table.api !== undefined) return
     const defaultView = table.getView('default')
     table.rows = [...(defaultView?.rows ?? [])]
+  }
+
+  /**
+   * 给数据表写入资源语义元数据。
+   *
+   * 这些字段只描述“资源身份”和“业务角色”，不参与运行时行为判断。
+   */
+  private applyTableSemanticMetadata(table: DataTable, metadata: TableSemanticMetadata): void {
+    if (metadata.resourceType !== undefined) {
+      table.resourceType = metadata.resourceType
+    }
+    if (metadata.resourceId !== undefined) {
+      table.resourceId = metadata.resourceId
+    }
+    if (metadata.businessCategory !== undefined) {
+      table.businessCategory = metadata.businessCategory
+    }
+  }
+
+  /**
+   * 更新数据表的资源语义元数据。
+   *
+   * updateTable 允许用 null 显式清空已有字段，方便建模工具做重分类或解绑。
+   */
+  private applyTableSemanticMetadataUpdates(
+    table: DataTable,
+    updates: Pick<DataSetCrudToolUpdateTableOptions, 'resourceType' | 'resourceId' | 'businessCategory'>,
+  ): void {
+    if (updates.resourceType !== undefined) {
+      if (updates.resourceType === null) {
+        delete table.resourceType
+      } else {
+        table.resourceType = updates.resourceType
+      }
+    }
+
+    if (updates.resourceId !== undefined) {
+      if (updates.resourceId === null) {
+        delete table.resourceId
+      } else {
+        table.resourceId = updates.resourceId
+      }
+    }
+
+    if (updates.businessCategory !== undefined) {
+      if (updates.businessCategory === null) {
+        delete table.businessCategory
+      } else {
+        table.businessCategory = updates.businessCategory
+      }
+    }
   }
 
   /**

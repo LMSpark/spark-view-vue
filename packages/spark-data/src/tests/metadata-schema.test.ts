@@ -39,6 +39,31 @@ describe('ITableMetadata canonical structure', () => {
     expect(data.views.default.rows).toEqual([{ id: 1 }, { id: 2 }])
   })
 
+  it('DataTable semantic metadata should roundtrip through ITableMetadata', () => {
+    const data: ITableMetadata = {
+      tableName: 'OrderSummary',
+      columns: [{ name: 'id', type: 'number', label: 'ID' }],
+      resourceType: 'database-view',
+      resourceId: 'vw_order_summary',
+      businessCategory: 'reference',
+      views: {
+        default: {
+          rows: [{ id: 1 }],
+        },
+      },
+    }
+
+    const table = DataTable.fromTableData(data)
+    expect(table.resourceType).toBe('database-view')
+    expect(table.resourceId).toBe('vw_order_summary')
+    expect(table.businessCategory).toBe('reference')
+
+    const roundtrip = table.toData()
+    expect(roundtrip.resourceType).toBe('database-view')
+    expect(roundtrip.resourceId).toBe('vw_order_summary')
+    expect(roundtrip.businessCategory).toBe('reference')
+  })
+
   it('DataTable.fromTableData() should read default view from views.default', () => {
     const data: ITableMetadata = {
       tableName: 'Orders',
