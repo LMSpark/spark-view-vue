@@ -11,6 +11,18 @@ import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
 import type { IAppServicesCapability } from '@spark-view/spark-utils'
+import {
+  commitDataSetHistory,
+  getDataSetHistoryEntry,
+  listDataSetHistory,
+} from './dataset-history'
+import type {
+  DataSetCommitVersionOptions,
+  DataSetHistoryEntry,
+  DataSetHistoryListOptions,
+  DataSetHistoryScope,
+  DataSetHistorySelector,
+} from './dataset-history'
 import { DataTable } from './data-table'
 import { normalizeDataSetMetadata } from './metadata'
 import { assertNoSeparator } from './core/utils'
@@ -74,6 +86,18 @@ function resolveRouteTemplateParams(routeLike: unknown): {
   if (tenantId !== undefined) result.tenantId = tenantId
   if (projectId !== undefined) result.projectId = projectId
   return result
+}
+
+function buildDataSetHistoryScope(
+  dataSet: Pick<DataSet, 'dataSetName' | 'pageId'>,
+  options?: Pick<DataSetHistoryListOptions, 'scopeId' | 'namespace'>,
+): DataSetHistoryScope {
+  return {
+    dataSetName: dataSet.dataSetName,
+    ...(dataSet.pageId !== undefined ? { pageId: dataSet.pageId } : {}),
+    ...(options?.scopeId !== undefined ? { scopeId: options.scopeId } : {}),
+    ...(options?.namespace !== undefined ? { namespace: options.namespace } : {}),
+  }
 }
 
 /**
@@ -193,7 +217,7 @@ export class DataSet implements IDataSet {
   _resolvedRelations: DataRelation[] | undefined
 
   /** Schema 格式版本（默认 1） */
-  schemaVersion: number
+  schemaVersion = 2
 
   /** 业务数据版本号（乐观锁） */
   version: number | undefined
@@ -266,36 +290,15 @@ export class DataSet implements IDataSet {
   }) {
     assertNoSeparator(config.dataSetName, 'dataSetName')
     this.dataSetName = config.dataSetName
-    this.schemaVersion = config.schemaVersion ?? 2
-    this.tableRelations = config.tableRelations
-    this.version = config.version
-    this.pageId = config.pageId
-
-    // ① 先保留原始 viewDependencies；关系图在所有表实例就绪后统一重建。
-    this.viewDependencies = config.viewDependencies
-
-    // ② 构建表级索引（聚合函数在视图编译时查询，需先于表构建就绪）
-    if (this.tableRelations?.length) {
-      this._buildTableRelationIndex()
-    }
-
-    // 构建表实例并建立引用链（DataSet → DataTable → DataView）
-    this.tables = {}
-    const tableDefs = config.tables
-    for (const [name, td] of Object.entries(tableDefs)) {
-      // P1-1: tableName 从对象 key 推断（用户可省略冗余的 tableName 字段）
-      if (!td.tableName) {
-        (td as { tableName: string }).tableName = name
-      }
-      const table = DataTable.fromTableData(td)
-      table.setDataSet(this)  // 设置 table.dataSet = this, view.dataTable = table
-      this.tables[name] = table
-    }
-
-    // ③ 所有表实例就绪后统一重建运行时关系图。
-    // 构造过程中各 view 已绑定 dataTable，但此时 cascade 订阅尚未拿到 resolved relations；
-    // 关系图完成后需要统一回调各 view 刷新 cascade 与聚合解析。
-    this._rebuildRelations(true)
+    this._applyNormalizedMetadata({
+      dataSetName: config.dataSetName,
+      tables: config.tables,
+      schemaVersion: config.schemaVersion ?? 2,
+      ...(config.tableRelations !== undefined ? { tableRelations: config.tableRelations } : {}),
+      ...(config.viewDependencies !== undefined ? { viewDependencies: config.viewDependencies } : {}),
+      version: config.version,
+      pageId: config.pageId,
+    })
   }
 
   /**
@@ -608,6 +611,30 @@ export class DataSet implements IDataSet {
     }
   }
 
+  private _createTablesFromMetadata(tableDefs: Record<string, ITableMetadata>): void {
+    this.tables = {}
+    for (const [name, td] of Object.entries(tableDefs)) {
+      if (!td.tableName) {
+        ;(td as { tableName: string }).tableName = name
+      }
+      const table = DataTable.fromTableData(td)
+      table.setDataSet(this)
+      this.tables[name] = table
+    }
+  }
+
+  private _applyNormalizedMetadata(normalized: IDataSetMetadata): void {
+    this.dataSetName = normalized.dataSetName
+    this.schemaVersion = normalized.schemaVersion ?? 2
+    this.tableRelations = normalized.tableRelations
+    this.viewDependencies = normalized.viewDependencies
+    this.version = normalized.version
+    this.pageId = normalized.pageId
+    this._buildTableRelationIndex()
+    this._createTablesFromMetadata(normalized.tables)
+    this._rebuildRelations(true)
+  }
+
   // ===== 工厂方法 =====
 
   /**
@@ -638,6 +665,77 @@ export class DataSet implements IDataSet {
       version: config.version,
       pageId: config.pageId,
     })
+  }
+
+  replaceFromData(data: IDataSetMetadata): void {
+    const normalized = normalizeDataSetMetadata(data)
+
+    for (const table of Object.values(this.tables)) {
+      table.destroy()
+      table.dataSet = undefined
+    }
+
+    this._applyNormalizedMetadata(normalized)
+    this._rebindActiveSubscriptions()
+  }
+
+  replaceFromPageData(rawPageData: Record<string, unknown>): void {
+    const next = DataSet.fromPageData(rawPageData)
+    this.replaceFromData(next.toData())
+  }
+
+  listVersions(options?: DataSetHistoryListOptions): DataSetHistoryEntry[] {
+    return listDataSetHistory(buildDataSetHistoryScope(this, options), options)
+  }
+
+  getVersionEntry(selector: DataSetHistorySelector, options?: DataSetHistoryListOptions): DataSetHistoryEntry | null {
+    return getDataSetHistoryEntry(buildDataSetHistoryScope(this, options), selector, options)
+  }
+
+  commitVersion(options?: DataSetCommitVersionOptions): DataSetHistoryEntry {
+    const latestHistoryVersion = this.listVersions(options)[0]?.version ?? 0
+    const timestamp = options?.timestamp ?? Date.now()
+    const nextVersion = options?.bumpVersion === false
+      ? Math.max(this.version ?? 0, latestHistoryVersion)
+      : Math.max(this.version ?? 0, latestHistoryVersion) + 1
+
+    this.version = nextVersion
+
+    const committed = commitDataSetHistory(this, {
+      ...options,
+      dataSetName: this.dataSetName,
+      ...(options?.pageId !== undefined
+        ? { pageId: options.pageId }
+        : this.pageId !== undefined
+          ? { pageId: this.pageId }
+          : {}),
+      version: nextVersion,
+      timestamp,
+    })
+
+    if (committed) {
+      return committed
+    }
+
+    return {
+      id: `${nextVersion}-${timestamp}`,
+      version: nextVersion,
+      timestamp,
+      dataSetName: this.dataSetName,
+      ...(this.pageId !== undefined ? { pageId: this.pageId } : {}),
+      ...(options?.label ? { label: options.label } : {}),
+      ...(options?.summary ? { summary: options.summary } : {}),
+      snapshot: this.toData(),
+      ...(options?.sourceData ? { sourceData: JSON.parse(JSON.stringify(options.sourceData)) as Record<string, unknown> } : {}),
+    }
+  }
+
+  restoreVersion(selector: DataSetHistorySelector, options?: DataSetHistoryListOptions): DataSetHistoryEntry | null {
+    const entry = this.getVersionEntry(selector, options)
+    if (!entry) return null
+    this.replaceFromData(entry.snapshot)
+    this.version = entry.version
+    return entry
   }
 
   // ===== 结构变更 =====

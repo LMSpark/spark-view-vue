@@ -33,6 +33,9 @@ public class PageConfigService {
     private static final Set<String> ALLOWED_FILES =
             Set.of("rule.json", "pagedata.json", "script.js", "style.css");
 
+    /** 页面级内部元数据文件，用于在文件系统中标记当前版。 */
+    private static final String PAGE_META_FILE = "__page-meta.json";
+
     private final ObjectMapper objectMapper;
     private final SseService sseService;
     private final Path configRoot;
@@ -69,6 +72,78 @@ public class PageConfigService {
         return pageDir(tenantId, projectId, pageId).resolve(filename);
     }
 
+    /** 返回页面元数据文件路径：{configRoot}/{tenantId}/{projectId}/{pageId}/__page-meta.json */
+    private Path pageMetaFile(String tenantId, String projectId, String pageId) {
+        return pageDir(tenantId, projectId, pageId).resolve(PAGE_META_FILE);
+    }
+
+    private record PageMeta(int currentVersion, long updatedAt, List<String> currentFiles) {
+    }
+
+    private PageMeta defaultPageMeta() {
+        return new PageMeta(0, 0L, List.of());
+    }
+
+    private PageMeta readPageMeta(String tenantId, String projectId, String pageId) throws IOException {
+        Path metaPath = pageMetaFile(tenantId, projectId, pageId);
+        if (!Files.isRegularFile(metaPath)) {
+            return defaultPageMeta();
+        }
+
+        try {
+            Map<String, Object> raw = objectMapper.readValue(
+                    Files.readString(metaPath, StandardCharsets.UTF_8),
+                    new TypeReference<Map<String, Object>>() {
+                    }
+            );
+            int currentVersion = asInt(raw.get("currentVersion"), 0);
+            long updatedAt = asLong(raw.get("updatedAt"), 0L);
+            List<String> currentFiles = normalizeCurrentFiles(raw.get("currentFiles"));
+            return new PageMeta(currentVersion, updatedAt, currentFiles);
+        } catch (Exception e) {
+            throw new IOException("页面元数据损坏: " + pageId + "/" + PAGE_META_FILE, e);
+        }
+    }
+
+    private void writePageMeta(String tenantId, String projectId, String pageId, PageMeta meta) throws IOException {
+        Path metaPath = pageMetaFile(tenantId, projectId, pageId);
+        Files.createDirectories(metaPath.getParent());
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("schemaVersion", 1);
+        payload.put("pageId", pageId);
+        payload.put("currentVersion", meta.currentVersion());
+        payload.put("updatedAt", meta.updatedAt());
+        payload.put("currentFiles", meta.currentFiles());
+
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload);
+        Files.writeString(metaPath, json, StandardCharsets.UTF_8);
+    }
+
+    private PageMeta nextPageMeta(PageMeta current, Collection<String> writtenFiles) {
+        List<String> currentFiles = new ArrayList<>(writtenFiles);
+        Collections.sort(currentFiles);
+        return new PageMeta(current.currentVersion() + 1, System.currentTimeMillis(), currentFiles);
+    }
+
+    private List<String> normalizeCurrentFiles(Object value) {
+        if (!(value instanceof Collection<?> collection)) {
+            return List.of();
+        }
+        List<String> result = new ArrayList<>();
+        for (Object item : collection) {
+            if (!(item instanceof String filename)) {
+                continue;
+            }
+            if (!ALLOWED_FILES.contains(filename)) {
+                continue;
+            }
+            result.add(filename);
+        }
+        result.sort(String::compareTo);
+        return result;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // 读取
     // ─────────────────────────────────────────────────────────────────────────
@@ -91,10 +166,17 @@ public class PageConfigService {
         String serverTimestamp = String.valueOf(Files.getLastModifiedTime(fp).toMillis());
 
         if (clientTimestamp != null && clientTimestamp.equals(serverTimestamp)) {
-            return Map.of("notModified", true, "timestamp", serverTimestamp, "content", "");
+            int currentVersion = readPageMeta(tenantId, projectId, pageId).currentVersion();
+            return Map.of(
+                    "notModified", true,
+                    "timestamp", serverTimestamp,
+                    "content", "",
+                    "currentVersion", currentVersion
+            );
         }
         String content = Files.readString(fp, StandardCharsets.UTF_8);
-        return Map.of("content", content, "timestamp", serverTimestamp);
+        int currentVersion = readPageMeta(tenantId, projectId, pageId).currentVersion();
+        return Map.of("content", content, "timestamp", serverTimestamp, "currentVersion", currentVersion);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -111,10 +193,14 @@ public class PageConfigService {
         Files.createDirectories(fp.getParent());
         Files.writeString(fp, content, StandardCharsets.UTF_8);
 
+        PageMeta currentMeta = readPageMeta(tenantId, projectId, pageId);
+        PageMeta nextMeta = nextPageMeta(currentMeta, List.of(filename));
+        writePageMeta(tenantId, projectId, pageId, nextMeta);
+
         String timestamp = String.valueOf(Files.getLastModifiedTime(fp).toMillis());
         sseService.broadcast(pageId, filename);
         log.info("[PageConfig] 写入文件: {}/{}", pageId, filename);
-        return Map.of("ok", true, "timestamp", timestamp);
+        return Map.of("ok", true, "timestamp", timestamp, "currentVersion", nextMeta.currentVersion());
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -139,9 +225,22 @@ public class PageConfigService {
             written.add(filename);
         }
 
+        PageMeta currentMeta = readPageMeta(tenantId, projectId, pageId);
+        PageMeta nextMeta = written.isEmpty()
+                ? currentMeta
+                : nextPageMeta(currentMeta, written);
+        if (!written.isEmpty()) {
+            writePageMeta(tenantId, projectId, pageId, nextMeta);
+        }
+
         sseService.broadcast(pageId, "__batch");
         log.info("[PageConfig] 批量写入: pageId={}, files={}", pageId, written);
-        return Map.of("ok", true, "pageId", pageId, "written", written);
+        return Map.of(
+                "ok", true,
+                "pageId", pageId,
+                "written", written,
+                "currentVersion", nextMeta.currentVersion()
+        );
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -210,6 +309,16 @@ public class PageConfigService {
                     }
                 }
             }
+            try {
+                PageMeta meta = readPageMeta(tenantId, projectId, pageId);
+                item.put("currentVersion", meta.currentVersion());
+                item.put("updatedAt", meta.updatedAt());
+            } catch (IOException e) {
+                log.warn("[PageConfig] 读取页面元数据失败 tenant={} project={} pageId={}: {}",
+                        tenantId, projectId, pageId, e.getMessage());
+                item.put("currentVersion", 0);
+                item.put("updatedAt", 0L);
+            }
             item.put("pageType", routeMeta.getOrDefault("pageType", "config"));
             item.put("files", existingFiles);
             item.put("hasDir", Files.isDirectory(dir));
@@ -254,9 +363,12 @@ public class PageConfigService {
             written.add(entry.getKey());
         }
 
+        PageMeta meta = nextPageMeta(defaultPageMeta(), written);
+        writePageMeta(tenantId, projectId, pageId, meta);
+
         sseService.broadcast(pageId, "__batch");
         log.info("[PageConfig] 创建页面: pageId={}, title={}", pageId, title);
-        return Map.of("ok", true, "pageId", pageId, "written", written);
+        return Map.of("ok", true, "pageId", pageId, "written", written, "currentVersion", meta.currentVersion());
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -453,6 +565,34 @@ public class PageConfigService {
             return "";
         }
         return str.trim();
+    }
+
+    private int asInt(Object value, int fallback) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        if (value instanceof String text) {
+            try {
+                return Integer.parseInt(text.trim());
+            } catch (NumberFormatException ignored) {
+                return fallback;
+            }
+        }
+        return fallback;
+    }
+
+    private long asLong(Object value, long fallback) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text) {
+            try {
+                return Long.parseLong(text.trim());
+            } catch (NumberFormatException ignored) {
+                return fallback;
+            }
+        }
+        return fallback;
     }
 
     /** 简单 JSON 字符串转义（用于脚手架模板） */

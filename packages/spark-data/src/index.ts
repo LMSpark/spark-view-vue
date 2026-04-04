@@ -22,6 +22,23 @@ export { DataSet } from './dataset'
 export { DataTable } from './data-table'
 export { DataView } from './data-view'
 export { DataSetCrudTool } from './dataset-crud-tool'
+export {
+  commitDataSetHistory,
+  createLocalStorageHistoryAdapter,
+  formatPageDataHistoryEntry,
+  getDataSetHistoryEntry,
+  listDataSetHistory,
+  resolveDataSetHistoryKey,
+} from './dataset-history'
+export type {
+  DataSetCommitVersionOptions,
+  DataSetHistoryCommitOptions,
+  DataSetHistoryEntry,
+  DataSetHistoryListOptions,
+  DataSetHistoryScope,
+  DataSetHistorySelector,
+  DataSetHistoryStorageAdapter,
+} from './dataset-history'
 
 // ===== DataKey 统一解析 =====
 

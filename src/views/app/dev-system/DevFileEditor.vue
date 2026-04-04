@@ -79,8 +79,7 @@ function resolveCodeLanguage(name: string): 'javascript' | 'css' {
 }
 
 function handleActiveFileChange(value: string) {
-  props.state.editFiles[activeFile.value] = value
-  props.state.fileDirty[activeFile.value] = true
+  props.state.updatePageFile(activeFile.value, value)
 }
 
 function fileIcon(name: string) {

@@ -3,6 +3,9 @@
     <div v-if="initError" class="spark-json-editor__notice">
       {{ initError }}
     </div>
+    <div v-else-if="schemaError" class="spark-json-editor__notice spark-json-editor__notice--warning">
+      {{ schemaError }}
+    </div>
     <textarea
       v-if="initError"
       :value="modelValue"
@@ -20,10 +23,32 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import type { Content, JSONEditorPropsOptional } from 'vanilla-jsoneditor'
 
 type SparkJsonEditorMode = 'text' | 'tree' | 'table'
+type SparkJsonSchema = Record<string, unknown>
+type SparkJsonEditorValidator = NonNullable<JSONEditorPropsOptional['validator']>
+type SparkJsonEditorRenderValue = NonNullable<JSONEditorPropsOptional['onRenderValue']>
+type SparkJsonEditorRenderValueProps = Parameters<SparkJsonEditorRenderValue>[0]
+type SparkJsonEditorRenderValueResult = ReturnType<SparkJsonEditorRenderValue>
 
 interface SparkJsonEditorInstance {
   updateProps: (props: JSONEditorPropsOptional) => void
   destroy: () => Promise<void>
+}
+
+interface SparkJsonEditorModule {
+  createJSONEditor: (options: {
+    target: HTMLDivElement
+    props: JSONEditorPropsOptional
+  }) => SparkJsonEditorInstance
+  createAjvValidator?: (options: {
+    schema: SparkJsonSchema
+    schemaDefinitions?: SparkJsonSchema
+  }) => SparkJsonEditorValidator
+  renderJSONSchemaEnum?: (
+    props: SparkJsonEditorRenderValueProps,
+    schema: SparkJsonSchema,
+    schemaDefinitions?: SparkJsonSchema,
+  ) => SparkJsonEditorRenderValueResult | undefined
+  renderValue?: SparkJsonEditorRenderValue
 }
 
 interface Props {
@@ -37,6 +62,10 @@ interface Props {
   navigationBar?: boolean
   statusBar?: boolean
   askToFormat?: boolean
+  schema?: SparkJsonSchema | null
+  schemaDefinitions?: SparkJsonSchema | null
+  enableSchemaValidation?: boolean
+  enableSchemaEnumRenderer?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -50,6 +79,10 @@ const props = withDefaults(defineProps<Props>(), {
   navigationBar: true,
   statusBar: true,
   askToFormat: false,
+  schema: null,
+  schemaDefinitions: null,
+  enableSchemaValidation: true,
+  enableSchemaEnumRenderer: true,
 })
 
 const emit = defineEmits<{
@@ -58,9 +91,12 @@ const emit = defineEmits<{
 
 const containerRef = ref<HTMLDivElement | null>(null)
 const editorRef = shallowRef<SparkJsonEditorInstance | null>(null)
+const editorModuleRef = shallowRef<SparkJsonEditorModule | null>(null)
 const initError = ref<string | null>(null)
+const schemaError = ref<string | null>(null)
 const currentContent = shallowRef<Content>(toEditorContent(props.modelValue))
 const lastSerializedValue = ref(props.modelValue)
+const editorExtensionProps = shallowRef<Pick<JSONEditorPropsOptional, 'validator' | 'onRenderValue'>>({})
 
 const rootStyle = computed(() => ({
   height: typeof props.height === 'number' ? `${props.height}px` : props.height,
@@ -79,6 +115,52 @@ function toEditorText(content: Content): string {
   return JSON.stringify(content.json, null, props.indentation) ?? ''
 }
 
+function refreshSchemaExtensions(): void {
+  const module = editorModuleRef.value
+  const schema = props.schema
+  schemaError.value = null
+
+  if (!module || !schema) {
+    editorExtensionProps.value = {}
+    return
+  }
+
+  let validator: SparkJsonEditorValidator | undefined
+  if (props.enableSchemaValidation && module.createAjvValidator) {
+    try {
+      validator = module.createAjvValidator({
+        schema,
+        ...(props.schemaDefinitions ? { schemaDefinitions: props.schemaDefinitions } : {}),
+      })
+    } catch (error) {
+      schemaError.value = error instanceof Error
+        ? `JSON Schema 校验器初始化失败: ${error.message}`
+        : `JSON Schema 校验器初始化失败: ${String(error)}`
+    }
+  }
+
+  let onRenderValue: SparkJsonEditorRenderValue | undefined
+  if (
+    props.enableSchemaEnumRenderer
+    && props.mode !== 'text'
+    && module.renderJSONSchemaEnum
+    && module.renderValue
+  ) {
+    onRenderValue = (renderProps) => {
+      return module.renderJSONSchemaEnum?.(
+        renderProps,
+        schema,
+        props.schemaDefinitions ?? undefined,
+      ) ?? module.renderValue?.(renderProps) ?? []
+    }
+  }
+
+  editorExtensionProps.value = {
+    ...(validator ? { validator } : {}),
+    ...(onRenderValue ? { onRenderValue } : {}),
+  }
+}
+
 function buildEditorProps(): JSONEditorPropsOptional {
   return {
     content: currentContent.value,
@@ -90,6 +172,7 @@ function buildEditorProps(): JSONEditorPropsOptional {
     navigationBar: props.navigationBar,
     statusBar: props.statusBar,
     askToFormat: props.askToFormat,
+    ...editorExtensionProps.value,
     onChange: (updatedContent) => {
       currentContent.value = updatedContent
       const nextValue = toEditorText(updatedContent)
@@ -110,11 +193,13 @@ async function mountEditor(): Promise<void> {
   }
 
   try {
-    const { createJSONEditor } = await import('vanilla-jsoneditor')
-    editorRef.value = createJSONEditor({
+    const editorModule = await import('vanilla-jsoneditor') as SparkJsonEditorModule
+    editorModuleRef.value = editorModule
+    refreshSchemaExtensions()
+    editorRef.value = editorModule.createJSONEditor({
       target: containerRef.value,
       props: buildEditorProps(),
-    }) as SparkJsonEditorInstance
+    })
     initError.value = null
   } catch (error) {
     initError.value = error instanceof Error
@@ -153,6 +238,20 @@ watch(
   },
 )
 
+watch(
+  () => [
+    props.schema,
+    props.schemaDefinitions,
+    props.enableSchemaValidation,
+    props.enableSchemaEnumRenderer,
+    props.mode,
+  ] as const,
+  () => {
+    refreshSchemaExtensions()
+    editorRef.value?.updateProps(buildEditorProps())
+  },
+)
+
 onMounted(() => {
   void mountEditor()
 })
@@ -160,6 +259,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   const editor = editorRef.value
   editorRef.value = null
+  editorModuleRef.value = null
   if (editor) {
     void editor.destroy()
   }
@@ -181,6 +281,12 @@ onBeforeUnmount(() => {
   color: var(--el-color-warning-dark-2);
   font-size: 12px;
   line-height: 1.5;
+}
+
+.spark-json-editor__notice--warning {
+  border-color: var(--el-color-danger-light-7);
+  background: var(--el-color-danger-light-9);
+  color: var(--el-color-danger-dark-2);
 }
 
 .spark-json-editor__surface {

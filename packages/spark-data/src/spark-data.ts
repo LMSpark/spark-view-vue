@@ -8,6 +8,7 @@ import { DataTable } from './data-table'
 import { DataView } from './data-view'
 import { DataSetCrudTool } from './dataset-crud-tool'
 import { CrudService } from './crud-service'
+import * as DataSetHistoryModule from './dataset-history'
 import * as DataKeyModule from './core/data-key'
 import * as ColumnValidationModule from './column-validation'
 import type { DataColumn, CrudApi, TableRelation, ViewDependency, DependencyType, FlatTreeNode, AggregateColumnConfig, TreeConfig, FilterExpression, SortExpression, CommitMode } from './types'
@@ -156,6 +157,12 @@ export namespace SparkData {
   export function createDataSetCrudTool(dataSetName: string): DataSetCrudTool {
     return new DataSetCrudTool(dataSetName)
   }
+
+  export const listDataSetHistory = DataSetHistoryModule.listDataSetHistory
+  export const getDataSetHistoryEntry = DataSetHistoryModule.getDataSetHistoryEntry
+  export const commitDataSetHistory = DataSetHistoryModule.commitDataSetHistory
+  export const createLocalStorageHistoryAdapter = DataSetHistoryModule.createLocalStorageHistoryAdapter
+  export const formatPageDataHistoryEntry = DataSetHistoryModule.formatPageDataHistoryEntry
 
   // ===== 关系快捷创建 =====
 
