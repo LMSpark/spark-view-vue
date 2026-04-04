@@ -132,6 +132,31 @@ export {
 
 export { stillsCapabilities, stillsActionSpec, sessionDescribe }
 export {
+  validateLlmDeserializedParams,
+  formatLlmParamValidationIssues,
+} from './llm-params-validator'
+export type {
+  LlmParamObjectSchema,
+  LlmParamArraySchema,
+  LlmParamValidationIssue,
+  LlmParamValidationResult,
+  LlmParamValidationOptions,
+} from './llm-params-validator'
+export {
+  DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
+  DATASET_CRUD_TOOL_STILLS_CAPABILITY_TABLE,
+  getDataSetCrudToolStillParameterRow,
+  getDataSetCrudToolStillCapabilityRow,
+  validateDataSetCrudToolStillParams,
+} from './dataset-crud-tool-stills-catalog'
+export type {
+  DatasetCrudToolStillFailureMode,
+  DatasetCrudToolStillType,
+  DatasetCrudToolStillTarget,
+  DatasetCrudToolStillParameterRow,
+  DatasetCrudToolStillCapabilityRow,
+} from './dataset-crud-tool-stills-catalog'
+export {
   blueprintDomain,
   getBlueprintState,
   blueprintCreate,
