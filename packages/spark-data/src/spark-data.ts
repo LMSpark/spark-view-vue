@@ -104,11 +104,11 @@ export namespace SparkData {
     return new DataSetCrudTool(dataSetName)
   }
 
-  export const listDataSetHistory = DataSetHistoryModule.listDataSetHistory
-  export const getDataSetHistoryEntry = DataSetHistoryModule.getDataSetHistoryEntry
-  export const commitDataSetHistory = DataSetHistoryModule.commitDataSetHistory
+  export const listDataSetSnapshots = DataSetHistoryModule.listDataSetSnapshots
+  export const getDataSetSnapshot = DataSetHistoryModule.getDataSetSnapshot
+  export const commitDataSetSnapshot = DataSetHistoryModule.commitDataSetSnapshot
   export const createLocalStorageHistoryAdapter = DataSetHistoryModule.createLocalStorageHistoryAdapter
-  export const formatPageDataHistoryEntry = DataSetHistoryModule.formatPageDataHistoryEntry
+  export const formatPageDataSnapshot = DataSetHistoryModule.formatPageDataSnapshot
 
   // ===== 关系快捷创建 =====
 

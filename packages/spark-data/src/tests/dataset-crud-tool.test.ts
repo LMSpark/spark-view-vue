@@ -55,6 +55,48 @@ describe('DataSetCrudTool', () => {
     expect(tool.getView('Users', 'grid')).toBeUndefined()
   })
 
+  it('should support batch row CRUD from one facade', async () => {
+    const tool = new DataSetCrudTool('BatchRowsDS')
+
+    tool.createTable({
+      tableName: 'Users',
+      columns: [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+        { name: 'name', type: 'string' },
+      ],
+      views: {
+        default: {
+          rows: [{ id: 1, name: 'Alice' }],
+          autoCurrentFirst: false,
+        },
+      },
+    })
+
+    const createResult = await tool.createRows('Users', [
+      { id: 2, name: 'Bob' },
+      { id: 3, name: 'Carol' },
+    ])
+    expect(createResult.success).toBe(true)
+    expect(createResult.data?.successCount).toBe(2)
+    expect(tool.listRows('Users')).toHaveLength(3)
+
+    const updateResult = await tool.updateRows('Users', [
+      { id: 2, data: { name: 'Bobby' } },
+      { id: 3, data: { name: 'Caroline' } },
+    ])
+    expect(updateResult.success).toBe(true)
+    expect(updateResult.data?.failureCount).toBe(0)
+    expect(tool.getRow('Users', 2)?.['name']).toBe('Bobby')
+    expect(tool.getRow('Users', 3)?.['name']).toBe('Caroline')
+
+    const deleteResult = await tool.deleteRows('Users', [1, 3])
+    expect(deleteResult.success).toBe(true)
+    expect(deleteResult.data?.successCount).toBe(2)
+    expect(tool.getRow('Users', 1)).toBeUndefined()
+    expect(tool.getRow('Users', 3)).toBeUndefined()
+    expect(tool.getTable('Users')?.rows).toHaveLength(1)
+  })
+
   it('should support column CRUD and refresh DataView column cache and validator', () => {
     const tool = new DataSetCrudTool('SchemaDS')
     tool.createTable({

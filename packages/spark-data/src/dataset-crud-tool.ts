@@ -2,6 +2,7 @@ import { DataSet } from './dataset'
 import type { DataTable } from './data-table'
 import type { DataView } from './data-view'
 import type {
+  BatchResult,
   CrudApi,
   CrudOperationConfig,
   CrudResult,
@@ -140,8 +141,28 @@ type DataSetCrudToolCreateRowParams = DataSetCrudToolTableNameParams & {
   viewId?: string
 }
 
+type DataSetCrudToolCreateRowsParams = DataSetCrudToolTableNameParams & {
+  items: Array<Partial<IDataRow>>
+  viewId?: string
+}
+
 type DataSetCrudToolUpdateRowParams = DataSetCrudToolRowSelector & {
   data: Partial<IDataRow>
+}
+
+type DataSetCrudToolUpdateRowsItem = {
+  id: string | number
+  data: Partial<IDataRow>
+}
+
+type DataSetCrudToolUpdateRowsParams = DataSetCrudToolTableNameParams & {
+  items: DataSetCrudToolUpdateRowsItem[]
+  viewId?: string
+}
+
+type DataSetCrudToolDeleteRowsParams = DataSetCrudToolTableNameParams & {
+  ids: Array<string | number>
+  viewId?: string
 }
 
 /**
@@ -624,6 +645,33 @@ export class DataSetCrudTool {
   }
 
   /**
+   * 在指定视图中批量创建多条新行。
+   *
+   * - immediate + API 模式：优先走 view.crud.batchCreateRecords
+   * - 其余模式：逐条复用 view.addRow，并统一收口为 BatchResult
+   */
+  createRows(
+    tableName: string,
+    items: Array<Partial<IDataRow>>,
+    viewId?: string,
+  ): Promise<CrudResult<BatchResult>>
+  createRows(params: DataSetCrudToolCreateRowsParams): Promise<CrudResult<BatchResult>>
+  async createRows(
+    tableNameOrParams: string | DataSetCrudToolCreateRowsParams,
+    items?: Array<Partial<IDataRow>>,
+    viewId = 'default',
+  ): Promise<CrudResult<BatchResult>> {
+    const next = this.normalizeCreateRowsArgs(tableNameOrParams, items, viewId)
+    const table = this.getTableOrThrow(next.tableName)
+    const view = this.getViewOrThrow(next.tableName, next.viewId)
+    const result = this.shouldUseRemoteBatch(table, view)
+      ? await view.crud.batchCreateRecords(next.items)
+      : await this.executeLocalCreateRows(view, next.items)
+    this.syncInlineDefaultRows(table, next.viewId)
+    return result
+  }
+
+  /**
    * 更新指定主键的行数据。
    *
    * @param tableName 表名。
@@ -656,6 +704,35 @@ export class DataSetCrudTool {
   }
 
   /**
+   * 批量更新多条行数据。
+   *
+   * 对话侧统一传 id + data，底层再按视图主键字段拼装 batchUpdate payload。
+   */
+  updateRows(
+    tableName: string,
+    items: DataSetCrudToolUpdateRowsItem[],
+    viewId?: string,
+  ): Promise<CrudResult<BatchResult>>
+  updateRows(params: DataSetCrudToolUpdateRowsParams): Promise<CrudResult<BatchResult>>
+  async updateRows(
+    tableNameOrParams: string | DataSetCrudToolUpdateRowsParams,
+    items?: DataSetCrudToolUpdateRowsItem[],
+    viewId = 'default',
+  ): Promise<CrudResult<BatchResult>> {
+    const next = this.normalizeUpdateRowsArgs(tableNameOrParams, items, viewId)
+    const table = this.getTableOrThrow(next.tableName)
+    const view = this.getViewOrThrow(next.tableName, next.viewId)
+    const result = this.shouldUseRemoteBatch(table, view)
+      ? await view.crud.batchUpdateRecords(next.items.map((item) => ({
+        ...item.data,
+        [view.primaryKey]: item.id,
+      })))
+      : await this.executeLocalUpdateRows(view, next.items)
+    this.syncInlineDefaultRows(table, next.viewId)
+    return result
+  }
+
+  /**
    * 删除指定主键的行数据。
    *
    * @param tableName 表名。
@@ -675,6 +752,30 @@ export class DataSetCrudTool {
     const table = this.getTableOrThrow(next.tableName)
     const view = this.getViewOrThrow(next.tableName, next.viewId)
     const result = await view.removeRow(next.id)
+    this.syncInlineDefaultRows(table, next.viewId)
+    return result
+  }
+
+  /**
+   * 批量删除多条行数据。
+   */
+  deleteRows(
+    tableName: string,
+    ids: Array<string | number>,
+    viewId?: string,
+  ): Promise<CrudResult<BatchResult>>
+  deleteRows(params: DataSetCrudToolDeleteRowsParams): Promise<CrudResult<BatchResult>>
+  async deleteRows(
+    tableNameOrParams: string | DataSetCrudToolDeleteRowsParams,
+    ids?: Array<string | number>,
+    viewId = 'default',
+  ): Promise<CrudResult<BatchResult>> {
+    const next = this.normalizeDeleteRowsArgs(tableNameOrParams, ids, viewId)
+    const table = this.getTableOrThrow(next.tableName)
+    const view = this.getViewOrThrow(next.tableName, next.viewId)
+    const result = this.shouldUseRemoteBatch(table, view)
+      ? await view.crud.batchDeleteRecords(next.ids)
+      : await this.executeLocalDeleteRows(view, next.ids)
     this.syncInlineDefaultRows(table, next.viewId)
     return result
   }
@@ -903,6 +1004,13 @@ export class DataSetCrudTool {
     return value as Exclude<T, undefined>
   }
 
+  private requireNonEmptyArray<T>(value: T[] | undefined, label: string): T[] {
+    if (!Array.isArray(value) || value.length === 0) {
+      throw new Error(`${label} must be a non-empty array`)
+    }
+    return value
+  }
+
   private normalizeTableNameArg(
     tableNameOrParams: string | DataSetCrudToolTableNameParams,
     methodName: string,
@@ -1120,6 +1228,30 @@ export class DataSetCrudTool {
     }
   }
 
+  private normalizeCreateRowsArgs(
+    tableNameOrParams: string | DataSetCrudToolCreateRowsParams,
+    items: Array<Partial<IDataRow>> | undefined,
+    viewId: string | undefined,
+  ): Required<DataSetCrudToolCreateRowsParams> {
+    if (typeof tableNameOrParams === 'string') {
+      return {
+        tableName: this.requireNonEmptyString(tableNameOrParams, 'createRows.tableName'),
+        items: this.requireNonEmptyArray(items, 'createRows.items').map((item, index) =>
+          this.requireObjectArg(item, `createRows.items[${index}]`),
+        ),
+        viewId: viewId ?? 'default',
+      }
+    }
+
+    return {
+      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'createRows.tableName'),
+      items: this.requireNonEmptyArray(tableNameOrParams.items, 'createRows.items').map((item, index) =>
+        this.requireObjectArg(item, `createRows.items[${index}]`),
+      ),
+      viewId: tableNameOrParams.viewId ?? 'default',
+    }
+  }
+
   private normalizeUpdateRowArgs(
     tableNameOrParams: string | DataSetCrudToolUpdateRowParams,
     idOrData?: string | number | Partial<IDataRow>,
@@ -1146,6 +1278,71 @@ export class DataSetCrudTool {
       tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'updateRow.tableName'),
       id: tableNameOrParams.id,
       data: this.requireObjectArg(tableNameOrParams.data, 'updateRow.data'),
+      viewId: tableNameOrParams.viewId ?? 'default',
+    }
+  }
+
+  private normalizeUpdateRowsArgs(
+    tableNameOrParams: string | DataSetCrudToolUpdateRowsParams,
+    items: DataSetCrudToolUpdateRowsItem[] | undefined,
+    viewId: string | undefined,
+  ): Required<DataSetCrudToolUpdateRowsParams> {
+    const normalizeItems = (
+      value: DataSetCrudToolUpdateRowsItem[] | undefined,
+      label: string,
+    ): DataSetCrudToolUpdateRowsItem[] => this.requireNonEmptyArray(value, label).map((item, index) => {
+      const candidate = this.requireObjectArg(item, `${label}[${index}]`)
+      const id = candidate['id']
+      if (typeof id !== 'string' && typeof id !== 'number') {
+        throw new Error(`${label}[${index}].id must be a string or number`)
+      }
+      return {
+        id,
+        data: this.requireObjectArg(candidate['data'], `${label}[${index}].data`),
+      }
+    })
+
+    if (typeof tableNameOrParams === 'string') {
+      return {
+        tableName: this.requireNonEmptyString(tableNameOrParams, 'updateRows.tableName'),
+        items: normalizeItems(items, 'updateRows.items'),
+        viewId: viewId ?? 'default',
+      }
+    }
+
+    return {
+      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'updateRows.tableName'),
+      items: normalizeItems(tableNameOrParams.items, 'updateRows.items'),
+      viewId: tableNameOrParams.viewId ?? 'default',
+    }
+  }
+
+  private normalizeDeleteRowsArgs(
+    tableNameOrParams: string | DataSetCrudToolDeleteRowsParams,
+    ids: Array<string | number> | undefined,
+    viewId: string | undefined,
+  ): Required<DataSetCrudToolDeleteRowsParams> {
+    const normalizeIds = (
+      value: Array<string | number> | undefined,
+      label: string,
+    ): Array<string | number> => this.requireNonEmptyArray(value, label).map((id, index) => {
+      if (typeof id !== 'string' && typeof id !== 'number') {
+        throw new Error(`${label}[${index}] must be a string or number`)
+      }
+      return id
+    })
+
+    if (typeof tableNameOrParams === 'string') {
+      return {
+        tableName: this.requireNonEmptyString(tableNameOrParams, 'deleteRows.tableName'),
+        ids: normalizeIds(ids, 'deleteRows.ids'),
+        viewId: viewId ?? 'default',
+      }
+    }
+
+    return {
+      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'deleteRows.tableName'),
+      ids: normalizeIds(tableNameOrParams.ids, 'deleteRows.ids'),
       viewId: tableNameOrParams.viewId ?? 'default',
     }
   }
@@ -1254,6 +1451,113 @@ export class DataSetCrudTool {
     if (viewId !== 'default' || table.api !== undefined) return
     const defaultView = table.getView('default')
     table.rows = [...(defaultView?.rows ?? [])]
+  }
+
+  private shouldUseRemoteBatch(table: DataTable, view: DataView): boolean {
+    return table.api !== undefined && view.commitMode === 'immediate'
+  }
+
+  private async executeLocalCreateRows(
+    view: DataView,
+    items: Array<Partial<IDataRow>>,
+  ): Promise<CrudResult<BatchResult>> {
+    const results: CrudResult[] = []
+    for (const item of items) {
+      try {
+        const result = await view.addRow(item)
+        results.push(this.toCrudResult(result, true))
+      } catch (error) {
+        results.push(this.toCrudResult(error, false))
+      }
+    }
+    return this.toBatchCrudResult(results)
+  }
+
+  private async executeLocalUpdateRows(
+    view: DataView,
+    items: DataSetCrudToolUpdateRowsItem[],
+  ): Promise<CrudResult<BatchResult>> {
+    const results: CrudResult[] = []
+    for (const item of items) {
+      try {
+        const result = await view.editRowById(item.id, item.data)
+        if (result === false) {
+          results.push({
+            success: false,
+            message: `Row "${item.id}" not found`,
+          })
+        } else {
+          results.push(this.toCrudResult(result, true))
+        }
+      } catch (error) {
+        results.push(this.toCrudResult(error, false))
+      }
+    }
+    return this.toBatchCrudResult(results)
+  }
+
+  private async executeLocalDeleteRows(
+    view: DataView,
+    ids: Array<string | number>,
+  ): Promise<CrudResult<BatchResult>> {
+    const results: CrudResult[] = []
+    for (const id of ids) {
+      try {
+        const result = await view.removeRow(id)
+        if (result === false) {
+          results.push({
+            success: false,
+            message: `Row "${id}" not found`,
+          })
+        } else {
+          results.push(this.toCrudResult(result, true))
+        }
+      } catch (error) {
+        results.push(this.toCrudResult(error, false))
+      }
+    }
+    return this.toBatchCrudResult(results)
+  }
+
+  private toCrudResult(result: unknown, defaultSuccess: boolean): CrudResult {
+    if (this.isCrudResult(result)) {
+      return result
+    }
+
+    if (result instanceof Error) {
+      return {
+        success: false,
+        error: result,
+        message: result.message,
+      }
+    }
+
+    return {
+      success: defaultSuccess,
+      ...(result !== undefined ? { data: result } : {}),
+    }
+  }
+
+  private toBatchCrudResult(results: CrudResult[]): CrudResult<BatchResult> {
+    const errors = results
+      .map((result) => result.error)
+      .filter((error): error is Error => error instanceof Error)
+    const failureCount = results.filter((result) => result.success === false).length
+
+    return {
+      success: true,
+      data: {
+        successCount: results.length - failureCount,
+        failureCount,
+        results,
+        errors,
+      },
+      ...(failureCount > 0 ? { message: `Batch completed with ${failureCount} failure(s)` } : {}),
+    }
+  }
+
+  private isCrudResult(value: unknown): value is CrudResult {
+    return typeof value === 'object' && value !== null && 'success' in value
   }
 
   /**

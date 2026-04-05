@@ -16,12 +16,12 @@ export interface DataSetHistoryScope {
   namespace?: string
 }
 
-export interface DataSetHistorySelector {
+export interface DataSetSnapshotSelector {
   entryId?: string
   version?: number
 }
 
-export interface DataSetHistoryEntry {
+export interface DataSetHistorySnapshot {
   id: string
   version: number
   timestamp: number
@@ -37,7 +37,7 @@ export interface DataSetHistoryListOptions extends DataSetHistoryScope {
   adapter?: DataSetHistoryStorageAdapter | null
 }
 
-export interface DataSetHistoryCommitOptions extends DataSetHistoryListOptions {
+export interface DataSetSnapshotCommitOptions extends DataSetHistoryListOptions {
   maxEntries?: number
   label?: string
   summary?: string
@@ -46,12 +46,12 @@ export interface DataSetHistoryCommitOptions extends DataSetHistoryListOptions {
   timestamp?: number
 }
 
-export interface DataSetCommitVersionOptions extends Omit<DataSetHistoryCommitOptions, 'version'> {
+export interface DataSetCommitSnapshotOptions extends Omit<DataSetSnapshotCommitOptions, 'version'> {
   bumpVersion?: boolean
 }
 
 interface DataSetHistoryEnvelope {
-  entries: DataSetHistoryEntry[]
+  entries: DataSetHistorySnapshot[]
   nextSlot: number
   capacity: number
 }
@@ -68,14 +68,14 @@ function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
 }
 
-function compareEntriesByNewest(left: DataSetHistoryEntry, right: DataSetHistoryEntry): number {
+function compareEntriesByNewest(left: DataSetHistorySnapshot, right: DataSetHistorySnapshot): number {
   if (right.timestamp !== left.timestamp) {
     return right.timestamp - left.timestamp
   }
   return right.version - left.version
 }
 
-function compareEntriesByOldest(left: DataSetHistoryEntry, right: DataSetHistoryEntry): number {
+function compareEntriesByOldest(left: DataSetHistorySnapshot, right: DataSetHistorySnapshot): number {
   if (left.timestamp !== right.timestamp) {
     return left.timestamp - right.timestamp
   }
@@ -100,11 +100,11 @@ function normalizeNextSlot(value: unknown, entriesLength: number, capacity: numb
   return entriesLength
 }
 
-function sortEntriesByNewest(entries: DataSetHistoryEntry[]): DataSetHistoryEntry[] {
+function sortEntriesByNewest(entries: DataSetHistorySnapshot[]): DataSetHistorySnapshot[] {
   return entries.slice().sort(compareEntriesByNewest)
 }
 
-function sortEntriesByOldest(entries: DataSetHistoryEntry[]): DataSetHistoryEntry[] {
+function sortEntriesByOldest(entries: DataSetHistorySnapshot[]): DataSetHistorySnapshot[] {
   return entries.slice().sort(compareEntriesByOldest)
 }
 
@@ -122,7 +122,7 @@ function resizeEnvelope(envelope: DataSetHistoryEnvelope, capacity: number): Dat
 
 function appendEntryToEnvelope(
   envelope: DataSetHistoryEnvelope,
-  entry: DataSetHistoryEntry,
+  entry: DataSetHistorySnapshot,
 ): DataSetHistoryEnvelope {
   const entries = envelope.entries.slice()
 
@@ -168,7 +168,7 @@ function normalizeEnvelope(value: unknown): DataSetHistoryEnvelope {
     return { entries: [], nextSlot: 0, capacity: DEFAULT_HISTORY_LIMIT }
   }
 
-  const entries = rawEntries.filter((entry): entry is DataSetHistoryEntry => {
+  const entries = rawEntries.filter((entry): entry is DataSetHistorySnapshot => {
     if (!isRecord(entry)) return false
     return isNonEmptyString(entry['id'])
       && typeof entry['version'] === 'number'
@@ -230,7 +230,7 @@ function toSnapshot(dataSetOrSnapshot: IDataSet | IDataSetMetadata): IDataSetMet
     : cloneJson(dataSetOrSnapshot)
 }
 
-function getLatestVersion(entries: DataSetHistoryEntry[]): number {
+function getLatestVersion(entries: DataSetHistorySnapshot[]): number {
   let maxVersion = 0
   for (const entry of entries) {
     if (entry.version > maxVersion) {
@@ -275,10 +275,10 @@ export function resolveDataSetHistoryKey(scope: DataSetHistoryScope): string {
   return `${namespace}:${identity.trim()}`
 }
 
-export function listDataSetHistory(
+export function listDataSetSnapshots(
   scope: DataSetHistoryScope,
   options?: DataSetHistoryListOptions,
-): DataSetHistoryEntry[] {
+): DataSetHistorySnapshot[] {
   const adapter = resolveAdapter(options?.adapter)
   if (!adapter) return []
 
@@ -295,12 +295,12 @@ export function listDataSetHistory(
   return sortEntriesByNewest(readEnvelope(key, adapter).entries)
 }
 
-export function getDataSetHistoryEntry(
+export function getDataSetSnapshot(
   scope: DataSetHistoryScope,
-  selector: DataSetHistorySelector,
+  selector: DataSetSnapshotSelector,
   options?: DataSetHistoryListOptions,
-): DataSetHistoryEntry | null {
-  const entries = listDataSetHistory(scope, options)
+): DataSetHistorySnapshot | null {
+  const entries = listDataSetSnapshots(scope, options)
   if (isNonEmptyString(selector.entryId)) {
     return entries.find((entry) => entry.id === selector.entryId) ?? null
   }
@@ -310,10 +310,10 @@ export function getDataSetHistoryEntry(
   return entries[0] ?? null
 }
 
-export function commitDataSetHistory(
+export function commitDataSetSnapshot(
   dataSetOrSnapshot: IDataSet | IDataSetMetadata,
-  options?: DataSetHistoryCommitOptions,
-): DataSetHistoryEntry | null {
+  options?: DataSetSnapshotCommitOptions,
+): DataSetHistorySnapshot | null {
   const adapter = resolveAdapter(options?.adapter)
   if (!adapter) return null
 
@@ -343,7 +343,7 @@ export function commitDataSetHistory(
     ...(scope.pageId !== undefined ? { pageId: scope.pageId } : {}),
   }
 
-  const entry: DataSetHistoryEntry = {
+  const entry: DataSetHistorySnapshot = {
     id: `${resolvedVersion}-${resolvedTimestamp}`,
     version: resolvedVersion,
     timestamp: resolvedTimestamp,
@@ -359,8 +359,8 @@ export function commitDataSetHistory(
   return entry
 }
 
-export function formatPageDataHistoryEntry(
-  entry: DataSetHistoryEntry,
+export function formatPageDataSnapshot(
+  entry: DataSetHistorySnapshot,
   indentation = 2,
 ): string {
   if (entry.sourceData) {

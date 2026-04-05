@@ -12,16 +12,16 @@ import type { DataView as SparkDataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
 import type { IAppServicesCapability } from '@spark-view/spark-utils'
 import {
-  commitDataSetHistory,
-  getDataSetHistoryEntry,
-  listDataSetHistory,
+  commitDataSetSnapshot,
+  getDataSetSnapshot,
+  listDataSetSnapshots,
 } from './dataset-history'
 import type {
-  DataSetCommitVersionOptions,
-  DataSetHistoryEntry,
+  DataSetCommitSnapshotOptions,
+  DataSetHistorySnapshot,
   DataSetHistoryListOptions,
   DataSetHistoryScope,
-  DataSetHistorySelector,
+  DataSetSnapshotSelector,
 } from './dataset-history'
 import { DataTable } from './data-table'
 import { normalizeDataSetMetadata } from './metadata'
@@ -699,16 +699,16 @@ export class DataSet implements IDataSet {
     this._rebindActiveSubscriptions()
   }
 
-  listVersions(options?: DataSetHistoryListOptions): DataSetHistoryEntry[] {
-    return listDataSetHistory(buildDataSetHistoryScope(this, options), options)
+  listSnapshots(options?: DataSetHistoryListOptions): DataSetHistorySnapshot[] {
+    return listDataSetSnapshots(buildDataSetHistoryScope(this, options), options)
   }
 
-  getVersionEntry(selector: DataSetHistorySelector, options?: DataSetHistoryListOptions): DataSetHistoryEntry | null {
-    return getDataSetHistoryEntry(buildDataSetHistoryScope(this, options), selector, options)
+  getSnapshot(selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions): DataSetHistorySnapshot | null {
+    return getDataSetSnapshot(buildDataSetHistoryScope(this, options), selector, options)
   }
 
-  commitVersion(options?: DataSetCommitVersionOptions): DataSetHistoryEntry {
-    const latestHistoryVersion = this.listVersions(options)[0]?.version ?? 0
+  commitSnapshot(options?: DataSetCommitSnapshotOptions): DataSetHistorySnapshot {
+    const latestHistoryVersion = this.listSnapshots(options)[0]?.version ?? 0
     const timestamp = options?.timestamp ?? Date.now()
     const nextVersion = options?.bumpVersion === false
       ? Math.max(this.version ?? 0, latestHistoryVersion)
@@ -716,7 +716,7 @@ export class DataSet implements IDataSet {
 
     this.version = nextVersion
 
-    const committed = commitDataSetHistory(this, {
+    const committed = commitDataSetSnapshot(this, {
       ...options,
       dataSetName: this.dataSetName,
       ...(options?.pageId !== undefined
@@ -745,8 +745,8 @@ export class DataSet implements IDataSet {
     }
   }
 
-  restoreVersion(selector: DataSetHistorySelector, options?: DataSetHistoryListOptions): DataSetHistoryEntry | null {
-    const entry = this.getVersionEntry(selector, options)
+  restoreSnapshot(selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions): DataSetHistorySnapshot | null {
+    const entry = this.getSnapshot(selector, options)
     if (!entry) return null
     this.replaceFromJson(entry.snapshot)
     this.version = entry.version
