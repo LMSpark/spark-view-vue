@@ -216,7 +216,7 @@ export class DataSetCrudTool {
    */
   constructor(dataSetName: string) {
     // 从最小空配置创建 DataSet，后续对象全部通过本工具类逐步补齐。
-    this.dataSet = DataSet.fromConfig({
+    this.dataSet = DataSet.fromJson({
       dataSetName,
       tables: {},
     })
@@ -240,17 +240,8 @@ export class DataSetCrudTool {
    *
    * @returns 可用于持久化或传输的 DataSet 元数据。
    */
-  toData(): IDataSetMetadata {
-    return this.dataSet.toData()
-  }
-
-  /**
-   * 将当前 DataSet 序列化为 JSON 友好的对象。
-   *
-   * @returns DataSet 元数据对象。
-   */
-  toJSON(): IDataSetMetadata {
-    return this.dataSet.toJSON()
+  toJson(): IDataSetMetadata {
+    return this.dataSet.toJson()
   }
 
   // ====================

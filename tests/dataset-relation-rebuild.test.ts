@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { DataSet } from '@spark-view/spark-data'
 
 describe('DataSet relation rebuild', () => {
-  it('fromPageData 在关系图就绪后补挂级联订阅', () => {
-    const ds = DataSet.fromPageData({
+  it('fromJson 在关系图就绪后补挂级联订阅', () => {
+    const ds = DataSet.fromJson({
       dataset: {
         dataSetName: 'PageDataSet',
         tables: {
@@ -51,7 +51,7 @@ describe('DataSet relation rebuild', () => {
   })
 
   it('运行期 addRelation/addDependency 会重建内部关系图', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'RuntimeRelationDataSet',
       tables: {
         Departments: {

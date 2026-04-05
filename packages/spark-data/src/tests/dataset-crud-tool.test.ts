@@ -108,7 +108,7 @@ describe('DataSetCrudTool', () => {
     expect(table?.resourceId).toBeUndefined()
     expect(table?.businessCategory).toBe('reference')
 
-    const exported = tool.toData().tables['StatusOptions']
+    const exported = tool.toJson().tables['StatusOptions']
     expect(exported?.resourceType).toBe('logical-view')
     expect(exported?.resourceId).toBeUndefined()
     expect(exported?.businessCategory).toBe('reference')

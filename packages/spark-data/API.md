@@ -2,9 +2,13 @@
 
 ## SparkData 命名空间
 
-### 概览
+### DataKey 概览
 
 `SparkData` 是数据空间的统一入口，提供优雅的工厂方法来创建数据管理对象。
+
+公共 API 规矩：
+- `create*` 入口优先使用命名类型或位置参数，保持强约束、容易定位错误。
+- 宽输入、归一化、兼容性入口统一收口到 `fromJson(...)`。
 
 ```typescript
 import { SparkData } from '@spark-view/spark-data'
@@ -16,12 +20,15 @@ import { SparkData } from '@spark-view/spark-data'
 
 ### DataSet 管理
 
-#### `SparkData.createDataSet(config)`
+#### `SparkData.createDataSet(meta)`
 
 创建 DataSet 实例
 
+该入口是强约束入口，只接受 canonical `IDataSetMetadata`。
+如果输入是 JSON 字符串、pagedata 原始对象或 legacy 结构，请改用 `SparkData.fromJson(...)`。
+
 **参数：**
-- `config: IDataSet` - DataSet 配置
+- `meta: IDataSetMetadata` - canonical DataSet 元数据
 
 **返回：** `DataSet`
 
@@ -37,28 +44,32 @@ const dataSet = SparkData.createDataSet({
         { name: 'name', type: 'string' },
         { name: 'email', type: 'string' }
       ],
-      rows: [
-        { id: 1, name: 'Alice', email: 'alice@example.com' },
-        { id: 2, name: 'Bob', email: 'bob@example.com' }
-      ]
+      views: {
+        default: {
+          rows: [
+            { id: 1, name: 'Alice', email: 'alice@example.com' },
+            { id: 2, name: 'Bob', email: 'bob@example.com' }
+          ]
+        }
+      }
     }
   },
   // 数据关系配置
-  relations: [
+  tableRelations: [
     {
       parentTable: 'Departments',
-      parentViewId: 'deptGrid',
       childTable: 'Users',
-      childViewId: 'userGrid',
-      dependencyType: 'currentRow',
-      filterExpression: {
-        field: 'departmentId',
-        op: '==',
-        value: { func: 'parentRow.id', args: [] }
-      },
-      autoLoad: true,
+      childField: 'departmentId',
       cascadeDelete: true,
       relationName: 'dept-users'
+    }
+  ],
+  viewDependencies: [
+    {
+      parentTable: 'Departments',
+      childTable: 'Users',
+      dependencyType: 'currentRow',
+      autoLoad: true,
     }
   ]
 })
@@ -71,16 +82,17 @@ const dataSet = SparkData.createDataSet({
 #### DataRelation 配置
 
 DataRelation 定义父子视图之间的依赖关系，支持级联操作和动态过滤。
+公共辅助函数也遵循同一条规矩：直接接受命名类型对象，而不是匿名 options。
 
 **接口定义：**
 ```typescript
 interface DataRelation {
   parentTable: string             // 父表名（数据源标识）
   parentViewId?: string           // 父视图 ID（默认 'default'）
-  
+
   childTable: string              // 子表名（数据源标识）
   childViewId?: string            // 子视图 ID（默认 'default'）
-  
+
   dependencyType: DependencyType  // 依赖类型：'currentRow' | 'selectedRows' | 'allRows' | 'pagedRows'
   filterExpression: FilterExpression // 过滤表达式，定义如何从父上下文过滤子上下文
   cascadeUpdate?: boolean         // 是否级联更新
@@ -142,19 +154,20 @@ type FilterExpression =
 }
 ```
 
-#### `SparkData.fromJSON(json)`
+#### `SparkData.fromJson(json)`
 
-从 JSON 字符串恢复 DataSet
+从 JSON 字符串、canonical DataSet 对象或 pagedata 原始对象恢复 DataSet。
+该入口负责宽输入归一化；当你需要强约束类型检查时，请优先使用 `createDataSet(meta)`。
 
 **参数：**
-- `json: string` - JSON 字符串
+- `json: string | Record<string, unknown> | IDataSetMetadata` - JSON 字符串或对象
 
 **返回：** `DataSet`
 
 **示例：**
 ```typescript
 const jsonString = '{"dataSetName":"MyApp","tables":{...}}'
-const dataSet = SparkData.fromJSON(jsonString)
+const dataSet = SparkData.fromJson(jsonString)
 ```
 
 ---
@@ -196,23 +209,23 @@ const treeManager = SparkData.createTreeManager(
 
 ### DataView 管理
 
-#### `SparkData.createDataView(config)`
+#### `SparkData.createDataView(tableName, meta?)`
 
 创建 DataView 实例，用于数据绑定和视图管理
 
 **参数：**
-- `config.tableName: string` - 表名
-- `config.viewId?: string` - 视图 ID（默认：'default'）
+- `tableName: string` - 表名
+- `meta?: IViewMetadata` - 视图元数据
 
 **返回：** `DataView`
 
 **示例：**
 ```typescript
 // 基本使用
-const view = SparkData.createDataView({ tableName: 'Users' })
+const view = SparkData.createDataView('Users')
 
 // 指定上下文 ID
-const detailView = SparkData.createDataView({ tableName: 'Orders', viewId: 'detail' })
+const detailView = SparkData.createDataView('Orders', { viewId: 'detail' })
 ```
 
 ---
@@ -273,18 +286,22 @@ const dataSet = SparkData.createDataSet({
         { name: 'parentId', type: 'number' },
         { name: 'name', type: 'string' }
       ],
-      rows: []
+      views: {
+        default: {
+          rows: []
+        }
+      }
     }
   }
 })
 
 // 创建 DataView
-const dataView = SparkData.createDataView({ tableName: 'Departments' })
+const dataView = SparkData.createDataView('Departments')
 
 // 创建 TreeManager 并关联
 const treeManager = SparkData.createTreeManager(
   { idField: 'id', parentIdField: 'parentId' },
-  dataSet.getTable('Departments')?.rows || []
+  dataSet.getTable('Departments')?.views.default?.rows || []
 )
 
 // 双向绑定
@@ -299,7 +316,7 @@ const dataSet = SparkData.createDataSet(
 )
 
 // 通过 DataView.requestData() 加载表数据
-const view = SparkData.createDataView({ tableName: 'Users' })
+const view = SparkData.createDataView('Users')
 await view.requestData()
 ```
 

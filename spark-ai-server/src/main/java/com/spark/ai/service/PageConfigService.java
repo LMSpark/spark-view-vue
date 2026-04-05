@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.UncheckedIOException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * 页面配置文件 CRUD 服务 — 按 (tenantId, projectId) 隔离。
@@ -35,6 +37,12 @@ public class PageConfigService {
 
     /** 页面级内部元数据文件，用于在文件系统中标记当前版。 */
     private static final String PAGE_META_FILE = "__page-meta.json";
+
+    /** 项目根级元数据文件，用于 routes.json 等根文件的版本管理。 */
+    private static final String PROJECT_META_FILE = "__project-meta.json";
+
+    /** 页面级版本目录。 */
+    private static final String PAGE_VERSIONS_DIR = "__versions";
 
     private final ObjectMapper objectMapper;
     private final SseService sseService;
@@ -67,6 +75,11 @@ public class PageConfigService {
         return projectDir(tenantId, projectId).resolve("routes.json");
     }
 
+    /** 返回项目根级元数据文件路径：{configRoot}/{tenantId}/{projectId}/__project-meta.json */
+    private Path projectMetaFile(String tenantId, String projectId) {
+        return projectDir(tenantId, projectId).resolve(PROJECT_META_FILE);
+    }
+
     /** 返回文件路径：{configRoot}/{tenantId}/{projectId}/{pageId}/{filename} */
     private Path filePath(String tenantId, String projectId, String pageId, String filename) {
         return pageDir(tenantId, projectId, pageId).resolve(filename);
@@ -77,11 +90,37 @@ public class PageConfigService {
         return pageDir(tenantId, projectId, pageId).resolve(PAGE_META_FILE);
     }
 
+    /** 返回页面版本目录：{configRoot}/{tenantId}/{projectId}/{pageId}/__versions */
+    private Path pageVersionsDir(String tenantId, String projectId, String pageId) {
+        return pageDir(tenantId, projectId, pageId).resolve(PAGE_VERSIONS_DIR);
+    }
+
+    /** 返回页面版本文件：{configRoot}/{tenantId}/{projectId}/{pageId}/__versions/{version}.json */
+    private Path pageVersionFile(String tenantId, String projectId, String pageId, int version) {
+        return pageVersionsDir(tenantId, projectId, pageId).resolve(version + ".json");
+    }
+
     private record PageMeta(int currentVersion, long updatedAt, List<String> currentFiles) {
+    }
+
+    private record ProjectMeta(int currentVersion, long updatedAt, List<String> currentFiles) {
+    }
+
+    private record PageVersionRecord(
+        int version,
+        long updatedAt,
+        List<String> changedFiles,
+        Integer restoredFromVersion,
+        Map<String, String> files
+    ) {
     }
 
     private PageMeta defaultPageMeta() {
         return new PageMeta(0, 0L, List.of());
+    }
+
+    private ProjectMeta defaultProjectMeta() {
+        return new ProjectMeta(0, 0L, List.of());
     }
 
     private PageMeta readPageMeta(String tenantId, String projectId, String pageId) throws IOException {
@@ -105,6 +144,27 @@ public class PageConfigService {
         }
     }
 
+    private ProjectMeta readProjectMeta(String tenantId, String projectId) throws IOException {
+        Path metaPath = projectMetaFile(tenantId, projectId);
+        if (!Files.isRegularFile(metaPath)) {
+            return defaultProjectMeta();
+        }
+
+        try {
+            Map<String, Object> raw = objectMapper.readValue(
+                    Files.readString(metaPath, StandardCharsets.UTF_8),
+                    new TypeReference<Map<String, Object>>() {
+                    }
+            );
+            int currentVersion = asInt(raw.get("currentVersion"), 0);
+            long updatedAt = asLong(raw.get("updatedAt"), 0L);
+            List<String> currentFiles = normalizeRootCurrentFiles(raw.get("currentFiles"));
+            return new ProjectMeta(currentVersion, updatedAt, currentFiles);
+        } catch (Exception e) {
+            throw new IOException("项目根元数据损坏: " + tenantId + "/" + projectId + "/" + PROJECT_META_FILE, e);
+        }
+    }
+
     private void writePageMeta(String tenantId, String projectId, String pageId, PageMeta meta) throws IOException {
         Path metaPath = pageMetaFile(tenantId, projectId, pageId);
         Files.createDirectories(metaPath.getParent());
@@ -120,10 +180,151 @@ public class PageConfigService {
         Files.writeString(metaPath, json, StandardCharsets.UTF_8);
     }
 
+    private void writeProjectMeta(String tenantId, String projectId, ProjectMeta meta) throws IOException {
+        Path metaPath = projectMetaFile(tenantId, projectId);
+        Files.createDirectories(metaPath.getParent());
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("schemaVersion", 1);
+        payload.put("projectId", projectId);
+        payload.put("currentVersion", meta.currentVersion());
+        payload.put("updatedAt", meta.updatedAt());
+        payload.put("currentFiles", meta.currentFiles());
+
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload);
+        Files.writeString(metaPath, json, StandardCharsets.UTF_8);
+    }
+
     private PageMeta nextPageMeta(PageMeta current, Collection<String> writtenFiles) {
         List<String> currentFiles = new ArrayList<>(writtenFiles);
         Collections.sort(currentFiles);
         return new PageMeta(current.currentVersion() + 1, System.currentTimeMillis(), currentFiles);
+    }
+
+    private ProjectMeta nextProjectMeta(ProjectMeta current, Collection<String> writtenFiles) {
+        List<String> currentFiles = new ArrayList<>(writtenFiles);
+        currentFiles.sort(String::compareTo);
+        return new ProjectMeta(current.currentVersion() + 1, System.currentTimeMillis(), currentFiles);
+    }
+
+    private void writePageVersionRecord(
+            String tenantId,
+            String projectId,
+            String pageId,
+            PageVersionRecord versionRecord
+    ) throws IOException {
+        Path versionPath = pageVersionFile(tenantId, projectId, pageId, versionRecord.version());
+        Files.createDirectories(versionPath.getParent());
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("schemaVersion", 1);
+        payload.put("pageId", pageId);
+        payload.put("version", versionRecord.version());
+        payload.put("updatedAt", versionRecord.updatedAt());
+        payload.put("changedFiles", versionRecord.changedFiles());
+        if (versionRecord.restoredFromVersion() != null) {
+            payload.put("restoredFromVersion", versionRecord.restoredFromVersion());
+        }
+        payload.put("files", versionRecord.files());
+
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload);
+        Files.writeString(versionPath, json, StandardCharsets.UTF_8);
+    }
+
+    private PageVersionRecord readPageVersionRecord(
+            String tenantId,
+            String projectId,
+            String pageId,
+            int version
+    ) throws IOException {
+        Path versionPath = pageVersionFile(tenantId, projectId, pageId, version);
+        if (!Files.isRegularFile(versionPath)) {
+            throw new NoSuchFileException(pageId + "/" + PAGE_VERSIONS_DIR + "/" + version + ".json");
+        }
+
+        try {
+            Map<String, Object> raw = objectMapper.readValue(
+                    Files.readString(versionPath, StandardCharsets.UTF_8),
+                    new TypeReference<Map<String, Object>>() {
+                    }
+            );
+            int snapshotVersion = asInt(raw.get("version"), version);
+            long updatedAt = asLong(raw.get("updatedAt"), 0L);
+            List<String> changedFiles = normalizeCurrentFiles(raw.get("changedFiles"));
+            Integer restoredFromVersion = asNullableInt(raw.get("restoredFromVersion"));
+            Map<String, String> files = normalizeSnapshotFiles(raw.get("files"));
+            return new PageVersionRecord(snapshotVersion, updatedAt, changedFiles, restoredFromVersion, files);
+        } catch (Exception e) {
+            throw new IOException("页面版本文件损坏: " + pageId + "/" + PAGE_VERSIONS_DIR + "/" + version + ".json", e);
+        }
+    }
+
+    private Map<String, String> normalizeSnapshotFiles(Object value) {
+        if (!(value instanceof Map<?, ?> rawMap)) {
+            return Map.of();
+        }
+
+        List<String> filenames = new ArrayList<>(ALLOWED_FILES);
+        filenames.sort(String::compareTo);
+
+        Map<String, String> result = new LinkedHashMap<>();
+        for (String filename : filenames) {
+            Object content = rawMap.get(filename);
+            if (content instanceof String text) {
+                result.put(filename, text);
+            }
+        }
+        return result;
+    }
+
+    private Map<String, String> readCurrentPageFiles(String tenantId, String projectId, String pageId) throws IOException {
+        List<String> filenames = new ArrayList<>(ALLOWED_FILES);
+        filenames.sort(String::compareTo);
+
+        Map<String, String> result = new LinkedHashMap<>();
+        for (String filename : filenames) {
+            Path fp = filePath(tenantId, projectId, pageId, filename);
+            if (Files.isRegularFile(fp)) {
+                result.put(filename, Files.readString(fp, StandardCharsets.UTF_8));
+            }
+        }
+        return result;
+    }
+
+    private void archivePageVersion(
+            String tenantId,
+            String projectId,
+            String pageId,
+            PageMeta meta,
+            Collection<String> changedFiles,
+            Integer restoredFromVersion
+    ) throws IOException {
+        Map<String, String> currentFiles = readCurrentPageFiles(tenantId, projectId, pageId);
+            writePageVersionRecord(
+                tenantId,
+                projectId,
+                pageId,
+                new PageVersionRecord(
+                        meta.currentVersion(),
+                        meta.updatedAt(),
+                        normalizeCurrentFiles(changedFiles),
+                        restoredFromVersion,
+                        currentFiles
+                )
+        );
+    }
+
+    private int parseVersionFileName(String filename) {
+        if (filename == null || !filename.endsWith(".json")) {
+            return -1;
+        }
+
+        String numericPart = filename.substring(0, filename.length() - 5);
+        try {
+            return Integer.parseInt(numericPart);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     private List<String> normalizeCurrentFiles(Object value) {
@@ -136,6 +337,24 @@ public class PageConfigService {
                 continue;
             }
             if (!ALLOWED_FILES.contains(filename)) {
+                continue;
+            }
+            result.add(filename);
+        }
+        result.sort(String::compareTo);
+        return result;
+    }
+
+    private List<String> normalizeRootCurrentFiles(Object value) {
+        if (!(value instanceof Collection<?> collection)) {
+            return List.of();
+        }
+        List<String> result = new ArrayList<>();
+        for (Object item : collection) {
+            if (!(item instanceof String filename)) {
+                continue;
+            }
+            if (!"routes.json".equals(filename)) {
                 continue;
             }
             result.add(filename);
@@ -179,6 +398,77 @@ public class PageConfigService {
         return Map.of("content", content, "timestamp", serverTimestamp, "currentVersion", currentVersion);
     }
 
+    public List<Map<String, Object>> listPageVersions(String tenantId, String projectId, String pageId) throws IOException {
+        validatePageId(pageId);
+
+        Path versionsDir = pageVersionsDir(tenantId, projectId, pageId);
+        if (!Files.isDirectory(versionsDir)) {
+            return List.of();
+        }
+
+        int currentVersion = readPageMeta(tenantId, projectId, pageId).currentVersion();
+        List<Map<String, Object>> result = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(versionsDir, "*.json")) {
+            for (Path child : stream) {
+                int version = parseVersionFileName(child.getFileName().toString());
+                if (version <= 0) {
+                    continue;
+                }
+                PageVersionRecord versionRecord = readPageVersionRecord(tenantId, projectId, pageId, version);
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("version", versionRecord.version());
+                item.put("updatedAt", versionRecord.updatedAt());
+                item.put("changedFiles", versionRecord.changedFiles());
+                item.put("current", versionRecord.version() == currentVersion);
+                if (versionRecord.restoredFromVersion() != null) {
+                    item.put("restoredFromVersion", versionRecord.restoredFromVersion());
+                }
+                result.add(item);
+            }
+        }
+
+        result.sort((left, right) -> Integer.compare(
+                asInt(right.get("version"), 0),
+                asInt(left.get("version"), 0)
+        ));
+        return result;
+    }
+
+    public Map<String, Object> readPageVersionFile(
+            String tenantId,
+            String projectId,
+            String pageId,
+            int version,
+            String filename
+    ) throws IOException {
+        validatePageId(pageId);
+        validateFilename(filename);
+        if (version <= 0) {
+            throw new IllegalArgumentException("无效的版本号: " + version);
+        }
+
+        PageVersionRecord versionRecord = readPageVersionRecord(tenantId, projectId, pageId, version);
+        String content = versionRecord.files().get(filename);
+        if (content == null) {
+            throw new NoSuchFileException(pageId + "/" + PAGE_VERSIONS_DIR + "/" + version + "/" + filename);
+        }
+
+        int currentVersion = readPageMeta(tenantId, projectId, pageId).currentVersion();
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("pageId", pageId);
+        payload.put("filename", filename);
+        payload.put("version", versionRecord.version());
+        payload.put("updatedAt", versionRecord.updatedAt());
+        payload.put("content", content);
+        payload.put("changedFiles", versionRecord.changedFiles());
+        payload.put("currentVersion", currentVersion);
+        payload.put("current", versionRecord.version() == currentVersion);
+        if (versionRecord.restoredFromVersion() != null) {
+            payload.put("restoredFromVersion", versionRecord.restoredFromVersion());
+        }
+        return payload;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // 写入（单文件）
     // ─────────────────────────────────────────────────────────────────────────
@@ -196,6 +486,7 @@ public class PageConfigService {
         PageMeta currentMeta = readPageMeta(tenantId, projectId, pageId);
         PageMeta nextMeta = nextPageMeta(currentMeta, List.of(filename));
         writePageMeta(tenantId, projectId, pageId, nextMeta);
+        archivePageVersion(tenantId, projectId, pageId, nextMeta, List.of(filename), null);
 
         String timestamp = String.valueOf(Files.getLastModifiedTime(fp).toMillis());
         sseService.broadcast(pageId, filename);
@@ -231,6 +522,7 @@ public class PageConfigService {
                 : nextPageMeta(currentMeta, written);
         if (!written.isEmpty()) {
             writePageMeta(tenantId, projectId, pageId, nextMeta);
+            archivePageVersion(tenantId, projectId, pageId, nextMeta, written, null);
         }
 
         sseService.broadcast(pageId, "__batch");
@@ -258,16 +550,24 @@ public class PageConfigService {
             throw new IllegalArgumentException("不允许读取根级文件: " + filename);
         }
 
+        int currentVersion = readProjectMeta(tenantId, projectId).currentVersion();
+
         Path routes = routesFile(tenantId, projectId);
 
         if (Files.isRegularFile(routes)) {
             String timestamp = String.valueOf(Files.getLastModifiedTime(routes).toMillis());
             if (clientTimestamp != null && clientTimestamp.equals(timestamp)) {
-                return Map.of("notModified", true, "timestamp", timestamp, "content", "");
+                return Map.of(
+                        "notModified", true,
+                        "timestamp", timestamp,
+                        "content", "",
+                        "currentVersion", currentVersion
+                );
             }
             return Map.of(
                     "content", Files.readString(routes, StandardCharsets.UTF_8),
-                    "timestamp", timestamp
+                    "timestamp", timestamp,
+                    "currentVersion", currentVersion
             );
         }
 
@@ -275,9 +575,18 @@ public class PageConfigService {
         String timestamp = String.valueOf(content.hashCode());
 
         if (clientTimestamp != null && clientTimestamp.equals(timestamp)) {
-            return Map.of("notModified", true, "timestamp", timestamp, "content", "");
+            return Map.of(
+                    "notModified", true,
+                    "timestamp", timestamp,
+                    "content", "",
+                    "currentVersion", currentVersion
+            );
         }
-        return Map.of("content", content, "timestamp", timestamp);
+        return Map.of(
+                "content", content,
+                "timestamp", timestamp,
+                "currentVersion", currentVersion
+        );
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -365,10 +674,57 @@ public class PageConfigService {
 
         PageMeta meta = nextPageMeta(defaultPageMeta(), written);
         writePageMeta(tenantId, projectId, pageId, meta);
+        archivePageVersion(tenantId, projectId, pageId, meta, written, null);
 
         sseService.broadcast(pageId, "__batch");
         log.info("[PageConfig] 创建页面: pageId={}, title={}", pageId, title);
         return Map.of("ok", true, "pageId", pageId, "written", written, "currentVersion", meta.currentVersion());
+    }
+
+    public Map<String, Object> restorePageVersion(
+            String tenantId,
+            String projectId,
+            String pageId,
+            int version
+    ) throws IOException {
+        validatePageId(pageId);
+        if (version <= 0) {
+            throw new IllegalArgumentException("无效的版本号: " + version);
+        }
+
+        PageVersionRecord versionRecord = readPageVersionRecord(tenantId, projectId, pageId, version);
+        Path dir = pageDir(tenantId, projectId, pageId);
+        Files.createDirectories(dir);
+
+        List<String> filenames = new ArrayList<>(ALLOWED_FILES);
+        filenames.sort(String::compareTo);
+        for (String filename : filenames) {
+            Path target = dir.resolve(filename);
+            String content = versionRecord.files().get(filename);
+            if (content == null) {
+                Files.deleteIfExists(target);
+                continue;
+            }
+            Files.writeString(target, content, StandardCharsets.UTF_8);
+        }
+
+        PageMeta currentMeta = readPageMeta(tenantId, projectId, pageId);
+    PageMeta nextMeta = nextPageMeta(currentMeta, versionRecord.files().keySet());
+        writePageMeta(tenantId, projectId, pageId, nextMeta);
+    archivePageVersion(tenantId, projectId, pageId, nextMeta, versionRecord.files().keySet(), version);
+
+        sseService.broadcast(pageId, "__batch");
+        log.info("[PageConfig] 恢复页面版本: pageId={}, fromVersion={}, currentVersion={}",
+                pageId, version, nextMeta.currentVersion());
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("ok", true);
+        payload.put("pageId", pageId);
+        payload.put("restoredFromVersion", version);
+        payload.put("currentVersion", nextMeta.currentVersion());
+        payload.put("written", normalizeCurrentFiles(versionRecord.files().keySet()));
+        payload.put("updatedAt", nextMeta.updatedAt());
+        return payload;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -383,13 +739,20 @@ public class PageConfigService {
         Path dir = pageDir(tenantId, projectId, pageId);
         List<String> deleted = new ArrayList<>();
         if (Files.isDirectory(dir)) {
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                for (Path f : stream) {
-                    deleted.add(f.getFileName().toString());
-                    Files.deleteIfExists(f);
-                }
+            try (Stream<Path> walk = Files.walk(dir)) {
+                walk.sorted(Comparator.reverseOrder()).forEach(path -> {
+                    if (!path.equals(dir)) {
+                        deleted.add(dir.relativize(path).toString().replace('\\', '/'));
+                    }
+                    try {
+                        Files.deleteIfExists(path);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
             }
-            Files.deleteIfExists(dir);
         }
 
         sseService.broadcast(pageId, "__deleted");
@@ -551,13 +914,23 @@ public class PageConfigService {
             Files.createDirectories(routesPath.getParent());
             String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(normalized);
             Files.writeString(routesPath, json, StandardCharsets.UTF_8);
+
+            ProjectMeta currentMeta = readProjectMeta(tenantId, projectId);
+            ProjectMeta nextMeta = nextProjectMeta(currentMeta, List.of("routes.json"));
+            writeProjectMeta(tenantId, projectId, nextMeta);
+
+            log.info("[PageConfig] 静态路由同步完成: created={}, updated={}, total={}, currentVersion={}",
+                    created, updated, synced.size(), nextMeta.currentVersion());
+            return Map.of(
+                    "ok", true,
+                    "created", created,
+                    "updated", updated,
+                    "synced", synced,
+                    "currentVersion", nextMeta.currentVersion()
+            );
         } catch (IOException e) {
             throw new IllegalArgumentException("写入 routes.json 失败: " + e.getMessage(), e);
         }
-
-        log.info("[PageConfig] 静态路由同步完成: created={}, updated={}, total={}",
-                created, updated, synced.size());
-        return Map.of("ok", true, "created", created, "updated", updated, "synced", synced);
     }
 
     private String asTrimmedString(Object value) {
@@ -579,6 +952,14 @@ public class PageConfigService {
             }
         }
         return fallback;
+    }
+
+    private Integer asNullableInt(Object value) {
+        if (value == null) {
+            return null;
+        }
+        int parsed = asInt(value, Integer.MIN_VALUE);
+        return parsed == Integer.MIN_VALUE ? null : parsed;
     }
 
     private long asLong(Object value, long fallback) {

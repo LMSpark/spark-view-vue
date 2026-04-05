@@ -2,7 +2,7 @@
  * 根测试层 DataSet JSON 提示词验证测试
  *
  * 把 docs/ai/prompts/data/DATASET_JSON_PROMPT.md 中的所有完整验证案例 JSON
- * 用 DataSet.fromPageData() 实例化，自动验证：
+ * 用 DataSet.fromJson() 实例化，自动验证：
  *  1. 能成功实例化（不抛出错误）
  *  2. 视图（DataView）行数据正确
  *  3. 内存级联正确（setCurrentRow → 子视图过滤）
@@ -29,7 +29,7 @@ const f = (row: IDataRow | undefined | null, field: string): unknown => row?.[fi
  * 这是提示词最终输出的 JSON 的正确消费方式。
  */
 function fromPromptJson(json: Record<string, unknown>): DataSet {
-  return DataSet.fromPageData(json)
+  return DataSet.fromJson(json)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ const CASE_A_JSON = {
 }
 
 describe('PROMPT 验证 — 案例 A: 图书馆管理', () => {
-  it('A-1: fromPageData 成功实例化 DataSet', () => {
+  it('A-1: fromJson 成功实例化 DataSet', () => {
     expect(() => fromPromptJson(CASE_A_JSON)).not.toThrow()
     const ds = fromPromptJson(CASE_A_JSON)
     expect(ds.dataSetName).toBe('LibraryDataSet')
@@ -228,7 +228,7 @@ const CASE_B_JSON = {
 }
 
 describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
-  it('B-1: fromPageData 成功实例化 DataSet', () => {
+  it('B-1: fromJson 成功实例化 DataSet', () => {
     expect(() => fromPromptJson(CASE_B_JSON)).not.toThrow()
   })
 
@@ -369,7 +369,7 @@ const EXAMPLE_9_JSON = {
 }
 
 describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
-  it('E9-1: fromPageData 成功实例化 DataSet', () => {
+  it('E9-1: fromJson 成功实例化 DataSet', () => {
     expect(() => fromPromptJson(EXAMPLE_9_JSON)).not.toThrow()
   })
 
@@ -503,7 +503,7 @@ const CASE_C_JSON = {
 }
 
 describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
-  it('C-1: fromPageData 成功实例化（含 api + autoLoad 配置）', () => {
+  it('C-1: fromJson 成功实例化（含 api + autoLoad 配置）', () => {
     expect(() => fromPromptJson(CASE_C_JSON)).not.toThrow()
   })
 
@@ -641,7 +641,7 @@ const CASE_G_JSON = {
 }
 
 describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', () => {
-  it('G-1: fromPageData 成功实例化', () => {
+  it('G-1: fromJson 成功实例化', () => {
     expect(() => fromPromptJson(CASE_G_JSON)).not.toThrow()
   })
 
@@ -846,7 +846,7 @@ const CASE_H_JSON = {
 }
 
 describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', () => {
-  it('H-1: fromPageData 成功实例化，三张表均存在', () => {
+  it('H-1: fromJson 成功实例化，三张表均存在', () => {
     const ds = fromPromptJson(CASE_H_JSON)
     expect(ds).toBeTruthy()
     expect(ds.getTable('Warehouses')).toBeTruthy()
@@ -1037,7 +1037,7 @@ const CASE_I_JSON = {
 }
 
 describe('Case I：标准提示词模板自测 - 物业管理系统（三级层次）', () => {
-  it('I-1: fromPageData 成功实例化，三张表均存在', () => {
+  it('I-1: fromJson 成功实例化，三张表均存在', () => {
     const ds = fromPromptJson(CASE_I_JSON)
     expect(ds).toBeTruthy()
     expect(ds.getTable('Communities')).toBeTruthy()

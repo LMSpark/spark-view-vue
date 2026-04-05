@@ -75,9 +75,9 @@ function setupMockApi(view: DataView) {
 
   const table = view.dataTable!
   table.api = api
-   
+
   ;(table as any)._crudService = mockCrud   // 注入 mock（绕过只读 getter）
-   
+
   ;(view as any)._crudDelegate = undefined  // 重置懒初始化，下次调用时使用新 crudService
 
   return mockCrud
@@ -146,14 +146,14 @@ describe('commitMode: basic field semantics', () => {
     expect(ds.getView('T', 'default')!.commitMode).toBe('staged')
   })
 
-  it('toData serializes commitMode only when non-default', () => {
+  it('toJson serializes commitMode only when non-default', () => {
     const { view } = createImmediateView()
-    const data = view.toData()
+    const data = view.toJson()
     expect(data.commitMode).toBeUndefined()
     expect(data.autoCommit).toBeUndefined()
 
     const { view: stagedView } = createStagedView()
-    const stagedData = stagedView.toData()
+    const stagedData = stagedView.toJson()
     expect(stagedData.commitMode).toBe('staged')
   })
 })

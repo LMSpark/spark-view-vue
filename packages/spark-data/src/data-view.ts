@@ -385,7 +385,7 @@ export class DataView implements IDataSource {
    * 确保 `_pk` 列元数据存在于 `table.columns` 和 `_columnMap` 中。
    *
    * - 已存在时替换（PK 配置可能变化导致 type 不同）
-   * - `table.columns` 保证运行时元数据完整；`toData()` 通过 `isComputed` 过滤排除
+  * - `table.columns` 保证运行时元数据完整；`toJson()` 通过 `isComputed` 过滤排除
    */
   private _ensurePkColumnMeta(table: DataTable): void {
     const meta = this._primaryKeyDelegate.getPkColumnMeta()
@@ -821,18 +821,18 @@ export class DataView implements IDataSource {
 
     this.requestState = RequestState.Loading
     this.loadingError = null
-    
+
     const requestId = ++this.currentLoadRequestId
 
     try {
       const loadParams = this.buildTreeModeParams(params)
       const result = await this.crudDelegate.list(loadParams)
-      
+
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadFromServer 请求 ${requestId} 被更新的请求 ${this.currentLoadRequestId} 替代，忽略响应`)
         return { success: false, message: 'Request superseded' }
       }
-      
+
       if (result.success && result.data !== undefined) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         this.selectionDelegate.applyAutoFirst()
@@ -849,7 +849,7 @@ export class DataView implements IDataSource {
         this.logger.debug(`loadFromServer 请求 ${requestId} 异常被忽略（已被新请求替代）`)
         return { success: false, message: 'Request superseded' }
       }
-      
+
       this.loadingError = toError(error)
       this.requestState = RequestState.Failed
       this.events.emit('requestStateChanged', this.requestState)
@@ -1258,29 +1258,29 @@ export class DataView implements IDataSource {
    */
   destroy(): void {
     if (this._isDestroyed) return
-    
+
     this.logger.debug(`销毁 DataView: ${this.tableName}:${this.viewId}`)
-    
+
     // 1. 销毁级联委托（清理订阅 + 取消待处理请求）
     this._cascadeDelegate?.destroy()
     this._cascadeDelegate = undefined
-    
+
     // 2. 销毁 CRUD 委托（释放 CrudService）
     this._crudDelegate?.destroy()
     this._crudDelegate = undefined
-    
+
     // 3. 清除防抖定时器
     if (this.stateChangedDebouncer) {
       clearTimeout(this.stateChangedDebouncer)
       this.stateChangedDebouncer = undefined
     }
-    
+
     // 4. 清理事件监听器（Batch 2 已扩展 IEventEmitter.removeAllListeners）
     this.events.removeAllListeners()
-    
+
     // 5. 清空数据
     this.resetState()
-    
+
     // 6. 清除计算列委托（内部清理跨表订阅 + 缓存 + 上下文）
     this._computedDelegate.destroy()
 
@@ -1293,11 +1293,11 @@ export class DataView implements IDataSource {
 
     // 9. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
     this.treeManager = undefined
-    
+
     // 10. 保留 DataTable 引用（现代 JS GC 能正确处理循环引用）。
     // Phase 4 M6: 不再 undefined dataTable，避免销毁后访问 getter（dataSet/crudService 等）
     // 抛出不明确的 "Cannot read property of undefined" 而非清晰的 "已销毁" 错误。
-    
+
     // 11. 标记为已销毁
     this._isDestroyed = true
   }
@@ -1319,7 +1319,7 @@ export class DataView implements IDataSource {
     if (!this._dataTable) {
       throw new Error(
         `DataView ${this.tableName}:${this.viewId} 尚未关联 DataTable，` +
-        `请通过 DataTable.getOrCreateView() 或 DataSet.fromConfig() 创建视图。`
+        `请通过 DataTable.getOrCreateView() 或 DataSet.fromJson() 创建视图。`
       )
     }
     return this._dataTable
@@ -1402,13 +1402,15 @@ export class DataView implements IDataSource {
     this.selectionDelegate.applyAutoFirst()
   }
 
-  toData(): IViewMetadata {
+  toJson(): IViewMetadata {
+    const serializedRows = this.rows.map((row) => this.stripComputedColumns(row) as IDataRow)
+
     const result: IViewMetadata = {
       tableName: this.tableName,
       viewId: this.viewId,
       page: this.page,
       pageSize: this.pageSize,
-      rows: this.rows,
+      rows: serializedRows,
     }
     if (this.filterExpression !== undefined) result.filterExpression = this.filterExpression
     if (this.sortExpression !== undefined) result.sortExpression = this.sortExpression
@@ -1426,7 +1428,7 @@ export class DataView implements IDataSource {
     return result
   }
 
-  static fromData(data: IViewMetadata, tableName: string, viewId: string): DataView {
+  static fromJson(data: IViewMetadata, tableName: string, viewId: string): DataView {
     const v = DataView.create(tableName, viewId)
     if (data.rows !== undefined) v.rows = [...data.rows]
     v.applyViewConfig(data)

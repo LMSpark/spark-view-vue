@@ -8,7 +8,7 @@
  * 设计原则：
  * - session state 持有真实 DataSet 实例，而不是元数据投影；
  * - still 层只负责编排、guard、参数校验、错误映射；
- * - 导出/序列化通过 DataSet.toData() / toJSON() 完成。
+ * - 导出/序列化通过 DataSet.toJson() 完成。
  */
 
 import type {
@@ -463,7 +463,7 @@ function projectDataSetSnapshot(dataset: DataSet): ProjectedPayload<{
   return {
     data: {
       status: 'ok',
-      snapshot: cloneJsonValue(dataset.toData()) as unknown as Record<string, unknown>,
+      snapshot: cloneJsonValue(dataset.toJson()) as unknown as Record<string, unknown>,
     },
     summary: `导出 DataSet: ${dataset.dataSetName}`,
   }
@@ -550,7 +550,7 @@ function describeViewInstance(view: DataView): ProjectedPayload<{
     data: {
       tableName: view.tableName,
       viewId: view.viewId,
-      config: view.toData(),
+      config: view.toJson(),
       viewIds: Object.keys(table.views),
     },
     summary: `视图 ${view.tableName}:${view.viewId}`,
@@ -569,7 +569,7 @@ function projectViewConfiguration(
     data: {
       tableName: view.tableName,
       viewId: view.viewId,
-      config: view.toData(),
+      config: view.toJson(),
     },
     summary: `配置视图 ${view.tableName}:${view.viewId}（${changedKeys.join(', ')}）`,
   }
@@ -917,7 +917,7 @@ const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
       return { ok: false, code: 'DATASET_EXISTS', msg: 'Dataset 已存在', fix: '如需重建请先 dataset.reset' }
     }
     state.data = createWorkingDataSet(params.dataSetName)
-    const snapshot = state.data.toData()
+    const snapshot = state.data.toJson()
     // 与外层设计工作流保持一致：dataset 初始化完成后进入结构设计阶段。
     state.phase = 'design'
     return {

@@ -4,7 +4,7 @@ import { DataSet } from '@spark-view/spark-data'
 
 describe('usePageDataSet - DataSet 生命周期管理', () => {
   it('接受已编译的 DataSet 实例并正确存储', () => {
-    const ds = DataSet.fromPageData({
+    const ds = DataSet.fromJson({
       stats: {
         totalUsers: 8523,
         todayOrders: 145,
@@ -43,14 +43,14 @@ describe('usePageDataSet - DataSet 生命周期管理', () => {
   })
 
   it('enableDataSet 为 false 时 initDataSet 不存储', () => {
-    const ds = DataSet.fromPageData({ foo: 'bar' })
+    const ds = DataSet.fromJson({ foo: 'bar' })
     const pds = usePageDataSet({ enableDataSet: false })
     pds.initDataSet(ds)
     expect(pds.dataSet).toBeNull()
   })
 
   it('clearDataSet 清除已存储的实例', () => {
-    const ds = DataSet.fromPageData({ foo: 'bar' })
+    const ds = DataSet.fromJson({ foo: 'bar' })
     const pds = usePageDataSet({ enableDataSet: true })
     pds.initDataSet(ds)
     expect(pds.dataSet).toBe(ds)

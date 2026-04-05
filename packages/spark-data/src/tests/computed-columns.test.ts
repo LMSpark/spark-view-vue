@@ -65,7 +65,7 @@ function makeTestDS(
     ...aggregateMap,
   }
 
-  const ds = DataSet.fromConfig({
+  const ds = DataSet.fromJson({
     dataSetName: 'TestDS',
     tables: {
       Orders: {
@@ -476,7 +476,7 @@ describe('聚合动态行编辑', () => {
     { name: 'cnt',   type: 'number', computeExpression: "$count('Items')" },
   ]
 
-  it('fromConfig 后聚合即已求值', () => {
+  it('fromJson 后聚合即已求值', () => {
     const { orders } = makeTestDS(AGG_COLS)
     expect(f(orders.rows[0], 'total')).toBe(350)
     expect(f(orders.rows[0], 'cnt')).toBe(3)
@@ -617,7 +617,7 @@ describe('运行时错误降级', () => {
 // 11. 边界条件
 // ─────────────────────────────────────────────────────────────────────────────
 describe('边界条件', () => {
-  it('DataSet.fromConfig 自动编译 + 求值（无需手动触发）', () => {
+  it('DataSet.fromJson 自动编译 + 求值（无需手动触发）', () => {
     const { orders } = makeTestDS([{ name: 'total', type: 'number', computeExpression: 'price * qty' }])
     expect(f(orders.rows[0], 'total')).toBe(600) // 100*6
     expect(f(orders.rows[1], 'total')).toBe(100) // 50*2

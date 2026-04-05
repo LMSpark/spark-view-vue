@@ -5,7 +5,7 @@
  *  - 表元数据：管理 tableName、columns、resourceType/resourceId/businessCategory、api、crudConfig（不含具体数据）
  *  - 视图容器：维护 default 与命名视图的集合（不遍历、不协调、不关心运行时状态）
  *  - 配置中心：提供 api 和 crudConfig 给 DataView 使用
- *  - 序列化：提供 toData()/fromTableData 用于持久化与恢复
+ *  - 序列化：提供 toJson()/fromJson 用于持久化与恢复
  *
  * 设计要点：
  *  - 纯结构定义，不包含任何数据操作（数据操作在 DataView）
@@ -195,7 +195,7 @@ export class DataTable {
    * - 设置 `this.dataSet = ds`
    * - 为已存在的所有视图建立级联订阅
    *
-   * 注意：`view.dataTable` 在视图创建时（构造函数 / getOrCreateView / fromTableData）
+  * 注意：`view.dataTable` 在视图创建时（构造函数 / getOrCreateView / fromJson）
    * 已确保赋值，此处不重复赋值，避免触发冗余的 syncFromConfig()。
    */
   setDataSet(ds: DataSet): void {
@@ -285,10 +285,10 @@ export class DataTable {
   /**
    * 将 DataTable 序列化为 canonical ITableMetadata（表核 + views 壳）。
    */
-  toData(): ITableMetadata {
+  toJson(): ITableMetadata {
     const viewsData = {} as ITableMetadata['views']
     for (const [id, view] of Object.entries(this.views)) {
-      viewsData[id] = view.toData()
+      viewsData[id] = view.toJson()
     }
 
     return {
@@ -427,7 +427,7 @@ export class DataTable {
   /**
    * 从表元数据恢复 DataTable。
    */
-  static fromTableData(data: ITableMetadata): DataTable {
+  static fromJson(data: ITableMetadata): DataTable {
     const normalized = normalizeTableMetadata(data)
     const t = new DataTable(normalized.tableName, normalized.columns)
     // P2: API 简写展开（字符串 / true → CrudApi 对象）
@@ -459,7 +459,7 @@ export class DataTable {
     // 处理命名视图（非 default）
     for (const [cid, cd] of Object.entries(normalized.views)) {
       if (cid === 'default') continue
-      const namedView = DataView.fromData(cd, t.tableName, cid)
+      const namedView = DataView.fromJson(cd, t.tableName, cid)
       namedView.dataTable = t   // 确保 primaryKey getter 可访问列定义
       t.views[cid] = namedView
     }

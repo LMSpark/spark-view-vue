@@ -55,7 +55,7 @@ export function normalizeDataSetMetadata(input: IDataSetMetadata): IDataSetMetad
     tables: normalizedTables,
     ...(input.tableRelations !== undefined ? { tableRelations: input.tableRelations } : {}),
     ...(input.viewDependencies !== undefined ? { viewDependencies: input.viewDependencies } : {}),
-    version: input.version,
-    pageId: input.pageId,
+    ...(input.version !== undefined ? { version: input.version } : {}),
+    ...(input.pageId !== undefined ? { pageId: input.pageId } : {}),
   }
 }

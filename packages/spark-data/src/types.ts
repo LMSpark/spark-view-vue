@@ -290,7 +290,7 @@ export interface DataColumn {
   /**
    * 是否为框架计算列（如 `_pk`）。
    *
-   * 计算列的值由框架自动维护，不参与序列化（`DataTable.toData()` 自动排除）。
+  * 计算列的值由框架自动维护，不参与序列化（`DataTable.toJson()` 自动排除）。
    * UI 组件可通过 `columns.filter(c => !c.isComputed)` 获取用户定义列。
    */
   isComputed?: boolean
@@ -345,7 +345,7 @@ export interface DataColumn {
    * `"ctx.taxRate ? amount * ctx.taxRate : amount"`
    * `"$sum('OrderItems', 'amount')"`
    * `"$sum('OrderItems@grid', 'amount')"`
-   * `"$count('OrderItems')"` 
+   * `"$count('OrderItems')"`
    */
   computeExpression?: string
 }
@@ -556,8 +556,9 @@ export interface IViewMetadata {
  * 数据表元数据（对应 DataTable 核）
  *
  * 表级关注点：表名、列定义、CRUD API、CRUD 配置和视图集合。
- * 所有视图配置均进入 `views`，包括 `default`；
- * 不再将 default 视图字段扁平提升到表级。
+ * 以实体序列化结果 `DataTable.toJson()` 为准：
+ * - 所有默认视图字段均必须进入 `views.default`
+ * - 表级不再承载 `rows / autoCurrentFirst / autoSelectFirst / page / pageSize` 等视图字段
  */
 export interface ITableMetadata extends TableSemanticMetadata {
   tableName: string
@@ -575,7 +576,11 @@ export interface ITableMetadata extends TableSemanticMetadata {
   views: { default: IViewMetadata } & Record<string, IViewMetadata>
 }
 
-/** 数据集元数据 */
+/**
+ * 数据集元数据（对应 DataSet.toJson() 输出）
+ *
+ * 顶层只承载数据集自身字段；表的默认视图数据必须继续下沉到 `tables.*.views.default`。
+ */
 export interface IDataSetMetadata {
   /**
    * Schema 格式版本（用于未来迁移兼容）。
@@ -590,8 +595,8 @@ export interface IDataSetMetadata {
   /** L2: 视图联动 — 声明视图联动策略（省略时自动从 tableRelations 推导） */
   viewDependencies?: ViewDependency[]
   /** 业务数据版本号（乐观锁），与 schemaVersion 含义不同 */
-  version: number | undefined
-  pageId: string | undefined
+  version?: number
+  pageId?: string
 }
 
 // ===== 过滤和排序类型 =====
@@ -991,10 +996,8 @@ export interface IDataSet {
   setPageRoute(route: unknown): void
   /** 生成端点 URL 模板上下文参数 */
   getRequestTemplateParams(): Record<string, unknown>
-  /** 序列化为元数据对象 */
-  toData(): IDataSetMetadata
-  /** 序列化（供 JSON.stringify 自动调用） */
-  toJSON(): IDataSetMetadata
+  /** 序列化为 JSON 友好的元数据对象 */
+  toJson(): IDataSetMetadata
   /**
    * 订阅数据集级别的加载事件（覆盖所有已注册表的所有视图）
    * @returns 取消订阅函数

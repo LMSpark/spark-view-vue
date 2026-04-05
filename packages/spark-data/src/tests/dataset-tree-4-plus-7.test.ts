@@ -7,7 +7,7 @@ const NAV_BASE = '/api/tenants/tenant-test/projects/homepage/navigation/nodes'
 const RELATIVE_NAV_BASE = '/navigation/nodes'
 
 function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
-  const dataSet = DataSet.fromConfig({
+  const dataSet = DataSet.fromJson({
     dataSetName: 'Tree4Plus7',
     tables: {
       NavigationNodes: {
@@ -45,7 +45,7 @@ function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
 }
 
 function createScopedRelativeTreeDataSet(mockHttpClient: unknown): DataSet {
-  const dataSet = DataSet.fromConfig({
+  const dataSet = DataSet.fromJson({
     dataSetName: 'Tree4Plus7ScopedRelative',
     tables: {
       NavigationNodes: {

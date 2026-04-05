@@ -158,7 +158,7 @@ export class TreeManager {
   /**
    * 将所有扁平节点序列化为 JSON 字符串（用于导出）
    */
-  toJSON(): string {
+  toJson(): string {
     return JSON.stringify(this.getAllNodes(), null, 2)
   }
 

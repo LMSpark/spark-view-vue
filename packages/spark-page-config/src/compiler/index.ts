@@ -58,24 +58,22 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
 /**
  * pagedata.json 原始字符串 → DataSet 实例
  *
- * 调用 DataSet.fromJSON() 构建完整实例：分配对象、建各表的 DataTable/DataView，
+ * 调用 DataSet.fromJson() 构建完整实例：分配对象、建各表的 DataTable/DataView，
  * 建立 DataSet → DataTable → DataView 引用链。
+ * 统一以实体规范化逻辑为准，根级 `tables` 与 `dataset.tables` 都走同一条 canonical 化路径。
  * 实例缓存在内存派生缓存中，timestamp 不变时直接复用，
  * 同一页面多次访问跳过重建，冷启动仍需跑一次（但无网络请求）。
  */
 export function parsePageData(raw: string): PageDataConfig {
   const parsed: unknown = JSON.parse(raw)
   if (parsed === null || parsed === undefined) {
-    return DataSet.fromConfig({ dataSetName: 'PageDataSet', tables: {} })
+    return DataSet.fromJson({ dataSetName: 'PageDataSet', tables: {} })
   }
   if (typeof parsed !== 'object') {
-    return DataSet.fromPageData({ value: parsed })
+    return DataSet.fromJson({ value: parsed })
   }
   const obj = parsed as Record<string, unknown>
-  if ('tables' in obj) {
-    return DataSet.fromJSON(raw)
-  }
-  return DataSet.fromPageData(obj)
+  return DataSet.fromJson(obj)
 }
 
 // ── Script / CSS 编译 ────────────────────────────────────────────────

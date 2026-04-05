@@ -52,6 +52,8 @@ export interface DataSetCommitVersionOptions extends Omit<DataSetHistoryCommitOp
 
 interface DataSetHistoryEnvelope {
   entries: DataSetHistoryEntry[]
+  nextSlot: number
+  capacity: number
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -64,6 +66,84 @@ function isNonEmptyString(value: unknown): value is string {
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
+}
+
+function compareEntriesByNewest(left: DataSetHistoryEntry, right: DataSetHistoryEntry): number {
+  if (right.timestamp !== left.timestamp) {
+    return right.timestamp - left.timestamp
+  }
+  return right.version - left.version
+}
+
+function compareEntriesByOldest(left: DataSetHistoryEntry, right: DataSetHistoryEntry): number {
+  if (left.timestamp !== right.timestamp) {
+    return left.timestamp - right.timestamp
+  }
+  return left.version - right.version
+}
+
+function normalizeHistoryCapacity(value: unknown, fallback = DEFAULT_HISTORY_LIMIT): number {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.max(1, Math.trunc(value))
+  }
+  return Math.max(1, Math.trunc(fallback))
+}
+
+function normalizeNextSlot(value: unknown, entriesLength: number, capacity: number): number {
+  if (entriesLength >= capacity) {
+    if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+      return Math.trunc(value) % capacity
+    }
+    return 0
+  }
+
+  return entriesLength
+}
+
+function sortEntriesByNewest(entries: DataSetHistoryEntry[]): DataSetHistoryEntry[] {
+  return entries.slice().sort(compareEntriesByNewest)
+}
+
+function sortEntriesByOldest(entries: DataSetHistoryEntry[]): DataSetHistoryEntry[] {
+  return entries.slice().sort(compareEntriesByOldest)
+}
+
+function resizeEnvelope(envelope: DataSetHistoryEnvelope, capacity: number): DataSetHistoryEnvelope {
+  const resolvedCapacity = normalizeHistoryCapacity(capacity)
+  const keptEntries = sortEntriesByNewest(envelope.entries).slice(0, resolvedCapacity)
+  const orderedEntries = sortEntriesByOldest(keptEntries)
+
+  return {
+    entries: orderedEntries,
+    nextSlot: orderedEntries.length < resolvedCapacity ? orderedEntries.length : 0,
+    capacity: resolvedCapacity,
+  }
+}
+
+function appendEntryToEnvelope(
+  envelope: DataSetHistoryEnvelope,
+  entry: DataSetHistoryEntry,
+): DataSetHistoryEnvelope {
+  const entries = envelope.entries.slice()
+
+  if (entries.length < envelope.capacity) {
+    const insertIndex = Math.min(Math.max(envelope.nextSlot, 0), entries.length)
+    entries.splice(insertIndex, 0, entry)
+    return {
+      entries,
+      nextSlot: entries.length < envelope.capacity ? entries.length : 0,
+      capacity: envelope.capacity,
+    }
+  }
+
+  const slot = normalizeNextSlot(envelope.nextSlot, entries.length, envelope.capacity)
+  entries[slot] = entry
+
+  return {
+    entries,
+    nextSlot: (slot + 1) % envelope.capacity,
+    capacity: envelope.capacity,
+  }
 }
 
 function buildHistoryScope(scope: DataSetHistoryScope): DataSetHistoryScope {
@@ -80,9 +160,13 @@ function resolveAdapter(adapter?: DataSetHistoryStorageAdapter | null): DataSetH
 }
 
 function normalizeEnvelope(value: unknown): DataSetHistoryEnvelope {
-  if (!isRecord(value)) return { entries: [] }
+  if (!isRecord(value)) {
+    return { entries: [], nextSlot: 0, capacity: DEFAULT_HISTORY_LIMIT }
+  }
   const rawEntries = value['entries']
-  if (!Array.isArray(rawEntries)) return { entries: [] }
+  if (!Array.isArray(rawEntries)) {
+    return { entries: [], nextSlot: 0, capacity: DEFAULT_HISTORY_LIMIT }
+  }
 
   const entries = rawEntries.filter((entry): entry is DataSetHistoryEntry => {
     if (!isRecord(entry)) return false
@@ -93,18 +177,42 @@ function normalizeEnvelope(value: unknown): DataSetHistoryEnvelope {
       && isRecord(entry['snapshot'])
   })
 
+  const rawCapacity = value['capacity']
+  const resolvedCapacity = normalizeHistoryCapacity(rawCapacity, Math.max(entries.length, DEFAULT_HISTORY_LIMIT))
+  const trimmedEntries = entries.slice(0, resolvedCapacity)
+
+  if (typeof value['nextSlot'] === 'number') {
+    return {
+      entries: trimmedEntries,
+      nextSlot: normalizeNextSlot(value['nextSlot'], trimmedEntries.length, resolvedCapacity),
+      capacity: resolvedCapacity,
+    }
+  }
+
   return {
-    entries: entries.sort((left, right) => right.timestamp - left.timestamp),
+    entries: sortEntriesByOldest(trimmedEntries),
+    nextSlot: trimmedEntries.length < resolvedCapacity ? trimmedEntries.length : 0,
+    capacity: resolvedCapacity,
   }
 }
 
 function readEnvelope(key: string, adapter: DataSetHistoryStorageAdapter): DataSetHistoryEnvelope {
   const raw = adapter.getItem(key)
-  if (!raw) return { entries: [] }
+  if (!raw) {
+    return {
+      entries: [],
+      nextSlot: 0,
+      capacity: DEFAULT_HISTORY_LIMIT,
+    }
+  }
   try {
     return normalizeEnvelope(JSON.parse(raw) as unknown)
   } catch {
-    return { entries: [] }
+    return {
+      entries: [],
+      nextSlot: 0,
+      capacity: DEFAULT_HISTORY_LIMIT,
+    }
   }
 }
 
@@ -117,8 +225,8 @@ function writeEnvelope(key: string, adapter: DataSetHistoryStorageAdapter, envel
 }
 
 function toSnapshot(dataSetOrSnapshot: IDataSet | IDataSetMetadata): IDataSetMetadata {
-  return 'toData' in dataSetOrSnapshot
-    ? cloneJson(dataSetOrSnapshot.toData())
+  return 'toJson' in dataSetOrSnapshot
+    ? cloneJson(dataSetOrSnapshot.toJson())
     : cloneJson(dataSetOrSnapshot)
 }
 
@@ -184,7 +292,7 @@ export function listDataSetHistory(
         ? { namespace: scope.namespace }
         : {}),
   }))
-  return readEnvelope(key, adapter).entries
+  return sortEntriesByNewest(readEnvelope(key, adapter).entries)
 }
 
 export function getDataSetHistoryEntry(
@@ -222,6 +330,10 @@ export function commitDataSetHistory(
   })
   const key = resolveDataSetHistoryKey(scope)
   const current = readEnvelope(key, adapter)
+  const capacity = normalizeHistoryCapacity(options?.maxEntries, current.capacity)
+  const workingEnvelope = capacity === current.capacity
+    ? current
+    : resizeEnvelope(current, capacity)
   const latestVersion = getLatestVersion(current.entries)
   const resolvedVersion = options?.version ?? Math.max(baseSnapshot.version ?? 0, latestVersion) + 1
   const resolvedTimestamp = options?.timestamp ?? Date.now()
@@ -243,11 +355,7 @@ export function commitDataSetHistory(
     ...(options?.sourceData ? { sourceData: cloneJson(options.sourceData) } : {}),
   }
 
-  const limitedEntries = [entry, ...current.entries]
-    .sort((left, right) => right.timestamp - left.timestamp)
-    .slice(0, options?.maxEntries ?? DEFAULT_HISTORY_LIMIT)
-
-  writeEnvelope(key, adapter, { entries: limitedEntries })
+  writeEnvelope(key, adapter, appendEntryToEnvelope(workingEnvelope, entry))
   return entry
 }
 

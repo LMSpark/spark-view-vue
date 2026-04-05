@@ -1,9 +1,10 @@
-﻿/**
+/**
  * SparkData 命名空间 API 测试
  */
 
 import { describe, it, expect } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
+import type { IDataSetMetadata, ITableMetadata, TreeConfig, IViewMetadata, TableRelation, ViewDependency } from '@spark-view/spark-data'
 
 describe('SparkData Namespace', () => {
   it('应该提供 createDataSet 工厂方法', () => {
@@ -35,10 +36,12 @@ describe('SparkData Namespace', () => {
   })
 
   it('应该提供 createTreeManager 工厂方法', () => {
-    const treeManager = SparkData.createTreeManager({
+    const config: TreeConfig = {
       idField: 'id',
       parentIdField: 'parentId'
-    }, [
+    }
+
+    const treeManager = SparkData.createTreeManager(config, [
       { id: 1, parentId: null, name: 'Root' },
       { id: 2, parentId: 1, name: 'Child 1' },
       { id: 3, parentId: 1, name: 'Child 2' }
@@ -50,14 +53,57 @@ describe('SparkData Namespace', () => {
   })
 
   it('应该提供 createDataView 工厂方法', () => {
-    const view = SparkData.createDataView({ tableName: 'Users', viewId: 'default' })
+    const meta: IViewMetadata = { viewId: 'default' }
+    const view = SparkData.createDataView('Users', meta)
 
     expect(view).toBeDefined()
     expect(view['tableName']).toBe('Users')
     expect(view['viewId']).toBe('default')
   })
 
-  it('应该提供 fromJSON 工厂方法', () => {
+  it('应该提供 createDataTable 工厂方法', () => {
+    const meta: ITableMetadata = {
+      tableName: 'Users',
+      columns: [
+        { name: 'id', type: 'number' },
+        { name: 'name', type: 'string' }
+      ],
+      views: {
+        default: {
+          rows: [{ id: 1, name: 'Alice' }]
+        }
+      }
+    }
+
+    const table = SparkData.createDataTable(meta)
+
+    expect(table.tableName).toBe('Users')
+    expect(table.views.default.rows).toHaveLength(1)
+  })
+
+  it('应该提供 createTableRelation 工厂方法', () => {
+    const relation: TableRelation = {
+      parentTable: 'Users',
+      childTable: 'Orders',
+      childField: 'userId',
+      cascadeDelete: true,
+    }
+
+    expect(SparkData.createTableRelation(relation)).toEqual(relation)
+  })
+
+  it('应该提供 createViewDependency 工厂方法', () => {
+    const dependency: ViewDependency = {
+      parentTable: 'Users',
+      childTable: 'Orders',
+      dependencyType: 'selectedRows',
+      autoLoad: true,
+    }
+
+    expect(SparkData.createViewDependency(dependency)).toEqual(dependency)
+  })
+
+  it('应该提供 fromJson 工厂方法', () => {
     const json = JSON.stringify({
       dataSetName: 'TestData',
       tables: {
@@ -69,7 +115,7 @@ describe('SparkData Namespace', () => {
       }
     })
 
-    const dataSet = SparkData.fromJSON(json)
+    const dataSet = SparkData.fromJson(json)
 
     expect(dataSet).toBeDefined()
     expect(dataSet.dataSetName).toBe('TestData')
@@ -88,5 +134,41 @@ describe('SparkData Namespace', () => {
 
     // 同一工厂方法创建的实例是相同类型
     expect(dataSet1.constructor).toBe(dataSet2.constructor)
+  })
+
+  it('createDataSet 应只接受 canonical IDataSetMetadata', () => {
+    const meta: IDataSetMetadata = {
+      dataSetName: 'CanonicalOnlyDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'id', type: 'number' }],
+          views: {
+            default: {
+              rows: [{ id: 1 }]
+            }
+          }
+        }
+      }
+    }
+
+    const dataSet = SparkData.createDataSet(meta)
+    expect(dataSet.dataSetName).toBe('CanonicalOnlyDS')
+
+    if (false) {
+      // @ts-expect-error createDataSet 只接受 canonical metadata；JSON 字符串应走 fromJson
+      SparkData.createDataSet('{"dataSetName":"Bad","tables":{}}')
+
+      // @ts-expect-error createDataSet 只接受 canonical metadata；legacy/pagedata 结构应走 fromJson
+      SparkData.createDataSet({
+        dataSetName: 'LegacyShape',
+        tables: {
+          Users: {
+            columns: [{ name: 'id', type: 'number' }],
+            rows: [{ id: 1 }]
+          }
+        }
+      })
+    }
   })
 })

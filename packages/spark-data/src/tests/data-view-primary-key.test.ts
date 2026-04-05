@@ -158,12 +158,12 @@ describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
 })
 
 describe('DataView.primaryKey 边缘用例', () => {
-  it('DataView.fromData()（无 DataTable）primaryKey 回退为 id', () => {
-    const v = SparkData.createDataView({ tableName: 'Standalone', viewId: 'default' })
+  it('DataView.fromJson()（无 DataTable）primaryKey 回退为 id', () => {
+    const v = SparkData.createDataView('Standalone', { viewId: 'default' })
     expect(v.primaryKey).toBe('id')
   })
 
-  it('fromTableData 命名视图正确继承列定义主键', () => {
+  it('fromJson 命名视图正确继承列定义主键', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'FromTableDS',
       tables: {
@@ -222,8 +222,8 @@ describe('DataView.primaryKey 边缘用例', () => {
     expect(view.primaryKey).toBe('message')
   })
 
-  it('DataTable.fromTableData 命名视图有正确 primaryKey', () => {
-    const table = DataTable.fromTableData({
+  it('DataTable.fromJson 命名视图有正确 primaryKey', () => {
+    const table = DataTable.fromJson({
       tableName: 'Products',
       columns: [{ name: 'sku', type: 'string', isPrimaryKey: true }],
       api: undefined,

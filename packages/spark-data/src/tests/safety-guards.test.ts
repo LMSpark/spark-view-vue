@@ -44,7 +44,7 @@ describe('S2: checkDataTableAttached guard', () => {
   })
 
   it('attached DataView — accessors work normally', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'Test',
       tables: {
         Users: {
@@ -103,7 +103,7 @@ describe('S3: TreeManager HTTP client sharing', () => {
 
 describe('L3: updateRowById rejects primary key mutation', () => {
   function createTestDS() {
-    return DataSet.fromConfig({
+    return DataSet.fromJson({
       dataSetName: 'Test',
       tables: {
         Items: {
@@ -152,7 +152,7 @@ describe('L3: updateRowById rejects primary key mutation', () => {
   })
 
   it('multi-pk: rejects if any PK field changes', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'Test',
       tables: {
         Items: {

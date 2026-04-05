@@ -60,7 +60,7 @@ export type {
   IDataSource,
   IDataSet,
 
-  // DataSet 配置（createDataSet / fromConfig 参数类型）
+  // DataSet 配置（createDataSet / fromJson 参数类型）
   IDataSetMetadata,
   ITableMetadata,
   DataColumn,

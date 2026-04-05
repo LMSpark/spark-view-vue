@@ -175,6 +175,55 @@ public class PageConfigController {
         }
     }
 
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions")
+    public ResponseEntity<?> listPageVersions(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @PathVariable String pageId) {
+        try {
+            return ResponseEntity.ok(pageConfigService.listPageVersions(tenantId, projectId, pageId));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions/{version}/{filename}")
+    public ResponseEntity<?> getPageVersionFile(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @PathVariable String pageId,
+            @PathVariable int version,
+            @PathVariable String filename) {
+        try {
+            return ResponseEntity.ok(pageConfigService.readPageVersionFile(tenantId, projectId, pageId, version, filename));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions/{version}/__restore")
+    public ResponseEntity<?> restorePageVersion(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @PathVariable String pageId,
+            @PathVariable int version) {
+        try {
+            return ResponseEntity.ok(pageConfigService.restorePageVersion(tenantId, projectId, pageId, version));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // 扁平兼容路由（/api/pages-config/**）
     // 前端 PageConfigLoader 使用这些路由，租户 / 项目从请求头推断
@@ -241,6 +290,33 @@ public class PageConfigController {
         String[] ctx = resolveContext(request);
         if (ctx == null) return MISSING_CONTEXT;
         return batch(ctx[0], ctx[1], pageId, files);
+    }
+
+    @GetMapping("/pages-config/{pageId}/__versions")
+    public ResponseEntity<?> listPageVersionsFlat(HttpServletRequest request,
+                                                  @PathVariable String pageId) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return listPageVersions(ctx[0], ctx[1], pageId);
+    }
+
+    @GetMapping("/pages-config/{pageId}/__versions/{version}/{filename}")
+    public ResponseEntity<?> getPageVersionFileFlat(HttpServletRequest request,
+                                                    @PathVariable String pageId,
+                                                    @PathVariable int version,
+                                                    @PathVariable String filename) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return getPageVersionFile(ctx[0], ctx[1], pageId, version, filename);
+    }
+
+    @PostMapping("/pages-config/{pageId}/__versions/{version}/__restore")
+    public ResponseEntity<?> restorePageVersionFlat(HttpServletRequest request,
+                                                    @PathVariable String pageId,
+                                                    @PathVariable int version) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return restorePageVersion(ctx[0], ctx[1], pageId, version);
     }
 
     @GetMapping("/pages-config/__list")

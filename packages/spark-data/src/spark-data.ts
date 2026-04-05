@@ -11,84 +11,61 @@ import { CrudService } from './crud-service'
 import * as DataSetHistoryModule from './dataset-history'
 import * as DataKeyModule from './core/data-key'
 import * as ColumnValidationModule from './column-validation'
-import type { DataColumn, CrudApi, TableRelation, ViewDependency, DependencyType, FlatTreeNode, AggregateColumnConfig, TreeConfig, FilterExpression, SortExpression, CommitMode } from './types'
+import type { CrudApi, TableRelation, ViewDependency, FlatTreeNode, TreeConfig, IDataSetMetadata, ITableMetadata, IViewMetadata } from './types'
 import type { RequestConfig } from '@spark-view/spark-utils'
 
 // ===== SparkData 命名空间 API =====
 
 /** SparkData 命名空间 API（推荐使用） */
 export namespace SparkData {
+  // 规矩：公共 create* API 不暴露匿名对象类型；优先直接使用命名类型或位置参数。
+
   // ===== DataSet 工厂方法 =====
 
   /**
-   * 创建数据集实例
-   * @param config 数据集配置
+   * 创建数据集实例。
+   * 该入口只接受 canonical `IDataSetMetadata`，用于强约束建模与 fail-fast 类型校验。
+   * 原始 pagedata 对象、legacy 结构或 JSON 字符串统一走 `fromJson()`。
+   * @param meta DataSet 元数据对象
    * @returns 数据集实例
    */
-  export function createDataSet(config: Parameters<typeof DataSet.fromConfig>[0]): DataSet {
-    return DataSet.fromConfig(config)
+  export function createDataSet(meta: IDataSetMetadata): DataSet {
+    return DataSet.fromJson(meta)
   }
 
   /**
-   * 从json字符串创建数据集实例
-   * @param json JSON字符串
+   * 从 JSON 字符串、canonical DataSet 对象或 pagedata 原始对象创建数据集实例。
+   * 当输入不是 `IDataSetMetadata` 强约束对象时，应使用该入口完成归一化。
+   * @param json JSON 字符串或对象
    * @returns 数据集实例
    */
-  export function fromJSON(json: string): DataSet {
-    return DataSet.fromJSON(json)
-  }
-
-  /**
-   * 从 pagedata.json 原始对象归一化并构建 DataSet 实例
-   *
-   * 支持两种格式：
-   * 1. 标准 DataSet 配置（含 `dataset.tables` 字段）→ 直接使用
-   * 2. 任意 key-value 结构 → 每个 key 归一化为一张表
-   *
-   * @param rawPageData pagedata.json 原始对象
-   * @returns 归一化后的 DataSet 实例
-   */
-  export function fromPageData(rawPageData: Record<string, unknown>): DataSet {
-    return DataSet.fromPageData(rawPageData)
+  export function fromJson(json: IDataSetMetadata | Record<string, unknown> | string): DataSet {
+    return DataSet.fromJson(json)
   }
 
   // ===== TreeManager 工厂方法 =====
 
   /**
-   * 创建树管理器实例
+   * 创建树管理器实例。
+   * 该入口直接接受 `TreeConfig`，避免公共 API 再定义匿名对象签名。
    * @param config 树结构字段配置
    * @param initialNodes 初始节点
    * @returns 树管理器实例
    */
-  export function createTreeManager(config: {
-    idField?: string
-    parentIdField?: string
-    textField?: string
-    depthLimit?: number
-    lazy?: boolean
-    /** 树视图模式（默认 'flat'）：flat 返回平铺节点列表，nested 返回嵌套树结构 */
-    treeMode?: 'flat' | 'nested'
-  }, initialNodes?: FlatTreeNode[]): TreeManager {
+  export function createTreeManager(config: TreeConfig, initialNodes?: FlatTreeNode[]): TreeManager {
     return new TreeManager({ ...config }, undefined, initialNodes)
   }
 
   // ===== DataTable 工厂方法 =====
 
   /**
-   * 创建数据表实例
-   * @param config 数据表配置
+   * 创建数据表实例。
+   * 该入口只接受 canonical `ITableMetadata`。
+   * @param meta 数据表元数据
    * @returns 数据表实例
    */
-  export function createDataTable(config: {
-    tableName: string
-    columns: DataColumn[]
-    api?: CrudApi | string | boolean
-  }): DataTable {
-    const table = new DataTable(config.tableName, config.columns)
-    if (config.api !== undefined && config.api !== false) {
-      table.setApi(config.api)
-    }
-    return table
+  export function createDataTable(meta: ITableMetadata): DataTable {
+    return DataTable.fromJson(meta)
   }
 
   // ===== CRUD 服务工厂方法 =====
@@ -106,47 +83,16 @@ export namespace SparkData {
   // ===== DataView 工厂方法 =====
 
   /**
-   * 创建数据视图实例
-   * @param config 数据视图配置
+   * 创建数据视图实例。
+   * 使用位置参数 `tableName` 提供强约束，其他视图配置统一复用 `IViewMetadata`。
+   * @param tableName 表名
+   * @param meta 数据视图元数据
    * @returns 数据视图实例
    */
-  export function createDataView(config: {
-    tableName: string
-    viewId?: string
-    /** 请求成功后自动将 currentRow 设为第一行，见 {@link DataView.autoCurrentFirst} */
-    autoCurrentFirst?: boolean
-    /** 请求成功后自动将 selectedRows 设为第一行，见 {@link DataView.autoSelectFirst} */
-    autoSelectFirst?: boolean
-    /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
-    treeConfig?: TreeConfig
-    /** 初始化后自动加载（默认 false），见 {@link DataView.autoLoad} */
-    autoLoad?: boolean
-    /** 设置分页/排序/过滤后自动刷新（默认 false），见 {@link DataView.autoRefresh} */
-    autoRefresh?: boolean
-    /** 值字段名（默认主键字段），见 {@link DataView.valueField} */
-    valueField?: string | string[]
-    /** 标签显示字段名，见 {@link DataView.labelField} */
-    labelField?: string
-    /** 值序列化分隔符，见 {@link DataView.selectionDelimiter} */
-    selectionDelimiter?: string
-    /** 增删改提交模式，见 {@link DataView.commitMode} */
-    commitMode?: CommitMode
-    /** @deprecated 使用 commitMode 代替，见 {@link DataView.commitMode} */
-    autoCommit?: boolean
-    /** 视图级聚合配置，见 {@link DataView.aggregates} */
-    aggregates?: Record<string, AggregateColumnConfig>
-    /** 过滤表达式初始值 */
-    filterExpression?: FilterExpression
-    /** 排序表达式初始値 */
-    sortExpression?: SortExpression
-    /** 初始页码 */
-    page?: number
-    /** 每页条数 */
-    pageSize?: number
-  }): DataView {
-    const view = DataView.create(config.tableName, config.viewId)
+  export function createDataView(tableName: string, meta?: IViewMetadata): DataView {
+    const view = DataView.create(tableName, meta?.viewId)
     // 所有视图配置字段由 applyViewConfig 集中赋值，单一来源
-    view.applyViewConfig(config)
+    view.applyViewConfig({ ...meta, tableName })
     return view
   }
 
@@ -167,50 +113,34 @@ export namespace SparkData {
   // ===== 关系快捷创建 =====
 
   /**
-   * 创建表关系定义（L1 数据 schema）
+   * 创建表关系定义（L1 数据 schema）。
+   * 直接接受 `TableRelation`，避免公共 API 暴露匿名 options 类型。
    *
    * @example
    * ```ts
-   * SparkData.createTableRelation('Users', 'Orders', 'userId')
+   * SparkData.createTableRelation({ parentTable: 'Users', childTable: 'Orders', childField: 'userId' })
    * // → { parentTable: 'Users', childTable: 'Orders', childField: 'userId' }
    * ```
    */
-  export function createTableRelation(
-    parentTable: string,
-    childTable: string,
-    childField: string,
-    options?: { parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean },
-  ): TableRelation {
+  export function createTableRelation(relation: TableRelation): TableRelation {
     return {
-      parentTable,
-      childTable,
-      childField,
-      ...(options?.parentField !== undefined ? { parentField: options.parentField } : {}),
-      ...(options?.condition !== undefined ? { condition: options.condition } : {}),
-      ...(options?.cascadeUpdate !== undefined ? { cascadeUpdate: options.cascadeUpdate } : {}),
-      ...(options?.cascadeDelete !== undefined ? { cascadeDelete: options.cascadeDelete } : {}),
+      ...relation,
     }
   }
 
   /**
-   * 创建视图依赖定义（L2 视图联动 schema）
+   * 创建视图依赖定义（L2 视图联动 schema）。
+   * 直接接受 `ViewDependency`，避免公共 API 暴露匿名 options 类型。
    *
    * @example
    * ```ts
-   * SparkData.createViewDependency('Users', 'Orders', { dependencyType: 'selectedRows' })
+   * SparkData.createViewDependency({ parentTable: 'Users', childTable: 'Orders', dependencyType: 'selectedRows' })
    * // → { parentTable: 'Users', childTable: 'Orders', dependencyType: 'selectedRows' }
    * ```
    */
-  export function createViewDependency(
-    parentTable: string,
-    childTable: string,
-    options?: { dependencyType?: DependencyType; autoLoad?: boolean },
-  ): ViewDependency {
+  export function createViewDependency(dependency: ViewDependency): ViewDependency {
     return {
-      parentTable,
-      childTable,
-      ...(options?.dependencyType !== undefined ? { dependencyType: options.dependencyType } : {}),
-      ...(options?.autoLoad !== undefined ? { autoLoad: options.autoLoad } : {}),
+      ...dependency,
     }
   }
 

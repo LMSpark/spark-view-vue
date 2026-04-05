@@ -36,9 +36,61 @@ function inferColumnType(v: unknown): ColumnType {
   return 'string'
 }
 
-/** @internal 从对象的键推断列配置（fromPageData 内部复用，避免两处重复 Object.keys.map） */
+/** @internal 从对象的键推断列配置（fromJson 内部复用，避免两处重复 Object.keys.map） */
 function inferColumnsFromRecord(obj: Record<string, unknown>): DataColumn[] {
   return Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n }))
+}
+
+const LEGACY_DEFAULT_VIEW_KEYS = [
+  'rows',
+  'filterExpression',
+  'sortExpression',
+  'autoCurrentFirst',
+  'autoSelectFirst',
+  'page',
+  'pageSize',
+  'treeConfig',
+  'valueField',
+  'labelField',
+  'selectionDelimiter',
+  'autoLoad',
+  'autoRefresh',
+  'commitMode',
+  'autoCommit',
+  'aggregates',
+] as const
+
+function normalizePageDataTableMetadata(
+  tableName: string,
+  table: Omit<ITableMetadata, 'tableName'> & { tableName?: string },
+): Omit<ITableMetadata, 'tableName'> & { tableName?: string } {
+  const rawTable = table as Record<string, unknown>
+  const rawViews = asRecord(rawTable['views'])
+  let nextTable: Record<string, unknown> = { ...rawTable }
+  const defaultView = asRecord(rawViews?.['default'])
+    ? { ...(rawViews?.['default'] as Record<string, unknown>) }
+    : {}
+
+  for (const key of LEGACY_DEFAULT_VIEW_KEYS) {
+    if (!(key in nextTable)) continue
+    defaultView[key] = nextTable[key]
+    const { [key]: _removed, ...rest } = nextTable
+    nextTable = rest
+  }
+
+  const normalizedViews: Record<string, unknown> = rawViews
+    ? { ...rawViews, default: defaultView }
+    : { default: defaultView }
+
+  const normalizedTable = nextTable as Omit<ITableMetadata, 'tableName'>
+
+  return {
+    ...normalizedTable,
+    tableName: typeof nextTable['tableName'] === 'string' && nextTable['tableName'].trim() !== ''
+      ? nextTable['tableName']
+      : tableName,
+    views: normalizedViews as ITableMetadata['views'],
+  }
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -296,8 +348,8 @@ export class DataSet implements IDataSet {
       schemaVersion: config.schemaVersion ?? 2,
       ...(config.tableRelations !== undefined ? { tableRelations: config.tableRelations } : {}),
       ...(config.viewDependencies !== undefined ? { viewDependencies: config.viewDependencies } : {}),
-      version: config.version,
-      pageId: config.pageId,
+      ...(config.version !== undefined ? { version: config.version } : {}),
+      ...(config.pageId !== undefined ? { pageId: config.pageId } : {}),
     })
   }
 
@@ -617,7 +669,7 @@ export class DataSet implements IDataSet {
       if (!td.tableName) {
         ;(td as { tableName: string }).tableName = name
       }
-      const table = DataTable.fromTableData(td)
+      const table = DataTable.fromJson(td)
       table.setDataSet(this)
       this.tables[name] = table
     }
@@ -635,40 +687,8 @@ export class DataSet implements IDataSet {
     this._rebuildRelations(true)
   }
 
-  // ===== 工厂方法 =====
-
-  /**
-   * 从配置创建数据集实例
-   * @param config 数据集配置
-   * @returns 数据集实例
-   */
-  static fromConfig(config: {
-    dataSetName: string
-    tables: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>
-    tableRelations?: TableRelation[]
-    viewDependencies?: ViewDependency[]
-    schemaVersion?: number
-    version?: number
-    pageId?: string
-  }): DataSet {
-    return DataSet.fromData({
-      dataSetName: config.dataSetName,
-      tables: Object.fromEntries(
-        Object.entries(config.tables).map(([tableName, table]) => [
-          tableName,
-          { ...table, tableName: table.tableName ?? tableName },
-        ]),
-      ) as Record<string, ITableMetadata>,
-      ...(config.schemaVersion !== undefined ? { schemaVersion: config.schemaVersion } : {}),
-      ...(config.tableRelations !== undefined ? { tableRelations: config.tableRelations } : {}),
-      ...(config.viewDependencies !== undefined ? { viewDependencies: config.viewDependencies } : {}),
-      version: config.version,
-      pageId: config.pageId,
-    })
-  }
-
-  replaceFromData(data: IDataSetMetadata): void {
-    const normalized = normalizeDataSetMetadata(data)
+  replaceFromJson(json: IDataSetMetadata | Record<string, unknown> | string): void {
+    const normalized = normalizeDataSetMetadata(DataSet.fromJson(json).toJson())
 
     for (const table of Object.values(this.tables)) {
       table.destroy()
@@ -677,11 +697,6 @@ export class DataSet implements IDataSet {
 
     this._applyNormalizedMetadata(normalized)
     this._rebindActiveSubscriptions()
-  }
-
-  replaceFromPageData(rawPageData: Record<string, unknown>): void {
-    const next = DataSet.fromPageData(rawPageData)
-    this.replaceFromData(next.toData())
   }
 
   listVersions(options?: DataSetHistoryListOptions): DataSetHistoryEntry[] {
@@ -725,7 +740,7 @@ export class DataSet implements IDataSet {
       ...(this.pageId !== undefined ? { pageId: this.pageId } : {}),
       ...(options?.label ? { label: options.label } : {}),
       ...(options?.summary ? { summary: options.summary } : {}),
-      snapshot: this.toData(),
+      snapshot: this.toJson(),
       ...(options?.sourceData ? { sourceData: JSON.parse(JSON.stringify(options.sourceData)) as Record<string, unknown> } : {}),
     }
   }
@@ -733,7 +748,7 @@ export class DataSet implements IDataSet {
   restoreVersion(selector: DataSetHistorySelector, options?: DataSetHistoryListOptions): DataSetHistoryEntry | null {
     const entry = this.getVersionEntry(selector, options)
     if (!entry) return null
-    this.replaceFromData(entry.snapshot)
+    this.replaceFromJson(entry.snapshot)
     this.version = entry.version
     return entry
   }
@@ -1178,13 +1193,13 @@ export class DataSet implements IDataSet {
   // ===== 序列化 =====
 
   /**
-   * 序列化为元数据对象
+   * 序列化为 JSON 友好的元数据对象
    * @returns 数据集元数据
    */
-  toData(): IDataSetMetadata {
+  toJson(): IDataSetMetadata {
     const tables: Record<string, ITableMetadata> = {}
     for (const [n, t] of Object.entries(this.tables)) {
-      tables[n] = t.toData()
+      tables[n] = t.toJson()
     }
     return {
       schemaVersion: this.schemaVersion,
@@ -1197,59 +1212,46 @@ export class DataSet implements IDataSet {
     } as IDataSetMetadata
   }
 
-  /**
-   * 序列化为可 JSON 化的对象（供 JSON.stringify 自动调用）
-   * @returns 数据集配置对象
-   */
-  toJSON(): IDataSetMetadata {
-    return this.toData()
-  }
-
   // ===== 反序列化工厂方法 =====
 
   /**
-   * 从元数据创建数据集实例
-   * @param data 数据集元数据
+   * 从 JSON 对象或 JSON 字符串创建数据集实例。
+   *
+   * 支持：
+   * 1. canonical DataSet 元数据对象
+   * 2. pagedata.json 原始对象（含 dataset 包裹或任意 key-value）
+   * 3. 上述两种结构的 JSON 字符串
+   *
+   * @param json 数据集元数据对象、pagedata 原始对象或 JSON 字符串
    * @returns 数据集实例
    */
-  static fromData(data: IDataSetMetadata): DataSet {
-    const normalized = normalizeDataSetMetadata(data)
-    return new DataSet(normalized)
-  }
+  static fromJson(json: IDataSetMetadata | Record<string, unknown> | string): DataSet {
+    if (typeof json === 'string') {
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(json)
+      } catch {
+        throw new Error('DataSet.fromJson: 无效的 JSON 数据')
+      }
 
-  /**
-   * 从JSON字符串创建数据集实例
-   * @param json JSON字符串
-   * @returns 数据集实例
-   */
-  static fromJSON(json: string): DataSet {
-    const parsed: unknown = JSON.parse(json)
-    if (typeof parsed !== 'object' || parsed === null) {
-      throw new Error('DataSet.fromJSON: 无效的 JSON 数据')
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        return DataSet.fromJson({ value: parsed })
+      }
+
+      return DataSet.fromJson(parsed as Record<string, unknown>)
     }
-    return DataSet.fromData(parsed as IDataSetMetadata)
-  }
 
-  /**
-   * 从 pagedata.json 原始对象归一化并构建 DataSet 实例
-   *
-   * 支持两种格式：
-   * 1. 标准 DataSet 配置（含 `dataset.tables` 字段）→ 直接使用该子结构
-   * 2. 任意 key-value 结构 → 每个 key 归一化为一张表（数组/对象/基础类型）
-   *
-   * @param rawPageData pagedata.json 原始对象
-   * @returns 归一化后的 DataSet 实例
-   */
-  static fromPageData(rawPageData: Record<string, unknown>): DataSet {
-    // 情形 1：rawPageData.dataset.tables 存在 → 标准 DataSet 配置，直接透传
-    const datasetCandidate = rawPageData['dataset']
-    if (
-      datasetCandidate !== null &&
-      datasetCandidate !== undefined &&
-      typeof datasetCandidate === 'object' &&
-      'tables' in (datasetCandidate as Record<string, unknown>)
-    ) {
-      const rd = datasetCandidate as {
+    const rawJson = json as Record<string, unknown>
+
+    const wrappedDataSetCandidate = asRecord(rawJson['dataset'])
+    const directDataSetCandidate = 'tables' in rawJson ? rawJson : null
+    const canonicalCandidate = wrappedDataSetCandidate && 'tables' in wrappedDataSetCandidate
+      ? wrappedDataSetCandidate
+      : directDataSetCandidate
+
+    // 情形 1：直接根级 DataSet，或 rawJson.dataset.tables 存在 → 规范化后透传
+    if (canonicalCandidate) {
+      const rd = canonicalCandidate as {
         dataSetName?: string
         tables?: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>
         tableRelations?: TableRelation[]
@@ -1258,9 +1260,17 @@ export class DataSet implements IDataSet {
         version?: number
         pageId?: string
       }
-      return DataSet.fromConfig({
+
+      const normalizedTables = Object.fromEntries(
+        Object.entries(rd.tables ?? {}).map(([tableName, table]) => [
+          tableName,
+          normalizePageDataTableMetadata(tableName, table),
+        ]),
+      ) as Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>
+
+      return new DataSet({
         dataSetName: rd.dataSetName ?? 'PageDataSet',
-        tables: (rd.tables ?? {}) as Record<string, Omit<ITableMetadata, 'tableName'> & { tableName?: string }>,
+        tables: normalizedTables as Record<string, ITableMetadata>,
         ...(rd.tableRelations ? { tableRelations: rd.tableRelations } : {}),
         ...(rd.viewDependencies ? { viewDependencies: rd.viewDependencies } : {}),
         ...(rd.schemaVersion !== undefined ? { schemaVersion: rd.schemaVersion } : {}),
@@ -1268,6 +1278,8 @@ export class DataSet implements IDataSet {
         ...(rd.pageId !== undefined ? { pageId: rd.pageId } : {}),
       })
     }
+
+    const rawPageData = rawJson
 
     // 情形 2：将整个 pagedata 的每个 key 归一化为一张表
     const tables: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName: string }> = {}
@@ -1315,7 +1327,7 @@ export class DataSet implements IDataSet {
     }
 
     // 构造函数会自动设置单行表的 currentRow
-    return DataSet.fromConfig({ dataSetName: 'PageDataSet', tables } as Parameters<typeof DataSet.fromConfig>[0])
+    return new DataSet({ dataSetName: 'PageDataSet', tables: tables as Record<string, ITableMetadata> })
   }
 }
 

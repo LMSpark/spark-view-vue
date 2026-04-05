@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { DataSet } from '../dataset'
 
 function createStructureDataSet(): DataSet {
-  return DataSet.fromConfig({
+  return DataSet.fromJson({
     dataSetName: 'StructureDS',
     tables: {
       Orders: {

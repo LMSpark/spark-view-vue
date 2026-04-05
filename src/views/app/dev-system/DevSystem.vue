@@ -11,19 +11,23 @@
         <el-button size="small" @click="showCreateDialog">
           <NavIcon name="Plus" :size="14" /> 新建页面
         </el-button>
-        <el-button size="small" @click="previewCurrentPage" :disabled="!state.editForm.path">
+        <el-button size="small" @click="previewCurrentPage" :disabled="!canPreviewCurrentPage">
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
         <el-button size="small" @click="showPreview = true">
           <NavIcon name="View" :size="14" /> JSON
         </el-button>
+        <el-button size="small" :disabled="!canRefreshCurrentTab" @click="refreshCurrentTab">
+          <NavIcon name="Refresh" :size="14" /> 刷新当前
+        </el-button>
         <el-button
           type="primary"
           size="small"
+          :disabled="!canSaveCurrentTab"
           :loading="state.navSaving.value || state.fileSaving.value"
-          @click="state.saveAll()"
+          @click="saveCurrentTab"
         >
-          <NavIcon name="DocumentChecked" :size="14" /> 保存全部
+          <NavIcon name="DocumentChecked" :size="14" /> {{ currentTabSaveLabel }}
         </el-button>
         <el-divider direction="vertical" />
         <el-button
@@ -53,96 +57,15 @@
             </template>
             <el-empty v-else description="在左侧树中选择节点开始编辑" />
           </el-tab-pane>
-          <!-- 4 个配置文件 tab（配置页面时） -->
-            <template v-if="state.activePageId.value">
-              <el-tab-pane v-for="fname in PAGE_FILE_NAMES" :key="fname" :name="fname">
-                <template #label>
-                  <span :class="{ 'tab-dirty': state.fileDirty[fname] }">
-                    <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
-                  </span>
-                </template>
-                <div class="inline-file-editor" v-loading="!state.fileLoaded.value">
-                  <div class="inline-file-toolbar">
-                    <span class="inline-file-id"><NavIcon name="Tickets" :size="14" /> {{ state.activePageId.value }}</span>
-                  <div v-if="fname === 'pagedata.json'" class="inline-file-meta">
-                    <el-tag v-if="state.pageDataBackendVersion.value !== null" size="small" type="success">后端版 v{{ state.pageDataBackendVersion.value }}</el-tag>
-                    <el-tag v-if="state.pageDataHistoryCount.value > 0" size="small" type="info">本地历史 {{ state.pageDataHistoryCount.value }}</el-tag>
-                    <el-tag v-if="state.pageDataSetError.value" size="small" type="danger">DataSet 解析失败</el-tag>
-                  </div>
-                    <div class="inline-file-actions">
-                      <el-select
-                        v-if="fname === 'pagedata.json'"
-                        v-model="selectedPageDataHistoryId"
-                        size="small"
-                        clearable
-                        filterable
-                        placeholder="选择历史版本"
-                        style="width: 220px"
-                        @change="handlePageDataHistorySelect"
-                      >
-                        <el-option
-                          v-for="entry in state.pageDataHistory.value"
-                          :key="String(entry.id)"
-                          :label="formatHistoryOption(entry.version, Number(entry.timestamp ?? 0), entry.label)"
-                          :value="String(entry.id)"
-                        />
-                      </el-select>
-                      <el-button
-                        v-if="fname === 'pagedata.json'"
-                        size="small"
-                        :disabled="!state.canPageDataHistoryBack.value"
-                        @click="goPageDataHistoryBack"
-                      >回退</el-button>
-                      <el-button
-                        v-if="fname === 'pagedata.json'"
-                        size="small"
-                        :disabled="!state.canPageDataHistoryForward.value"
-                        @click="goPageDataHistoryForward"
-                      >向前</el-button>
-                      <el-button
-                        v-if="fname === 'pagedata.json'"
-                        size="small"
-                        :disabled="state.pageDataHistoryCount.value === 0"
-                        @click="openPageDataHistory"
-                      ><NavIcon name="List" :size="14" /> 本地历史</el-button>
-                      <el-button
-                        v-if="state.hasAnyFileDirty.value"
-                        size="small"
-                        type="primary"
-                        :loading="state.fileSaving.value"
-                        @click="state.savePageFiles()"
-                      ><NavIcon name="DocumentChecked" :size="14" /> 保存文件</el-button>
-                      <el-button size="small" @click="refreshFiles"><NavIcon name="Refresh" :size="14" /></el-button>
-                    </div>
-                  </div>
-                  <SparkJsonEditor
-                    v-if="isJsonFile(fname)"
-                    :model-value="state.editFiles[fname] ?? ''"
-                    class="code-input code-input--json"
-                    height="100%"
-                    mode="text"
-                    @update:model-value="handleFileValueChange(fname, $event)"
-                  />
-                  <SparkCodeEditor
-                    v-else-if="isCodeFile(fname)"
-                    :model-value="state.editFiles[fname] ?? ''"
-                    :language="resolveCodeLanguage(fname)"
-                    class="code-input code-input--code"
-                    height="100%"
-                    @update:model-value="handleFileValueChange(fname, $event)"
-                  />
-                  <el-input
-                    v-else
-                    v-model="state.editFiles[fname]"
-                    type="textarea"
-                    :autosize="{ minRows: 28, maxRows: 60 }"
-                    class="code-input"
-                  @input="handleFileValueChange(fname, state.editFiles[fname] ?? '')"
-                  />
-                </div>
-              </el-tab-pane>
+          <el-tab-pane v-for="fname in PAGE_FILE_NAMES" :key="fname" :name="fname" :disabled="!state.activePageId.value">
+            <template #label>
+              <span :class="{ 'tab-dirty': state.fileDirty[fname] }">
+                <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
+              </span>
             </template>
-          </el-tabs>
+            <DevFileEditor :state="state" :active-file="fname" :show-tabs="false" />
+          </el-tab-pane>
+        </el-tabs>
 
         <!-- 工作区底栏 -->
         <div class="workspace-footer">
@@ -157,9 +80,9 @@
             <template v-if="state.activePageId.value">
               <span class="footer-info"><NavIcon name="Tickets" :size="13" /> {{ state.activePageId.value }}</span>
               <el-tag v-if="state.hasAnyFileDirty.value" type="warning" size="small">文件已修改</el-tag>
-              <el-tag v-if="workTab === 'pagedata.json' && state.pageDataBackendVersion.value !== null" type="success" size="small">后端版 v{{ state.pageDataBackendVersion.value }}</el-tag>
-              <el-tag v-if="workTab === 'pagedata.json' && state.pageDataHistoryCount.value > 0" type="info" size="small">本地历史 {{ state.pageDataHistoryCount.value }}</el-tag>
-              <el-tag v-if="workTab === 'pagedata.json' && state.pageDataSetError.value" type="danger" size="small">{{ state.pageDataSetError.value }}</el-tag>
+              <el-tag v-if="currentWorkspaceFile && state.pageBackendVersion.value !== null" type="success" size="small">后端版 v{{ state.pageBackendVersion.value }}</el-tag>
+              <el-tag v-if="currentWorkspaceFile && state.getFileSnapshotCount(currentWorkspaceFile) > 0" type="info" size="small">快照 {{ state.getFileSnapshotCount(currentWorkspaceFile) }}</el-tag>
+              <el-tag v-if="currentWorkspaceFile === 'pagedata.json' && state.pageDataSetError.value" type="danger" size="small">{{ state.pageDataSetError.value }}</el-tag>
             </template>
           </div>
           <div class="workspace-footer__right">
@@ -245,72 +168,54 @@
         <el-button @click="showPreview = false">关闭</el-button>
       </template>
     </el-dialog>
-    <el-dialog v-model="showPageDataHistory" title="pagedata.json 本地历史" width="860px" top="8vh">
-      <el-empty v-if="state.pageDataHistory.value.length === 0" description="当前页面还没有本地历史版本" />
-      <el-table v-else :data="state.pageDataHistory.value" size="small" border>
-        <el-table-column prop="version" label="本地序号" width="90" />
-        <el-table-column label="时间" width="180">
-          <template #default="scope">
-            {{ formatHistoryTime(Number(scope.row.timestamp ?? 0)) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="label" label="标签" min-width="180" />
-        <el-table-column prop="summary" label="摘要" min-width="220" />
-        <el-table-column prop="操作" width="120" fixed="right">
-          <template #default="scope">
-            <el-button size="small" type="primary" link @click="restorePageDataVersion(String(scope.row.id ?? ''))">
-              恢复
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <template #footer>
-        <el-button @click="showPageDataHistory = false">关闭</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { SparkCodeEditor, SparkJsonEditor } from '@spark-view/spark-component'
-import { useDevState, PAGE_FILE_NAMES } from './useDevState'
+import { SparkJsonEditor } from '@spark-view/spark-component'
+import { PAGE_FILE_NAMES, useDevState } from './useDevState'
+import type { DevWorkspaceTab, PageFileName } from './useDevState'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevAiPanel from './DevAiPanel.vue'
+import DevFileEditor from './DevFileEditor.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
 const { router, tenantPath } = useTenantRouter()
 const state = useDevState()
-const selectedPageDataHistoryId = ref<string>('')
 
 // 工作区 Tab
-const workTab = ref<string>('props')
-
-// 切换节点时，一律回到节点属性 tab
-watch(() => state.selectedNode.value, () => {
-  workTab.value = 'props'
+const workTab = ref<DevWorkspaceTab>('props')
+const currentWorkspaceFile = computed<PageFileName | null>(() => {
+  return isPageFileName(workTab.value) ? workTab.value : null
 })
 
-watch(() => state.pageDataHistory.value, (history) => {
-  const selectedId = selectedPageDataHistoryId.value
-  if (!selectedId) return
-  const exists = history.some((entry) => String(entry.id) === selectedId)
-  if (!exists) {
-    selectedPageDataHistoryId.value = ''
-  }
-}, { deep: true })
+const currentTabSaveLabel = computed(() => (workTab.value === 'props' ? '保存节点' : '保存当前文件'))
+const canPreviewCurrentPage = computed(() => Boolean(state.editForm.path || state.activePageId.value))
 
-// activePageId 清空时切回节点属性（取消关联 / 选中非配置节点）
-watch(() => state.activePageId.value, (newId) => {
-  if (!newId && state.selectedNode.value) {
-    workTab.value = 'props'
+const canSaveCurrentTab = computed(() => {
+  if (workTab.value === 'props') {
+    return state.selectedNode.value != null
   }
-  selectedPageDataHistoryId.value = ''
+
+  return currentWorkspaceFile.value !== null && Boolean(state.activePageId.value)
 })
+
+const canRefreshCurrentTab = computed(() => {
+  if (workTab.value === 'props') {
+    return state.selectedNode.value != null || state.treeData.value.length > 0
+  }
+
+  return currentWorkspaceFile.value !== null && Boolean(state.activePageId.value)
+})
+
+function isPageFileName(value: string): value is PageFileName {
+  return PAGE_FILE_NAMES.includes(value as PageFileName)
+}
 
 function fileIcon(name: string) {
   if (name === 'rule.json') return 'Crop'
@@ -320,67 +225,24 @@ function fileIcon(name: string) {
   return 'Document'
 }
 
-function isJsonFile(name: string): boolean {
-  return name.endsWith('.json')
-}
-
-function isCodeFile(name: string): boolean {
-  return name.endsWith('.js') || name.endsWith('.css')
-}
-
-function resolveCodeLanguage(name: string): 'javascript' | 'css' {
-  return name.endsWith('.css') ? 'css' : 'javascript'
-}
-
-function handleFileValueChange(name: string, value: string): void {
-  state.updatePageFile(name, value)
-}
-
-function openPageDataHistory() {
-  state.refreshPageDataHistory()
-  showPageDataHistory.value = true
-}
-
-function restorePageDataVersion(entryId: string) {
-  if (!entryId) return
-  if (state.restorePageDataHistory(entryId)) {
-    selectedPageDataHistoryId.value = entryId
-    workTab.value = 'pagedata.json'
-    showPageDataHistory.value = false
+watch(() => state.selectedNode.value?.id ?? '', (nextId, prevId) => {
+  if (nextId && nextId !== prevId) {
+    workTab.value = 'props'
   }
-}
+})
 
-function handlePageDataHistorySelect(value: string | undefined) {
-  if (!value) return
-  restorePageDataVersion(value)
-}
-
-function goPageDataHistoryBack() {
-  if (state.goPageDataHistoryBack()) {
-    workTab.value = 'pagedata.json'
+// activePageId 清空时切回节点属性（取消关联 / 选中非配置节点）
+watch(() => state.activePageId.value, (newId) => {
+  if (newId && !state.selectedNode.value) {
+    workTab.value = 'rule.json'
   }
-}
-
-function goPageDataHistoryForward() {
-  if (state.goPageDataHistoryForward()) {
-    workTab.value = 'pagedata.json'
+  if (!newId && state.selectedNode.value) {
+    workTab.value = 'props'
   }
-}
-
-function formatHistoryTime(timestamp: number): string {
-  if (!Number.isFinite(timestamp) || timestamp <= 0) return '-'
-  return new Date(timestamp).toLocaleString('zh-CN', { hour12: false })
-}
-
-function formatHistoryOption(version: number, timestamp: number, label?: string): string {
-  const timeText = formatHistoryTime(timestamp)
-  const labelText = label?.trim() ? ` · ${label}` : ''
-  return `#${version} · ${timeText}${labelText}`
-}
+})
 
 // JSON 预览
 const showPreview = ref(false)
-const showPageDataHistory = ref(false)
 
 function previewPage(pageId: string) {
   void router.push(tenantPath(`/${pageId}`))
@@ -441,8 +303,26 @@ function copyJson() {
   void navigator.clipboard.writeText(state.previewJson.value).then(() => ElMessage.success('已复制'))
 }
 
-function refreshFiles() {
-  if (state.activePageId.value) void state.loadPageFiles(state.activePageId.value)
+function saveCurrentTab() {
+  if (workTab.value === 'props') {
+    void state.saveByTab('props')
+    return
+  }
+
+  if (currentWorkspaceFile.value) {
+    void state.saveByTab(currentWorkspaceFile.value)
+  }
+}
+
+function refreshCurrentTab() {
+  if (workTab.value === 'props') {
+    void state.refreshByTab('props')
+    return
+  }
+
+  if (currentWorkspaceFile.value) {
+    void state.refreshByTab(currentWorkspaceFile.value)
+  }
 }
 
 // 初始化
@@ -452,9 +332,12 @@ onMounted(() => { void state.initialize() })
 <style scoped>
 /* ═══ 整体布局 ═══ */
 .dev-system {
-  height: 100%;
+  height: calc(100dvh - var(--spark-header-height) - var(--spark-footer-height) - var(--spark-tab-bar-height, 34px) - 32px);
+  max-height: calc(100dvh - var(--spark-header-height) - var(--spark-footer-height) - var(--spark-tab-bar-height, 34px) - 32px);
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   background: var(--el-bg-color-page);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -478,12 +361,6 @@ onMounted(() => { void state.initialize() })
 .dev-header__logo {
   font-size: 22px;
 }
-
-.inline-file-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
 .dev-header__title {
   font-size: 16px;
   font-weight: 700;
@@ -501,8 +378,8 @@ onMounted(() => { void state.initialize() })
   display: flex;
   min-height: 0;
   overflow: hidden;
-  gap: 12px;
-  padding: 12px;
+  gap: 8px;
+  padding: 8px;
   background: var(--el-fill-color-lighter);
 }
 
@@ -510,6 +387,8 @@ onMounted(() => { void state.initialize() })
 .dev-body__tree {
   width: 320px;
   flex-shrink: 0;
+  display: flex;
+  min-height: 0;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 12px;
   background: var(--el-bg-color);
@@ -541,12 +420,16 @@ onMounted(() => { void state.initialize() })
 
 .workspace-tabs :deep(.el-tabs__content) {
   flex: 1;
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
   padding: 0;
 }
 .workspace-tabs :deep(.el-tab-pane) {
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
   padding: 12px;
 }
 
@@ -644,57 +527,11 @@ onMounted(() => { void state.initialize() })
   color: var(--el-text-color-secondary);
 }
 
-/* ═══ 内嵌文件编辑器 ═══ */
-.inline-file-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-}
-.inline-file-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--el-border-color-lighter);
-  margin-bottom: 4px;
-}
-.inline-file-id {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--el-color-primary);
-}
-.inline-file-actions {
-  display: flex;
-  gap: 6px;
-}
-.code-input {
-  flex: 1;
-  min-height: 0;
-}
-
-.code-input--json {
-  min-height: 0;
-}
-
-.code-input--code {
-  min-height: 0;
-}
-
-.code-input :deep(textarea) {
-  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-/* ═══ Tab 脏标记 ═══ */
 .tab-dirty {
   color: var(--el-color-warning);
   font-weight: 600;
 }
+
 .tab-dirty::after {
   content: ' •';
 }

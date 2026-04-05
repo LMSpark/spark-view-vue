@@ -9,7 +9,7 @@ import { DataSet } from '@spark-view/spark-data'
 
 describe('Data Architecture Refactor', () => {
   it('DataTable 只提供配置，DataView 拥有数据', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'TestDS',
       tables: {
         Users: {
@@ -43,7 +43,7 @@ describe('Data Architecture Refactor', () => {
   })
 
   it('DataTable 管理视图容器，不操作数据', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'TestDS',
       tables: {
         Products: {
@@ -55,11 +55,11 @@ describe('Data Architecture Refactor', () => {
     })
 
     const table = ds.getTable('Products')!
-    
+
     // DataTable 可以创建和管理视图
     const view1 = table.getOrCreateView('grid1')
     const view2 = table.getOrCreateView('grid2')
-    
+
     expect(view1.viewId).toBe('grid1')
     expect(view2.viewId).toBe('grid2')
     expect(table.views['grid1']).toBe(view1)
@@ -72,7 +72,7 @@ describe('Data Architecture Refactor', () => {
   })
 
   it('DataView 从 DataTable 获取配置', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'TestDS',
       tables: {
         Orders: {

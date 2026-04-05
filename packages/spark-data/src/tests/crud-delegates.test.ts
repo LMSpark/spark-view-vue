@@ -55,7 +55,7 @@ describe('M5: CrudService shared HTTP client', () => {
   })
 
   it('DataSet.setSharedHttpClient should be accessible', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'Test',
       tables: {
         T: {
@@ -329,7 +329,7 @@ describe('S1: DataView public delegate accessors', () => {
   })
 
   it('view.crud.retrieveRecord should delegate to CrudService.retrieve', async () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'RetrieveDS',
       tables: {
         T: {
@@ -371,7 +371,7 @@ describe('S1: DataView public delegate accessors', () => {
   })
 
   it('view.retrieveRecordById should sync fetched row back into local rows', async () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'RetrieveSyncDS',
       tables: {
         T: {

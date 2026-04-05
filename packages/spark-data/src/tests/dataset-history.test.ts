@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  commitDataSetHistory,
   DataSet,
   formatPageDataHistoryEntry,
   getDataSetHistoryEntry,
@@ -51,7 +52,7 @@ describe('DataSet history/version', () => {
     const pageId = 'orders-page'
 
     const firstPageData = createCanonicalPageData('Alice')
-    const dataSet = DataSet.fromPageData(firstPageData)
+    const dataSet = DataSet.fromJson(firstPageData)
     dataSet.pageId = pageId
 
     const firstEntry = dataSet.commitVersion({
@@ -67,7 +68,7 @@ describe('DataSet history/version', () => {
     expect(dataSet.version).toBe(1)
 
     const secondPageData = createCanonicalPageData('Bob')
-    dataSet.replaceFromPageData(secondPageData)
+    dataSet.replaceFromJson(secondPageData)
     dataSet.pageId = pageId
     const secondEntry = dataSet.commitVersion({
       adapter,
@@ -95,12 +96,12 @@ describe('DataSet history/version', () => {
     const pageId = 'orders-restore-page'
 
     const firstPageData = createCanonicalPageData('Alpha')
-    const dataSet = DataSet.fromPageData(firstPageData)
+    const dataSet = DataSet.fromJson(firstPageData)
     dataSet.pageId = pageId
     dataSet.commitVersion({ adapter, scopeId: pageId, pageId, sourceData: firstPageData })
 
     const secondPageData = createCanonicalPageData('Beta')
-    dataSet.replaceFromPageData(secondPageData)
+    dataSet.replaceFromJson(secondPageData)
     dataSet.pageId = pageId
     dataSet.commitVersion({ adapter, scopeId: pageId, pageId, sourceData: secondPageData })
 
@@ -110,6 +111,40 @@ describe('DataSet history/version', () => {
     const restored = dataSet.restoreVersion({ version: 1 }, { adapter, scopeId: pageId })
     expect(restored?.version).toBe(1)
     expect(dataSet.version).toBe(1)
-    expect(dataSet.toData().tables['Orders']?.views.default.rows?.[0]?.['name']).toBe('Alpha')
+    expect(dataSet.toJson().tables['Orders']?.views.default.rows?.[0]?.['name']).toBe('Alpha')
+  })
+
+  it('should reuse fixed snapshot slots when history exceeds the max entries limit', () => {
+    const storage = new Map<string, string>()
+    const adapter = createMemoryHistoryAdapter(storage)
+    const pageId = 'orders-ring-page'
+
+    for (let version = 1; version <= 5; version += 1) {
+      const snapshot = createCanonicalPageData(`User-${version}`)
+      commitDataSetHistory(snapshot.dataset, {
+        adapter,
+        scopeId: pageId,
+        pageId,
+        sourceData: snapshot,
+        maxEntries: 3,
+        version,
+        timestamp: version,
+      })
+    }
+
+    const history = listDataSetHistory({ pageId, scopeId: pageId }, { adapter })
+    expect(history).toHaveLength(3)
+    expect(history.map((entry) => entry.version)).toEqual([5, 4, 3])
+
+    const rawEnvelope = JSON.parse(storage.get('spark:data-history:orders-ring-page') ?? '{}') as {
+      entries?: Array<{ version?: number }>
+      nextSlot?: number
+      capacity?: number
+    }
+
+    expect(rawEnvelope.capacity).toBe(3)
+    expect(rawEnvelope.nextSlot).toBe(2)
+    expect(Array.isArray(rawEnvelope.entries)).toBe(true)
+    expect(rawEnvelope.entries?.length).toBe(3)
   })
 })

@@ -11,10 +11,10 @@
  * - DataSetCrudTool 公开方法现已兼容对象参数签名，LLM 可按 paramsSchema 直接调用 crudToolMethod；
  *   旧的位置参数签名仍保持兼容，避免破坏现有调用方；
  * - action 统一使用 datasetTool.* 命名空间，避免与当前 datatable.* / dataview.* stills 冲突；
- * - constructor / dataSet / dataSetName / toJSON 不单独暴露给 LLM：
+ * - constructor / dataSet / dataSetName / toJson 不单独暴露给 LLM：
  *   - constructor 由宿主注入；
  *   - dataSet / dataSetName 属于运行时上下文；
- *   - toJSON 与 toData 语义重复，统一折叠到 datasetTool.export。
+ *   - toJson 语义与 datasetTool.export 重合，统一折叠到 datasetTool.export。
  */
 
 import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from './llm-params-validator'
@@ -443,7 +443,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
   defineDescribeRow({
     action: 'datasetTool.export',
     target: 'dataset',
-    crudToolMethod: 'toData',
+    crudToolMethod: 'toJson',
     description: '导出当前 DataSet 元数据快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {

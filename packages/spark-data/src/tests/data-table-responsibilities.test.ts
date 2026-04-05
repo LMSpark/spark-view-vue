@@ -38,7 +38,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
   })
 
   it('DataView 的订阅可被 UI 与子视图使用（语义一致）', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'S',
       tables: {
         Departments: { tableName: 'Departments', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [{ id: 1 }] } } },
@@ -71,7 +71,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
   })
 
   it('DataSet.getView 应返回已存在的视图，不存在时返回 undefined', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'S',
       tables: {
         Users: {
@@ -143,7 +143,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
 
 describe('Event system', () => {
   it('DataView.events.on cleared 通知 UI', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'S',
       tables: {
         Orders: { tableName: 'Orders', columns: [{ name: 'id', type: 'number' }], views: { default: {} } }
@@ -161,7 +161,7 @@ describe('Event system', () => {
   })
 
   it('DataView.setCurrentRow 触发状态观察（currentRowChanged 事件）', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'S',
       tables: {
         Departments: { tableName: 'Departments', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [{ id: 1 }, { id: 2 }] } } },
@@ -186,7 +186,7 @@ describe('Event system', () => {
   })
 
   it('命名视图独立接收 currentRowChanged 事件', () => {
-    const ds = DataSet.fromConfig({
+    const ds = DataSet.fromJson({
       dataSetName: 'S',
       tables: {
         Items: { tableName: 'Items', columns: [{ name: 'id', type: 'number' }], views: { default: { rows: [{ id: 1 }] } } }
@@ -209,7 +209,7 @@ describe('Event system', () => {
 
     // currentRowChanged 触发 1 次
     expect(notifyCount).toBe(1)
-    
+
     // 但不应该修改视图行数据
     expect(grid1View.rows).toEqual([{ id: 2 }, { id: 3 }])
   })
