@@ -80,7 +80,6 @@
             <template v-if="state.activePageId.value">
               <span class="footer-info"><NavIcon name="Tickets" :size="13" /> {{ state.activePageId.value }}</span>
               <el-tag v-if="state.hasAnyFileDirty.value" type="warning" size="small">文件已修改</el-tag>
-              <el-tag v-if="currentWorkspaceFile && state.pageBackendVersion.value !== null" type="success" size="small">后端版 v{{ state.pageBackendVersion.value }}</el-tag>
               <el-tag v-if="currentWorkspaceFile && state.getFileSnapshotCount(currentWorkspaceFile) > 0" type="info" size="small">快照 {{ state.getFileSnapshotCount(currentWorkspaceFile) }}</el-tag>
               <el-tag v-if="currentWorkspaceFile === 'pagedata.json' && state.pageDataSetError.value" type="danger" size="small">{{ state.pageDataSetError.value }}</el-tag>
             </template>

@@ -101,6 +101,23 @@ describe('meta stills (P0)', () => {
     expect(data.action).toBe('datatable.create')
   })
 
+  it('stills.actionSpec returns component spec for known component type', () => {
+    const r = exec('stills.actionSpec', { action: 'r-table' })
+    expectOk(r)
+    const data = r.data as {
+      action: string
+      subjectKind: string
+      componentType: string
+      category: string
+      props: Array<{ name: string }>
+    }
+    expect(data.action).toBe('r-table')
+    expect(data.subjectKind).toBe('component')
+    expect(data.componentType).toBe('r-table')
+    expect(data.category).toBe('container')
+    expect(data.props.some((prop) => prop.name === 'dataKey')).toBe(true)
+  })
+
   it('stills.actionSpec exposes usage rules and failure modes for risky actions', () => {
     const r = exec('stills.actionSpec', { action: 'blueprint.revise' })
     expectOk(r)
@@ -123,10 +140,19 @@ describe('meta stills (P0)', () => {
     const data = r.data as {
       domains: Record<string, { phase: string; initialized: boolean }>
       executionTrace: { totalActions: number }
+      components: {
+        summary: { total: number; containers: number }
+        querySpecExample: string
+        components: Array<{ type: string }>
+      }
     }
     expect(data.domains['dataset']?.phase).toBe('discover')
     expect(data.domains['blueprint']?.phase).toBe('idle')
     expect(data.executionTrace.totalActions).toBe(0)
+    expect(data.components.summary.total).toBeGreaterThan(0)
+    expect(data.components.summary.containers).toBeGreaterThan(0)
+    expect(data.components.querySpecExample).toContain('stills.actionSpec')
+    expect(data.components.components.some((component) => component.type === 'r-table')).toBe(true)
   })
 })
 

@@ -19,7 +19,6 @@ let _refCount = 0
 const MAX_NOTIFICATIONS = 50
 
 function formatFileLabel(file: string): string {
-  if (file === '__batch') return '批量更新'
   return file
 }
 

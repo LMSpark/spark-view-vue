@@ -8,7 +8,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - Build variants: `pnpm run build:fe`（仅前端）; `pnpm run build:java`（仅 JAR）; `pnpm run build:no-upload`（跳过元数据上传）
 - Typecheck: `pnpm run typecheck` (uses `tsconfig.typecheck.json`)
 - Tests (前端): `pnpm run test` (Vitest + jsdom + @vue/test-utils); single test: `pnpm run test -- -t "capability-late-binding"`
-- Tests (后端): `cd spark-ai-server && mvn test`（26 tests, JUnit 5 + MockMvc）
+- Tests (后端): `cd spark-ai-server && mvn test`（75 tests, JUnit 5 + MockMvc）
 - Lint & hooks: `pnpm run lint`; Husky pre-commit runs `lint` + `typecheck`
 - Commit scope 必须是: `deps, docs, scripts, spark-data, spark-app, spark-component, spark-utils, spark-page-config`
 - Java: 需要 JDK 17+（JAVA_HOME 指向 JDK 17 安装目录）
@@ -1390,9 +1390,9 @@ node scripts/publish-packages.mjs --dry-run
 ### 概述
 Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页面配置文件 CRUD、组件元数据存储。
 
-- **技术栈**: Java 17+ / Spring Boot 3.2.5 / Maven / 无数据库（文件 + 内存）
+- **技术栈**: Java 17+ / Spring Boot 3.2.5 / Maven / H2 嵌入式数据库（版本元数据）+ 文件系统（页面配置内容）
 - **入口**: `spark-ai-server/src/main/java/com/spark/ai/SparkAiApplication.java`
-- **26 个测试**: `cd spark-ai-server && mvn test`
+- **75 个测试**: `cd spark-ai-server && mvn test`
 
 ### API-first 提示词（前端优先，禁止默认改后端）
 
@@ -1402,10 +1402,9 @@ Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页�
 2. 若需迁移历史数据：**由前端显式调用 API 触发**，禁止恢复后端启动期隐式迁移。
 3. 多租户请求优先使用 `/api/tenants/{tenantId}/projects/{projectId}/...`；
   仅在兼容场景使用扁平 `/api/pages-config/**`，并确保请求头包含 `X-Tenant-Id`、`X-Project-Id`。
-4. `pages-config` 相关写入优先使用批量接口 `__batch`，减少重绑与事件风暴。
-5. 失败必须显式暴露（fail-fast），禁止静默兜底掩盖根因。
+4. 失败必须显式暴露（fail-fast），禁止静默兜底掩盖根因。
 
-### 后端完整 API 清单（按 Controller，2026-03-17 校验）
+### 后端完整 API 清单（按 Controller，2026-04-05 校验）
 
 #### 1) AI 对话与页面生成（AiChatController）
 
@@ -1433,8 +1432,14 @@ Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页�
 | `POST` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/__sync-routes` | 同步 routes |
 | `GET` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/routes.json` | 读取 routes.json |
 | `GET` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}` | 读取页面文件 |
-| `PUT` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}` | 写入单文件 |
-| `POST` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__batch` | 批量写入 |
+| `PUT` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}` | 写入单文件（只写磁盘，不自动升版） |
+| `GET` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions` | 查询页面全部文件的版本列表 |
+| `POST` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions` | 创建文件版本快照（手动升版） |
+| `GET` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions` | 查询某文件版本列表 |
+| `GET` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}` | 读取指定版本内容 |
+| `POST` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}/__restore` | 恢复指定版本 |
+| `DELETE` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}` | 删除指定版本 |
+| `POST` | `/api/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/__prune` | 修剪旧版本 |
 
 **兼容接口（扁平路径，需头部上下文）**
 
@@ -1444,10 +1449,17 @@ Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页�
 | `GET` | `/api/pages-config/routes.json` |
 | `GET` | `/api/pages-config/{pageId}/{filename}` |
 | `PUT` | `/api/pages-config/{pageId}/{filename}` |
-| `POST` | `/api/pages-config/{pageId}/__batch` |
 | `GET` | `/api/pages-config/__list` |
+| `GET` | `/api/pages-config/__health` |
 | `POST` | `/api/pages-config/__create` |
 | `DELETE` | `/api/pages-config/{pageId}` |
+| `GET` | `/api/pages-config/{pageId}/__versions` |
+| `POST` | `/api/pages-config/{pageId}/{filename}/__versions` |
+| `GET` | `/api/pages-config/{pageId}/{filename}/__versions` |
+| `GET` | `/api/pages-config/{pageId}/{filename}/__versions/{version}` |
+| `POST` | `/api/pages-config/{pageId}/{filename}/__versions/{version}/__restore` |
+| `DELETE` | `/api/pages-config/{pageId}/{filename}/__versions/{version}` |
+| `POST` | `/api/pages-config/{pageId}/{filename}/__versions/__prune` |
 
 #### 3) 导航管理（NavigationController，多租户）
 
@@ -1556,7 +1568,9 @@ Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页�
 
 | 数据 | 位置 | 持久化 |
 |------|------|--------|
-| 页面配置 | `spark-ai-server/data/pages-config/` | ✅ 文件系统（git-tracked） |
+| 页面配置（工作文件） | `spark-ai-server/data/pages-config/` | ✅ 文件系统（git-tracked） |
+| 页面配置（版本快照） | `spark-ai-server/data/pages-config/{tenant}/{project}/{page}/{version}__{filename}` | ✅ 文件系统（扁平命名） |
+| 版本元数据 | H2 嵌入式数据库 `file_version` 表 | ✅ H2 file-based（`data/sparkdb`） |
 | 组件元数据 | `spark-ai-server/data/component-metadata.json` | ✅ 文件（构建时写入，启动时加载） |
 | 租户配置 | 内存 `ConcurrentHashMap` | ❌ 重启丢失 |
 

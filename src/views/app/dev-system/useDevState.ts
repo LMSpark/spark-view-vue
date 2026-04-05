@@ -9,12 +9,12 @@
 import { ref, reactive, computed, shallowRef } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import {
-  commitDataSetHistory,
-  formatPageDataHistoryEntry,
-  getDataSetHistoryEntry,
-  listDataSetHistory,
+  commitDataSetSnapshot,
+  formatPageDataSnapshot,
+  getDataSetSnapshot,
+  listDataSetSnapshots,
 } from '@spark-view/spark-data'
-import type { DataSet, DataSetHistoryEntry } from '@spark-view/spark-data'
+import type { DataSet, DataSetHistorySnapshot } from '@spark-view/spark-data'
 import { demoNavRoot } from '@/layout/demo-nav'
 import { canonicalizePageDataJson, canonicalizePageDataValue } from './pageDataJsonSchema'
 import {
@@ -62,22 +62,19 @@ export interface DevContextConfig {
 
 export interface BackendPageVersionSummary {
   version: number
-  updatedAt: number
-  changedFiles: string[]
-  current: boolean
-  restoredFromVersion: number | null
+  createdAt: string
+  isCurrent: boolean
+  modifiedBy: string | null
 }
 
 export interface BackendPageVersionFile {
   pageId: string
   filename: PageFileName
   version: number
-  updatedAt: number
+  createdAt: string
+  isCurrent: boolean
+  modifiedBy: string | null
   content: string
-  changedFiles: string[]
-  currentVersion: number | null
-  current: boolean
-  restoredFromVersion: number | null
 }
 
 export const PAGE_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
@@ -112,11 +109,6 @@ function parseOptionalNumber(value: unknown): number | null {
     return Number.isFinite(parsed) ? parsed : null
   }
   return null
-}
-
-function parseStringList(value: unknown): string[] {
-  if (!Array.isArray(value)) return []
-  return value.filter((item): item is string => typeof item === 'string')
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -187,9 +179,8 @@ export function useDevState() {
   const pageDataSet = shallowRef<DataSet | null>(null)
   const pageDataDocument = shallowRef<Record<string, unknown> | null>(null)
   const pageDataSetError = ref<string | null>(null)
-  const pageDataHistory = ref<DataSetHistoryEntry[]>([])
+  const pageDataHistory = ref<DataSetHistorySnapshot[]>([])
   const pageDataHistoryBaseIndex = ref(-1)
-  const pageDataBackendVersion = ref<number | null>(null)
   const pageDataHistoryDraft = ref<string | null>(null)
   const fileTextHistory = reactive<Record<PageFileName, string[]>>({
     'rule.json': [],
@@ -241,7 +232,6 @@ export function useDevState() {
   // ── 计算属性 ──
   const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
-  const pageBackendVersion = computed(() => pageDataBackendVersion.value)
   const pageDataHistoryCount = computed(() => pageDataHistory.value.length)
   const pageDataHistoryActiveIndex = computed(() => resolvePageDataHistoryIndex(editFiles['pagedata.json'] ?? ''))
   const canPageDataHistoryBack = computed(() => {
@@ -281,7 +271,7 @@ export function useDevState() {
 
   function resolvePageDataHistoryIndex(rawText: string): number {
     const comparableText = tryCanonicalizePageDataText(rawText)
-    return pageDataHistory.value.findIndex((entry) => tryCanonicalizePageDataText(formatPageDataHistoryEntry(entry)) === comparableText)
+    return pageDataHistory.value.findIndex((entry) => tryCanonicalizePageDataText(formatPageDataSnapshot(entry)) === comparableText)
   }
 
   function resolveFileTextHistoryIndex(name: PageFileName, rawText?: string): number {
@@ -442,7 +432,7 @@ export function useDevState() {
     const latestEntry = pageDataHistory.value[0]
     if (!latestEntry) return true
 
-    if (tryCanonicalizePageDataText(formatPageDataHistoryEntry(latestEntry)) === canonicalText) {
+    if (tryCanonicalizePageDataText(formatPageDataSnapshot(latestEntry)) === canonicalText) {
       return false
     }
 
@@ -460,7 +450,7 @@ export function useDevState() {
 
     canonicalPageData.dataSet.pageId = pageId
 
-    commitDataSetHistory(canonicalPageData.dataSet, {
+    commitDataSetSnapshot(canonicalPageData.dataSet, {
       scopeId: pageId,
       pageId,
       maxEntries: PAGE_DATA_SNAPSHOT_LIMIT,
@@ -762,10 +752,6 @@ export function useDevState() {
   async function loadPages() {
     try {
       pageList.value = await http.get<Array<Record<string, unknown>>>(`${getPageApi()}/__list`)
-      if (activePageId.value) {
-        const activePage = findPageMeta(activePageId.value)
-        pageDataBackendVersion.value = parseOptionalNumber(activePage?.['currentVersion'])
-      }
     } catch { /* ignore */ }
   }
 
@@ -782,7 +768,6 @@ export function useDevState() {
 
     activePageId.value = pageId
     fileLoaded.value = false
-    pageDataBackendVersion.value = null
     for (const k of PAGE_FILE_NAMES) {
       fileDirty[k] = false
       editFiles[k] = ''
@@ -798,10 +783,6 @@ export function useDevState() {
           : content
         savedFiles[fname] = editFiles[fname]
         resetFileTextHistory(fname, editFiles[fname])
-        const currentVersion = parseOptionalNumber(data['currentVersion'])
-        if (currentVersion !== null) {
-          pageDataBackendVersion.value = currentVersion
-        }
       } catch {
         editFiles[fname] = ''
         savedFiles[fname] = ''
@@ -833,7 +814,6 @@ export function useDevState() {
     pageDataSetError.value = null
     pageDataHistory.value = []
     pageDataHistoryBaseIndex.value = -1
-    pageDataBackendVersion.value = null
     pageDataHistoryDraft.value = null
   }
 
@@ -844,24 +824,23 @@ export function useDevState() {
       return
     }
 
-    pageDataHistory.value = listDataSetHistory({ pageId, scopeId: pageId })
+    pageDataHistory.value = listDataSetSnapshots({ pageId, scopeId: pageId })
   }
 
-  async function listRemotePageVersions(): Promise<BackendPageVersionSummary[]> {
+  async function listRemotePageVersions(filename: PageFileName): Promise<BackendPageVersionSummary[]> {
     const pageId = activePageId.value
     if (!pageId) return []
 
     try {
       const result = await http.get<Array<Record<string, unknown>>>(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/__versions`,
+        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions`,
       )
       return result
         .map((item) => ({
           version: parseOptionalNumber(item['version']) ?? 0,
-          updatedAt: parseOptionalNumber(item['updatedAt']) ?? 0,
-          changedFiles: parseStringList(item['changedFiles']),
-          current: Boolean(item['current']),
-          restoredFromVersion: parseOptionalNumber(item['restoredFromVersion']),
+          createdAt: typeof item['createdAt'] === 'string' ? item['createdAt'] : '',
+          isCurrent: Boolean(item['isCurrent']),
+          modifiedBy: typeof item['modifiedBy'] === 'string' ? item['modifiedBy'] : null,
         }))
         .filter((item) => item.version > 0)
     } catch (e) {
@@ -879,7 +858,7 @@ export function useDevState() {
 
     try {
       const result = await http.get<Record<string, unknown>>(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/__versions/${version}/${filename}`,
+        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}`,
       )
       const resolvedFilename = isPageFileName(String(result['filename'] ?? ''))
         ? String(result['filename']) as PageFileName
@@ -888,12 +867,10 @@ export function useDevState() {
         pageId: String(result['pageId'] ?? pageId),
         filename: resolvedFilename,
         version: parseOptionalNumber(result['version']) ?? version,
-        updatedAt: parseOptionalNumber(result['updatedAt']) ?? 0,
+        createdAt: typeof result['createdAt'] === 'string' ? result['createdAt'] : '',
         content: typeof result['content'] === 'string' ? result['content'] : '',
-        changedFiles: parseStringList(result['changedFiles']),
-        currentVersion: parseOptionalNumber(result['currentVersion']),
-        current: Boolean(result['current']),
-        restoredFromVersion: parseOptionalNumber(result['restoredFromVersion']),
+        isCurrent: Boolean(result['isCurrent']),
+        modifiedBy: typeof result['modifiedBy'] === 'string' ? result['modifiedBy'] : null,
       }
     } catch (e) {
       addStatus(`读取后端版本 v${version} 失败: ${String(e)}`, 'error')
@@ -901,29 +878,20 @@ export function useDevState() {
     }
   }
 
-  async function restoreRemotePageVersion(version: number): Promise<boolean> {
+  async function restoreRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
 
     try {
-      const result = await http.post<Record<string, unknown>>(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/__versions/${version}/__restore`,
+      await http.post<Record<string, unknown>>(
+        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}/__restore`,
         {},
       )
-      const currentVersion = parseOptionalNumber(result['currentVersion'])
-      if (currentVersion !== null) {
-        pageDataBackendVersion.value = currentVersion
-      }
       await loadPageFiles(pageId)
-      addStatus(
-        currentVersion !== null
-          ? `页面 ${pageId} 已将后端版本 v${version} 设为当前版，新当前版 v${currentVersion}`
-          : `页面 ${pageId} 已将后端版本 v${version} 设为当前版`,
-        'success',
-      )
+      addStatus(`页面 ${pageId} 已将 ${filename} 版本 v${version} 恢复为当前版`, 'success')
       return true
     } catch (e) {
-      addStatus(`设为当前版失败: ${String(e)}`, 'error')
+      addStatus(`恢复版本失败: ${String(e)}`, 'error')
       return false
     }
   }
@@ -987,7 +955,7 @@ export function useDevState() {
     const pageId = activePageId.value
     if (!pageId) return false
 
-    const entry = getDataSetHistoryEntry({ pageId, scopeId: pageId }, { entryId })
+    const entry = getDataSetSnapshot({ pageId, scopeId: pageId }, { entryId })
     if (!entry) {
       addStatus('未找到对应的 pagedata 快照', 'warning')
       return false
@@ -1001,7 +969,7 @@ export function useDevState() {
       draftText: pageDataHistoryDraft.value,
     })
     pageDataHistoryBaseIndex.value = pageDataHistory.value.findIndex((historyEntry) => historyEntry.id === entry.id)
-    applyPageDataEditorText(formatPageDataHistoryEntry(entry))
+    applyPageDataEditorText(formatPageDataSnapshot(entry))
     addStatus(`已恢复 pagedata.json 快照 #${entry.version}，等待保存`, 'success')
     return true
   }
@@ -1027,7 +995,7 @@ export function useDevState() {
     }
 
     pageDataHistoryBaseIndex.value = targetIndex
-    applyPageDataEditorText(formatPageDataHistoryEntry(entry))
+    applyPageDataEditorText(formatPageDataSnapshot(entry))
     addStatus(`已回退到快照 #${entry.version}，等待保存`, 'success')
     return true
   }
@@ -1058,7 +1026,7 @@ export function useDevState() {
     if (!entry) return false
 
     pageDataHistoryBaseIndex.value = forwardTarget.index
-    applyPageDataEditorText(formatPageDataHistoryEntry(entry))
+    applyPageDataEditorText(formatPageDataSnapshot(entry))
     addStatus(`已前进到快照 #${entry.version}，等待保存`, 'success')
     return true
   }
@@ -1416,23 +1384,19 @@ export function useDevState() {
         editFiles['pagedata.json'] = canonicalPageDataText
       }
 
-      const result = await http.post<Record<string, unknown>>(`${getPageApi()}/${encodeURIComponent(pageId)}/__batch`, body)
-      const currentVersion = parseOptionalNumber(result['currentVersion'])
-      if (currentVersion !== null) {
-        pageDataBackendVersion.value = currentVersion
-      }
       for (const k of PAGE_FILE_NAMES) {
-        savedFiles[k] = body[k] ?? editFiles[k] ?? ''
+        const fileContent = body[k] ?? editFiles[k] ?? ''
+        await http.put<Record<string, unknown>>(
+          `${getPageApi()}/${encodeURIComponent(pageId)}/${k}`,
+          fileContent,
+          { headers: { 'Content-Type': 'text/plain' } },
+        )
+        savedFiles[k] = fileContent
         fileDirty[k] = false
       }
       refreshPageDataHistory()
       pageDataHistoryDraft.value = null
-      addStatus(
-        pageDataBackendVersion.value !== null
-          ? `页面 ${pageId} 已保存，后端当前版 v${pageDataBackendVersion.value}`
-          : `页面 ${pageId} 已保存`,
-        'success',
-      )
+      addStatus(`页面 ${pageId} 已保存`, 'success')
       await loadPages()
     } catch (e) {
       addStatus(`文件保存失败: ${String(e)}`, 'error')
@@ -1463,15 +1427,11 @@ export function useDevState() {
         }
       }
 
-      const result = await http.put<Record<string, unknown>>(
+      await http.put<Record<string, unknown>>(
         `${getPageApi()}/${encodeURIComponent(pageId)}/${name}`,
         content,
         { headers: { 'Content-Type': 'text/plain' } },
       )
-      const currentVersion = parseOptionalNumber(result['currentVersion'])
-      if (currentVersion !== null) {
-        pageDataBackendVersion.value = currentVersion
-      }
 
       savedFiles[name] = content
       fileDirty[name] = false
@@ -1480,12 +1440,7 @@ export function useDevState() {
         pageDataHistoryDraft.value = null
       }
 
-      addStatus(
-        pageDataBackendVersion.value !== null
-          ? `页面 ${pageId} 已保存 ${name}，后端当前版 v${pageDataBackendVersion.value}`
-          : `页面 ${pageId} 已保存 ${name}`,
-        'success',
-      )
+      addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
       await loadPages()
     } catch (e) {
       addStatus(`保存 ${name} 失败: ${String(e)}`, 'error')
@@ -1782,8 +1737,6 @@ export function useDevState() {
     pageDataDocument,
     pageDataSetError,
     pageDataHistory,
-    pageDataBackendVersion,
-    pageBackendVersion,
 
     // 页面列表
     pageList,

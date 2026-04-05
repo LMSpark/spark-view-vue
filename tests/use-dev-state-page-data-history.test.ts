@@ -103,19 +103,17 @@ describe('useDevState pagedata local history', () => {
 
     const historyCountBeforeSave = state.pageDataHistory.value.length
     const latestEntryIdBeforeSave = state.pageDataHistory.value[0]?.id
-    httpPost.mockResolvedValue({ currentVersion: 7 })
+    httpPut.mockResolvedValue({ ok: true })
 
     await state.savePageFiles()
 
-    expect(httpPost).toHaveBeenCalledWith(
-      '/api/pages-config/orders-page/__batch',
-      expect.objectContaining({
-        'pagedata.json': canonicalizePageDataJson(editedPageDataText).text,
-      }),
+    expect(httpPut).toHaveBeenCalledWith(
+      '/api/pages-config/orders-page/pagedata.json',
+      canonicalizePageDataJson(editedPageDataText).text,
+      { headers: { 'Content-Type': 'text/plain' } },
     )
     expect(state.pageDataHistory.value).toHaveLength(historyCountBeforeSave)
     expect(state.pageDataHistory.value[0]?.id).toBe(latestEntryIdBeforeSave)
-    expect(state.pageDataBackendVersion.value).toBe(7)
     expect(state.fileDirty['pagedata.json']).toBe(false)
   })
 
@@ -126,7 +124,7 @@ describe('useDevState pagedata local history', () => {
 
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) {
-        return { content: initialRuleText, currentVersion: 5 }
+        return { content: initialRuleText }
       }
 
       const requestedFile = PAGE_FILE_NAMES.find((fileName) => url.endsWith(`/${fileName}`))
@@ -140,7 +138,6 @@ describe('useDevState pagedata local history', () => {
     const state = useDevState()
     await state.loadPageFiles('orders-page')
 
-    expect(state.pageBackendVersion.value).toBe(5)
     expect(state.getFileHistoryCount('rule.json')).toBe(1)
     expect(state.canFileHistoryBack('rule.json')).toBe(false)
 
@@ -200,7 +197,7 @@ describe('useDevState pagedata local history', () => {
     state.updatePageFile('script.js', 'console.log("alpha")\n')
     const historyCountBeforeSave = state.getFileHistoryCount('script.js')
 
-    httpPut.mockResolvedValue({ currentVersion: 9 })
+    httpPut.mockResolvedValue({ ok: true })
 
     await state.saveByTab('script.js')
 
@@ -210,7 +207,6 @@ describe('useDevState pagedata local history', () => {
       { headers: { 'Content-Type': 'text/plain' } },
     )
     expect(state.getFileHistoryCount('script.js')).toBe(historyCountBeforeSave)
-    expect(state.pageBackendVersion.value).toBe(9)
     expect(state.fileDirty['script.js']).toBe(false)
   })
 
