@@ -19,6 +19,10 @@ import { noGuard } from './types'
 import { getAllStills, getStill } from './dispatcher'
 import { getDataSetState } from './dataset-domain'
 import { getDomain } from './domain'
+import {
+  COMPONENT_DIRECTORY_DESCRIBE,
+  getComponentSpec,
+} from '../catalog/component-props-catalog'
 
 // ═══════════════════════════════════════════════════════════
 // helper
@@ -172,12 +176,20 @@ interface ActionSpecParams {
   action: string
 }
 
+function buildComponentSpecUsageRules(componentType: string): string[] {
+  return [
+    '当前返回的是组件配置规格，不是 still 动作执行规格。',
+    '如需查动作参数，请继续用 stills.capabilities 或 stills.actionSpec 查询真正的 still action。',
+    `可直接复用当前参数格式继续精查其他组件：stills.actionSpec {"action":"${componentType}"}`,
+  ]
+}
+
 export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
   action: 'stills.actionSpec',
   type: 'describe',
-  description: '返回指定动作的参数规格、guard、使用规则、失败模式与示例',
+  description: '返回指定 still 动作或组件 type 的详细规格',
   guard: noGuard,
-  paramsSchema: { action: 'string — 动作名' },
+  paramsSchema: { action: 'string — still 动作名或组件 type' },
   example: { action: 'datatable.create' },
   validate: (params) => {
     if (!isNonEmptyString(params.action)) return missingParam('action')
@@ -185,29 +197,57 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
   },
   execute: (_session: IStillSession, params: ActionSpecParams): StillResult => {
     const still = getStill(params.action)
-    if (!still) {
+    if (still) {
       return {
-        ok: false,
-        code: 'UNKNOWN_ACTION',
-        msg: `未知动作: ${params.action}`,
-        fix: '请先查 stills.capabilities 获取可用动作列表',
+        ok: true,
+        data: {
+          action: still.action,
+          subjectKind: 'still',
+          type: still.type,
+          description: still.description,
+          guard: still.guardDescription ?? null,
+          usageRules: still.usageRules ?? [],
+          paramsSchema: still.paramsSchema ?? null,
+          resultSchema: still.resultSchema ?? null,
+          example: still.example ?? null,
+          failureModes: still.failureModes ?? [],
+        },
+        summary: `返回动作 ${still.action} 的规格`,
+      }
+    }
+
+    const componentSpec = getComponentSpec(params.action)
+    if (componentSpec !== undefined) {
+      return {
+        ok: true,
+        data: {
+          action: componentSpec.type,
+          subjectKind: 'component',
+          type: 'component',
+          componentType: componentSpec.type,
+          category: componentSpec.category,
+          description: componentSpec.description,
+          props: componentSpec.props,
+          emits: (componentSpec as Record<string, unknown>)['emits'] ?? [],
+          rootFields: (componentSpec as Record<string, unknown>)['rootFields'] ?? [],
+          binding: (componentSpec as Record<string, unknown>)['binding'] ?? null,
+          notes: (componentSpec as Record<string, unknown>)['notes'] ?? null,
+          guard: null,
+          usageRules: buildComponentSpecUsageRules(componentSpec.type),
+          paramsSchema: null,
+          resultSchema: null,
+          example: { action: componentSpec.type },
+          failureModes: [],
+        },
+        summary: `返回组件 ${componentSpec.type} 的规格`,
       }
     }
 
     return {
-      ok: true,
-      data: {
-        action: still.action,
-        type: still.type,
-        description: still.description,
-        guard: still.guardDescription ?? null,
-        usageRules: still.usageRules ?? [],
-        paramsSchema: still.paramsSchema ?? null,
-        resultSchema: still.resultSchema ?? null,
-        example: still.example ?? null,
-        failureModes: still.failureModes ?? [],
-      },
-      summary: `返回动作 ${still.action} 的规格`,
+      ok: false,
+      code: 'UNKNOWN_ACTION',
+      msg: `未知动作或组件: ${params.action}`,
+      fix: '请先查 session.describe 获取组件目录，或查 stills.capabilities 获取动作列表',
     }
   },
 }
@@ -233,6 +273,10 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
     const datasetState = getDataSetState(session)
     const dataset = datasetState.data
     const blueprintSummary = buildBlueprintSummary(session.blueprint)
+    const componentsDirectory = {
+      ...COMPONENT_DIRECTORY_DESCRIBE,
+      querySpecExample: 'stills.actionSpec {"action":"r-table"}',
+    }
 
     // ── 聚合所有已注册域的角色与状态 ──
     const roles: string[] = []
@@ -274,11 +318,12 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
           totalActions: session.patchLog.length,
           actionCounts,
         },
+        components: componentsDirectory,
         dataset: datasetSummary,
         blueprint: blueprintSummary,
         nextStep,
       },
-      summary: '返回会话全局状态（含域状态 + 执行追踪）',
+      summary: '返回会话全局状态（含域状态 + 组件目录 + 执行追踪）',
     }
   },
 }

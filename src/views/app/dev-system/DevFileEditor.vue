@@ -4,7 +4,6 @@
       <div class="file-header">
         <div class="file-header__meta">
           <span class="file-page-id"><NavIcon name="Tickets" :size="14" /> {{ state.activePageId.value }}</span>
-          <el-tag v-if="state.pageBackendVersion.value !== null" size="small" type="success">后端版 v{{ state.pageBackendVersion.value }}</el-tag>
           <el-tag v-if="state.getFileSnapshotCount(resolvedActiveFile) > 0" size="small" type="info">快照 {{ state.getFileSnapshotCount(resolvedActiveFile) }}</el-tag>
           <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataSetError.value" size="small" type="danger">DataSet 解析失败</el-tag>
         </div>
@@ -61,10 +60,11 @@
       </el-tabs>
 
       <div class="editor-area" v-loading="!state.fileLoaded.value">
-        <PageDataVxeTreeEditor
+        <VxeJsonTreeEditor
           v-if="resolvedActiveFile === 'pagedata.json' && pageDataEditorMode !== 'text'"
           :model-value="state.editFiles[resolvedActiveFile] ?? ''"
           :document-value="state.pageDataDocument.value as Record<string, unknown> | null"
+          :policy="pageDataPolicy"
           class="code-input code-input--json"
           height="100%"
           :schema="PAGE_DATA_JSON_SCHEMA"
@@ -117,22 +117,17 @@
               <el-table-column prop="version" label="版本" width="80" />
               <el-table-column label="时间" width="180">
                 <template #default="scope">
-                  {{ formatHistoryTime(scope.row.updatedAt) }}
+                  {{ scope.row.createdAt ?? '-' }}
                 </template>
               </el-table-column>
-              <el-table-column label="变更文件" min-width="180">
+              <el-table-column label="操作人" min-width="120">
                 <template #default="scope">
-                  {{ formatChangedFiles(scope.row.changedFiles) }}
+                  {{ scope.row.modifiedBy ?? '-' }}
                 </template>
               </el-table-column>
-              <el-table-column label="状态" width="160">
+              <el-table-column label="状态" width="100">
                 <template #default="scope">
-                  <div class="remote-version-status">
-                    <el-tag v-if="scope.row.current" size="small" type="success">当前版</el-tag>
-                    <el-tag v-if="scope.row.restoredFromVersion !== null" size="small" type="warning">
-                      恢复自 v{{ scope.row.restoredFromVersion }}
-                    </el-tag>
-                  </div>
+                  <el-tag v-if="scope.row.isCurrent" size="small" type="success">当前版</el-tag>
                 </template>
               </el-table-column>
             </el-table>
@@ -140,11 +135,8 @@
           <div class="remote-version-browser__preview" v-loading="remoteVersionPreviewLoading">
             <div v-if="remoteVersionPreview" class="remote-version-browser__preview-meta">
               <el-tag size="small" type="info">浏览版本 v{{ remoteVersionPreview.version }}</el-tag>
-              <el-tag v-if="remoteVersionPreview.current" size="small" type="success">当前版</el-tag>
-              <el-tag v-if="remoteVersionPreview.restoredFromVersion !== null" size="small" type="warning">
-                恢复自 v{{ remoteVersionPreview.restoredFromVersion }}
-              </el-tag>
-              <span class="remote-version-browser__preview-time">{{ formatHistoryTime(remoteVersionPreview.updatedAt) }}</span>
+              <el-tag v-if="remoteVersionPreview.isCurrent" size="small" type="success">当前版</el-tag>
+              <span class="remote-version-browser__preview-time">{{ remoteVersionPreview.createdAt ?? '-' }}</span>
             </div>
             <el-empty
               v-if="!remoteVersionPreview && !remoteVersionPreviewLoading"
@@ -189,7 +181,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, SparkJsonEditor } from '@spark-view/spark-component'
-import PageDataVxeTreeEditor from './components/PageDataVxeTreeEditor.vue'
+import VxeJsonTreeEditor from './components/VxeJsonTreeEditor.vue'
+import { pageDataPolicy } from './policies/pageDataPolicy'
 import { PAGE_FILE_NAMES } from './useDevState'
 import type { BackendPageVersionFile, BackendPageVersionSummary, DevState, PageFileName } from './useDevState'
 import { canonicalizePageDataJson, PAGE_DATA_JSON_SCHEMA } from './pageDataJsonSchema'
@@ -219,7 +212,7 @@ const canRestoreRemoteVersion = computed(() => {
   const version = selectedRemoteVersion.value
   if (version === null) return false
   const matched = remotePageVersions.value.find((item) => item.version === version)
-  return Boolean(matched) && !matched?.current
+  return Boolean(matched) && !matched?.isCurrent
 })
 
 const {
@@ -307,15 +300,6 @@ function redoActiveFile() {
   props.state.redoFileSnapshot(resolvedActiveFile.value)
 }
 
-function formatHistoryTime(timestamp: number): string {
-  if (!Number.isFinite(timestamp) || timestamp <= 0) return '-'
-  return new Date(timestamp).toLocaleString('zh-CN', { hour12: false })
-}
-
-function formatChangedFiles(files: string[]): string {
-  return files.length > 0 ? files.join(', ') : '-'
-}
-
 async function loadRemoteVersionPreview(version: number) {
   selectedRemoteVersion.value = version
   remoteVersionPreviewLoading.value = true
@@ -332,10 +316,10 @@ async function loadRemoteVersionHistory(fileName: PageFileName, preferredVersion
   remoteVersionPreview.value = null
   selectedRemoteVersion.value = null
   try {
-    const versions = await props.state.listRemotePageVersions()
+    const versions = await props.state.listRemotePageVersions(fileName)
     remotePageVersions.value = versions
     const targetVersion = preferredVersion
-      ?? versions.find((item) => item.current)?.version
+      ?? versions.find((item) => item.isCurrent)?.version
       ?? versions[0]?.version
       ?? null
     if (targetVersion !== null) {
@@ -361,7 +345,7 @@ async function restoreSelectedRemoteVersion() {
 
   restoringRemoteVersion.value = true
   try {
-    if (await props.state.restoreRemotePageVersion(version)) {
+    if (await props.state.restoreRemotePageVersion(version, remoteVersionTargetFile.value)) {
       localActiveFile.value = remoteVersionTargetFile.value
       await loadRemoteVersionHistory(remoteVersionTargetFile.value)
     }

@@ -23,20 +23,19 @@ export { DataTable } from './data-table'
 export { DataView } from './data-view'
 export { DataSetCrudTool } from './dataset-crud-tool'
 export {
-  commitDataSetHistory,
+  commitDataSetSnapshot,
   createLocalStorageHistoryAdapter,
-  formatPageDataHistoryEntry,
-  getDataSetHistoryEntry,
-  listDataSetHistory,
+  formatPageDataSnapshot,
+  getDataSetSnapshot,
+  listDataSetSnapshots,
   resolveDataSetHistoryKey,
 } from './dataset-history'
 export type {
-  DataSetCommitVersionOptions,
-  DataSetHistoryCommitOptions,
-  DataSetHistoryEntry,
+  DataSetCommitSnapshotOptions,
+  DataSetHistorySnapshot,
   DataSetHistoryListOptions,
   DataSetHistoryScope,
-  DataSetHistorySelector,
+  DataSetSnapshotSelector,
   DataSetHistoryStorageAdapter,
 } from './dataset-history'
 

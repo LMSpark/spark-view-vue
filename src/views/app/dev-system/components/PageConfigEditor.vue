@@ -4,6 +4,16 @@
       <span class="pce-header__title">配置文件</span>
       <div class="pce-header__actions">
         <el-select
+          v-if="activeFile === 'rule.json'"
+          :model-value="ruleEditorMode"
+          size="small"
+          style="width: 140px"
+          @update:model-value="handleRuleEditorModeChange"
+        >
+          <el-option label="树" value="tree" :disabled="!ruleTreeEditorAvailable" />
+          <el-option label="源码" value="text" />
+        </el-select>
+        <el-select
           v-if="activeFile === 'pagedata.json'"
           :model-value="pageDataEditorMode"
           size="small"
@@ -28,10 +38,19 @@
     </div>
     <el-tabs v-model="activeFile" type="card" class="pce-tabs">
       <el-tab-pane v-for="fname in FILE_NAMES" :key="fname" :label="fname" :name="fname">
-        <PageDataVxeTreeEditor
-          v-if="fname === 'pagedata.json' && pageDataEditorMode !== 'text'"
+        <VxeJsonTreeEditor
+          v-if="fname === 'rule.json' && ruleEditorMode === 'tree'"
+          :model-value="files[fname] ?? ''"
+          :policy="rulePolicy"
+          class="pce-json-editor"
+          height="420px"
+          @update:model-value="handleFileValueChange(fname, $event)"
+        />
+        <VxeJsonTreeEditor
+          v-else-if="fname === 'pagedata.json' && pageDataEditorMode !== 'text'"
           :model-value="files[fname] ?? ''"
           :document-value="pageDataDocument"
+          :policy="pageDataPolicy"
           class="pce-json-editor"
           height="420px"
           :schema="PAGE_DATA_JSON_SCHEMA"
@@ -78,8 +97,11 @@ import {
   canonicalizePageDataValue,
   PAGE_DATA_JSON_SCHEMA,
 } from '../pageDataJsonSchema'
-import PageDataVxeTreeEditor from './PageDataVxeTreeEditor.vue'
+import VxeJsonTreeEditor from './VxeJsonTreeEditor.vue'
+import { pageDataPolicy } from '../policies/pageDataPolicy'
+import { rulePolicy } from '../policies/rulePolicy'
 import { usePageDataEditorMode } from '../composables/usePageDataEditorMode'
+import { useRuleEditorMode } from '../composables/useRuleEditorMode'
 
 import { getPageApi } from '@/services/api-paths'
 import { http } from '@/services/http'
@@ -102,6 +124,13 @@ const saving = ref(false)
 const pageDataDocument = ref<Record<string, unknown> | null>(null)
 
 const hasChanges = computed(() => Object.values(dirty).some(Boolean))
+const {
+  ruleEditorMode,
+  ruleTreeEditorAvailable,
+  handleRuleEditorModeChange,
+} = useRuleEditorMode({
+  getRawText: () => files['rule.json'] ?? '',
+})
 const {
   pageDataEditorMode,
   pageDataObjectEditorAvailable,
@@ -211,7 +240,9 @@ async function handleSave() {
       }
       body[fname] = files[fname] ?? ''
     }
-    await http.post(`${getPageApi()}/${encodeURIComponent(props.pageId)}/__batch`, body)
+    for (const fname of FILE_NAMES) {
+      await http.put(`${getPageApi()}/${encodeURIComponent(props.pageId)}/${fname}`, body[fname] ?? '', { headers: { 'Content-Type': 'text/plain' } })
+    }
     for (const fname of FILE_NAMES) dirty[fname] = false
     ElMessage.success('配置文件已保存')
   } catch (e) {

@@ -3,11 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { PAGE_DATA_JSON_SCHEMA } from '../src/views/app/dev-system/pageDataJsonSchema'
 import {
   addChildNode,
-  buildPageDataTreeRows,
-  filterPageDataTreeRows,
+  buildJsonTreeRows,
+  filterJsonTreeRows,
   resolveSchemaInfoForPath,
   type JsonObject,
-} from '../src/views/app/dev-system/pageDataTreeEditor'
+} from '../src/views/app/dev-system/jsonTreeEditor'
+import { pageDataPolicy } from '../src/views/app/dev-system/policies/pageDataPolicy'
 
 function createSamplePageData(): JsonObject {
   return {
@@ -30,7 +31,7 @@ function createSamplePageData(): JsonObject {
   }
 }
 
-describe('pageDataTreeEditor', () => {
+describe('jsonTreeEditor (pageData policy)', () => {
   it('should resolve schema info through additionalProperties and array items', () => {
     const tablesInfo = resolveSchemaInfoForPath(PAGE_DATA_JSON_SCHEMA, ['tables'])
     expect(tablesInfo.title).toBe('数据表集合')
@@ -44,30 +45,26 @@ describe('pageDataTreeEditor', () => {
     expect(relationInfo.required).toBe(true)
   })
 
-  it('should keep ancestors when filtering tree rows', () => {
-    const rows = buildPageDataTreeRows(createSamplePageData())
-    const filtered = filterPageDataTreeRows(rows, (row) => row.displayKey === 'columns')
+  it('should keep ancestors when filtering flat tree rows', () => {
+    const rows = buildJsonTreeRows(createSamplePageData(), pageDataPolicy)
+    const filtered = filterJsonTreeRows(rows, (row) => row.displayKey === 'columns')
 
-    expect(filtered).toHaveLength(1)
-    const root = filtered[0]
-    if (!root) {
-      throw new Error('根节点缺失')
-    }
+    // 平坦行模型：命中行 + 所有祖先行均被保留
+    const ids = filtered.map((r) => r.displayKey)
+    expect(ids).toContain('pagedata')
+    expect(ids).toContain('tables')
+    expect(ids).toContain('Users')
+    expect(ids).toContain('columns')
 
-    expect(root.displayKey).toBe('pagedata')
-    expect(root.children?.map((child) => child.displayKey)).toEqual(['tables'])
-    expect(root.children?.[0]?.children?.map((child) => child.displayKey)).toEqual(['Users'])
-    expect(root.children?.[0]?.children?.[0]?.children?.map((child) => child.displayKey)).toEqual(['columns'])
-
-    const serializedKeys = JSON.stringify(filtered)
-    expect(serializedKeys).toContain('tables')
-    expect(serializedKeys).toContain('Users')
-    expect(serializedKeys).toContain('columns')
+    // columns 的 parentId 应指向 Users 行
+    const columnsRow = filtered.find((r) => r.displayKey === 'columns')
+    const usersRow = filtered.find((r) => r.displayKey === 'Users')
+    expect(columnsRow?.parentId).toBe(usersRow?.id)
   })
 
   it('should add semantic default nodes for tables and relations', () => {
     const sample = createSamplePageData()
-    const withNewTable = addChildNode(sample, ['tables'])
+    const withNewTable = addChildNode(sample, ['tables'], pageDataPolicy)
     const nextTables = withNewTable['tables'] as Record<string, JsonObject>
     const newTableEntry = Object.entries(nextTables).find(([key]) => key !== 'Users')
 
@@ -77,7 +74,7 @@ describe('pageDataTreeEditor', () => {
       views: { default: {} },
     })
 
-    const withRelation = addChildNode(sample, ['tableRelations'])
+    const withRelation = addChildNode(sample, ['tableRelations'], pageDataPolicy)
     expect(withRelation['tableRelations']).toEqual([
       {
         parentTable: 'ParentTable',
