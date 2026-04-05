@@ -32,6 +32,10 @@ export type { ComponentCategory } from './supplement'
 export { generateJsonCatalog } from './json-catalog-generator'
 export type { JsonCatalogOptions } from './json-catalog-generator'
 
+// ── AI 目录 TS 生成器（JSON → component-props-catalog.ts） ──
+export { generatePropsCatalog } from './catalog-generator'
+export type { CatalogGeneratorOptions } from './catalog-generator'
+
 // ── JSON Schema 类型 ──
 export type {
   ComponentCatalog,
@@ -54,12 +58,27 @@ export { EL_BINDING_DESCRIPTORS, inferBindingFromVcm, buildAllBindingDescriptors
 // ── 提示词生成器（JSON → prompt text） ──
 export {
   generateRegistryPrompt,
+  generateComponentDirectoryPrompt,
   generateComponentPrompt,
   generatePropsCatalogPrompt,
+  generateComponentPromptRecord,
+  generateComponentDescribeCatalog,
+  generateComponentQueryCatalog,
+  queryComponentActionSpec,
   queryComponentProps,
+  queryComponentPromptRecord,
+  queryComponentCatalog,
   generateLegacyCatalogRecord,
 } from './prompt-generator'
-export type { PromptGeneratorOptions, PromptVerbosity } from './prompt-generator'
+export type {
+  PromptGeneratorOptions,
+  PromptVerbosity,
+  ComponentDirectoryDescribeItem,
+  ComponentDirectoryDescribePayload,
+  ComponentActionSpecPayload,
+  ComponentDescribeCatalog,
+  ComponentQueryCatalog,
+} from './prompt-generator'
 
 // ── 校验器（JSON → 校验报告） ──
 export { validateWithCatalog } from './catalog-validator'

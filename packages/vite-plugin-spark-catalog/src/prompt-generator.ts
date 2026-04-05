@@ -26,6 +26,73 @@ export interface PromptGeneratorOptions {
   includeConstraints?: boolean
 }
 
+/**
+ * 供 AI 查询使用的组件目录产物。
+ *
+ * - directoryPrompt: 组件目录总览，适合先回答“有哪些组件”
+ * - promptByType: 按组件 type 建立的完整参数目录，适合精确查询
+ */
+export interface ComponentQueryCatalog {
+  directoryPrompt: string
+  promptByType: Record<string, string>
+}
+
+/**
+ * 组件目录的结构化摘要项。
+ *
+ * 适合在 session.describe 这类“目录级查询”里直接返回，
+ * 让 AI 先知道有哪些组件、属于什么分类、各自做什么。
+ */
+export interface ComponentDirectoryDescribeItem {
+  type: string
+  category: ComponentEntry['category']
+  description: string
+}
+
+/**
+ * 供 session.describe 合并返回的组件目录结构。
+ */
+export interface ComponentDirectoryDescribePayload {
+  hint: string
+  summary: {
+    total: number
+    containers: number
+    fields: number
+    groups: number
+    meta: number
+    features: number
+  }
+  registry: ComponentCatalog['registry']
+  components: ComponentDirectoryDescribeItem[]
+}
+
+/**
+ * 供 stills.actionSpec 式单项查询消费的组件规格。
+ *
+ * 注意：这里描述的是组件 type 的配置规格，不是 still action 本身的执行规格。
+ */
+export interface ComponentActionSpecPayload {
+  type: string
+  category: ComponentEntry['category']
+  description: string
+  props: PropEntry[]
+  emits?: ComponentEntry['emits']
+  rootFields?: ComponentEntry['rootFields']
+  binding?: ComponentEntry['binding']
+  notes?: string
+}
+
+/**
+ * 供 describe 语义消费的完整组件目录产物。
+ *
+ * - directory: 目录级摘要，适合并入 session.describe
+ * - specByType: 单组件规格表，适合按 type 做 actionSpec 式精查
+ */
+export interface ComponentDescribeCatalog {
+  directory: ComponentDirectoryDescribePayload
+  specByType: Record<string, ComponentActionSpecPayload>
+}
+
 /* --------------------------------------------------------------------------
  * 公共 API
  * ----------------------------------------------------------------------- */
@@ -45,6 +112,25 @@ export function generateRegistryPrompt(catalog: ComponentCatalog): string {
     `| SPARK 分组 | ${registry.groups.join(', ')} |`,
   ]
   return lines.join('\n')
+}
+
+/**
+ * 生成供 AI 查询的组件目录。
+ *
+ * 包含：
+ * 1. 分类注册表
+ * 2. 全量 type / category / description 索引表
+ */
+export function generateComponentDirectoryPrompt(catalog: ComponentCatalog): string {
+  return [
+    '## 组件目录',
+    '',
+    generateRegistryPrompt(catalog),
+    '',
+    '## 组件索引',
+    '',
+    generateComponentIndex(catalog),
+  ].join('\n')
 }
 
 /**
@@ -180,6 +266,133 @@ export function queryComponentProps(catalog: ComponentCatalog, types: string[]):
   }
 
   return results.join('\n\n---\n\n')
+}
+
+/**
+ * 生成按组件 type 建立的完整参数目录。
+ *
+ * value 为 generateComponentPrompt(entry, 'full') 的结果，适合运行时做按 type 精确查询。
+ */
+export function generateComponentPromptRecord(catalog: ComponentCatalog): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(catalog.components).map(([type, entry]) => [type, generateComponentPrompt(entry, 'full')]),
+  )
+}
+
+/**
+ * 生成供 AI 查询的完整组件目录产物。
+ */
+export function generateComponentQueryCatalog(catalog: ComponentCatalog): ComponentQueryCatalog {
+  return {
+    directoryPrompt: generateComponentDirectoryPrompt(catalog),
+    promptByType: generateComponentPromptRecord(catalog),
+  }
+}
+
+/**
+ * 生成供 describe 语义直接消费的结构化目录产物。
+ */
+export function generateComponentDescribeCatalog(catalog: ComponentCatalog): ComponentDescribeCatalog {
+  const entries = filterEntries(catalog)
+  const components = entries.map<ComponentDirectoryDescribeItem>((entry) => ({
+    type: entry.type,
+    category: entry.category,
+    description: entry.description,
+  }))
+
+  return {
+    directory: {
+      hint: 'session.describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 查询 specByType。',
+      summary: {
+        total: components.length,
+        containers: catalog.registry.containers.length,
+        fields: catalog.registry.fields.length,
+        groups: catalog.registry.groups.length,
+        meta: catalog.registry.meta.length,
+        features: entries.filter(entry => entry.category === 'feature').length,
+      },
+      registry: catalog.registry,
+      components,
+    },
+    specByType: Object.fromEntries(
+      entries.map((entry) => [
+        entry.type,
+        {
+          type: entry.type,
+          category: entry.category,
+          description: entry.description,
+          props: entry.props,
+          ...(entry.emits.length > 0 ? { emits: entry.emits } : {}),
+          ...(entry.rootFields !== undefined && entry.rootFields.length > 0
+            ? { rootFields: entry.rootFields }
+            : {}),
+          ...(entry.binding !== undefined ? { binding: entry.binding } : {}),
+          ...(entry.notes !== undefined ? { notes: entry.notes } : {}),
+        } satisfies ComponentActionSpecPayload,
+      ]),
+    ),
+  }
+}
+
+/**
+ * 从结构化组件规格表中按 type 查询单组件规格。
+ */
+export function queryComponentActionSpec(
+  specByType: Record<string, ComponentActionSpecPayload>,
+  type: string,
+): ComponentActionSpecPayload | null {
+  return specByType[type] ?? null
+}
+
+/**
+ * 对已经生成好的参数目录做查询。
+ *
+ * 适合消费方只拿到 promptByType + directoryPrompt 时复用统一查询语义，
+ * 而不必重新遍历原始 ComponentCatalog。
+ */
+export function queryComponentPromptRecord(
+  promptByType: Record<string, string>,
+  types: string[],
+  directoryPrompt?: string,
+): string {
+  const results: string[] = []
+
+  for (const query of types) {
+    const hashIdx = query.indexOf('#')
+    const type = hashIdx !== -1 ? query.slice(0, hashIdx) : query
+    const fragment = hashIdx !== -1 ? query.slice(hashIdx + 1) : null
+
+    if (type === '@list') {
+      results.push(directoryPrompt ?? '❌ 未提供组件目录')
+      continue
+    }
+
+    const prompt = promptByType[type]
+    if (prompt === undefined) {
+      results.push(`❌ 未找到组件「${type}」`)
+      continue
+    }
+
+    if (fragment !== null) {
+      const matched = prompt.split('\n').filter(line =>
+        line.toLowerCase().includes(fragment.toLowerCase()),
+      )
+      results.push(matched.length > 0 ? matched.join('\n') : `❌ 组件「${type}」中未找到「${fragment}」相关内容`)
+      continue
+    }
+
+    results.push(prompt)
+  }
+
+  return results.join('\n\n---\n\n')
+}
+
+/**
+ * 更贴近 AI 场景的别名：按 type 查询组件目录详情。
+ */
+export function queryComponentCatalog(catalog: ComponentCatalog, types: string[]): string {
+  const queryCatalog = generateComponentQueryCatalog(catalog)
+  return queryComponentPromptRecord(queryCatalog.promptByType, types, queryCatalog.directoryPrompt)
 }
 
 /**

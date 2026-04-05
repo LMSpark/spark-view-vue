@@ -62,9 +62,9 @@ function withPC<T>(session: IStillSession, op: (pc: IPageConfigData) => StillRes
 function findById(node: SparkNode, id: string): SparkNode | null {
   if (node.id === id) return node
   if (!Array.isArray(node.children)) return null
-  for (const c of node.children) {
-    if (typeof c === 'string' || typeof c === 'number') continue
-    const found = findById(c, id)
+  for (const child of node.children) {
+    if (typeof child === 'string' || typeof child === 'number') continue
+    const found = findById(child, id)
     if (found !== null) return found
   }
   return null
@@ -73,10 +73,10 @@ function findById(node: SparkNode, id: string): SparkNode | null {
 /** 递归查找父节点 */
 function findParent(root: SparkNode, targetId: string): SparkNode | null {
   if (!Array.isArray(root.children)) return null
-  for (const c of root.children) {
-    if (typeof c === 'string' || typeof c === 'number') continue
-    if (c.id === targetId) return root
-    const found = findParent(c, targetId)
+  for (const child of root.children) {
+    if (typeof child === 'string' || typeof child === 'number') continue
+    if (child.id === targetId) return root
+    const found = findParent(child, targetId)
     if (found !== null) return found
   }
   return null
@@ -85,47 +85,47 @@ function findParent(root: SparkNode, targetId: string): SparkNode | null {
 /** 从父节点的 children 中移除目标（就地修改） */
 function removeFromParent(parent: SparkNode, targetId: string): boolean {
   if (!Array.isArray(parent.children)) return false
-  const idx = parent.children.findIndex(
-    (c) => typeof c !== 'string' && typeof c !== 'number' && c.id === targetId,
+  const index = parent.children.findIndex(
+    (child) => typeof child !== 'string' && typeof child !== 'number' && child.id === targetId,
   )
-  if (idx === -1) return false
-  parent.children.splice(idx, 1)
+  if (index === -1) return false
+  parent.children.splice(index, 1)
   return true
 }
 
 /** 收集所有 event handler 函数名 */
 function collectHandlerNames(node: SparkNode): Set<string> {
   const names = new Set<string>()
-  _walkHandlers(node, names)
+  walkHandlers(node, names)
   return names
 }
 
-function _walkHandlers(node: SparkNode, out: Set<string>): void {
+function walkHandlers(node: SparkNode, out: Set<string>): void {
   const on = node.props?.['on'] as Record<string, string> | undefined
   if (on && typeof on === 'object') {
-    for (const v of Object.values(on)) {
-      if (typeof v === 'string' && v.length > 0) out.add(v)
+    for (const handlerName of Object.values(on)) {
+      if (typeof handlerName === 'string' && handlerName.length > 0) out.add(handlerName)
     }
   }
   if (!Array.isArray(node.children)) return
-  for (const c of node.children) {
-    if (typeof c !== 'string' && typeof c !== 'number') _walkHandlers(c, out)
+  for (const child of node.children) {
+    if (typeof child !== 'string' && typeof child !== 'number') walkHandlers(child, out)
   }
 }
 
 /** 收集所有 dataKey */
 function collectDataKeys(node: SparkNode): Set<string> {
   const keys = new Set<string>()
-  _walkDataKeys(node, keys)
+  walkDataKeys(node, keys)
   return keys
 }
 
-function _walkDataKeys(node: SparkNode, out: Set<string>): void {
-  const dk = node.props?.['dataKey']
-  if (typeof dk === 'string' && dk.length > 0) out.add(dk)
+function walkDataKeys(node: SparkNode, out: Set<string>): void {
+  const dataKey = node.props?.['dataKey']
+  if (typeof dataKey === 'string' && dataKey.length > 0) out.add(dataKey)
   if (!Array.isArray(node.children)) return
-  for (const c of node.children) {
-    if (typeof c !== 'string' && typeof c !== 'number') _walkDataKeys(c, out)
+  for (const child of node.children) {
+    if (typeof child !== 'string' && typeof child !== 'number') walkDataKeys(child, out)
   }
 }
 
@@ -290,10 +290,10 @@ const ruleAddComponent: StillDefinition<AddComponentParams, { id: string }> = {
       }
 
       if (!Array.isArray(parent.children)) parent.children = []
-      const idx = params.position !== undefined
+      const index = params.position !== undefined
         ? Math.min(params.position, parent.children.length)
         : parent.children.length
-      parent.children.splice(idx, 0, newNode)
+      parent.children.splice(index, 0, newNode)
 
       const state = getPageConfigState(session)
       if (state.phase === 'bootstrapped') state.phase = 'refining'
@@ -425,29 +425,26 @@ const ruleReorder: StillDefinition<ReorderParams, void> = {
         return { ok: false, code: 'NO_CHILDREN', msg: '目标节点没有子节点', fix: '先添加子节点' }
       }
 
-      // 按 childIds 重排 SparkNode 子节点，文本/数字子节点保持原序追加到末尾
       const nodeMap = new Map<string, SparkNode>()
       const textChildren: SparkNodeChildren = []
-      for (const c of target.children) {
-        if (typeof c === 'string' || typeof c === 'number') {
-          textChildren.push(c)
-        } else if (c.id) {
-          nodeMap.set(c.id, c)
+      for (const child of target.children) {
+        if (typeof child === 'string' || typeof child === 'number') {
+          textChildren.push(child)
+        } else if (child.id) {
+          nodeMap.set(child.id, child)
         }
       }
 
       const reordered: SparkNodeChildren = []
       for (const id of params.childIds) {
-        const n = nodeMap.get(id)
-        if (n) {
-          reordered.push(n)
+        const node = nodeMap.get(id)
+        if (node) {
+          reordered.push(node)
           nodeMap.delete(id)
         }
       }
-      // 追加 childIds 未列出的节点
-      for (const [, n] of nodeMap) reordered.push(n)
-      // 追加文本子节点
-      for (const t of textChildren) reordered.push(t)
+      for (const [, node] of nodeMap) reordered.push(node)
+      for (const textChild of textChildren) reordered.push(textChild)
 
       target.children = reordered
       return { ok: true, data: undefined, summary: `子节点已重排 (${params.childIds.length} items)` }
@@ -901,8 +898,8 @@ const pageconfigDescribe: StillDefinition<Record<string, never>, unknown> = {
 function countNodes(node: SparkNode): number {
   let count = 1
   if (Array.isArray(node.children)) {
-    for (const c of node.children) {
-      if (typeof c !== 'string' && typeof c !== 'number') count += countNodes(c)
+    for (const child of node.children) {
+      if (typeof child !== 'string' && typeof child !== 'number') count += countNodes(child)
     }
   }
   return count

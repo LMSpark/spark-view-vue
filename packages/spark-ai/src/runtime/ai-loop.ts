@@ -435,14 +435,21 @@ export function setupHotReload(
 // ─── 文件写入 API ────────────────────────────────────────────────────────────
 
 /**
- * 批量写入页面配置文件
+ * 批量写入页面配置文件（逐文件 PUT）
  */
 export async function writePageFiles(pageId: string, files: PageFiles): Promise<string[]> {
-  const result = await http.post<{ written: string[] }>(
-    `${getPageApiUrl()}/${encodeURIComponent(pageId)}/__batch`,
-    files,
-  )
-  return result.written
+  const written: string[] = []
+  const entries = Object.entries(files) as Array<[string, string | undefined]>
+  for (const [fileName, content] of entries) {
+    if (content === undefined) continue
+    await http.put<Record<string, unknown>>(
+      `${getPageApiUrl()}/${encodeURIComponent(pageId)}/${fileName}`,
+      content,
+      { headers: { 'Content-Type': 'text/plain' } },
+    )
+    written.push(fileName)
+  }
+  return written
 }
 
 /**
