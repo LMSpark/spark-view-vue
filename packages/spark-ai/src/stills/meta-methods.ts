@@ -217,7 +217,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
     }
 
     const componentSpec = getComponentSpec(params.action)
-    if (componentSpec !== undefined) {
+    if (componentSpec !== null) {
       return {
         ok: true,
         data: {
