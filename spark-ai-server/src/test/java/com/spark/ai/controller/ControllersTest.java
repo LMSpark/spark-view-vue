@@ -125,26 +125,6 @@ class ControllersTest {
                 .andExpect(jsonPath("$.ok").value(true));
     }
 
-    // ── PageConfigController: POST batch ──────────────────────────────────
-
-    @Test
-    void batch_writesMultipleFiles() throws Exception {
-        when(pageConfigService.writeBatch(eq("t1"), eq("p1"), eq("new-pg"), any()))
-                .thenReturn(Map.of("ok", true, "pageId", "new-pg",
-                        "written", java.util.List.of("rule.json", "pagedata.json")));
-
-        String filesJson = """
-                {"rule.json":"[]","pagedata.json":"{}"}
-                """;
-
-        mockMvc.perform(post("/api/tenants/t1/projects/p1/pages-config/new-pg/__batch")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filesJson))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ok").value(true))
-                .andExpect(jsonPath("$.pageId").value("new-pg"));
-    }
-
     // ── PageConfigController: SSE ─────────────────────────────────────────
 
     @Test

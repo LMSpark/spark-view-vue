@@ -16,6 +16,9 @@ import java.util.Map;
 /**
  * 页面配置文件 REST 端点 — 按 (tenantId, projectId) 隔离。
  * SSE 事件流保持全局（/api/events）。
+ *
+ * <h3>文件级版本管理</h3>
+ * 版本操作路径：{pageId}/{filename}/__versions/...
  */
 @RestController
 @RequestMapping("/api")
@@ -45,6 +48,12 @@ public class PageConfigController {
         return ResponseEntity.ok(pages);
     }
 
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/__health")
+    public ResponseEntity<?> checkPagesHealth(@PathVariable String tenantId,
+                                               @PathVariable String projectId) {
+        return ResponseEntity.ok(pageConfigService.checkPagesHealth(tenantId, projectId));
+    }
+
     // ── 创建页面 ─────────────────────────────────────────────────────────────
 
     @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/__create")
@@ -60,7 +69,7 @@ public class PageConfigController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "文件系统错误: " + e.getMessage()));
         }
     }
@@ -77,7 +86,7 @@ public class PageConfigController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "文件系统错误: " + e.getMessage()));
         }
     }
@@ -107,7 +116,7 @@ public class PageConfigController {
             Map<String, Object> result = pageConfigService.readRootFile(
                     tenantId, projectId, "routes.json", timestamp);
             return ResponseEntity.ok(result);
-        } catch (java.nio.file.NoSuchFileException e) {
+        } catch (NoSuchFileException e) {
             return ResponseEntity.notFound().build();
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
@@ -136,7 +145,7 @@ public class PageConfigController {
         }
     }
 
-    // ── 写入单个文件 ──────────────────────────────────────────────────────────
+    // ── 写入单个文件（只写磁盘，不自动升版）──────────────────────────────────
 
     @PutMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}")
     public ResponseEntity<?> putFile(
@@ -156,69 +165,138 @@ public class PageConfigController {
         }
     }
 
-    // ── 批量写入 ──────────────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    // 文件级版本管理
+    // ══════════════════════════════════════════════════════════════════════════
 
-    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__batch")
-    public ResponseEntity<?> batch(
+    /** 创建文件版本快照（手动升版） */
+    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions")
+    public ResponseEntity<?> createFileVersion(
             @PathVariable String tenantId,
             @PathVariable String projectId,
             @PathVariable String pageId,
-            @RequestBody Map<String, String> files) {
+            @PathVariable String filename,
+            @RequestBody(required = false) Map<String, String> body) {
         try {
-            Map<String, Object> result = pageConfigService.writeBatch(
-                    tenantId, projectId, pageId, files);
+            String modifiedBy = body != null ? body.get("modifiedBy") : null;
+            Map<String, Object> result = pageConfigService.createFileVersion(
+                    tenantId, projectId, pageId, filename, modifiedBy);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.notFound().build();
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 
+    /** 查询某文件的版本列表 */
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions")
+    public ResponseEntity<?> listFileVersions(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @PathVariable String pageId,
+            @PathVariable String filename) {
+        try {
+            return ResponseEntity.ok(pageConfigService.listFileVersions(
+                    tenantId, projectId, pageId, filename));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /** 查询某页面全部文件的版本列表 */
     @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions")
-    public ResponseEntity<?> listPageVersions(
+    public ResponseEntity<?> listPageFileVersions(
             @PathVariable String tenantId,
             @PathVariable String projectId,
             @PathVariable String pageId) {
         try {
-            return ResponseEntity.ok(pageConfigService.listPageVersions(tenantId, projectId, pageId));
+            return ResponseEntity.ok(pageConfigService.listPageFileVersions(
+                    tenantId, projectId, pageId));
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 
-    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions/{version}/{filename}")
-    public ResponseEntity<?> getPageVersionFile(
+    /** 读取指定版本的文件内容 */
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}")
+    public ResponseEntity<?> getFileVersionContent(
             @PathVariable String tenantId,
             @PathVariable String projectId,
             @PathVariable String pageId,
-            @PathVariable int version,
-            @PathVariable String filename) {
-        try {
-            return ResponseEntity.ok(pageConfigService.readPageVersionFile(tenantId, projectId, pageId, version, filename));
-        } catch (IllegalArgumentException | SecurityException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (NoSuchFileException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions/{version}/__restore")
-    public ResponseEntity<?> restorePageVersion(
-            @PathVariable String tenantId,
-            @PathVariable String projectId,
-            @PathVariable String pageId,
+            @PathVariable String filename,
             @PathVariable int version) {
         try {
-            return ResponseEntity.ok(pageConfigService.restorePageVersion(tenantId, projectId, pageId, version));
+            return ResponseEntity.ok(pageConfigService.readFileVersionContent(
+                    tenantId, projectId, pageId, filename, version));
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (NoSuchFileException e) {
             return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /** 恢复指定版本（覆盖工作文件） */
+    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}/__restore")
+    public ResponseEntity<?> restoreFileVersion(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @PathVariable String pageId,
+            @PathVariable String filename,
+            @PathVariable int version) {
+        try {
+            return ResponseEntity.ok(pageConfigService.restoreFileVersion(
+                    tenantId, projectId, pageId, filename, version));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /** 删除指定版本 */
+    @DeleteMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}")
+    public ResponseEntity<?> deleteFileVersion(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @PathVariable String pageId,
+            @PathVariable String filename,
+            @PathVariable int version) {
+        try {
+            pageConfigService.deleteFileVersion(tenantId, projectId, pageId, filename, version);
+            return ResponseEntity.ok(Map.of("ok", true, "pageId", pageId,
+                    "filename", filename, "deletedVersion", version));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /** 修剪旧版本 */
+    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/__prune")
+    public ResponseEntity<?> pruneFileVersions(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
+            @PathVariable String pageId,
+            @PathVariable String filename,
+            @RequestBody Map<String, Object> body) {
+        try {
+            int keepCount = body.containsKey("keepCount") ? ((Number) body.get("keepCount")).intValue() : 10;
+            int deleted = pageConfigService.pruneFileVersions(
+                    tenantId, projectId, pageId, filename, keepCount);
+            return ResponseEntity.ok(Map.of("ok", true, "pageId", pageId,
+                    "filename", filename, "keepCount", keepCount, "deleted", deleted));
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
@@ -233,11 +311,6 @@ public class PageConfigController {
         Map.of("error", "MISSING_CONTEXT",
                "message", "请求头缺少 X-Tenant-Id 或 X-Project-Id，请先登录"));
 
-    /**
-     * 从请求头解析租户 + 项目上下文。
-     *
-     * @return [tenantId, projectId]，任一缺失时返回 null
-     */
     private String[] resolveContext(HttpServletRequest request) {
         String tenant = request.getHeader("X-Tenant-Id");
         String project = request.getHeader("X-Project-Id");
@@ -283,40 +356,71 @@ public class PageConfigController {
         return putFile(ctx[0], ctx[1], pageId, filename, content);
     }
 
-    @PostMapping("/pages-config/{pageId}/__batch")
-    public ResponseEntity<?> batchFlat(HttpServletRequest request,
-                                        @PathVariable String pageId,
-                                        @RequestBody Map<String, String> files) {
+    @PostMapping("/pages-config/{pageId}/{filename}/__versions")
+    public ResponseEntity<?> createFileVersionFlat(HttpServletRequest request,
+                                                    @PathVariable String pageId,
+                                                    @PathVariable String filename,
+                                                    @RequestBody(required = false) Map<String, String> body) {
         String[] ctx = resolveContext(request);
         if (ctx == null) return MISSING_CONTEXT;
-        return batch(ctx[0], ctx[1], pageId, files);
+        return createFileVersion(ctx[0], ctx[1], pageId, filename, body);
+    }
+
+    @GetMapping("/pages-config/{pageId}/{filename}/__versions")
+    public ResponseEntity<?> listFileVersionsFlat(HttpServletRequest request,
+                                                   @PathVariable String pageId,
+                                                   @PathVariable String filename) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return listFileVersions(ctx[0], ctx[1], pageId, filename);
     }
 
     @GetMapping("/pages-config/{pageId}/__versions")
-    public ResponseEntity<?> listPageVersionsFlat(HttpServletRequest request,
-                                                  @PathVariable String pageId) {
+    public ResponseEntity<?> listPageFileVersionsFlat(HttpServletRequest request,
+                                                       @PathVariable String pageId) {
         String[] ctx = resolveContext(request);
         if (ctx == null) return MISSING_CONTEXT;
-        return listPageVersions(ctx[0], ctx[1], pageId);
+        return listPageFileVersions(ctx[0], ctx[1], pageId);
     }
 
-    @GetMapping("/pages-config/{pageId}/__versions/{version}/{filename}")
-    public ResponseEntity<?> getPageVersionFileFlat(HttpServletRequest request,
-                                                    @PathVariable String pageId,
-                                                    @PathVariable int version,
-                                                    @PathVariable String filename) {
+    @GetMapping("/pages-config/{pageId}/{filename}/__versions/{version}")
+    public ResponseEntity<?> getFileVersionContentFlat(HttpServletRequest request,
+                                                        @PathVariable String pageId,
+                                                        @PathVariable String filename,
+                                                        @PathVariable int version) {
         String[] ctx = resolveContext(request);
         if (ctx == null) return MISSING_CONTEXT;
-        return getPageVersionFile(ctx[0], ctx[1], pageId, version, filename);
+        return getFileVersionContent(ctx[0], ctx[1], pageId, filename, version);
     }
 
-    @PostMapping("/pages-config/{pageId}/__versions/{version}/__restore")
-    public ResponseEntity<?> restorePageVersionFlat(HttpServletRequest request,
+    @PostMapping("/pages-config/{pageId}/{filename}/__versions/{version}/__restore")
+    public ResponseEntity<?> restoreFileVersionFlat(HttpServletRequest request,
+                                                     @PathVariable String pageId,
+                                                     @PathVariable String filename,
+                                                     @PathVariable int version) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return restoreFileVersion(ctx[0], ctx[1], pageId, filename, version);
+    }
+
+    @DeleteMapping("/pages-config/{pageId}/{filename}/__versions/{version}")
+    public ResponseEntity<?> deleteFileVersionFlat(HttpServletRequest request,
                                                     @PathVariable String pageId,
+                                                    @PathVariable String filename,
                                                     @PathVariable int version) {
         String[] ctx = resolveContext(request);
         if (ctx == null) return MISSING_CONTEXT;
-        return restorePageVersion(ctx[0], ctx[1], pageId, version);
+        return deleteFileVersion(ctx[0], ctx[1], pageId, filename, version);
+    }
+
+    @PostMapping("/pages-config/{pageId}/{filename}/__versions/__prune")
+    public ResponseEntity<?> pruneFileVersionsFlat(HttpServletRequest request,
+                                                    @PathVariable String pageId,
+                                                    @PathVariable String filename,
+                                                    @RequestBody Map<String, Object> body) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return pruneFileVersions(ctx[0], ctx[1], pageId, filename, body);
     }
 
     @GetMapping("/pages-config/__list")
@@ -324,6 +428,13 @@ public class PageConfigController {
         String[] ctx = resolveContext(request);
         if (ctx == null) return MISSING_CONTEXT;
         return listPages(ctx[0], ctx[1]);
+    }
+
+    @GetMapping("/pages-config/__health")
+    public ResponseEntity<?> checkPagesHealthFlat(HttpServletRequest request) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return checkPagesHealth(ctx[0], ctx[1]);
     }
 
     @PostMapping("/pages-config/__create")
