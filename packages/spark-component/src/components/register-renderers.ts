@@ -27,6 +27,11 @@ import RendererSpace from './containers/non-data-components/RendererSpace.vue'
 import RendererDivider from './containers/non-data-components/RendererDivider.vue'
 import RendererButton from './containers/non-data-components/RendererButton.vue'
 import RendererLink from './containers/non-data-components/RendererLink.vue'
+import RendererPageHeader from './containers/non-data-components/RendererPageHeader.vue'
+import RendererDropdown from './containers/non-data-components/RendererDropdown.vue'
+import RendererTooltip from './containers/non-data-components/RendererTooltip.vue'
+import RendererPopover from './containers/non-data-components/RendererPopover.vue'
+import RendererPopconfirm from './containers/non-data-components/RendererPopconfirm.vue'
 import BuiltinActionButton from './containers/BuiltinActionButton.vue'
 
 // ── 展示组件（同步导入） ──
@@ -108,6 +113,11 @@ export function registerAllRenderers(): void {
   Spark.register('r-divider', RendererDivider)
   Spark.register('r-button', RendererButton)
   Spark.register('r-link', RendererLink)
+  Spark.register('r-page-header', RendererPageHeader)
+  Spark.register('r-dropdown', RendererDropdown)
+  Spark.register('r-tooltip', RendererTooltip)
+  Spark.register('r-popover', RendererPopover)
+  Spark.register('r-popconfirm', RendererPopconfirm)
   Spark.register('builtin-action', BuiltinActionButton)
 
   // ── 展示组件：数据驱动 + 非数据驱动 ──

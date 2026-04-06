@@ -47,6 +47,11 @@ import RendererSpace from './containers/non-data-components/RendererSpace.vue'
 import RendererDivider from './containers/non-data-components/RendererDivider.vue'
 import RendererButton from './containers/non-data-components/RendererButton.vue'
 import RendererLink from './containers/non-data-components/RendererLink.vue'
+import RendererPageHeader from './containers/non-data-components/RendererPageHeader.vue'
+import RendererDropdown from './containers/non-data-components/RendererDropdown.vue'
+import RendererTooltip from './containers/non-data-components/RendererTooltip.vue'
+import RendererPopover from './containers/non-data-components/RendererPopover.vue'
+import RendererPopconfirm from './containers/non-data-components/RendererPopconfirm.vue'
 import DisplayStatistic from './display/data-components/DisplayStatistic.vue'
 import DisplayProgress from './display/data-components/DisplayProgress.vue'
 import DisplayTag from './display/data-components/DisplayTag.vue'
@@ -103,6 +108,11 @@ markSparkTemplateNodeComponent(RendererSpace, { nodeType: 'r-space' })
 markSparkTemplateNodeComponent(RendererDivider, { nodeType: 'r-divider' })
 markSparkTemplateNodeComponent(RendererButton, { nodeType: 'r-button' })
 markSparkTemplateNodeComponent(RendererLink, { nodeType: 'r-link' })
+markSparkTemplateNodeComponent(RendererPageHeader, { nodeType: 'r-page-header' })
+markSparkTemplateNodeComponent(RendererDropdown, { nodeType: 'r-dropdown' })
+markSparkTemplateNodeComponent(RendererTooltip, { nodeType: 'r-tooltip' })
+markSparkTemplateNodeComponent(RendererPopover, { nodeType: 'r-popover' })
+markSparkTemplateNodeComponent(RendererPopconfirm, { nodeType: 'r-popconfirm' })
 markSparkTemplateNodeComponent(DisplayStatistic, { nodeType: 'r-statistic' })
 markSparkTemplateNodeComponent(DisplayProgress, { nodeType: 'r-progress' })
 markSparkTemplateNodeComponent(DisplayTag, { nodeType: 'r-tag' })
@@ -178,6 +188,11 @@ export const RSpace = createTemplateDsl('r-space', 'RSpace')
 export const RDivider = createTemplateDsl('r-divider', 'RDivider')
 export const RButton = createTemplateDsl('r-button', 'RButton')
 export const RLink = createTemplateDsl('r-link', 'RLink')
+export const RPageHeader = createTemplateDsl('r-page-header', 'RPageHeader')
+export const RDropdown = createTemplateDsl('r-dropdown', 'RDropdown')
+export const RTooltip = createTemplateDsl('r-tooltip', 'RTooltip')
+export const RPopover = createTemplateDsl('r-popover', 'RPopover')
+export const RPopconfirm = createTemplateDsl('r-popconfirm', 'RPopconfirm')
 export const RStatistic = createTemplateDsl('r-statistic', 'RStatistic')
 export const RProgress = createTemplateDsl('r-progress', 'RProgress')
 export const RTag = createTemplateDsl('r-tag', 'RTag')
@@ -215,6 +230,11 @@ export { RendererSpace }
 export { RendererDivider }
 export { RendererButton }
 export { RendererLink }
+export { RendererPageHeader }
+export { RendererDropdown }
+export { RendererTooltip }
+export { RendererPopover }
+export { RendererPopconfirm }
 export { BuiltinActionButton }
 export { default as RendererFieldScope } from './containers/data-components/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/data-components/RendererListItemScope.vue'
