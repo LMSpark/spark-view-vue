@@ -160,8 +160,8 @@ export const COMPONENT_SPEC_BY_TYPE = ${JSON.stringify(describeCatalog.specByTyp
 /**
  * 按组件 type 获取结构化规格。
  */
-export function getComponentSpec(type: string) {
-  return COMPONENT_SPEC_BY_TYPE[type] ?? null
+export function getComponentSpec(type: string): Record<string, unknown> | null {
+  return (COMPONENT_SPEC_BY_TYPE as Record<string, Record<string, unknown>>)[type] ?? null
 }
 
 /**
@@ -208,6 +208,7 @@ export function queryComponentPrompts(types: string[]): string | null {
     const prompt = COMPONENT_PROMPT_BY_TYPE[type]
 
     if (prompt === undefined) {
+      // eslint-disable-next-line prefer-template
       results.push('❌ 未找到组件「' + type + '」')
       continue
     }
@@ -219,6 +220,7 @@ export function queryComponentPrompts(types: string[]): string | null {
       results.push(
         matched.length > 0
           ? matched.join('\\n')
+          // eslint-disable-next-line prefer-template
           : '❌ 组件「' + type + '」中未找到「' + fragment + '」相关内容',
       )
       continue

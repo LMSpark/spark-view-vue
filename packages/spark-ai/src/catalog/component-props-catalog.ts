@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-04-06T00:21:29.836Z
- * 条目数量：97
+ * 生成时间：2026-04-06T00:30:18.614Z
+ * 条目数量：132
  */
 import type { ComponentCatalog } from './types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-04-06T00:21:29.832Z",
-  "componentCount": 97,
+  "buildTime": "2026-04-06T00:30:18.602Z",
+  "componentCount": 132,
   "registry": {
     "containers": [
       "r-block",
@@ -41,37 +41,55 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-tree"
     ],
     "fields": [
+      "r-affix",
+      "r-backtop",
+      "r-button",
+      "r-card",
+      "r-carousel",
+      "r-carousel-item",
       "r-cascader",
       "r-checkbox",
       "r-checkbox-group",
+      "r-col",
       "r-collapse-item",
       "r-color",
       "r-context-renderer",
       "r-date",
       "r-dept-picker",
+      "r-divider",
+      "r-dropdown",
       "r-entity-picker",
       "r-file-browser",
       "r-file-path",
       "r-html-editor",
       "r-icon",
       "r-image",
+      "r-link",
       "r-multi-select",
       "r-number",
+      "r-page-header",
+      "r-popconfirm",
+      "r-popover",
       "r-product-picker",
       "r-radio",
       "r-rate",
+      "r-row",
+      "r-scrollbar",
       "r-select",
       "r-slider",
+      "r-space",
       "r-step-item",
       "r-switch",
       "r-tab-pane",
       "r-text",
       "r-textarea",
       "r-toolbar",
+      "r-tooltip",
       "r-transfer",
       "r-tree-select",
       "r-upload",
-      "r-user-picker"
+      "r-user-picker",
+      "r-watermark"
     ],
     "groups": [
       "r-column-group"
@@ -572,7 +590,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "cardShadow",
-          "type": "\"never\" | \"always\" | \"hover\"",
+          "type": "\"always\" | \"hover\" | \"never\"",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式"
@@ -1325,7 +1343,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "cardShadow",
-          "type": "\"never\" | \"always\" | \"hover\"",
+          "type": "\"always\" | \"hover\" | \"never\"",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
@@ -1542,6 +1560,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。",
       "props": [
         {
+          "name": "width",
+          "type": "number",
+          "required": false
+        },
+        {
           "name": "name",
           "type": "string",
           "required": false
@@ -1559,11 +1582,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "placeholder",
           "type": "string",
-          "required": false
-        },
-        {
-          "name": "width",
-          "type": "number",
           "required": false
         },
         {
@@ -1669,6 +1687,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。",
       "props": [
         {
+          "name": "width",
+          "type": "number",
+          "required": false
+        },
+        {
           "name": "name",
           "type": "string",
           "required": false
@@ -1686,11 +1709,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "placeholder",
           "type": "string",
-          "required": false
-        },
-        {
-          "name": "width",
-          "type": "number",
           "required": false
         },
         {
@@ -1796,6 +1814,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。",
       "props": [
         {
+          "name": "width",
+          "type": "number",
+          "required": false
+        },
+        {
           "name": "name",
           "type": "string",
           "required": false
@@ -1813,11 +1836,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "placeholder",
           "type": "string",
-          "required": false
-        },
-        {
-          "name": "width",
-          "type": "number",
           "required": false
         },
         {
@@ -1916,6 +1934,155 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         "valueType": "string",
         "hasOptions": true
       }
+    },
+    "r-watermark": {
+      "type": "r-watermark",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。",
+      "props": [
+        {
+          "name": "content",
+          "type": "string | string[]",
+          "required": false
+        },
+        {
+          "name": "font",
+          "type": "WatermarkFont",
+          "required": false
+        },
+        {
+          "name": "gap",
+          "type": "[number, number]",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "[number, number]",
+          "required": false
+        },
+        {
+          "name": "rotate",
+          "type": "number",
+          "required": false,
+          "default": "-22"
+        },
+        {
+          "name": "zIndex",
+          "type": "number",
+          "required": false,
+          "default": "9"
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-watermark\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-tooltip": {
+      "type": "r-tooltip",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。",
+      "props": [
+        {
+          "name": "content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "placement",
+          "type": "string",
+          "required": false,
+          "default": "\"bottom\""
+        },
+        {
+          "name": "effect",
+          "type": "\"dark\" | \"light\"",
+          "required": false,
+          "default": "\"dark\""
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "showAfter",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "hideAfter",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "showArrow",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "enterable",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "popperClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "rawContent",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tooltip\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
     },
     "r-toolbar": {
       "type": "r-toolbar",
@@ -2129,7 +2296,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "mode",
-          "type": "\"header\" | \"content\"",
+          "type": "\"content\" | \"header\"",
           "required": true
         }
       ],
@@ -2138,6 +2305,601 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "activate",
           "type": "[index: number]",
           "schema": []
+        }
+      ]
+    },
+    "r-space": {
+      "type": "r-space",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。",
+      "props": [
+        {
+          "name": "direction",
+          "type": "\"horizontal\" | \"vertical\"",
+          "required": false,
+          "default": "\"horizontal\""
+        },
+        {
+          "name": "size",
+          "type": "string | number",
+          "required": false,
+          "default": "12"
+        },
+        {
+          "name": "wrap",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "fill",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "alignment",
+          "type": "\"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\"",
+          "required": false,
+          "default": "\"center\""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-space\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-scrollbar": {
+      "type": "r-scrollbar",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。",
+      "props": [
+        {
+          "name": "height",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "maxHeight",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "native",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "wrapStyle",
+          "type": "string | Record<string, string>",
+          "required": false
+        },
+        {
+          "name": "wrapClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "viewStyle",
+          "type": "string | Record<string, string>",
+          "required": false
+        },
+        {
+          "name": "viewClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "noresize",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "always",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "minSize",
+          "type": "number",
+          "required": false,
+          "default": "20"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-scrollbar\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-row": {
+      "type": "r-row",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。",
+      "props": [
+        {
+          "name": "gutter",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "justify",
+          "type": "\"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\"",
+          "required": false,
+          "default": "\"start\""
+        },
+        {
+          "name": "align",
+          "type": "\"bottom\" | \"top\" | \"middle\"",
+          "required": false,
+          "default": "\"top\""
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "required": false,
+          "default": "\"div\""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-row\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-popover": {
+      "type": "r-popover",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "placement",
+          "type": "string",
+          "required": false,
+          "default": "\"bottom\""
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "default": "150"
+        },
+        {
+          "name": "trigger",
+          "type": "\"click\" | \"hover\" | \"focus\" | \"contextmenu\"",
+          "required": false,
+          "default": "\"click\""
+        },
+        {
+          "name": "effect",
+          "type": "\"dark\" | \"light\"",
+          "required": false,
+          "default": "\"light\""
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "showAfter",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "hideAfter",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "showArrow",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "popperClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-popover\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-popconfirm": {
+      "type": "r-popconfirm",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "confirmButtonText",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "cancelButtonText",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "confirmButtonType",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "required": false,
+          "default": "\"primary\""
+        },
+        {
+          "name": "cancelButtonType",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "required": false,
+          "default": "\"\""
+        },
+        {
+          "name": "icon",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "iconColor",
+          "type": "string",
+          "required": false,
+          "default": "\"#f90\""
+        },
+        {
+          "name": "hideIcon",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "hideAfter",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "default": "150"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-popconfirm\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "confirm",
+          "type": "[]"
+        },
+        {
+          "name": "cancel",
+          "type": "[]"
+        }
+      ]
+    },
+    "r-page-header": {
+      "type": "r-page-header",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "default": "\"\\u8FD4\\u56DE\""
+        },
+        {
+          "name": "icon",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-page-header\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "back",
+          "type": "[]"
+        }
+      ]
+    },
+    "r-link": {
+      "type": "r-link",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "linkType",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "required": false,
+          "default": "\"default\""
+        },
+        {
+          "name": "underline",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "target",
+          "type": "\"_self\" | \"_blank\" | \"_parent\" | \"_top\"",
+          "required": false,
+          "default": "\"_self\""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-link\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-dropdown": {
+      "type": "r-dropdown",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。",
+      "props": [
+        {
+          "name": "items",
+          "type": "DropdownItem[]",
+          "required": false
+        },
+        {
+          "name": "trigger",
+          "type": "\"click\" | \"hover\" | \"contextmenu\"",
+          "required": false,
+          "default": "\"hover\""
+        },
+        {
+          "name": "effect",
+          "type": "\"dark\" | \"light\"",
+          "required": false,
+          "default": "\"light\""
+        },
+        {
+          "name": "placement",
+          "type": "string",
+          "required": false,
+          "default": "\"bottom\""
+        },
+        {
+          "name": "hideOnClick",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "showTimeout",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "hideTimeout",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "splitButton",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "popperClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "maxHeight",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-dropdown\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-divider": {
+      "type": "r-divider",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。",
+      "props": [
+        {
+          "name": "direction",
+          "type": "\"horizontal\" | \"vertical\"",
+          "required": false,
+          "default": "\"horizontal\""
+        },
+        {
+          "name": "borderStyle",
+          "type": "\"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\"",
+          "required": false,
+          "default": "\"solid\""
+        },
+        {
+          "name": "contentPosition",
+          "type": "\"center\" | \"left\" | \"right\"",
+          "required": false,
+          "default": "\"center\""
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-divider\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         }
       ]
     },
@@ -2206,6 +2968,462 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "index",
           "type": "number",
           "required": true
+        }
+      ]
+    },
+    "r-col": {
+      "type": "r-col",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。",
+      "props": [
+        {
+          "name": "span",
+          "type": "number",
+          "required": false,
+          "default": "24"
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "push",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "pull",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "xs",
+          "type": "ResponsiveValue",
+          "required": false
+        },
+        {
+          "name": "sm",
+          "type": "ResponsiveValue",
+          "required": false
+        },
+        {
+          "name": "md",
+          "type": "ResponsiveValue",
+          "required": false
+        },
+        {
+          "name": "lg",
+          "type": "ResponsiveValue",
+          "required": false
+        },
+        {
+          "name": "xl",
+          "type": "ResponsiveValue",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "required": false,
+          "default": "\"div\""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-col\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-carousel-item": {
+      "type": "r-carousel-item",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。",
+      "props": [
+        {
+          "name": "itemName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-carousel-item\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-carousel": {
+      "type": "r-carousel",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。",
+      "props": [
+        {
+          "name": "height",
+          "type": "string",
+          "required": false,
+          "default": "\"200px\""
+        },
+        {
+          "name": "initialIndex",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "trigger",
+          "type": "\"click\" | \"hover\"",
+          "required": false,
+          "default": "\"hover\""
+        },
+        {
+          "name": "autoplay",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "interval",
+          "type": "number",
+          "required": false,
+          "default": "3000"
+        },
+        {
+          "name": "indicatorPosition",
+          "type": "\"\" | \"none\" | \"outside\"",
+          "required": false,
+          "default": "\"\""
+        },
+        {
+          "name": "arrow",
+          "type": "\"always\" | \"hover\" | \"never\"",
+          "required": false,
+          "default": "\"hover\""
+        },
+        {
+          "name": "loop",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "direction",
+          "type": "\"horizontal\" | \"vertical\"",
+          "required": false,
+          "default": "\"horizontal\""
+        },
+        {
+          "name": "pauseOnHover",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "motionBlur",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-carousel\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-card": {
+      "type": "r-card",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。",
+      "props": [
+        {
+          "name": "header",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "shadow",
+          "type": "\"always\" | \"hover\" | \"never\"",
+          "required": false,
+          "default": "\"always\""
+        },
+        {
+          "name": "bodyStyle",
+          "type": "string | Record<string, string>",
+          "required": false
+        },
+        {
+          "name": "bodyClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-card\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-button": {
+      "type": "r-button",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "buttonType",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | \"text\"",
+          "required": false,
+          "default": "\"default\""
+        },
+        {
+          "name": "buttonSize",
+          "type": "\"default\" | \"large\" | \"small\"",
+          "required": false,
+          "default": "\"default\""
+        },
+        {
+          "name": "plain",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "textMode",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "bg",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "linkMode",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "round",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "circle",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "autoInsertSpace",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "dark",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-button\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-backtop": {
+      "type": "r-backtop",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。",
+      "props": [
+        {
+          "name": "target",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "visibilityHeight",
+          "type": "number",
+          "required": false,
+          "default": "200"
+        },
+        {
+          "name": "right",
+          "type": "number",
+          "required": false,
+          "default": "40"
+        },
+        {
+          "name": "bottom",
+          "type": "number",
+          "required": false,
+          "default": "40"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-backtop\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "r-affix": {
+      "type": "r-affix",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。",
+      "props": [
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "position",
+          "type": "\"bottom\" | \"top\"",
+          "required": false,
+          "default": "\"top\""
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "zIndex",
+          "type": "number",
+          "required": false,
+          "default": "100"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-affix\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         }
       ]
     },
@@ -2282,7 +3500,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "listType",
-          "type": "\"picture\" | \"text\" | \"picture-card\"",
+          "type": "\"text\" | \"picture\" | \"picture-card\"",
           "required": false,
           "default": "\"text\"",
           "description": "列表展示类型"
@@ -4934,7 +6152,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         }
       ]
@@ -4946,7 +6164,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         }
       ],
@@ -4974,7 +6192,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         }
       ],
@@ -4992,7 +6210,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         },
         {
@@ -5014,7 +6232,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         }
       ]
@@ -5154,7 +6372,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         }
       ]
@@ -5166,7 +6384,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         }
       ]
@@ -5178,7 +6396,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         }
       ]
@@ -5190,7 +6408,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         }
       ]
@@ -5202,7 +6420,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "props": [
         {
           "name": "state",
-          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
           "required": true
         },
         {
@@ -5689,6 +6907,1155 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "name": "type",
           "type": "string",
           "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-timeline-item": {
+      "type": "display-timeline-item",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。",
+      "props": [
+        {
+          "name": "timestamp",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "hideTimestamp",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "center",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "placement",
+          "type": "\"bottom\" | \"top\"",
+          "required": false,
+          "default": "\"bottom\""
+        },
+        {
+          "name": "itemType",
+          "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "required": false,
+          "default": "\"primary\""
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "itemSize",
+          "type": "\"large\" | \"normal\"",
+          "required": false,
+          "default": "\"normal\""
+        },
+        {
+          "name": "hollow",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-timeline-item\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-timeline": {
+      "type": "display-timeline",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-timeline\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-skeleton": {
+      "type": "display-skeleton",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。",
+      "props": [
+        {
+          "name": "rows",
+          "type": "number",
+          "required": false,
+          "default": "3"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "animated",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "throttle",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-skeleton\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-result": {
+      "type": "display-result",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。",
+      "props": [
+        {
+          "name": "icon",
+          "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
+          "required": false,
+          "default": "\"info\""
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "subTitle",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-result\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-empty": {
+      "type": "display-empty",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。",
+      "props": [
+        {
+          "name": "image",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "imageSize",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-empty\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-descriptions-item": {
+      "type": "display-descriptions-item",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "span",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "labelAlign",
+          "type": "\"center\" | \"left\" | \"right\"",
+          "required": false
+        },
+        {
+          "name": "contentAlign",
+          "type": "\"center\" | \"left\" | \"right\"",
+          "required": false
+        },
+        {
+          "name": "labelClassName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "unknown",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-descriptions-item\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-descriptions": {
+      "type": "display-descriptions",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "extra",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "border",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "column",
+          "type": "number",
+          "required": false,
+          "default": "3"
+        },
+        {
+          "name": "direction",
+          "type": "\"horizontal\" | \"vertical\"",
+          "required": false,
+          "default": "\"horizontal\""
+        },
+        {
+          "name": "descriptionsSize",
+          "type": "\"default\" | \"large\" | \"small\"",
+          "required": false,
+          "default": "\"default\""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-descriptions\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-breadcrumb-item": {
+      "type": "display-breadcrumb-item",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string | Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "replace",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-breadcrumb-item\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-breadcrumb": {
+      "type": "display-breadcrumb",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。",
+      "props": [
+        {
+          "name": "separator",
+          "type": "string",
+          "required": false,
+          "default": "\"/\""
+        },
+        {
+          "name": "separatorIcon",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-breadcrumb\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-alert": {
+      "type": "display-alert",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "alertType",
+          "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
+          "required": false,
+          "default": "\"info\""
+        },
+        {
+          "name": "closable",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "closeText",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "center",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "showIcon",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "effect",
+          "type": "\"dark\" | \"light\"",
+          "required": false,
+          "default": "\"light\""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-alert\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "close",
+          "type": "[]"
+        }
+      ]
+    },
+    "display-text": {
+      "type": "display-text",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。",
+      "props": [
+        {
+          "name": "value",
+          "type": "unknown",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "required": false,
+          "default": "\"span\""
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "suffix",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "\"number\" | \"currency\" | \"percent\" | \"date\"",
+          "required": false
+        },
+        {
+          "name": "precision",
+          "type": "number",
+          "required": false,
+          "default": "2"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "default": "\"-\""
+        },
+        {
+          "name": "textClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "textStyle",
+          "type": "string | Record<string, string>",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-text-display\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-tag": {
+      "type": "display-tag",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。",
+      "props": [
+        {
+          "name": "content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "tagType",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "required": false,
+          "default": "\"\""
+        },
+        {
+          "name": "closable",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "disableTransitions",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "hit",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "round",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "\"default\" | \"large\" | \"small\"",
+          "required": false,
+          "default": "\"default\""
+        },
+        {
+          "name": "effect",
+          "type": "\"dark\" | \"light\" | \"plain\"",
+          "required": false,
+          "default": "\"light\""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tag\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "close",
+          "type": "[]"
+        }
+      ]
+    },
+    "display-statistic": {
+      "type": "display-statistic",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "dataKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "precision",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "decimalSeparator",
+          "type": "string",
+          "required": false,
+          "default": "\".\""
+        },
+        {
+          "name": "groupSeparator",
+          "type": "string",
+          "required": false,
+          "default": "\",\""
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "suffix",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "valueStyle",
+          "type": "string | Record<string, string>",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-statistic\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ],
+      "binding": {
+        "selfResolving": true
+      }
+    },
+    "display-progress": {
+      "type": "display-progress",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。",
+      "props": [
+        {
+          "name": "percentage",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "progressType",
+          "type": "\"circle\" | \"dashboard\" | \"line\"",
+          "required": false,
+          "default": "\"line\""
+        },
+        {
+          "name": "strokeWidth",
+          "type": "number",
+          "required": false,
+          "default": "6"
+        },
+        {
+          "name": "textInside",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "status",
+          "type": "\"success\" | \"warning\" | \"exception\"",
+          "required": false
+        },
+        {
+          "name": "indeterminate",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": false,
+          "default": "3"
+        },
+        {
+          "name": "color",
+          "type": "ProgressColor",
+          "required": false
+        },
+        {
+          "name": "circleWidth",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "showText",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "strokeLinecap",
+          "type": "\"round\" | \"butt\" | \"square\"",
+          "required": false,
+          "default": "\"round\""
+        },
+        {
+          "name": "formatText",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-progress\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-pagination": {
+      "type": "display-pagination",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。",
+      "props": [
+        {
+          "name": "total",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "required": false,
+          "default": "10"
+        },
+        {
+          "name": "currentPage",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "pageSizes",
+          "type": "number[]",
+          "required": false,
+          "default": "[10, 20, 50, 100]"
+        },
+        {
+          "name": "pagerCount",
+          "type": "number",
+          "required": false,
+          "default": "7"
+        },
+        {
+          "name": "layout",
+          "type": "string",
+          "required": false,
+          "default": "\"total, sizes, prev, pager, next, jumper\""
+        },
+        {
+          "name": "background",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "small",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "hideOnSinglePage",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-pagination\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:currentPage",
+          "type": "[page: number]",
+          "schema": []
+        },
+        {
+          "name": "update:pageSize",
+          "type": "[size: number]",
+          "schema": []
+        }
+      ]
+    },
+    "display-badge": {
+      "type": "display-badge",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。",
+      "props": [
+        {
+          "name": "badgeValue",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string | number",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "default": "99"
+        },
+        {
+          "name": "isDot",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "hiddenBadge",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "badgeType",
+          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "required": false,
+          "default": "\"danger\""
+        },
+        {
+          "name": "showZero",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "[number, number]",
+          "required": false
+        },
+        {
+          "name": "badgeStyle",
+          "type": "Record<string, string>",
+          "required": false
+        },
+        {
+          "name": "badgeClass",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-badge\"",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+        }
+      ]
+    },
+    "display-avatar": {
+      "type": "display-avatar",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。",
+      "props": [
+        {
+          "name": "avatarSize",
+          "type": "number | \"default\" | \"large\" | \"small\"",
+          "required": false,
+          "default": "\"default\""
+        },
+        {
+          "name": "shape",
+          "type": "\"circle\" | \"square\"",
+          "required": false,
+          "default": "\"circle\""
+        },
+        {
+          "name": "src",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "srcSet",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "fit",
+          "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\"",
+          "required": false,
+          "default": "\"cover\""
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "icon",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-avatar\"",
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
@@ -6290,7 +8657,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "position",
-          "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+          "type": "\"bottom\" | \"top\" | \"left\" | \"right\"",
           "required": false,
           "description": "编辑区位置"
         },
@@ -6497,12 +8864,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
 export const COMPONENT_DIRECTORY_DESCRIBE = {
   "hint": "session.describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 查询 specByType。",
   "summary": {
-    "total": 97,
+    "total": 132,
     "containers": 12,
-    "fields": 31,
+    "fields": 49,
     "groups": 1,
     "meta": 2,
-    "features": 51
+    "features": 68
   },
   "registry": {
     "containers": [
@@ -6520,37 +8887,55 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "r-tree"
     ],
     "fields": [
+      "r-affix",
+      "r-backtop",
+      "r-button",
+      "r-card",
+      "r-carousel",
+      "r-carousel-item",
       "r-cascader",
       "r-checkbox",
       "r-checkbox-group",
+      "r-col",
       "r-collapse-item",
       "r-color",
       "r-context-renderer",
       "r-date",
       "r-dept-picker",
+      "r-divider",
+      "r-dropdown",
       "r-entity-picker",
       "r-file-browser",
       "r-file-path",
       "r-html-editor",
       "r-icon",
       "r-image",
+      "r-link",
       "r-multi-select",
       "r-number",
+      "r-page-header",
+      "r-popconfirm",
+      "r-popover",
       "r-product-picker",
       "r-radio",
       "r-rate",
+      "r-row",
+      "r-scrollbar",
       "r-select",
       "r-slider",
+      "r-space",
       "r-step-item",
       "r-switch",
       "r-tab-pane",
       "r-text",
       "r-textarea",
       "r-toolbar",
+      "r-tooltip",
       "r-transfer",
       "r-tree-select",
       "r-upload",
-      "r-user-picker"
+      "r-user-picker",
+      "r-watermark"
     ],
     "groups": [
       "r-column-group"
@@ -6662,6 +9047,91 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-workbench\" 引用。"
     },
     {
+      "type": "display-alert",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。"
+    },
+    {
+      "type": "display-avatar",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。"
+    },
+    {
+      "type": "display-badge",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。"
+    },
+    {
+      "type": "display-breadcrumb",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。"
+    },
+    {
+      "type": "display-breadcrumb-item",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。"
+    },
+    {
+      "type": "display-descriptions",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。"
+    },
+    {
+      "type": "display-descriptions-item",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。"
+    },
+    {
+      "type": "display-empty",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。"
+    },
+    {
+      "type": "display-pagination",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。"
+    },
+    {
+      "type": "display-progress",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。"
+    },
+    {
+      "type": "display-result",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。"
+    },
+    {
+      "type": "display-skeleton",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。"
+    },
+    {
+      "type": "display-statistic",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。"
+    },
+    {
+      "type": "display-tag",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。"
+    },
+    {
+      "type": "display-text",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。"
+    },
+    {
+      "type": "display-timeline",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。"
+    },
+    {
+      "type": "display-timeline-item",
+      "category": "feature",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。"
+    },
+    {
       "type": "dock-actions",
       "category": "feature",
       "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。"
@@ -6757,9 +9227,39 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"project-tree\" 引用。"
     },
     {
+      "type": "r-affix",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。"
+    },
+    {
+      "type": "r-backtop",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。"
+    },
+    {
       "type": "r-block",
       "category": "container",
       "description": "块容器（轻量分区）"
+    },
+    {
+      "type": "r-button",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。"
+    },
+    {
+      "type": "r-card",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。"
+    },
+    {
+      "type": "r-carousel",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。"
+    },
+    {
+      "type": "r-carousel-item",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。"
     },
     {
       "type": "r-cascader",
@@ -6775,6 +9275,11 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "type": "r-checkbox-group",
       "category": "field",
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。"
+    },
+    {
+      "type": "r-col",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。"
     },
     {
       "type": "r-collapse",
@@ -6822,9 +9327,19 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。"
     },
     {
+      "type": "r-divider",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。"
+    },
+    {
       "type": "r-drawer",
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。"
+    },
+    {
+      "type": "r-dropdown",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。"
     },
     {
       "type": "r-entity-picker",
@@ -6862,6 +9377,11 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。"
     },
     {
+      "type": "r-link",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。"
+    },
+    {
       "type": "r-list",
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。"
@@ -6875,6 +9395,21 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "type": "r-number",
       "category": "field",
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。"
+    },
+    {
+      "type": "r-page-header",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。"
+    },
+    {
+      "type": "r-popconfirm",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。"
+    },
+    {
+      "type": "r-popover",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。"
     },
     {
       "type": "r-product-picker",
@@ -6892,6 +9427,16 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。"
     },
     {
+      "type": "r-row",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。"
+    },
+    {
+      "type": "r-scrollbar",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。"
+    },
+    {
       "type": "r-section",
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。"
@@ -6905,6 +9450,11 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "type": "r-slider",
       "category": "field",
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。"
+    },
+    {
+      "type": "r-space",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。"
     },
     {
       "type": "r-step-item",
@@ -6952,6 +9502,11 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。"
     },
     {
+      "type": "r-tooltip",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。"
+    },
+    {
       "type": "r-transfer",
       "category": "field",
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。"
@@ -6975,6 +9530,11 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "type": "r-user-picker",
       "category": "field",
       "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。"
+    },
+    {
+      "type": "r-watermark",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。"
     },
     {
       "type": "rform-compare-demo",
@@ -7741,7 +10301,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       }
     ]
@@ -7753,7 +10313,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       },
       {
@@ -7793,7 +10353,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       }
     ],
@@ -7811,7 +10371,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       }
     ],
@@ -7839,7 +10399,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       }
     ]
@@ -7855,6 +10415,1592 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "category": "feature",
     "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-workbench\" 引用。",
     "props": []
+  },
+  "display-alert": {
+    "type": "display-alert",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "alertType",
+        "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
+        "required": false,
+        "default": "\"info\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
+          "variants": [
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"error\""
+          ]
+        }
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "closeText",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "center",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "showIcon",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "effect",
+        "type": "\"dark\" | \"light\"",
+        "required": false,
+        "default": "\"light\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"dark\" | \"light\"",
+          "variants": [
+            "\"dark\"",
+            "\"light\""
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-alert\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ],
+    "emits": [
+      {
+        "name": "close",
+        "type": "[]"
+      }
+    ]
+  },
+  "display-avatar": {
+    "type": "display-avatar",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。",
+    "props": [
+      {
+        "name": "avatarSize",
+        "type": "number | \"default\" | \"large\" | \"small\"",
+        "required": false,
+        "default": "\"default\"",
+        "schema": {
+          "kind": "enum",
+          "type": "number | \"default\" | \"large\" | \"small\"",
+          "variants": [
+            "number",
+            "\"default\"",
+            "\"large\"",
+            "\"small\""
+          ]
+        }
+      },
+      {
+        "name": "shape",
+        "type": "\"circle\" | \"square\"",
+        "required": false,
+        "default": "\"circle\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"circle\" | \"square\"",
+          "variants": [
+            "\"circle\"",
+            "\"square\""
+          ]
+        }
+      },
+      {
+        "name": "src",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "srcSet",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "alt",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "fit",
+        "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\"",
+        "required": false,
+        "default": "\"cover\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\"",
+          "variants": [
+            "\"fill\"",
+            "\"none\"",
+            "\"cover\"",
+            "\"contain\"",
+            "\"scale-down\""
+          ]
+        }
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-avatar\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-badge": {
+    "type": "display-badge",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。",
+    "props": [
+      {
+        "name": "badgeValue",
+        "type": "string | number",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "value",
+        "type": "string | number",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "required": false,
+        "default": "99"
+      },
+      {
+        "name": "isDot",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "hiddenBadge",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "badgeType",
+        "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+        "required": false,
+        "default": "\"danger\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "variants": [
+            "\"\"",
+            "\"primary\"",
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"danger\""
+          ]
+        }
+      },
+      {
+        "name": "showZero",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "offset",
+        "type": "[number, number]",
+        "required": false
+      },
+      {
+        "name": "badgeStyle",
+        "type": "Record<string, string>",
+        "required": false
+      },
+      {
+        "name": "badgeClass",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-badge\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-breadcrumb": {
+    "type": "display-breadcrumb",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。",
+    "props": [
+      {
+        "name": "separator",
+        "type": "string",
+        "required": false,
+        "default": "\"/\""
+      },
+      {
+        "name": "separatorIcon",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-breadcrumb\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-breadcrumb-item": {
+    "type": "display-breadcrumb-item",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "to",
+        "type": "string | Record<string, unknown>",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | Record<string, unknown>",
+          "variants": [
+            "string",
+            "Record<string, unknown>"
+          ]
+        }
+      },
+      {
+        "name": "replace",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-breadcrumb-item\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-descriptions": {
+    "type": "display-descriptions",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "extra",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "border",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "column",
+        "type": "number",
+        "required": false,
+        "default": "3"
+      },
+      {
+        "name": "direction",
+        "type": "\"horizontal\" | \"vertical\"",
+        "required": false,
+        "default": "\"horizontal\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"horizontal\" | \"vertical\"",
+          "variants": [
+            "\"horizontal\"",
+            "\"vertical\""
+          ]
+        }
+      },
+      {
+        "name": "descriptionsSize",
+        "type": "\"default\" | \"large\" | \"small\"",
+        "required": false,
+        "default": "\"default\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"default\" | \"large\" | \"small\"",
+          "variants": [
+            "\"default\"",
+            "\"large\"",
+            "\"small\""
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-descriptions\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-descriptions-item": {
+    "type": "display-descriptions-item",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "span",
+        "type": "number",
+        "required": false,
+        "default": "1"
+      },
+      {
+        "name": "labelAlign",
+        "type": "\"center\" | \"left\" | \"right\"",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "\"center\" | \"left\" | \"right\"",
+          "variants": [
+            "\"center\"",
+            "\"left\"",
+            "\"right\""
+          ]
+        }
+      },
+      {
+        "name": "contentAlign",
+        "type": "\"center\" | \"left\" | \"right\"",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "\"center\" | \"left\" | \"right\"",
+          "variants": [
+            "\"center\"",
+            "\"left\"",
+            "\"right\""
+          ]
+        }
+      },
+      {
+        "name": "labelClassName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "className",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "value",
+        "type": "unknown",
+        "required": false
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-descriptions-item\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-empty": {
+    "type": "display-empty",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。",
+    "props": [
+      {
+        "name": "image",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "imageSize",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-empty\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-pagination": {
+    "type": "display-pagination",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。",
+    "props": [
+      {
+        "name": "total",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "pageSize",
+        "type": "number",
+        "required": false,
+        "default": "10"
+      },
+      {
+        "name": "currentPage",
+        "type": "number",
+        "required": false,
+        "default": "1"
+      },
+      {
+        "name": "pageSizes",
+        "type": "number[]",
+        "required": false,
+        "default": "[10, 20, 50, 100]"
+      },
+      {
+        "name": "pagerCount",
+        "type": "number",
+        "required": false,
+        "default": "7"
+      },
+      {
+        "name": "layout",
+        "type": "string",
+        "required": false,
+        "default": "\"total, sizes, prev, pager, next, jumper\""
+      },
+      {
+        "name": "background",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "small",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "hideOnSinglePage",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-pagination\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ],
+    "emits": [
+      {
+        "name": "update:currentPage",
+        "type": "[page: number]",
+        "schema": []
+      },
+      {
+        "name": "update:pageSize",
+        "type": "[size: number]",
+        "schema": []
+      }
+    ]
+  },
+  "display-progress": {
+    "type": "display-progress",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。",
+    "props": [
+      {
+        "name": "percentage",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "value",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "progressType",
+        "type": "\"circle\" | \"dashboard\" | \"line\"",
+        "required": false,
+        "default": "\"line\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"circle\" | \"dashboard\" | \"line\"",
+          "variants": [
+            "\"circle\"",
+            "\"dashboard\"",
+            "\"line\""
+          ]
+        }
+      },
+      {
+        "name": "strokeWidth",
+        "type": "number",
+        "required": false,
+        "default": "6"
+      },
+      {
+        "name": "textInside",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "status",
+        "type": "\"success\" | \"warning\" | \"exception\"",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "\"success\" | \"warning\" | \"exception\"",
+          "variants": [
+            "\"success\"",
+            "\"warning\"",
+            "\"exception\""
+          ]
+        }
+      },
+      {
+        "name": "indeterminate",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "duration",
+        "type": "number",
+        "required": false,
+        "default": "3"
+      },
+      {
+        "name": "color",
+        "type": "ProgressColor",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "ProgressColor",
+          "variants": [
+            "string",
+            "{ color: string; percentage: number; }[]"
+          ]
+        }
+      },
+      {
+        "name": "circleWidth",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "showText",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "strokeLinecap",
+        "type": "\"round\" | \"butt\" | \"square\"",
+        "required": false,
+        "default": "\"round\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"round\" | \"butt\" | \"square\"",
+          "variants": [
+            "\"round\"",
+            "\"butt\"",
+            "\"square\""
+          ]
+        }
+      },
+      {
+        "name": "formatText",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-progress\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-result": {
+    "type": "display-result",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。",
+    "props": [
+      {
+        "name": "icon",
+        "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
+        "required": false,
+        "default": "\"info\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
+          "variants": [
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"error\""
+          ]
+        }
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "subTitle",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-result\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-skeleton": {
+    "type": "display-skeleton",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。",
+    "props": [
+      {
+        "name": "rows",
+        "type": "number",
+        "required": false,
+        "default": "3"
+      },
+      {
+        "name": "count",
+        "type": "number",
+        "required": false,
+        "default": "1"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "animated",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "throttle",
+        "type": "number",
+        "required": false,
+        "default": "0"
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-skeleton\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-statistic": {
+    "type": "display-statistic",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "value",
+        "type": "string | number",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "dataKey",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "precision",
+        "type": "number",
+        "required": false,
+        "default": "0"
+      },
+      {
+        "name": "decimalSeparator",
+        "type": "string",
+        "required": false,
+        "default": "\".\""
+      },
+      {
+        "name": "groupSeparator",
+        "type": "string",
+        "required": false,
+        "default": "\",\""
+      },
+      {
+        "name": "prefix",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "suffix",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "valueStyle",
+        "type": "string | Record<string, string>",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | Record<string, string>",
+          "variants": [
+            "string",
+            "Record<string, string>"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-statistic\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ],
+    "binding": {
+      "selfResolving": true
+    }
+  },
+  "display-tag": {
+    "type": "display-tag",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。",
+    "props": [
+      {
+        "name": "content",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "tagType",
+        "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+        "required": false,
+        "default": "\"\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "variants": [
+            "\"\"",
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"danger\""
+          ]
+        }
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "disableTransitions",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "hit",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "round",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "size",
+        "type": "\"default\" | \"large\" | \"small\"",
+        "required": false,
+        "default": "\"default\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"default\" | \"large\" | \"small\"",
+          "variants": [
+            "\"default\"",
+            "\"large\"",
+            "\"small\""
+          ]
+        }
+      },
+      {
+        "name": "effect",
+        "type": "\"dark\" | \"light\" | \"plain\"",
+        "required": false,
+        "default": "\"light\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"dark\" | \"light\" | \"plain\"",
+          "variants": [
+            "\"dark\"",
+            "\"light\"",
+            "\"plain\""
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-tag\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ],
+    "emits": [
+      {
+        "name": "close",
+        "type": "[]"
+      }
+    ]
+  },
+  "display-text": {
+    "type": "display-text",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。",
+    "props": [
+      {
+        "name": "value",
+        "type": "unknown",
+        "required": false
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "tag",
+        "type": "string",
+        "required": false,
+        "default": "\"span\""
+      },
+      {
+        "name": "prefix",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "suffix",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "format",
+        "type": "\"number\" | \"currency\" | \"percent\" | \"date\"",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "\"number\" | \"currency\" | \"percent\" | \"date\"",
+          "variants": [
+            "\"number\"",
+            "\"currency\"",
+            "\"percent\"",
+            "\"date\""
+          ]
+        }
+      },
+      {
+        "name": "precision",
+        "type": "number",
+        "required": false,
+        "default": "2"
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "required": false,
+        "default": "\"-\""
+      },
+      {
+        "name": "textClass",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "textStyle",
+        "type": "string | Record<string, string>",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | Record<string, string>",
+          "variants": [
+            "string",
+            "Record<string, string>"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-text-display\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-timeline": {
+    "type": "display-timeline",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。",
+    "props": [
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-timeline\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "display-timeline-item": {
+    "type": "display-timeline-item",
+    "category": "feature",
+    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。",
+    "props": [
+      {
+        "name": "timestamp",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "hideTimestamp",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "center",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "placement",
+        "type": "\"bottom\" | \"top\"",
+        "required": false,
+        "default": "\"bottom\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"bottom\" | \"top\"",
+          "variants": [
+            "\"bottom\"",
+            "\"top\""
+          ]
+        }
+      },
+      {
+        "name": "itemType",
+        "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+        "required": false,
+        "default": "\"primary\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "variants": [
+            "\"primary\"",
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"danger\""
+          ]
+        }
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "itemSize",
+        "type": "\"large\" | \"normal\"",
+        "required": false,
+        "default": "\"normal\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"large\" | \"normal\"",
+          "variants": [
+            "\"large\"",
+            "\"normal\""
+          ]
+        }
+      },
+      {
+        "name": "hollow",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-timeline-item\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
   },
   "dock-actions": {
     "type": "dock-actions",
@@ -7957,15 +12103,15 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "position",
-        "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+        "type": "\"bottom\" | \"top\" | \"left\" | \"right\"",
         "required": false,
         "description": "编辑区位置",
         "schema": {
           "kind": "enum",
-          "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+          "type": "\"bottom\" | \"top\" | \"left\" | \"right\"",
           "variants": [
-            "\"top\"",
             "\"bottom\"",
+            "\"top\"",
             "\"left\"",
             "\"right\""
           ]
@@ -8341,7 +12487,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       },
       {
@@ -8366,7 +12512,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       }
     ]
@@ -8378,7 +12524,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       }
     ]
@@ -8390,7 +12536,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       }
     ]
@@ -8402,7 +12548,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [
       {
         "name": "state",
-        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+        "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
         "required": true
       }
     ]
@@ -8553,6 +12699,112 @@ export const COMPONENT_SPEC_BY_TYPE = {
       }
     ]
   },
+  "r-affix": {
+    "type": "r-affix",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。",
+    "props": [
+      {
+        "name": "offset",
+        "type": "number",
+        "required": false,
+        "default": "0"
+      },
+      {
+        "name": "position",
+        "type": "\"bottom\" | \"top\"",
+        "required": false,
+        "default": "\"top\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"bottom\" | \"top\"",
+          "variants": [
+            "\"bottom\"",
+            "\"top\""
+          ]
+        }
+      },
+      {
+        "name": "target",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "zIndex",
+        "type": "number",
+        "required": false,
+        "default": "100"
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-affix\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "r-backtop": {
+    "type": "r-backtop",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。",
+    "props": [
+      {
+        "name": "target",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "visibilityHeight",
+        "type": "number",
+        "required": false,
+        "default": "200"
+      },
+      {
+        "name": "right",
+        "type": "number",
+        "required": false,
+        "default": "40"
+      },
+      {
+        "name": "bottom",
+        "type": "number",
+        "required": false,
+        "default": "40"
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-backtop\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
   "r-block": {
     "type": "r-block",
     "category": "container",
@@ -8601,6 +12853,461 @@ export const COMPONENT_SPEC_BY_TYPE = {
       }
     ],
     "notes": "**r-block** — 块容器（轻量分区）\ntitle: string — 标题\ndescription: string — 描述\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbordered: boolean — 边框，默认 true\nuseCard: boolean — 卡片样式，默认 false\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高定义\n适合做页面中的局部块，不强制数据绑定"
+  },
+  "r-button": {
+    "type": "r-button",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "buttonType",
+        "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | \"text\"",
+        "required": false,
+        "default": "\"default\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | \"text\"",
+          "variants": [
+            "\"\"",
+            "\"default\"",
+            "\"primary\"",
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"danger\"",
+            "\"text\""
+          ]
+        }
+      },
+      {
+        "name": "buttonSize",
+        "type": "\"default\" | \"large\" | \"small\"",
+        "required": false,
+        "default": "\"default\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"default\" | \"large\" | \"small\"",
+          "variants": [
+            "\"default\"",
+            "\"large\"",
+            "\"small\""
+          ]
+        }
+      },
+      {
+        "name": "plain",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "textMode",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "bg",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "linkMode",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "round",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "circle",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "autoInsertSpace",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "dark",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-button\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "r-card": {
+    "type": "r-card",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。",
+    "props": [
+      {
+        "name": "header",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "shadow",
+        "type": "\"always\" | \"hover\" | \"never\"",
+        "required": false,
+        "default": "\"always\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"always\" | \"hover\" | \"never\"",
+          "variants": [
+            "\"always\"",
+            "\"hover\"",
+            "\"never\""
+          ]
+        }
+      },
+      {
+        "name": "bodyStyle",
+        "type": "string | Record<string, string>",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | Record<string, string>",
+          "variants": [
+            "string",
+            "Record<string, string>"
+          ]
+        }
+      },
+      {
+        "name": "bodyClass",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-card\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "r-carousel": {
+    "type": "r-carousel",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。",
+    "props": [
+      {
+        "name": "height",
+        "type": "string",
+        "required": false,
+        "default": "\"200px\""
+      },
+      {
+        "name": "initialIndex",
+        "type": "number",
+        "required": false,
+        "default": "0"
+      },
+      {
+        "name": "trigger",
+        "type": "\"click\" | \"hover\"",
+        "required": false,
+        "default": "\"hover\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"click\" | \"hover\"",
+          "variants": [
+            "\"click\"",
+            "\"hover\""
+          ]
+        }
+      },
+      {
+        "name": "autoplay",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "interval",
+        "type": "number",
+        "required": false,
+        "default": "3000"
+      },
+      {
+        "name": "indicatorPosition",
+        "type": "\"\" | \"none\" | \"outside\"",
+        "required": false,
+        "default": "\"\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"\" | \"none\" | \"outside\"",
+          "variants": [
+            "\"\"",
+            "\"none\"",
+            "\"outside\""
+          ]
+        }
+      },
+      {
+        "name": "arrow",
+        "type": "\"always\" | \"hover\" | \"never\"",
+        "required": false,
+        "default": "\"hover\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"always\" | \"hover\" | \"never\"",
+          "variants": [
+            "\"always\"",
+            "\"hover\"",
+            "\"never\""
+          ]
+        }
+      },
+      {
+        "name": "loop",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "direction",
+        "type": "\"horizontal\" | \"vertical\"",
+        "required": false,
+        "default": "\"horizontal\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"horizontal\" | \"vertical\"",
+          "variants": [
+            "\"horizontal\"",
+            "\"vertical\""
+          ]
+        }
+      },
+      {
+        "name": "pauseOnHover",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "motionBlur",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-carousel\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "r-carousel-item": {
+    "type": "r-carousel-item",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。",
+    "props": [
+      {
+        "name": "itemName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-carousel-item\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
   },
   "r-cascader": {
     "type": "r-cascader",
@@ -9026,6 +13733,127 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "valueType": "string",
       "hasOptions": true
     }
+  },
+  "r-col": {
+    "type": "r-col",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。",
+    "props": [
+      {
+        "name": "span",
+        "type": "number",
+        "required": false,
+        "default": "24"
+      },
+      {
+        "name": "offset",
+        "type": "number",
+        "required": false,
+        "default": "0"
+      },
+      {
+        "name": "push",
+        "type": "number",
+        "required": false,
+        "default": "0"
+      },
+      {
+        "name": "pull",
+        "type": "number",
+        "required": false,
+        "default": "0"
+      },
+      {
+        "name": "xs",
+        "type": "ResponsiveValue",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "ResponsiveValue",
+          "variants": [
+            "number",
+            "{ span?: number; offset?: number; push?: number; pull?: number; }"
+          ]
+        }
+      },
+      {
+        "name": "sm",
+        "type": "ResponsiveValue",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "ResponsiveValue",
+          "variants": [
+            "number",
+            "{ span?: number; offset?: number; push?: number; pull?: number; }"
+          ]
+        }
+      },
+      {
+        "name": "md",
+        "type": "ResponsiveValue",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "ResponsiveValue",
+          "variants": [
+            "number",
+            "{ span?: number; offset?: number; push?: number; pull?: number; }"
+          ]
+        }
+      },
+      {
+        "name": "lg",
+        "type": "ResponsiveValue",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "ResponsiveValue",
+          "variants": [
+            "number",
+            "{ span?: number; offset?: number; push?: number; pull?: number; }"
+          ]
+        }
+      },
+      {
+        "name": "xl",
+        "type": "ResponsiveValue",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "ResponsiveValue",
+          "variants": [
+            "number",
+            "{ span?: number; offset?: number; push?: number; pull?: number; }"
+          ]
+        }
+      },
+      {
+        "name": "tag",
+        "type": "string",
+        "required": false,
+        "default": "\"div\""
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-col\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
   },
   "r-collapse": {
     "type": "r-collapse",
@@ -9787,6 +14615,11 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。",
     "props": [
       {
+        "name": "width",
+        "type": "number",
+        "required": false
+      },
+      {
         "name": "name",
         "type": "string",
         "required": false
@@ -9815,11 +14648,6 @@ export const COMPONENT_SPEC_BY_TYPE = {
       {
         "name": "placeholder",
         "type": "string",
-        "required": false
-      },
-      {
-        "name": "width",
-        "type": "number",
         "required": false
       },
       {
@@ -10260,6 +15088,83 @@ export const COMPONENT_SPEC_BY_TYPE = {
     },
     "notes": "**r-dialog** — 对话框容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调"
   },
+  "r-divider": {
+    "type": "r-divider",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。",
+    "props": [
+      {
+        "name": "direction",
+        "type": "\"horizontal\" | \"vertical\"",
+        "required": false,
+        "default": "\"horizontal\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"horizontal\" | \"vertical\"",
+          "variants": [
+            "\"horizontal\"",
+            "\"vertical\""
+          ]
+        }
+      },
+      {
+        "name": "borderStyle",
+        "type": "\"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\"",
+        "required": false,
+        "default": "\"solid\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\"",
+          "variants": [
+            "\"solid\"",
+            "\"dashed\"",
+            "\"dotted\"",
+            "\"double\"",
+            "\"none\""
+          ]
+        }
+      },
+      {
+        "name": "contentPosition",
+        "type": "\"center\" | \"left\" | \"right\"",
+        "required": false,
+        "default": "\"center\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"center\" | \"left\" | \"right\"",
+          "variants": [
+            "\"center\"",
+            "\"left\"",
+            "\"right\""
+          ]
+        }
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-divider\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
   "r-drawer": {
     "type": "r-drawer",
     "category": "container",
@@ -10418,6 +15323,173 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "valueType": "boolean"
     },
     "notes": "**r-drawer** — 抽屉容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen / onClose / onOpened / onClosed: string — 生命周期回调"
+  },
+  "r-dropdown": {
+    "type": "r-dropdown",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。",
+    "props": [
+      {
+        "name": "items",
+        "type": "DropdownItem[]",
+        "required": false,
+        "schema": {
+          "kind": "array",
+          "type": "DropdownItem[]",
+          "items": [
+            {
+              "kind": "object",
+              "type": "DropdownItem",
+              "properties": {
+                "label": {
+                  "name": "label",
+                  "type": "string",
+                  "required": true
+                },
+                "command": {
+                  "name": "command",
+                  "type": "string",
+                  "required": false
+                },
+                "disabled": {
+                  "name": "disabled",
+                  "type": "boolean",
+                  "required": false,
+                  "schema": {
+                    "kind": "enum",
+                    "type": "boolean",
+                    "variants": [
+                      "false",
+                      "true"
+                    ]
+                  }
+                },
+                "divided": {
+                  "name": "divided",
+                  "type": "boolean",
+                  "required": false
+                },
+                "icon": {
+                  "name": "icon",
+                  "type": "string",
+                  "required": false
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "trigger",
+        "type": "\"click\" | \"hover\" | \"contextmenu\"",
+        "required": false,
+        "default": "\"hover\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"click\" | \"hover\" | \"contextmenu\"",
+          "variants": [
+            "\"click\"",
+            "\"hover\"",
+            "\"contextmenu\""
+          ]
+        }
+      },
+      {
+        "name": "effect",
+        "type": "\"dark\" | \"light\"",
+        "required": false,
+        "default": "\"light\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"dark\" | \"light\"",
+          "variants": [
+            "\"dark\"",
+            "\"light\""
+          ]
+        }
+      },
+      {
+        "name": "placement",
+        "type": "string",
+        "required": false,
+        "default": "\"bottom\""
+      },
+      {
+        "name": "hideOnClick",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "showTimeout",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "hideTimeout",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "splitButton",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "popperClass",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "maxHeight",
+        "type": "string | number",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-dropdown\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
   },
   "r-entity-picker": {
     "type": "r-entity-picker",
@@ -11317,6 +16389,91 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "valueType": "string"
     }
   },
+  "r-link": {
+    "type": "r-link",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。",
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "linkType",
+        "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+        "required": false,
+        "default": "\"default\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "variants": [
+            "\"\"",
+            "\"default\"",
+            "\"primary\"",
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"danger\""
+          ]
+        }
+      },
+      {
+        "name": "underline",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "href",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "target",
+        "type": "\"_self\" | \"_blank\" | \"_parent\" | \"_top\"",
+        "required": false,
+        "default": "\"_self\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"_self\" | \"_blank\" | \"_parent\" | \"_top\"",
+          "variants": [
+            "\"_self\"",
+            "\"_blank\"",
+            "\"_parent\"",
+            "\"_top\""
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-link\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
   "r-list": {
     "type": "r-list",
     "category": "container",
@@ -11408,17 +16565,17 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "cardShadow",
-        "type": "\"never\" | \"always\" | \"hover\"",
+        "type": "\"always\" | \"hover\" | \"never\"",
         "required": false,
         "default": "\"hover\"",
         "description": "卡片阴影模式",
         "schema": {
           "kind": "enum",
-          "type": "\"never\" | \"always\" | \"hover\"",
+          "type": "\"always\" | \"hover\" | \"never\"",
           "variants": [
-            "\"never\"",
             "\"always\"",
-            "\"hover\""
+            "\"hover\"",
+            "\"never\""
           ]
         }
       },
@@ -11902,11 +17059,317 @@ export const COMPONENT_SPEC_BY_TYPE = {
     },
     "notes": "filterMode: 'range' — 启用范围过滤模式"
   },
+  "r-page-header": {
+    "type": "r-page-header",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false,
+        "default": "\"\\u8FD4\\u56DE\""
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-page-header\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ],
+    "emits": [
+      {
+        "name": "back",
+        "type": "[]"
+      }
+    ]
+  },
+  "r-popconfirm": {
+    "type": "r-popconfirm",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "confirmButtonText",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "cancelButtonText",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "confirmButtonType",
+        "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+        "required": false,
+        "default": "\"primary\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "variants": [
+            "\"\"",
+            "\"default\"",
+            "\"primary\"",
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"danger\""
+          ]
+        }
+      },
+      {
+        "name": "cancelButtonType",
+        "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+        "required": false,
+        "default": "\"\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+          "variants": [
+            "\"\"",
+            "\"default\"",
+            "\"primary\"",
+            "\"success\"",
+            "\"warning\"",
+            "\"info\"",
+            "\"danger\""
+          ]
+        }
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "iconColor",
+        "type": "string",
+        "required": false,
+        "default": "\"#f90\""
+      },
+      {
+        "name": "hideIcon",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "hideAfter",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "width",
+        "type": "string | number",
+        "required": false,
+        "default": "150",
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-popconfirm\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ],
+    "emits": [
+      {
+        "name": "confirm",
+        "type": "[]"
+      },
+      {
+        "name": "cancel",
+        "type": "[]"
+      }
+    ]
+  },
+  "r-popover": {
+    "type": "r-popover",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。",
+    "props": [
+      {
+        "name": "title",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "placement",
+        "type": "string",
+        "required": false,
+        "default": "\"bottom\""
+      },
+      {
+        "name": "width",
+        "type": "string | number",
+        "required": false,
+        "default": "150",
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "trigger",
+        "type": "\"click\" | \"hover\" | \"focus\" | \"contextmenu\"",
+        "required": false,
+        "default": "\"click\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"click\" | \"hover\" | \"focus\" | \"contextmenu\"",
+          "variants": [
+            "\"click\"",
+            "\"hover\"",
+            "\"focus\"",
+            "\"contextmenu\""
+          ]
+        }
+      },
+      {
+        "name": "effect",
+        "type": "\"dark\" | \"light\"",
+        "required": false,
+        "default": "\"light\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"dark\" | \"light\"",
+          "variants": [
+            "\"dark\"",
+            "\"light\""
+          ]
+        }
+      },
+      {
+        "name": "offset",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "showAfter",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "hideAfter",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "showArrow",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "popperClass",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-popover\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
   "r-product-picker": {
     "type": "r-product-picker",
     "category": "field",
     "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。",
     "props": [
+      {
+        "name": "width",
+        "type": "number",
+        "required": false
+      },
       {
         "name": "name",
         "type": "string",
@@ -11936,11 +17399,6 @@ export const COMPONENT_SPEC_BY_TYPE = {
       {
         "name": "placeholder",
         "type": "string",
-        "required": false
-      },
-      {
-        "name": "width",
-        "type": "number",
         "required": false
       },
       {
@@ -12274,6 +17732,213 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "valueType": "string"
     }
   },
+  "r-row": {
+    "type": "r-row",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。",
+    "props": [
+      {
+        "name": "gutter",
+        "type": "number",
+        "required": false,
+        "default": "0"
+      },
+      {
+        "name": "justify",
+        "type": "\"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\"",
+        "required": false,
+        "default": "\"start\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\"",
+          "variants": [
+            "\"start\"",
+            "\"center\"",
+            "\"end\"",
+            "\"space-between\"",
+            "\"space-around\"",
+            "\"space-evenly\""
+          ]
+        }
+      },
+      {
+        "name": "align",
+        "type": "\"bottom\" | \"top\" | \"middle\"",
+        "required": false,
+        "default": "\"top\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"bottom\" | \"top\" | \"middle\"",
+          "variants": [
+            "\"bottom\"",
+            "\"top\"",
+            "\"middle\""
+          ]
+        }
+      },
+      {
+        "name": "tag",
+        "type": "string",
+        "required": false,
+        "default": "\"div\""
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-row\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
+  "r-scrollbar": {
+    "type": "r-scrollbar",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。",
+    "props": [
+      {
+        "name": "height",
+        "type": "string | number",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "maxHeight",
+        "type": "string | number",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "native",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "wrapStyle",
+        "type": "string | Record<string, string>",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | Record<string, string>",
+          "variants": [
+            "string",
+            "Record<string, string>"
+          ]
+        }
+      },
+      {
+        "name": "wrapClass",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "viewStyle",
+        "type": "string | Record<string, string>",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | Record<string, string>",
+          "variants": [
+            "string",
+            "Record<string, string>"
+          ]
+        }
+      },
+      {
+        "name": "viewClass",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "noresize",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "always",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "minSize",
+        "type": "number",
+        "required": false,
+        "default": "20"
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-scrollbar\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
   "r-section": {
     "type": "r-section",
     "category": "container",
@@ -12361,17 +18026,17 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "cardShadow",
-        "type": "\"never\" | \"always\" | \"hover\"",
+        "type": "\"always\" | \"hover\" | \"never\"",
         "required": false,
         "default": "\"never\"",
         "description": "卡片阴影模式",
         "schema": {
           "kind": "enum",
-          "type": "\"never\" | \"always\" | \"hover\"",
+          "type": "\"always\" | \"hover\" | \"never\"",
           "variants": [
-            "\"never\"",
             "\"always\"",
-            "\"hover\""
+            "\"hover\"",
+            "\"never\""
           ]
         }
       },
@@ -12785,6 +18450,105 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "valueType": "string"
     }
   },
+  "r-space": {
+    "type": "r-space",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。",
+    "props": [
+      {
+        "name": "direction",
+        "type": "\"horizontal\" | \"vertical\"",
+        "required": false,
+        "default": "\"horizontal\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"horizontal\" | \"vertical\"",
+          "variants": [
+            "\"horizontal\"",
+            "\"vertical\""
+          ]
+        }
+      },
+      {
+        "name": "size",
+        "type": "string | number",
+        "required": false,
+        "default": "12",
+        "schema": {
+          "kind": "enum",
+          "type": "string | number",
+          "variants": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      {
+        "name": "wrap",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "fill",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "alignment",
+        "type": "\"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\"",
+        "required": false,
+        "default": "\"center\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\"",
+          "variants": [
+            "\"center\"",
+            "\"stretch\"",
+            "\"flex-start\"",
+            "\"flex-end\"",
+            "\"baseline\""
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-space\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
   "r-step-item": {
     "type": "r-step-item",
     "category": "field",
@@ -12882,14 +18646,14 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "mode",
-        "type": "\"header\" | \"content\"",
+        "type": "\"content\" | \"header\"",
         "required": true,
         "schema": {
           "kind": "enum",
-          "type": "\"header\" | \"content\"",
+          "type": "\"content\" | \"header\"",
           "variants": [
-            "\"header\"",
-            "\"content\""
+            "\"content\"",
+            "\"header\""
           ]
         }
       }
@@ -13625,6 +19389,119 @@ export const COMPONENT_SPEC_BY_TYPE = {
       }
     ]
   },
+  "r-tooltip": {
+    "type": "r-tooltip",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。",
+    "props": [
+      {
+        "name": "content",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "placement",
+        "type": "string",
+        "required": false,
+        "default": "\"bottom\""
+      },
+      {
+        "name": "effect",
+        "type": "\"dark\" | \"light\"",
+        "required": false,
+        "default": "\"dark\"",
+        "schema": {
+          "kind": "enum",
+          "type": "\"dark\" | \"light\"",
+          "variants": [
+            "\"dark\"",
+            "\"light\""
+          ]
+        }
+      },
+      {
+        "name": "offset",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "showAfter",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "hideAfter",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "showArrow",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "enterable",
+        "type": "boolean",
+        "required": false,
+        "default": "true",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "popperClass",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "rawContent",
+        "type": "boolean",
+        "required": false,
+        "default": "false",
+        "schema": {
+          "kind": "enum",
+          "type": "boolean",
+          "variants": [
+            "false",
+            "true"
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-tooltip\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
+  },
   "r-transfer": {
     "type": "r-transfer",
     "category": "field",
@@ -14251,16 +20128,16 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "listType",
-        "type": "\"picture\" | \"text\" | \"picture-card\"",
+        "type": "\"text\" | \"picture\" | \"picture-card\"",
         "required": false,
         "default": "\"text\"",
         "description": "列表展示类型",
         "schema": {
           "kind": "enum",
-          "type": "\"picture\" | \"text\" | \"picture-card\"",
+          "type": "\"text\" | \"picture\" | \"picture-card\"",
           "variants": [
-            "\"picture\"",
             "\"text\"",
+            "\"picture\"",
             "\"picture-card\""
           ]
         }
@@ -14325,6 +20202,11 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。",
     "props": [
       {
+        "name": "width",
+        "type": "number",
+        "required": false
+      },
+      {
         "name": "name",
         "type": "string",
         "required": false
@@ -14353,11 +20235,6 @@ export const COMPONENT_SPEC_BY_TYPE = {
       {
         "name": "placeholder",
         "type": "string",
-        "required": false
-      },
-      {
-        "name": "width",
-        "type": "number",
         "required": false
       },
       {
@@ -14489,6 +20366,118 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "hasOptions": true
     },
     "notes": "**r-user-picker** — 用户选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户"
+  },
+  "r-watermark": {
+    "type": "r-watermark",
+    "category": "field",
+    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。",
+    "props": [
+      {
+        "name": "content",
+        "type": "string | string[]",
+        "required": false,
+        "schema": {
+          "kind": "enum",
+          "type": "string | string[]",
+          "variants": [
+            "string",
+            "string[]"
+          ]
+        }
+      },
+      {
+        "name": "font",
+        "type": "WatermarkFont",
+        "required": false,
+        "schema": {
+          "kind": "object",
+          "type": "WatermarkFont",
+          "properties": {
+            "color": {
+              "name": "color",
+              "type": "string",
+              "required": false
+            },
+            "fontSize": {
+              "name": "fontSize",
+              "type": "number",
+              "required": false
+            },
+            "fontWeight": {
+              "name": "fontWeight",
+              "type": "string",
+              "required": false
+            },
+            "fontFamily": {
+              "name": "fontFamily",
+              "type": "string",
+              "required": false
+            },
+            "fontStyle": {
+              "name": "fontStyle",
+              "type": "string",
+              "required": false
+            },
+            "textAlign": {
+              "name": "textAlign",
+              "type": "string",
+              "required": false
+            }
+          }
+        }
+      },
+      {
+        "name": "gap",
+        "type": "[number, number]",
+        "required": false
+      },
+      {
+        "name": "offset",
+        "type": "[number, number]",
+        "required": false
+      },
+      {
+        "name": "rotate",
+        "type": "number",
+        "required": false,
+        "default": "-22"
+      },
+      {
+        "name": "zIndex",
+        "type": "number",
+        "required": false,
+        "default": "9"
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "default": "\"r-watermark\"",
+        "description": "组件类型（对应 ComponentDefinition.type）"
+      },
+      {
+        "name": "props",
+        "type": "Record<string, unknown>",
+        "required": false,
+        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+      },
+      {
+        "name": "id",
+        "type": "string",
+        "required": false,
+        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+      }
+    ]
   },
   "rform-compare-demo": {
     "type": "rform-compare-demo",
@@ -14773,8 +20762,8 @@ export const COMPONENT_SPEC_BY_TYPE = {
           "kind": "enum",
           "type": "SparkJsonEditorMode",
           "variants": [
-            "\"table\"",
             "\"text\"",
+            "\"table\"",
             "\"tree\""
           ]
         }
@@ -15228,7 +21217,7 @@ export function getComponentSpec(type: string): Record<string, unknown> | null {
 /**
  * 供 AI 先做“有哪些组件”判断的组件目录。
  */
-export const COMPONENT_DIRECTORY_PROMPT = "## 组件目录\n\n## 组件注册表\n\n| 分组 | 允许的 type |\n|------|------------|\n| SPARK 容器 | r-block, r-collapse, r-detail, r-dialog, r-drawer, r-form, r-list, r-section, r-steps, r-table, r-tabs, r-tree |\n| SPARK 字段 | r-cascader, r-checkbox, r-checkbox-group, r-collapse-item, r-color, r-context-renderer, r-date, r-dept-picker, r-entity-picker, r-file-browser, r-file-path, r-html-editor, r-icon, r-image, r-multi-select, r-number, r-product-picker, r-radio, r-rate, r-select, r-slider, r-step-item, r-switch, r-tab-pane, r-text, r-textarea, r-toolbar, r-transfer, r-tree-select, r-upload, r-user-picker |\n| SPARK 分组 | r-column-group |\n\n## 组件索引\n\n| type | 分类 | 描述 |\n|------|------|------|\n| context-aware-fields-api | meta | 语境感知字段渲染能力总览 |\n| builtin-action | meta | 声明式动作节点（零代码优先） |\n| r-table | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。 |\n| r-form | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。 |\n| r-detail | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。 |\n| r-tree | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。 |\n| r-list | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。 |\n| r-tabs | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。 |\n| r-collapse | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。 |\n| r-steps | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。 |\n| r-dialog | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。 |\n| r-drawer | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。 |\n| r-section | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。 |\n| r-block | container | 块容器（轻量分区） |\n| r-user-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。 |\n| r-dept-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。 |\n| r-product-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。 |\n| r-toolbar | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。 |\n| r-tab-pane | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。 |\n| r-step-item | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。 |\n| r-collapse-item | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。 |\n| r-upload | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。 |\n| r-tree-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。 |\n| r-transfer | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。 |\n| r-textarea | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。 |\n| r-text | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。 |\n| r-switch | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。 |\n| r-slider | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。 |\n| r-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。 |\n| r-rate | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。 |\n| r-radio | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。 |\n| r-number | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。 |\n| r-multi-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。 |\n| r-image | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。 |\n| r-icon | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。 |\n| r-html-editor | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。 |\n| r-file-path | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。 |\n| r-file-browser | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。 |\n| r-entity-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。 |\n| r-date | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。 |\n| r-color | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。 |\n| r-checkbox-group | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。 |\n| r-checkbox | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。 |\n| r-cascader | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。 |\n| sap-chat-panel | feature | SPARK 组件，可在注册表中通过 type=\"sap-chat-panel\" 使用。 |\n| nav-icon | feature | SPARK 组件，可在注册表中通过 type=\"nav-icon\" 使用。 |\n| module-context-badge | feature | SPARK 组件，可在注册表中通过 type=\"module-context-badge\" 使用。 |\n| icon-picker | feature | SPARK 组件，可在注册表中通过 type=\"icon-picker\" 使用。 |\n| error-fallback | feature | SPARK 组件，可在注册表中通过 type=\"error-fallback\" 使用。 |\n| ai-chat-widget | feature | SPARK 组件，可在注册表中通过 type=\"ai-chat-widget\" 使用。 |\n| ai-chat-panel | feature | SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。 |\n| ai-assistant-hub | feature | SPARK 组件，可在注册表中通过 type=\"ai-assistant-hub\" 使用。 |\n| tenant-config | feature | SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。 |\n| settings | feature | SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。 |\n| cache-manager | feature | SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。 |\n| app-list | feature | SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。 |\n| login-view | feature | SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。 |\n| home-page | feature | SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。 |\n| about | feature | SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。 |\n| template-dsl-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。 |\n| rform-compare-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。 |\n| dashboard | feature | SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。 |\n| custom-rtable-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。 |\n| capability-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。 |\n| dev-workbench | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-workbench\" 引用。 |\n| dev-system | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。 |\n| dev-site-tree | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-site-tree\" 引用。 |\n| dev-page-overview | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-page-overview\" 引用。 |\n| dev-node-props | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-node-props\" 引用。 |\n| dev-file-editor | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-file-editor\" 引用。 |\n| dev-ai-panel | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-ai-panel\" 引用。 |\n| workspace-panel | feature | SPARK 视图组件，可在注册表中通过 type=\"workspace-panel\" 引用。 |\n| wbs-node-editor | feature | SPARK 视图组件，可在注册表中通过 type=\"wbs-node-editor\" 引用。 |\n| vxe-json-tree-editor | feature | SPARK 视图组件，可在注册表中通过 type=\"vxe-json-tree-editor\" 引用。 |\n| project-tree | feature | SPARK 视图组件，可在注册表中通过 type=\"project-tree\" 引用。 |\n| page-config-editor | feature | SPARK 视图组件，可在注册表中通过 type=\"page-config-editor\" 引用。 |\n| node-target-config | feature | SPARK 视图组件，可在注册表中通过 type=\"node-target-config\" 引用。 |\n| node-state-config | feature | SPARK 视图组件，可在注册表中通过 type=\"node-state-config\" 引用。 |\n| node-layout-config | feature | SPARK 视图组件，可在注册表中通过 type=\"node-layout-config\" 引用。 |\n| node-context-config | feature | SPARK 视图组件，可在注册表中通过 type=\"node-context-config\" 引用。 |\n| node-basic-info | feature | SPARK 视图组件，可在注册表中通过 type=\"node-basic-info\" 引用。 |\n| ai-studio-panel | feature | SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。 |\n| spark-component-renderer | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。 |\n| unregistered-node-fallback | feature | SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。 |\n| spark-json-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。 |\n| spark-code-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。 |\n| spark-child | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。 |\n| tree-node-summary | feature | SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。 |\n| r-context-renderer | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。 |\n| builtin-action-button | feature | SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。 |\n| dock-tail | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。 |\n| dock-header | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。 |\n| dock-footer | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。 |\n| dock-filter | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。 |\n| dock-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。 |\n| dock-actions | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。 |\n| r-column-group | group |  |"
+export const COMPONENT_DIRECTORY_PROMPT = "## 组件目录\n\n## 组件注册表\n\n| 分组 | 允许的 type |\n|------|------------|\n| SPARK 容器 | r-block, r-collapse, r-detail, r-dialog, r-drawer, r-form, r-list, r-section, r-steps, r-table, r-tabs, r-tree |\n| SPARK 字段 | r-affix, r-backtop, r-button, r-card, r-carousel, r-carousel-item, r-cascader, r-checkbox, r-checkbox-group, r-col, r-collapse-item, r-color, r-context-renderer, r-date, r-dept-picker, r-divider, r-dropdown, r-entity-picker, r-file-browser, r-file-path, r-html-editor, r-icon, r-image, r-link, r-multi-select, r-number, r-page-header, r-popconfirm, r-popover, r-product-picker, r-radio, r-rate, r-row, r-scrollbar, r-select, r-slider, r-space, r-step-item, r-switch, r-tab-pane, r-text, r-textarea, r-toolbar, r-tooltip, r-transfer, r-tree-select, r-upload, r-user-picker, r-watermark |\n| SPARK 分组 | r-column-group |\n\n## 组件索引\n\n| type | 分类 | 描述 |\n|------|------|------|\n| context-aware-fields-api | meta | 语境感知字段渲染能力总览 |\n| builtin-action | meta | 声明式动作节点（零代码优先） |\n| r-table | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。 |\n| r-form | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。 |\n| r-detail | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。 |\n| r-tree | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。 |\n| r-list | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。 |\n| r-tabs | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。 |\n| r-collapse | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。 |\n| r-steps | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。 |\n| r-dialog | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。 |\n| r-drawer | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。 |\n| r-section | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。 |\n| r-block | container | 块容器（轻量分区） |\n| r-user-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。 |\n| r-dept-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。 |\n| r-product-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。 |\n| r-watermark | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。 |\n| r-tooltip | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。 |\n| r-toolbar | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。 |\n| r-tab-pane | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。 |\n| r-step-item | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。 |\n| r-space | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。 |\n| r-scrollbar | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。 |\n| r-row | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。 |\n| r-popover | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。 |\n| r-popconfirm | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。 |\n| r-page-header | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。 |\n| r-link | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。 |\n| r-dropdown | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。 |\n| r-divider | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。 |\n| r-collapse-item | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。 |\n| r-col | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。 |\n| r-carousel-item | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。 |\n| r-carousel | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。 |\n| r-card | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。 |\n| r-button | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。 |\n| r-backtop | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。 |\n| r-affix | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。 |\n| r-upload | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。 |\n| r-tree-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。 |\n| r-transfer | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。 |\n| r-textarea | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。 |\n| r-text | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。 |\n| r-switch | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。 |\n| r-slider | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。 |\n| r-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。 |\n| r-rate | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。 |\n| r-radio | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。 |\n| r-number | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。 |\n| r-multi-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。 |\n| r-image | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。 |\n| r-icon | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。 |\n| r-html-editor | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。 |\n| r-file-path | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。 |\n| r-file-browser | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。 |\n| r-entity-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。 |\n| r-date | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。 |\n| r-color | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。 |\n| r-checkbox-group | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。 |\n| r-checkbox | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。 |\n| r-cascader | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。 |\n| sap-chat-panel | feature | SPARK 组件，可在注册表中通过 type=\"sap-chat-panel\" 使用。 |\n| nav-icon | feature | SPARK 组件，可在注册表中通过 type=\"nav-icon\" 使用。 |\n| module-context-badge | feature | SPARK 组件，可在注册表中通过 type=\"module-context-badge\" 使用。 |\n| icon-picker | feature | SPARK 组件，可在注册表中通过 type=\"icon-picker\" 使用。 |\n| error-fallback | feature | SPARK 组件，可在注册表中通过 type=\"error-fallback\" 使用。 |\n| ai-chat-widget | feature | SPARK 组件，可在注册表中通过 type=\"ai-chat-widget\" 使用。 |\n| ai-chat-panel | feature | SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。 |\n| ai-assistant-hub | feature | SPARK 组件，可在注册表中通过 type=\"ai-assistant-hub\" 使用。 |\n| tenant-config | feature | SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。 |\n| settings | feature | SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。 |\n| cache-manager | feature | SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。 |\n| app-list | feature | SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。 |\n| login-view | feature | SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。 |\n| home-page | feature | SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。 |\n| about | feature | SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。 |\n| template-dsl-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。 |\n| rform-compare-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。 |\n| dashboard | feature | SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。 |\n| custom-rtable-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。 |\n| capability-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。 |\n| dev-workbench | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-workbench\" 引用。 |\n| dev-system | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。 |\n| dev-site-tree | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-site-tree\" 引用。 |\n| dev-page-overview | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-page-overview\" 引用。 |\n| dev-node-props | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-node-props\" 引用。 |\n| dev-file-editor | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-file-editor\" 引用。 |\n| dev-ai-panel | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-ai-panel\" 引用。 |\n| workspace-panel | feature | SPARK 视图组件，可在注册表中通过 type=\"workspace-panel\" 引用。 |\n| wbs-node-editor | feature | SPARK 视图组件，可在注册表中通过 type=\"wbs-node-editor\" 引用。 |\n| vxe-json-tree-editor | feature | SPARK 视图组件，可在注册表中通过 type=\"vxe-json-tree-editor\" 引用。 |\n| project-tree | feature | SPARK 视图组件，可在注册表中通过 type=\"project-tree\" 引用。 |\n| page-config-editor | feature | SPARK 视图组件，可在注册表中通过 type=\"page-config-editor\" 引用。 |\n| node-target-config | feature | SPARK 视图组件，可在注册表中通过 type=\"node-target-config\" 引用。 |\n| node-state-config | feature | SPARK 视图组件，可在注册表中通过 type=\"node-state-config\" 引用。 |\n| node-layout-config | feature | SPARK 视图组件，可在注册表中通过 type=\"node-layout-config\" 引用。 |\n| node-context-config | feature | SPARK 视图组件，可在注册表中通过 type=\"node-context-config\" 引用。 |\n| node-basic-info | feature | SPARK 视图组件，可在注册表中通过 type=\"node-basic-info\" 引用。 |\n| ai-studio-panel | feature | SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。 |\n| spark-component-renderer | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。 |\n| unregistered-node-fallback | feature | SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。 |\n| spark-json-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。 |\n| spark-code-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。 |\n| spark-child | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。 |\n| tree-node-summary | feature | SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。 |\n| r-context-renderer | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。 |\n| display-timeline-item | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。 |\n| display-timeline | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。 |\n| display-skeleton | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。 |\n| display-result | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。 |\n| display-empty | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。 |\n| display-descriptions-item | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。 |\n| display-descriptions | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。 |\n| display-breadcrumb-item | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。 |\n| display-breadcrumb | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。 |\n| display-alert | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。 |\n| display-text | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。 |\n| display-tag | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。 |\n| display-statistic | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。 |\n| display-progress | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。 |\n| display-pagination | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。 |\n| display-badge | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。 |\n| display-avatar | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。 |\n| builtin-action-button | feature | SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。 |\n| dock-tail | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。 |\n| dock-header | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。 |\n| dock-footer | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。 |\n| dock-filter | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。 |\n| dock-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。 |\n| dock-actions | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。 |\n| r-column-group | group |  |"
 
 /**
  * 供 AI 按组件 type 精确查询的参数目录。
@@ -15240,22 +21229,40 @@ export const COMPONENT_PROMPT_BY_TYPE: Record<string, string> = {
   "r-form": "**r-form** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键，如 \"Users@currentRow\"\nlabelWidth?: string — 表单标签宽度 (默认 \"100px\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-form\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
   "r-detail": "**r-detail** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntitleAlign?: \"center\" | \"left\" | \"right\" — 标题对齐 (默认 \"left\")\nvalueAlign?: \"center\" | \"left\" | \"right\" — 值对齐 (默认 \"left\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-detail\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
   "r-tree": "**r-tree** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键，如 \"TreeData@rows\"\nactions?: unknown — 结构化节点动作 dock\neditor?: unknown — 结构化编辑区 dock\nnodeKey?: string — 节点主键字段名，默认取 treeConfig.idField\ncurrentKey?: string | number | null — 当前选中节点 ID\nexpandToKey?: string | number | null — 初始化展开并定位到目标节点 ID\nexpandLevel?: number — 初始化自动展开到指定层级（根节点为第 1 层）\nallowAppend?: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete?: boolean — 允许删除节点（自动生成删除按钮）\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n\n**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA",
-  "r-list": "**r-list** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键\nactions?: unknown — 结构化列表项动作 dock\ncolumns?: number — 列数 (默认 1)\ngap?: string | number — 列表项间距 (默认 0)\nminItemWidth?: string — 最小项宽度 (默认 \"\")\nrowKey?: string — 行唯一键字段 (默认 \"id\")\nemptyText?: string — 空数据提示文案 (默认 \"\\u6682\\u65E0\\u6570\\u636E\")\nitemClass?: string — 列表项 CSS 类名 (默认 \"\")\nitemStyle?: CSSProperties — 列表项行内样式 (默认 {})\nuseCard?: boolean — 使用卡片包裹 (默认 false)\ncardShadow?: \"never\" | \"always\" | \"hover\" — 卡片阴影模式 (默认 \"hover\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\nitemColSpan?: number — 项跨列数\nitemRowSpan?: number — 项跨行数 (默认 1)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-list\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\ndock='actions' children — 列表项动作节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
+  "r-list": "**r-list** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键\nactions?: unknown — 结构化列表项动作 dock\ncolumns?: number — 列数 (默认 1)\ngap?: string | number — 列表项间距 (默认 0)\nminItemWidth?: string — 最小项宽度 (默认 \"\")\nrowKey?: string — 行唯一键字段 (默认 \"id\")\nemptyText?: string — 空数据提示文案 (默认 \"\\u6682\\u65E0\\u6570\\u636E\")\nitemClass?: string — 列表项 CSS 类名 (默认 \"\")\nitemStyle?: CSSProperties — 列表项行内样式 (默认 {})\nuseCard?: boolean — 使用卡片包裹 (默认 false)\ncardShadow?: \"always\" | \"hover\" | \"never\" — 卡片阴影模式 (默认 \"hover\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\nitemColSpan?: number — 项跨列数\nitemRowSpan?: number — 项跨行数 (默认 1)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-list\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\ndock='actions' children — 列表项动作节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
   "r-tabs": "**r-tabs** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。\n\n【Props】\nmodelValue?: string | number — 当前激活标签页\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tabs\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\n\n【事件】\nupdate:modelValue: [value: string | number]\n\n**r-tabs** — 标签页容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\nchildren 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）",
   "r-collapse": "**r-collapse** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。\n\n【Props】\nmodelValue?: CollapseValue — 当前展开的面板\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-collapse\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\n\n【事件】\nupdate:modelValue: [value: CollapseValue]\n\n**r-collapse** — 折叠面板容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\nchildren 内放 r-collapse-item",
   "r-steps": "**r-steps** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。\n\n【Props】\nmodelValue?: string | number — 当前步骤\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-steps\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\n\n【事件】\nupdate:modelValue: [value: string | number]\n\n**r-steps** — 步骤条容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\nchildren 内放 r-step",
   "r-dialog": "**r-dialog** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。\n\n【Props】\nheader?: unknown — 结构化头部 dock\nfooter?: unknown — 结构化底部 dock\ntitle?: string — 对话框标题 (默认 \"\")\nmodelValue?: boolean — 控制显隐（v-model） (默认 false)\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-dialog\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调\n\n【事件】\nupdate:modelValue: [value: boolean]\n\n**r-dialog** — 对话框容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调",
   "r-drawer": "**r-drawer** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。\n\n【Props】\nheader?: unknown — 结构化头部 dock\nfooter?: unknown — 结构化底部 dock\ntitle?: string — 抽屉标题 (默认 \"\")\nmodelValue?: boolean — 控制显隐（v-model） (默认 false)\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-drawer\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【事件】\nupdate:modelValue: [value: boolean]\n\n**r-drawer** — 抽屉容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen / onClose / onOpened / onClosed: string — 生命周期回调",
-  "r-section": "**r-section** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。\n\n【Props】\nheader?: unknown — 结构化头部 dock\ntitle?: string — 分区标题 (默认 \"\")\ndescription?: string — 分区描述 (默认 \"\")\ncollapsible?: boolean — 是否可折叠 (默认 false)\ndefaultCollapsed?: boolean — 默认折叠 (默认 false)\nbordered?: boolean — 显示边框 (默认 true)\nuseCard?: boolean — 使用卡片样式 (默认 false)\ncardShadow?: \"never\" | \"always\" | \"hover\" — 卡片阴影模式 (默认 \"never\")\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\nexpandText?: string — 展开文案 (默认 \"\\u5C55\\u5F00\")\ncollapseText?: string — 收起文案 (默认 \"\\u6536\\u8D77\")\nshowToggleIcon?: boolean — 显示切换图标 (默认 true)\nexpandIconText?: string — 展开图标文案 (默认 \">\")\ncollapseIconText?: string — 收起图标文案 (默认 \"v\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-section\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高\n\n**r-section** — 分区容器\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高",
+  "r-section": "**r-section** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。\n\n【Props】\nheader?: unknown — 结构化头部 dock\ntitle?: string — 分区标题 (默认 \"\")\ndescription?: string — 分区描述 (默认 \"\")\ncollapsible?: boolean — 是否可折叠 (默认 false)\ndefaultCollapsed?: boolean — 默认折叠 (默认 false)\nbordered?: boolean — 显示边框 (默认 true)\nuseCard?: boolean — 使用卡片样式 (默认 false)\ncardShadow?: \"always\" | \"hover\" | \"never\" — 卡片阴影模式 (默认 \"never\")\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\nexpandText?: string — 展开文案 (默认 \"\\u5C55\\u5F00\")\ncollapseText?: string — 收起文案 (默认 \"\\u6536\\u8D77\")\nshowToggleIcon?: boolean — 显示切换图标 (默认 true)\nexpandIconText?: string — 展开图标文案 (默认 \">\")\ncollapseIconText?: string — 收起图标文案 (默认 \"v\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-section\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高\n\n**r-section** — 分区容器\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高",
   "r-block": "**r-block** — 块容器（轻量分区）\n\n【根级字段】\ntitle: string — 标题\ndescription: string — 描述\nprops.docks.header.class: string — 头部 CSS 类名\nbordered: boolean — 边框，默认 true\nuseCard: boolean — 卡片样式，默认 false\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高定义\n\n**r-block** — 块容器（轻量分区）\ntitle: string — 标题\ndescription: string — 描述\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbordered: boolean — 边框，默认 true\nuseCard: boolean — 卡片样式，默认 false\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高定义\n适合做页面中的局部块，不强制数据绑定",
-  "r-user-picker": "**r-user-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。\n\n【Props】\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nwidth?: number\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户\n\n【事件】\nupdate:modelValue: any[]\n\n**r-user-picker** — 用户选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户",
-  "r-dept-picker": "**r-dept-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。\n\n【Props】\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nwidth?: number\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径\n\n【事件】\nupdate:modelValue: any[]\n\n**r-dept-picker** — 部门选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径",
-  "r-product-picker": "**r-product-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。\n\n【Props】\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nwidth?: number\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存\n\n【事件】\nupdate:modelValue: any[]\n\n**r-product-picker** — 产品选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存",
+  "r-user-picker": "**r-user-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。\n\n【Props】\nwidth?: number\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户\n\n【事件】\nupdate:modelValue: any[]\n\n**r-user-picker** — 用户选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户",
+  "r-dept-picker": "**r-dept-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。\n\n【Props】\nwidth?: number\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径\n\n【事件】\nupdate:modelValue: any[]\n\n**r-dept-picker** — 部门选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径",
+  "r-product-picker": "**r-product-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。\n\n【Props】\nwidth?: number\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存\n\n【事件】\nupdate:modelValue: any[]\n\n**r-product-picker** — 产品选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存",
+  "r-watermark": "**r-watermark** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。\n\n【Props】\ncontent?: string | string[]\nfont?: WatermarkFont\ngap?: [number, number]\noffset?: [number, number]\nrotate?: number (默认 -22)\nzIndex?: number (默认 9)\nwidth?: number\nheight?: number\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-watermark\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-tooltip": "**r-tooltip** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。\n\n【Props】\ncontent?: string\nplacement?: string (默认 \"bottom\")\neffect?: \"dark\" | \"light\" (默认 \"dark\")\noffset?: number\nshowAfter?: number\nhideAfter?: number\nshowArrow?: boolean (默认 true)\nenterable?: boolean (默认 true)\npopperClass?: string\nrawContent?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tooltip\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
   "r-toolbar": "**r-toolbar** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。\n\n【Props】\ntail?: unknown — 结构化尾区 dock\ngap?: string | number — 单个子项之间的间距（同一区域内部）\nzoneGap?: string | number — 主区与尾区之间的间距（区域级）\nalign?: InlineAlign — 区域内部子项的交叉轴对齐\njustify?: InlineJustify — 主区内部子项的主轴分布方式\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-toolbar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
   "r-tab-pane": "**r-tab-pane** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。\n\n【Props】\ntype?: string (默认 \"r-tab-pane\")\nprops?: Record<string, unknown>\nid?: string\nname?: string | number\nvalue?: string | number\nlabel?: string\ntitle?: string\ndisabled?: boolean\nlazy?: boolean\nclosable?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number",
-  "r-step-item": "**r-step-item** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。\n\n【Props】\ntype?: string (默认 \"r-step\")\nprops?: Record<string, unknown>\nid?: string\ntitle?: string\nlabel?: string\ndescription?: string\nstatus?: string\ndisabled?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number\nmode: \"header\" | \"content\"\n\n【事件】\nactivate: [index: number]",
+  "r-step-item": "**r-step-item** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。\n\n【Props】\ntype?: string (默认 \"r-step\")\nprops?: Record<string, unknown>\nid?: string\ntitle?: string\nlabel?: string\ndescription?: string\nstatus?: string\ndisabled?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number\nmode: \"content\" | \"header\"\n\n【事件】\nactivate: [index: number]",
+  "r-space": "**r-space** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。\n\n【Props】\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\nsize?: string | number (默认 12)\nwrap?: boolean (默认 false)\nfill?: boolean (默认 false)\nalignment?: \"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\" (默认 \"center\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-space\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-scrollbar": "**r-scrollbar** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。\n\n【Props】\nheight?: string | number\nmaxHeight?: string | number\nnative?: boolean (默认 false)\nwrapStyle?: string | Record<string, string>\nwrapClass?: string\nviewStyle?: string | Record<string, string>\nviewClass?: string\nnoresize?: boolean (默认 false)\nalways?: boolean (默认 false)\nminSize?: number (默认 20)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-scrollbar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-row": "**r-row** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。\n\n【Props】\ngutter?: number (默认 0)\njustify?: \"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\" (默认 \"start\")\nalign?: \"bottom\" | \"top\" | \"middle\" (默认 \"top\")\ntag?: string (默认 \"div\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-row\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-popover": "**r-popover** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。\n\n【Props】\ntitle?: string\ncontent?: string\nplacement?: string (默认 \"bottom\")\nwidth?: string | number (默认 150)\ntrigger?: \"click\" | \"hover\" | \"focus\" | \"contextmenu\" (默认 \"click\")\neffect?: \"dark\" | \"light\" (默认 \"light\")\noffset?: number\nshowAfter?: number\nhideAfter?: number\nshowArrow?: boolean (默认 true)\npopperClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-popover\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-popconfirm": "**r-popconfirm** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。\n\n【Props】\ntitle?: string\nconfirmButtonText?: string\ncancelButtonText?: string\nconfirmButtonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"primary\")\ncancelButtonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"\")\nicon?: string\niconColor?: string (默认 \"#f90\")\nhideIcon?: boolean (默认 false)\nhideAfter?: number\nwidth?: string | number (默认 150)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-popconfirm\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nconfirm: []\ncancel: []",
+  "r-page-header": "**r-page-header** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。\n\n【Props】\ntitle?: string (默认 \"\\u8FD4\\u56DE\")\nicon?: string\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-page-header\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nback: []",
+  "r-link": "**r-link** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。\n\n【Props】\nlabel?: string\nlinkType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"default\")\nunderline?: boolean (默认 true)\nhref?: string\ntarget?: \"_self\" | \"_blank\" | \"_parent\" | \"_top\" (默认 \"_self\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-link\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-dropdown": "**r-dropdown** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。\n\n【Props】\nitems?: DropdownItem[]\ntrigger?: \"click\" | \"hover\" | \"contextmenu\" (默认 \"hover\")\neffect?: \"dark\" | \"light\" (默认 \"light\")\nplacement?: string (默认 \"bottom\")\nhideOnClick?: boolean (默认 true)\nshowTimeout?: number\nhideTimeout?: number\nsplitButton?: boolean (默认 false)\npopperClass?: string\nmaxHeight?: string | number\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-dropdown\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-divider": "**r-divider** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。\n\n【Props】\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\nborderStyle?: \"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\" (默认 \"solid\")\ncontentPosition?: \"center\" | \"left\" | \"right\" (默认 \"center\")\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-divider\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
   "r-collapse-item": "**r-collapse-item** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。\n\n【Props】\ntype?: string (默认 \"r-collapse-item\")\nprops?: Record<string, unknown>\nid?: string\nname?: string | number\ntitle?: string\nlabel?: string\ndisabled?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number",
-  "r-upload": "**r-upload** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（文件路径）\naction?: string — 上传 URL (默认 \"#\")\naccept?: string — 接受文件类型 (默认 \"\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u70B9\\u51FB\\u4E0A\\u4F20\")\nautoUpload?: boolean — 自动上传 (默认 true)\nshowFileList?: boolean — 显示文件列表 (默认 true)\nlimit?: number — 最大文件数 (默认 1)\nlistType?: \"picture\" | \"text\" | \"picture-card\" — 列表展示类型 (默认 \"text\")\nseparator?: string — 多文件分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u6D4F\\u89C8\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-upload\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\n\n透传到 el-upload: autoUpload(默认 true), showFileList(默认 true), limit(默认 1), listType('text'|'picture'|'picture-card')",
+  "r-col": "**r-col** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。\n\n【Props】\nspan?: number (默认 24)\noffset?: number (默认 0)\npush?: number (默认 0)\npull?: number (默认 0)\nxs?: ResponsiveValue\nsm?: ResponsiveValue\nmd?: ResponsiveValue\nlg?: ResponsiveValue\nxl?: ResponsiveValue\ntag?: string (默认 \"div\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-col\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-carousel-item": "**r-carousel-item** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。\n\n【Props】\nitemName?: string\nlabel?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-carousel-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-carousel": "**r-carousel** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。\n\n【Props】\nheight?: string (默认 \"200px\")\ninitialIndex?: number (默认 0)\ntrigger?: \"click\" | \"hover\" (默认 \"hover\")\nautoplay?: boolean (默认 true)\ninterval?: number (默认 3000)\nindicatorPosition?: \"\" | \"none\" | \"outside\" (默认 \"\")\narrow?: \"always\" | \"hover\" | \"never\" (默认 \"hover\")\nloop?: boolean (默认 true)\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\npauseOnHover?: boolean (默认 true)\nmotionBlur?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-carousel\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-card": "**r-card** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。\n\n【Props】\nheader?: string\nshadow?: \"always\" | \"hover\" | \"never\" (默认 \"always\")\nbodyStyle?: string | Record<string, string>\nbodyClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-card\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-button": "**r-button** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。\n\n【Props】\nlabel?: string\nbuttonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | \"text\" (默认 \"default\")\nbuttonSize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\nplain?: boolean (默认 false)\ntextMode?: boolean (默认 false)\nbg?: boolean (默认 false)\nlinkMode?: boolean (默认 false)\nround?: boolean (默认 false)\ncircle?: boolean (默认 false)\nloading?: boolean (默认 false)\nautoInsertSpace?: boolean (默认 false)\ncolor?: string\ndark?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-button\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-backtop": "**r-backtop** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。\n\n【Props】\ntarget?: string\nvisibilityHeight?: number (默认 200)\nright?: number (默认 40)\nbottom?: number (默认 40)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-backtop\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-affix": "**r-affix** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。\n\n【Props】\noffset?: number (默认 0)\nposition?: \"bottom\" | \"top\" (默认 \"top\")\ntarget?: string\nzIndex?: number (默认 100)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-affix\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-upload": "**r-upload** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（文件路径）\naction?: string — 上传 URL (默认 \"#\")\naccept?: string — 接受文件类型 (默认 \"\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u70B9\\u51FB\\u4E0A\\u4F20\")\nautoUpload?: boolean — 自动上传 (默认 true)\nshowFileList?: boolean — 显示文件列表 (默认 true)\nlimit?: number — 最大文件数 (默认 1)\nlistType?: \"text\" | \"picture\" | \"picture-card\" — 列表展示类型 (默认 \"text\")\nseparator?: string — 多文件分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u6D4F\\u89C8\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-upload\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\n\n透传到 el-upload: autoUpload(默认 true), showFileList(默认 true), limit(默认 1), listType('text'|'picture'|'picture-card')",
   "r-tree-select": "**r-tree-select** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: TreeSelectValue — 双向绑定值\noptions?: unknown[] — 树形选项（嵌套结构）\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\noptionChildrenField?: string — 子节点字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\nmultiple?: boolean — 多选模式 (默认 false)\ncheckStrictly?: boolean — 父子不关联勾选 (默认 false)\ndefaultExpandAll?: boolean — 默认展开所有节点 (默认 false)\nrenderAfterExpand?: boolean — 展开后才渲染子节点 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: TreeSelectValue]",
   "r-transfer": "**r-transfer** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: TransferValue — 双向绑定值（已选值数组）\noptions?: unknown[] — 数据源（左侧候选列表）\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\ntitles?: [string, string] — 左右面板标题 (默认 [\"\\u5F85\\u9009\", \"\\u5DF2\\u9009\"] as [\n    string,\n    string\n])\nfilterable?: boolean — 可搜索 (默认 false)\nfilterPlaceholder?: string — 搜索框占位符 (默认 \"\\u8BF7\\u8F93\\u5165\\u5173\\u952E\\u8BCD\")\ntargetOrder?: \"push\" | \"unshift\" | \"original\" — 右侧排序方式 (默认 \"original\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-transfer\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: TransferValue]",
   "r-textarea": "**r-textarea** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\nrows?: number — 行数 (默认 4)\nautosize?: boolean | { minRows?: number; maxRows?: number; } — 自适应高度 (默认 false)\nmaxlength?: number — 最大长度\nshowWordLimit?: boolean — 显示字数统计 (默认 false)\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u8F93\\u5165\\u5185\\u5BB9\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-textarea\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
@@ -15300,21 +21307,21 @@ export const COMPONENT_PROMPT_BY_TYPE: Record<string, string> = {
   "capability-demo": "**capability-demo** — SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。",
   "dev-workbench": "**dev-workbench** — SPARK 视图组件，可在注册表中通过 type=\"dev-workbench\" 引用。",
   "dev-system": "**dev-system** — SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。",
-  "dev-site-tree": "**dev-site-tree** — SPARK 视图组件，可在注册表中通过 type=\"dev-site-tree\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
-  "dev-page-overview": "**dev-page-overview** — SPARK 视图组件，可在注册表中通过 type=\"dev-page-overview\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }\n\n【事件】\ncreatePage: []\nlocateNode: [pageId: string]\neditPage: [pageId: string]",
-  "dev-node-props": "**dev-node-props** — SPARK 视图组件，可在注册表中通过 type=\"dev-node-props\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }\n\n【事件】\ncreatePage: []",
-  "dev-file-editor": "**dev-file-editor** — SPARK 视图组件，可在注册表中通过 type=\"dev-file-editor\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }\nactiveFile?: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"\nshowTabs?: boolean",
-  "dev-ai-panel": "**dev-ai-panel** — SPARK 视图组件，可在注册表中通过 type=\"dev-ai-panel\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+  "dev-site-tree": "**dev-site-tree** — SPARK 视图组件，可在注册表中通过 type=\"dev-site-tree\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+  "dev-page-overview": "**dev-page-overview** — SPARK 视图组件，可在注册表中通过 type=\"dev-page-overview\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }\n\n【事件】\ncreatePage: []\nlocateNode: [pageId: string]\neditPage: [pageId: string]",
+  "dev-node-props": "**dev-node-props** — SPARK 视图组件，可在注册表中通过 type=\"dev-node-props\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }\n\n【事件】\ncreatePage: []",
+  "dev-file-editor": "**dev-file-editor** — SPARK 视图组件，可在注册表中通过 type=\"dev-file-editor\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }\nactiveFile?: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"\nshowTabs?: boolean",
+  "dev-ai-panel": "**dev-ai-panel** — SPARK 视图组件，可在注册表中通过 type=\"dev-ai-panel\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
   "workspace-panel": "**workspace-panel** — SPARK 视图组件，可在注册表中通过 type=\"workspace-panel\" 引用。\n\n【Props】\nnodeId: string | null",
   "wbs-node-editor": "**wbs-node-editor** — SPARK 视图组件，可在注册表中通过 type=\"wbs-node-editor\" 引用。\n\n【Props】\nnodeId: string",
   "vxe-json-tree-editor": "**vxe-json-tree-editor** — SPARK 视图组件，可在注册表中通过 type=\"vxe-json-tree-editor\" 引用。\n\n【Props】\nmodelValue?: string (默认 \"\")\ndocumentValue?: Record<string, unknown> | null (默认 null)\nheight?: string | number (默认 420)\nreadOnly?: boolean (默认 false)\nschema?: Record<string, unknown> | null (默认 null)\npolicy?: Partial<JsonTreePolicy> (默认 {})\nfilterPlaceholder?: string (默认 \"\\u7B5B\\u9009\\u8DEF\\u5F84 / \\u952E\\u540D / \\u503C\")\n\n【事件】\nupdate:modelValue: [value: string]\nupdate:documentValue: [value: Record<string, unknown>]",
   "project-tree": "**project-tree** — SPARK 视图组件，可在注册表中通过 type=\"project-tree\" 引用。\n\n【Props】\nstate: ProjectState\n\n【事件】\nnodeClick: [nodeId: string]\naddGroup: []\naddPage: []",
   "page-config-editor": "**page-config-editor** — SPARK 视图组件，可在注册表中通过 type=\"page-config-editor\" 引用。\n\n【Props】\npageId: string",
-  "node-target-config": "**node-target-config** — SPARK 视图组件，可在注册表中通过 type=\"node-target-config\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
-  "node-state-config": "**node-state-config** — SPARK 视图组件，可在注册表中通过 type=\"node-state-config\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
-  "node-layout-config": "**node-layout-config** — SPARK 视图组件，可在注册表中通过 type=\"node-layout-config\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
-  "node-context-config": "**node-context-config** — SPARK 视图组件，可在注册表中通过 type=\"node-context-config\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
-  "node-basic-info": "**node-basic-info** — SPARK 视图组件，可在注册表中通过 type=\"node-basic-info\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }\nmoduleKindDisabled: boolean",
+  "node-target-config": "**node-target-config** — SPARK 视图组件，可在注册表中通过 type=\"node-target-config\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+  "node-state-config": "**node-state-config** — SPARK 视图组件，可在注册表中通过 type=\"node-state-config\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+  "node-layout-config": "**node-layout-config** — SPARK 视图组件，可在注册表中通过 type=\"node-layout-config\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+  "node-context-config": "**node-context-config** — SPARK 视图组件，可在注册表中通过 type=\"node-context-config\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }",
+  "node-basic-info": "**node-basic-info** — SPARK 视图组件，可在注册表中通过 type=\"node-basic-info\" 引用。\n\n【Props】\nstate: { treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoaded: Ref<boolean, boolean>; pageDataSet: ShallowRef<DataSet | null, DataSet | null>; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageDataHistory: Ref<{ id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[], DataSetHistorySnapshot[] | { id: string; version: number; timestamp: number; dataSetName: string; pageId?: string; label?: string; summary?: string; snapshot: { schemaVersion?: number; dataSetName: string; tables: Record<string, ITableMetadata>; tableRelations?: { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: Record<string, unknown>; cascadeUpdate?: boolean; cascadeDelete?: boolean; }[]; viewDependencies?: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean; }[]; version?: number; pageId?: string; }; sourceData?: Record<string, unknown>; }[]>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; pageDataHistoryCount: ComputedRef<number>; pageDataHistoryActiveIndex: ComputedRef<number>; canPageDataHistoryBack: ComputedRef<boolean>; canPageDataHistoryForward: ComputedRef<boolean>; previewJson: ComputedRef<string>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canUndoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canRedoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFiles: (pageId: string) => Promise<void>; clearFiles: () => void; refreshPageDataHistory: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; readRemotePageVersionFile: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionFile | null>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; restorePageDataHistory: (entryId: string) => boolean; goPageDataHistoryBack: () => boolean; goPageDataHistoryForward: () => boolean; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: string, value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; saveByTab: (tab: DevWorkspaceTab) => Promise<void>; refreshByTab: (tab: DevWorkspaceTab) => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; applyNavChanges: () => void; markNavDirty: () => void; cancelAutoSave: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; savePageFiles: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; createPage: (pageId: string, title: string, icon: string, linkToNav: boolean) => Promise<void>; initialize: () => Promise<void>; }\nmoduleKindDisabled: boolean",
   "ai-studio-panel": "**ai-studio-panel** — SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。",
   "spark-component-renderer": "**spark-component-renderer** — SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。\n\n【Props】\nparentContext?: ICapabilityContext — 显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
   "unregistered-node-fallback": "**unregistered-node-fallback** — SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。\n\n【Props】\ntitle?: string (默认 \"\\u672A\\u6CE8\\u518C\\u7684\\u7EC4\\u4EF6\\u7C7B\\u578B\")\ndescription?: string (默认 \"\")",
@@ -15323,12 +21330,29 @@ export const COMPONENT_PROMPT_BY_TYPE: Record<string, string> = {
   "spark-child": "**spark-child** — SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。\n\n【Props】\ntype: string\nid?: string\nnodeId?: string\ncolSpan?: string | number\nrowSpan?: string | number",
   "tree-node-summary": "**tree-node-summary** — SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。\n\n【Props】\nnameField?: string (默认 \"name\")\ntypeField?: string (默认 \"type\")\nstatusField?: string (默认 \"status\")\nownerField?: string (默认 \"owner\")\nmetaField?: string (默认 \"route\")\nextraField?: string (默认 \"childPlacement\")\nshowType?: boolean (默认 true)\nshowStatus?: boolean (默认 true)\nshowOwner?: boolean (默认 false)\nshowMeta?: boolean (默认 true)\nshowExtra?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree-node-summary\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
   "r-context-renderer": "**r-context-renderer** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。\n\n【Props】\ndisplayLabel?: string | undefined — 显示标签\nlabel?: string | undefined — 直接传入的标签（供 r-column-group 直连使用）\nfieldName?: string | undefined — 字段绑定名\nfield?: string | undefined — 直接传入的字段名（供裸列节点使用）\nwidth?: string | number | undefined — 列宽\nsortable?: boolean | \"custom\" | undefined — Element Plus 表格列排序能力\nfilterable?: boolean | undefined — 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning\nminWidth?: string | number | undefined — 最小列宽\nfixed?: boolean | \"left\" | \"right\" | undefined — 固定列方向\nalign?: TextAlign | undefined — 列对齐\nheaderAlign?: TextAlign | undefined — 表头对齐\nisCurrentFieldHidden?: boolean | undefined — 当前字段是否隐藏\nshouldRenderCurrentField?: boolean | undefined — 当前宿主下字段是否应渲染\ncurrentDisplayValue?: string | undefined — 当前显示值\nisTableCellHidden?: ((row: IDataRow) => boolean) | undefined — 表格行级隐藏判断\ngetTableCellDisplayValue?: ((row: IDataRow) => string) | undefined — 表格行级显示值获取\nvalidationRules?: FormItemRule[] | undefined — 表单验证规则\ntitleAlign?: TextAlign | undefined — 标题对齐（table/detail）\nvalueAlign?: TextAlign | undefined — 值对齐（table/detail）\nheaderCellClassName?: string | undefined — 表头 class（table）\nlabelClassName?: string | undefined — 兼容直接传入的列头 class\ncellClassName?: string | undefined — 单元格 class（table）\nclassName?: string | undefined — 兼容直接传入的列 class\ntitleClassName?: string | undefined — 标题 class（detail）\nvalueClassName?: string | undefined — 值 class（detail/table value）\ntype: string — 组件类型（对应 ComponentDefinition.type）\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-timeline-item": "**display-timeline-item** — SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。\n\n【Props】\ntimestamp?: string\nhideTimestamp?: boolean (默认 false)\ncenter?: boolean (默认 false)\nplacement?: \"bottom\" | \"top\" (默认 \"bottom\")\nitemType?: \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"primary\")\ncolor?: string\nitemSize?: \"large\" | \"normal\" (默认 \"normal\")\nhollow?: boolean (默认 false)\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-timeline-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-timeline": "**display-timeline** — SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。\n\n【Props】\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-timeline\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-skeleton": "**display-skeleton** — SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。\n\n【Props】\nrows?: number (默认 3)\ncount?: number (默认 1)\nloading?: boolean (默认 true)\nanimated?: boolean (默认 false)\nthrottle?: number (默认 0)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-skeleton\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-result": "**display-result** — SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。\n\n【Props】\nicon?: \"success\" | \"warning\" | \"info\" | \"error\" (默认 \"info\")\ntitle?: string\nsubTitle?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-result\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-empty": "**display-empty** — SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。\n\n【Props】\nimage?: string\nimageSize?: number\ndescription?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-empty\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-descriptions-item": "**display-descriptions-item** — SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。\n\n【Props】\nlabel?: string\nspan?: number (默认 1)\nlabelAlign?: \"center\" | \"left\" | \"right\"\ncontentAlign?: \"center\" | \"left\" | \"right\"\nlabelClassName?: string\nclassName?: string\ncontent?: string\nvalue?: unknown\nfield?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-descriptions-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-descriptions": "**display-descriptions** — SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。\n\n【Props】\ntitle?: string\nextra?: string\nborder?: boolean (默认 false)\ncolumn?: number (默认 3)\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\ndescriptionsSize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-descriptions\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-breadcrumb-item": "**display-breadcrumb-item** — SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。\n\n【Props】\nlabel?: string\nto?: string | Record<string, unknown>\nreplace?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-breadcrumb-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-breadcrumb": "**display-breadcrumb** — SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。\n\n【Props】\nseparator?: string (默认 \"/\")\nseparatorIcon?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-breadcrumb\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-alert": "**display-alert** — SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。\n\n【Props】\ntitle?: string\ndescription?: string\nalertType?: \"success\" | \"warning\" | \"info\" | \"error\" (默认 \"info\")\nclosable?: boolean (默认 true)\ncloseText?: string\ncenter?: boolean (默认 false)\nshowIcon?: boolean (默认 false)\neffect?: \"dark\" | \"light\" (默认 \"light\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-alert\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclose: []",
+  "display-text": "**display-text** — SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。\n\n【Props】\nvalue?: unknown\nfield?: string\ntag?: string (默认 \"span\")\nprefix?: string\nsuffix?: string\nformat?: \"number\" | \"currency\" | \"percent\" | \"date\"\nprecision?: number (默认 2)\nplaceholder?: string (默认 \"-\")\ntextClass?: string\ntextStyle?: string | Record<string, string>\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-text-display\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-tag": "**display-tag** — SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。\n\n【Props】\ncontent?: string\nvalue?: string\nfield?: string\ntagType?: \"\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"\")\nclosable?: boolean (默认 false)\ndisableTransitions?: boolean (默认 false)\nhit?: boolean (默认 false)\nround?: boolean (默认 false)\ncolor?: string\nsize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\neffect?: \"dark\" | \"light\" | \"plain\" (默认 \"light\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tag\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclose: []",
+  "display-statistic": "**display-statistic** — SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。\n\n【Props】\ntitle?: string\nvalue?: string | number\ndataKey?: string\nfield?: string\nprecision?: number (默认 0)\ndecimalSeparator?: string (默认 \".\")\ngroupSeparator?: string (默认 \",\")\nprefix?: string\nsuffix?: string\nvalueStyle?: string | Record<string, string>\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-statistic\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-progress": "**display-progress** — SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。\n\n【Props】\npercentage?: number\nvalue?: number\nfield?: string\nprogressType?: \"circle\" | \"dashboard\" | \"line\" (默认 \"line\")\nstrokeWidth?: number (默认 6)\ntextInside?: boolean (默认 false)\nstatus?: \"success\" | \"warning\" | \"exception\"\nindeterminate?: boolean (默认 false)\nduration?: number (默认 3)\ncolor?: ProgressColor\ncircleWidth?: number\nshowText?: boolean (默认 true)\nstrokeLinecap?: \"round\" | \"butt\" | \"square\" (默认 \"round\")\nformatText?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-progress\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-pagination": "**display-pagination** — SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。\n\n【Props】\ntotal?: number\npageSize?: number (默认 10)\ncurrentPage?: number (默认 1)\npageSizes?: number[] (默认 [10, 20, 50, 100])\npagerCount?: number (默认 7)\nlayout?: string (默认 \"total, sizes, prev, pager, next, jumper\")\nbackground?: boolean (默认 true)\nsmall?: boolean (默认 false)\nhideOnSinglePage?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-pagination\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:currentPage: [page: number]\nupdate:pageSize: [size: number]",
+  "display-badge": "**display-badge** — SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。\n\n【Props】\nbadgeValue?: string | number\nvalue?: string | number\nfield?: string\nmax?: number (默认 99)\nisDot?: boolean (默认 false)\nhiddenBadge?: boolean (默认 false)\nbadgeType?: \"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"danger\")\nshowZero?: boolean (默认 true)\ncolor?: string\noffset?: [number, number]\nbadgeStyle?: Record<string, string>\nbadgeClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-badge\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-avatar": "**display-avatar** — SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。\n\n【Props】\navatarSize?: number | \"default\" | \"large\" | \"small\" (默认 \"default\")\nshape?: \"circle\" | \"square\" (默认 \"circle\")\nsrc?: string\nvalue?: string\nfield?: string\nsrcSet?: string\nalt?: string\nfit?: \"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" (默认 \"cover\")\ntext?: string\nicon?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-avatar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
   "builtin-action-button": "**builtin-action-button** — SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。\n\n【Props】\nbuiltinAction?: string\nlabel?: string\nbuttonType?: string\nbuttonSize?: string\nbuttonPlain?: boolean\nbuttonText?: boolean\nbuttonLink?: boolean\nbuttonClass?: string\nbuttonDisabled?: boolean\ndisabled?: boolean\ndisabledWhenRow?: Record<string, unknown>\nrow?: IDataRow\nrowIndex?: number\ndata?: unknown\ndataSource?: unknown\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"builtin-action\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclick: [event: MouseEvent]",
   "dock-tail": "**dock-tail** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。\n\n【Props】\ntype?: string (默认 \"r-tail\")\nid?: string\nwidth?: string | number — 尾区宽度",
   "dock-header": "**dock-header** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。\n\n【Props】\ntype?: string (默认 \"r-header\")\nid?: string\nwidth?: string | number — 区域宽度",
   "dock-footer": "**dock-footer** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。\n\n【Props】\ntype?: string (默认 \"r-footer\")\nid?: string\nwidth?: string | number — 区域宽度",
   "dock-filter": "**dock-filter** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。\n\n【Props】\ntype?: string (默认 \"r-filter\")\nid?: string\ncolumns?: (string | DockFilterItem)[] — 筛选列\ncollapsible?: boolean — 是否可折叠\ndefaultCollapsed?: boolean — 默认折叠\nautoFitMinWidth?: string — 自适应最小宽度\nitemSpan?: number — 单项跨列数\ngridColumns?: number — 网格列数\ngridGap?: string | number — 网格间距\ngridAutoRows?: string — 网格行高",
-  "dock-editor": "**dock-editor** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。\n\n【Props】\ntype?: string (默认 \"r-editor\")\nid?: string\nposition?: \"top\" | \"bottom\" | \"left\" | \"right\" — 编辑区位置\nwidth?: string | number — 编辑区宽度",
+  "dock-editor": "**dock-editor** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。\n\n【Props】\ntype?: string (默认 \"r-editor\")\nid?: string\nposition?: \"bottom\" | \"top\" | \"left\" | \"right\" — 编辑区位置\nwidth?: string | number — 编辑区宽度",
   "dock-actions": "**dock-actions** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。\n\n【Props】\ntype?: string (默认 \"r-actions\")\nid?: string\nposition?: \"left\" | \"right\" — 操作列位置\nlabel?: string — 列标题\nwidth?: string | number — 列宽\nalign?: \"center\" | \"left\" | \"right\" — 对齐方式\nfixed?: boolean | \"left\" | \"right\" — 固定列",
   "r-column-group": "**r-column-group** — \n\n【使用场景】复杂表格需要多级表头分组，例如「基本信息」下包含「姓名」「年龄」「邮箱」\n\n【示例】\n{ \"type\": \"r-column-group\", \"props\": { \"label\": \"基本信息\" }, \"children\": [\n  { \"type\": \"r-text\", \"field\": \"name\", \"props\": { \"label\": \"姓名\" } },\n  { \"type\": \"r-number\", \"field\": \"age\", \"props\": { \"label\": \"年龄\" } }\n]}\nchildren 内放 r-* 字段组件作为实际数据列"
 }
@@ -15367,7 +21391,8 @@ export function queryComponentPrompts(types: string[]): string | null {
     const prompt = COMPONENT_PROMPT_BY_TYPE[type]
 
     if (prompt === undefined) {
-      results.push(`❌ 未找到组件「${type}」`)
+      // eslint-disable-next-line prefer-template
+      results.push('❌ 未找到组件「' + type + '」')
       continue
     }
 
@@ -15378,7 +21403,8 @@ export function queryComponentPrompts(types: string[]): string | null {
       results.push(
         matched.length > 0
           ? matched.join('\n')
-          : `❌ 组件「${type}」中未找到「${fragment}」相关内容`,
+          // eslint-disable-next-line prefer-template
+          : '❌ 组件「' + type + '」中未找到「' + fragment + '」相关内容',
       )
       continue
     }
