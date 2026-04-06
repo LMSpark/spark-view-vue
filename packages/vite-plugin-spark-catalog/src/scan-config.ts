@@ -40,6 +40,12 @@ export const COMPONENT_EXCLUDE_PATTERNS = [
   '**/*.test.vue',
   '**/*.spec.vue',
   '**/__tests__/**',
+  // dev-system 仅暴露顶层 dev-system 视图；其内部编辑器/面板/节点配置组件属于实现细节。
+  '**/src/views/app/dev-system/DevAiPanel.vue',
+  '**/src/views/app/dev-system/DevFileEditor.vue',
+  '**/src/views/app/dev-system/DevNodeProps.vue',
+  '**/src/views/app/dev-system/DevSiteTree.vue',
+  '**/src/views/app/dev-system/components/**/*.vue',
 ] as const
 
 /* ==========================================================================

@@ -151,7 +151,7 @@ const DEBUG_ROUTE_RESULT_EVENT = 'debug-route-result'
 const props = defineProps<{ state: DevState }>()
 const { router, tenantPath } = useTenantRouter()
 
-const pageId = ref('my-page')
+const pageId = ref('')
 const prompt = ref('')
 const feedback = ref('')
 const loading = ref(false)
@@ -163,12 +163,13 @@ const previewTab = ref('files')
 const loop = computed(() => getAILoop())
 const sessionId = computed(() => loop.value?.sessionId ?? '(未初始化)')
 const hasFiles = computed(() => Object.keys(files.value).length > 0)
+const currentFormPageId = computed(() => props.state.editForm.path?.replace(/^\/+/, '') ?? '')
 
 // 当选中节点有 path 时，自动同步到 AI 面板
 watch(() => props.state.editForm.path, (val) => {
   const derived = val ? val.replace(/^\/+/, '') : ''
   if (derived) pageId.value = derived
-})
+}, { immediate: true })
 
 // SSE 监听文件变更
 let unsubSSE: (() => void) | null = null
@@ -238,9 +239,8 @@ onMounted(() => {
       props.state.addStatus(`文件变更: ${event.file}`, 'info')
       void refreshFiles()
       // 同步刷新工作区文件编辑器
-      const currentPageId = props.state.editForm.path?.replace(/^\/+/, '') ?? ''
-      if (currentPageId === pageId.value) {
-        void props.state.loadPageFiles(pageId.value)
+      if (currentFormPageId.value === pageId.value) {
+        props.state.requestAllPageFileReload()
       }
     }
   })
@@ -293,9 +293,8 @@ async function handleGenerate() {
     explanation.value = resp.explanation ?? ''
     props.state.addStatus(`✅ 生成完成，写入 ${Object.keys(resp.files).length} 个文件`, 'success')
     // 同步刷新工作区
-    const formPageId = props.state.editForm.path?.replace(/^\/+/, '') ?? ''
-    if (formPageId === pageId.value.trim()) {
-      void props.state.loadPageFiles(pageId.value.trim())
+    if (currentFormPageId.value === pageId.value.trim()) {
+      props.state.requestAllPageFileReload()
     }
     void props.state.loadPages()
   } catch (err) {
@@ -325,9 +324,8 @@ async function handleIterate() {
     explanation.value = resp.explanation ?? ''
     props.state.addStatus(`✅ 迭代完成，修改 ${Object.keys(resp.files).length} 个文件`, 'success')
     feedback.value = ''
-    const iterFormPageId = props.state.editForm.path?.replace(/^\/+/, '') ?? ''
-    if (iterFormPageId === pageId.value.trim()) {
-      void props.state.loadPageFiles(pageId.value.trim())
+    if (currentFormPageId.value === pageId.value.trim()) {
+      props.state.requestAllPageFileReload()
     }
   } catch (err) {
     props.state.addStatus(`❌ 迭代失败: ${err instanceof Error ? err.message : String(err)}`, 'error')

@@ -4,20 +4,20 @@
       <div class="file-header">
         <div class="file-header__meta">
           <span class="file-page-id"><NavIcon name="Tickets" :size="14" /> {{ state.activePageId.value }}</span>
-          <el-tag v-if="state.getFileSnapshotCount(resolvedActiveFile) > 0" size="small" type="info" effect="plain">
-            可撤销 {{ state.getFileSnapshotCount(resolvedActiveFile) }} 步
+          <el-tag v-if="editor.snapshotCount.value > 0" size="small" type="info" effect="plain">
+            可撤销 {{ editor.snapshotCount.value }} 步
           </el-tag>
           <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataSetError.value" size="small" type="danger" effect="dark">DataSet 解析失败</el-tag>
         </div>
         <div class="file-header__actions">
           <el-button-group class="action-group">
             <el-tooltip content="撤销 (Ctrl+Z)" placement="bottom" :show-after="600">
-              <el-button size="small" :disabled="!canUndoActiveFile()" @click="undoActiveFile">
+              <el-button size="small" :disabled="!editor.canUndo.value" @click="editor.undo">
                 <NavIcon name="RefreshLeft" :size="14" />
               </el-button>
             </el-tooltip>
             <el-tooltip content="重做 (Ctrl+Y)" placement="bottom" :show-after="600">
-              <el-button size="small" :disabled="!canRedoActiveFile()" @click="redoActiveFile">
+              <el-button size="small" :disabled="!editor.canRedo.value" @click="editor.redo">
                 <NavIcon name="RefreshRight" :size="14" />
               </el-button>
             </el-tooltip>
@@ -32,7 +32,7 @@
             <el-button
               type="primary"
               size="small"
-              :disabled="!state.fileDirty[resolvedActiveFile]"
+              :disabled="!editor.isDirty.value"
               :loading="state.fileSaving.value"
               @click="saveFile"
             >
@@ -61,7 +61,7 @@
         </el-tab-pane>
       </el-tabs>
 
-      <div class="editor-body" v-loading="!state.fileLoaded.value">
+      <div class="editor-body" v-loading="!editor.isReady.value">
         <div class="editor-area">
           <JsonTreeEditor
             v-if="resolvedActiveFile === 'rule.json'"
@@ -71,7 +71,7 @@
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:model-value="handleActiveFileChange"
+            @update:model-value="editor.updateText"
           />
           <JsonTreeEditor
             v-else-if="resolvedActiveFile === 'pagedata.json'"
@@ -90,7 +90,7 @@
             :language="resolveCodeLanguage(resolvedActiveFile)"
             class="code-input code-input--code"
             height="100%"
-            @update:model-value="handleActiveFileChange"
+            @update:model-value="editor.updateText"
           />
           <el-input
             v-else
@@ -98,7 +98,7 @@
             type="textarea"
             :autosize="{ minRows: 30, maxRows: 60 }"
             class="code-input"
-            @update:model-value="handleActiveFileChange"
+            @update:model-value="editor.updateText"
           />
         </div>
 
@@ -135,10 +135,11 @@
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor, type JsonDocument } from '@spark-view/spark-component'
 import { ElMessageBox } from 'element-plus'
+import { useDevFileEditor } from './composables/useDevFileEditor'
 import { pageDataPolicy } from './policies/pageDataPolicy'
 import { rulePolicy } from './policies/rulePolicy'
 import { RULE_JSON_SCHEMA } from './policies/ruleJsonSchema'
-import { canonicalizePageDataJson, PAGE_DATA_JSON_SCHEMA } from './policies/pageDataJsonSchema'
+import { PAGE_DATA_JSON_SCHEMA } from './policies/pageDataJsonSchema'
 import { PAGE_FILE_NAMES } from './useDevState'
 import type { BackendPageVersionSummary, DevState, PageFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
@@ -157,6 +158,7 @@ const creatingVersion = ref(false)
 const remotePageVersions = ref<BackendPageVersionSummary[]>([])
 const resolvedActiveFile = computed<PageFileName>(() => props.activeFile ?? localActiveFile.value)
 const showTabs = computed(() => props.showTabs ?? true)
+const editor = useDevFileEditor(props.state, resolvedActiveFile)
 
 watch(() => props.activeFile, (nextFile) => {
   if (nextFile && nextFile !== localActiveFile.value) {
@@ -177,17 +179,8 @@ function resolveCodeLanguage(name: string): 'javascript' | 'css' {
   return name.endsWith('.css') ? 'css' : 'javascript'
 }
 
-function handleActiveFileChange(value: string) {
-  if (resolvedActiveFile.value === 'pagedata.json') {
-    props.state.updatePageFile(resolvedActiveFile.value, canonicalizePageDataJson(value).text)
-    return
-  }
-
-  props.state.updatePageFile(resolvedActiveFile.value, value)
-}
-
 function handleActivePageDataDocumentChange(value: JsonDocument) {
-  props.state.updatePageDataDocument(value as Record<string, unknown>)
+  editor.updateDocument(value as Record<string, unknown>)
 }
 
 function fileIcon(name: string): string {
@@ -198,28 +191,12 @@ function fileIcon(name: string): string {
   return 'Document'
 }
 
-function canUndoActiveFile(): boolean {
-  return props.state.canUndoFileSnapshot(resolvedActiveFile.value)
-}
-
-function canRedoActiveFile(): boolean {
-  return props.state.canRedoFileSnapshot(resolvedActiveFile.value)
-}
-
-function undoActiveFile() {
-  props.state.undoFileSnapshot(resolvedActiveFile.value)
-}
-
-function redoActiveFile() {
-  props.state.redoFileSnapshot(resolvedActiveFile.value)
-}
-
 function saveFile() {
-  void props.state.saveByTab(resolvedActiveFile.value)
+  void editor.save()
 }
 
 function refreshFile() {
-  void props.state.refreshByTab(resolvedActiveFile.value)
+  void editor.refresh()
 }
 
 async function loadVersions() {
@@ -252,7 +229,7 @@ async function restoreVersion(version: number) {
 async function createVersion() {
   creatingVersion.value = true
   try {
-    await props.state.saveByTab(resolvedActiveFile.value)
+    await editor.save()
     if (await props.state.createRemotePageVersion(resolvedActiveFile.value)) {
       await loadVersions()
     }

@@ -38,16 +38,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { DevState } from '../useDevState'
+import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{ state: DevState }>()
-
-const isDirectoryNode = computed(() => {
-  const kind = props.state.editForm.nodeKind
-  return kind === 'system-directory' || kind === 'module'
-})
+const flags = useNodeKindFlags(props.state)
+const isDirectoryNode = flags.isDirectoryNode
 </script>
 
 <style scoped>

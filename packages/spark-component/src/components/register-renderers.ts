@@ -67,10 +67,6 @@ import DisplayResult from './display/non-data-components/DisplayResult.vue'
 import DisplayBreadcrumb from './display/non-data-components/DisplayBreadcrumb.vue'
 import DisplayBreadcrumbItem from './display/non-data-components/DisplayBreadcrumbItem.vue'
 import DisplaySkeleton from './display/non-data-components/DisplaySkeleton.vue'
-import DisplayImage from './display/data-components/DisplayImage.vue'
-import DisplayCalendar from './display/non-data-components/DisplayCalendar.vue'
-import DisplayCountdown from './display/non-data-components/DisplayCountdown.vue'
-import DisplayIcon from './display/non-data-components/DisplayIcon.vue'
 
 // ── Dock 组件（同步导入） ──
 import DockActions from './containers/docks/DockActions.vue'
@@ -117,7 +113,6 @@ import FieldContextRenderer from './fields/non-data-components/FieldContextRende
 import TreeNodeSummary from './fields/non-data-components/TreeNodeSummary.vue'
 import SparkCodeEditor from './support/SparkCodeEditor.vue'
 import SparkJsonEditor from './support/SparkJsonEditor.vue'
-import JsonTreeEditor from './support/JsonTreeEditor.vue'
 
 export function registerAllRenderers(): void {
   // ── 容器组件：同步注册（与公共静态导出保持一致） ──
@@ -182,10 +177,6 @@ export function registerAllRenderers(): void {
   Spark.register('r-breadcrumb', DisplayBreadcrumb)
   Spark.register('r-breadcrumb-item', DisplayBreadcrumbItem)
   Spark.register('r-skeleton', DisplaySkeleton)
-  Spark.register('display-image', DisplayImage)
-  Spark.register('display-calendar', DisplayCalendar)
-  Spark.register('display-countdown', DisplayCountdown)
-  Spark.register('display-icon', DisplayIcon)
 
   // ── Dock 组件：容器内由容器提取、独立使用正常渲染 ──
   Spark.register('r-actions', DockActions)
@@ -234,5 +225,4 @@ export function registerAllRenderers(): void {
   // ── 支持组件：开发工具 ──
   Spark.register('code-editor', SparkCodeEditor)
   Spark.register('json-editor', SparkJsonEditor)
-  Spark.register('json-tree-editor', JsonTreeEditor)
 }

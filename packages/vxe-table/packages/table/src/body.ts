@@ -80,6 +80,10 @@ export default defineVxeComponent({
           const parentRowRest = fullAllDataRowIdData[getRowid($xeTable, parentRow)] || {}
           lineHeight = `calc(-1em + ${Math.floor(cellHeight / 2 + getCellRestHeight(parentRowRest, cellOpts, rowOpts, defaultRowHeight) / 2)}px)`
         }
+        const parentIndent = (rLevel > 0 ? (rLevel - 1) : 0) * treeOpts.indent
+        const connectorWidth = rLevel > 0
+          ? `calc(${treeOpts.indent}px - 0.5em)`
+          : '0.5em'
         return [
           h('div', {
             key: 'tl',
@@ -90,7 +94,8 @@ export default defineVxeComponent({
               style: {
                 height: lineHeight,
                 bottom: `-${Math.floor(cellHeight / 2)}px`,
-                left: `calc(${(rLevel * treeOpts.indent)}px + 1em)`
+                left: `calc(${parentIndent}px + 1em)`,
+                width: connectorWidth
               }
             })
           ])

@@ -23,6 +23,7 @@ export { DataTable } from './data-table'
 export { DataView } from './data-view'
 export { DataSetCrudTool } from './dataset-crud-tool'
 export {
+  clearDataSetSnapshots,
   commitDataSetSnapshot,
   createLocalStorageHistoryAdapter,
   formatPageDataSnapshot,

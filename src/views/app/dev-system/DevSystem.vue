@@ -54,7 +54,7 @@
                 <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
               </span>
             </template>
-            <DevFileEditor :state="state" :active-file="fname" :show-tabs="false" />
+            <DevFileEditor v-if="workTab === fname" :state="state" :active-file="fname" :show-tabs="false" />
           </el-tab-pane>
         </el-tabs>
 

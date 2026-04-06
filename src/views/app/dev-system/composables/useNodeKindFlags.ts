@@ -32,11 +32,6 @@ export function useNodeKindFlags(state: DevState) {
     return '路由 & 关联页面'
   })
 
-  /** 当前节点是否是"有页面配置文件"的类型 */
-  const isPageLikeNode = computed(() =>
-    isPageNode.value || isSystemPageNode.value,
-  )
-
   return {
     isDirectoryNode,
     isSystemPageNode,
@@ -48,6 +43,5 @@ export function useNodeKindFlags(state: DevState) {
     showTargetSelector,
     showPathStatus,
     routeSectionLabel,
-    isPageLikeNode,
   }
 }

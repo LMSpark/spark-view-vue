@@ -26,6 +26,3 @@ const props = defineProps<{ state: DevState }>()
 
 const flags = useNodeKindFlags(props.state)
 </script>
-
-<style scoped>
-</style>

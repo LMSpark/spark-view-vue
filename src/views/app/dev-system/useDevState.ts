@@ -8,22 +8,10 @@
  */
 import { ref, reactive, computed, shallowRef } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
-import {
-  commitDataSetSnapshot,
-  formatPageDataSnapshot,
-  getDataSetSnapshot,
-  listDataSetSnapshots,
-} from '@spark-view/spark-data'
-import type { DataSet, DataSetHistorySnapshot } from '@spark-view/spark-data'
+import type { DataSet } from '@spark-view/spark-data'
 import { demoNavRoot } from '@/layout/demo-nav'
 import { canonicalizePageDataJson, canonicalizePageDataValue } from './policies/pageDataJsonSchema'
-import {
-  canNavigatePageDataHistoryBack,
-  canNavigatePageDataHistoryForward,
-  getDraftTextForHistoryRestore,
-  getPageDataHistoryBackTargetIndex,
-  getPageDataHistoryForwardTarget,
-} from './composables/pageDataHistoryNavigation'
+import { loadTextHistory, saveTextHistory, clearTextHistoryStorage } from './composables/textHistoryStore'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -67,16 +55,6 @@ export interface BackendPageVersionSummary {
   modifiedBy: string | null
 }
 
-export interface BackendPageVersionFile {
-  pageId: string
-  filename: PageFileName
-  version: number
-  createdAt: string
-  isCurrent: boolean
-  modifiedBy: string | null
-  content: string
-}
-
 export const PAGE_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
 export type PageFileName = typeof PAGE_FILE_NAMES[number]
 export type DevWorkspaceTab = 'props' | PageFileName
@@ -95,10 +73,7 @@ function tryCanonicalizePageDataText(rawText: string): string {
 }
 
 type CanonicalPageData = ReturnType<typeof canonicalizePageDataValue>
-
-function isPageFileName(value: string): value is PageFileName {
-  return PAGE_FILE_NAMES.includes(value as PageFileName)
-}
+type PageFileLoadState = 'idle' | 'loading' | 'loaded'
 
 function parseOptionalNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -175,13 +150,21 @@ export function useDevState() {
     'rule.json': false, 'pagedata.json': false, 'script.js': false, 'style.css': false,
   })
   const fileSaving = ref(false)
-  const fileLoaded = ref(false)
+  const fileLoadState = reactive<Record<PageFileName, PageFileLoadState>>({
+    'rule.json': 'idle',
+    'pagedata.json': 'idle',
+    'script.js': 'idle',
+    'style.css': 'idle',
+  })
+  const fileReloadToken = reactive<Record<PageFileName, number>>({
+    'rule.json': 0,
+    'pagedata.json': 0,
+    'script.js': 0,
+    'style.css': 0,
+  })
   const pageDataSet = shallowRef<DataSet | null>(null)
   const pageDataDocument = shallowRef<Record<string, unknown> | null>(null)
   const pageDataSetError = ref<string | null>(null)
-  const pageDataHistory = ref<DataSetHistorySnapshot[]>([])
-  const pageDataHistoryBaseIndex = ref(-1)
-  const pageDataHistoryDraft = ref<string | null>(null)
   const fileTextHistory = reactive<Record<PageFileName, string[]>>({
     'rule.json': [],
     'pagedata.json': [],
@@ -206,7 +189,6 @@ export function useDevState() {
     'script.js': 0,
     'style.css': 0,
   })
-  const PAGE_DATA_SNAPSHOT_LIMIT = 20
   const FILE_TEXT_SNAPSHOT_LIMIT = 100
   const LOCAL_SNAPSHOT_MIN_INTERVAL_MS = 5000
 
@@ -232,35 +214,6 @@ export function useDevState() {
   // ── 计算属性 ──
   const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
-  const pageDataHistoryCount = computed(() => {
-    const count = pageDataHistory.value.length
-    if (count === 0) return 0
-    const activeIndex = pageDataHistoryActiveIndex.value
-    if (activeIndex >= 0) return count - 1 - activeIndex
-    // Draft state: first back goes to baseIndex or 0, then continues to oldest
-    const bi = pageDataHistoryBaseIndex.value
-    const firstTarget = (bi >= 0 && bi < count) ? bi : 0
-    return count - firstTarget
-  })
-  const pageDataHistoryActiveIndex = computed(() => resolvePageDataHistoryIndex(editFiles['pagedata.json'] ?? ''))
-  const canPageDataHistoryBack = computed(() => {
-    return canNavigatePageDataHistoryBack({
-      historyCount: pageDataHistory.value.length,
-      activeIndex: pageDataHistoryActiveIndex.value,
-      baseIndex: pageDataHistoryBaseIndex.value,
-      currentText: editFiles['pagedata.json'] ?? '',
-      draftText: pageDataHistoryDraft.value,
-    })
-  })
-  const canPageDataHistoryForward = computed(() => {
-    return canNavigatePageDataHistoryForward({
-      historyCount: pageDataHistory.value.length,
-      activeIndex: pageDataHistoryActiveIndex.value,
-      baseIndex: pageDataHistoryBaseIndex.value,
-      currentText: editFiles['pagedata.json'] ?? '',
-      draftText: pageDataHistoryDraft.value,
-    })
-  })
 
   function normalizePageIdFromPath(path: string | undefined | null): string {
     return path ? path.replace(/^\/+/, '').trim() : ''
@@ -270,21 +223,10 @@ export function useDevState() {
     return nodeKind === 'page' || nodeKind === 'sub-page'
   }
 
-  function findPageMeta(pageId: string): Record<string, unknown> | undefined {
-    return pageList.value.find((p) => String(p['pageId'] ?? '') === pageId)
-  }
-
-  function resolvePageDataHistoryIndex(rawText: string): number {
-    const comparableText = tryCanonicalizePageDataText(rawText)
-    return pageDataHistory.value.findIndex((entry) => tryCanonicalizePageDataText(formatPageDataSnapshot(entry)) === comparableText)
-  }
-
   function resolveFileTextHistoryIndex(name: PageFileName, rawText?: string): number {
-    if (name === 'pagedata.json') {
-      return resolvePageDataHistoryIndex(rawText ?? editFiles[name] ?? '')
-    }
-
-    const comparableText = rawText ?? editFiles[name] ?? ''
+    const comparableText = name === 'pagedata.json'
+      ? tryCanonicalizePageDataText(rawText ?? editFiles[name] ?? '')
+      : (rawText ?? editFiles[name] ?? '')
     return fileTextHistory[name].findIndex((entry) => entry === comparableText)
   }
 
@@ -296,36 +238,85 @@ export function useDevState() {
     return lastSnapshotAt <= 0 || now - lastSnapshotAt >= LOCAL_SNAPSHOT_MIN_INTERVAL_MS
   }
 
-  function resetFileTextHistory(name: PageFileName, text: string) {
-    if (name === 'pagedata.json') {
-      fileTextHistory[name] = []
-      fileTextHistoryCursor[name] = -1
-      fileTextHistoryDraft[name] = null
-      fileTextLastSnapshotAt[name] = 0
-      return
-    }
-
-    fileTextHistory[name] = [text]
-    fileTextHistoryCursor[name] = 0
-    fileTextHistoryDraft[name] = null
-    fileTextLastSnapshotAt[name] = nowSnapshotTimestamp()
+  function clearPageDataBinding() {
+    pageDataSet.value = null
+    pageDataDocument.value = null
+    pageDataSetError.value = null
   }
 
-  function clearFileTextHistory(name: PageFileName) {
+  function resetPageFileState(name: PageFileName) {
+    editFiles[name] = ''
+    savedFiles[name] = ''
+    fileDirty[name] = false
     fileTextHistory[name] = []
     fileTextHistoryCursor[name] = -1
     fileTextHistoryDraft[name] = null
     fileTextLastSnapshotAt[name] = 0
+    fileLoadState[name] = 'idle'
+    fileReloadToken[name] = 0
+
+    if (name === 'pagedata.json') {
+      clearPageDataBinding()
+    }
+  }
+
+  function resetAllPageFileStates() {
+    for (const name of PAGE_FILE_NAMES) {
+      resetPageFileState(name)
+    }
+  }
+
+  function requestPageFileReload(name: PageFileName) {
+    fileLoadState[name] = 'idle'
+    fileReloadToken[name] += 1
+
+    if (name === 'pagedata.json') {
+      clearPageDataBinding()
+    }
+  }
+
+  function requestAllPageFileReload() {
+    for (const name of PAGE_FILE_NAMES) {
+      requestPageFileReload(name)
+    }
+  }
+
+  function setActivePageContext(pageId: string, forceReset = false): boolean {
+    if (!pageId) {
+      clearFiles()
+      return false
+    }
+
+    if (!isBackendConfigPage(pageId)) {
+      clearFiles()
+      return false
+    }
+
+    const shouldReset = forceReset || activePageId.value !== pageId
+    activePageId.value = pageId
+
+    if (shouldReset) {
+      resetAllPageFileStates()
+    }
+
+    return true
   }
 
   function commitFileTextHistory(name: PageFileName, text: string): boolean {
-    if (name === 'pagedata.json') return false
-
-    const currentIndex = fileTextHistoryCursor[name]
     const currentEntries = fileTextHistory[name]
+    const currentIndex = fileTextHistoryCursor[name]
     const currentText = currentIndex >= 0 ? currentEntries[currentIndex] : undefined
     if (currentText === text) {
       return false
+    }
+
+    // Truncate future entries immediately on branch (cursor not at end)
+    // e.g. A0→A1→A2→A3, undo to A2, edit → A3 discarded right away
+    if (currentIndex >= 0 && currentIndex < currentEntries.length - 1) {
+      const truncated = currentEntries.slice(0, currentIndex + 1)
+      fileTextHistory[name] = truncated
+      const pageId = activePageId.value
+      if (pageId) saveTextHistory(pageId, name, truncated)
     }
 
     const now = nowSnapshotTimestamp()
@@ -333,10 +324,7 @@ export function useDevState() {
       return false
     }
 
-    let nextEntries = currentIndex >= 0
-      ? currentEntries.slice(0, currentIndex + 1)
-      : []
-    nextEntries = [...nextEntries, text]
+    let nextEntries = [...fileTextHistory[name], text]
 
     if (nextEntries.length > FILE_TEXT_SNAPSHOT_LIMIT) {
       nextEntries = nextEntries.slice(nextEntries.length - FILE_TEXT_SNAPSHOT_LIMIT)
@@ -346,6 +334,8 @@ export function useDevState() {
     fileTextHistoryCursor[name] = nextEntries.length - 1
     fileTextHistoryDraft[name] = null
     fileTextLastSnapshotAt[name] = now
+    const pageId = activePageId.value
+    if (pageId) saveTextHistory(pageId, name, nextEntries)
     return true
   }
 
@@ -399,86 +389,31 @@ export function useDevState() {
   }
 
   function getFileHistoryCount(name: PageFileName): number {
-    if (name === 'pagedata.json') {
-      return pageDataHistoryCount.value
-    }
-    // Return undoable step count, not total entries
-    const history = fileTextHistory[name]
-    if (history.length === 0) return 0
-    const activeIndex = resolveFileTextHistoryIndex(name, editFiles[name] ?? '')
-    if (activeIndex >= 0) {
-      // At index N (chronological), can undo N times (back to index 0)
-      return activeIndex
-    }
-    // Draft state (text not in history): undo first goes to cursor, then back to 0
-    const cursor = fileTextHistoryCursor[name]
-    return cursor >= 0 ? cursor + 1 : 0
+    return fileTextHistory[name].length
   }
 
   function getFileSnapshotCount(name: PageFileName): number {
-    return getFileHistoryCount(name)
+    const entries = fileTextHistory[name]
+    if (entries.length === 0) return 0
+    const activeIndex = resolveFileTextHistoryIndex(name, editFiles[name] ?? '')
+    if (activeIndex <= 0) {
+      // Not found in history or at index 0 → check if current text differs from any entry (unsaved edit)
+      if (activeIndex === -1 && entries.length > 0) {
+        // Current text is an unsaved edit on top of history → can undo back to cursor
+        const cursor = fileTextHistoryCursor[name]
+        return cursor >= 0 ? cursor + 1 : entries.length
+      }
+      return 0
+    }
+    return activeIndex
   }
 
   function canFileHistoryBack(name: PageFileName): boolean {
-    if (name === 'pagedata.json') {
-      return canPageDataHistoryBack.value
-    }
     return getFileHistoryBackTargetIndex(name) >= 0
   }
 
-  function canUndoFileSnapshot(name: PageFileName): boolean {
-    return canFileHistoryBack(name)
-  }
-
   function canFileHistoryForward(name: PageFileName): boolean {
-    if (name === 'pagedata.json') {
-      return canPageDataHistoryForward.value
-    }
     return getFileHistoryForwardTarget(name).kind !== 'none'
-  }
-
-  function canRedoFileSnapshot(name: PageFileName): boolean {
-    return canFileHistoryForward(name)
-  }
-
-  function shouldCommitLocalPageDataHistory(canonicalText: string): boolean {
-    if (!canonicalText.trim()) return false
-
-    const latestEntry = pageDataHistory.value[0]
-    if (!latestEntry) return true
-
-    if (tryCanonicalizePageDataText(formatPageDataSnapshot(latestEntry)) === canonicalText) {
-      return false
-    }
-
-    const latestTimestamp = typeof latestEntry.timestamp === 'number'
-      ? latestEntry.timestamp
-      : Number(latestEntry.timestamp)
-
-    return hasSnapshotIntervalElapsed(Number.isFinite(latestTimestamp) ? latestTimestamp : 0)
-  }
-
-  function commitLocalPageDataHistory(canonicalPageData: CanonicalPageData, summary: string): boolean {
-    const pageId = activePageId.value
-    if (!pageId) return false
-    if (!shouldCommitLocalPageDataHistory(canonicalPageData.text)) return false
-
-    canonicalPageData.dataSet.pageId = pageId
-
-    commitDataSetSnapshot(canonicalPageData.dataSet, {
-      scopeId: pageId,
-      pageId,
-      maxEntries: PAGE_DATA_SNAPSHOT_LIMIT,
-      label: `${pageId}/pagedata.json`,
-      summary,
-      sourceData: canonicalPageData.value,
-      version: (pageDataHistory.value[0]?.version ?? 0) + 1,
-    })
-
-    refreshPageDataHistory()
-    pageDataHistoryBaseIndex.value = 0
-    pageDataHistoryDraft.value = null
-    return true
   }
 
   function applyCanonicalPageData(canonicalPageData: CanonicalPageData) {
@@ -491,26 +426,17 @@ export function useDevState() {
     pageDataSetError.value = null
   }
 
-  function applyPageDataEditorText(rawText: string) {
-    const nextText = tryCanonicalizePageDataText(rawText)
-    editFiles['pagedata.json'] = nextText
-    fileDirty['pagedata.json'] = nextText !== savedFiles['pagedata.json']
-    syncPageDataBinding(nextText)
-  }
-
   function updatePageDataDocument(nextValue: Record<string, unknown>) {
     const canonicalPageData = canonicalizePageDataValue(nextValue)
     editFiles['pagedata.json'] = canonicalPageData.text
     fileDirty['pagedata.json'] = canonicalPageData.text !== savedFiles['pagedata.json']
-    pageDataHistoryDraft.value = null
+    fileTextHistoryDraft['pagedata.json'] = null
     applyCanonicalPageData(canonicalPageData)
-    if (!commitLocalPageDataHistory(canonicalPageData, 'DevSystem 结构化编辑 pagedata.json')) {
-      refreshPageDataHistory()
-    }
+    commitFileTextHistory('pagedata.json', canonicalPageData.text)
   }
 
   function isBackendConfigPage(pageId: string): boolean {
-    const pageMeta = findPageMeta(pageId)
+    const pageMeta = pageList.value.find((page) => String(page['pageId'] ?? '') === pageId)
     if (!pageMeta) return true
     return String(pageMeta['pageType'] ?? 'config') !== 'system-page'
   }
@@ -558,11 +484,6 @@ export function useDevState() {
     return !isPageLikeKind(parent.nodeKind ?? 'module')
   }
 
-  function normalizeLinkTarget(value: unknown): LinkTarget {
-    if (value === 'new-tab') return 'new-tab'
-    return 'iframe'
-  }
-
   function defaultIconByKind(kind: NavNodeKind): string {
     return DEFAULT_ICON_BY_KIND[kind]
   }
@@ -570,11 +491,7 @@ export function useDevState() {
   function syncPageFilesForNode(node: NavNode, forceReload: boolean) {
     const pageId = normalizePageIdFromPath(node.path)
     if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
-      if (forceReload || activePageId.value !== pageId || !fileLoaded.value) {
-        void loadPageFiles(pageId)
-      } else {
-        activePageId.value = pageId
-      }
+      setActivePageContext(pageId, forceReload || activePageId.value !== pageId)
       return
     }
 
@@ -770,76 +687,71 @@ export function useDevState() {
     } catch { /* ignore */ }
   }
 
-  async function loadPageFiles(pageId: string) {
+  async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }) {
+    const pageId = activePageId.value
     if (!pageId) {
-      clearFiles()
-      return
-    }
-    if (!isBackendConfigPage(pageId)) {
-      clearFiles()
-      addStatus(`页面 ${pageId} 为 system-page，配置文件由前端组件维护`, 'info')
       return
     }
 
-    activePageId.value = pageId
-    fileLoaded.value = false
-    for (const k of PAGE_FILE_NAMES) {
-      fileDirty[k] = false
-      editFiles[k] = ''
-      savedFiles[k] = ''
-      clearFileTextHistory(k)
+    if (fileLoadState[name] === 'loading') {
+      return
     }
-    for (const fname of PAGE_FILE_NAMES) {
-      try {
-        const data = await http.get<Record<string, unknown>>(`${getPageApi()}/${encodeURIComponent(pageId)}/${fname}`)
-        const content = typeof data['content'] === 'string' ? data['content'] : ''
-        editFiles[fname] = fname === 'pagedata.json'
-          ? tryCanonicalizePageDataText(content)
-          : content
-        savedFiles[fname] = editFiles[fname]
-        resetFileTextHistory(fname, editFiles[fname])
-      } catch {
-        editFiles[fname] = ''
-        savedFiles[fname] = ''
-        resetFileTextHistory(fname, '')
+
+    if (!options?.forceReload && fileLoadState[name] === 'loaded') {
+      return
+    }
+
+    fileLoadState[name] = 'loading'
+
+    let content = ''
+    try {
+      const data = await http.get<Record<string, unknown>>(`${getPageApi()}/${encodeURIComponent(pageId)}/${name}`)
+      content = typeof data['content'] === 'string' ? data['content'] : ''
+    } catch {
+      content = ''
+    }
+
+    const loadedText = name === 'pagedata.json'
+      ? tryCanonicalizePageDataText(content)
+      : content
+
+    editFiles[name] = loadedText
+    savedFiles[name] = loadedText
+    fileDirty[name] = false
+
+    const comparableText = name === 'pagedata.json'
+      ? tryCanonicalizePageDataText(loadedText)
+      : loadedText
+    const stored = loadTextHistory(pageId, name)
+
+    if (stored.length > 0 && stored[stored.length - 1] === comparableText) {
+      fileTextHistory[name] = stored
+      fileTextHistoryCursor[name] = stored.length - 1
+    } else {
+      clearTextHistoryStorage(pageId, name)
+      if (comparableText) {
+        fileTextHistory[name] = [comparableText]
+        fileTextHistoryCursor[name] = 0
+        saveTextHistory(pageId, name, [comparableText])
+      } else {
+        fileTextHistory[name] = []
+        fileTextHistoryCursor[name] = -1
       }
     }
-    syncPageDataBinding(editFiles['pagedata.json'] ?? '', {
-      trackLocalHistory: true,
-      historySummary: 'DevSystem 加载后端 pagedata.json',
-    })
-    refreshPageDataHistory()
-    pageDataHistoryBaseIndex.value = resolvePageDataHistoryIndex(editFiles['pagedata.json'] ?? '')
-    pageDataHistoryDraft.value = null
-    fileLoaded.value = true
-    addStatus(`已加载 ${pageId} 配置文件`, 'info')
+
+    fileTextHistoryDraft[name] = null
+    fileTextLastSnapshotAt[name] = loadedText ? nowSnapshotTimestamp() : 0
+
+    if (name === 'pagedata.json') {
+      syncPageDataBinding(loadedText)
+    }
+
+    fileLoadState[name] = 'loaded'
   }
 
   function clearFiles() {
     activePageId.value = ''
-    fileLoaded.value = false
-    for (const k of PAGE_FILE_NAMES) {
-      editFiles[k] = ''
-      savedFiles[k] = ''
-      fileDirty[k] = false
-      clearFileTextHistory(k)
-    }
-    pageDataSet.value = null
-    pageDataDocument.value = null
-    pageDataSetError.value = null
-    pageDataHistory.value = []
-    pageDataHistoryBaseIndex.value = -1
-    pageDataHistoryDraft.value = null
-  }
-
-  function refreshPageDataHistory() {
-    const pageId = activePageId.value
-    if (!pageId) {
-      pageDataHistory.value = []
-      return
-    }
-
-    pageDataHistory.value = listDataSetSnapshots({ pageId, scopeId: pageId })
+    resetAllPageFileStates()
   }
 
   async function listRemotePageVersions(filename: PageFileName): Promise<BackendPageVersionSummary[]> {
@@ -864,35 +776,6 @@ export function useDevState() {
     }
   }
 
-  async function readRemotePageVersionFile(
-    version: number,
-    filename: PageFileName,
-  ): Promise<BackendPageVersionFile | null> {
-    const pageId = activePageId.value
-    if (!pageId) return null
-
-    try {
-      const result = await http.get<Record<string, unknown>>(
-        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}`,
-      )
-      const resolvedFilename = isPageFileName(String(result['filename'] ?? ''))
-        ? String(result['filename']) as PageFileName
-        : filename
-      return {
-        pageId: String(result['pageId'] ?? pageId),
-        filename: resolvedFilename,
-        version: parseOptionalNumber(result['version']) ?? version,
-        createdAt: typeof result['createdAt'] === 'string' ? result['createdAt'] : '',
-        content: typeof result['content'] === 'string' ? result['content'] : '',
-        isCurrent: Boolean(result['isCurrent']),
-        modifiedBy: typeof result['modifiedBy'] === 'string' ? result['modifiedBy'] : null,
-      }
-    } catch (e) {
-      addStatus(`读取后端版本 v${version} 失败: ${String(e)}`, 'error')
-      return null
-    }
-  }
-
   async function restoreRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
@@ -902,7 +785,7 @@ export function useDevState() {
         `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}/__restore`,
         {},
       )
-      await loadPageFiles(pageId)
+      requestPageFileReload(filename)
       addStatus(`页面 ${pageId} 已将 ${filename} 版本 v${version} 恢复为当前版`, 'success')
       return true
     } catch (e) {
@@ -944,146 +827,42 @@ export function useDevState() {
     }
   }
 
-  function syncPageDataBinding(
-    rawText: string,
-    options?: {
-      trackLocalHistory?: boolean
-      historySummary?: string
-    },
-  ) {
+  function syncPageDataBinding(rawText: string) {
     if (!rawText.trim()) {
-      pageDataSet.value = null
-      pageDataDocument.value = null
-      pageDataSetError.value = null
-      refreshPageDataHistory()
+      clearPageDataBinding()
       return
     }
 
-    let historyCommitted = false
     try {
       const canonicalPageData = canonicalizePageDataJson(rawText)
       applyCanonicalPageData(canonicalPageData)
-      if (options?.trackLocalHistory) {
-        historyCommitted = commitLocalPageDataHistory(
-          canonicalPageData,
-          options.historySummary ?? 'DevSystem 本地编辑 pagedata.json',
-        )
-      }
     } catch (error) {
       pageDataSet.value = null
       pageDataDocument.value = null
       pageDataSetError.value = error instanceof Error ? error.message : String(error)
     }
-
-    if (!historyCommitted) {
-      refreshPageDataHistory()
-    }
   }
 
-  function updatePageFile(name: string, value: string) {
-    editFiles[name] = value
+  function updatePageFile(name: PageFileName, value: string) {
     if (name === 'pagedata.json') {
-      fileDirty[name] = value !== savedFiles[name]
-      pageDataHistoryDraft.value = null
-      syncPageDataBinding(value, {
-        trackLocalHistory: true,
-        historySummary: 'DevSystem 文本编辑 pagedata.json',
-      })
+      const canonical = tryCanonicalizePageDataText(value)
+      editFiles[name] = canonical
+      fileDirty[name] = canonical !== savedFiles[name]
+      fileLoadState[name] = 'loaded'
+      syncPageDataBinding(canonical)
+      fileTextHistoryDraft[name] = null
+      commitFileTextHistory(name, canonical)
       return
     }
 
+    editFiles[name] = value
     fileDirty[name] = value !== savedFiles[name]
-    if (isPageFileName(name)) {
-      fileTextHistoryDraft[name] = null
-      commitFileTextHistory(name, value)
-    }
-  }
-
-  function restorePageDataHistory(entryId: string): boolean {
-    const pageId = activePageId.value
-    if (!pageId) return false
-
-    const entry = getDataSetSnapshot({ pageId, scopeId: pageId }, { entryId })
-    if (!entry) {
-      addStatus('未找到对应的 pagedata 快照', 'warning')
-      return false
-    }
-
-    pageDataHistoryDraft.value = getDraftTextForHistoryRestore({
-      historyCount: pageDataHistory.value.length,
-      activeIndex: resolvePageDataHistoryIndex(editFiles['pagedata.json'] ?? ''),
-      baseIndex: pageDataHistoryBaseIndex.value,
-      currentText: editFiles['pagedata.json'] ?? '',
-      draftText: pageDataHistoryDraft.value,
-    })
-    pageDataHistoryBaseIndex.value = pageDataHistory.value.findIndex((historyEntry) => historyEntry.id === entry.id)
-    applyPageDataEditorText(formatPageDataSnapshot(entry))
-    addStatus(`已恢复 pagedata.json 快照 #${entry.version}，等待保存`, 'success')
-    return true
-  }
-
-  function goPageDataHistoryBack(): boolean {
-    const currentText = editFiles['pagedata.json'] ?? ''
-    const activeIndex = resolvePageDataHistoryIndex(currentText)
-    const targetIndex = getPageDataHistoryBackTargetIndex({
-      historyCount: pageDataHistory.value.length,
-      activeIndex,
-      baseIndex: pageDataHistoryBaseIndex.value,
-      currentText,
-      draftText: pageDataHistoryDraft.value,
-    })
-
-    if (targetIndex < 0) return false
-
-    const entry = pageDataHistory.value[targetIndex]
-    if (!entry) return false
-
-    if (activeIndex === -1) {
-      pageDataHistoryDraft.value = currentText
-    }
-
-    pageDataHistoryBaseIndex.value = targetIndex
-    applyPageDataEditorText(formatPageDataSnapshot(entry))
-    addStatus(`已回退到快照 #${entry.version}，等待保存`, 'success')
-    return true
-  }
-
-  function goPageDataHistoryForward(): boolean {
-    const currentText = editFiles['pagedata.json'] ?? ''
-    const activeIndex = resolvePageDataHistoryIndex(currentText)
-
-    const forwardTarget = getPageDataHistoryForwardTarget({
-      historyCount: pageDataHistory.value.length,
-      activeIndex,
-      baseIndex: pageDataHistoryBaseIndex.value,
-      currentText,
-      draftText: pageDataHistoryDraft.value,
-    })
-
-    if (forwardTarget.kind === 'draft' && pageDataHistoryDraft.value !== null) {
-      const draftText = pageDataHistoryDraft.value
-      pageDataHistoryDraft.value = null
-      applyPageDataEditorText(draftText)
-      addStatus('已前进到未保存草稿，等待保存', 'success')
-      return true
-    }
-
-    if (forwardTarget.kind !== 'history') return false
-
-    const entry = pageDataHistory.value[forwardTarget.index]
-    if (!entry) return false
-
-    pageDataHistoryBaseIndex.value = forwardTarget.index
-    applyPageDataEditorText(formatPageDataSnapshot(entry))
-    addStatus(`已前进到快照 #${entry.version}，等待保存`, 'success')
-    return true
+    fileLoadState[name] = 'loaded'
+    fileTextHistoryDraft[name] = null
+    commitFileTextHistory(name, value)
   }
 
   function goFileHistoryBack(name: PageFileName): boolean {
-    if (name === 'pagedata.json') {
-      return goPageDataHistoryBack()
-    }
-
     const nextIndex = getFileHistoryBackTargetIndex(name)
     if (nextIndex < 0) return false
 
@@ -1098,6 +877,7 @@ export function useDevState() {
     fileTextHistoryCursor[name] = nextIndex
     editFiles[name] = nextText
     fileDirty[name] = nextText !== savedFiles[name]
+    if (name === 'pagedata.json') syncPageDataBinding(nextText)
     addStatus(`已撤销 ${name} 本地修改，等待保存`, 'success')
     return true
   }
@@ -1107,10 +887,6 @@ export function useDevState() {
   }
 
   function goFileHistoryForward(name: PageFileName): boolean {
-    if (name === 'pagedata.json') {
-      return goPageDataHistoryForward()
-    }
-
     const forwardTarget = getFileHistoryForwardTarget(name)
 
     if (forwardTarget.kind === 'draft' && fileTextHistoryDraft[name] !== null) {
@@ -1118,6 +894,7 @@ export function useDevState() {
       fileTextHistoryDraft[name] = null
       editFiles[name] = draftText
       fileDirty[name] = draftText !== savedFiles[name]
+      if (name === 'pagedata.json') syncPageDataBinding(draftText)
       addStatus(`已重做 ${name} 本地修改，等待保存`, 'success')
       return true
     }
@@ -1130,6 +907,7 @@ export function useDevState() {
     fileTextHistoryCursor[name] = forwardTarget.index
     editFiles[name] = nextText
     fileDirty[name] = nextText !== savedFiles[name]
+    if (name === 'pagedata.json') syncPageDataBinding(nextText)
     addStatus(`已重做 ${name} 本地修改，等待保存`, 'success')
     return true
   }
@@ -1186,7 +964,7 @@ export function useDevState() {
     editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
     editForm.redirect = node.redirect ?? ''
-    editForm.linkTarget = normalizeLinkTarget(node.linkTarget)
+    editForm.linkTarget = node.linkTarget === 'new-tab' ? 'new-tab' : 'iframe'
     editForm.parentPageId = node.parentPageId ?? ''
     editForm.refId = node.refId ?? ''
     editForm.childPlacement = node.childPlacement ?? ''
@@ -1404,53 +1182,7 @@ export function useDevState() {
       addStatus(`页面 ${pageId} 为 vue-component，不提供后端配置文件编辑`, 'warning')
       return
     }
-    void loadPageFiles(pageId)
-  }
-
-  async function savePageFiles() {
-    const pageId = activePageId.value
-    if (!pageId) return
-    fileSaving.value = true
-    try {
-      const body: Record<string, string> = { ...editFiles }
-      const currentPageDataText = editFiles['pagedata.json'] ?? ''
-      let canonicalPageDataText = currentPageDataText
-      let canonicalPageData: CanonicalPageData | null = null
-
-      if (currentPageDataText.trim()) {
-        canonicalPageData = canonicalizePageDataJson(currentPageDataText)
-        canonicalPageDataText = canonicalPageData.text
-        body['pagedata.json'] = canonicalPageDataText
-      }
-
-      if (canonicalPageData) {
-        canonicalPageData.dataSet.pageId = pageId
-        applyCanonicalPageData(canonicalPageData)
-      }
-
-      if (canonicalPageDataText !== currentPageDataText) {
-        editFiles['pagedata.json'] = canonicalPageDataText
-      }
-
-      for (const k of PAGE_FILE_NAMES) {
-        const fileContent = body[k] ?? editFiles[k] ?? ''
-        await http.put<Record<string, unknown>>(
-          `${getPageApi()}/${encodeURIComponent(pageId)}/${k}`,
-          fileContent,
-          { headers: { 'Content-Type': 'text/plain' } },
-        )
-        savedFiles[k] = fileContent
-        fileDirty[k] = false
-      }
-      refreshPageDataHistory()
-      pageDataHistoryDraft.value = null
-      addStatus(`页面 ${pageId} 已保存`, 'success')
-      await loadPages()
-    } catch (e) {
-      addStatus(`文件保存失败: ${String(e)}`, 'error')
-    } finally {
-      fileSaving.value = false
-    }
+    setActivePageContext(pageId, activePageId.value !== pageId)
   }
 
   async function savePageFile(name: PageFileName) {
@@ -1469,9 +1201,7 @@ export function useDevState() {
           content = canonicalPageData.text
           editFiles[name] = content
         } else {
-          pageDataSet.value = null
-          pageDataDocument.value = null
-          pageDataSetError.value = null
+          clearPageDataBinding()
         }
       }
 
@@ -1483,10 +1213,6 @@ export function useDevState() {
 
       savedFiles[name] = content
       fileDirty[name] = false
-      if (name === 'pagedata.json') {
-        refreshPageDataHistory()
-        pageDataHistoryDraft.value = null
-      }
 
       addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
       await loadPages()
@@ -1497,36 +1223,6 @@ export function useDevState() {
     }
   }
 
-  async function saveByTab(tab: DevWorkspaceTab) {
-    if (isPageFileName(tab)) {
-      await savePageFile(tab)
-      return
-    }
-
-    if (selectedNode.value) {
-      await saveNodeChanges()
-      return
-    }
-
-    await saveNavConfig()
-  }
-
-  async function refreshByTab(tab: DevWorkspaceTab) {
-    cancelAutoSave()
-
-    if (isPageFileName(tab)) {
-      if (activePageId.value) {
-        await loadPageFiles(activePageId.value)
-      }
-      return
-    }
-
-    await Promise.all([
-      loadNavConfig({ preserveSelectedNodeId: selectedNode.value?.id ?? null }),
-      loadPages(),
-    ])
-  }
-
   async function saveAll() {
     if (navDirty.value) {
       if (selectedNode.value) {
@@ -1535,7 +1231,13 @@ export function useDevState() {
         await saveNavConfig()
       }
     }
-    if (hasAnyFileDirty.value) await savePageFiles()
+    if (hasAnyFileDirty.value) {
+      for (const name of PAGE_FILE_NAMES) {
+        if (fileDirty[name]) {
+          await savePageFile(name)
+        }
+      }
+    }
     if (!navDirty.value && !hasAnyFileDirty.value) {
       if (selectedNode.value) {
         await saveNodeChanges()
@@ -1561,7 +1263,7 @@ export function useDevState() {
     markNavDirty()
     const pageId = normalizePageIdFromPath(val)
     if (pageId && isConfigNodeKind(editForm.nodeKind)) {
-      void loadPageFiles(pageId)
+      setActivePageContext(pageId, activePageId.value !== pageId)
     } else {
       clearFiles()
     }
@@ -1579,7 +1281,7 @@ export function useDevState() {
     markNavDirty()
     const pageId = normalizePageIdFromPath(editForm.path)
     if (pageId && isConfigNodeKind(editForm.nodeKind)) {
-      void loadPageFiles(pageId)
+      setActivePageContext(pageId, activePageId.value !== pageId)
     } else {
       clearFiles()
     }
@@ -1734,20 +1436,6 @@ export function useDevState() {
   // 新建页面
   // ═══════════════════════════════════════════════════════════
 
-  async function createPage(pageId: string, title: string, icon: string, linkToNav: boolean) {
-    await http.post(`${getPageApi()}/__create`, { pageId, title, icon })
-
-    if (linkToNav && selectedNode.value) {
-      editForm.path = `/${pageId}`
-      markNavDirty()
-      await saveNodeChanges()
-      void loadPageFiles(pageId)
-    }
-
-    await loadPages()
-    addStatus(`页面 ${pageId} 创建成功`, 'success')
-  }
-
   // ── 工具 ──
   function deepClone<T>(obj: T): T { return JSON.parse(JSON.stringify(obj)) as T }
 
@@ -1780,11 +1468,10 @@ export function useDevState() {
     editFiles,
     fileDirty,
     fileSaving,
-    fileLoaded,
-    pageDataSet,
+    fileLoadState,
+    fileReloadToken,
     pageDataDocument,
     pageDataSetError,
-    pageDataHistory,
 
     // 页面列表
     pageList,
@@ -1799,14 +1486,8 @@ export function useDevState() {
     // 计算属性
     hasAnyFileDirty,
     hasAnyDirty,
-    pageDataHistoryCount,
-    pageDataHistoryActiveIndex,
-    canPageDataHistoryBack,
-    canPageDataHistoryForward,
     getFileSnapshotCount,
     getFileHistoryCount,
-    canUndoFileSnapshot,
-    canRedoFileSnapshot,
     canFileHistoryBack,
     canFileHistoryForward,
 
@@ -1814,36 +1495,28 @@ export function useDevState() {
     addStatus,
     loadNavConfig,
     loadPages,
-    loadPageFiles,
+    loadPageFile,
+    requestPageFileReload,
+    requestAllPageFileReload,
     clearFiles,
-    refreshPageDataHistory,
     listRemotePageVersions,
-    readRemotePageVersionFile,
     restoreRemotePageVersion,
     createRemotePageVersion,
     deleteRemotePageVersion,
     updatePageDataDocument,
-    restorePageDataHistory,
-    goPageDataHistoryBack,
-    goPageDataHistoryForward,
     undoFileSnapshot,
     redoFileSnapshot,
     goFileHistoryBack,
     goFileHistoryForward,
     updatePageFile,
     savePageFile,
-    saveByTab,
-    refreshByTab,
     onLinkUrlChanged,
     probeLinkTarget,
     selectPage,
     loadNodeToForm,
-    applyNavChanges,
     markNavDirty,
-    cancelAutoSave,
     saveNavConfig,
     saveNodeChanges,
-    savePageFiles,
     saveAll,
     selectNode,
     handlePathChange,
@@ -1860,7 +1533,6 @@ export function useDevState() {
     addContextItem,
     removeContextItem,
     fillDemoContext,
-    createPage,
     initialize,
   }
 }

@@ -77,20 +77,22 @@ describe('useDevState pagedata local history', () => {
     })
 
     const state = useDevState()
-    await state.loadPageFiles('orders-page')
+    state.selectPage('orders-page')
+    await state.loadPageFile('pagedata.json')
 
-    expect(state.pageDataHistory.value).toHaveLength(1)
-    expect(state.pageDataHistoryActiveIndex.value).toBe(0)
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
+    expect(state.canFileHistoryBack('pagedata.json')).toBe(false)
     expect(state.fileDirty['pagedata.json']).toBe(false)
 
     const editedPageDataText = createPageDataText('Beta', true)
     state.updatePageFile('pagedata.json', editedPageDataText)
 
-    expect(state.pageDataHistory.value).toHaveLength(1)
-    expect(state.pageDataHistoryActiveIndex.value).toBe(-1)
-    expect(state.goPageDataHistoryBack()).toBe(true)
+    // Still 1 snapshot (interval not elapsed), but current text diverged → can undo
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
+    expect(state.canFileHistoryBack('pagedata.json')).toBe(true)
+    expect(state.goFileHistoryBack('pagedata.json')).toBe(true)
     expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(initialPageDataText).text)
-    expect(state.goPageDataHistoryForward()).toBe(true)
+    expect(state.goFileHistoryForward('pagedata.json')).toBe(true)
     expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(editedPageDataText).text)
   })
 
@@ -101,19 +103,17 @@ describe('useDevState pagedata local history', () => {
     const editedPageDataText = createPageDataText('Gamma', true)
     state.updatePageFile('pagedata.json', editedPageDataText)
 
-    const historyCountBeforeSave = state.pageDataHistory.value.length
-    const latestEntryIdBeforeSave = state.pageDataHistory.value[0]?.id
+    const historyCountBeforeSave = state.getFileHistoryCount('pagedata.json')
     httpPut.mockResolvedValue({ ok: true })
 
-    await state.savePageFiles()
+    await state.savePageFile('pagedata.json')
 
     expect(httpPut).toHaveBeenCalledWith(
       '/api/pages-config/orders-page/pagedata.json',
       canonicalizePageDataJson(editedPageDataText).text,
       { headers: { 'Content-Type': 'text/plain' } },
     )
-    expect(state.pageDataHistory.value).toHaveLength(historyCountBeforeSave)
-    expect(state.pageDataHistory.value[0]?.id).toBe(latestEntryIdBeforeSave)
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(historyCountBeforeSave)
     expect(state.fileDirty['pagedata.json']).toBe(false)
   })
 
@@ -136,7 +136,8 @@ describe('useDevState pagedata local history', () => {
     })
 
     const state = useDevState()
-    await state.loadPageFiles('orders-page')
+    state.selectPage('orders-page')
+    await state.loadPageFile('rule.json')
 
     expect(state.getFileHistoryCount('rule.json')).toBe(1)
     expect(state.canFileHistoryBack('rule.json')).toBe(false)
@@ -160,16 +161,15 @@ describe('useDevState pagedata local history', () => {
     state.activePageId.value = 'orders-page'
 
     state.updatePageFile('pagedata.json', createPageDataText('Snapshot-1', true))
-    expect(state.pageDataHistory.value).toHaveLength(1)
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
 
     state.updatePageFile('pagedata.json', createPageDataText('Snapshot-2', true))
-    expect(state.pageDataHistory.value).toHaveLength(1)
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(1)
 
     vi.advanceTimersByTime(5001)
     state.updatePageFile('pagedata.json', createPageDataText('Snapshot-3', true))
 
-    expect(state.pageDataHistory.value).toHaveLength(2)
-    expect(state.pageDataHistory.value.map((entry) => entry.version)).toEqual([2, 1])
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(2)
   })
 
   it('commits a new text snapshot only after the minimum interval elapses', () => {
@@ -199,7 +199,7 @@ describe('useDevState pagedata local history', () => {
 
     httpPut.mockResolvedValue({ ok: true })
 
-    await state.saveByTab('script.js')
+    await state.savePageFile('script.js')
 
     expect(httpPut).toHaveBeenCalledWith(
       '/api/pages-config/orders-page/script.js',
@@ -214,24 +214,21 @@ describe('useDevState pagedata local history', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
 
-    for (let index = 1; index <= 21; index += 1) {
+    for (let index = 1; index <= 101; index += 1) {
       if (index > 1) {
         vi.advanceTimersByTime(5001)
       }
       state.updatePageFile('pagedata.json', createPageDataText(`Snapshot-${index}`, true))
     }
 
-    expect(state.pageDataHistory.value).toHaveLength(20)
-    expect(state.pageDataHistory.value.map((entry) => entry.version)).toEqual(
-      Array.from({ length: 20 }, (_, offset) => 21 - offset),
-    )
+    expect(state.getFileHistoryCount('pagedata.json')).toBe(100)
 
-    for (let step = 0; step < 19; step += 1) {
-      expect(state.goPageDataHistoryBack()).toBe(true)
+    for (let step = 0; step < 99; step += 1) {
+      expect(state.goFileHistoryBack('pagedata.json')).toBe(true)
     }
 
     expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(createPageDataText('Snapshot-2', true)).text)
-    expect(state.goPageDataHistoryBack()).toBe(false)
+    expect(state.goFileHistoryBack('pagedata.json')).toBe(false)
   })
 
   it('reuses text snapshots cyclically after reaching the local snapshot limit', () => {

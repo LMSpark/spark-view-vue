@@ -359,6 +359,26 @@ export function commitDataSetSnapshot(
   return entry
 }
 
+export function clearDataSetSnapshots(
+  scope: DataSetHistoryScope,
+  options?: DataSetHistoryListOptions,
+): void {
+  const adapter = resolveAdapter(options?.adapter)
+  if (!adapter) return
+
+  const key = resolveDataSetHistoryKey(buildHistoryScope({
+    ...(scope.dataSetName !== undefined ? { dataSetName: scope.dataSetName } : {}),
+    ...(scope.pageId !== undefined ? { pageId: scope.pageId } : {}),
+    ...(scope.scopeId !== undefined ? { scopeId: scope.scopeId } : {}),
+    ...(options?.namespace !== undefined
+      ? { namespace: options.namespace }
+      : scope.namespace !== undefined
+        ? { namespace: scope.namespace }
+        : {}),
+  }))
+  adapter.removeItem(key)
+}
+
 export function formatPageDataSnapshot(
   entry: DataSetHistorySnapshot,
   indentation = 2,
