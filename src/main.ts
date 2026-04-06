@@ -490,103 +490,13 @@ async function startApp() {
 
         startupLogger.info('✅ 应用准备挂载')
         
-        // 🎨 注册 Renderer 智能组件
-        const {
-          RendererTable,
-          RendererForm,
-          RendererDetail,
-          RendererTree,
-          RendererList,
-          RendererTabs,
-          RendererCollapse,
-          RendererDialog,
-          RendererDrawer,
-          RendererSteps,
-          RendererSection,
-          FieldTextarea,
-          FieldHtmlEditor,
-          FieldText,
-          FieldNumber,
-          FieldDate,
-          FieldSelect,
-          FieldMultiSelect,
-          FieldRadio,
-          FieldCheckbox,
-          FieldCheckboxGroup,
-          FieldSwitch,
-          FieldSlider,
-          FieldRate,
-          FieldColor,
-          FieldIcon,
-          FieldImage,
-          FieldFilePath,
-          FieldFileBrowser,
-          FieldUpload,
-          FieldEntityPicker,
-          FieldUserPicker,
-          FieldDeptPicker,
-          FieldProductPicker,
-          FieldCascader,
-          FieldTreeSelect,
-          FieldTransfer,
-          ModuleContextBadge,
-        } = await import('./components/renderer-components')
-        
-        app.component('r-table', RendererTable)
-        app.component('r-form', RendererForm)
-        app.component('r-detail', RendererDetail)
-        app.component('r-tree', RendererTree)
-        app.component('r-list', RendererList)
-        app.component('r-tabs', RendererTabs)
-        app.component('r-collapse', RendererCollapse)
-        app.component('r-dialog', RendererDialog)
-        app.component('r-drawer', RendererDrawer)
-        app.component('r-steps', RendererSteps)
-        app.component('r-section', RendererSection)
-        app.component('r-block', RendererSection)
-        app.component('r-text', FieldText)
-        app.component('r-textarea', FieldTextarea)
-        app.component('r-html-editor', FieldHtmlEditor)
-        app.component('r-number', FieldNumber)
-        app.component('r-date', FieldDate)
-        app.component('r-select', FieldSelect)
-        app.component('r-multi-select', FieldMultiSelect)
-        app.component('r-radio', FieldRadio)
-        app.component('r-checkbox', FieldCheckbox)
-        app.component('r-checkbox-group', FieldCheckboxGroup)
-        app.component('r-switch', FieldSwitch)
-        app.component('r-slider', FieldSlider)
-        app.component('r-rate', FieldRate)
-        app.component('r-color', FieldColor)
-        app.component('r-icon', FieldIcon)
-        app.component('r-image', FieldImage)
-        app.component('r-file-path', FieldFilePath)
-        app.component('r-file-browser', FieldFileBrowser)
-        app.component('r-upload', FieldUpload)
-        app.component('r-entity-picker', FieldEntityPicker)
-        app.component('r-user-picker', FieldUserPicker)
-        app.component('r-dept-picker', FieldDeptPicker)
-        app.component('r-product-picker', FieldProductPicker)
-        app.component('r-cascader', FieldCascader)
-        app.component('r-tree-select', FieldTreeSelect)
-        app.component('r-transfer', FieldTransfer)
-        app.component('r-module-context-badge', ModuleContextBadge)
-        
-        // 示例：使用包提供的运行时自动注册工具
-        // 这段代码演示了在项目根的 `src/main.ts` 中直接调用
-        // `setupAutoRegister` 来扫描并注册所有 Vue 组件。
-        //
-        // 如果你不需要自定义选项，可以把它放在 `onBeforeStart`
-        // 或者 `beforeMount` 钩子里，SparkApp.start 会在此之后进行
-        // 路由/页面配置等初始化。
-        const { setupAutoRegister } = await import('@spark-view/spark-app')
-        await setupAutoRegister(app, {
-          // patterns: ['./src/components/**/*.vue'],
-          // exclude: ['**/demo/**']
-        })
+        // 🎨 注册 SPARK 组件（registerAllRenderers 注册全部 103 个组件类型）
+        const { registerAllRenderers, Spark } = await import('@spark-view/spark-component')
+        registerAllRenderers()
 
-        // Vue 组件路由由 DynamicRouter 从导航树统一派生
-        // componentMap 映射 vue-component 路径 → 组件
+        // 主项目本地组件：单独注册到 SPARK registry
+        const ModuleContextBadge = (await import('./components/ModuleContextBadge.vue')).default
+        Spark.register('r-module-context-badge', ModuleContextBadge)
 
         // 🤖 注册 AI Studio 组件（SPARK registry + Vue 全局组件）
         const { initAiStudio } = await import('./views/app/ai-studio/initialize')

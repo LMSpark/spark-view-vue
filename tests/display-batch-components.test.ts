@@ -90,7 +90,7 @@ function mountDisplayComponent(
 
   return mount(Provider, {
     global: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       stubs: stubs as any,
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,

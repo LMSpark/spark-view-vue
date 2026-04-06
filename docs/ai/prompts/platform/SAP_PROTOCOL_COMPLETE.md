@@ -164,15 +164,13 @@ SAP 协议块的通用语法是：
 @@end
 ```
 
-### 4.5 `tool`
-
-旧的 `tool` 类型已经不再属于 SAP 协议可接受输入。
+### 4.5 `type` 约束
 
 当前统一规则：
 
 - 发起真实操作只能使用 `request`
 - 查看能力只能使用 `describe:system.capabilities`
-- 发送 `@@tool:*` 到 `/api/sap/execute` 会返回 `@@error`，错误码为 `INVALID_TYPE`
+- 发送任何非 `request/describe` 的类型到 `/api/sap/execute` 会返回 `@@error`，错误码为 `INVALID_TYPE`
 
 ---
 
@@ -382,12 +380,12 @@ Content-Type: text/plain
 
 - 前端 `SapChatPanel` 只生成并提取 `request / describe`
 - 后端 `SapAssistantService` 的 system prompt 只要求 `request / describe`
-- 后端 `SapOrchestrator` 显式拒绝 `tool` 等非规范类型
+- 后端 `SapOrchestrator` 显式拒绝非规范类型
 
 因此：
 
 - SAP 专项文档、测试样例、前端提示词、后端提示词都必须使用 `request / describe / result / error`
-- `@@tool:*` 现在属于旧口径，不再视为兼容输入
+- 不再保留任何非 canonical `type` 的兼容输入
 
 ---
 

@@ -83,14 +83,14 @@ class SapOrchestratorTest {
         }
 
         @Test
-        @DisplayName("tool 类型返回 INVALID_TYPE")
-        void shouldRejectLegacyToolType() {
-            String input = "@@tool:file.write#legacy1\n{\"path\":\"ok.txt\",\"content\":\"data\"}\n@@end";
+        @DisplayName("非法 type 返回 INVALID_TYPE")
+        void shouldRejectInvalidType() {
+            String input = "@@invalid:file.write#bad1\n{\"path\":\"ok.txt\",\"content\":\"data\"}\n@@end";
 
             String result = orchestrator.processProtocol(input);
 
             assertTrue(result.contains("INVALID_TYPE"));
-            assertTrue(result.contains("@@error:file.write#legacy1"));
+            assertTrue(result.contains("@@error:file.write#bad1"));
         }
 
         @Test

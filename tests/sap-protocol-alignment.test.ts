@@ -33,23 +33,19 @@ describe('SAP protocol alignment', () => {
     expect(extraction.blocks).toHaveLength(2)
   })
 
-  it('strips canonical SAP blocks while leaving legacy tool blocks untouched', () => {
+  it('strips canonical SAP blocks', () => {
     const text = [
       '开始执行',
       '@@request:db.query#req-2',
       '{"sql":"SELECT 1"}',
       '@@end',
       '中间说明',
-      '@@tool:db.query#legacy-2',
-      '{"sql":"SELECT 2"}',
-      '@@end',
     ].join('\n')
 
     const stripped = stripSapProtocolBlocks(text)
 
     expect(stripped).toContain('开始执行')
     expect(stripped).toContain('中间说明')
-    expect(stripped).toContain('@@tool:db.query#legacy-2')
     expect(stripped).not.toContain('@@request:db.query#req-2')
   })
 })

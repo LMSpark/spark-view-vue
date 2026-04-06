@@ -146,6 +146,20 @@ public class SapOrchestrator {
                             "仅允许 @@request:<action>#<id> 发起操作，或使用 @@describe:<action>#<id> 查询信息"));
         }
 
+        if ("describe".equals(type) && !"system.capabilities".equals(action)) {
+            return formatError(action, id,
+                new SapError("INVALID_PROTOCOL",
+                    "describe 类型仅允许用于 system.capabilities",
+                    "请改为 @@request:" + action + "#<id> 调用真实动作"));
+        }
+
+        if ("request".equals(type) && "system.capabilities".equals(action)) {
+            return formatError(action, id,
+                new SapError("INVALID_PROTOCOL",
+                    "system.capabilities 必须使用 describe 类型",
+                    "请改为 @@describe:system.capabilities#<id>"));
+        }
+
         return null;
     }
 

@@ -37,7 +37,7 @@
 示例：
 
 ```text
-@@tool:page.auto#req-1
+@@request:page.auto#req-1
 {"pageId":"orders","prompt":"创建订单列表页"}
 @@end
 ```
@@ -51,7 +51,7 @@ SAP 专项示例：
 ```
 
 说明：
-- `type`：协议类型，如通用 AI 工具常用 `tool`，SAP 专项使用 `request` / `describe`
+- `type`：协议类型，仅允许 `request` / `describe`
 - `action`：工具动作（如 `page.auto` / `file.write`）
 - `requestId`：工具调用唯一标识
 - `<json>`：工具参数
