@@ -52,6 +52,12 @@ import RendererDropdown from './containers/non-data-components/RendererDropdown.
 import RendererTooltip from './containers/non-data-components/RendererTooltip.vue'
 import RendererPopover from './containers/non-data-components/RendererPopover.vue'
 import RendererPopconfirm from './containers/non-data-components/RendererPopconfirm.vue'
+import RendererBacktop from './containers/non-data-components/RendererBacktop.vue'
+import RendererCarousel from './containers/non-data-components/RendererCarousel.vue'
+import RendererCarouselItem from './containers/non-data-components/RendererCarouselItem.vue'
+import RendererWatermark from './containers/non-data-components/RendererWatermark.vue'
+import RendererAffix from './containers/non-data-components/RendererAffix.vue'
+import RendererScrollbar from './containers/non-data-components/RendererScrollbar.vue'
 import DisplayStatistic from './display/data-components/DisplayStatistic.vue'
 import DisplayProgress from './display/data-components/DisplayProgress.vue'
 import DisplayTag from './display/data-components/DisplayTag.vue'
@@ -68,6 +74,7 @@ import DisplayEmpty from './display/non-data-components/DisplayEmpty.vue'
 import DisplayResult from './display/non-data-components/DisplayResult.vue'
 import DisplayBreadcrumb from './display/non-data-components/DisplayBreadcrumb.vue'
 import DisplayBreadcrumbItem from './display/non-data-components/DisplayBreadcrumbItem.vue'
+import DisplaySkeleton from './display/non-data-components/DisplaySkeleton.vue'
 
 // ── DSL 标记：使组件可作为模板 DSL 子节点编译为 SparkNode ─────────────────────
 markSparkTemplateNodeComponent(BuiltinActionButton, { nodeType: 'builtin-action' })
@@ -113,6 +120,12 @@ markSparkTemplateNodeComponent(RendererDropdown, { nodeType: 'r-dropdown' })
 markSparkTemplateNodeComponent(RendererTooltip, { nodeType: 'r-tooltip' })
 markSparkTemplateNodeComponent(RendererPopover, { nodeType: 'r-popover' })
 markSparkTemplateNodeComponent(RendererPopconfirm, { nodeType: 'r-popconfirm' })
+markSparkTemplateNodeComponent(RendererBacktop, { nodeType: 'r-backtop' })
+markSparkTemplateNodeComponent(RendererCarousel, { nodeType: 'r-carousel' })
+markSparkTemplateNodeComponent(RendererCarouselItem, { nodeType: 'r-carousel-item' })
+markSparkTemplateNodeComponent(RendererWatermark, { nodeType: 'r-watermark' })
+markSparkTemplateNodeComponent(RendererAffix, { nodeType: 'r-affix' })
+markSparkTemplateNodeComponent(RendererScrollbar, { nodeType: 'r-scrollbar' })
 markSparkTemplateNodeComponent(DisplayStatistic, { nodeType: 'r-statistic' })
 markSparkTemplateNodeComponent(DisplayProgress, { nodeType: 'r-progress' })
 markSparkTemplateNodeComponent(DisplayTag, { nodeType: 'r-tag' })
@@ -129,6 +142,7 @@ markSparkTemplateNodeComponent(DisplayEmpty, { nodeType: 'r-empty' })
 markSparkTemplateNodeComponent(DisplayResult, { nodeType: 'r-result' })
 markSparkTemplateNodeComponent(DisplayBreadcrumb, { nodeType: 'r-breadcrumb' })
 markSparkTemplateNodeComponent(DisplayBreadcrumbItem, { nodeType: 'r-breadcrumb-item' })
+markSparkTemplateNodeComponent(DisplaySkeleton, { nodeType: 'r-skeleton' })
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
@@ -193,6 +207,12 @@ export const RDropdown = createTemplateDsl('r-dropdown', 'RDropdown')
 export const RTooltip = createTemplateDsl('r-tooltip', 'RTooltip')
 export const RPopover = createTemplateDsl('r-popover', 'RPopover')
 export const RPopconfirm = createTemplateDsl('r-popconfirm', 'RPopconfirm')
+export const RBacktop = createTemplateDsl('r-backtop', 'RBacktop')
+export const RCarousel = createTemplateDsl('r-carousel', 'RCarousel')
+export const RCarouselItem = createTemplateDsl('r-carousel-item', 'RCarouselItem')
+export const RWatermark = createTemplateDsl('r-watermark', 'RWatermark')
+export const RAffix = createTemplateDsl('r-affix', 'RAffix')
+export const RScrollbar = createTemplateDsl('r-scrollbar', 'RScrollbar')
 export const RStatistic = createTemplateDsl('r-statistic', 'RStatistic')
 export const RProgress = createTemplateDsl('r-progress', 'RProgress')
 export const RTag = createTemplateDsl('r-tag', 'RTag')
@@ -209,6 +229,7 @@ export const REmpty = createTemplateDsl('r-empty', 'REmpty')
 export const RResult = createTemplateDsl('r-result', 'RResult')
 export const RBreadcrumb = createTemplateDsl('r-breadcrumb', 'RBreadcrumb')
 export const RBreadcrumbItem = createTemplateDsl('r-breadcrumb-item', 'RBreadcrumbItem')
+export const RSkeleton = createTemplateDsl('r-skeleton', 'RSkeleton')
 
 // ── 容器 Renderer 组件 ───────────────────────────────────────────────────────
 export { RendererTable }
@@ -235,6 +256,12 @@ export { RendererDropdown }
 export { RendererTooltip }
 export { RendererPopover }
 export { RendererPopconfirm }
+export { RendererBacktop }
+export { RendererCarousel }
+export { RendererCarouselItem }
+export { RendererWatermark }
+export { RendererAffix }
+export { RendererScrollbar }
 export { BuiltinActionButton }
 export { default as RendererFieldScope } from './containers/data-components/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/data-components/RendererListItemScope.vue'
@@ -287,6 +314,7 @@ export { DisplayEmpty }
 export { DisplayResult }
 export { DisplayBreadcrumb }
 export { DisplayBreadcrumbItem }
+export { DisplaySkeleton }
 
 // ── 注册 & composable ────────────────────────────────────────────────────────
 export { registerAllRenderers } from './register-renderers.js'

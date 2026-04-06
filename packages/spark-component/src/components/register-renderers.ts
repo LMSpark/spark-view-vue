@@ -32,6 +32,12 @@ import RendererDropdown from './containers/non-data-components/RendererDropdown.
 import RendererTooltip from './containers/non-data-components/RendererTooltip.vue'
 import RendererPopover from './containers/non-data-components/RendererPopover.vue'
 import RendererPopconfirm from './containers/non-data-components/RendererPopconfirm.vue'
+import RendererBacktop from './containers/non-data-components/RendererBacktop.vue'
+import RendererCarousel from './containers/non-data-components/RendererCarousel.vue'
+import RendererCarouselItem from './containers/non-data-components/RendererCarouselItem.vue'
+import RendererWatermark from './containers/non-data-components/RendererWatermark.vue'
+import RendererAffix from './containers/non-data-components/RendererAffix.vue'
+import RendererScrollbar from './containers/non-data-components/RendererScrollbar.vue'
 import BuiltinActionButton from './containers/BuiltinActionButton.vue'
 
 // ── 展示组件（同步导入） ──
@@ -51,6 +57,7 @@ import DisplayEmpty from './display/non-data-components/DisplayEmpty.vue'
 import DisplayResult from './display/non-data-components/DisplayResult.vue'
 import DisplayBreadcrumb from './display/non-data-components/DisplayBreadcrumb.vue'
 import DisplayBreadcrumbItem from './display/non-data-components/DisplayBreadcrumbItem.vue'
+import DisplaySkeleton from './display/non-data-components/DisplaySkeleton.vue'
 
 // ── Dock 组件（同步导入） ──
 import DockActions from './containers/docks/DockActions.vue'
@@ -118,6 +125,12 @@ export function registerAllRenderers(): void {
   Spark.register('r-tooltip', RendererTooltip)
   Spark.register('r-popover', RendererPopover)
   Spark.register('r-popconfirm', RendererPopconfirm)
+  Spark.register('r-backtop', RendererBacktop)
+  Spark.register('r-carousel', RendererCarousel)
+  Spark.register('r-carousel-item', RendererCarouselItem)
+  Spark.register('r-watermark', RendererWatermark)
+  Spark.register('r-affix', RendererAffix)
+  Spark.register('r-scrollbar', RendererScrollbar)
   Spark.register('builtin-action', BuiltinActionButton)
 
   // ── 展示组件：数据驱动 + 非数据驱动 ──
@@ -137,6 +150,7 @@ export function registerAllRenderers(): void {
   Spark.register('r-result', DisplayResult)
   Spark.register('r-breadcrumb', DisplayBreadcrumb)
   Spark.register('r-breadcrumb-item', DisplayBreadcrumbItem)
+  Spark.register('r-skeleton', DisplaySkeleton)
 
   // ── Dock 组件：容器内由容器提取、独立使用正常渲染 ──
   Spark.register('r-actions', DockActions)

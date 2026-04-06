@@ -1,0 +1,46 @@
+<template>
+  <el-skeleton
+    v-if="isVisible"
+    :rows="rows"
+    :count="count"
+    :loading="loading"
+    :animated="animated"
+    :throttle="throttle"
+    v-bind="$attrs"
+  >
+    <template v-if="resolvedChildren.length" #default>
+      <SparkComponentRenderer
+        v-for="(child, index) in resolvedChildren"
+        :key="nodeId(child) ?? `r-skeleton-child-${index}`"
+        :config="child"
+      />
+    </template>
+  </el-skeleton>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+
+interface Props extends SparkNode {
+  children?: SparkNode[]
+  rows?: number
+  count?: number
+  loading?: boolean
+  animated?: boolean
+  throttle?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-skeleton',
+  rows: 3,
+  count: 1,
+  loading: true,
+  animated: false,
+  throttle: 0,
+})
+
+const { isVisible } = useSparkPageComponent(props)
+
+const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
+</script>
