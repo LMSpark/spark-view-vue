@@ -44,6 +44,9 @@ import RendererAnchorLink from './containers/non-data-components/RendererAnchorL
 import RendererContainer from './containers/non-data-components/RendererContainer.vue'
 import RendererAside from './containers/non-data-components/RendererAside.vue'
 import RendererMain from './containers/non-data-components/RendererMain.vue'
+import RendererLayoutHeader from './containers/non-data-components/RendererLayoutHeader.vue'
+import RendererLayoutFooter from './containers/non-data-components/RendererLayoutFooter.vue'
+import RendererButtonGroup from './containers/non-data-components/RendererButtonGroup.vue'
 import BuiltinActionButton from './containers/BuiltinActionButton.vue'
 
 // ── 展示组件（同步导入） ──
@@ -67,6 +70,7 @@ import DisplaySkeleton from './display/non-data-components/DisplaySkeleton.vue'
 import DisplayImage from './display/data-components/DisplayImage.vue'
 import DisplayCalendar from './display/non-data-components/DisplayCalendar.vue'
 import DisplayCountdown from './display/non-data-components/DisplayCountdown.vue'
+import DisplayIcon from './display/non-data-components/DisplayIcon.vue'
 
 // ── Dock 组件（同步导入） ──
 import DockActions from './containers/docks/DockActions.vue'
@@ -152,6 +156,9 @@ export function registerAllRenderers(): void {
   Spark.register('r-container', RendererContainer)
   Spark.register('r-aside', RendererAside)
   Spark.register('r-main', RendererMain)
+  Spark.register('r-layout-header', RendererLayoutHeader)
+  Spark.register('r-layout-footer', RendererLayoutFooter)
+  Spark.register('r-button-group', RendererButtonGroup)
   Spark.register('builtin-action', BuiltinActionButton)
 
   // ── 展示组件：数据驱动 + 非数据驱动 ──
@@ -175,6 +182,7 @@ export function registerAllRenderers(): void {
   Spark.register('display-image', DisplayImage)
   Spark.register('display-calendar', DisplayCalendar)
   Spark.register('display-countdown', DisplayCountdown)
+  Spark.register('display-icon', DisplayIcon)
 
   // ── Dock 组件：容器内由容器提取、独立使用正常渲染 ──
   Spark.register('r-actions', DockActions)

@@ -70,6 +70,9 @@ import RendererAnchorLink from './containers/non-data-components/RendererAnchorL
 import RendererContainer from './containers/non-data-components/RendererContainer.vue'
 import RendererAside from './containers/non-data-components/RendererAside.vue'
 import RendererMain from './containers/non-data-components/RendererMain.vue'
+import RendererLayoutHeader from './containers/non-data-components/RendererLayoutHeader.vue'
+import RendererLayoutFooter from './containers/non-data-components/RendererLayoutFooter.vue'
+import RendererButtonGroup from './containers/non-data-components/RendererButtonGroup.vue'
 import DisplayStatistic from './display/data-components/DisplayStatistic.vue'
 import DisplayProgress from './display/data-components/DisplayProgress.vue'
 import DisplayTag from './display/data-components/DisplayTag.vue'
@@ -90,6 +93,7 @@ import DisplaySkeleton from './display/non-data-components/DisplaySkeleton.vue'
 import DisplayImage from './display/data-components/DisplayImage.vue'
 import DisplayCalendar from './display/non-data-components/DisplayCalendar.vue'
 import DisplayCountdown from './display/non-data-components/DisplayCountdown.vue'
+import DisplayIcon from './display/non-data-components/DisplayIcon.vue'
 
 // ── DSL 标记：使组件可作为模板 DSL 子节点编译为 SparkNode ─────────────────────
 markSparkTemplateNodeComponent(BuiltinActionButton, { nodeType: 'builtin-action' })
@@ -153,6 +157,9 @@ markSparkTemplateNodeComponent(RendererAnchorLink, { nodeType: 'r-anchor-link' }
 markSparkTemplateNodeComponent(RendererContainer, { nodeType: 'r-container' })
 markSparkTemplateNodeComponent(RendererAside, { nodeType: 'r-aside' })
 markSparkTemplateNodeComponent(RendererMain, { nodeType: 'r-main' })
+markSparkTemplateNodeComponent(RendererLayoutHeader, { nodeType: 'r-layout-header' })
+markSparkTemplateNodeComponent(RendererLayoutFooter, { nodeType: 'r-layout-footer' })
+markSparkTemplateNodeComponent(RendererButtonGroup, { nodeType: 'r-button-group' })
 markSparkTemplateNodeComponent(DisplayStatistic, { nodeType: 'r-statistic' })
 markSparkTemplateNodeComponent(DisplayProgress, { nodeType: 'r-progress' })
 markSparkTemplateNodeComponent(DisplayTag, { nodeType: 'r-tag' })
@@ -173,6 +180,7 @@ markSparkTemplateNodeComponent(DisplaySkeleton, { nodeType: 'r-skeleton' })
 markSparkTemplateNodeComponent(DisplayImage, { nodeType: 'display-image' })
 markSparkTemplateNodeComponent(DisplayCalendar, { nodeType: 'display-calendar' })
 markSparkTemplateNodeComponent(DisplayCountdown, { nodeType: 'display-countdown' })
+markSparkTemplateNodeComponent(DisplayIcon, { nodeType: 'display-icon' })
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
@@ -255,6 +263,9 @@ export const RAnchorLink = createTemplateDsl('r-anchor-link', 'RAnchorLink')
 export const RContainer = createTemplateDsl('r-container', 'RContainer')
 export const RAside = createTemplateDsl('r-aside', 'RAside')
 export const RMain = createTemplateDsl('r-main', 'RMain')
+export const RLayoutHeader = createTemplateDsl('r-layout-header', 'RLayoutHeader')
+export const RLayoutFooter = createTemplateDsl('r-layout-footer', 'RLayoutFooter')
+export const RButtonGroup = createTemplateDsl('r-button-group', 'RButtonGroup')
 export const RStatistic = createTemplateDsl('r-statistic', 'RStatistic')
 export const RProgress = createTemplateDsl('r-progress', 'RProgress')
 export const RTag = createTemplateDsl('r-tag', 'RTag')
@@ -275,6 +286,7 @@ export const RSkeleton = createTemplateDsl('r-skeleton', 'RSkeleton')
 export const RDisplayImage = createTemplateDsl('display-image', 'RDisplayImage')
 export const RDisplayCalendar = createTemplateDsl('display-calendar', 'RDisplayCalendar')
 export const RDisplayCountdown = createTemplateDsl('display-countdown', 'RDisplayCountdown')
+export const RDisplayIcon = createTemplateDsl('display-icon', 'RDisplayIcon')
 
 // ── 容器 Renderer 组件 ───────────────────────────────────────────────────────
 export { RendererTable }
@@ -313,6 +325,9 @@ export { RendererAnchorLink }
 export { RendererContainer }
 export { RendererAside }
 export { RendererMain }
+export { RendererLayoutHeader }
+export { RendererLayoutFooter }
+export { RendererButtonGroup }
 export { BuiltinActionButton }
 export { default as RendererFieldScope } from './containers/data-components/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/data-components/RendererListItemScope.vue'
@@ -375,6 +390,7 @@ export { DisplaySkeleton }
 export { DisplayImage }
 export { DisplayCalendar }
 export { DisplayCountdown }
+export { DisplayIcon }
 
 // ── 注册 & composable ────────────────────────────────────────────────────────
 export { registerAllRenderers } from './register-renderers.js'
