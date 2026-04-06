@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { PAGE_DATA_JSON_SCHEMA } from '../src/views/app/dev-system/pageDataJsonSchema'
 import {
   addChildNode,
   buildJsonTreeRows,
   filterJsonTreeRows,
   resolveSchemaInfoForPath,
   type JsonObject,
-} from '../src/views/app/dev-system/jsonTreeEditor'
+} from '@spark-view/spark-component'
+import { PAGE_DATA_JSON_SCHEMA } from '../src/views/app/dev-system/policies/pageDataJsonSchema'
 import { pageDataPolicy } from '../src/views/app/dev-system/policies/pageDataPolicy'
 
 function createSamplePageData(): JsonObject {
@@ -64,7 +64,7 @@ describe('jsonTreeEditor (pageData policy)', () => {
 
   it('should add semantic default nodes for tables and relations', () => {
     const sample = createSamplePageData()
-    const withNewTable = addChildNode(sample, ['tables'], pageDataPolicy)
+    const withNewTable = addChildNode(sample, ['tables'], pageDataPolicy) as JsonObject
     const nextTables = withNewTable['tables'] as Record<string, JsonObject>
     const newTableEntry = Object.entries(nextTables).find(([key]) => key !== 'Users')
 
@@ -74,7 +74,7 @@ describe('jsonTreeEditor (pageData policy)', () => {
       views: { default: {} },
     })
 
-    const withRelation = addChildNode(sample, ['tableRelations'], pageDataPolicy)
+    const withRelation = addChildNode(sample, ['tableRelations'], pageDataPolicy) as JsonObject
     expect(withRelation['tableRelations']).toEqual([
       {
         parentTable: 'ParentTable',

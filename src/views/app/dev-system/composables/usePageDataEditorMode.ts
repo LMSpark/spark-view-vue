@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 
-import { canUseStructuredPageDataEditor, canonicalizePageDataJson, type PageDataEditorMode } from '../pageDataJsonSchema'
+import { canUseStructuredPageDataEditor, canonicalizePageDataJson, type PageDataEditorMode } from '../policies/pageDataJsonSchema'
 
 export interface UsePageDataEditorModeOptions {
   getRawText: () => string

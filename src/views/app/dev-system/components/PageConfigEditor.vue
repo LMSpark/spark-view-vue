@@ -3,33 +3,6 @@
     <div class="pce-header">
       <span class="pce-header__title">配置文件</span>
       <div class="pce-header__actions">
-        <el-select
-          v-if="activeFile === 'rule.json'"
-          :model-value="ruleEditorMode"
-          size="small"
-          style="width: 140px"
-          @update:model-value="handleRuleEditorModeChange"
-        >
-          <el-option label="树" value="tree" :disabled="!ruleTreeEditorAvailable" />
-          <el-option label="源码" value="text" />
-        </el-select>
-        <el-select
-          v-if="activeFile === 'pagedata.json'"
-          :model-value="pageDataEditorMode"
-          size="small"
-          style="width: 140px"
-          @update:model-value="handlePageDataEditorModeChange"
-        >
-          <el-option label="对象" value="tree" :disabled="!pageDataObjectEditorAvailable" />
-          <el-option label="表格" value="table" :disabled="!pageDataObjectEditorAvailable" />
-          <el-option label="源码" value="text" />
-        </el-select>
-        <span
-          v-if="activeFile === 'pagedata.json' && pageDataEditorMode === 'table'"
-          class="pce-header__hint"
-        >
-          结构化模式支持树表、Schema 提示和过滤
-        </span>
         <el-button size="small" type="primary" :loading="saving" :disabled="!hasChanges" @click="handleSave">
           保存
         </el-button>
@@ -38,16 +11,17 @@
     </div>
     <el-tabs v-model="activeFile" type="card" class="pce-tabs">
       <el-tab-pane v-for="fname in FILE_NAMES" :key="fname" :label="fname" :name="fname">
-        <VxeJsonTreeEditor
-          v-if="fname === 'rule.json' && ruleEditorMode === 'tree'"
+        <JsonTreeEditor
+          v-if="fname === 'rule.json'"
           :model-value="files[fname] ?? ''"
           :policy="rulePolicy"
+          :schema="RULE_JSON_SCHEMA"
           class="pce-json-editor"
           height="420px"
           @update:model-value="handleFileValueChange(fname, $event)"
         />
-        <VxeJsonTreeEditor
-          v-else-if="fname === 'pagedata.json' && pageDataEditorMode !== 'text'"
+        <JsonTreeEditor
+          v-else-if="fname === 'pagedata.json'"
           :model-value="files[fname] ?? ''"
           :document-value="pageDataDocument"
           :policy="pageDataPolicy"
@@ -55,17 +29,6 @@
           height="420px"
           :schema="PAGE_DATA_JSON_SCHEMA"
           @update:document-value="handlePageDataDocumentChange"
-        />
-        <SparkJsonEditor
-          v-else-if="isJsonFile(fname)"
-          :model-value="files[fname] ?? ''"
-          class="pce-json-editor"
-          height="420px"
-          mode="text"
-          :schema="fname === 'pagedata.json' ? PAGE_DATA_JSON_SCHEMA : null"
-          :enable-schema-validation="fname === 'pagedata.json'"
-          :enable-schema-enum-renderer="fname === 'pagedata.json'"
-          @update:model-value="handleFileValueChange(fname, $event)"
         />
         <SparkCodeEditor
           v-else-if="isCodeFile(fname)"
@@ -88,21 +51,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, shallowRef, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { SparkCodeEditor, SparkJsonEditor } from '@spark-view/spark-component'
 import {
-  canUseStructuredPageDataEditor,
-  canonicalizePageDataJson,
-  canonicalizePageDataValue,
-  PAGE_DATA_JSON_SCHEMA,
-} from '../pageDataJsonSchema'
-import VxeJsonTreeEditor from './VxeJsonTreeEditor.vue'
+  SparkCodeEditor,
+  JsonTreeEditor,
+  type JsonDocument,
+} from '@spark-view/spark-component'
+import { canUseStructuredPageDataEditor, canonicalizePageDataJson, canonicalizePageDataValue, PAGE_DATA_JSON_SCHEMA } from '../policies/pageDataJsonSchema'
 import { pageDataPolicy } from '../policies/pageDataPolicy'
 import { rulePolicy } from '../policies/rulePolicy'
-import { usePageDataEditorMode } from '../composables/usePageDataEditorMode'
-import { useRuleEditorMode } from '../composables/useRuleEditorMode'
-
+import { RULE_JSON_SCHEMA } from '../policies/ruleJsonSchema'
 import { getPageApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
@@ -121,31 +80,9 @@ const dirty = reactive<Record<string, boolean>>({
 })
 const loading = ref(false)
 const saving = ref(false)
-const pageDataDocument = ref<Record<string, unknown> | null>(null)
+const pageDataDocument = shallowRef<JsonDocument | null>(null)
 
 const hasChanges = computed(() => Object.values(dirty).some(Boolean))
-const {
-  ruleEditorMode,
-  ruleTreeEditorAvailable,
-  handleRuleEditorModeChange,
-} = useRuleEditorMode({
-  getRawText: () => files['rule.json'] ?? '',
-})
-const {
-  pageDataEditorMode,
-  pageDataObjectEditorAvailable,
-  handlePageDataEditorModeChange,
-} = usePageDataEditorMode({
-  getRawText: () => files['pagedata.json'] ?? '',
-  applyCanonicalText: (text) => {
-    files['pagedata.json'] = text
-    dirty['pagedata.json'] = true
-  },
-})
-
-function isJsonFile(fname: string): boolean {
-  return fname.endsWith('.json')
-}
 
 function isCodeFile(fname: string): boolean {
   return fname.endsWith('.js') || fname.endsWith('.css')
@@ -156,25 +93,22 @@ function resolveCodeLanguage(fname: string): 'javascript' | 'css' {
 }
 
 function handleFileValueChange(fname: string, value: string) {
-  if (fname === 'pagedata.json' && pageDataEditorMode.value !== 'text') {
+  if (fname === 'pagedata.json') {
     const canonicalPageData = canonicalizePageDataJson(value)
     files[fname] = canonicalPageData.text
-    pageDataDocument.value = canonicalPageData.value
+    pageDataDocument.value = canonicalPageData.value as JsonDocument
     dirty[fname] = true
     return
   }
 
   files[fname] = value
-  if (fname === 'pagedata.json') {
-    syncPageDataDocument(value)
-  }
   dirty[fname] = true
 }
 
-function handlePageDataDocumentChange(value: Record<string, unknown>) {
-  const canonicalPageData = canonicalizePageDataValue(value)
+function handlePageDataDocumentChange(value: JsonDocument) {
+  const canonicalPageData = canonicalizePageDataValue(value as Record<string, unknown>)
   files['pagedata.json'] = canonicalPageData.text
-  pageDataDocument.value = canonicalPageData.value
+  pageDataDocument.value = canonicalPageData.value as JsonDocument
   dirty['pagedata.json'] = true
 }
 
@@ -185,7 +119,7 @@ function syncPageDataDocument(rawText: string) {
   }
 
   try {
-    pageDataDocument.value = canonicalizePageDataJson(rawText).value
+    pageDataDocument.value = canonicalizePageDataJson(rawText).value as JsonDocument
   } catch {
     pageDataDocument.value = null
   }
@@ -235,7 +169,7 @@ async function handleSave() {
         const canonicalPageData = canonicalizePageDataJson(files[fname] ?? '')
         body[fname] = canonicalPageData.text
         files[fname] = canonicalPageData.text
-        pageDataDocument.value = canonicalPageData.value
+        pageDataDocument.value = canonicalPageData.value as JsonDocument
         continue
       }
       body[fname] = files[fname] ?? ''

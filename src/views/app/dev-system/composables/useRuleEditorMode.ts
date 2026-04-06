@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 
-import { parseJsonDocument } from '../jsonTreeEditor'
+import { parseJsonDocument } from '@spark-view/spark-component'
 
 export type RuleEditorMode = 'tree' | 'text'
 

@@ -19,7 +19,7 @@ vi.mock('@/services/api-paths', () => ({
   getNavApi: () => '/api/navigation',
 }))
 
-import { canonicalizePageDataJson } from '../src/views/app/dev-system/pageDataJsonSchema'
+import { canonicalizePageDataJson } from '../src/views/app/dev-system/policies/pageDataJsonSchema'
 import { PAGE_FILE_NAMES, useDevState } from '../src/views/app/dev-system/useDevState'
 
 function createPageDataText(name: string, compact = false): string {

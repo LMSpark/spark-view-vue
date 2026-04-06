@@ -8,17 +8,6 @@
           <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataSetError.value" size="small" type="danger">DataSet 解析失败</el-tag>
         </div>
         <div class="file-header__actions">
-          <el-select
-            v-if="resolvedActiveFile === 'pagedata.json'"
-            :model-value="pageDataEditorMode"
-            size="small"
-            style="width: 140px"
-            @update:model-value="handlePageDataEditorModeChange"
-          >
-            <el-option label="对象" value="tree" :disabled="!pageDataObjectEditorAvailable" />
-            <el-option label="表格" value="table" :disabled="!pageDataObjectEditorAvailable" />
-            <el-option label="源码" value="text" />
-          </el-select>
           <el-button size="small" :disabled="!canUndoActiveFile()" @click="undoActiveFile">撤销</el-button>
           <el-button size="small" :disabled="!canRedoActiveFile()" @click="redoActiveFile">重做</el-button>
           <el-button size="small" :disabled="!state.activePageId.value" @click="openRemoteVersionHistory(resolvedActiveFile)">
@@ -45,10 +34,6 @@
         </div>
       </div>
 
-      <div v-if="resolvedActiveFile === 'pagedata.json' && pageDataEditorMode === 'table'" class="file-notice">
-        结构化模式支持树表、Schema 提示和过滤；源码模式适合精确调整 canonical JSON。
-      </div>
-
       <el-tabs v-if="showTabs" v-model="localActiveFile" type="card" class="file-tab-bar">
         <el-tab-pane v-for="f in PAGE_FILE_NAMES" :key="f" :name="f">
           <template #label>
@@ -60,26 +45,24 @@
       </el-tabs>
 
       <div class="editor-area" v-loading="!state.fileLoaded.value">
-        <VxeJsonTreeEditor
-          v-if="resolvedActiveFile === 'pagedata.json' && pageDataEditorMode !== 'text'"
+        <JsonTreeEditor
+          v-if="resolvedActiveFile === 'rule.json'"
           :model-value="state.editFiles[resolvedActiveFile] ?? ''"
-          :document-value="state.pageDataDocument.value as Record<string, unknown> | null"
+          :policy="rulePolicy"
+          :schema="RULE_JSON_SCHEMA"
+          class="code-input code-input--json"
+          height="100%"
+          @update:model-value="handleActiveFileChange"
+        />
+        <JsonTreeEditor
+          v-else-if="resolvedActiveFile === 'pagedata.json'"
+          :model-value="state.editFiles[resolvedActiveFile] ?? ''"
+          :document-value="(state.pageDataDocument.value as JsonDocument | null)"
           :policy="pageDataPolicy"
           class="code-input code-input--json"
           height="100%"
           :schema="PAGE_DATA_JSON_SCHEMA"
           @update:document-value="handleActivePageDataDocumentChange"
-        />
-        <SparkJsonEditor
-          v-else-if="isJsonFile(resolvedActiveFile)"
-          :model-value="state.editFiles[resolvedActiveFile] ?? ''"
-          class="code-input code-input--json"
-          height="100%"
-          mode="text"
-          :schema="resolvedActiveFile === 'pagedata.json' ? PAGE_DATA_JSON_SCHEMA : null"
-          :enable-schema-validation="resolvedActiveFile === 'pagedata.json'"
-          :enable-schema-enum-renderer="resolvedActiveFile === 'pagedata.json'"
-          @update:model-value="handleActiveFileChange"
         />
         <SparkCodeEditor
           v-else-if="isCodeFile(resolvedActiveFile)"
@@ -142,16 +125,12 @@
               v-if="!remoteVersionPreview && !remoteVersionPreviewLoading"
               description="选择左侧版本后可浏览当前文件内容"
             />
-            <SparkJsonEditor
+            <JsonTreeEditor
               v-else-if="isJsonFile(remoteVersionTargetFile)"
               :model-value="remoteVersionPreviewContent"
               class="code-input code-input--json"
               height="460px"
-              mode="text"
-              :schema="remoteVersionTargetFile === 'pagedata.json' ? PAGE_DATA_JSON_SCHEMA : null"
-              :enable-schema-validation="false"
-              :enable-schema-enum-renderer="false"
-              read-only
+              :read-only="true"
             />
             <SparkCodeEditor
               v-else
@@ -180,13 +159,13 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { SparkCodeEditor, SparkJsonEditor } from '@spark-view/spark-component'
-import VxeJsonTreeEditor from './components/VxeJsonTreeEditor.vue'
+import { SparkCodeEditor, JsonTreeEditor, type JsonDocument } from '@spark-view/spark-component'
 import { pageDataPolicy } from './policies/pageDataPolicy'
+import { rulePolicy } from './policies/rulePolicy'
+import { RULE_JSON_SCHEMA } from './policies/ruleJsonSchema'
+import { canonicalizePageDataJson, PAGE_DATA_JSON_SCHEMA } from './policies/pageDataJsonSchema'
 import { PAGE_FILE_NAMES } from './useDevState'
 import type { BackendPageVersionFile, BackendPageVersionSummary, DevState, PageFileName } from './useDevState'
-import { canonicalizePageDataJson, PAGE_DATA_JSON_SCHEMA } from './pageDataJsonSchema'
-import { usePageDataEditorMode } from './composables/usePageDataEditorMode'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{
@@ -215,17 +194,6 @@ const canRestoreRemoteVersion = computed(() => {
   return Boolean(matched) && !matched?.isCurrent
 })
 
-const {
-  pageDataEditorMode,
-  pageDataObjectEditorAvailable,
-  handlePageDataEditorModeChange,
-} = usePageDataEditorMode({
-  getRawText: () => props.state.editFiles['pagedata.json'] ?? '',
-  applyCanonicalText: (text) => {
-    props.state.updatePageFile('pagedata.json', text)
-  },
-})
-
 watch(() => props.activeFile, (nextFile) => {
   if (nextFile && nextFile !== localActiveFile.value) {
     localActiveFile.value = nextFile
@@ -252,7 +220,7 @@ function resolveCodeLanguage(name: string): 'javascript' | 'css' {
 }
 
 function handleActiveFileChange(value: string) {
-  if (resolvedActiveFile.value === 'pagedata.json' && pageDataEditorMode.value !== 'text') {
+  if (resolvedActiveFile.value === 'pagedata.json') {
     props.state.updatePageFile(resolvedActiveFile.value, canonicalizePageDataJson(value).text)
     return
   }
@@ -260,8 +228,8 @@ function handleActiveFileChange(value: string) {
   props.state.updatePageFile(resolvedActiveFile.value, value)
 }
 
-function handleActivePageDataDocumentChange(value: Record<string, unknown>) {
-  props.state.updatePageDataDocument(value)
+function handleActivePageDataDocumentChange(value: JsonDocument) {
+  props.state.updatePageDataDocument(value as Record<string, unknown>)
 }
 
 function fileIcon(name: string): string {

@@ -2,8 +2,8 @@
 // rulePolicy.ts — rule.json (SparkNode) 领域策略
 // ══════════════════════════════════════════════════════════════
 
-import type { JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '../jsonTreeEditor'
-import { ensureUniqueObjectKey } from '../jsonTreeEditor'
+import type { JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '@spark-view/spark-component'
+import { ensureUniqueObjectKey } from '@spark-view/spark-component'
 
 // ── SparkNode 结构键 ─────────────────────────────────────────
 //

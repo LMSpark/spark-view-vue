@@ -16,7 +16,7 @@ import {
 } from '@spark-view/spark-data'
 import type { DataSet, DataSetHistorySnapshot } from '@spark-view/spark-data'
 import { demoNavRoot } from '@/layout/demo-nav'
-import { canonicalizePageDataJson, canonicalizePageDataValue } from './pageDataJsonSchema'
+import { canonicalizePageDataJson, canonicalizePageDataValue } from './policies/pageDataJsonSchema'
 import {
   canNavigatePageDataHistoryBack,
   canNavigatePageDataHistoryForward,

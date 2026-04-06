@@ -180,7 +180,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import {
   addChildNode,
@@ -196,11 +196,14 @@ import {
   updateNodeNumberValue,
   updateNodeStringValue,
   updateNodeType,
+  type JsonDocument,
   type JsonNodeType,
   type JsonObject,
+  type JsonPath,
   type JsonTreePolicy,
   type JsonTreeRow,
-} from '../jsonTreeEditor'
+  type JsonValue,
+} from './jsonTreeEditor'
 
 // ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
 
@@ -216,12 +219,21 @@ interface DisplayRow extends JsonTreeRow {
 
 interface Props {
   modelValue?: string
-  documentValue?: Record<string, unknown> | null
+  documentValue?: JsonDocument | null
   height?: number | string
   readOnly?: boolean
   schema?: Record<string, unknown> | null
-  policy?: Partial<JsonTreePolicy>
   filterPlaceholder?: string
+  // ── policy 聚合对象（复杂场景一次传入）──
+  policy?: Partial<JsonTreePolicy>
+  // ── policy 平铺 props（优先级高于 policy 对象）──
+  rootLabel?: string
+  isProtected?: (path: JsonPath) => boolean
+  canEditKey?: (path: JsonPath) => boolean
+  canEditType?: (path: JsonPath) => boolean
+  suggestChildKey?: (target: JsonObject, parentPath: JsonPath) => string
+  createDefaultArrayItem?: (parentPath: JsonPath) => JsonValue
+  createDefaultObjectValue?: (parentPath: JsonPath, key: string) => JsonValue
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -230,16 +242,29 @@ const props = withDefaults(defineProps<Props>(), {
   height: 420,
   readOnly: false,
   schema: null,
-  policy: () => ({}),
   filterPlaceholder: '筛选路径 / 键名 / 值',
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  'update:documentValue': [value: Record<string, unknown>]
+  'update:documentValue': [value: JsonDocument]
 }>()
 
-// ── 内部状态 ──────────────────────────────────────────────────
+// ── 合并 policy（平铺 props 优先） ──────────────────────────
+
+const mergedPolicy = computed<Partial<JsonTreePolicy>>(() => {
+  const base = props.policy ?? {}
+  return {
+    ...base,
+    ...(props.rootLabel !== undefined ? { rootLabel: props.rootLabel } : {}),
+    ...(props.isProtected !== undefined ? { isProtected: props.isProtected } : {}),
+    ...(props.canEditKey !== undefined ? { canEditKey: props.canEditKey } : {}),
+    ...(props.canEditType !== undefined ? { canEditType: props.canEditType } : {}),
+    ...(props.suggestChildKey !== undefined ? { suggestChildKey: props.suggestChildKey } : {}),
+    ...(props.createDefaultArrayItem !== undefined ? { createDefaultArrayItem: props.createDefaultArrayItem } : {}),
+    ...(props.createDefaultObjectValue !== undefined ? { createDefaultObjectValue: props.createDefaultObjectValue } : {}),
+  }
+})
 
 const tableRef = ref<VxeTableInstance<DisplayRow> | null>(null)
 const keywordInput = ref('')
@@ -247,7 +272,7 @@ const keyword = ref('')
 const typeFilter = ref<'all' | JsonNodeType>('all')
 const schemaOnly = ref(false)
 const parseError = ref<string | null>(null)
-const documentRef = ref<JsonObject>({})
+const documentRef = shallowRef<JsonDocument>({})
 const currentRowId = ref('$')
 let keywordTimer: ReturnType<typeof setTimeout> | undefined
 let lastEmittedModelValue: string | null = null
@@ -310,7 +335,7 @@ const hasActiveFilter = computed(() => {
 // ── 数据管线 ─────────────────────────────────────────────────
 
 const allRows = computed<DisplayRow[]>(() => {
-  const rawRows = buildJsonTreeRows(documentRef.value, props.policy)
+  const rawRows = buildJsonTreeRows(documentRef.value, mergedPolicy.value)
   const schemaCache = new Map<string, ReturnType<typeof resolveSchemaInfoForPath>>()
   return rawRows.map((row) => enrichRow(row, schemaCache))
 })
@@ -376,7 +401,7 @@ function syncDocument(rawText: string): void {
   }
 }
 
-function syncDocumentValue(value: Record<string, unknown>): void {
+function syncDocumentValue(value: JsonDocument): void {
   const nextDocument = cloneDocument(value)
   const nextText = serializeJsonDocument(nextDocument)
   if (lastEmittedModelValue !== null && nextText === lastEmittedModelValue) {
@@ -456,12 +481,12 @@ function isRowActive(row: Pick<DisplayRow, 'id'>): boolean {
 function handleKeyChange(row: DisplayRow, value: string | number): void {
   if (typeof value !== 'string') return
   pendingExpandRowId = row.parentId
-  mutateDocument((current) => renameNodeKey(current, row.path, value, props.policy))
+  mutateDocument((current) => renameNodeKey(current, row.path, value, mergedPolicy.value))
 }
 
 function handleTypeChange(row: DisplayRow, value: JsonNodeType): void {
   if (value === undefined || value === null) return
-  mutateDocument((current) => updateNodeType(current, row.path, value, props.policy))
+  mutateDocument((current) => updateNodeType(current, row.path, value, mergedPolicy.value))
 }
 
 function handleStringUpdate(row: DisplayRow, value: string | undefined): void {
@@ -483,21 +508,21 @@ function handleBooleanChange(row: DisplayRow, value: boolean): void {
 
 function handleAddChild(row: DisplayRow): void {
   pendingExpandRowId = row.id
-  mutateDocument((current) => addChildNode(current, row.path, props.policy))
+  mutateDocument((current) => addChildNode(current, row.path, mergedPolicy.value))
 }
 
 function handleAddSibling(row: DisplayRow): void {
   pendingExpandRowId = row.parentId
-  mutateDocument((current) => addSiblingNode(current, row.path, props.policy))
+  mutateDocument((current) => addSiblingNode(current, row.path, mergedPolicy.value))
 }
 
 function handleDelete(row: DisplayRow): void {
   pendingExpandRowId = row.parentId
   currentRowId.value = row.parentId ?? '$'
-  mutateDocument((current) => deleteNode(current, row.path, props.policy))
+  mutateDocument((current) => deleteNode(current, row.path, mergedPolicy.value))
 }
 
-function mutateDocument(mutator: (current: JsonObject) => JsonObject): void {
+function mutateDocument(mutator: (current: JsonDocument) => JsonDocument): void {
   if (props.readOnly) return
   const nextDocument = mutator(documentRef.value)
   const nextText = serializeJsonDocument(nextDocument)
@@ -508,8 +533,8 @@ function mutateDocument(mutator: (current: JsonObject) => JsonObject): void {
   emit('update:modelValue', nextText)
 }
 
-function cloneDocument(value: Record<string, unknown>): JsonObject {
-  return JSON.parse(JSON.stringify(value)) as JsonObject
+function cloneDocument(value: JsonDocument): JsonDocument {
+  return JSON.parse(JSON.stringify(value)) as JsonDocument
 }
 
 // ── 类型标签 ──────────────────────────────────────────────────

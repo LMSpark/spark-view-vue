@@ -137,10 +137,16 @@ export {
   RTree,
   SparkCodeEditor,
   SparkJsonEditor,
+  JsonTreeEditor,
   SparkComponentRenderer,
   SparkTableColumns,
   createTemplateDsl,
 } from './components/index.js'
+
+// ── JSON 树编辑器逻辑 ─────────────────────────────────────────────────────────
+export * from './components/support/jsonTreeEditor.js'
+
+
 export * as componentComposables from './components/composables.js'
 export * as containerComposables from './components/containers/composables.js'
 export * as containerDataComponents from './components/containers/data-components/index.js'

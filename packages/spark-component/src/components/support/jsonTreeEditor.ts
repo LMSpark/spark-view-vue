@@ -18,6 +18,9 @@ export interface JsonObject {
   [key: string]: JsonValue
 }
 
+/** 文档顶层：对象或数组 */
+export type JsonDocument = JsonObject | JsonValue[]
+
 // ── 路径类型 ────────────────────────────────────────────────
 
 export type JsonPathSegment = string | number
@@ -126,15 +129,14 @@ export function formatJsonPath(path: JsonPath): string {
 // 解析 / 序列化
 // ════════════════════════════════════════════════════════════
 
-export function parseJsonDocument(rawText: string): JsonObject {
+export function parseJsonDocument(rawText: string): JsonDocument {
   const parsed: unknown = JSON.parse(rawText)
-  if (!isJsonObject(parsed)) {
-    throw new Error('JSON 顶层必须是对象')
-  }
-  return parsed
+  if (isJsonObject(parsed)) return parsed
+  if (Array.isArray(parsed)) return parsed as JsonValue[]
+  throw new Error('JSON 顶层必须是对象或数组')
 }
 
-export function serializeJsonDocument(value: JsonObject): string {
+export function serializeJsonDocument(value: JsonDocument): string {
   return `${JSON.stringify(value, null, 2)}\n`
 }
 
@@ -149,7 +151,7 @@ export function serializeJsonDocument(value: JsonObject): string {
  * 可直接喂给 VXE 的 `treeConfig.transform = true`。
  */
 export function buildJsonTreeRows(
-  value: JsonObject,
+  value: JsonDocument,
   policy?: Partial<JsonTreePolicy>,
 ): JsonTreeRow[] {
   const p = resolvePolicy(policy)
@@ -174,7 +176,9 @@ function appendRow(
   const key = typeof lastSegment === 'string' ? lastSegment : displayKey
 
   let childCount = 0
-  if (actualType === 'root' || actualType === 'object') {
+  if (actualType === 'root') {
+    childCount = Array.isArray(value) ? value.length : (isJsonObject(value) ? Object.keys(value).length : 0)
+  } else if (actualType === 'object') {
     childCount = isJsonObject(value) ? Object.keys(value).length : 0
   } else if (actualType === 'array') {
     childCount = Array.isArray(value) ? value.length : 0
@@ -202,7 +206,18 @@ function appendRow(
   })
 
   // 递归子节点
-  if (actualType === 'root' || actualType === 'object') {
+  if (actualType === 'root') {
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const item = value[i] as JsonValue
+        appendRow(out, item, [...path, i], `[${i}]`, inferNodeType(item), actualType, policy)
+      }
+    } else if (isJsonObject(value)) {
+      for (const [childKey, childValue] of Object.entries(value)) {
+        appendRow(out, childValue, [...path, childKey], childKey, inferNodeType(childValue), actualType, policy)
+      }
+    }
+  } else if (actualType === 'object') {
     const obj = value as JsonObject
     for (const [childKey, childValue] of Object.entries(obj)) {
       appendRow(out, childValue, [...path, childKey], childKey, inferNodeType(childValue), actualType, policy)
@@ -252,10 +267,10 @@ export function filterJsonTreeRows<T extends JsonTreeRow>(
  * - 数组：用 policy.createDefaultArrayItem 追加末尾
  */
 export function addChildNode(
-  root: JsonObject,
+  root: JsonDocument,
   path: JsonPath,
   policy?: Partial<JsonTreePolicy>,
-): JsonObject {
+): JsonDocument {
   const p = resolvePolicy(policy)
   const target = getValueAtPath(root, path)
 
@@ -277,10 +292,10 @@ export function addChildNode(
  * - 对象：在父对象中添加新键
  */
 export function addSiblingNode(
-  root: JsonObject,
+  root: JsonDocument,
   path: JsonPath,
   policy?: Partial<JsonTreePolicy>,
-): JsonObject {
+): JsonDocument {
   if (path.length === 0) return addChildNode(root, path, policy)
 
   const p = resolvePolicy(policy)
@@ -308,10 +323,10 @@ export function addSiblingNode(
  * 删除 path 指向的节点。根节点和受保护节点不可删除。
  */
 export function deleteNode(
-  root: JsonObject,
+  root: JsonDocument,
   path: JsonPath,
   policy?: Partial<JsonTreePolicy>,
-): JsonObject {
+): JsonDocument {
   const p = resolvePolicy(policy)
   if (path.length === 0 || p.isProtected(path)) return root
 
@@ -339,11 +354,11 @@ export function deleteNode(
  * 重命名 path 指向的对象键。保持键在父对象中的顺序。
  */
 export function renameNodeKey(
-  root: JsonObject,
+  root: JsonDocument,
   path: JsonPath,
   nextKeyInput: string,
   policy?: Partial<JsonTreePolicy>,
-): JsonObject {
+): JsonDocument {
   const p = resolvePolicy(policy)
   if (!p.canEditKey(path)) return root
 
@@ -371,11 +386,11 @@ export function renameNodeKey(
  * 切换 path 指向的节点类型。值会被替换为目标类型的默认值。
  */
 export function updateNodeType(
-  root: JsonObject,
+  root: JsonDocument,
   path: JsonPath,
   nextType: JsonNodeType,
   policy?: Partial<JsonTreePolicy>,
-): JsonObject {
+): JsonDocument {
   const p = resolvePolicy(policy)
   if (!p.canEditType(path)) return root
   return updateValueAtPath(root, path, createValueByType(nextType))
@@ -385,10 +400,10 @@ export function updateNodeType(
  * 更新字符串值。
  */
 export function updateNodeStringValue(
-  root: JsonObject,
+  root: JsonDocument,
   path: JsonPath,
   nextValue: string,
-): JsonObject {
+): JsonDocument {
   return updateValueAtPath(root, path, nextValue)
 }
 
@@ -396,10 +411,10 @@ export function updateNodeStringValue(
  * 更新数字值。非有限数回退为 0。
  */
 export function updateNodeNumberValue(
-  root: JsonObject,
+  root: JsonDocument,
   path: JsonPath,
   nextValue: number | null | undefined,
-): JsonObject {
+): JsonDocument {
   const safeValue = typeof nextValue === 'number' && Number.isFinite(nextValue) ? nextValue : 0
   return updateValueAtPath(root, path, safeValue)
 }
@@ -408,10 +423,10 @@ export function updateNodeNumberValue(
  * 更新布尔值。
  */
 export function updateNodeBooleanValue(
-  root: JsonObject,
+  root: JsonDocument,
   path: JsonPath,
   nextValue: boolean,
-): JsonObject {
+): JsonDocument {
   return updateValueAtPath(root, path, nextValue)
 }
 
@@ -599,8 +614,8 @@ function formatValuePreview(type: JsonNodeType | 'root', value: JsonValue, child
 
 // ── 路径读写 ─────────────────────────────────────────────────
 
-function getValueAtPath(root: JsonObject, path: JsonPath): JsonValue {
-  let current: JsonValue = root
+function getValueAtPath(root: JsonDocument, path: JsonPath): JsonValue {
+  let current: JsonValue = root as JsonValue
   for (const segment of path) {
     if (typeof segment === 'number') {
       if (!Array.isArray(current)) throw new Error(`路径不是数组: ${formatJsonPath(path)}`)
@@ -613,11 +628,16 @@ function getValueAtPath(root: JsonObject, path: JsonPath): JsonValue {
   return current
 }
 
-function updateValueAtPath(root: JsonObject, path: JsonPath, nextValue: JsonValue): JsonObject {
+function updateValueAtPath(root: JsonDocument, path: JsonPath, nextValue: JsonValue): JsonDocument {
   if (path.length === 0) {
-    return isJsonObject(nextValue) ? nextValue : root
+    if (isJsonObject(nextValue)) return nextValue
+    if (Array.isArray(nextValue)) return nextValue
+    return root
   }
-  return applyPathUpdate(root, path, () => nextValue) as JsonObject
+  const result = applyPathUpdate(root as JsonValue, path, () => nextValue)
+  if (isJsonObject(result)) return result
+  if (Array.isArray(result)) return result as JsonValue[]
+  return root
 }
 
 function applyPathUpdate(
@@ -684,6 +704,6 @@ function asSchemaRecord(value: unknown): JsonSchemaRecord | null {
 /**
  * 从 JSON 对象中读取指定路径的值。路径不存在时抛异常。
  */
-export function getValueAtJsonPath(root: JsonObject, path: JsonPath): JsonValue {
+export function getValueAtJsonPath(root: JsonDocument, path: JsonPath): JsonValue {
   return getValueAtPath(root, path)
 }

@@ -5,7 +5,7 @@ import {
   canonicalizePageDataJson,
   canonicalizePageDataValue,
   PAGE_DATA_JSON_SCHEMA,
-} from '../src/views/app/dev-system/pageDataJsonSchema'
+} from '../src/views/app/dev-system/policies/pageDataJsonSchema'
 
 describe('pageDataJsonSchema', () => {
   it('should canonicalize wrapped dataset text into root dataset metadata text', () => {

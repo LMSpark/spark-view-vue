@@ -115,6 +115,9 @@ import FieldTimeSelect from './fields/data-components/FieldTimeSelect.vue'
 import FieldAutocomplete from './fields/data-components/FieldAutocomplete.vue'
 import FieldContextRenderer from './fields/non-data-components/FieldContextRenderer.vue'
 import TreeNodeSummary from './fields/non-data-components/TreeNodeSummary.vue'
+import SparkCodeEditor from './support/SparkCodeEditor.vue'
+import SparkJsonEditor from './support/SparkJsonEditor.vue'
+import JsonTreeEditor from './support/JsonTreeEditor.vue'
 
 export function registerAllRenderers(): void {
   // ── 容器组件：同步注册（与公共静态导出保持一致） ──
@@ -227,4 +230,9 @@ export function registerAllRenderers(): void {
   Spark.register('r-autocomplete', FieldAutocomplete)
   Spark.register('r-column-group', FieldContextRenderer)
   Spark.register('r-tree-node-summary', TreeNodeSummary)
+
+  // ── 支持组件：开发工具 ──
+  Spark.register('code-editor', SparkCodeEditor)
+  Spark.register('json-editor', SparkJsonEditor)
+  Spark.register('json-tree-editor', JsonTreeEditor)
 }
