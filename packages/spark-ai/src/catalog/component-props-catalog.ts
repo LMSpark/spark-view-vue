@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-04-05T23:34:56.975Z
+ * 生成时间：2026-04-06T00:02:35.913Z
  * 条目数量：97
  */
 import type { ComponentCatalog } from './types'
@@ -23,7 +23,7 @@ import type { ComponentCatalog } from './types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-04-05T23:34:56.972Z",
+  "buildTime": "2026-04-06T00:02:35.905Z",
   "componentCount": 97,
   "registry": {
     "containers": [
@@ -15221,11 +15221,8 @@ export const COMPONENT_SPEC_BY_TYPE = {
 /**
  * 按组件 type 获取结构化规格。
  */
-type ComponentSpec = (typeof COMPONENT_SPEC_BY_TYPE)[keyof typeof COMPONENT_SPEC_BY_TYPE]
-
-export function getComponentSpec(type: string): ComponentSpec | null {
-  if (!Object.hasOwn(COMPONENT_SPEC_BY_TYPE, type)) return null
-  return COMPONENT_SPEC_BY_TYPE[type as keyof typeof COMPONENT_SPEC_BY_TYPE]
+export function getComponentSpec(type: string): Record<string, unknown> | null {
+  return (COMPONENT_SPEC_BY_TYPE as Record<string, Record<string, unknown>>)[type] ?? null
 }
 
 /**
@@ -15370,7 +15367,7 @@ export function queryComponentPrompts(types: string[]): string | null {
     const prompt = COMPONENT_PROMPT_BY_TYPE[type]
 
     if (prompt === undefined) {
-      results.push(`❌ 未找到组件「${  type  }」`)
+      results.push(`❌ 未找到组件「${type}」`)
       continue
     }
 
@@ -15381,7 +15378,7 @@ export function queryComponentPrompts(types: string[]): string | null {
       results.push(
         matched.length > 0
           ? matched.join('\n')
-          : `❌ 组件「${  type  }」中未找到「${  fragment  }」相关内容`,
+          : `❌ 组件「${type}」中未找到「${fragment}」相关内容`,
       )
       continue
     }

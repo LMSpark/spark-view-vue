@@ -218,28 +218,29 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
 
     const componentSpec = getComponentSpec(params.action)
     if (componentSpec !== null) {
+      const specType = componentSpec['type'] as string
       return {
         ok: true,
         data: {
-          action: componentSpec.type,
+          action: specType,
           subjectKind: 'component',
           type: 'component',
-          componentType: componentSpec.type,
-          category: componentSpec.category,
-          description: componentSpec.description,
-          props: componentSpec.props,
-          emits: (componentSpec as Record<string, unknown>)['emits'] ?? [],
-          rootFields: (componentSpec as Record<string, unknown>)['rootFields'] ?? [],
-          binding: (componentSpec as Record<string, unknown>)['binding'] ?? null,
-          notes: (componentSpec as Record<string, unknown>)['notes'] ?? null,
+          componentType: specType,
+          category: componentSpec['category'],
+          description: componentSpec['description'],
+          props: componentSpec['props'],
+          emits: componentSpec['emits'] ?? [],
+          rootFields: componentSpec['rootFields'] ?? [],
+          binding: componentSpec['binding'] ?? null,
+          notes: componentSpec['notes'] ?? null,
           guard: null,
-          usageRules: buildComponentSpecUsageRules(componentSpec.type),
+          usageRules: buildComponentSpecUsageRules(specType),
           paramsSchema: null,
           resultSchema: null,
-          example: { action: componentSpec.type },
+          example: { action: specType },
           failureModes: [],
         },
-        summary: `返回组件 ${componentSpec.type} 的规格`,
+        summary: `返回组件 ${specType} 的规格`,
       }
     }
 

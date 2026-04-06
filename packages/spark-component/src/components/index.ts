@@ -39,6 +39,31 @@ import FieldTransfer from './fields/data-components/FieldTransfer.vue'
 import FieldContextRenderer from './fields/non-data-components/FieldContextRenderer.vue'
 import FieldTreeNodeSummary from './fields/non-data-components/TreeNodeSummary.vue'
 
+// ── 新增布局/展示/反馈组件导入 ──────────────────────────────────────────────
+import RendererRow from './containers/non-data-components/RendererRow.vue'
+import RendererCol from './containers/non-data-components/RendererCol.vue'
+import RendererCard from './containers/non-data-components/RendererCard.vue'
+import RendererSpace from './containers/non-data-components/RendererSpace.vue'
+import RendererDivider from './containers/non-data-components/RendererDivider.vue'
+import RendererButton from './containers/non-data-components/RendererButton.vue'
+import RendererLink from './containers/non-data-components/RendererLink.vue'
+import DisplayStatistic from './display/data-components/DisplayStatistic.vue'
+import DisplayProgress from './display/data-components/DisplayProgress.vue'
+import DisplayTag from './display/data-components/DisplayTag.vue'
+import DisplayBadge from './display/data-components/DisplayBadge.vue'
+import DisplayAvatar from './display/data-components/DisplayAvatar.vue'
+import DisplayText from './display/data-components/DisplayText.vue'
+import DisplayPagination from './display/data-components/DisplayPagination.vue'
+import DisplayDescriptions from './display/non-data-components/DisplayDescriptions.vue'
+import DisplayDescriptionsItem from './display/non-data-components/DisplayDescriptionsItem.vue'
+import DisplayTimeline from './display/non-data-components/DisplayTimeline.vue'
+import DisplayTimelineItem from './display/non-data-components/DisplayTimelineItem.vue'
+import DisplayAlert from './display/non-data-components/DisplayAlert.vue'
+import DisplayEmpty from './display/non-data-components/DisplayEmpty.vue'
+import DisplayResult from './display/non-data-components/DisplayResult.vue'
+import DisplayBreadcrumb from './display/non-data-components/DisplayBreadcrumb.vue'
+import DisplayBreadcrumbItem from './display/non-data-components/DisplayBreadcrumbItem.vue'
+
 // ── DSL 标记：使组件可作为模板 DSL 子节点编译为 SparkNode ─────────────────────
 markSparkTemplateNodeComponent(BuiltinActionButton, { nodeType: 'builtin-action' })
 markSparkTemplateNodeComponent(FieldText, { nodeType: 'r-text' })
@@ -69,6 +94,31 @@ markSparkTemplateNodeComponent(FieldTreeSelect, { nodeType: 'r-tree-select' })
 markSparkTemplateNodeComponent(FieldTransfer, { nodeType: 'r-transfer' })
 markSparkTemplateNodeComponent(FieldContextRenderer, { nodeType: 'r-column-group' })
 markSparkTemplateNodeComponent(FieldTreeNodeSummary, { nodeType: 'r-tree-node-summary' })
+
+// ── DSL 标记：布局/展示/反馈组件 ──────────────────────────────────────────────
+markSparkTemplateNodeComponent(RendererRow, { nodeType: 'r-row' })
+markSparkTemplateNodeComponent(RendererCol, { nodeType: 'r-col' })
+markSparkTemplateNodeComponent(RendererCard, { nodeType: 'r-card' })
+markSparkTemplateNodeComponent(RendererSpace, { nodeType: 'r-space' })
+markSparkTemplateNodeComponent(RendererDivider, { nodeType: 'r-divider' })
+markSparkTemplateNodeComponent(RendererButton, { nodeType: 'r-button' })
+markSparkTemplateNodeComponent(RendererLink, { nodeType: 'r-link' })
+markSparkTemplateNodeComponent(DisplayStatistic, { nodeType: 'r-statistic' })
+markSparkTemplateNodeComponent(DisplayProgress, { nodeType: 'r-progress' })
+markSparkTemplateNodeComponent(DisplayTag, { nodeType: 'r-tag' })
+markSparkTemplateNodeComponent(DisplayBadge, { nodeType: 'r-badge' })
+markSparkTemplateNodeComponent(DisplayAvatar, { nodeType: 'r-avatar' })
+markSparkTemplateNodeComponent(DisplayText, { nodeType: 'r-text-display' })
+markSparkTemplateNodeComponent(DisplayPagination, { nodeType: 'r-pagination' })
+markSparkTemplateNodeComponent(DisplayDescriptions, { nodeType: 'r-descriptions' })
+markSparkTemplateNodeComponent(DisplayDescriptionsItem, { nodeType: 'r-descriptions-item' })
+markSparkTemplateNodeComponent(DisplayTimeline, { nodeType: 'r-timeline' })
+markSparkTemplateNodeComponent(DisplayTimelineItem, { nodeType: 'r-timeline-item' })
+markSparkTemplateNodeComponent(DisplayAlert, { nodeType: 'r-alert' })
+markSparkTemplateNodeComponent(DisplayEmpty, { nodeType: 'r-empty' })
+markSparkTemplateNodeComponent(DisplayResult, { nodeType: 'r-result' })
+markSparkTemplateNodeComponent(DisplayBreadcrumb, { nodeType: 'r-breadcrumb' })
+markSparkTemplateNodeComponent(DisplayBreadcrumbItem, { nodeType: 'r-breadcrumb-item' })
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
@@ -120,6 +170,31 @@ export const RTransfer = createTemplateDsl('r-transfer', 'RTransfer')
 export const RColumnGroup = createTemplateDsl('r-column-group', 'RColumnGroup')
 export const RTreeNodeSummary = createTemplateDsl('r-tree-node-summary', 'RTreeNodeSummary')
 
+// ── DSL 快捷名：布局/展示/反馈 ──────────────────────────────────────────────
+export const RRow = createTemplateDsl('r-row', 'RRow')
+export const RCol = createTemplateDsl('r-col', 'RCol')
+export const RCard = createTemplateDsl('r-card', 'RCard')
+export const RSpace = createTemplateDsl('r-space', 'RSpace')
+export const RDivider = createTemplateDsl('r-divider', 'RDivider')
+export const RButton = createTemplateDsl('r-button', 'RButton')
+export const RLink = createTemplateDsl('r-link', 'RLink')
+export const RStatistic = createTemplateDsl('r-statistic', 'RStatistic')
+export const RProgress = createTemplateDsl('r-progress', 'RProgress')
+export const RTag = createTemplateDsl('r-tag', 'RTag')
+export const RBadge = createTemplateDsl('r-badge', 'RBadge')
+export const RAvatar = createTemplateDsl('r-avatar', 'RAvatar')
+export const RTextDisplay = createTemplateDsl('r-text-display', 'RTextDisplay')
+export const RPagination = createTemplateDsl('r-pagination', 'RPagination')
+export const RDescriptions = createTemplateDsl('r-descriptions', 'RDescriptions')
+export const RDescriptionsItem = createTemplateDsl('r-descriptions-item', 'RDescriptionsItem')
+export const RTimeline = createTemplateDsl('r-timeline', 'RTimeline')
+export const RTimelineItem = createTemplateDsl('r-timeline-item', 'RTimelineItem')
+export const RAlert = createTemplateDsl('r-alert', 'RAlert')
+export const REmpty = createTemplateDsl('r-empty', 'REmpty')
+export const RResult = createTemplateDsl('r-result', 'RResult')
+export const RBreadcrumb = createTemplateDsl('r-breadcrumb', 'RBreadcrumb')
+export const RBreadcrumbItem = createTemplateDsl('r-breadcrumb-item', 'RBreadcrumbItem')
+
 // ── 容器 Renderer 组件 ───────────────────────────────────────────────────────
 export { RendererTable }
 export { default as RendererForm } from './containers/data-components/RendererForm/index.js'
@@ -133,6 +208,13 @@ export { default as RendererDrawer } from './containers/non-data-components/Rend
 export { default as RendererSteps } from './containers/non-data-components/RendererSteps/index.js'
 export { default as RendererSection } from './containers/non-data-components/RendererSection/index.js'
 export { default as RendererToolbar } from './containers/non-data-components/RendererToolbar.vue'
+export { RendererRow }
+export { RendererCol }
+export { RendererCard }
+export { RendererSpace }
+export { RendererDivider }
+export { RendererButton }
+export { RendererLink }
 export { BuiltinActionButton }
 export { default as RendererFieldScope } from './containers/data-components/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/data-components/RendererListItemScope.vue'
@@ -167,6 +249,24 @@ export { FieldTransfer }
 export { FieldContextRenderer }
 export { FieldContextRenderer as FieldColumnGroup }
 export { FieldTreeNodeSummary }
+
+// ── 展示组件导出 ──────────────────────────────────────────────────────────────
+export { DisplayStatistic }
+export { DisplayProgress }
+export { DisplayTag }
+export { DisplayBadge }
+export { DisplayAvatar }
+export { DisplayText }
+export { DisplayPagination }
+export { DisplayDescriptions }
+export { DisplayDescriptionsItem }
+export { DisplayTimeline }
+export { DisplayTimelineItem }
+export { DisplayAlert }
+export { DisplayEmpty }
+export { DisplayResult }
+export { DisplayBreadcrumb }
+export { DisplayBreadcrumbItem }
 
 // ── 注册 & composable ────────────────────────────────────────────────────────
 export { registerAllRenderers } from './register-renderers.js'

@@ -1,0 +1,58 @@
+<template>
+  <el-avatar
+    v-if="isVisible"
+    :size="avatarSize"
+    :shape="shape"
+    :icon="iconComponent"
+    :src="resolvedSrc"
+    :src-set="srcSet"
+    :alt="alt"
+    :fit="fit"
+    v-bind="$attrs"
+  >
+    <template v-if="text">{{ text }}</template>
+  </el-avatar>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useDisplayDataSource } from '../composables/useDisplayDataSource'
+
+interface Props extends SparkNode {
+  avatarSize?: number | 'large' | 'default' | 'small'
+  shape?: 'circle' | 'square'
+  src?: string
+  value?: string
+  field?: string
+  srcSet?: string
+  alt?: string
+  fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
+  text?: string
+  icon?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-avatar',
+  avatarSize: 'default',
+  shape: 'circle',
+  fit: 'cover',
+})
+
+const { isVisible } = useSparkPageComponent(props)
+
+const { resolvedValue: dataValue } = useDisplayDataSource(props)
+
+const resolvedSrc = computed(() => {
+  if (props.src) return props.src
+  const v = dataValue.value
+  if (typeof v === 'string') return v
+  return undefined
+})
+
+const iconComponent = computed(() => {
+  // el-avatar accepts Component or undefined for icon prop
+  // In SparkNode config mode, we skip icon components
+  return undefined
+})
+</script>

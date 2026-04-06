@@ -20,7 +20,32 @@ import RendererDrawer from './containers/non-data-components/RendererDrawer/inde
 import RendererSteps from './containers/non-data-components/RendererSteps/index.js'
 import RendererSection from './containers/non-data-components/RendererSection/index.js'
 import RendererToolbar from './containers/non-data-components/RendererToolbar.vue'
+import RendererRow from './containers/non-data-components/RendererRow.vue'
+import RendererCol from './containers/non-data-components/RendererCol.vue'
+import RendererCard from './containers/non-data-components/RendererCard.vue'
+import RendererSpace from './containers/non-data-components/RendererSpace.vue'
+import RendererDivider from './containers/non-data-components/RendererDivider.vue'
+import RendererButton from './containers/non-data-components/RendererButton.vue'
+import RendererLink from './containers/non-data-components/RendererLink.vue'
 import BuiltinActionButton from './containers/BuiltinActionButton.vue'
+
+// ── 展示组件（同步导入） ──
+import DisplayStatistic from './display/data-components/DisplayStatistic.vue'
+import DisplayProgress from './display/data-components/DisplayProgress.vue'
+import DisplayTag from './display/data-components/DisplayTag.vue'
+import DisplayBadge from './display/data-components/DisplayBadge.vue'
+import DisplayAvatar from './display/data-components/DisplayAvatar.vue'
+import DisplayText from './display/data-components/DisplayText.vue'
+import DisplayPagination from './display/data-components/DisplayPagination.vue'
+import DisplayDescriptions from './display/non-data-components/DisplayDescriptions.vue'
+import DisplayDescriptionsItem from './display/non-data-components/DisplayDescriptionsItem.vue'
+import DisplayTimeline from './display/non-data-components/DisplayTimeline.vue'
+import DisplayTimelineItem from './display/non-data-components/DisplayTimelineItem.vue'
+import DisplayAlert from './display/non-data-components/DisplayAlert.vue'
+import DisplayEmpty from './display/non-data-components/DisplayEmpty.vue'
+import DisplayResult from './display/non-data-components/DisplayResult.vue'
+import DisplayBreadcrumb from './display/non-data-components/DisplayBreadcrumb.vue'
+import DisplayBreadcrumbItem from './display/non-data-components/DisplayBreadcrumbItem.vue'
 
 // ── Dock 组件（同步导入） ──
 import DockActions from './containers/docks/DockActions.vue'
@@ -76,7 +101,32 @@ export function registerAllRenderers(): void {
   Spark.register('r-block', RendererSection)
   Spark.register('r-toolbar', RendererToolbar)
   Spark.register('r-menu', RendererToolbar)
+  Spark.register('r-row', RendererRow)
+  Spark.register('r-col', RendererCol)
+  Spark.register('r-card', RendererCard)
+  Spark.register('r-space', RendererSpace)
+  Spark.register('r-divider', RendererDivider)
+  Spark.register('r-button', RendererButton)
+  Spark.register('r-link', RendererLink)
   Spark.register('builtin-action', BuiltinActionButton)
+
+  // ── 展示组件：数据驱动 + 非数据驱动 ──
+  Spark.register('r-statistic', DisplayStatistic)
+  Spark.register('r-progress', DisplayProgress)
+  Spark.register('r-tag', DisplayTag)
+  Spark.register('r-badge', DisplayBadge)
+  Spark.register('r-avatar', DisplayAvatar)
+  Spark.register('r-text-display', DisplayText)
+  Spark.register('r-pagination', DisplayPagination)
+  Spark.register('r-descriptions', DisplayDescriptions)
+  Spark.register('r-descriptions-item', DisplayDescriptionsItem)
+  Spark.register('r-timeline', DisplayTimeline)
+  Spark.register('r-timeline-item', DisplayTimelineItem)
+  Spark.register('r-alert', DisplayAlert)
+  Spark.register('r-empty', DisplayEmpty)
+  Spark.register('r-result', DisplayResult)
+  Spark.register('r-breadcrumb', DisplayBreadcrumb)
+  Spark.register('r-breadcrumb-item', DisplayBreadcrumbItem)
 
   // ── Dock 组件：容器内由容器提取、独立使用正常渲染 ──
   Spark.register('r-actions', DockActions)

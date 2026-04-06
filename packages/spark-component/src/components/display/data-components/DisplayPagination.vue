@@ -1,0 +1,78 @@
+<template>
+  <el-pagination
+    v-if="isVisible"
+    :total="resolvedTotal"
+    :page-size="resolvedPageSize"
+    :current-page="resolvedCurrentPage"
+    :page-sizes="pageSizes"
+    :pager-count="pagerCount"
+    :layout="layout"
+    :background="background"
+    :small="small"
+    :disabled="isDisabled"
+    :hide-on-single-page="hideOnSinglePage"
+    v-bind="$attrs"
+    @update:current-page="handleCurrentChange"
+    @update:page-size="handleSizeChange"
+  />
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useSparkPageComponent, useSparkConsume, DATA_SOURCE, type SparkNode } from '../../internal'
+
+interface Props extends SparkNode {
+  total?: number
+  pageSize?: number
+  currentPage?: number
+  pageSizes?: number[]
+  pagerCount?: number
+  layout?: string
+  background?: boolean
+  small?: boolean
+  hideOnSinglePage?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-pagination',
+  pageSize: 10,
+  currentPage: 1,
+  pageSizes: () => [10, 20, 50, 100],
+  pagerCount: 7,
+  layout: 'total, sizes, prev, pager, next, jumper',
+  background: true,
+  small: false,
+  hideOnSinglePage: false,
+})
+
+const emit = defineEmits<{
+  'update:currentPage': [page: number]
+  'update:pageSize': [size: number]
+}>()
+
+const { isVisible, isDisabled } = useSparkPageComponent(props)
+
+const { sparkConsume } = useSparkConsume()
+const dataSource = sparkConsume(DATA_SOURCE)
+
+const resolvedTotal = computed(() => {
+  if (props.total !== undefined) return props.total
+  return dataSource?.total ?? 0
+})
+
+const resolvedPageSize = computed(() => {
+  return dataSource?.pageSize ?? props.pageSize
+})
+
+const resolvedCurrentPage = computed(() => {
+  return dataSource?.page ?? props.currentPage
+})
+
+function handleCurrentChange(page: number) {
+  emit('update:currentPage', page)
+}
+
+function handleSizeChange(size: number) {
+  emit('update:pageSize', size)
+}
+</script>

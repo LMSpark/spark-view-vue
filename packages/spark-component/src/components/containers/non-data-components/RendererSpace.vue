@@ -1,0 +1,62 @@
+<template>
+  <div v-if="isVisible" :class="spaceClasses" :style="spaceStyle" v-bind="$attrs">
+    <SparkComponentRenderer
+      v-for="(child, index) in resolvedChildren"
+      :key="nodeId(child) ?? `r-space-child-${index}`"
+      :config="child"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+
+interface Props extends SparkNode {
+  children?: SparkNode[]
+  direction?: 'horizontal' | 'vertical'
+  size?: number | string
+  wrap?: boolean
+  fill?: boolean
+  alignment?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline'
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-space',
+  direction: 'horizontal',
+  size: 12,
+  wrap: false,
+  fill: false,
+  alignment: 'center',
+})
+
+const { isVisible } = useSparkPageComponent(props)
+
+const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
+
+const spaceClasses = computed(() => [
+  'r-space',
+  `r-space--${props.direction}`,
+  { 'r-space--wrap': props.wrap, 'r-space--fill': props.fill },
+])
+
+const gapValue = computed(() => {
+  if (typeof props.size === 'number') return `${props.size}px`
+  return props.size
+})
+
+const spaceStyle = computed(() => ({
+  display: 'flex',
+  flexDirection: props.direction === 'vertical' ? ('column' as const) : ('row' as const),
+  gap: gapValue.value,
+  flexWrap: props.wrap ? ('wrap' as const) : ('nowrap' as const),
+  alignItems: props.alignment,
+  ...(props.fill ? { width: '100%' } : {}),
+}))
+</script>
+
+<style scoped>
+.r-space--fill > * {
+  flex: 1;
+}
+</style>
