@@ -41,6 +41,9 @@ import RendererScrollbar from './containers/non-data-components/RendererScrollba
 import RendererTour from './containers/non-data-components/RendererTour.vue'
 import RendererAnchor from './containers/non-data-components/RendererAnchor.vue'
 import RendererAnchorLink from './containers/non-data-components/RendererAnchorLink.vue'
+import RendererContainer from './containers/non-data-components/RendererContainer.vue'
+import RendererAside from './containers/non-data-components/RendererAside.vue'
+import RendererMain from './containers/non-data-components/RendererMain.vue'
 import BuiltinActionButton from './containers/BuiltinActionButton.vue'
 
 // ── 展示组件（同步导入） ──
@@ -103,6 +106,9 @@ import FieldTransfer from './fields/data-components/FieldTransfer.vue'
 import FieldSegmented from './fields/data-components/FieldSegmented.vue'
 import FieldCheckTag from './fields/data-components/FieldCheckTag.vue'
 import FieldMention from './fields/data-components/FieldMention.vue'
+import FieldTimePicker from './fields/data-components/FieldTimePicker.vue'
+import FieldTimeSelect from './fields/data-components/FieldTimeSelect.vue'
+import FieldAutocomplete from './fields/data-components/FieldAutocomplete.vue'
 import FieldContextRenderer from './fields/non-data-components/FieldContextRenderer.vue'
 import TreeNodeSummary from './fields/non-data-components/TreeNodeSummary.vue'
 
@@ -143,6 +149,9 @@ export function registerAllRenderers(): void {
   Spark.register('r-tour', RendererTour)
   Spark.register('r-anchor', RendererAnchor)
   Spark.register('r-anchor-link', RendererAnchorLink)
+  Spark.register('r-container', RendererContainer)
+  Spark.register('r-aside', RendererAside)
+  Spark.register('r-main', RendererMain)
   Spark.register('builtin-action', BuiltinActionButton)
 
   // ── 展示组件：数据驱动 + 非数据驱动 ──
@@ -205,6 +214,9 @@ export function registerAllRenderers(): void {
   Spark.register('r-segmented', FieldSegmented)
   Spark.register('r-check-tag', FieldCheckTag)
   Spark.register('r-mention', FieldMention)
+  Spark.register('r-time-picker', FieldTimePicker)
+  Spark.register('r-time-select', FieldTimeSelect)
+  Spark.register('r-autocomplete', FieldAutocomplete)
   Spark.register('r-column-group', FieldContextRenderer)
   Spark.register('r-tree-node-summary', TreeNodeSummary)
 }

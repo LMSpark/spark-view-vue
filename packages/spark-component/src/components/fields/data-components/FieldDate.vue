@@ -3,12 +3,15 @@
     <template #form>
       <el-date-picker
         :model-value="fieldValue as string | Date | Array<string | Date>"
-        :type="isRangeFilter ? 'daterange' : 'date'"
-        :placeholder="isRangeFilter ? undefined : '选择日期'"
-        :start-placeholder="isRangeFilter ? '开始日期' : undefined"
-        :end-placeholder="isRangeFilter ? '结束日期' : undefined"
-        :range-separator="isRangeFilter ? '至' : undefined"
+        :type="resolvedPickerType"
+        :placeholder="isRangeType ? undefined : placeholder"
+        :start-placeholder="isRangeType ? startPlaceholder : undefined"
+        :end-placeholder="isRangeType ? endPlaceholder : undefined"
+        :range-separator="isRangeType ? rangeSeparator : undefined"
+        :format="format"
+        :value-format="valueFormat"
         :disabled="!isCurrentFieldEditable"
+        :clearable="clearable"
         @update:model-value="handleChange"
       />
     </template>
@@ -16,10 +19,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+
+type DatePickerType = 'year' | 'month' | 'date' | 'dates' | 'datetime' | 'week'
+  | 'datetimerange' | 'daterange' | 'monthrange' | 'yearrange'
 
 interface Props extends SparkNode {
   /** 字段绑定名 */
@@ -30,6 +37,22 @@ interface Props extends SparkNode {
   width?: number
   /** 双向绑定值，日期范围时为数组 */
   modelValue?: string | Date | Array<string | Date>
+  /** 日期选择器类型 */
+  dateType?: DatePickerType
+  /** 占位文本 */
+  placeholder?: string
+  /** 范围开始占位 */
+  startPlaceholder?: string
+  /** 范围结束占位 */
+  endPlaceholder?: string
+  /** 范围分隔符 */
+  rangeSeparator?: string
+  /** 显示格式 */
+  format?: string
+  /** 值格式 */
+  valueFormat?: string
+  /** 可清空 */
+  clearable?: boolean
   /** 筛选模式 */
   filterMode?: string
   /** 筛选变体 */
@@ -40,6 +63,11 @@ interface Props extends SparkNode {
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-date',
+  placeholder: '选择日期',
+  startPlaceholder: '开始日期',
+  endPlaceholder: '结束日期',
+  rangeSeparator: '至',
+  clearable: true,
 })
 
 const emit = defineEmits<{
@@ -55,6 +83,15 @@ function formatDateValue(value: unknown): string {
 }
 
 const isRangeFilter = useRangeFilterMode(props)
+
+const RANGE_TYPES = new Set<string>(['daterange', 'datetimerange', 'monthrange', 'yearrange'])
+
+const resolvedPickerType = computed((): DatePickerType => {
+  if (props.dateType) return props.dateType
+  return isRangeFilter.value ? 'daterange' : 'date'
+})
+
+const isRangeType = computed(() => RANGE_TYPES.has(resolvedPickerType.value))
 
 const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string | Date | Array<string | Date>>({
   props,

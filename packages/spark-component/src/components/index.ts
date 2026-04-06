@@ -39,6 +39,9 @@ import FieldTransfer from './fields/data-components/FieldTransfer.vue'
 import FieldSegmented from './fields/data-components/FieldSegmented.vue'
 import FieldCheckTag from './fields/data-components/FieldCheckTag.vue'
 import FieldMention from './fields/data-components/FieldMention.vue'
+import FieldTimePicker from './fields/data-components/FieldTimePicker.vue'
+import FieldTimeSelect from './fields/data-components/FieldTimeSelect.vue'
+import FieldAutocomplete from './fields/data-components/FieldAutocomplete.vue'
 import FieldContextRenderer from './fields/non-data-components/FieldContextRenderer.vue'
 import FieldTreeNodeSummary from './fields/non-data-components/TreeNodeSummary.vue'
 
@@ -64,6 +67,9 @@ import RendererScrollbar from './containers/non-data-components/RendererScrollba
 import RendererTour from './containers/non-data-components/RendererTour.vue'
 import RendererAnchor from './containers/non-data-components/RendererAnchor.vue'
 import RendererAnchorLink from './containers/non-data-components/RendererAnchorLink.vue'
+import RendererContainer from './containers/non-data-components/RendererContainer.vue'
+import RendererAside from './containers/non-data-components/RendererAside.vue'
+import RendererMain from './containers/non-data-components/RendererMain.vue'
 import DisplayStatistic from './display/data-components/DisplayStatistic.vue'
 import DisplayProgress from './display/data-components/DisplayProgress.vue'
 import DisplayTag from './display/data-components/DisplayTag.vue'
@@ -116,6 +122,9 @@ markSparkTemplateNodeComponent(FieldTransfer, { nodeType: 'r-transfer' })
 markSparkTemplateNodeComponent(FieldSegmented, { nodeType: 'r-segmented' })
 markSparkTemplateNodeComponent(FieldCheckTag, { nodeType: 'r-check-tag' })
 markSparkTemplateNodeComponent(FieldMention, { nodeType: 'r-mention' })
+markSparkTemplateNodeComponent(FieldTimePicker, { nodeType: 'r-time-picker' })
+markSparkTemplateNodeComponent(FieldTimeSelect, { nodeType: 'r-time-select' })
+markSparkTemplateNodeComponent(FieldAutocomplete, { nodeType: 'r-autocomplete' })
 markSparkTemplateNodeComponent(FieldContextRenderer, { nodeType: 'r-column-group' })
 markSparkTemplateNodeComponent(FieldTreeNodeSummary, { nodeType: 'r-tree-node-summary' })
 
@@ -141,6 +150,9 @@ markSparkTemplateNodeComponent(RendererScrollbar, { nodeType: 'r-scrollbar' })
 markSparkTemplateNodeComponent(RendererTour, { nodeType: 'r-tour' })
 markSparkTemplateNodeComponent(RendererAnchor, { nodeType: 'r-anchor' })
 markSparkTemplateNodeComponent(RendererAnchorLink, { nodeType: 'r-anchor-link' })
+markSparkTemplateNodeComponent(RendererContainer, { nodeType: 'r-container' })
+markSparkTemplateNodeComponent(RendererAside, { nodeType: 'r-aside' })
+markSparkTemplateNodeComponent(RendererMain, { nodeType: 'r-main' })
 markSparkTemplateNodeComponent(DisplayStatistic, { nodeType: 'r-statistic' })
 markSparkTemplateNodeComponent(DisplayProgress, { nodeType: 'r-progress' })
 markSparkTemplateNodeComponent(DisplayTag, { nodeType: 'r-tag' })
@@ -212,6 +224,9 @@ export const RTransfer = createTemplateDsl('r-transfer', 'RTransfer')
 export const RSegmented = createTemplateDsl('r-segmented', 'RSegmented')
 export const RCheckTag = createTemplateDsl('r-check-tag', 'RCheckTag')
 export const RMention = createTemplateDsl('r-mention', 'RMention')
+export const RTimePicker = createTemplateDsl('r-time-picker', 'RTimePicker')
+export const RTimeSelect = createTemplateDsl('r-time-select', 'RTimeSelect')
+export const RAutocomplete = createTemplateDsl('r-autocomplete', 'RAutocomplete')
 export const RColumnGroup = createTemplateDsl('r-column-group', 'RColumnGroup')
 export const RTreeNodeSummary = createTemplateDsl('r-tree-node-summary', 'RTreeNodeSummary')
 
@@ -237,6 +252,9 @@ export const RScrollbar = createTemplateDsl('r-scrollbar', 'RScrollbar')
 export const RTour = createTemplateDsl('r-tour', 'RTour')
 export const RAnchor = createTemplateDsl('r-anchor', 'RAnchor')
 export const RAnchorLink = createTemplateDsl('r-anchor-link', 'RAnchorLink')
+export const RContainer = createTemplateDsl('r-container', 'RContainer')
+export const RAside = createTemplateDsl('r-aside', 'RAside')
+export const RMain = createTemplateDsl('r-main', 'RMain')
 export const RStatistic = createTemplateDsl('r-statistic', 'RStatistic')
 export const RProgress = createTemplateDsl('r-progress', 'RProgress')
 export const RTag = createTemplateDsl('r-tag', 'RTag')
@@ -292,6 +310,9 @@ export { RendererScrollbar }
 export { RendererTour }
 export { RendererAnchor }
 export { RendererAnchorLink }
+export { RendererContainer }
+export { RendererAside }
+export { RendererMain }
 export { BuiltinActionButton }
 export { default as RendererFieldScope } from './containers/data-components/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/data-components/RendererListItemScope.vue'
@@ -326,6 +347,9 @@ export { FieldTransfer }
 export { FieldSegmented }
 export { FieldCheckTag }
 export { FieldMention }
+export { FieldTimePicker }
+export { FieldTimeSelect }
+export { FieldAutocomplete }
 export { FieldContextRenderer }
 export { FieldContextRenderer as FieldColumnGroup }
 export { FieldTreeNodeSummary }
