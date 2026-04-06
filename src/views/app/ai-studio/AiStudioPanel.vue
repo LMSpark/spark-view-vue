@@ -11,13 +11,9 @@
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  getAILoop,
-  readPageFiles,
-  type PageFiles,
-  type LogSnapshot,
-} from '@spark-view/spark-ai'
+import type { PageFiles } from '@spark-view/spark-ai'
 import { onPageConfigChange, type FileChangeEvent } from '@spark-view/spark-utils'
+import { useAiLoopWorkspace } from '@/composables/useAiLoopWorkspace'
 
 // ─── 状态 ──────────────────────────────────────────────────────────────────
 
@@ -27,14 +23,21 @@ const pageId = ref('my-page')
 const prompt = ref('')
 const feedback = ref('')
 const activeFileTab = ref('rule.json')
-const files = ref<PageFiles>({})
-const explanation = ref('')
-const loading = ref(false)
-const logs = ref<LogSnapshot[]>([])
 const statusMessages = ref<Array<{ text: string; type: 'success' | 'warning' | 'error' | 'info'; time: string }>>([])
 
-const loop = computed(() => getAILoop())
-const sessionId = computed(() => loop.value?.sessionId ?? '(未初始化)')
+const {
+  loop,
+  sessionId,
+  files,
+  explanation,
+  loading,
+  logs,
+  hasFiles,
+  generate: runGenerate,
+  iterate: runIterate,
+  refreshFiles: loadPageFiles,
+  refreshLogs: loadPageLogs,
+} = useAiLoopWorkspace()
 
 const fileTabList = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
 
@@ -42,8 +45,6 @@ const currentFileContent = computed(() => {
   const key = activeFileTab.value as keyof PageFiles
   return files.value[key] ?? ''
 })
-
-const hasFiles = computed(() => Object.keys(files.value).length > 0)
 
 // ─── SSE 监听 ─────────────────────────────────────────────────────────────
 
@@ -86,17 +87,12 @@ async function handleGenerate() {
     addStatus('请输入提示词', 'warning')
     return
   }
-  loading.value = true
   addStatus(`⏳ 生成中... pageId=${pageId.value}`, 'info')
   try {
-    const resp = await loop.value.generate(pageId.value.trim(), prompt.value.trim())
-    files.value = resp.files
-    explanation.value = resp.explanation ?? ''
-    addStatus(`✅ 生成完成，写入 ${Object.keys(resp.files).length} 个文件`, 'success')
+    const count = await runGenerate(pageId.value.trim(), prompt.value.trim())
+    addStatus(`✅ 生成完成，写入 ${count} 个文件`, 'success')
   } catch (err) {
     addStatus(`❌ 生成失败: ${err instanceof Error ? err.message : String(err)}`, 'error')
-  } finally {
-    loading.value = false
   }
 }
 
@@ -109,28 +105,23 @@ async function handleIterate() {
     addStatus('请输入 Page ID', 'warning')
     return
   }
-  loading.value = true
   addStatus(`⏳ 迭代中... feedback=${feedback.value || '(无)'}`, 'info')
   try {
-    const resp = await loop.value.iterate(
+    const count = await runIterate(
       pageId.value.trim(),
       feedback.value.trim() || undefined,
     )
-    files.value = resp.files
-    explanation.value = resp.explanation ?? ''
-    addStatus(`✅ 迭代完成，修改 ${Object.keys(resp.files).length} 个文件`, 'success')
+    addStatus(`✅ 迭代完成，修改 ${count} 个文件`, 'success')
     feedback.value = ''
   } catch (err) {
     addStatus(`❌ 迭代失败: ${err instanceof Error ? err.message : String(err)}`, 'error')
-  } finally {
-    loading.value = false
   }
 }
 
 async function refreshFiles() {
   if (!pageId.value.trim()) return
   try {
-    files.value = await readPageFiles(pageId.value.trim())
+    await loadPageFiles(pageId.value.trim())
     addStatus('📂 已刷新文件内容', 'info')
   } catch {
     addStatus('读取文件失败', 'error')
@@ -138,9 +129,8 @@ async function refreshFiles() {
 }
 
 function refreshLogs() {
-  if (!loop.value) return
-  logs.value = loop.value.collector.peek(pageId.value.trim() || undefined)
-  addStatus(`📋 已刷新日志 (${logs.value.length} 条)`, 'info')
+  const count = loadPageLogs(pageId.value.trim() || undefined)
+  addStatus(`📋 已刷新日志 (${count} 条)`, 'info')
 }
 
 function navigateToPage() {

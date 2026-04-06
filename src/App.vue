@@ -383,7 +383,6 @@ function handleUserCommand(command: string) {
         void handleCrossAppNavigate(command)
       } else {
         // 用户菜单导航项：通过 command(=item.path??redirect??id) 找到节点 → nav.navigateTo
-        // 兼容 path 带 '/' 和不带 '/' 两种格式（迁移后 system-action path 无 '/'）
         const userMenuItem = nav.regionItems.value.userMenu.find(
           item => (item.path ?? item.redirect ?? item.id) === command
         )

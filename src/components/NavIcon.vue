@@ -6,53 +6,10 @@ const props = defineProps<{ name?: string | undefined; size?: number | undefined
 
 const iconMap = Icons as unknown as Record<string, ReturnType<typeof import('vue')['defineComponent']>>
 
-const LEGACY_ICON_ALIAS: Record<string, string> = {
-  '🔧': 'SetUp',
-  '🎨': 'Brush',
-  '💬': 'ChatDotRound',
-  '🔍': 'Search',
-  '⛶': 'FullScreen',
-  '🔔': 'Bell',
-  '🌙': 'Moon',
-  '👤': 'User',
-  '⚙️': 'Setting',
-  '⚙': 'Setting',
-  '🏠': 'HomeFilled',
-  '📊': 'DataBoard',
-  '📱': 'Grid',
-  '📋': 'List',
-  '👥': 'UserFilled',
-  '⚡': 'Lightning',
-  '🗄️': 'Coin',
-  'ℹ️': 'InfoFilled',
-  'ℹ': 'InfoFilled',
-  '🔗': 'Connection',
-  '🔄': 'Refresh',
-  '🧠': 'Cpu',
-  '📦': 'Box',
-  '🧩': 'Grid',
-  '📈': 'TrendCharts',
-  '🎯': 'Aim',
-  '🏢': 'OfficeBuilding',
-  '🌳': 'Share',
-  '🌲': 'Share',
-  '🌿': 'Share',
-  '➕': 'Plus',
-  '🗑️': 'Delete',
-  '🤖': 'Cpu',
-  '💾': 'DocumentChecked',
-  '📑': 'Tickets',
-  '📐': 'Crop',
-  '👁️': 'View',
-  '🚀': 'Promotion',
-  '✅': 'SuccessFilled',
-  '⚠️': 'WarningFilled',
-  '❌': 'CircleCloseFilled',
-}
-
 const normalizedName = computed(() => {
-  if (!props.name) return undefined
-  return LEGACY_ICON_ALIAS[props.name] ?? props.name
+  const name = props.name?.trim()
+  if (!name) return undefined
+  return name
 })
 
 const isElIcon = computed(() => {

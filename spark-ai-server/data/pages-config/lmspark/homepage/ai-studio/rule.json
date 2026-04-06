@@ -1,6 +1,6 @@
 [
   {
-    "type": "ai-studio",
+    "type": "ai-studio-panel",
     "style": {
       "height": "calc(100vh - 60px)"
     }

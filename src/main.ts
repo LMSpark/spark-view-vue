@@ -43,8 +43,6 @@ import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger,
 import { getNavHomePath } from '@spark-view/spark-app'
 import type { LogTransport } from '@spark-view/spark-app'
 import { addLogTransport } from '@spark-view/spark-utils'
-import { onDebugRouteRequest } from '@spark-view/spark-utils'
-import type { DebugRouteRequestEvent } from '@spark-view/spark-utils'
 import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
 
 // 创建启动日志（临时用于启动流程）
@@ -64,7 +62,6 @@ import { loadAppConfig } from '@spark-view/spark-app'
 
 // 主应用组件
 import { createApp } from 'vue'
-import type { Router } from 'vue-router'
 import App from './App.vue'
 import ErrorFallback from './components/ErrorFallback.vue'
 import './style.css'
@@ -85,6 +82,18 @@ function extractPageId(path: string): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined
 }
 
+function mountStartupError(error: unknown, fallbackMessage: string): void {
+  const appElement = document.querySelector('#app')
+  if (appElement?.innerHTML) {
+    startupLogger.warn('⚠️ 检测到已挂载的应用，跳过错误页面渲染')
+    return
+  }
+
+  const normalizedError = error instanceof Error ? error : new Error(fallbackMessage)
+  const errorApp = createApp(ErrorFallback, { error: normalizedError })
+  errorApp.mount('#app')
+}
+
 /**
  * 启动应用
  * 
@@ -96,11 +105,10 @@ function extractPageId(path: string): string | undefined {
  */
 async function startApp() {
   try {
-    // 🔧 清除损坏的缓存（旧版 toJSON 问题 / 前缀迁移兼容）
+    // 🔧 清除损坏的页面缓存（仅处理当前 spark_page_ 前缀）
     if (typeof localStorage !== 'undefined') {
       const badKeys = Object.keys(localStorage).filter(k => {
-        // spark_page_ 是页面配置 FileLoader 的实际前缀；spark_file_ 是旧版误用的前缀
-        const isPageCache = k.startsWith('spark_page_') || k.startsWith('spark_file_')
+        const isPageCache = k.startsWith('spark_page_')
         if (!isPageCache) return false
         try {
           const cached = localStorage.getItem(k)
@@ -108,7 +116,7 @@ async function startApp() {
           const parsed: unknown = JSON.parse(cached)
           if (parsed === null || typeof parsed !== 'object') return true  // 格式不合法
           const obj = parsed as { data?: unknown }
-          // :raw 槽位必须存字符串（原始文件内容），非字符串说明旧版把对象存进去了
+          // :raw 槽位必须存字符串（原始文件内容）
           if (k.endsWith(':raw') && typeof obj.data !== 'string') return true
         } catch { return true /* JSON.parse 失败 → 强制清除 */ }
         return false
@@ -244,131 +252,6 @@ async function startApp() {
     
     const { getPageApi, getNavApi } = await import('./services/api-paths')
 
-    type DebugBridgeState = {
-      installed: boolean
-      offRoute?: (() => void) | undefined
-    }
-
-    const DEBUG_BRIDGE_KEY = '__SPARK_DEBUG_BRIDGE_STATE__'
-
-    function normalizeScopedPath(path: string): string {
-      if (path === '/') return '/'
-      return path.replace(/\/{2,}/g, '/').replace(/\/+$/, '')
-    }
-
-    function resolveDebugTargetPath(event: DebugRouteRequestEvent): string | null {
-      const rawPath = typeof event.path === 'string' && event.path.trim().length > 0
-        ? event.path.trim()
-        : null
-      const rawPageId = typeof event.pageId === 'string' && event.pageId.trim().length > 0
-        ? event.pageId.trim()
-        : null
-
-      let target = rawPath ?? (rawPageId ? (rawPageId.startsWith('/') ? rawPageId : `/${rawPageId}`) : null)
-      if (target === null) return null
-      if (!target.startsWith('/')) target = `/${target}`
-
-      if (target.startsWith('/t/')) return normalizeScopedPath(target)
-
-      if (!isAuthenticated()) {
-        return normalizeScopedPath(target)
-      }
-
-      const user = getUser()
-      const tenantId = typeof event.tenantId === 'string' && event.tenantId.trim().length > 0
-        ? event.tenantId.trim()
-        : (user?.tenantId ?? 'default')
-      const projectId = typeof event.projectId === 'string' && event.projectId.trim().length > 0
-        ? event.projectId.trim()
-        : (user?.defaultProjectId ?? 'homepage')
-      const scopePrefix = `/t/${encodeURIComponent(tenantId)}/${encodeURIComponent(projectId)}`
-
-      if (target === '/') return normalizeScopedPath(`${scopePrefix}${getNavHomePath()}`)
-      return normalizeScopedPath(`${scopePrefix}${target}`)
-    }
-
-    async function reportDebugRouteResult(payload: Record<string, unknown>): Promise<void> {
-      try {
-        await appHttpClient.post('/api/ai/debug/route-result', payload)
-      } catch (error) {
-        startupLogger.warn('上报 debug-route-result 失败', { error: String(error) })
-      }
-    }
-
-    function installDebugCommandBridge(router: Router): void {
-      const w = window as unknown as Record<string, unknown>
-      const existing = w[DEBUG_BRIDGE_KEY] as DebugBridgeState | undefined
-      if (existing?.installed) return
-
-      const offRoute = onDebugRouteRequest(async (event) => {
-        const requestId = typeof event.requestId === 'string' && event.requestId.trim().length > 0
-          ? event.requestId
-          : `route-${Date.now()}`
-        const currentPath = router.currentRoute.value.path
-        const targetPath = resolveDebugTargetPath(event)
-
-        if (targetPath === null) {
-          await reportDebugRouteResult({
-            requestId,
-            status: 'ignored',
-            message: 'missing path/pageId',
-            reason: event.reason,
-            currentPath,
-            pageId: extractPageId(currentPath),
-            timestamp: Date.now(),
-          })
-          return
-        }
-
-        try {
-          if (event.replace === true) {
-            await router.replace(targetPath)
-          } else {
-            await router.push(targetPath)
-          }
-          const finalPath = router.currentRoute.value.path
-          await reportDebugRouteResult({
-            requestId,
-            status: 'success',
-            reason: event.reason,
-            targetPath,
-            currentPath: finalPath,
-            pageId: extractPageId(finalPath),
-            timestamp: Date.now(),
-          })
-        } catch (error) {
-          const message = String(error)
-          const finalPath = router.currentRoute.value.path
-          if (message.includes('Avoided redundant navigation')) {
-            await reportDebugRouteResult({
-              requestId,
-              status: 'success',
-              reason: event.reason,
-              targetPath,
-              currentPath: finalPath,
-              pageId: extractPageId(finalPath),
-              message: 'redundant navigation treated as success',
-              timestamp: Date.now(),
-            })
-            return
-          }
-          await reportDebugRouteResult({
-            requestId,
-            status: 'error',
-            reason: event.reason,
-            targetPath,
-            currentPath: finalPath,
-            pageId: extractPageId(finalPath),
-            message,
-            timestamp: Date.now(),
-          })
-        }
-      })
-
-      w[DEBUG_BRIDGE_KEY] = { installed: true, offRoute } as DebugBridgeState
-      startupLogger.info('🛰️ 调试指令桥接已启用（route）')
-    }
-
     // 5.1 URL → localStorage 项目上下文预同步
     // 浏览器地址栏输入跨项目 URL 时，在 registerRoutes() 加载导航树之前
     // 将 URL 中的 projectId 写入 localStorage，确保后续 API 调用使用正确的项目上下文
@@ -442,7 +325,7 @@ async function startApp() {
       
       // 挂载前钩子
       beforeMount: async (context) => {
-        const { router, app } = context
+        const { router } = context
 
         // ── AI 闭环：尽早注入 pageId 上下文 ──
         // mount 阶段渲染页面时产生的错误需要正确的 pageId 标记，
@@ -498,11 +381,9 @@ async function startApp() {
         const ModuleContextBadge = (await import('./components/ModuleContextBadge.vue')).default
         Spark.register('r-module-context-badge', ModuleContextBadge)
 
-        // 🤖 注册 AI Studio 组件（SPARK registry + Vue 全局组件）
-        const { initAiStudio } = await import('./views/app/ai-studio/initialize')
-        initAiStudio()
+        // 🤖 注册 AI Studio 组件（仅保留 Spark registry 单一路径）
         const AiStudioPanel = (await import('./views/app/ai-studio/AiStudioPanel.vue')).default
-        app.component('ai-studio', AiStudioPanel)
+        Spark.register('ai-studio-panel', AiStudioPanel)
         startupLogger.info('✅ AI Studio 组件注册完成')
       },
       
@@ -512,9 +393,6 @@ async function startApp() {
         
         // _currentPageId + router.afterEach 已在 beforeMount 中设置
         const { router } = context
-
-        // 调试 SSE 指令桥接（后端发 debug-route-request 即可驱动前端切页并回执）
-        installDebugCommandBridge(router)
         
         // ── AI 闭环：初始化 AI Loop 服务（可选） ──
         if (appConfig.config.features.enableAI === true) {
@@ -616,36 +494,15 @@ async function startApp() {
         
         // TODO: 错误上报到监控系统
         // await reportError(error)
-        
-        // 检查 #app 是否已经有挂载的应用
-        const appElement = document.querySelector('#app')
-        if (appElement?.innerHTML) {
-          startupLogger.warn('⚠️ 检测到已挂载的应用，跳过错误页面渲染')
-          return
-        }
-        
-        // 显示错误降级页面
-        const errorApp = createApp(ErrorFallback, { 
-          error: error instanceof Error ? error : new Error(String(error))
-        })
-        errorApp.mount('#app')
+
+        mountStartupError(error, String(error))
       }
     })
   } catch (error) {
     startupLogger.error('❌ 应用启动失败', error instanceof Error ? error : { error })
-    
-    // 检查 #app 是否已经有挂载的应用
-    const appElement = document.querySelector('#app')
-    if (appElement?.innerHTML) {
-      startupLogger.warn('⚠️ 检测到已挂载的应用，跳过错误页面渲染')
-      return
-    }
-    
+
     // 配置加载失败时的降级处理
-    const errorApp = createApp(ErrorFallback, { 
-      error: error instanceof Error ? error : new Error('配置加载失败')
-    })
-    errorApp.mount('#app')
+    mountStartupError(error, '配置加载失败')
   }
 }
 

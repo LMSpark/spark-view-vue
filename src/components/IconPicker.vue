@@ -56,47 +56,12 @@ const emit = defineEmits<{
 const iconMap = Icons as unknown as Record<string, ReturnType<typeof import('vue')['defineComponent']>>
 const allNames = Object.keys(Icons).filter(k => k !== 'default').sort()
 
-const LEGACY_ICON_ALIAS: Record<string, string> = {
-  '🔧': 'SetUp',
-  '🎨': 'Brush',
-  '💬': 'ChatDotRound',
-  '🔍': 'Search',
-  '⛶': 'FullScreen',
-  '🔔': 'Bell',
-  '🌙': 'Moon',
-  '👤': 'User',
-  '⚙️': 'Setting',
-  '⚙': 'Setting',
-  '🏠': 'HomeFilled',
-  '📊': 'DataBoard',
-  '📱': 'Grid',
-  '📋': 'List',
-  '👥': 'UserFilled',
-  '⚡': 'Lightning',
-  '🗄️': 'Coin',
-  'ℹ️': 'InfoFilled',
-  'ℹ': 'InfoFilled',
-  '🔗': 'Connection',
-  '🔄': 'Refresh',
-  '🧠': 'Cpu',
-  '📦': 'Box',
-  '🧩': 'Grid',
-  '📈': 'TrendCharts',
-  '🎯': 'Aim',
-  '🏢': 'OfficeBuilding',
-  '🌳': 'Share',
-  '🌲': 'Share',
-  '🌿': 'Share',
-  '📄': 'Document',
-  '🤖': 'Cpu',
-}
-
 const keyword = ref('')
 
 const resolvedIconName = computed(() => {
   const raw = props.modelValue?.trim() ?? ''
   if (!raw) return ''
-  return LEGACY_ICON_ALIAS[raw] ?? raw
+  return raw
 })
 
 const hasResolvedIcon = computed(() => {
