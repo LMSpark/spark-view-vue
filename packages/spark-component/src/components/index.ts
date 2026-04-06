@@ -36,6 +36,9 @@ import FieldProductPicker from './fields/data-components/FieldProductPicker.vue'
 import FieldCascader from './fields/data-components/FieldCascader.vue'
 import FieldTreeSelect from './fields/data-components/FieldTreeSelect.vue'
 import FieldTransfer from './fields/data-components/FieldTransfer.vue'
+import FieldSegmented from './fields/data-components/FieldSegmented.vue'
+import FieldCheckTag from './fields/data-components/FieldCheckTag.vue'
+import FieldMention from './fields/data-components/FieldMention.vue'
 import FieldContextRenderer from './fields/non-data-components/FieldContextRenderer.vue'
 import FieldTreeNodeSummary from './fields/non-data-components/TreeNodeSummary.vue'
 
@@ -58,6 +61,9 @@ import RendererCarouselItem from './containers/non-data-components/RendererCarou
 import RendererWatermark from './containers/non-data-components/RendererWatermark.vue'
 import RendererAffix from './containers/non-data-components/RendererAffix.vue'
 import RendererScrollbar from './containers/non-data-components/RendererScrollbar.vue'
+import RendererTour from './containers/non-data-components/RendererTour.vue'
+import RendererAnchor from './containers/non-data-components/RendererAnchor.vue'
+import RendererAnchorLink from './containers/non-data-components/RendererAnchorLink.vue'
 import DisplayStatistic from './display/data-components/DisplayStatistic.vue'
 import DisplayProgress from './display/data-components/DisplayProgress.vue'
 import DisplayTag from './display/data-components/DisplayTag.vue'
@@ -75,6 +81,9 @@ import DisplayResult from './display/non-data-components/DisplayResult.vue'
 import DisplayBreadcrumb from './display/non-data-components/DisplayBreadcrumb.vue'
 import DisplayBreadcrumbItem from './display/non-data-components/DisplayBreadcrumbItem.vue'
 import DisplaySkeleton from './display/non-data-components/DisplaySkeleton.vue'
+import DisplayImage from './display/data-components/DisplayImage.vue'
+import DisplayCalendar from './display/non-data-components/DisplayCalendar.vue'
+import DisplayCountdown from './display/non-data-components/DisplayCountdown.vue'
 
 // ── DSL 标记：使组件可作为模板 DSL 子节点编译为 SparkNode ─────────────────────
 markSparkTemplateNodeComponent(BuiltinActionButton, { nodeType: 'builtin-action' })
@@ -104,6 +113,9 @@ markSparkTemplateNodeComponent(FieldProductPicker, { nodeType: 'r-product-picker
 markSparkTemplateNodeComponent(FieldCascader, { nodeType: 'r-cascader' })
 markSparkTemplateNodeComponent(FieldTreeSelect, { nodeType: 'r-tree-select' })
 markSparkTemplateNodeComponent(FieldTransfer, { nodeType: 'r-transfer' })
+markSparkTemplateNodeComponent(FieldSegmented, { nodeType: 'r-segmented' })
+markSparkTemplateNodeComponent(FieldCheckTag, { nodeType: 'r-check-tag' })
+markSparkTemplateNodeComponent(FieldMention, { nodeType: 'r-mention' })
 markSparkTemplateNodeComponent(FieldContextRenderer, { nodeType: 'r-column-group' })
 markSparkTemplateNodeComponent(FieldTreeNodeSummary, { nodeType: 'r-tree-node-summary' })
 
@@ -126,6 +138,9 @@ markSparkTemplateNodeComponent(RendererCarouselItem, { nodeType: 'r-carousel-ite
 markSparkTemplateNodeComponent(RendererWatermark, { nodeType: 'r-watermark' })
 markSparkTemplateNodeComponent(RendererAffix, { nodeType: 'r-affix' })
 markSparkTemplateNodeComponent(RendererScrollbar, { nodeType: 'r-scrollbar' })
+markSparkTemplateNodeComponent(RendererTour, { nodeType: 'r-tour' })
+markSparkTemplateNodeComponent(RendererAnchor, { nodeType: 'r-anchor' })
+markSparkTemplateNodeComponent(RendererAnchorLink, { nodeType: 'r-anchor-link' })
 markSparkTemplateNodeComponent(DisplayStatistic, { nodeType: 'r-statistic' })
 markSparkTemplateNodeComponent(DisplayProgress, { nodeType: 'r-progress' })
 markSparkTemplateNodeComponent(DisplayTag, { nodeType: 'r-tag' })
@@ -143,6 +158,9 @@ markSparkTemplateNodeComponent(DisplayResult, { nodeType: 'r-result' })
 markSparkTemplateNodeComponent(DisplayBreadcrumb, { nodeType: 'r-breadcrumb' })
 markSparkTemplateNodeComponent(DisplayBreadcrumbItem, { nodeType: 'r-breadcrumb-item' })
 markSparkTemplateNodeComponent(DisplaySkeleton, { nodeType: 'r-skeleton' })
+markSparkTemplateNodeComponent(DisplayImage, { nodeType: 'display-image' })
+markSparkTemplateNodeComponent(DisplayCalendar, { nodeType: 'display-calendar' })
+markSparkTemplateNodeComponent(DisplayCountdown, { nodeType: 'display-countdown' })
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
@@ -191,6 +209,9 @@ export const RProductPicker = createTemplateDsl('r-product-picker', 'RProductPic
 export const RCascader = createTemplateDsl('r-cascader', 'RCascader')
 export const RTreeSelect = createTemplateDsl('r-tree-select', 'RTreeSelect')
 export const RTransfer = createTemplateDsl('r-transfer', 'RTransfer')
+export const RSegmented = createTemplateDsl('r-segmented', 'RSegmented')
+export const RCheckTag = createTemplateDsl('r-check-tag', 'RCheckTag')
+export const RMention = createTemplateDsl('r-mention', 'RMention')
 export const RColumnGroup = createTemplateDsl('r-column-group', 'RColumnGroup')
 export const RTreeNodeSummary = createTemplateDsl('r-tree-node-summary', 'RTreeNodeSummary')
 
@@ -213,6 +234,9 @@ export const RCarouselItem = createTemplateDsl('r-carousel-item', 'RCarouselItem
 export const RWatermark = createTemplateDsl('r-watermark', 'RWatermark')
 export const RAffix = createTemplateDsl('r-affix', 'RAffix')
 export const RScrollbar = createTemplateDsl('r-scrollbar', 'RScrollbar')
+export const RTour = createTemplateDsl('r-tour', 'RTour')
+export const RAnchor = createTemplateDsl('r-anchor', 'RAnchor')
+export const RAnchorLink = createTemplateDsl('r-anchor-link', 'RAnchorLink')
 export const RStatistic = createTemplateDsl('r-statistic', 'RStatistic')
 export const RProgress = createTemplateDsl('r-progress', 'RProgress')
 export const RTag = createTemplateDsl('r-tag', 'RTag')
@@ -230,6 +254,9 @@ export const RResult = createTemplateDsl('r-result', 'RResult')
 export const RBreadcrumb = createTemplateDsl('r-breadcrumb', 'RBreadcrumb')
 export const RBreadcrumbItem = createTemplateDsl('r-breadcrumb-item', 'RBreadcrumbItem')
 export const RSkeleton = createTemplateDsl('r-skeleton', 'RSkeleton')
+export const RDisplayImage = createTemplateDsl('display-image', 'RDisplayImage')
+export const RDisplayCalendar = createTemplateDsl('display-calendar', 'RDisplayCalendar')
+export const RDisplayCountdown = createTemplateDsl('display-countdown', 'RDisplayCountdown')
 
 // ── 容器 Renderer 组件 ───────────────────────────────────────────────────────
 export { RendererTable }
@@ -262,6 +289,9 @@ export { RendererCarouselItem }
 export { RendererWatermark }
 export { RendererAffix }
 export { RendererScrollbar }
+export { RendererTour }
+export { RendererAnchor }
+export { RendererAnchorLink }
 export { BuiltinActionButton }
 export { default as RendererFieldScope } from './containers/data-components/RendererFieldScope.vue'
 export { default as RendererListItemScope } from './containers/data-components/RendererListItemScope.vue'
@@ -293,6 +323,9 @@ export { FieldProductPicker }
 export { FieldCascader }
 export { FieldTreeSelect }
 export { FieldTransfer }
+export { FieldSegmented }
+export { FieldCheckTag }
+export { FieldMention }
 export { FieldContextRenderer }
 export { FieldContextRenderer as FieldColumnGroup }
 export { FieldTreeNodeSummary }
@@ -315,6 +348,9 @@ export { DisplayResult }
 export { DisplayBreadcrumb }
 export { DisplayBreadcrumbItem }
 export { DisplaySkeleton }
+export { DisplayImage }
+export { DisplayCalendar }
+export { DisplayCountdown }
 
 // ── 注册 & composable ────────────────────────────────────────────────────────
 export { registerAllRenderers } from './register-renderers.js'

@@ -38,6 +38,9 @@ import RendererCarouselItem from './containers/non-data-components/RendererCarou
 import RendererWatermark from './containers/non-data-components/RendererWatermark.vue'
 import RendererAffix from './containers/non-data-components/RendererAffix.vue'
 import RendererScrollbar from './containers/non-data-components/RendererScrollbar.vue'
+import RendererTour from './containers/non-data-components/RendererTour.vue'
+import RendererAnchor from './containers/non-data-components/RendererAnchor.vue'
+import RendererAnchorLink from './containers/non-data-components/RendererAnchorLink.vue'
 import BuiltinActionButton from './containers/BuiltinActionButton.vue'
 
 // ── 展示组件（同步导入） ──
@@ -58,6 +61,9 @@ import DisplayResult from './display/non-data-components/DisplayResult.vue'
 import DisplayBreadcrumb from './display/non-data-components/DisplayBreadcrumb.vue'
 import DisplayBreadcrumbItem from './display/non-data-components/DisplayBreadcrumbItem.vue'
 import DisplaySkeleton from './display/non-data-components/DisplaySkeleton.vue'
+import DisplayImage from './display/data-components/DisplayImage.vue'
+import DisplayCalendar from './display/non-data-components/DisplayCalendar.vue'
+import DisplayCountdown from './display/non-data-components/DisplayCountdown.vue'
 
 // ── Dock 组件（同步导入） ──
 import DockActions from './containers/docks/DockActions.vue'
@@ -94,6 +100,9 @@ import FieldProductPicker from './fields/data-components/FieldProductPicker.vue'
 import FieldCascader from './fields/data-components/FieldCascader.vue'
 import FieldTreeSelect from './fields/data-components/FieldTreeSelect.vue'
 import FieldTransfer from './fields/data-components/FieldTransfer.vue'
+import FieldSegmented from './fields/data-components/FieldSegmented.vue'
+import FieldCheckTag from './fields/data-components/FieldCheckTag.vue'
+import FieldMention from './fields/data-components/FieldMention.vue'
 import FieldContextRenderer from './fields/non-data-components/FieldContextRenderer.vue'
 import TreeNodeSummary from './fields/non-data-components/TreeNodeSummary.vue'
 
@@ -131,6 +140,9 @@ export function registerAllRenderers(): void {
   Spark.register('r-watermark', RendererWatermark)
   Spark.register('r-affix', RendererAffix)
   Spark.register('r-scrollbar', RendererScrollbar)
+  Spark.register('r-tour', RendererTour)
+  Spark.register('r-anchor', RendererAnchor)
+  Spark.register('r-anchor-link', RendererAnchorLink)
   Spark.register('builtin-action', BuiltinActionButton)
 
   // ── 展示组件：数据驱动 + 非数据驱动 ──
@@ -151,6 +163,9 @@ export function registerAllRenderers(): void {
   Spark.register('r-breadcrumb', DisplayBreadcrumb)
   Spark.register('r-breadcrumb-item', DisplayBreadcrumbItem)
   Spark.register('r-skeleton', DisplaySkeleton)
+  Spark.register('display-image', DisplayImage)
+  Spark.register('display-calendar', DisplayCalendar)
+  Spark.register('display-countdown', DisplayCountdown)
 
   // ── Dock 组件：容器内由容器提取、独立使用正常渲染 ──
   Spark.register('r-actions', DockActions)
@@ -187,6 +202,9 @@ export function registerAllRenderers(): void {
   Spark.register('r-cascader', FieldCascader)
   Spark.register('r-tree-select', FieldTreeSelect)
   Spark.register('r-transfer', FieldTransfer)
+  Spark.register('r-segmented', FieldSegmented)
+  Spark.register('r-check-tag', FieldCheckTag)
+  Spark.register('r-mention', FieldMention)
   Spark.register('r-column-group', FieldContextRenderer)
   Spark.register('r-tree-node-summary', TreeNodeSummary)
 }

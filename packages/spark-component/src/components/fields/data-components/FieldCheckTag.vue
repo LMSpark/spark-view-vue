@@ -1,0 +1,47 @@
+<template>
+  <el-check-tag
+    v-if="isVisible"
+    :checked="isChecked"
+    :disabled="isDisabled"
+    v-bind="$attrs"
+    @change="handleChange"
+  >
+    <slot>{{ label }}</slot>
+  </el-check-tag>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useSparkPageComponent, type SparkNode } from '../../internal'
+
+interface Props extends SparkNode {
+  /** 是否选中 */
+  checked?: boolean
+  /** 标签文本 */
+  label?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  type: 'r-check-tag',
+  checked: false,
+})
+
+const emit = defineEmits<{
+  change: [checked: boolean]
+  'update:checked': [checked: boolean]
+}>()
+
+const { isVisible, isDisabled } = useSparkPageComponent(props)
+
+const isChecked = ref(props.checked)
+
+watch(() => props.checked, (v) => {
+  isChecked.value = v
+})
+
+function handleChange(val: boolean) {
+  isChecked.value = val
+  emit('update:checked', val)
+  emit('change', val)
+}
+</script>
