@@ -4,33 +4,50 @@
       <div class="file-header">
         <div class="file-header__meta">
           <span class="file-page-id"><NavIcon name="Tickets" :size="14" /> {{ state.activePageId.value }}</span>
-          <el-tag v-if="state.getFileSnapshotCount(resolvedActiveFile) > 0" size="small" type="info">快照 {{ state.getFileSnapshotCount(resolvedActiveFile) }}</el-tag>
-          <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataSetError.value" size="small" type="danger">DataSet 解析失败</el-tag>
+          <el-tag v-if="state.getFileSnapshotCount(resolvedActiveFile) > 0" size="small" type="info" effect="plain">
+            可撤销 {{ state.getFileSnapshotCount(resolvedActiveFile) }} 步
+          </el-tag>
+          <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataSetError.value" size="small" type="danger" effect="dark">DataSet 解析失败</el-tag>
         </div>
         <div class="file-header__actions">
-          <el-button size="small" :disabled="!canUndoActiveFile()" @click="undoActiveFile">撤销</el-button>
-          <el-button size="small" :disabled="!canRedoActiveFile()" @click="redoActiveFile">重做</el-button>
-          <el-button size="small" :disabled="!state.activePageId.value" @click="openRemoteVersionHistory(resolvedActiveFile)">
-            <NavIcon name="Collection" :size="14" /> 后端版本
-          </el-button>
+          <el-button-group class="action-group">
+            <el-tooltip content="撤销 (Ctrl+Z)" placement="bottom" :show-after="600">
+              <el-button size="small" :disabled="!canUndoActiveFile()" @click="undoActiveFile">
+                <NavIcon name="RefreshLeft" :size="14" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="重做 (Ctrl+Y)" placement="bottom" :show-after="600">
+              <el-button size="small" :disabled="!canRedoActiveFile()" @click="redoActiveFile">
+                <NavIcon name="RefreshRight" :size="14" />
+              </el-button>
+            </el-tooltip>
+          </el-button-group>
+          <span class="action-divider" />
+          <el-tooltip content="从服务端重新加载此文件" placement="bottom" :show-after="600">
+            <el-button size="small" :disabled="!state.activePageId.value" @click="refreshFile">
+              <NavIcon name="Refresh" :size="14" />
+            </el-button>
+          </el-tooltip>
+          <el-tooltip content="保存当前文件到服务端" placement="bottom" :show-after="600">
+            <el-button
+              type="primary"
+              size="small"
+              :disabled="!state.fileDirty[resolvedActiveFile]"
+              :loading="state.fileSaving.value"
+              @click="saveFile"
+            >
+              <NavIcon name="DocumentChecked" :size="14" /> 保存
+            </el-button>
+          </el-tooltip>
+          <span class="action-divider" />
           <el-button
-            v-if="state.fileDirty[resolvedActiveFile]"
             size="small"
-            type="primary"
-            :loading="state.fileSaving.value"
-            @click="saveActiveFile"
+            :type="showVersionPanel ? 'primary' : 'default'"
+            :disabled="!state.activePageId.value"
+            @click="toggleVersionPanel"
           >
-            <NavIcon name="DocumentChecked" :size="14" /> 保存当前
+            <NavIcon name="Clock" :size="14" /> 版本
           </el-button>
-          <el-button
-            v-if="state.hasAnyFileDirty.value"
-            size="small"
-            :loading="state.fileSaving.value"
-            @click="saveAllFiles"
-          >
-            <NavIcon name="FolderChecked" :size="14" /> 保存全部
-          </el-button>
-          <el-button size="small" @click="refreshActiveFile"><NavIcon name="Refresh" :size="14" /> 刷新当前</el-button>
         </div>
       </div>
 
@@ -44,117 +61,71 @@
         </el-tab-pane>
       </el-tabs>
 
-      <div class="editor-area" v-loading="!state.fileLoaded.value">
-        <JsonTreeEditor
-          v-if="resolvedActiveFile === 'rule.json'"
-          type="json-tree-editor"
-          :model-value="state.editFiles[resolvedActiveFile] ?? ''"
-          :policy="rulePolicy"
-          :schema="RULE_JSON_SCHEMA"
-          class="code-input code-input--json"
-          height="100%"
-          @update:model-value="handleActiveFileChange"
-        />
-        <JsonTreeEditor
-          v-else-if="resolvedActiveFile === 'pagedata.json'"
-          type="json-tree-editor"
-          :model-value="state.editFiles[resolvedActiveFile] ?? ''"
-          :document-value="(state.pageDataDocument.value as JsonDocument | null)"
-          :policy="pageDataPolicy"
-          class="code-input code-input--json"
-          height="100%"
-          :schema="PAGE_DATA_JSON_SCHEMA"
-          @update:document-value="handleActivePageDataDocumentChange"
-        />
-        <SparkCodeEditor
-          v-else-if="isCodeFile(resolvedActiveFile)"
-          :model-value="state.editFiles[resolvedActiveFile] ?? ''"
-          :language="resolveCodeLanguage(resolvedActiveFile)"
-          class="code-input code-input--code"
-          height="100%"
-          @update:model-value="handleActiveFileChange"
-        />
-        <el-input
-          v-else
-          :model-value="state.editFiles[resolvedActiveFile]"
-          type="textarea"
-          :autosize="{ minRows: 30, maxRows: 60 }"
-          class="code-input"
-          @update:model-value="handleActiveFileChange"
-        />
-      </div>
-
-      <el-dialog v-model="showRemoteVersionHistory" :title="`${remoteVersionTargetFile} 后端版本`" width="1120px" top="6vh">
-        <el-empty
-          v-if="!remoteVersionLoading && remotePageVersions.length === 0"
-          description="当前页面还没有后端版本"
-        />
-        <div v-else class="remote-version-browser" v-loading="remoteVersionLoading">
-          <div class="remote-version-browser__list">
-            <el-table
-              :data="remotePageVersions"
-              size="small"
-              border
-              highlight-current-row
-              height="460"
-              @row-click="handleRemoteVersionRowClick"
-            >
-              <el-table-column prop="version" label="版本" width="80" />
-              <el-table-column label="时间" width="180">
-                <template #default="scope">
-                  {{ scope.row.createdAt ?? '-' }}
-                </template>
-              </el-table-column>
-              <el-table-column label="操作人" min-width="120">
-                <template #default="scope">
-                  {{ scope.row.modifiedBy ?? '-' }}
-                </template>
-              </el-table-column>
-              <el-table-column label="状态" width="100">
-                <template #default="scope">
-                  <el-tag v-if="scope.row.isCurrent" size="small" type="success">当前版</el-tag>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-          <div class="remote-version-browser__preview" v-loading="remoteVersionPreviewLoading">
-            <div v-if="remoteVersionPreview" class="remote-version-browser__preview-meta">
-              <el-tag size="small" type="info">浏览版本 v{{ remoteVersionPreview.version }}</el-tag>
-              <el-tag v-if="remoteVersionPreview.isCurrent" size="small" type="success">当前版</el-tag>
-              <span class="remote-version-browser__preview-time">{{ remoteVersionPreview.createdAt ?? '-' }}</span>
-            </div>
-            <el-empty
-              v-if="!remoteVersionPreview && !remoteVersionPreviewLoading"
-              description="选择左侧版本后可浏览当前文件内容"
-            />
-            <JsonTreeEditor
-              v-else-if="isJsonFile(remoteVersionTargetFile)"
-              type="json-tree-editor"
-              :model-value="remoteVersionPreviewContent"
-              class="code-input code-input--json"
-              height="460px"
-              :read-only="true"
-            />
-            <SparkCodeEditor
-              v-else
-              :model-value="remoteVersionPreviewContent"
-              :language="resolveCodeLanguage(remoteVersionTargetFile)"
-              class="code-input code-input--code"
-              height="460px"
-              :read-only="true"
-            />
-          </div>
+      <div class="editor-body" v-loading="!state.fileLoaded.value">
+        <div class="editor-area">
+          <JsonTreeEditor
+            v-if="resolvedActiveFile === 'rule.json'"
+            type="json-tree-editor"
+            :model-value="state.editFiles[resolvedActiveFile] ?? ''"
+            :policy="rulePolicy"
+            :schema="RULE_JSON_SCHEMA"
+            class="code-input code-input--json"
+            height="100%"
+            @update:model-value="handleActiveFileChange"
+          />
+          <JsonTreeEditor
+            v-else-if="resolvedActiveFile === 'pagedata.json'"
+            type="json-tree-editor"
+            :model-value="state.editFiles[resolvedActiveFile] ?? ''"
+            :document-value="(state.pageDataDocument.value as JsonDocument | null)"
+            :policy="pageDataPolicy"
+            class="code-input code-input--json"
+            height="100%"
+            :schema="PAGE_DATA_JSON_SCHEMA"
+            @update:document-value="handleActivePageDataDocumentChange"
+          />
+          <SparkCodeEditor
+            v-else-if="isCodeFile(resolvedActiveFile)"
+            :model-value="state.editFiles[resolvedActiveFile] ?? ''"
+            :language="resolveCodeLanguage(resolvedActiveFile)"
+            class="code-input code-input--code"
+            height="100%"
+            @update:model-value="handleActiveFileChange"
+          />
+          <el-input
+            v-else
+            :model-value="state.editFiles[resolvedActiveFile]"
+            type="textarea"
+            :autosize="{ minRows: 30, maxRows: 60 }"
+            class="code-input"
+            @update:model-value="handleActiveFileChange"
+          />
         </div>
-        <template #footer>
-          <el-button @click="showRemoteVersionHistory = false">关闭</el-button>
-          <el-button
-            type="primary"
-            :disabled="!canRestoreRemoteVersion"
-            :loading="restoringRemoteVersion"
-            @click="restoreSelectedRemoteVersion"
-          >设为当前版</el-button>
-        </template>
-      </el-dialog>
+
+        <!-- ── 版本侧栏（内联） ── -->
+        <transition name="slide-version">
+          <div v-if="showVersionPanel" class="version-side">
+            <div class="vs-header">
+              <span class="vs-title">版本历史</span>
+              <el-button size="small" type="primary" :loading="creatingVersion" @click="createVersion">
+                <NavIcon name="Plus" :size="12" /> 存档
+              </el-button>
+            </div>
+            <div class="vs-file">{{ resolvedActiveFile }}</div>
+            <div v-loading="remoteVersionLoading" class="vs-list">
+              <div v-if="remotePageVersions.length === 0 && !remoteVersionLoading" class="vs-empty">暂无版本</div>
+              <div v-for="v in remotePageVersions" :key="v.version" class="vs-row" :class="{ 'vs-row--current': v.isCurrent }">
+                <span class="version-badge">v{{ v.version }}</span>
+                <span class="vs-time">{{ formatVersionTime(v.createdAt) }}</span>
+                <el-tag v-if="v.isCurrent" size="small" type="success" effect="plain" round>当前</el-tag>
+                <span class="vs-spacer" />
+                <el-button v-if="!v.isCurrent" size="small" type="primary" text :loading="restoringVersion === v.version" @click="restoreVersion(v.version)">恢复</el-button>
+                <el-button v-if="!v.isCurrent" size="small" type="danger" text @click="confirmDeleteVersion(v)"><NavIcon name="Delete" :size="12" /></el-button>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </div>
     </template>
     <el-empty v-else description="请从左侧树中选择一个配置页面开始编辑" class="empty-hint" />
   </div>
@@ -163,12 +134,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor, type JsonDocument } from '@spark-view/spark-component'
+import { ElMessageBox } from 'element-plus'
 import { pageDataPolicy } from './policies/pageDataPolicy'
 import { rulePolicy } from './policies/rulePolicy'
 import { RULE_JSON_SCHEMA } from './policies/ruleJsonSchema'
 import { canonicalizePageDataJson, PAGE_DATA_JSON_SCHEMA } from './policies/pageDataJsonSchema'
 import { PAGE_FILE_NAMES } from './useDevState'
-import type { BackendPageVersionFile, BackendPageVersionSummary, DevState, PageFileName } from './useDevState'
+import type { BackendPageVersionSummary, DevState, PageFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{
@@ -178,24 +150,13 @@ const props = defineProps<{
 }>()
 
 const localActiveFile = ref<PageFileName>('rule.json')
-const showRemoteVersionHistory = ref(false)
+const showVersionPanel = ref(false)
 const remoteVersionLoading = ref(false)
-const remoteVersionPreviewLoading = ref(false)
-const restoringRemoteVersion = ref(false)
-const remoteVersionTargetFile = ref<PageFileName>('rule.json')
+const restoringVersion = ref<number | null>(null)
+const creatingVersion = ref(false)
 const remotePageVersions = ref<BackendPageVersionSummary[]>([])
-const remoteVersionPreview = ref<BackendPageVersionFile | null>(null)
-const selectedRemoteVersion = ref<number | null>(null)
 const resolvedActiveFile = computed<PageFileName>(() => props.activeFile ?? localActiveFile.value)
 const showTabs = computed(() => props.showTabs ?? true)
-const remoteVersionPreviewContent = computed(() => remoteVersionPreview.value?.content ?? '')
-const canRestoreRemoteVersion = computed(() => {
-  if (restoringRemoteVersion.value) return false
-  const version = selectedRemoteVersion.value
-  if (version === null) return false
-  const matched = remotePageVersions.value.find((item) => item.version === version)
-  return Boolean(matched) && !matched?.isCurrent
-})
 
 watch(() => props.activeFile, (nextFile) => {
   if (nextFile && nextFile !== localActiveFile.value) {
@@ -204,15 +165,9 @@ watch(() => props.activeFile, (nextFile) => {
 }, { immediate: true })
 
 watch(() => props.state.activePageId.value, () => {
-  showRemoteVersionHistory.value = false
+  showVersionPanel.value = false
   remotePageVersions.value = []
-  remoteVersionPreview.value = null
-  selectedRemoteVersion.value = null
 })
-
-function isJsonFile(name: string): boolean {
-  return name.endsWith('.json')
-}
 
 function isCodeFile(name: string): boolean {
   return name.endsWith('.js') || name.endsWith('.css')
@@ -243,18 +198,6 @@ function fileIcon(name: string): string {
   return 'Document'
 }
 
-function saveActiveFile() {
-  void props.state.saveByTab(resolvedActiveFile.value)
-}
-
-function saveAllFiles() {
-  void props.state.savePageFiles()
-}
-
-function refreshActiveFile() {
-  void props.state.refreshByTab(resolvedActiveFile.value)
-}
-
 function canUndoActiveFile(): boolean {
   return props.state.canUndoFileSnapshot(resolvedActiveFile.value)
 }
@@ -271,57 +214,76 @@ function redoActiveFile() {
   props.state.redoFileSnapshot(resolvedActiveFile.value)
 }
 
-async function loadRemoteVersionPreview(version: number) {
-  selectedRemoteVersion.value = version
-  remoteVersionPreviewLoading.value = true
-  try {
-    remoteVersionPreview.value = await props.state.readRemotePageVersionFile(version, remoteVersionTargetFile.value)
-  } finally {
-    remoteVersionPreviewLoading.value = false
-  }
+function saveFile() {
+  void props.state.saveByTab(resolvedActiveFile.value)
 }
 
-async function loadRemoteVersionHistory(fileName: PageFileName, preferredVersion?: number | null) {
-  remoteVersionTargetFile.value = fileName
+function refreshFile() {
+  void props.state.refreshByTab(resolvedActiveFile.value)
+}
+
+async function loadVersions() {
   remoteVersionLoading.value = true
-  remoteVersionPreview.value = null
-  selectedRemoteVersion.value = null
   try {
-    const versions = await props.state.listRemotePageVersions(fileName)
-    remotePageVersions.value = versions
-    const targetVersion = preferredVersion
-      ?? versions.find((item) => item.isCurrent)?.version
-      ?? versions[0]?.version
-      ?? null
-    if (targetVersion !== null) {
-      await loadRemoteVersionPreview(targetVersion)
-    }
+    remotePageVersions.value = await props.state.listRemotePageVersions(resolvedActiveFile.value)
   } finally {
     remoteVersionLoading.value = false
   }
 }
 
-function openRemoteVersionHistory(fileName: PageFileName) {
-  showRemoteVersionHistory.value = true
-  void loadRemoteVersionHistory(fileName)
+function toggleVersionPanel() {
+  showVersionPanel.value = !showVersionPanel.value
+  if (showVersionPanel.value) {
+    void loadVersions()
+  }
 }
 
-function handleRemoteVersionRowClick(row: BackendPageVersionSummary) {
-  void loadRemoteVersionPreview(row.version)
-}
-
-async function restoreSelectedRemoteVersion() {
-  const version = selectedRemoteVersion.value
-  if (version === null) return
-
-  restoringRemoteVersion.value = true
+async function restoreVersion(version: number) {
+  restoringVersion.value = version
   try {
-    if (await props.state.restoreRemotePageVersion(version, remoteVersionTargetFile.value)) {
-      localActiveFile.value = remoteVersionTargetFile.value
-      await loadRemoteVersionHistory(remoteVersionTargetFile.value)
+    if (await props.state.restoreRemotePageVersion(version, resolvedActiveFile.value)) {
+      await loadVersions()
     }
   } finally {
-    restoringRemoteVersion.value = false
+    restoringVersion.value = null
+  }
+}
+
+async function createVersion() {
+  creatingVersion.value = true
+  try {
+    await props.state.saveByTab(resolvedActiveFile.value)
+    if (await props.state.createRemotePageVersion(resolvedActiveFile.value)) {
+      await loadVersions()
+    }
+  } finally {
+    creatingVersion.value = false
+  }
+}
+
+async function confirmDeleteVersion(row: BackendPageVersionSummary) {
+  try {
+    await ElMessageBox.confirm(
+      `确定删除版本 v${row.version} 吗？此操作不可撤销。`,
+      '删除版本',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
+    )
+  } catch {
+    return
+  }
+  if (await props.state.deleteRemotePageVersion(row.version, resolvedActiveFile.value)) {
+    await loadVersions()
+  }
+}
+
+function formatVersionTime(raw: string | null | undefined): string {
+  if (!raw) return '-'
+  try {
+    const d = new Date(raw)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  } catch {
+    return raw
   }
 }
 </script>
@@ -335,14 +297,16 @@ async function restoreSelectedRemoteVersion() {
   overflow: hidden;
 }
 
+/* ── Header ─────────────────────────────────────── */
 .file-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  padding: 12px 12px 8px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--el-border-color-lighter);
+  background: var(--el-bg-color);
 }
 
 .file-header__meta,
@@ -360,6 +324,20 @@ async function restoreSelectedRemoteVersion() {
 
 .file-header__actions {
   justify-content: flex-end;
+  gap: 6px;
+}
+
+.action-group {
+  display: inline-flex;
+}
+
+.action-divider {
+  display: inline-block;
+  width: 1px;
+  height: 20px;
+  background: var(--el-border-color-lighter);
+  margin: 0 2px;
+  flex-shrink: 0;
 }
 
 .file-page-id {
@@ -371,16 +349,7 @@ async function restoreSelectedRemoteVersion() {
   color: var(--el-color-primary);
 }
 
-.file-notice {
-  margin: 8px 12px 0;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: var(--el-color-primary-light-9);
-  border: 1px solid var(--el-color-primary-light-7);
-  color: var(--el-color-primary-dark-2);
-  font-size: 12px;
-}
-
+/* ── Tabs ────────────────────────────────────────── */
 .file-tab-bar {
   padding: 0 12px;
   flex-shrink: 0;
@@ -396,11 +365,21 @@ async function restoreSelectedRemoteVersion() {
   gap: 4px;
 }
 
+/* ── Editor Body (flex row) ──────────────────── */
+.editor-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Editor ────────────────────────────────── */
 .editor-area {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
   padding: 8px 12px 12px;
 }
@@ -428,38 +407,102 @@ async function restoreSelectedRemoteVersion() {
 }
 
 .file-dirty::after {
-  content: ' •';
+  content: ' \2022';
 }
 
-.remote-version-browser {
-  display: grid;
-  grid-template-columns: 420px minmax(0, 1fr);
-  gap: 12px;
-  min-height: 460px;
-}
-
-.remote-version-browser__list,
-.remote-version-browser__preview {
-  min-width: 0;
-}
-
-.remote-version-browser__preview {
+/* ── Version Side Panel ───────────────────── */
+.version-side {
+  width: 280px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border-left: 1px solid var(--el-border-color-lighter);
+  background: var(--el-bg-color);
+  overflow: hidden;
 }
 
-.remote-version-browser__preview-meta,
-.remote-version-status {
+.vs-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+  flex-shrink: 0;
 }
 
-.remote-version-browser__preview-time {
-  font-size: 12px;
+.vs-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.vs-file {
+  font-size: 11px;
   color: var(--el-text-color-secondary);
+  padding: 4px 12px;
+  flex-shrink: 0;
+}
+
+.vs-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 8px;
+}
+
+.vs-empty {
+  text-align: center;
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  padding: 24px 0;
+}
+
+.vs-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 4px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+}
+
+.vs-row--current {
+  background: var(--el-color-success-light-9);
+  border-radius: 4px;
+}
+
+.vs-time {
+  font-size: 11px;
+  color: var(--el-text-color-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.vs-spacer {
+  flex: 1;
+}
+
+.version-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+/* slide transition */
+.slide-version-enter-active,
+.slide-version-leave-active {
+  transition: width 0.25s ease, opacity 0.25s ease;
+  overflow: hidden;
+}
+
+.slide-version-enter-from,
+.slide-version-leave-to {
+  width: 0;
+  opacity: 0;
 }
 
 .empty-hint {
@@ -467,11 +510,5 @@ async function restoreSelectedRemoteVersion() {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-@media (max-width: 1280px) {
-  .remote-version-browser {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

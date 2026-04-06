@@ -8,26 +8,17 @@
         <el-tag v-if="state.hasAnyDirty.value" type="warning" size="small" effect="dark">未保存</el-tag>
       </div>
       <div class="dev-header__right">
-        <el-button size="small" @click="showCreateDialog">
-          <NavIcon name="Plus" :size="14" /> 新建页面
-        </el-button>
         <el-button size="small" @click="previewCurrentPage" :disabled="!canPreviewCurrentPage">
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
-        <el-button size="small" @click="showPreview = true">
-          <NavIcon name="View" :size="14" /> JSON
-        </el-button>
-        <el-button size="small" :disabled="!canRefreshCurrentTab" @click="refreshCurrentTab">
-          <NavIcon name="Refresh" :size="14" /> 刷新当前
-        </el-button>
         <el-button
-          type="primary"
+          v-if="state.hasAnyDirty.value"
           size="small"
-          :disabled="!canSaveCurrentTab"
+          type="success"
           :loading="state.navSaving.value || state.fileSaving.value"
-          @click="saveCurrentTab"
+          @click="saveAll"
         >
-          <NavIcon name="DocumentChecked" :size="14" /> {{ currentTabSaveLabel }}
+          <NavIcon name="FolderChecked" :size="14" /> 全部保存
         </el-button>
         <el-divider direction="vertical" />
         <el-button
@@ -40,20 +31,20 @@
       </div>
     </div>
 
-    <!-- ═══ 主体三栏布局 ═══ -->
+    <!-- ═══ 主体两栏布局 ═══ -->
     <div class="dev-body" v-loading="state.navLoading.value">
       <!-- 左栏：站点树 -->
       <div class="dev-body__tree">
         <DevSiteTree :state="state" />
       </div>
 
-      <!-- 中栏：工作区 -->
+      <!-- 右栏：工作区 -->
       <div class="dev-body__workspace">
         <el-tabs v-model="workTab" type="border-card" class="workspace-tabs">
           <!-- 🔧 节点属性（选中节点时可用） -->
           <el-tab-pane label="节点属性" name="props" :disabled="!state.selectedNode.value">
             <template v-if="state.selectedNode.value">
-              <DevNodeProps :state="state" @create-page="showCreateDialogLinked" />
+              <DevNodeProps :state="state" />
             </template>
             <el-empty v-else description="在左侧树中选择节点开始编辑" />
           </el-tab-pane>
@@ -80,7 +71,6 @@
             <template v-if="state.activePageId.value">
               <span class="footer-info"><NavIcon name="Tickets" :size="13" /> {{ state.activePageId.value }}</span>
               <el-tag v-if="state.hasAnyFileDirty.value" type="warning" size="small">文件已修改</el-tag>
-              <el-tag v-if="currentWorkspaceFile && state.getFileSnapshotCount(currentWorkspaceFile) > 0" type="info" size="small">快照 {{ state.getFileSnapshotCount(currentWorkspaceFile) }}</el-tag>
               <el-tag v-if="currentWorkspaceFile === 'pagedata.json' && state.pageDataSetError.value" type="danger" size="small">{{ state.pageDataSetError.value }}</el-tag>
             </template>
           </div>
@@ -98,21 +88,21 @@
         </div>
       </div>
 
-      <!-- 右栏：AI 助手 (可折叠) -->
-      <transition name="slide-right">
-        <div v-if="state.aiPanelVisible.value" class="dev-body__ai">
-          <div class="ai-panel-header">
-            <span class="ai-panel-header__title"><NavIcon name="Cpu" :size="14" /> AI 助手</span>
-            <el-button
-              size="small"
-              link
-              @click="state.aiPanelVisible.value = false"
-            ><NavIcon name="CloseBold" :size="12" /></el-button>
-          </div>
-          <DevAiPanel :state="state" />
-        </div>
-      </transition>
     </div>
+
+    <!-- ═══ AI 助手抽屉 ═══ -->
+    <el-drawer
+      v-model="state.aiPanelVisible.value"
+      title="AI 助手"
+      direction="rtl"
+      size="420px"
+      :with-header="true"
+      :close-on-click-modal="false"
+      :append-to-body="true"
+      class="ai-drawer"
+    >
+      <DevAiPanel :state="state" />
+    </el-drawer>
 
     <!-- ═══ 底部状态栏 ═══ -->
     <div class="dev-status-bar">
@@ -129,53 +119,13 @@
       </div>
     </div>
 
-    <!-- ═══ 新建页面对话框 ═══ -->
-    <el-dialog v-model="createVisible" title="新建页面" width="480px" :close-on-click-modal="false">
-      <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-width="100px">
-        <el-form-item label="Page ID" prop="pageId">
-          <el-input v-model="createForm.pageId" placeholder="英文/数字/横线" />
-        </el-form-item>
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="createForm.title" placeholder="页面显示名称" />
-        </el-form-item>
-        <el-form-item label="图标">
-          <el-input v-model="createForm.icon" placeholder="Document" style="width: 120px" />
-        </el-form-item>
-        <el-form-item v-if="state.selectedNode.value" label="关联到节点">
-          <el-switch v-model="createForm.linkToNav" />
-          <span v-if="createForm.linkToNav" style="margin-left: 8px; color: var(--el-text-color-secondary); font-size: 12px">
-            将自动写入当前节点的 pageId
-          </span>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="createVisible = false">取消</el-button>
-        <el-button type="primary" :loading="creating" @click="doCreate">创建</el-button>
-      </template>
-    </el-dialog>
 
-    <!-- ═══ JSON 预览对话框 ═══ -->
-    <el-dialog v-model="showPreview" title="导航配置 JSON" width="720px" top="5vh">
-      <SparkJsonEditor
-        :model-value="state.previewJson.value"
-        height="560px"
-        mode="text"
-        read-only
-      />
-      <template #footer>
-        <el-button @click="copyJson"><NavIcon name="List" :size="14" /> 复制</el-button>
-        <el-button @click="showPreview = false">关闭</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { ElMessage } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
-import { SparkJsonEditor } from '@spark-view/spark-component'
 import { PAGE_FILE_NAMES, useDevState } from './useDevState'
 import type { DevWorkspaceTab, PageFileName } from './useDevState'
 import DevSiteTree from './DevSiteTree.vue'
@@ -193,24 +143,7 @@ const currentWorkspaceFile = computed<PageFileName | null>(() => {
   return isPageFileName(workTab.value) ? workTab.value : null
 })
 
-const currentTabSaveLabel = computed(() => (workTab.value === 'props' ? '保存节点' : '保存当前文件'))
 const canPreviewCurrentPage = computed(() => Boolean(state.editForm.path || state.activePageId.value))
-
-const canSaveCurrentTab = computed(() => {
-  if (workTab.value === 'props') {
-    return state.selectedNode.value != null
-  }
-
-  return currentWorkspaceFile.value !== null && Boolean(state.activePageId.value)
-})
-
-const canRefreshCurrentTab = computed(() => {
-  if (workTab.value === 'props') {
-    return state.selectedNode.value != null || state.treeData.value.length > 0
-  }
-
-  return currentWorkspaceFile.value !== null && Boolean(state.activePageId.value)
-})
 
 function isPageFileName(value: string): value is PageFileName {
   return PAGE_FILE_NAMES.includes(value as PageFileName)
@@ -240,9 +173,6 @@ watch(() => state.activePageId.value, (newId) => {
   }
 })
 
-// JSON 预览
-const showPreview = ref(false)
-
 function previewPage(pageId: string) {
   void router.push(tenantPath(`/${pageId}`))
 }
@@ -251,77 +181,9 @@ function previewCurrentPage() {
   if (state.editForm.path) void router.push(tenantPath(state.editForm.path))
   else if (state.activePageId.value) void router.push(tenantPath(`/${state.activePageId.value}`))
 }
-const createVisible = ref(false)
-const creating = ref(false)
-const createFormRef = ref<FormInstance>()
-const createForm = reactive({ pageId: '', title: '', icon: 'Document', linkToNav: false })
-const createRules: FormRules = {
-  pageId: [
-    { required: true, message: '必填', trigger: 'blur' },
-    { pattern: /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/, message: '英文/数字/横线', trigger: 'blur' },
-  ],
-  title: [{ required: true, message: '必填', trigger: 'blur' }],
-}
 
-function showCreateDialog() {
-  createForm.pageId = ''
-  createForm.title = ''
-  createForm.icon = 'Document'
-  createForm.linkToNav = false
-  createVisible.value = true
-}
-
-function showCreateDialogLinked() {
-  createForm.pageId = state.editForm.id || ''
-  createForm.title = state.editForm.title || ''
-  createForm.icon = state.editForm.icon || 'Document'
-  createForm.linkToNav = state.selectedNode.value != null
-  createVisible.value = true
-}
-
-async function doCreate() {
-  const valid = await createFormRef.value?.validate().catch(() => false)
-  if (!valid) return
-  creating.value = true
-  try {
-    await state.createPage(
-      createForm.pageId,
-      createForm.title,
-      createForm.icon,
-      createForm.linkToNav,
-    )
-    createVisible.value = false
-  } catch (e) {
-    ElMessage.error(String(e))
-  } finally {
-    creating.value = false
-  }
-}
-
-function copyJson() {
-  void navigator.clipboard.writeText(state.previewJson.value).then(() => ElMessage.success('已复制'))
-}
-
-function saveCurrentTab() {
-  if (workTab.value === 'props') {
-    void state.saveByTab('props')
-    return
-  }
-
-  if (currentWorkspaceFile.value) {
-    void state.saveByTab(currentWorkspaceFile.value)
-  }
-}
-
-function refreshCurrentTab() {
-  if (workTab.value === 'props') {
-    void state.refreshByTab('props')
-    return
-  }
-
-  if (currentWorkspaceFile.value) {
-    void state.refreshByTab(currentWorkspaceFile.value)
-  }
+function saveAll() {
+  void state.saveAll()
 }
 
 // 初始化
@@ -454,34 +316,12 @@ onMounted(() => { void state.initialize() })
   color: var(--el-text-color-secondary);
 }
 
-/* 右栏：AI 面板 */
-.dev-body__ai {
-  width: 380px;
-  flex-shrink: 0;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 12px;
-  background: var(--el-bg-color);
+/* AI 抽屉内部布局 */
+.ai-drawer :deep(.el-drawer__body) {
+  padding: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.ai-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--el-border-color-lighter);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-  flex-shrink: 0;
-}
-
-.ai-panel-header__title {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 /* ═══ 底部状态栏 ═══ */
@@ -535,17 +375,7 @@ onMounted(() => { void state.initialize() })
   content: ' •';
 }
 
-/* ═══ AI 面板滑入动画 ═══ */
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: all 0.25s ease;
-}
-.slide-right-enter-from,
-.slide-right-leave-to {
-  width: 0;
-  opacity: 0;
-  overflow: hidden;
-}
+
 
 /* ═══ 工作区空状态 ═══ */
 .workspace-empty {

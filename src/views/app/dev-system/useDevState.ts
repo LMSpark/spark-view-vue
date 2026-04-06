@@ -222,7 +222,7 @@ export function useDevState() {
   const linkProbeInfo = ref<{ embeddable: boolean; reason: string } | null>(null)
 
   // ── AI 面板 ──
-  const aiPanelVisible = ref(true)
+  const aiPanelVisible = ref(false)
 
   // ── 自动保存 ──
   const autoSaveStatus = ref<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle')
@@ -232,7 +232,16 @@ export function useDevState() {
   // ── 计算属性 ──
   const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
-  const pageDataHistoryCount = computed(() => pageDataHistory.value.length)
+  const pageDataHistoryCount = computed(() => {
+    const count = pageDataHistory.value.length
+    if (count === 0) return 0
+    const activeIndex = pageDataHistoryActiveIndex.value
+    if (activeIndex >= 0) return count - 1 - activeIndex
+    // Draft state: first back goes to baseIndex or 0, then continues to oldest
+    const bi = pageDataHistoryBaseIndex.value
+    const firstTarget = (bi >= 0 && bi < count) ? bi : 0
+    return count - firstTarget
+  })
   const pageDataHistoryActiveIndex = computed(() => resolvePageDataHistoryIndex(editFiles['pagedata.json'] ?? ''))
   const canPageDataHistoryBack = computed(() => {
     return canNavigatePageDataHistoryBack({
@@ -251,10 +260,6 @@ export function useDevState() {
       currentText: editFiles['pagedata.json'] ?? '',
       draftText: pageDataHistoryDraft.value,
     })
-  })
-  const previewJson = computed(() => {
-    const root: AppNavRoot = { title: '', childPlacement: 'header', children: treeData.value }
-    return JSON.stringify(root, null, 2)
   })
 
   function normalizePageIdFromPath(path: string | undefined | null): string {
@@ -397,7 +402,17 @@ export function useDevState() {
     if (name === 'pagedata.json') {
       return pageDataHistoryCount.value
     }
-    return fileTextHistory[name].length
+    // Return undoable step count, not total entries
+    const history = fileTextHistory[name]
+    if (history.length === 0) return 0
+    const activeIndex = resolveFileTextHistoryIndex(name, editFiles[name] ?? '')
+    if (activeIndex >= 0) {
+      // At index N (chronological), can undo N times (back to index 0)
+      return activeIndex
+    }
+    // Draft state (text not in history): undo first goes to cursor, then back to 0
+    const cursor = fileTextHistoryCursor[name]
+    return cursor >= 0 ? cursor + 1 : 0
   }
 
   function getFileSnapshotCount(name: PageFileName): number {
@@ -892,6 +907,39 @@ export function useDevState() {
       return true
     } catch (e) {
       addStatus(`恢复版本失败: ${String(e)}`, 'error')
+      return false
+    }
+  }
+
+  async function createRemotePageVersion(filename: PageFileName): Promise<boolean> {
+    const pageId = activePageId.value
+    if (!pageId) return false
+
+    try {
+      await http.post<Record<string, unknown>>(
+        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions`,
+        {},
+      )
+      addStatus(`${filename} 已创建新版本快照`, 'success')
+      return true
+    } catch (e) {
+      addStatus(`创建版本快照失败: ${String(e)}`, 'error')
+      return false
+    }
+  }
+
+  async function deleteRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
+    const pageId = activePageId.value
+    if (!pageId) return false
+
+    try {
+      await http.delete(
+        `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}`,
+      )
+      addStatus(`${filename} 版本 v${version} 已删除`, 'success')
+      return true
+    } catch (e) {
+      addStatus(`删除版本失败: ${String(e)}`, 'error')
       return false
     }
   }
@@ -1755,7 +1803,6 @@ export function useDevState() {
     pageDataHistoryActiveIndex,
     canPageDataHistoryBack,
     canPageDataHistoryForward,
-    previewJson,
     getFileSnapshotCount,
     getFileHistoryCount,
     canUndoFileSnapshot,
@@ -1773,6 +1820,8 @@ export function useDevState() {
     listRemotePageVersions,
     readRemotePageVersionFile,
     restoreRemotePageVersion,
+    createRemotePageVersion,
+    deleteRemotePageVersion,
     updatePageDataDocument,
     restorePageDataHistory,
     goPageDataHistoryBack,

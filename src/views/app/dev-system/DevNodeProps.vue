@@ -47,7 +47,6 @@ import NodeStateConfig from './components/NodeStateConfig.vue'
 import NodeContextConfig from './components/NodeContextConfig.vue'
 
 const props = defineProps<{ state: DevState }>()
-defineEmits<{ createPage: [] }>()
 
 const isSystemRootDirectory = computed(() => props.state.isSystemRootDirectory(props.state.selectedNode.value))
 const moduleKindDisabled = computed(() => !props.state.canUseModuleNodeKind(props.state.selectedNode.value))
