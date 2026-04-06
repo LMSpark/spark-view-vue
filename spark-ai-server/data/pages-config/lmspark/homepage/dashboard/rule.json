@@ -1,0 +1,229 @@
+[
+  {
+    "type": "div",
+    "class": "dashboard-page",
+    "children": [
+      {
+        "type": "r-page-header",
+        "props": {
+          "content": "管理仪表板"
+        },
+        "on": {
+          "back": "handleBack"
+        }
+      },
+      {
+        "type": "div",
+        "class": "dashboard-content",
+        "children": [
+          {
+            "type": "r-row",
+            "props": { "gutter": 20 },
+            "class": "stats-row",
+            "children": [
+              {
+                "type": "r-col",
+                "props": { "span": 6 },
+                "children": [
+                  {
+                    "type": "r-card",
+                    "class": "stats-card stats-card--users",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "stats-content",
+                        "children": [
+                          { "type": "div", "class": "stats-icon", "children": ["👥"] },
+                          {
+                            "type": "div",
+                            "class": "stats-info",
+                            "children": [
+                              { "type": "div", "class": "stats-value", "children": ["1,234"] },
+                              { "type": "div", "class": "stats-label", "children": ["用户总数"] }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-col",
+                "props": { "span": 6 },
+                "children": [
+                  {
+                    "type": "r-card",
+                    "class": "stats-card stats-card--visits",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "stats-content",
+                        "children": [
+                          { "type": "div", "class": "stats-icon", "children": ["📊"] },
+                          {
+                            "type": "div",
+                            "class": "stats-info",
+                            "children": [
+                              { "type": "div", "class": "stats-value", "children": ["567"] },
+                              { "type": "div", "class": "stats-label", "children": ["今日访问"] }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-col",
+                "props": { "span": 6 },
+                "children": [
+                  {
+                    "type": "r-card",
+                    "class": "stats-card stats-card--hot",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "stats-content",
+                        "children": [
+                          { "type": "div", "class": "stats-icon", "children": ["🔥"] },
+                          {
+                            "type": "div",
+                            "class": "stats-info",
+                            "children": [
+                              { "type": "div", "class": "stats-value", "children": ["89"] },
+                              { "type": "div", "class": "stats-label", "children": ["热门内容"] }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-col",
+                "props": { "span": 6 },
+                "children": [
+                  {
+                    "type": "r-card",
+                    "class": "stats-card stats-card--revenue",
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "stats-content",
+                        "children": [
+                          { "type": "div", "class": "stats-icon", "children": ["💰"] },
+                          {
+                            "type": "div",
+                            "class": "stats-info",
+                            "children": [
+                              { "type": "div", "class": "stats-value", "children": ["¥12,345"] },
+                              { "type": "div", "class": "stats-label", "children": ["今日收入"] }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "r-row",
+            "props": { "gutter": 20 },
+            "class": "feature-row",
+            "children": [
+              {
+                "type": "r-col",
+                "props": { "span": 12 },
+                "children": [
+                  {
+                    "type": "r-card",
+                    "props": { "header": "快捷操作" },
+                    "children": [
+                      {
+                        "type": "div",
+                        "class": "quick-actions",
+                        "children": [
+                          {
+                            "type": "r-button-group",
+                            "children": [
+                              {
+                                "type": "r-button",
+                                "props": { "buttonType": "primary" },
+                                "on": { "click": "goToConfigPage" },
+                                "children": ["📝 配置页面演示"]
+                              },
+                              {
+                                "type": "r-button",
+                                "props": { "buttonType": "success" },
+                                "on": { "click": "goToVueComponent" },
+                                "children": ["🎯 Vue 组件页面"]
+                              },
+                              {
+                                "type": "r-button",
+                                "props": { "buttonType": "warning" },
+                                "on": { "click": "goToSettings" },
+                                "children": ["⚙️ 系统设置"]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-col",
+                "props": { "span": 12 },
+                "children": [
+                  {
+                    "type": "r-card",
+                    "props": { "header": "页面类型对比" },
+                    "children": [
+                      {
+                        "type": "el-table",
+                        "dataKey": "pageTypes@rows",
+                        "props": {
+                          "style": { "width": "100%" }
+                        },
+                        "children": [
+                          {
+                            "type": "el-table-column",
+                            "props": { "prop": "type", "label": "页面类型", "width": "120" }
+                          },
+                          {
+                            "type": "el-table-column",
+                            "props": { "prop": "tech", "label": "技术实现" }
+                          },
+                          {
+                            "type": "el-table-column",
+                            "props": { "prop": "example", "label": "示例页面" }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "r-alert",
+            "props": {
+              "title": "混合渲染模式",
+              "alertType": "info",
+              "closable": false,
+              "description": "🎯 当前页面: 零代码配置页面 (JSON DSL 模式) | 📊 配置页面: 通过 JSON 配置生成 | 🔄 混合模式: 同时支持 Vue 组件与 JSON 配置两种渲染方式"
+            },
+            "style": { "marginTop": "20px" }
+          }
+        ]
+      }
+    ]
+  }
+]

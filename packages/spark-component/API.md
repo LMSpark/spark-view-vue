@@ -411,3 +411,161 @@ export type {
   PageConfig,
 }
 ```
+
+---
+
+## 内置 SparkNode 组件目录（103 类型）
+
+所有组件通过 `Spark.register()` 注册，在 `rule.json` 中以 `type` 引用。
+
+### 容器组件 — 数据驱动（5 类型）
+
+自解析 `dataKey`，提供 `DATA_SOURCE` 能力。
+
+| type | 组件 | 说明 |
+|------|------|------|
+| `r-table` | RendererTable | DataView → el-table，自动行选中/高亮 |
+| `r-form` | RendererForm | DataView.currentRow → reactive formModel |
+| `r-detail` | RendererDetail | DataView.currentRow → 只读详情展示 |
+| `r-tree` | RendererTree | DataView → el-tree，支持懒加载/嵌套 |
+| `r-list` | RendererList | DataView → 列表渲染 |
+
+### 容器组件 — 非数据驱动（39 类型，含 2 别名）
+
+纯布局/交互容器，透传 children。
+
+| type | 组件 | 说明 |
+|------|------|------|
+| `r-tabs` | RendererTabs | el-tabs，子节点为 tab-pane |
+| `r-collapse` | RendererCollapse | el-collapse，子节点为 collapse-item |
+| `r-dialog` | RendererDialog | el-dialog 弹窗 |
+| `r-drawer` | RendererDrawer | el-drawer 抽屉 |
+| `r-steps` | RendererSteps | el-steps 步骤条 |
+| `r-section` | RendererSection | 语义分区容器 |
+| `r-block` | RendererSection | ⇢ `r-section` 别名 |
+| `r-toolbar` | RendererToolbar | 工具栏 |
+| `r-menu` | RendererToolbar | ⇢ `r-toolbar` 别名 |
+| `r-row` | RendererRow | el-row 栅格行 |
+| `r-col` | RendererCol | el-col 栅格列（span/offset/push/pull） |
+| `r-card` | RendererCard | el-card 卡片 |
+| `r-space` | RendererSpace | el-space 间距 |
+| `r-divider` | RendererDivider | el-divider 分割线 |
+| `r-button` | RendererButton | el-button（buttonType/size/icon/loading） |
+| `r-link` | RendererLink | el-link 文字链接 |
+| `r-page-header` | RendererPageHeader | el-page-header 页头 |
+| `r-dropdown` | RendererDropdown | el-dropdown 下拉菜单 |
+| `r-tooltip` | RendererTooltip | el-tooltip 文字提示 |
+| `r-popover` | RendererPopover | el-popover 气泡弹出框 |
+| `r-popconfirm` | RendererPopconfirm | el-popconfirm 气泡确认框 |
+| `r-backtop` | RendererBacktop | el-backtop 回到顶部 |
+| `r-carousel` | RendererCarousel | el-carousel 走马灯 |
+| `r-carousel-item` | RendererCarouselItem | el-carousel-item 走马灯项 |
+| `r-watermark` | RendererWatermark | el-watermark 水印 |
+| `r-affix` | RendererAffix | el-affix 固钉 |
+| `r-scrollbar` | RendererScrollbar | el-scrollbar 滚动条 |
+| `r-tour` | RendererTour | el-tour 漫游式引导 |
+| `r-anchor` | RendererAnchor | el-anchor 锚点导航 |
+| `r-anchor-link` | RendererAnchorLink | el-anchor-link 锚点链接 |
+| `r-container` | RendererContainer | el-container 布局容器（direction） |
+| `r-aside` | RendererAside | el-aside 侧边栏（asideWidth） |
+| `r-main` | RendererMain | el-main 主内容区 |
+| `r-layout-header` | RendererLayoutHeader | el-header 布局顶栏（headerHeight） |
+| `r-layout-footer` | RendererLayoutFooter | el-footer 布局底栏（footerHeight） |
+| `r-button-group` | RendererButtonGroup | el-button-group 按钮组 |
+| `builtin-action` | BuiltinActionButton | 内置操作按钮（增删改查） |
+
+### 展示组件 — 数据驱动（7 类型）
+
+绑定 DataView 字段数据，通过 `useDisplayDataSource` 读取。
+
+| type | 组件 | 说明 |
+|------|------|------|
+| `r-statistic` | DisplayStatistic | el-statistic 统计数值 |
+| `r-progress` | DisplayProgress | el-progress 进度条 |
+| `r-tag` | DisplayTag | el-tag 标签 |
+| `r-badge` | DisplayBadge | el-badge 徽章 |
+| `r-avatar` | DisplayAvatar | el-avatar 头像 |
+| `r-text-display` | DisplayText | el-text 文本展示 |
+| `r-pagination` | DisplayPagination | el-pagination 分页 |
+
+### 展示组件 — 非数据驱动（14 类型）
+
+静态/配置驱动的展示元素。
+
+| type | 组件 | 说明 |
+|------|------|------|
+| `r-descriptions` | DisplayDescriptions | el-descriptions 描述列表 |
+| `r-descriptions-item` | DisplayDescriptionsItem | el-descriptions-item 描述项 |
+| `r-timeline` | DisplayTimeline | el-timeline 时间线 |
+| `r-timeline-item` | DisplayTimelineItem | el-timeline-item 时间线项 |
+| `r-alert` | DisplayAlert | el-alert 提示 |
+| `r-empty` | DisplayEmpty | el-empty 空状态 |
+| `r-result` | DisplayResult | el-result 结果页 |
+| `r-breadcrumb` | DisplayBreadcrumb | el-breadcrumb 面包屑 |
+| `r-breadcrumb-item` | DisplayBreadcrumbItem | el-breadcrumb-item 面包屑项 |
+| `r-skeleton` | DisplaySkeleton | el-skeleton 骨架屏 |
+| `display-image` | DisplayImage | el-image 图片展示 |
+| `display-calendar` | DisplayCalendar | el-calendar 日历 |
+| `display-countdown` | DisplayCountdown | el-countdown 倒计时 |
+| `display-icon` | DisplayIcon | el-icon 图标（动态解析 @element-plus/icons-vue） |
+
+### Dock 组件（6 类型）
+
+容器内结构化槽位（header/footer/actions/filter/editor/tail）。
+
+| type | 组件 | 说明 |
+|------|------|------|
+| `r-actions` | DockActions | 操作按钮区 |
+| `r-filter` | DockFilter | 筛选条件区 |
+| `r-editor` | DockEditor | 编辑区 |
+| `r-header` | DockHeader | 容器顶部操作栏（div 弹性布局，非 el-header） |
+| `r-footer` | DockFooter | 容器底部操作栏（div 弹性布局，非 el-footer） |
+| `r-tail` | DockTail | 尾部扩展区 |
+
+### 字段组件（32 类型）
+
+表单字段，支持 DataView 双向绑定 + 权限渲染。
+
+| type | 组件 | 说明 |
+|------|------|------|
+| `r-text` | FieldText | el-input 文本输入 |
+| `r-textarea` | FieldTextarea | el-input textarea 多行 |
+| `r-html-editor` | FieldHtmlEditor | 富文本编辑器 |
+| `r-number` | FieldNumber | el-input-number 数字输入 |
+| `r-date` | FieldDate | el-date-picker（dateType 支持 date/datetime/daterange/monthrange 等全类型） |
+| `r-select` | FieldSelect | el-select 下拉选择 |
+| `r-multi-select` | FieldMultiSelect | el-select 多选模式 |
+| `r-radio` | FieldRadio | el-radio-group 单选 |
+| `r-checkbox` | FieldCheckbox | el-checkbox 复选框 |
+| `r-checkbox-group` | FieldCheckboxGroup | el-checkbox-group 复选组 |
+| `r-switch` | FieldSwitch | el-switch 开关 |
+| `r-slider` | FieldSlider | el-slider 滑块 |
+| `r-rate` | FieldRate | el-rate 评分 |
+| `r-color` | FieldColor | el-color-picker 颜色选择 |
+| `r-icon` | FieldIcon | 图标选择器 |
+| `r-image` | FieldImage | 图片选择/预览 |
+| `r-file-path` | FieldFilePath | 文件路径输入 |
+| `r-file-browser` | FieldFileBrowser | 文件浏览器 |
+| `r-upload` | FieldUpload | el-upload 文件上传 |
+| `r-entity-picker` | FieldEntityPicker | 实体选择器 |
+| `r-user-picker` | FieldUserPicker | 用户选择器 |
+| `r-dept-picker` | FieldDeptPicker | 部门选择器 |
+| `r-product-picker` | FieldProductPicker | 产品选择器 |
+| `r-cascader` | FieldCascader | el-cascader 级联选择 |
+| `r-tree-select` | FieldTreeSelect | el-tree-select 树选择 |
+| `r-transfer` | FieldTransfer | el-transfer 穿梭框 |
+| `r-segmented` | FieldSegmented | el-segmented 分段控制器 |
+| `r-check-tag` | FieldCheckTag | el-check-tag 可选标签 |
+| `r-mention` | FieldMention | el-mention @提及 |
+| `r-time-picker` | FieldTimePicker | el-time-picker 时间选择 |
+| `r-time-select` | FieldTimeSelect | el-time-select 时间下拉 |
+| `r-autocomplete` | FieldAutocomplete | el-autocomplete 自动补全 |
+
+### 基础设施组件（2 类型）
+
+| type | 组件 | 说明 |
+|------|------|------|
+| `r-column-group` | FieldContextRenderer | 表格列分组/字段上下文渲染 |
+| `r-tree-node-summary` | TreeNodeSummary | 树节点摘要展示 |
+
+> **注意**：`r-header`/`r-footer`（Dock）与 `r-layout-header`/`r-layout-footer`（Layout）是不同组件——Dock 是容器内操作栏（div 弹性布局），Layout 是 el-header/el-footer 页面结构容器。
