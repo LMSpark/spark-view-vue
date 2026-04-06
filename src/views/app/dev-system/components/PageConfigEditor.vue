@@ -13,6 +13,7 @@
       <el-tab-pane v-for="fname in FILE_NAMES" :key="fname" :label="fname" :name="fname">
         <JsonTreeEditor
           v-if="fname === 'rule.json'"
+          type="json-tree-editor"
           :model-value="files[fname] ?? ''"
           :policy="rulePolicy"
           :schema="RULE_JSON_SCHEMA"
@@ -22,6 +23,7 @@
         />
         <JsonTreeEditor
           v-else-if="fname === 'pagedata.json'"
+          type="json-tree-editor"
           :model-value="files[fname] ?? ''"
           :document-value="pageDataDocument"
           :policy="pageDataPolicy"

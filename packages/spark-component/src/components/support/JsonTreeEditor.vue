@@ -64,7 +64,7 @@
           <template #default="{ row }">
             <div class="vxe-json-tree-editor__key-cell">
               <el-input
-                v-if="row.keyEditable && !readOnly && isRowActive(row)"
+                v-if="row.keyEditable && isEditable && isRowActive(row)"
                 :model-value="row.displayKey"
                 size="small"
                 @change="handleKeyChange(row, $event)"
@@ -79,7 +79,7 @@
         <vxe-column field="type" title="类型" width="130">
           <template #default="{ row }">
             <el-select
-              v-if="row.typeEditable && !readOnly && isRowActive(row)"
+              v-if="row.typeEditable && isEditable && isRowActive(row)"
               :model-value="row.type"
               size="small"
               style="width: 110px"
@@ -97,7 +97,7 @@
             <div class="vxe-json-tree-editor__value-cell">
               <template v-if="row.type === 'string'">
                 <el-select
-                  v-if="!readOnly && isRowActive(row) && row._schemaEnumValues.length > 0"
+                  v-if="isEditable && isRowActive(row) && row._schemaEnumValues.length > 0"
                   :model-value="row.stringValue"
                   size="small"
                   filterable
@@ -110,7 +110,7 @@
                   v-else-if="isRowActive(row)"
                   :model-value="row.stringValue"
                   size="small"
-                  :readonly="readOnly"
+                  :readonly="!isEditable"
                   @change="handleStringChange(row, $event)"
                 />
                 <span v-else class="vxe-json-tree-editor__value-text">{{ row.stringValue || '(空字符串)' }}</span>
@@ -120,13 +120,13 @@
                 :model-value="row.numberValue ?? 0"
                 size="small"
                 controls-position="right"
-                :disabled="readOnly"
+                :disabled="!isEditable"
                 @change="handleNumberChange(row, $event)"
               />
               <el-switch
                 v-else-if="row.type === 'boolean' && isRowActive(row)"
                 :model-value="row.booleanValue"
-                :disabled="readOnly"
+                :disabled="!isEditable"
                 @update:model-value="handleBooleanChange(row, $event)"
               />
               <el-tag v-else-if="row.type === 'boolean'" size="small" type="info" effect="plain">
@@ -162,7 +162,7 @@
         <vxe-column field="pathText" title="路径" min-width="220" />
 
         <!-- 列 7: 操作 -->
-        <vxe-column v-if="!readOnly" title="操作" width="210">
+        <vxe-column v-if="isEditable" title="操作" width="210">
           <template #default="{ row }">
             <div class="vxe-json-tree-editor__action-cell">
               <template v-if="isRowActive(row)">
@@ -182,6 +182,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
+import type { SparkNode } from '../internal'
+import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import {
   addChildNode,
   addSiblingNode,
@@ -217,7 +219,13 @@ interface DisplayRow extends JsonTreeRow {
 
 // ── Props ─────────────────────────────────────────────────────
 
-interface Props {
+interface Props extends SparkNode {
+  /** 字段绑定名，映射到 DataView 行字段 */
+  field?: string
+  /** 显示标签 */
+  label?: string
+  /** r-table 内列宽 */
+  width?: number
   modelValue?: string
   documentValue?: JsonDocument | null
   height?: number | string
@@ -243,6 +251,7 @@ const props = withDefaults(defineProps<Props>(), {
   readOnly: false,
   schema: null,
   filterPlaceholder: '筛选路径 / 键名 / 值',
+  type: 'json-tree-editor',
 })
 
 const emit = defineEmits<{
@@ -250,6 +259,35 @@ const emit = defineEmits<{
   'update:documentValue': [value: JsonDocument]
 }>()
 
+// ── 字段能力接入 ────────────────────────────────────────────
+
+const { permission, handleControlledChange } = useBasicFieldState<string>({
+  props,
+  fieldType: 'json-tree-editor',
+  fallbackValue: '',
+  emitUpdate: value => emit('update:modelValue', value),
+})
+
+const { fieldValue, isCurrentFieldEditable: _fieldEditable } = permission
+
+/** 字段模式用权限驱动；独立模式用 !readOnly */
+const isEditable = computed(() =>
+  props.field ? _fieldEditable.value : !props.readOnly,
+)
+
+/**
+ * 字段模式下的有效输入值。
+ * DATA_ROW[field] 可能是 string（JSON 文本）→ 反序列化；
+ * 也可能是 object/array（已解析文档）→ 直接使用。
+ */
+const effectiveFieldInput = computed<string | JsonDocument>(() => {
+  if (props.field) {
+    const raw: unknown = fieldValue.value
+    if (raw !== null && typeof raw === 'object') return raw as JsonDocument
+    return typeof raw === 'string' ? raw : ''
+  }
+  return props.modelValue
+})
 // ── 合并 policy（平铺 props 优先） ──────────────────────────
 
 const mergedPolicy = computed<Partial<JsonTreePolicy>>(() => {
@@ -368,13 +406,17 @@ watch(() => props.documentValue, (value) => {
   syncDocumentValue(value)
 }, { immediate: true })
 
-watch(() => props.modelValue, (value) => {
+watch(effectiveFieldInput, (value) => {
   if (props.documentValue !== null) return
-  if (lastEmittedModelValue !== null && value === lastEmittedModelValue) {
-    lastEmittedModelValue = null
-    return
+  if (typeof value === 'string') {
+    if (lastEmittedModelValue !== null && value === lastEmittedModelValue) {
+      lastEmittedModelValue = null
+      return
+    }
+    syncDocument(value)
+  } else {
+    syncDocumentValue(value)
   }
-  syncDocument(value)
 }, { immediate: true })
 
 watch(displayRows, () => {
@@ -523,7 +565,7 @@ function handleDelete(row: DisplayRow): void {
 }
 
 function mutateDocument(mutator: (current: JsonDocument) => JsonDocument): void {
-  if (props.readOnly) return
+  if (!isEditable.value) return
   const nextDocument = mutator(documentRef.value)
   const nextText = serializeJsonDocument(nextDocument)
   documentRef.value = nextDocument
@@ -531,6 +573,8 @@ function mutateDocument(mutator: (current: JsonDocument) => JsonDocument): void 
   lastEmittedModelValue = nextText
   emit('update:documentValue', cloneDocument(nextDocument))
   emit('update:modelValue', nextText)
+  // 字段模式：通过能力链回写 DATA_ROW[field]
+  void handleControlledChange(nextText)
 }
 
 function cloneDocument(value: JsonDocument): JsonDocument {

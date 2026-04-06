@@ -47,6 +47,7 @@
       <div class="editor-area" v-loading="!state.fileLoaded.value">
         <JsonTreeEditor
           v-if="resolvedActiveFile === 'rule.json'"
+          type="json-tree-editor"
           :model-value="state.editFiles[resolvedActiveFile] ?? ''"
           :policy="rulePolicy"
           :schema="RULE_JSON_SCHEMA"
@@ -56,6 +57,7 @@
         />
         <JsonTreeEditor
           v-else-if="resolvedActiveFile === 'pagedata.json'"
+          type="json-tree-editor"
           :model-value="state.editFiles[resolvedActiveFile] ?? ''"
           :document-value="(state.pageDataDocument.value as JsonDocument | null)"
           :policy="pageDataPolicy"
@@ -127,6 +129,7 @@
             />
             <JsonTreeEditor
               v-else-if="isJsonFile(remoteVersionTargetFile)"
+              type="json-tree-editor"
               :model-value="remoteVersionPreviewContent"
               class="code-input code-input--json"
               height="460px"
