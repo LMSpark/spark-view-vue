@@ -7,6 +7,7 @@
 1. [DATAFLOW_ARCHITECTURE.md](DATAFLOW_ARCHITECTURE.md)：页面配置、DataSet、渲染链路的总体数据流。
 2. [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md)：权限模型、快照与渲染规则。
 3. [PLATFORM_TENANT_ROUTING.md](PLATFORM_TENANT_ROUTING.md)：租户/项目路由与平台级路径结构。
+4. [SPARK_AI_PACKAGE_FULL_DESIGN.md](SPARK_AI_PACKAGE_FULL_DESIGN.md)：`packages/spark-ai` 完整设计方案（含与后端接口关联、风险和分阶段落地计划）。
 
 ## 重要重构记录
 
