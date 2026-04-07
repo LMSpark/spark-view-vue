@@ -68,3 +68,7 @@ export type {
   RegionVisibility,
   NavContextState,
 } from './nav-types'
+
+// ==================== 快照历史 ====================
+
+export { SnapshotHistory } from './snapshot-history'

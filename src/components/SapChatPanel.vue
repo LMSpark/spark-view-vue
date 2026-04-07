@@ -33,6 +33,52 @@
                 <div class="sap-text sap-markdown">
                   <VueMarkdown :source="msg.text" />
                 </div>
+                <!-- 交互式确认问题 -->
+                <div v-if="msg.uiConfirm" class="sap-ui-confirm">
+                  <div class="sap-ui-confirm-title">{{ msg.uiConfirm.title || '需求确认' }}</div>
+                  <div v-for="q in msg.uiConfirm.questions" :key="q.id" class="sap-ui-question">
+                    <div class="sap-ui-question-text">{{ q.text }}</div>
+                    <div class="sap-ui-options">
+                      <template v-if="q.type === 'single'">
+                        <label v-for="opt in q.options" :key="opt.key" class="sap-ui-option">
+                          <input
+                            type="radio"
+                            :name="`q-${i}-${q.id}`"
+                            :value="opt.key"
+                            :checked="(msg.uiConfirm?.answers[q.id] ?? [])[0] === opt.key"
+                            :disabled="msg.uiConfirm?.submitted"
+                            @change="setAnswer(i, q.id, opt.key)"
+                          />
+                          <span class="sap-ui-option-key">{{ opt.key }}</span>
+                          <span>{{ opt.label }}</span>
+                          <span v-if="opt.description" class="sap-ui-option-desc">{{ opt.description }}</span>
+                        </label>
+                      </template>
+                      <template v-else>
+                        <label v-for="opt in q.options" :key="opt.key" class="sap-ui-option">
+                          <input
+                            type="checkbox"
+                            :checked="(msg.uiConfirm?.answers[q.id] ?? []).includes(opt.key)"
+                            :disabled="msg.uiConfirm?.submitted"
+                            @change="toggleAnswer(i, q.id, opt.key)"
+                          />
+                          <span class="sap-ui-option-key">{{ opt.key }}</span>
+                          <span>{{ opt.label }}</span>
+                          <span v-if="opt.description" class="sap-ui-option-desc">{{ opt.description }}</span>
+                        </label>
+                      </template>
+                    </div>
+                  </div>
+                  <button
+                    v-if="!msg.uiConfirm.submitted"
+                    class="sap-ui-submit"
+                    :disabled="!isConfirmReady(i) || loading"
+                    @click="submitConfirm(i)"
+                  >
+                    提交确认
+                  </button>
+                  <div v-else class="sap-ui-submitted">✅ 已提交</div>
+                </div>
                 <!-- 工具调用追踪 -->
                 <div v-if="msg.toolCalls && msg.toolCalls.length > 0" class="sap-tool-trace">
                   <div
@@ -94,7 +140,8 @@ import { createAuthHeaders } from '@/services/http'
 import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
 import { streamAiChatText } from '@/services/ai-protocol'
 import { extractSapProtocolBlocks, stripSapProtocolBlocks } from '@/services/sap-protocol'
-import { registerAllStills, createSession, executeStill } from '@spark-view/spark-ai'
+import { registerAllStills, createSession, executeStill, extractUiConfirmBlocks, stripUiBlocks } from '@spark-view/spark-ai'
+import type { UiConfirmPayload } from '@spark-view/spark-ai'
 
 const props = withDefaults(defineProps<{ embedded?: boolean; forceOpen?: boolean; mode?: 'sap' | 'stills' }>(), {
   embedded: false,
@@ -220,10 +267,16 @@ interface ToolCallInfo {
   detail?: string
 }
 
+interface UiConfirmState extends UiConfirmPayload {
+  answers: Record<string, string[]>
+  submitted: boolean
+}
+
 interface ChatMessage {
   role: 'user' | 'assistant'
   text: string
   toolCalls?: ToolCallInfo[]
+  uiConfirm?: UiConfirmState
 }
 
 // ── 响应式状态 ─────────────────────────────────────────────────────────────
@@ -309,6 +362,64 @@ async function handleSend() {
 
   messages.value.push({ role: 'user', text })
   prompt.value = ''
+  await runConversation()
+}
+
+// ── UI 确认交互 ─────────────────────────────────────────────────────────────
+
+function setAnswer(msgIdx: number, questionId: string, key: string) {
+  const confirm = messages.value[msgIdx]?.uiConfirm
+  if (confirm && !confirm.submitted) {
+    confirm.answers[questionId] = [key]
+  }
+}
+
+function toggleAnswer(msgIdx: number, questionId: string, key: string) {
+  const confirm = messages.value[msgIdx]?.uiConfirm
+  if (!confirm || confirm.submitted) return
+  const current = confirm.answers[questionId] ?? []
+  if (current.includes(key)) {
+    confirm.answers[questionId] = current.filter(k => k !== key)
+  } else {
+    confirm.answers[questionId] = [...current, key]
+  }
+}
+
+function isConfirmReady(msgIdx: number): boolean {
+  const confirm = messages.value[msgIdx]?.uiConfirm
+  if (!confirm) return false
+  return confirm.questions.every(q => {
+    const ans = confirm.answers[q.id]
+    return ans !== undefined && ans.length > 0
+  })
+}
+
+function formatConfirmAnswers(confirm: UiConfirmState): string {
+  const lines = confirm.questions.map(q => {
+    const selected = confirm.answers[q.id] ?? []
+    const labels = selected.map(k => {
+      const opt = q.options.find(o => o.key === k)
+      return opt ? `${k}. ${opt.label}` : k
+    })
+    return `${q.text}\n  → ${labels.join(', ')}`
+  })
+  return `[需求确认回答]\n\n${lines.join('\n\n')}`
+}
+
+async function submitConfirm(msgIdx: number) {
+  const confirm = messages.value[msgIdx]?.uiConfirm
+  if (!confirm || confirm.submitted || loading.value) return
+  confirm.submitted = true
+
+  const answerText = formatConfirmAnswers(confirm)
+  messages.value.push({ role: 'user', text: answerText })
+  scrollToBottom()
+  await runConversation()
+}
+
+// ── 核心：前端 SAP 协议回路 ────────────────────────────────────────────────
+
+async function runConversation() {
   loading.value = true
   _abortRequested = false
   _abortController = new AbortController()
@@ -354,8 +465,23 @@ async function handleSend() {
       // ── Step 2: 检测是否包含 SAP 协议块 ──
       const extraction = extractSapProtocolBlocks(aiReply)
       if (extraction.kind === 'none') {
-        // 无工具调用 → 最终回复，退出循环
-        messages.value.push({ role: 'assistant', text: aiReply })
+        // 检测 @@ui:confirm-questions 交互块
+        const confirmPayloads = extractUiConfirmBlocks(aiReply)
+        const displayText = stripUiBlocks(stripSapProtocolBlocks(aiReply)) || aiReply
+        if (confirmPayloads.length > 0 && confirmPayloads[0] !== undefined) {
+          const payload = confirmPayloads[0]
+          messages.value.push({
+            role: 'assistant',
+            text: displayText,
+            uiConfirm: { ...payload, answers: {}, submitted: false },
+          })
+          conversation.push({ role: 'assistant', content: aiReply })
+          scrollToBottom()
+          // 等待用户通过 submitConfirm 提交后恢复对话
+          break
+        }
+        // 无工具调用、无 UI 块 → 最终回复
+        messages.value.push({ role: 'assistant', text: displayText })
         conversation.push({ role: 'assistant', content: aiReply })
         scrollToBottom()
         break
@@ -766,6 +892,92 @@ function truncateResult(text: string, max = 500): string {
   background: none;
   padding: 0;
   color: inherit;
+}
+
+/* ── UI 确认交互 ──────────────────────────────────────────────────────── */
+.sap-ui-confirm {
+  margin-top: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafbfc;
+}
+.sap-ui-confirm-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1f2937;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.sap-ui-question {
+  margin-bottom: 12px;
+}
+.sap-ui-question:last-child {
+  margin-bottom: 0;
+}
+.sap-ui-question-text {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+.sap-ui-options {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 4px;
+}
+.sap-ui-option {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.sap-ui-option:hover {
+  background: #f3f4f6;
+}
+.sap-ui-option input {
+  margin: 0;
+  flex-shrink: 0;
+}
+.sap-ui-option-key {
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 16px;
+}
+.sap-ui-option-desc {
+  color: #9ca3af;
+  font-size: 11px;
+}
+.sap-ui-submit {
+  margin-top: 10px;
+  padding: 6px 16px;
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.sap-ui-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sap-ui-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.sap-ui-submitted {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #059669;
+  font-weight: 500;
 }
 
 /* ── 动画 ─────────────────────────────────────────────────────────────── */

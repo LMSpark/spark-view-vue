@@ -179,6 +179,17 @@ export { getPageConfigState, createPageConfigState } from './pageconfig-types'
 export type { PageConfigDomainState, PageConfigPhase, IPageConfigData, PageConfigExportResult, PageConfigValidationIssue } from './pageconfig-types'
 
 // ═══════════════════════════════════════════════════════════
+// Edit Domain
+// ═══════════════════════════════════════════════════════════
+
+import { editDomain } from './edit-domain'
+export { editDomain, getEditState, editGuard } from './edit-domain'
+export type { EditDomainState, EditPhase, EditGuardOptions } from './edit-domain'
+export { editInit, fileReadScript, fileWriteScript, fileReadStyle, fileWriteStyle } from './edit-domain'
+export { createNodeTreeStills } from './edit-nodeTree-stills'
+export { createDatasetStills } from './edit-dataset-stills'
+
+// ═══════════════════════════════════════════════════════════
 // Register All
 // ═══════════════════════════════════════════════════════════
 
@@ -205,5 +216,19 @@ export function registerAllStills(): void {
   registerDomain(datasetDomain)
   registerDomain(blueprintDomain)
   registerDomain(pageConfigDomain)
+  registerAll(metaStills as unknown as StillDefinition[])
+}
+
+/**
+ * 注册编辑模式 stills（与 registerAllStills 互斥）。
+ *
+ * edit domain 的 datasetTool.* / sparkNodeTree.* 动作名与生成模式
+ * 的 datatable.* / dataview.* 有意隔离，但同时注册两组可能导致
+ * meta stills（stills.capabilities）返回混乱目录。
+ *
+ * 推荐切换模式时先 clearRegistry() + clearDomains()。
+ */
+export function registerEditStills(): void {
+  registerDomain(editDomain)
   registerAll(metaStills as unknown as StillDefinition[])
 }

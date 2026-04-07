@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { SparkNode, SparkNodeTreeSnapshot } from '../index'
+import type { SparkNode } from '../index'
 import { SparkNodeTree } from '../index'
 
 function createSparkNodeTree(): SparkNode {
@@ -236,43 +236,30 @@ describe('SparkNodeTree', () => {
   })
 })
 
-// ─── undo / redo（与 DataSet 版本管理 API 对齐）────────────────────
+// ─── undo / redo（SnapshotHistory 委托）────────────────────
 
 describe('SparkNodeTree — undo / redo', () => {
-  it('构造时应创建 version 0 初始快照', () => {
+  it('构造时应创建初始快照', () => {
     const root = createSparkNodeTree()
     const tree = new SparkNodeTree({ root })
 
     expect(tree.version).toBe(0)
     expect(tree.canUndo).toBe(false)
     expect(tree.canRedo).toBe(false)
-    expect(tree.undoCount).toBe(0)
-    expect(tree.redoCount).toBe(0)
-
-    const versions = tree.listSnapshots()
-    expect(versions).toHaveLength(1)
-    expect(versions[0].version).toBe(0)
-    expect(versions[0].snapshot).toBe(root)
+    expect(tree.historyCursor).toBe(0)
   })
 
-  it('写操作应自动提交版本（label = 方法名）', () => {
+  it('写操作应自动推入快照', () => {
     const root = createSparkNodeTree()
     const tree = new SparkNodeTree({ root })
 
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt' } })
     expect(tree.version).toBe(1)
-    expect(tree.undoCount).toBe(1)
+    expect(tree.historyCursor).toBe(1)
 
     tree.setProps({ nodeId: 'txt', props: { field: 'name' } })
     expect(tree.version).toBe(2)
-    expect(tree.undoCount).toBe(2)
-
-    const versions = tree.listSnapshots()
-    expect(versions).toHaveLength(3)
-    expect(versions[0].label).toBe('setProps')
-    expect(versions[1].label).toBe('addNode')
-    expect(versions[2].version).toBe(0) // 初始快照无 label
-    expect(versions[2].label).toBeUndefined()
+    expect(tree.historyCursor).toBe(2)
   })
 
   it('undo 应还原到上一个快照', () => {
@@ -286,10 +273,8 @@ describe('SparkNodeTree — undo / redo', () => {
     const undone = tree.undo()
     expect(undone).toBe(rootBefore)
     expect(tree.getNode({ nodeId: 'txt' })).toBeNull()
-    expect(tree.version).toBe(0)
     expect(tree.canUndo).toBe(false)
     expect(tree.canRedo).toBe(true)
-    expect(tree.redoCount).toBe(1)
   })
 
   it('redo 应还原到下一个快照', () => {
@@ -305,7 +290,6 @@ describe('SparkNodeTree — undo / redo', () => {
     const redone = tree.redo()
     expect(redone).toBe(rootAfterAdd)
     expect(tree.getNode({ nodeId: 'txt' })).not.toBeNull()
-    expect(tree.version).toBe(1)
     expect(tree.canRedo).toBe(false)
   })
 
@@ -317,18 +301,16 @@ describe('SparkNodeTree — undo / redo', () => {
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt2' } })
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt3' } })
     expect(tree.version).toBe(3)
-    expect(tree.undoCount).toBe(3)
+    expect(tree.historyCursor).toBe(3)
 
     tree.undo()
     tree.undo()
-    expect(tree.version).toBe(1)
-    expect(tree.undoCount).toBe(1)
-    expect(tree.redoCount).toBe(2)
+    expect(tree.historyCursor).toBe(1)
     expect(tree.getNode({ nodeId: 'txt1' })).not.toBeNull()
     expect(tree.getNode({ nodeId: 'txt2' })).toBeNull()
 
     tree.redo()
-    expect(tree.version).toBe(2)
+    expect(tree.historyCursor).toBe(2)
     expect(tree.getNode({ nodeId: 'txt2' })).not.toBeNull()
     expect(tree.getNode({ nodeId: 'txt3' })).toBeNull()
   })
@@ -340,11 +322,10 @@ describe('SparkNodeTree — undo / redo', () => {
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt1' } })
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt2' } })
     tree.undo()
-    expect(tree.redoCount).toBe(1)
+    expect(tree.canRedo).toBe(true)
 
     // 分支：新写操作清除 redo
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt3' } })
-    expect(tree.redoCount).toBe(0)
     expect(tree.canRedo).toBe(false)
     expect(tree.getNode({ nodeId: 'txt2' })).toBeNull()
     expect(tree.getNode({ nodeId: 'txt3' })).not.toBeNull()
@@ -362,8 +343,7 @@ describe('SparkNodeTree — undo / redo', () => {
 
     expect(tree.canUndo).toBe(false)
     expect(tree.canRedo).toBe(false)
-    expect(tree.undoCount).toBe(0)
-    expect(tree.listSnapshots()).toHaveLength(0)
+    expect(tree.historyCursor).toBe(-1)
     expect(tree.undo()).toBeNull()
   })
 
@@ -375,10 +355,9 @@ describe('SparkNodeTree — undo / redo', () => {
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'b' } }) // v2
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'c' } }) // v3
 
-    // 限制 3 条，v0 和 v1 应被淘汰
-    const versions = tree.listSnapshots()
-    expect(versions).toHaveLength(3)
-    expect(versions.map((v) => v.version)).toEqual([3, 2, 1])
+    // 限制 3 条，最旧的被淘汰，cursor 应留在末尾
+    expect(tree.historyCursor).toBe(2) // 0, 1, 2 三个位置
+    expect(tree.canUndo).toBe(true)
   })
 
   it('clearHistory 应仅保留当前快照', () => {
@@ -387,9 +366,9 @@ describe('SparkNodeTree — undo / redo', () => {
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'b' } })
 
     tree.clearHistory()
-    expect(tree.listSnapshots()).toHaveLength(1)
     expect(tree.canUndo).toBe(false)
     expect(tree.canRedo).toBe(false)
+    expect(tree.historyCursor).toBe(0)
     // root 不变
     expect(tree.getNode({ nodeId: 'b' })).not.toBeNull()
   })
@@ -399,363 +378,35 @@ describe('SparkNodeTree — undo / redo', () => {
 
     expect(() => tree.removeNode({ nodeId: 'root' })).toThrow(/root node/i)
     // 没有成功写操作，历史仅初始快照
-    expect(tree.undoCount).toBe(0)
-    expect(tree.listSnapshots()).toHaveLength(1)
-  })
-
-  // ─── 版本管理 API（与 DataSet 对齐）─────────────────────────
-
-  it('listSnapshots 应返回从新到旧的排列', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-    tree.setProps({ nodeId: 'a', props: { label: 'x' } })
-
-    const versions = tree.listSnapshots()
-    expect(versions[0].version).toBeGreaterThan(versions[1].version)
-    expect(versions[1].version).toBeGreaterThan(versions[2].version)
-  })
-
-  it('getSnapshot 按 version 或 entryId 查找', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-
-    const byVersion = tree.getSnapshot({ version: 1 })
-    expect(byVersion).not.toBeNull()
-    expect(byVersion?.label).toBe('addNode')
-
-    const byId = tree.getSnapshot({ entryId: byVersion?.id ?? '' })
-    expect(byId?.version).toBe(1)
-
-    const current = tree.getSnapshot({})
-    expect(current?.version).toBe(tree.version)
-  })
-
-  it('restoreSnapshot 应跳转到指定版本', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'b' } })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'c' } })
-
-    const restored = tree.restoreSnapshot({ version: 1 })
-    expect(restored?.version).toBe(1)
-    expect(tree.version).toBe(1)
-    expect(tree.getNode({ nodeId: 'a' })).not.toBeNull()
-    expect(tree.getNode({ nodeId: 'b' })).toBeNull()
-
-    // 从 v1 可以 redo 到 v2, v3
-    expect(tree.redoCount).toBe(2)
-  })
-
-  it('restoreSnapshot 找不到版本时返回 null', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    expect(tree.restoreSnapshot({ version: 999 })).toBeNull()
-  })
-
-  it('commitSnapshot 应手动保存当前状态', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-
-    const entry = tree.commitSnapshot({ label: 'checkpoint' })
-    expect(entry.label).toBe('checkpoint')
-    expect(entry.snapshot).toBe(tree.root)
-    expect(tree.version).toBe(entry.version)
-
-    // commitSnapshot 会截断 redo 并推入新条目
-    expect(tree.listSnapshots()).toHaveLength(3) // v0, v1(addNode), v2(checkpoint)
-  })
-
-  it('SparkNodeTreeSnapshot 应包含 id/version/timestamp/label/snapshot', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-
-    const entry: SparkNodeTreeSnapshot = tree.listSnapshots()[0]
-    expect(entry.id).toMatch(/^\d+-\d+$/)
-    expect(typeof entry.version).toBe('number')
-    expect(typeof entry.timestamp).toBe('number')
-    expect(entry.label).toBe('addNode')
-    expect(entry.snapshot).toBeDefined()
-  })
-
-  it('所有 5 种写操作均自动记录历史', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    const labels: string[] = []
-
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'x' } })
-    tree.setProps({ nodeId: 'x', props: { label: 'test' } })
-    tree.replaceNode({ nodeId: 'x', node: { type: 'r-text', id: 'x', props: {} } })
-    tree.reorderChildren({ parentId: 'toolbar', childIds: ['x'] })
-    tree.removeNode({ nodeId: 'x' })
-
-    for (const entry of tree.listSnapshots()) {
-      if (entry.label) labels.push(entry.label)
-    }
-
-    expect(labels).toContain('addNode')
-    expect(labels).toContain('setProps')
-    expect(labels).toContain('replaceNode')
-    expect(labels).toContain('reorderChildren')
-    expect(labels).toContain('removeNode')
-  })
-})
-
-// ─── undo / redo（与 DataSet 版本管理 API 对齐）────────────────────
-
-describe('SparkNodeTree — undo / redo', () => {
-  it('构造时应创建 version 0 初始快照', () => {
-    const root = createSparkNodeTree()
-    const tree = new SparkNodeTree({ root })
-
-    expect(tree.version).toBe(0)
+    expect(tree.historyCursor).toBe(0)
     expect(tree.canUndo).toBe(false)
-    expect(tree.canRedo).toBe(false)
-    expect(tree.undoCount).toBe(0)
-    expect(tree.redoCount).toBe(0)
-
-    const versions = tree.listSnapshots()
-    expect(versions).toHaveLength(1)
-    expect(versions[0].version).toBe(0)
-    expect(versions[0].snapshot).toBe(root)
   })
 
-  it('写操作应自动提交版本（label = 方法名）', () => {
-    const root = createSparkNodeTree()
-    const tree = new SparkNodeTree({ root })
-
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt' } })
-    expect(tree.version).toBe(1)
-    expect(tree.undoCount).toBe(1)
-
-    tree.setProps({ nodeId: 'txt', props: { field: 'name' } })
-    expect(tree.version).toBe(2)
-    expect(tree.undoCount).toBe(2)
-
-    const versions = tree.listSnapshots()
-    expect(versions).toHaveLength(3)
-    expect(versions[0].label).toBe('setProps')
-    expect(versions[1].label).toBe('addNode')
-    expect(versions[2].version).toBe(0) // 初始快照无 label
-    expect(versions[2].label).toBeUndefined()
-  })
-
-  it('undo 应还原到上一个快照', () => {
-    const root = createSparkNodeTree()
-    const tree = new SparkNodeTree({ root })
-    const rootBefore = tree.root
-
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt' } })
-    expect(tree.getNode({ nodeId: 'txt' })).not.toBeNull()
-
-    const undone = tree.undo()
-    expect(undone).toBe(rootBefore)
-    expect(tree.getNode({ nodeId: 'txt' })).toBeNull()
-    expect(tree.version).toBe(0)
-    expect(tree.canUndo).toBe(false)
-    expect(tree.canRedo).toBe(true)
-    expect(tree.redoCount).toBe(1)
-  })
-
-  it('redo 应还原到下一个快照', () => {
-    const root = createSparkNodeTree()
-    const tree = new SparkNodeTree({ root })
-
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt' } })
-    const rootAfterAdd = tree.root
-
+  it('historyCursor 应为只读属性', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
+    expect(tree.historyCursor).toBe(1)
     tree.undo()
-    expect(tree.getNode({ nodeId: 'txt' })).toBeNull()
-
-    const redone = tree.redo()
-    expect(redone).toBe(rootAfterAdd)
-    expect(tree.getNode({ nodeId: 'txt' })).not.toBeNull()
-    expect(tree.version).toBe(1)
-    expect(tree.canRedo).toBe(false)
-  })
-
-  it('多步 undo → redo 往返', () => {
-    const root = createSparkNodeTree()
-    const tree = new SparkNodeTree({ root })
-
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt1' } })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt2' } })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt3' } })
-    expect(tree.version).toBe(3)
-    expect(tree.undoCount).toBe(3)
-
-    tree.undo()
-    tree.undo()
-    expect(tree.version).toBe(1)
-    expect(tree.undoCount).toBe(1)
-    expect(tree.redoCount).toBe(2)
-    expect(tree.getNode({ nodeId: 'txt1' })).not.toBeNull()
-    expect(tree.getNode({ nodeId: 'txt2' })).toBeNull()
-
+    expect(tree.historyCursor).toBe(0)
     tree.redo()
-    expect(tree.version).toBe(2)
-    expect(tree.getNode({ nodeId: 'txt2' })).not.toBeNull()
-    expect(tree.getNode({ nodeId: 'txt3' })).toBeNull()
-  })
-
-  it('新写操作应截断前方 redo 历史（标准分支语义）', () => {
-    const root = createSparkNodeTree()
-    const tree = new SparkNodeTree({ root })
-
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt1' } })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt2' } })
-    tree.undo()
-    expect(tree.redoCount).toBe(1)
-
-    // 分支：新写操作清除 redo
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt3' } })
-    expect(tree.redoCount).toBe(0)
-    expect(tree.canRedo).toBe(false)
-    expect(tree.getNode({ nodeId: 'txt2' })).toBeNull()
-    expect(tree.getNode({ nodeId: 'txt3' })).not.toBeNull()
-  })
-
-  it('无可撤销/重做时返回 null', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    expect(tree.undo()).toBeNull()
-    expect(tree.redo()).toBeNull()
-  })
-
-  it('historyLimit=0 应禁用所有历史功能', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree(), historyLimit: 0 })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'txt' } })
-
-    expect(tree.canUndo).toBe(false)
-    expect(tree.canRedo).toBe(false)
-    expect(tree.undoCount).toBe(0)
-    expect(tree.listSnapshots()).toHaveLength(0)
-    expect(tree.undo()).toBeNull()
-  })
-
-  it('historyLimit 应限制最大条目数', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree(), historyLimit: 3 })
-
-    // 构造 v0 已占 1 个位置
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } }) // v1
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'b' } }) // v2
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'c' } }) // v3
-
-    // 限制 3 条，v0 和 v1 应被淘汰
-    const versions = tree.listSnapshots()
-    expect(versions).toHaveLength(3)
-    expect(versions.map((v) => v.version)).toEqual([3, 2, 1])
-  })
-
-  it('clearHistory 应仅保留当前快照', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'b' } })
-
-    tree.clearHistory()
-    expect(tree.listSnapshots()).toHaveLength(1)
-    expect(tree.canUndo).toBe(false)
-    expect(tree.canRedo).toBe(false)
-    // root 不变
-    expect(tree.getNode({ nodeId: 'b' })).not.toBeNull()
-  })
-
-  it('removeNode 失败时不应产生脏历史', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-
-    expect(() => tree.removeNode({ nodeId: 'root' })).toThrow(/root node/i)
-    // 没有成功写操作，历史仅初始快照
-    expect(tree.undoCount).toBe(0)
-    expect(tree.listSnapshots()).toHaveLength(1)
-  })
-
-  // ─── 版本管理 API（与 DataSet 对齐）─────────────────────────
-
-  it('listSnapshots 应返回从新到旧的排列', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-    tree.setProps({ nodeId: 'a', props: { label: 'x' } })
-
-    const versions = tree.listSnapshots()
-    expect(versions[0].version).toBeGreaterThan(versions[1].version)
-    expect(versions[1].version).toBeGreaterThan(versions[2].version)
-  })
-
-  it('getSnapshot 按 version 或 entryId 查找', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-
-    const byVersion = tree.getSnapshot({ version: 1 })
-    expect(byVersion).not.toBeNull()
-    expect(byVersion?.label).toBe('addNode')
-
-    const byId = tree.getSnapshot({ entryId: byVersion?.id ?? '' })
-    expect(byId?.version).toBe(1)
-
-    const current = tree.getSnapshot({})
-    expect(current?.version).toBe(tree.version)
-  })
-
-  it('restoreSnapshot 应跳转到指定版本', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'b' } })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'c' } })
-
-    const restored = tree.restoreSnapshot({ version: 1 })
-    expect(restored?.version).toBe(1)
-    expect(tree.version).toBe(1)
-    expect(tree.getNode({ nodeId: 'a' })).not.toBeNull()
-    expect(tree.getNode({ nodeId: 'b' })).toBeNull()
-
-    // 从 v1 可以 redo 到 v2, v3
-    expect(tree.redoCount).toBe(2)
-  })
-
-  it('restoreSnapshot 找不到版本时返回 null', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    expect(tree.restoreSnapshot({ version: 999 })).toBeNull()
-  })
-
-  it('commitSnapshot 应手动保存当前状态', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-
-    const entry = tree.commitSnapshot({ label: 'checkpoint' })
-    expect(entry.label).toBe('checkpoint')
-    expect(entry.snapshot).toBe(tree.root)
-    expect(tree.version).toBe(entry.version)
-
-    // commitSnapshot 会截断 redo 并推入新条目
-    expect(tree.listSnapshots()).toHaveLength(3) // v0, v1(addNode), v2(checkpoint)
-  })
-
-  it('SparkNodeTreeSnapshot 应包含 id/version/timestamp/label/snapshot', () => {
-    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'a' } })
-
-    const entry: SparkNodeTreeSnapshot = tree.listSnapshots()[0]
-    expect(entry.id).toMatch(/^\d+-\d+$/)
-    expect(typeof entry.version).toBe('number')
-    expect(typeof entry.timestamp).toBe('number')
-    expect(entry.label).toBe('addNode')
-    expect(entry.snapshot).toBeDefined()
+    expect(tree.historyCursor).toBe(1)
   })
 
   it('所有 5 种写操作均自动记录历史', () => {
     const tree = new SparkNodeTree({ root: createSparkNodeTree() })
-    const labels: string[] = []
 
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'x' } })
+    expect(tree.historyCursor).toBe(1)
     tree.setProps({ nodeId: 'x', props: { label: 'test' } })
+    expect(tree.historyCursor).toBe(2)
     tree.replaceNode({ nodeId: 'x', node: { type: 'r-text', id: 'x', props: {} } })
+    expect(tree.historyCursor).toBe(3)
     tree.reorderChildren({ parentId: 'toolbar', childIds: ['x'] })
+    expect(tree.historyCursor).toBe(4)
     tree.removeNode({ nodeId: 'x' })
+    expect(tree.historyCursor).toBe(5)
 
-    for (const entry of tree.listSnapshots()) {
-      if (entry.label) labels.push(entry.label)
-    }
-
-    expect(labels).toContain('addNode')
-    expect(labels).toContain('setProps')
-    expect(labels).toContain('replaceNode')
-    expect(labels).toContain('reorderChildren')
-    expect(labels).toContain('removeNode')
+    // 全部可 undo
+    expect(tree.canUndo).toBe(true)
   })
 })

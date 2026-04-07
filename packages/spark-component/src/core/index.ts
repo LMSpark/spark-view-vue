@@ -49,18 +49,7 @@ export type {
   SparkNodeReplaceResult,
   SparkNodeRemoveResult,
   SparkNodeReorderChildrenResult,
-  SparkNodeTreeSnapshot,
-  SparkNodeTreeSnapshotSelector,
-  SparkNodeTreeCommitSnapshotOptions,
 } from './spark-node-tree.js'
-
-export type {
-  SparkNodeTreeToolFailureMode,
-  SparkNodeTreeToolType,
-  SparkNodeTreeToolTarget,
-  SparkNodeTreeToolParameterRow,
-  SparkNodeTreeToolCapabilityRow,
-} from './spark-node-tree-tool-catalog.js'
 
 export { SPARK_REGISTRY_KEY } from '../system/keys.js'
 
@@ -75,13 +64,6 @@ export {
 } from './types.js'
 
 export { SparkNodeTree } from './spark-node-tree.js'
-
-export {
-  SPARK_NODE_TREE_TOOL_PARAMETER_TABLE,
-  SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE,
-  getSparkNodeTreeToolParameterRow,
-  getSparkNodeTreeToolCapabilityRow,
-} from './spark-node-tree-tool-catalog.js'
 
 export {
   PAGE_DATASET,

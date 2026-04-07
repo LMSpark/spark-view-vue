@@ -310,6 +310,53 @@ export function stripBlocksWithUnclosed(text: string, filter?: ProtocolBlockFilt
     .trim()
 }
 
+// ── UI 交互块（@@ui:confirm-questions）──────────────────────────────────────
+
+/** 单个选项 */
+export interface UiConfirmOption {
+  key: string
+  label: string
+  description?: string
+}
+
+/** 单个确认问题 */
+export interface UiConfirmQuestion {
+  id: string
+  text: string
+  /** single = 单选（radio），multi = 多选（checkbox） */
+  type: 'single' | 'multi'
+  options: UiConfirmOption[]
+}
+
+/** @@ui:confirm-questions 块的 JSON 负载 */
+export interface UiConfirmPayload {
+  title?: string
+  questions: UiConfirmQuestion[]
+}
+
+/**
+ * 从文本中提取 @@ui:confirm-questions 块并解析 JSON 负载。
+ * 返回所有合法解析的 payload（通常只有一个）。
+ */
+export function extractUiConfirmBlocks(text: string): UiConfirmPayload[] {
+  const blocks = extractBlocks(text, { types: ['ui'], names: ['confirm-questions'] })
+  const results: UiConfirmPayload[] = []
+  for (const b of blocks) {
+    try {
+      const payload = JSON.parse(b.payload) as UiConfirmPayload
+      if (Array.isArray(payload.questions)) results.push(payload)
+    } catch { /* skip malformed */ }
+  }
+  return results
+}
+
+/**
+ * 从文本中去除所有 @@ui:* 块
+ */
+export function stripUiBlocks(text: string): string {
+  return stripBlocks(text, { types: ['ui'] })
+}
+
 // ── 内部辅助 ──────────────────────────────────────────────────────────────────
 
 function collapseBlankLines(text: string): string {

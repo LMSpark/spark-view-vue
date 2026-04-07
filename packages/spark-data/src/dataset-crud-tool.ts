@@ -1,4 +1,5 @@
 import { DataSet } from './dataset'
+import { SnapshotHistory } from '@spark-view/spark-utils'
 import type { DataTable } from './data-table'
 import type { DataView } from './data-view'
 import type {
@@ -228,7 +229,8 @@ export class DataSetCrudTool {
   /**
    * 当前工具类持有的 DataSet 实例。
    */
-  readonly dataSet: DataSet
+  private _dataSet: DataSet
+  private _history: SnapshotHistory<IDataSetMetadata>
 
   /**
    * 创建一个绑定到指定 dataSetName 的统一 CRUD 工具。
@@ -237,10 +239,38 @@ export class DataSetCrudTool {
    */
   constructor(dataSetName: string) {
     // 从最小空配置创建 DataSet，后续对象全部通过本工具类逐步补齐。
-    this.dataSet = DataSet.fromJson({
+    this._dataSet = DataSet.fromJson({
       dataSetName,
       tables: {},
     })
+    this._history = new SnapshotHistory<IDataSetMetadata>(50)
+    this._history.push(this._dataSet.toJson())
+  }
+
+  /**
+   * 从已有 DataSet 实例创建工具类。
+   */
+  static fromDataSet(dataSet: DataSet): DataSetCrudTool {
+    const tool = Object.create(DataSetCrudTool.prototype) as DataSetCrudTool
+    tool._dataSet = dataSet
+    tool._history = new SnapshotHistory<IDataSetMetadata>(50)
+    tool._history.push(dataSet.toJson())
+    return tool
+  }
+
+  /**
+   * 从 JSON 元数据创建工具类。
+   */
+  static fromJson(json: IDataSetMetadata): DataSetCrudTool {
+    const ds = DataSet.fromJson(json)
+    return DataSetCrudTool.fromDataSet(ds)
+  }
+
+  /**
+   * 当前工具类持有的 DataSet 实例。
+   */
+  get dataSet(): DataSet {
+    return this._dataSet
   }
 
   // ====================
@@ -263,6 +293,59 @@ export class DataSetCrudTool {
    */
   toJson(): IDataSetMetadata {
     return this.dataSet.toJson()
+  }
+
+  // ====================
+  // Undo / Redo
+  // ====================
+
+  get canUndo(): boolean {
+    return this._history.canUndo
+  }
+
+  get canRedo(): boolean {
+    return this._history.canRedo
+  }
+
+  get historyCursor(): number {
+    return this._history.cursor
+  }
+
+  /**
+   * 撤销最近一次结构写操作。
+   * 成功时替换内部 DataSet 并返回 true；无可撤销时返回 false。
+   */
+  undo(): boolean {
+    const snapshot = this._history.undo()
+    if (snapshot === null) return false
+    this._dataSet = DataSet.fromJson(snapshot)
+    return true
+  }
+
+  /**
+   * 重做最近一次被撤销的操作。
+   * 成功时替换内部 DataSet 并返回 true；无可重做时返回 false。
+   */
+  redo(): boolean {
+    const snapshot = this._history.redo()
+    if (snapshot === null) return false
+    this._dataSet = DataSet.fromJson(snapshot)
+    return true
+  }
+
+  clearHistory(): void {
+    const current = this._history.current
+    this._history.clear()
+    if (current !== null) {
+      this._history.push(current)
+    }
+  }
+
+  /**
+   * 每次结构写操作成功后调用，将当前状态推入历史栈。
+   */
+  private _afterWrite(): void {
+    this._history.push(this._dataSet.toJson())
   }
 
   // ====================
@@ -335,6 +418,7 @@ export class DataSetCrudTool {
     const next = this.normalizeCreateColumnArgs(tableNameOrParams, column)
     const table = this.getTableOrThrow(next.tableName)
     table.addColumns([next.column])
+    this._afterWrite()
     return table
   }
 
@@ -358,6 +442,7 @@ export class DataSetCrudTool {
     const next = this.normalizeUpdateColumnArgs(tableNameOrParams, columnNameOrUpdates, maybeUpdates)
     const table = this.getTableOrThrow(next.tableName)
     table.updateColumn(next.columnName, next.updates)
+    this._afterWrite()
     return table
   }
 
@@ -376,6 +461,7 @@ export class DataSetCrudTool {
   ): void {
     const selector = this.normalizeColumnSelectorArgs(tableNameOrParams, columnName, 'deleteColumn')
     this.getTableOrThrow(selector.tableName).removeColumn(selector.columnName)
+    this._afterWrite()
   }
 
   /**
@@ -406,6 +492,7 @@ export class DataSetCrudTool {
       }
     }
 
+    this._afterWrite()
     return table
   }
 
@@ -456,6 +543,7 @@ export class DataSetCrudTool {
       table.getView('default')?.replaceRows([...next.defaultRows])
     }
 
+    this._afterWrite()
     return table
   }
 
@@ -467,6 +555,7 @@ export class DataSetCrudTool {
    */
   deleteTable(tableNameOrParams: string | DataSetCrudToolTableNameParams): void {
     this.dataSetContract.removeTable(this.normalizeTableNameArg(tableNameOrParams, 'deleteTable'))
+    this._afterWrite()
   }
 
   // ====================
@@ -528,6 +617,7 @@ export class DataSetCrudTool {
     if (next.config) {
       this.applyViewMetadata(table, view, next.config)
     }
+    this._afterWrite()
     return view
   }
 
@@ -551,6 +641,7 @@ export class DataSetCrudTool {
     const table = this.getTableOrThrow(next.tableName)
     const view = this.getViewOrThrow(next.tableName, next.viewId)
     this.applyViewMetadata(table, view, next.updates)
+    this._afterWrite()
     return view
   }
 
@@ -573,6 +664,7 @@ export class DataSetCrudTool {
       throw new Error('Default view cannot be deleted')
     }
     this.getTableOrThrow(next.tableName).destroyView(next.viewId)
+    this._afterWrite()
   }
 
   // ====================
@@ -823,6 +915,7 @@ export class DataSetCrudTool {
    */
   createRelation(params: CreateRelationParams): TableRelation {
     this.dataSet.addRelation(params)
+    this._afterWrite()
     return this.getRelationOrThrow(params)
   }
 
@@ -841,7 +934,9 @@ export class DataSetCrudTool {
     updates?: Partial<TableRelation>,
   ): TableRelation {
     const next = this.normalizeUpdateRelationArgs(selectorOrParams, updates)
-    return this.dataSetContract.updateRelation(next.selector, next.updates)
+    const result = this.dataSetContract.updateRelation(next.selector, next.updates)
+    this._afterWrite()
+    return result
   }
 
   /**
@@ -863,13 +958,16 @@ export class DataSetCrudTool {
         this.requireNonEmptyString(selectorOrParentTable, 'deleteRelation.parentTable'),
         this.requireNonEmptyString(childTable, 'deleteRelation.childTable'),
       )
+      this._afterWrite()
       return
     }
     if ('selector' in selectorOrParentTable) {
       this.dataSet.removeRelation(selectorOrParentTable.selector)
+      this._afterWrite()
       return
     }
     this.dataSet.removeRelation(selectorOrParentTable)
+    this._afterWrite()
   }
 
   // ====================
@@ -918,6 +1016,7 @@ export class DataSetCrudTool {
    */
   createDependency(params: CreateDependencyParams): ViewDependency {
     this.dataSet.addDependency(params)
+    this._afterWrite()
     return this.getDependencyOrThrow(params.parentTable, params.childTable)
   }
 
@@ -942,7 +1041,9 @@ export class DataSetCrudTool {
     updates?: Partial<ViewDependency>,
   ): ViewDependency {
     const next = this.normalizeUpdateDependencyArgs(parentTableOrParams, childTableOrUpdates, updates)
-    return this.dataSetContract.updateDependency(next.parentTable, next.childTable, next.updates)
+    const result = this.dataSetContract.updateDependency(next.parentTable, next.childTable, next.updates)
+    this._afterWrite()
+    return result
   }
 
   /**
@@ -960,6 +1061,7 @@ export class DataSetCrudTool {
   ): void {
     const next = this.normalizeDependencySelectorArgs(parentTableOrParams, childTable, 'deleteDependency')
     this.dataSet.removeDependency(next.parentTable, next.childTable)
+    this._afterWrite()
   }
 
   // ====================

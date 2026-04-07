@@ -55,11 +55,6 @@ export type {
   SparkNodeReplaceResult,
   SparkNodeRemoveResult,
   SparkNodeReorderChildrenResult,
-  SparkNodeTreeToolFailureMode,
-  SparkNodeTreeToolType,
-  SparkNodeTreeToolTarget,
-  SparkNodeTreeToolParameterRow,
-  SparkNodeTreeToolCapabilityRow,
   DockFilterItem,
   ComponentDefinition,
   ComponentRegistry,
@@ -78,10 +73,6 @@ export {
   isSparkNode,
   getSparkNodeChildren,
   SparkNodeTree,
-  SPARK_NODE_TREE_TOOL_PARAMETER_TABLE,
-  SPARK_NODE_TREE_TOOL_CAPABILITY_TABLE,
-  getSparkNodeTreeToolParameterRow,
-  getSparkNodeTreeToolCapabilityRow,
 } from './core/index.js'
 
 // ── 6. 数据 + Renderer 能力键 ──

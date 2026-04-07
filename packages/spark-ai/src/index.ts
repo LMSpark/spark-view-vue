@@ -12,6 +12,8 @@ export {
   extractFirstJsonObject,
   parseTokenUsage,
   formatTokenUsage,
+  extractUiConfirmBlocks,
+  stripUiBlocks,
 } from './protocol'
 export type {
   ProtocolRole,
@@ -23,6 +25,9 @@ export type {
   StreamCallbacks,
   ProtocolBlockFilter,
   ToolBlockFilter,
+  UiConfirmOption,
+  UiConfirmQuestion,
+  UiConfirmPayload,
 } from './protocol'
 
 // ── AI Loop (core engine) ────────────────────────────────────────────────────
@@ -103,6 +108,8 @@ export { NAV_PLANNER_SYSTEM_PROMPT } from './prompts/nav-planner-prompt'
 export { PAGE_SYSTEM_PROMPT } from './prompts/page-system-prompt'
 export {
   SAP_SYSTEM_PROMPT,
+  STILLS_PROTOCOL_BASE,
+  STILLS_DATASET_DOMAIN,
   STILLS_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
   STILLS_SYSTEM_PROMPT,

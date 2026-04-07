@@ -214,14 +214,25 @@ describe('提示词内容完整性', () => {
     expect(SAP_SYSTEM_PROMPT).toContain('@@result')
   })
 
-  it('STILLS_RUNTIME_PROMPT 包含完整纪律体系', () => {
-    expect(STILLS_RUNTIME_PROMPT).toContain('发现优先')
-    expect(STILLS_RUNTIME_PROMPT).toContain('执行纪律')
+  it('STILLS_RUNTIME_PROMPT 包含完整五层架构', () => {
+    // L1 协议
+    expect(STILLS_RUNTIME_PROMPT).toContain('L1: SAP/1.0 协议')
+    // L2 能力发现
+    expect(STILLS_RUNTIME_PROMPT).toContain('L2: 能力发现')
+    expect(STILLS_RUNTIME_PROMPT).toContain('stills.capabilities')
+    expect(STILLS_RUNTIME_PROMPT).toContain('stills.actionSpec')
+    // L3 业务逻辑
+    expect(STILLS_RUNTIME_PROMPT).toContain('L3: 业务逻辑')
+    expect(STILLS_RUNTIME_PROMPT).toContain('@@ui:confirm-questions')
+    expect(STILLS_RUNTIME_PROMPT).toContain('蓝图编排')
     expect(STILLS_RUNTIME_PROMPT).toContain('效率纪律')
-    expect(STILLS_RUNTIME_PROMPT).toContain('蓝图纪律')
     expect(STILLS_RUNTIME_PROMPT).toContain('SPARK DataSet 核心概念')
-    expect(STILLS_RUNTIME_PROMPT).toContain('DataSet 建模完整性')
+    // L4 API 目录
+    expect(STILLS_RUNTIME_PROMPT).toContain('L4: API 目录')
     expect(STILLS_RUNTIME_PROMPT).toContain('dataset.validate')
+    // L5 按需查询
+    expect(STILLS_RUNTIME_PROMPT).toContain('L5: 按需查询')
+    expect(STILLS_RUNTIME_PROMPT).toContain('actionSpec')
   })
 
   it('STILLS_BLUEPRINT_PROMPT 包含五层架构', () => {

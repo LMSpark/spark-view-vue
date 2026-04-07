@@ -1,4 +1,5 @@
 import { isSparkNode, type SparkNode, type SparkNodeChildren } from './types.js'
+import { SnapshotHistory } from '@spark-view/spark-utils'
 
 // ====================
 // 公共参数与结果类型
@@ -19,32 +20,6 @@ export interface SparkNodeTreeRootParams {
    * 设为 0 时禁用历史记录（undo/redo 不可用）。
    */
   historyLimit?: number
-}
-
-/**
- * 快照条目 — 与 DataSetHistorySnapshot 对齐。
- */
-export interface SparkNodeTreeSnapshot {
-  id: string
-  version: number
-  timestamp: number
-  label?: string
-  snapshot: SparkNode
-}
-
-/**
- * 快照选择器 — 与 DataSetSnapshotSelector 对齐。
- */
-export interface SparkNodeTreeSnapshotSelector {
-  entryId?: string
-  version?: number
-}
-
-/**
- * commitSnapshot 的选项。
- */
-export interface SparkNodeTreeCommitSnapshotOptions {
-  label?: string
 }
 
 /**
@@ -242,10 +217,8 @@ export interface SparkNodeReorderChildrenResult {
  */
 export class SparkNodeTree {
   private _root: SparkNode
-  private readonly _history: SparkNodeTreeSnapshot[] = []
-  private _cursor = -1
+  private readonly _history: SnapshotHistory<SparkNode>
   private _version = -1
-  private readonly _historyLimit: number
 
   /**
    * 使用一个当前组件实例节点创建树操作实例。
@@ -254,9 +227,11 @@ export class SparkNodeTree {
   constructor(params: SparkNodeTreeRootParams) {
     const next = normalizeRootParams(params, 'constructor')
     this._root = next.root
-    this._historyLimit = normalizeHistoryLimit(params.historyLimit)
-    if (this._historyLimit > 0) {
-      this._pushEntry(null)
+    const limit = normalizeHistoryLimit(params.historyLimit)
+    this._history = new SnapshotHistory<SparkNode>(limit)
+    if (limit > 0) {
+      this._version++
+      this._history.push(this._root)
     }
   }
 
@@ -281,80 +256,27 @@ export class SparkNodeTree {
     return this._root
   }
 
-  // ─── 快照管理（与 DataSet 对齐）────────────────────────────────
+  // ─── Undo / Redo（委托 SnapshotHistory）────────────────────────
 
   /**
-   * 返回全部快照条目，从新到旧排列（与 DataSet.listSnapshots 一致）。
-   */
-  listSnapshots(): SparkNodeTreeSnapshot[] {
-    return this._history.slice().reverse()
-  }
-
-  /**
-   * 按 version 或 entryId 查找单条快照条目。
-   * 均未指定时返回当前游标处的条目。
-   */
-  getSnapshot(selector: SparkNodeTreeSnapshotSelector): SparkNodeTreeSnapshot | null {
-    if (typeof selector.entryId === 'string') {
-      return this._history.find((e) => e.id === selector.entryId) ?? null
-    }
-    if (typeof selector.version === 'number') {
-      return this._history.find((e) => e.version === selector.version) ?? null
-    }
-    return this._history[this._cursor] ?? null
-  }
-
-  /**
-   * 跳转到指定快照，更新 root 与游标。
-   * 与 DataSet.restoreSnapshot 对齐。
-   */
-  restoreSnapshot(selector: SparkNodeTreeSnapshotSelector): SparkNodeTreeSnapshot | null {
-    const entry = this.getSnapshot(selector)
-    if (!entry) return null
-    const index = this._history.indexOf(entry)
-    if (index < 0) return null
-    this._cursor = index
-    this._root = entry.snapshot
-    this._version = entry.version
-    return entry
-  }
-
-  /**
-   * 手动保存当前状态为一个命名快照（不修改 root）。
-   * 与 DataSet.commitSnapshot 对齐。
-   */
-  commitSnapshot(options?: SparkNodeTreeCommitSnapshotOptions): SparkNodeTreeSnapshot {
-    return this._pushEntry(options?.label ?? null)
-  }
-
-  // ─── Undo / Redo（游标导航）────────────────────────────────────
-
-  /**
-   * 是否可撤销（游标前方还有条目）。
+   * 是否可撤销。
    */
   get canUndo(): boolean {
-    return this._cursor > 0
+    return this._history.canUndo
   }
 
   /**
-   * 是否可重做（游标后方还有条目）。
+   * 是否可重做。
    */
   get canRedo(): boolean {
-    return this._cursor < this._history.length - 1
+    return this._history.canRedo
   }
 
   /**
-   * 可撤销步数。
+   * 当前历史游标位置（供 EditTransaction 记录）。
    */
-  get undoCount(): number {
-    return Math.max(this._cursor, 0)
-  }
-
-  /**
-   * 可重做步数。
-   */
-  get redoCount(): number {
-    return Math.max(this._history.length - 1 - this._cursor, 0)
+  get historyCursor(): number {
+    return this._history.cursor
   }
 
   /**
@@ -362,12 +284,9 @@ export class SparkNodeTree {
    * 返回撤销后的 root；无可撤销时返回 null 不修改状态。
    */
   undo(): SparkNode | null {
-    if (!this.canUndo) return null
-    this._cursor--
-    const entry = this._history[this._cursor]
-    if (!entry) return null
-    this._root = entry.snapshot
-    this._version = entry.version
+    const snapshot = this._history.undo()
+    if (snapshot === null) return null
+    this._root = snapshot
     return this._root
   }
 
@@ -376,12 +295,9 @@ export class SparkNodeTree {
    * 返回重做后的 root；无可重做时返回 null 不修改状态。
    */
   redo(): SparkNode | null {
-    if (!this.canRedo) return null
-    this._cursor++
-    const entry = this._history[this._cursor]
-    if (!entry) return null
-    this._root = entry.snapshot
-    this._version = entry.version
+    const snapshot = this._history.redo()
+    if (snapshot === null) return null
+    this._root = snapshot
     return this._root
   }
 
@@ -389,60 +305,22 @@ export class SparkNodeTree {
    * 清空全部历史，仅保留当前快照。
    */
   clearHistory(): void {
-    if (this._historyLimit <= 0) return
-    const current = this._history[this._cursor]
-    this._history.length = 0
-    if (current) {
+    const current = this._history.current
+    this._history.clear()
+    if (current !== null) {
       this._history.push(current)
-      this._cursor = 0
-    } else {
-      this._cursor = -1
     }
   }
 
   // ─── 内部历史管理 ──────────────────────────────────────────────
 
   /**
-   * 向历史数组追加一条快照。
-   *
-   * - 截断游标之后的前进条目（标准分支语义）
-   * - 超出 historyLimit 时移除最旧条目
+   * 写操作确认成功后调用：更新 root 并追加历史快照。
    */
-  private _pushEntry(label: string | null): SparkNodeTreeSnapshot {
-    if (this._cursor < this._history.length - 1) {
-      this._history.splice(this._cursor + 1)
-    }
-
-    this._version++
-    const timestamp = Date.now()
-    const entry: SparkNodeTreeSnapshot = {
-      id: `${this._version}-${timestamp}`,
-      version: this._version,
-      timestamp,
-      ...(label !== null ? { label } : {}),
-      snapshot: this._root,
-    }
-
-    this._history.push(entry)
-    this._cursor = this._history.length - 1
-
-    if (this._history.length > this._historyLimit) {
-      const excess = this._history.length - this._historyLimit
-      this._history.splice(0, excess)
-      this._cursor = Math.max(0, this._cursor - excess)
-    }
-
-    return entry
-  }
-
-  /**
-   * 写操作确认成功后调用：更新 root 并追加历史条目。
-   */
-  private _commitWrite(nextRoot: SparkNode, label: string): void {
+  private _commitWrite(nextRoot: SparkNode, _label: string): void {
     this._root = nextRoot
-    if (this._historyLimit > 0) {
-      this._pushEntry(label)
-    }
+    this._version++
+    this._history.push(this._root)
   }
 
   // ─── 查询 API ─────────────────────────────────────────────────
