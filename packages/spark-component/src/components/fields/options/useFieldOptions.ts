@@ -14,7 +14,7 @@ import {
 
 export type { FieldOption } from './option-normalization.js'
 
-interface FieldTransferOption {
+export interface FieldTransferOption {
   key: string | number
   label: string
   disabled?: boolean

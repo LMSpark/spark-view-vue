@@ -100,66 +100,36 @@ export type {
   ModuleContextCapability,
   PageCssScopeCapability,
 } from './core/index.js'
-export type { RendererTableApi } from './components/containers/data-components/RendererTable/types.js'
-export type { RendererFormApi } from './components/containers/data-components/RendererForm/types.js'
-export type { RendererDetailApi } from './components/containers/data-components/RendererDetail/types.js'
-export type { RendererTreeApi } from './components/containers/data-components/RendererTree/types.js'
-export type { RendererListApi } from './components/containers/data-components/RendererList/types.js'
-export type { RendererDialogApi } from './components/containers/non-data-components/RendererDialog/types.js'
-export type { RendererDrawerApi } from './components/containers/non-data-components/RendererDrawer/types.js'
-export type { RendererTabsApi } from './components/containers/non-data-components/RendererTabs/types.js'
-export type { RendererCollapseApi } from './components/containers/non-data-components/RendererCollapse/types.js'
-export type { RendererStepsApi } from './components/containers/non-data-components/RendererSteps/types.js'
-export type { RendererSectionApi } from './components/containers/non-data-components/RendererSection/types.js'
+export type {
+  RendererTableApi,
+  RendererTreePath,
+  RendererFormApi,
+  RendererDetailApi,
+  RendererTreeApi,
+  RendererListApi,
+  RendererDialogApi,
+  RendererDrawerApi,
+  RendererTabsApi,
+  RendererCollapseApi,
+  RendererStepsApi,
+  RendererSectionApi,
+} from './components/containers/index.js'
 
 // ── 7. 页面渲染引擎 ──
 export {
   SparkPageRenderer,
 } from './page/index.js'
-export {
-  SparkChild,
-  SparkChildrenBridge,
-  ElTableColumns,
-  ElButton,
-  RCollapse,
-  RDetail,
-  RDialog,
-  RDrawer,
-  RForm,
-  RList,
-  RNumber,
-  RSection,
-  RSteps,
-  RTable,
-  RTabs,
-  RText,
-  RToolbar,
-  RTree,
-  SparkCodeEditor,
-  SparkJsonEditor,
-  JsonTreeEditor,
-  SparkComponentRenderer,
-  SparkTableColumns,
-  createTemplateDsl,
-} from './components/index.js'
-
-// ── JSON 树编辑器逻辑 ─────────────────────────────────────────────────────────
-export * from './components/support/jsonTreeEditor.js'
+// 组件层公共导出（容器 / 字段 / 展示 / 模板 DSL / 支持组件）
+export * from './components/index.js'
 
 
 export * as componentComposables from './components/composables.js'
+export * as containers from './components/containers/index.js'
+export * as displays from './components/display/index.js'
+export * as fields from './components/fields/index.js'
 export * as containerComposables from './components/containers/composables.js'
-export * as containerDataComponents from './components/containers/data-components/index.js'
-export * as containerNonDataComponents from './components/containers/non-data-components/index.js'
-export * as containerDataComponentComposables from './components/containers/data-components/composables/index.js'
-export * as containerNonDataComponentComposables from './components/containers/non-data-components/composables/index.js'
-export * as containerDataComponentSupport from './components/containers/data-components/support/index.js'
 export * as fieldComposables from './components/fields/composables.js'
-export * as fieldDataComponents from './components/fields/data-components/index.js'
-export * as fieldNonDataComponents from './components/fields/non-data-components/index.js'
-export * as fieldDataComponentComposables from './components/fields/data-components/composables/index.js'
-export * as fieldNonDataComponentComposables from './components/fields/non-data-components/composables/index.js'
-export * as fieldDataComponentSupport from './components/fields/data-components/support/index.js'
+export * as displayComposables from './components/display/composables/index.js'
 
 export {
   usePageDataSet,
@@ -174,118 +144,3 @@ export type {
   PageConfig,
   PageRendererProps,
 } from './page/index.js'
-
-// ── 8. 内置 Renderer 容器 + 字段组件（注册） ──
-export {
-  // 数据容器
-  RendererTable,
-  RendererForm,
-  RendererDetail,
-  RendererTree,
-  RendererList,
-  RendererFieldScope,
-  RendererListItemScope,
-  // 非数据容器 — 布局
-  RendererRow,
-  RendererCol,
-  RendererCard,
-  RendererSpace,
-  RendererDivider,
-  RendererContainer,
-  RendererAside,
-  RendererMain,
-  RendererLayoutHeader,
-  RendererLayoutFooter,
-  // 非数据容器 — 导航 & 交互
-  RendererTabs,
-  RendererCollapse,
-  RendererSteps,
-  RendererSection,
-  RendererToolbar,
-  RendererButton,
-  RendererButtonGroup,
-  RendererLink,
-  RendererPageHeader,
-  RendererDropdown,
-  // 非数据容器 — 反馈 & 叠加层
-  RendererDialog,
-  RendererDrawer,
-  RendererTooltip,
-  RendererPopover,
-  RendererPopconfirm,
-  RendererTour,
-  // 非数据容器 — 滚动 & 锚点
-  RendererBacktop,
-  RendererScrollbar,
-  RendererAffix,
-  RendererAnchor,
-  RendererAnchorLink,
-  // 非数据容器 — 展示增强
-  RendererCarousel,
-  RendererCarouselItem,
-  RendererWatermark,
-  // 内建动作
-  BuiltinActionButton,
-  // 数据展示
-  DisplayStatistic,
-  DisplayProgress,
-  DisplayTag,
-  DisplayBadge,
-  DisplayAvatar,
-  DisplayText,
-  DisplayPagination,
-  DisplayDescriptions,
-  DisplayDescriptionsItem,
-  DisplayTimeline,
-  DisplayTimelineItem,
-  DisplayAlert,
-  DisplayEmpty,
-  DisplayResult,
-  DisplayBreadcrumb,
-  DisplayBreadcrumbItem,
-  DisplaySkeleton,
-  DisplayImage,
-  DisplayCalendar,
-  DisplayCountdown,
-  DisplayIcon,
-  // 字段
-  FieldText,
-  FieldTextarea,
-  FieldHtmlEditor,
-  FieldNumber,
-  FieldDate,
-  FieldSelect,
-  FieldMultiSelect,
-  FieldRadio,
-  FieldCheckbox,
-  FieldCheckboxGroup,
-  FieldSwitch,
-  FieldSlider,
-  FieldRate,
-  FieldColor,
-  FieldIcon,
-  FieldImage,
-  FieldFilePath,
-  FieldFileBrowser,
-  FieldUpload,
-  FieldEntityPicker,
-  FieldUserPicker,
-  FieldDeptPicker,
-  FieldProductPicker,
-  FieldCascader,
-  FieldTreeSelect,
-  FieldTransfer,
-  FieldSegmented,
-  FieldCheckTag,
-  FieldMention,
-  FieldTimePicker,
-  FieldTimeSelect,
-  FieldAutocomplete,
-  FieldContextRenderer,
-  FieldColumnGroup,
-  FieldTreeNodeSummary,
-  // 注册
-  registerAllRenderers,
-  // Composable
-  useFieldPermission,
-} from './components/index.js'

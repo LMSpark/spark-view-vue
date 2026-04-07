@@ -117,6 +117,27 @@ import type { SparkCapabilityContext } from '@spark-view/spark-component'
 
 完整 API 文档请查看 [API.md](./API.md)
 
+## 组件分类入口
+
+组件导出已按领域重组，推荐优先使用以下命名空间：
+
+```typescript
+import {
+  containers,
+  displays,
+  fields,
+  containerComposables,
+  fieldComposables,
+  displayComposables,
+} from '@spark-view/spark-component'
+```
+
+- `containers`：容器 renderer（数据容器 / 结构容器 / Dock）
+- `displays`：展示 renderer（数据展示 / 静态展示）
+- `fields`：字段 renderer（数据字段 / 非数据字段）
+
+不再推荐继续依赖深路径碎片导出（例如 `containerDataComponents` / `fieldDataComponentSupport`）。
+
 ## 依赖
 
 ```json

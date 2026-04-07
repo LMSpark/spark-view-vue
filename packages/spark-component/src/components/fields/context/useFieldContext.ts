@@ -6,7 +6,7 @@ import type { FormItemRule } from '../columnFormRules'
 
 type TextAlign = 'left' | 'center' | 'right'
 
-interface FieldContextProps {
+export interface FieldContextProps {
   type: string
   displayLabel: string
   fieldName: string

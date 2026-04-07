@@ -5,3 +5,6 @@ export {
 export type {
   FieldOption,
 } from './useFieldOptions.js'
+export type {
+  FieldTransferOption,
+} from './useFieldOptions.js'

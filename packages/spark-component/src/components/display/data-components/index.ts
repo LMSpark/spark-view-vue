@@ -1,0 +1,8 @@
+export { default as DisplayStatistic } from './DisplayStatistic.vue'
+export { default as DisplayProgress } from './DisplayProgress.vue'
+export { default as DisplayTag } from './DisplayTag.vue'
+export { default as DisplayBadge } from './DisplayBadge.vue'
+export { default as DisplayAvatar } from './DisplayAvatar.vue'
+export { default as DisplayText } from './DisplayText.vue'
+export { default as DisplayPagination } from './DisplayPagination.vue'
+export { default as DisplayImage } from './DisplayImage.vue'
