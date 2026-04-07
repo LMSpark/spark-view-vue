@@ -39,10 +39,12 @@ function createSamplePageData(): JsonObject {
 function findId(model: TreeModel, path: Array<string | number>): string {
   let id = rootOf(model)
   for (const seg of path) {
-    const node = model.get(id)!
-    const child = node.childIds.find(c => model.get(c)!.segment === seg)
-    if (!child) throw new Error(`Path segment "${String(seg)}" not found`)
-    id = child
+    let found: string | undefined
+    for (const node of model.values()) {
+      if (node.parentId === id && node.segment === seg) { found = node.id; break }
+    }
+    if (!found) throw new Error(`Path segment "${String(seg)}" not found`)
+    id = found
   }
   return id
 }

@@ -65,8 +65,8 @@ export interface TreeNode {
   readonly type: JsonNodeType
   /** 叶子节点的原始值 */
   readonly value: string | number | boolean | null
-  /** 子节点 ID（有序） */
-  readonly childIds: readonly string[]
+  /** 同级排序权重（parentId 相同的节点按此排序） */
+  readonly order: number
 }
 
 // ── 显示行（toDisplayRows 输出，附加遍历上下文 + 策略字段）──
@@ -76,6 +76,8 @@ export interface TreeDisplayNode extends TreeNode {
   readonly depth: number
   /** 从根到此节点的路径 */
   readonly path: JsonPath
+  /** 直接子节点数量 */
+  readonly childCount: number
   /** 键是否可重命名 */
   readonly keyEditable: boolean
   /** 类型是否可切换 */
@@ -100,6 +102,16 @@ function generateUid(): string { return `n${++_treeUidCounter}` }
 
 /** 测试时重置计数器 */
 export function resetTreeUidCounter(): void { _treeUidCounter = 0 }
+
+/** 按 order 排序返回某父节点的所有子节点 ID */
+function getChildIds(model: ReadonlyMap<string, TreeNode>, parentId: string): string[] {
+  const children: Array<{ id: string; order: number }> = []
+  for (const node of model.values()) {
+    if (node.parentId === parentId) children.push({ id: node.id, order: node.order })
+  }
+  children.sort((a, b) => a.order - b.order)
+  return children.map(c => c.id)
+}
 
 // ── 策略接口（领域特化注入点）────────────────────────────────
 
@@ -178,25 +190,27 @@ function addNodeToMap(
   value: JsonValue,
   parentId: string | null,
   segment: string | number,
+  order: number,
 ): string {
   const id = generateUid()
   const type = inferNodeType(value)
   const isContainer = type === 'object' || type === 'array'
-  const childIds: string[] = []
-
-  if (isContainer && Array.isArray(value)) {
-    for (let i = 0; i < value.length; i++)
-      childIds.push(addNodeToMap(nodes, value[i] as JsonValue, id, i))
-  } else if (isContainer && isJsonObject(value)) {
-    for (const [k, v] of Object.entries(value))
-      childIds.push(addNodeToMap(nodes, v, id, k))
-  }
 
   nodes.set(id, {
     id, parentId, segment, type,
     value: isContainer ? null : (value as string | number | boolean | null),
-    childIds,
+    order,
   })
+
+  if (isContainer && Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++)
+      addNodeToMap(nodes, value[i] as JsonValue, id, i, i)
+  } else if (isContainer && isJsonObject(value)) {
+    let idx = 0
+    for (const [k, v] of Object.entries(value))
+      addNodeToMap(nodes, v, id, k, idx++)
+  }
+
   return id
 }
 
@@ -204,10 +218,11 @@ function addNodeToMap(
 function toJsonValue(nodes: ReadonlyMap<string, TreeNode>, uid: string): JsonValue {
   const n = nodes.get(uid)
   if (!n) throw new Error(`toJsonValue: node "${uid}" not found`)
-  if (n.type === 'array') return n.childIds.map(c => toJsonValue(nodes, c))
+  const children = getChildIds(nodes, uid)
+  if (n.type === 'array') return children.map(c => toJsonValue(nodes, c))
   if (n.type === 'object') {
     const obj: JsonObject = {}
-    for (const c of n.childIds) { const ch = nodes.get(c); if (ch) obj[ch.segment as string] = toJsonValue(nodes, c) }
+    for (const c of children) { const ch = nodes.get(c); if (ch) obj[ch.segment as string] = toJsonValue(nodes, c) }
     return obj
   }
   return n.value as JsonValue
@@ -216,7 +231,7 @@ function toJsonValue(nodes: ReadonlyMap<string, TreeNode>, uid: string): JsonVal
 /** 从 JSON 文档构建内部树模型 */
 export function buildTreeModel(doc: JsonDocument, policy?: Partial<JsonTreePolicy>): TreeModel {
   const nodes = new Map<string, TreeNode>()
-  addNodeToMap(nodes, doc as JsonValue, null, resolvePolicy(policy).rootLabel)
+  addNodeToMap(nodes, doc as JsonValue, null, resolvePolicy(policy).rootLabel, 0)
   return nodes
 }
 
@@ -244,13 +259,15 @@ export function toDisplayRows(model: TreeModel, policy?: Partial<JsonTreePolicy>
   function walk(uid: string, depth: number, path: JsonPath): void {
     const node = model.get(uid)
     if (!node) return
+    const children = getChildIds(model, uid)
     rows.push({
       ...node, depth, path,
+      childCount: children.length,
       keyEditable: p.canEditKey(path),
       typeEditable: p.canEditType(path),
       deletable: depth > 0 && !p.isProtected(path),
     })
-    for (const childId of node.childIds) {
+    for (const childId of children) {
       const ch = model.get(childId)
       if (ch) walk(childId, depth + 1, [...path, ch.segment])
     }
@@ -309,26 +326,27 @@ function makeResult(nodes: Map<string, TreeNode>, focusId: string, expandId: str
 function removeSubtree(nodes: Map<string, TreeNode>, uid: string): void {
   const n = nodes.get(uid)
   if (!n) return
-  for (const c of n.childIds) removeSubtree(nodes, c)
+  for (const c of getChildIds(nodes, uid)) removeSubtree(nodes, c)
   nodes.delete(uid)
 }
 
-/** 修正数组子节点的 segment 索引（插入/删除后） */
-function reindexChildren(nodes: Map<string, TreeNode>, childIds: readonly string[], fromIdx: number): void {
-  for (let i = fromIdx; i < childIds.length; i++) {
-    const cid = childIds[i]
+/** 修正数组子节点的 segment 和 order（插入/删除后） */
+function reindexChildren(nodes: Map<string, TreeNode>, parentId: string): void {
+  const children = getChildIds(nodes, parentId)
+  for (let i = 0; i < children.length; i++) {
+    const cid = children[i]
     if (!cid) continue
     const c = nodes.get(cid)
-    if (c) nodes.set(c.id, { ...c, segment: i })
+    if (c && (c.segment !== i || c.order !== i)) {
+      nodes.set(c.id, { ...c, segment: i, order: i })
+    }
   }
 }
 
 /** 收集父节点下所有字符串键（供 suggestChildKey 判重） */
 function collectSiblingKeys(model: TreeModel, parentId: string): JsonObject {
   const obj: JsonObject = {}
-  const parent = model.get(parentId)
-  if (!parent) return obj
-  for (const c of parent.childIds) {
+  for (const c of getChildIds(model, parentId)) {
     const ch = model.get(c)
     if (ch && typeof ch.segment === 'string') obj[ch.segment] = null as unknown as JsonValue
   }
@@ -343,15 +361,16 @@ export function addChildNode(model: TreeModel, uid: string, policy?: Partial<Jso
   const p = resolvePolicy(policy)
   const path = getNodePath(model, uid)
   const nodes = new Map(model)
+  const existingChildren = getChildIds(model, uid)
+  const nextOrder = existingChildren.length
   let newId: string
 
   if (target.type === 'array') {
-    newId = addNodeToMap(nodes, p.createDefaultArrayItem(path), uid, target.childIds.length)
+    newId = addNodeToMap(nodes, p.createDefaultArrayItem(path), uid, nextOrder, nextOrder)
   } else {
     const nextKey = p.suggestChildKey(collectSiblingKeys(model, uid), path)
-    newId = addNodeToMap(nodes, p.createDefaultObjectValue(path, nextKey), uid, nextKey)
+    newId = addNodeToMap(nodes, p.createDefaultObjectValue(path, nextKey), uid, nextKey, nextOrder)
   }
-  nodes.set(uid, { ...target, childIds: [...target.childIds, newId] })
   return makeResult(nodes, newId, uid)
 }
 
@@ -368,16 +387,20 @@ export function addSiblingNode(model: TreeModel, uid: string, policy?: Partial<J
   let newId: string
 
   if (parent.type === 'array') {
-    const idx = parent.childIds.indexOf(uid)
-    newId = addNodeToMap(nodes, p.createDefaultArrayItem(parentPath), parent.id, idx + 1)
-    const newChildIds = [...parent.childIds]
-    newChildIds.splice(idx + 1, 0, newId)
-    reindexChildren(nodes, newChildIds, idx + 1)
-    nodes.set(parent.id, { ...parent, childIds: newChildIds })
+    const newOrder = target.order + 1
+    // 将 order >= newOrder 的现有兄弟后移
+    for (const sibId of getChildIds(model, parent.id)) {
+      const sib = nodes.get(sibId)
+      if (sib && sib.order >= newOrder) {
+        nodes.set(sib.id, { ...sib, order: sib.order + 1 })
+      }
+    }
+    newId = addNodeToMap(nodes, p.createDefaultArrayItem(parentPath), parent.id, newOrder, newOrder)
+    reindexChildren(nodes, parent.id)
   } else {
+    const siblings = getChildIds(model, parent.id)
     const nextKey = p.suggestChildKey(collectSiblingKeys(model, parent.id), parentPath)
-    newId = addNodeToMap(nodes, p.createDefaultObjectValue(parentPath, nextKey), parent.id, nextKey)
-    nodes.set(parent.id, { ...parent, childIds: [...parent.childIds, newId] })
+    newId = addNodeToMap(nodes, p.createDefaultObjectValue(parentPath, nextKey), parent.id, nextKey, siblings.length)
   }
   return makeResult(nodes, newId, parent.id)
 }
@@ -390,13 +413,10 @@ export function deleteNode(model: TreeModel, uid: string, policy?: Partial<JsonT
 
   const parent = model.get(target.parentId)
   if (!parent) return unchanged(model, uid)
-  const idx = parent.childIds.indexOf(uid)
-  const newChildIds = parent.childIds.filter(c => c !== uid)
   const nodes = new Map(model)
 
-  if (parent.type === 'array') reindexChildren(nodes, newChildIds, idx)
-  nodes.set(parent.id, { ...parent, childIds: newChildIds })
   removeSubtree(nodes, uid)
+  if (parent.type === 'array') reindexChildren(nodes, parent.id)
   return makeResult(nodes, parent.id, parent.id)
 }
 
@@ -428,14 +448,13 @@ export function updateNodeType(model: TreeModel, uid: string, nextType: JsonNode
   if (!resolvePolicy(policy).canEditType(getNodePath(model, uid))) return unchanged(model, uid)
 
   const nodes = new Map(model)
-  for (const c of target.childIds) removeSubtree(nodes, c)
+  for (const c of getChildIds(nodes, uid)) removeSubtree(nodes, c)
 
   const isContainer = nextType === 'object' || nextType === 'array'
   const defaultValue = createValueByType(nextType)
   nodes.set(uid, {
     ...target, type: nextType,
     value: isContainer ? null : (defaultValue as string | number | boolean | null),
-    childIds: [],
   })
   return makeResult(nodes, uid)
 }
@@ -446,23 +465,23 @@ export function updateNodeValue(model: TreeModel, uid: string, nextValue: JsonVa
   if (!target) return unchanged(model, uid)
 
   const nodes = new Map(model)
-  for (const c of target.childIds) removeSubtree(nodes, c)
+  for (const c of getChildIds(nodes, uid)) removeSubtree(nodes, c)
 
   const newType = inferNodeType(nextValue)
   const isContainer = newType === 'object' || newType === 'array'
   if (isContainer) {
     // 重建子树
-    const childIds: string[] = []
     if (Array.isArray(nextValue)) {
       for (let i = 0; i < nextValue.length; i++)
-        childIds.push(addNodeToMap(nodes, nextValue[i] as JsonValue, uid, i))
+        addNodeToMap(nodes, nextValue[i] as JsonValue, uid, i, i)
     } else if (isJsonObject(nextValue)) {
+      let idx = 0
       for (const [k, v] of Object.entries(nextValue))
-        childIds.push(addNodeToMap(nodes, v, uid, k))
+        addNodeToMap(nodes, v, uid, k, idx++)
     }
-    nodes.set(uid, { ...target, type: newType, value: null, childIds })
+    nodes.set(uid, { ...target, type: newType, value: null })
   } else {
-    nodes.set(uid, { ...target, type: newType, value: nextValue as string | number | boolean | null, childIds: [] })
+    nodes.set(uid, { ...target, type: newType, value: nextValue as string | number | boolean | null })
   }
   return makeResult(nodes, uid)
 }
@@ -706,21 +725,10 @@ export function getValueAtJsonPath(root: JsonDocument, path: JsonPath): JsonValu
 // 平铺 ↔ 树往返管线（UUID 方案）
 // ════════════════════════════════════════════════════════════
 
-/** 平铺行（编辑态） */
-export interface FlatJsonRow {
-  readonly id: string
-  readonly parentId: string | null
-  readonly segment: string | number
-  readonly type: JsonNodeType
-  readonly value: string | number | boolean | null
-  /** 同级排序权重（拖拽后写入，restoreJsonDocumentFromFlat 按此排序） */
-  readonly order: number
-}
-
 /** 平铺文档（保留根类型，便于还原） */
 export interface FlatJsonTreeDocument {
   readonly rootType: 'object' | 'array'
-  readonly rows: FlatJsonRow[]
+  readonly rows: TreeNode[]
 }
 
 /**
@@ -730,7 +738,7 @@ export interface FlatJsonTreeDocument {
  */
 export function flattenJsonDocumentForEdit(doc: JsonDocument): FlatJsonTreeDocument {
   const rootType = Array.isArray(doc) ? 'array' as const : 'object' as const
-  const rows: FlatJsonRow[] = []
+  const rows: TreeNode[] = []
 
   function walk(value: JsonValue, parentId: string | null, segment: string | number, order: number): void {
     const id = generateUid()
@@ -768,8 +776,8 @@ export function flattenJsonDocumentForEdit(doc: JsonDocument): FlatJsonTreeDocum
  */
 export function restoreJsonDocumentFromFlat(flat: FlatJsonTreeDocument): JsonDocument {
   const { rows, rootType } = flat
-  const idMap = new Map<string, FlatJsonRow>()
-  const childrenMap = new Map<string | null, FlatJsonRow[]>()
+  const idMap = new Map<string, TreeNode>()
+  const childrenMap = new Map<string | null, TreeNode[]>()
 
   for (const row of rows) {
     idMap.set(row.id, row)
@@ -788,7 +796,7 @@ export function restoreJsonDocumentFromFlat(flat: FlatJsonTreeDocument): JsonDoc
     siblings.sort((a, b) => a.order - b.order)
   }
 
-  function buildValue(row: FlatJsonRow): JsonValue {
+  function buildValue(row: TreeNode): JsonValue {
     const children = childrenMap.get(row.id)
     if (row.type === 'array') return (children ?? []).map(c => buildValue(c))
     if (row.type === 'object') {
@@ -812,7 +820,7 @@ export function restoreJsonDocumentFromFlat(flat: FlatJsonTreeDocument): JsonDoc
  * 便捷入口：按 originalData 的类型还原（对象 → 对象，数组 → 数组）。
  */
 export function restoreJsonDocumentByOriginalType(
-  rows: FlatJsonRow[],
+  rows: TreeNode[],
   originalData: JsonDocument,
 ): JsonDocument {
   const rootType = Array.isArray(originalData) ? 'array' as const : 'object' as const

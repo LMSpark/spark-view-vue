@@ -476,7 +476,7 @@ function enrichRow(
   const isContainer = row.type === 'object' || row.type === 'array'
   const displayKey = row.depth === 0 ? rootLabel
     : (typeof row.segment === 'number' ? `[${row.segment}]` : row.segment)
-  const valuePreview = formatValuePreview(row.type, isContainer ? null : row.value, row.childIds.length)
+  const valuePreview = formatValuePreview(row.type, isContainer ? null : row.value, row.childCount)
   const stringValue = typeof row.value === 'string' ? row.value : ''
   const numberValue = typeof row.value === 'number' ? row.value : null
   const booleanValue = row.value === true
