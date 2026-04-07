@@ -326,6 +326,7 @@ let lastEmittedModelValue: string | null = null
 let tableStateInitialized = false
 let lastFilterActiveState = false
 let pendingExpandRowId: string | null = null
+let pendingRestoreState: { expandPaths: Set<string>; currentPath: string | null } | null = null
 
 // ── 常量 ──────────────────────────────────────────────────────
 
@@ -438,15 +439,37 @@ onBeforeUnmount(() => {
   if (keywordTimer) clearTimeout(keywordTimer)
 })
 
+// ── 树状态捕获与恢复 ────────────────────────────────────────
+
+function serializePath(path: JsonPath): string {
+  return path.map(s => typeof s === 'number' ? `[${s}]` : s).join('/')
+}
+
+/**
+ * 在模型整体重建前捕获展开/选中状态（按路径，不依赖 ID）。
+ * syncTableState 会在下一 tick 检测并恢复。
+ */
+function captureTreeState(): void {
+  const table = tableRef.value
+  if (!table) return
+  const expandedRecords = table.getTreeExpandRecords() as DisplayRow[]
+  const expandPaths = new Set(expandedRecords.map(r => serializePath(r.path)))
+  const currentRow = allRows.value.find(r => r.id === currentRowId.value)
+  const currentPath = currentRow ? serializePath(currentRow.path) : null
+  pendingRestoreState = { expandPaths, currentPath }
+}
+
 // ── 文档同步 ─────────────────────────────────────────────────
 
 function syncDocument(rawText: string): void {
   if (rawText.trim() === '') {
+    captureTreeState()
     treeModelRef.value = buildTreeModel({}, mergedPolicy.value)
     parseError.value = null
     return
   }
   try {
+    captureTreeState()
     const doc = parseJsonDocument(rawText)
     treeModelRef.value = buildTreeModel(doc, mergedPolicy.value)
     parseError.value = null
@@ -462,6 +485,7 @@ function syncDocumentValue(value: JsonDocument): void {
     lastEmittedModelValue = null
     return
   }
+  captureTreeState()
   treeModelRef.value = buildTreeModel(nextDocument, mergedPolicy.value)
   parseError.value = null
 }
@@ -625,6 +649,30 @@ function syncTableState(): void {
     const table = tableRef.value
     const firstRow = displayRows.value[0]
     if (!table || !firstRow) return
+
+    // ── 恢复外部同步（undo/redo）前的展开 + 选中状态 ──
+    if (pendingRestoreState) {
+      const { expandPaths, currentPath } = pendingRestoreState
+      pendingRestoreState = null
+      tableStateInitialized = true
+
+      const rowsToExpand = displayRows.value.filter(r => expandPaths.has(serializePath(r.path)))
+      const activeRow = currentPath
+        ? displayRows.value.find(r => serializePath(r.path) === currentPath) ?? firstRow
+        : firstRow
+      currentRowId.value = activeRow.id
+
+      if (rowsToExpand.length > 0) {
+        void table.clearTreeExpand().then(() => {
+          return table.setTreeExpand(rowsToExpand, true)
+        }).then(() => {
+          table.setCurrentRow(activeRow)
+        })
+      } else {
+        table.setCurrentRow(activeRow)
+      }
+      return
+    }
 
     const activeRow = displayRows.value.find((row) => row.id === currentRowId.value) ?? firstRow
     currentRowId.value = activeRow.id
