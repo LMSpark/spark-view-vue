@@ -3,7 +3,7 @@
  *
  * ⚠️ 请勿手动编辑 — 由 vite-plugin-spark-catalog 构建时生成
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-04-07T14:35:23.046Z
+ * 生成时间：2026-04-07T15:32:46.875Z
  * 条目数量：122
  */
 

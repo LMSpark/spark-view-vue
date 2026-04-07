@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-04-07T14:35:23.056Z
+ * 生成时间：2026-04-07T15:32:46.892Z
  * 条目数量：122
  */
 import type { ComponentCatalog } from './types'
@@ -23,7 +23,7 @@ import type { ComponentCatalog } from './types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-04-07T14:35:23.046Z",
+  "buildTime": "2026-04-07T15:32:46.875Z",
   "componentCount": 122,
   "registry": {
     "containers": [

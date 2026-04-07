@@ -1,8 +1,11 @@
 /**
- * SPARK 组件 Props 目录生成 Vite 插件
+ * SPARK 组件目录生成 Vite 插件
  *
- * 独立插件，单一职责：在 configResolved 和 HMR 时调用 catalog-generator
- * 生成 component-props-catalog.ts。
+ * 目录文件由 git 跟踪，始终存在。插件仅在两个场景生成：
+ * - HMR：dev 时 .vue 变更自动重新生成
+ * - CLI：`pnpm run generate:catalog`（build:check 中 vue-tsc 前调用）
+ *
+ * configResolved 不扫描，避免每次 dev/build 重复开销。
  *
  * @module plugin
  */
@@ -43,16 +46,6 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
 
     configResolved(resolvedConfig) {
       root = resolvedConfig.root
-      const jsonOptions = {
-        featurePatterns: options.featurePatterns,
-        exclude: options.exclude,
-        outputPath: options.jsonOutputPath,
-        verbose: options.verbose,
-      }
-      const catalog = generateJsonCatalog(root, jsonOptions)
-      generatePropsCatalog(root, options, catalog)
-      generateSapCatalogFiles(root, catalog)
-      generateDevSystemCatalog(root, catalog)
     },
 
     handleHotUpdate({ file }) {

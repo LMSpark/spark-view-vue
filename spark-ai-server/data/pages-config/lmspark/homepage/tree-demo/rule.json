@@ -7,7 +7,7 @@
         "type": "el-card",
         "class": "nav-editor-toolbar-card",
         "props": {
-          "shadow": "never"
+          "shadow": "hover"
         },
         "children": [
           {
