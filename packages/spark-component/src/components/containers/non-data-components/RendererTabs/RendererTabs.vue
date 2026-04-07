@@ -42,6 +42,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。
+ */
 import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'

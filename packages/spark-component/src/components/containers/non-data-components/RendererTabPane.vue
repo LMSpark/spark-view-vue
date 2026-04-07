@@ -31,6 +31,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。
+ */
 import { computed } from 'vue'
 import { SparkChildrenBridge, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'

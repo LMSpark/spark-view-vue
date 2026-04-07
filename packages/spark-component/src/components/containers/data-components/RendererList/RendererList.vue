@@ -83,6 +83,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。
+ */
 import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'

@@ -76,6 +76,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'

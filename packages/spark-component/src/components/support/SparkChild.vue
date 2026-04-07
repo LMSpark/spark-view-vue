@@ -7,6 +7,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。
+ */
 import { computed, getCurrentInstance, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import type { SparkNode } from '../../core/types.js'

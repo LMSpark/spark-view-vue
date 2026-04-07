@@ -15,6 +15,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 数据作用域容器，透明地向子组件注入 DATA_ROW 上下文，不产生额外 DOM 包装。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'

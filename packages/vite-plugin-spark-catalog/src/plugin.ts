@@ -9,7 +9,7 @@
 
 import type { Plugin } from 'vite'
 import { generatePropsCatalog } from './catalog-generator'
-import { generateJsonCatalog } from './json-catalog-generator'
+import { generateJsonCatalog, generateSapCatalogFiles, generateDevSystemCatalog } from './json-catalog-generator'
 import { createLogger, normalizePath } from './utils'
 
 const logger = createLogger('spark-catalog')
@@ -51,6 +51,8 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
       }
       const catalog = generateJsonCatalog(root, jsonOptions)
       generatePropsCatalog(root, options, catalog)
+      generateSapCatalogFiles(root, catalog)
+      generateDevSystemCatalog(root, catalog)
     },
 
     handleHotUpdate({ file }) {
@@ -75,6 +77,8 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
         }
         const catalog = generateJsonCatalog(root, jsonOptions)
         generatePropsCatalog(root, options, catalog)
+        generateSapCatalogFiles(root, catalog)
+        generateDevSystemCatalog(root, catalog)
       }
     },
   }

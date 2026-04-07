@@ -43,6 +43,9 @@
 
 <script setup lang="ts">
 /**
+ * @skill-description 数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。
+ */
+/**
  * RendererForm - 表单容器组件
  */
 import { ref } from 'vue'

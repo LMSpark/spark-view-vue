@@ -23,6 +23,7 @@ import {
   COMPONENT_DIRECTORY_DESCRIBE,
   getComponentSpec,
 } from '../catalog/component-props-catalog'
+import type { SapCatalogRegistry } from '../catalog/sap-catalog-types'
 
 // ═══════════════════════════════════════════════════════════
 // helper
@@ -325,6 +326,80 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
         nextStep,
       },
       summary: '返回会话全局状态（含域状态 + 组件目录 + 执行追踪）',
+    }
+  },
+}
+
+// ═══════════════════════════════════════════════════════════
+// catalog.query
+// ═══════════════════════════════════════════════════════════
+
+interface CatalogQueryParams {
+  type?: string
+  category?: string
+}
+
+export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
+  action: 'catalog.query',
+  type: 'describe',
+  description: '查询可用组件目录。无参数返回全量列表；指定 type 返回单组件详情；指定 category 返回分类列表。',
+  guard: noGuard,
+  paramsSchema: { type: '可选，组件类型', category: '可选，container|field|group|meta' },
+  example: { category: 'field' },
+  validate: () => null,
+  execute: (session: IStillSession, params: CatalogQueryParams): StillResult => {
+    if (session.catalog === null) {
+      return {
+        ok: false,
+        code: 'NO_CATALOG',
+        msg: 'SAP Catalog 未加载',
+        fix: '请确认构建时已生成并上传 sap-catalog.json',
+      }
+    }
+    const catalog = session.catalog
+
+    // 模式 1: 单组件详情（返回完整 API：props + emits + rootFields + binding + nestingRule）
+    if (isNonEmptyString(params.type)) {
+      const entry = catalog.components[params.type]
+      if (entry === undefined) {
+        return { ok: false, code: 'NOT_FOUND', msg: `组件 "${params.type}" 不在目录中`, fix: '请用 catalog.query 查看可用组件列表' }
+      }
+      const parts = [`${entry.props.length} props`]
+      if (entry.emits && entry.emits.length > 0) parts.push(`${entry.emits.length} emits`)
+      if (entry.rootFields && entry.rootFields.length > 0) parts.push(`${entry.rootFields.length} rootFields`)
+      if (entry.nestingRule) parts.push('有嵌套规则')
+      return {
+        ok: true,
+        data: { type: params.type, ...entry },
+        summary: `${params.type} (${entry.category}): ${parts.join(', ')}`,
+      }
+    }
+
+    // 模式 2: 按 category 过滤
+    if (isNonEmptyString(params.category)) {
+      const registryKey = params.category as keyof SapCatalogRegistry
+      const types = catalog.registry[registryKey]
+      const list = types.map((t) => ({
+        type: t,
+        description: catalog.components[t]?.description ?? '',
+      }))
+      return {
+        ok: true,
+        data: { category: params.category, count: list.length, components: list },
+        summary: `${params.category}: ${list.length} 组件`,
+      }
+    }
+
+    // 模式 3: 全量列表
+    const list = Object.entries(catalog.components).map(([type, e]) => ({
+      type,
+      category: e.category,
+      description: e.description,
+    }))
+    return {
+      ok: true,
+      data: { total: list.length, components: list },
+      summary: `共 ${list.length} 个可用组件`,
     }
   },
 }

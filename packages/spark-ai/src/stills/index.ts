@@ -52,7 +52,7 @@ import {
   dependencyRemove,
 } from './dataset-domain'
 import type { DataSetDomainState, DesignPhase } from './dataset-domain'
-import { stillsCapabilities, stillsActionSpec, sessionDescribe } from './meta-methods'
+import { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery } from './meta-methods'
 import {
   blueprintDomain,
   getBlueprintState,
@@ -130,7 +130,7 @@ export {
 // Framework Stills
 // ═══════════════════════════════════════════════════════════
 
-export { stillsCapabilities, stillsActionSpec, sessionDescribe }
+export { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery }
 export {
   validateLlmDeserializedParams,
   formatLlmParamValidationIssues,
@@ -191,6 +191,7 @@ const metaStills = [
   stillsCapabilities,
   stillsActionSpec,
   sessionDescribe,
+  catalogQuery,
 ] as const
 
 /**
@@ -198,7 +199,7 @@ const metaStills = [
  * - dataset domain（24 个）通过 registerDomain 注册；
  * - blueprint domain（7 个）通过 registerDomain 注册；
  * - pageconfig domain（18 个）通过 registerDomain 注册；
- * - meta stills（3 个）通过 registerAll 注册。
+ * - meta stills（4 个）通过 registerAll 注册。
  */
 export function registerAllStills(): void {
   registerDomain(datasetDomain)

@@ -21,6 +21,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 import { useDisplayDataSource } from '../composables/useDisplayDataSource'

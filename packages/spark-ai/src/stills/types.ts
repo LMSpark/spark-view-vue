@@ -8,6 +8,7 @@
  */
 
 import type { IDataSetMetadata, TableRelation, ViewDependency } from '@spark-view/spark-data'
+import type { SapCatalog } from '../catalog/sap-catalog-types'
 
 // ═══════════════════════════════════════════════════════════
 // Guard / Result
@@ -154,6 +155,8 @@ export interface IStillSession {
   patchLog: PatchEntry[]
   /** 各域 state 的通用容器，key = 域名 */
   domains: Record<string, DomainState<unknown, string>>
+  /** SAP 组件目录（可选，presence 启用组件校验） */
+  catalog: SapCatalog | null
 }
 
 /** 从 session.domains 中按域名读取强类型 state。 */

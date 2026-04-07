@@ -29,6 +29,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。
+ */
 import { computed } from 'vue'
 import { SparkChildrenBridge, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'

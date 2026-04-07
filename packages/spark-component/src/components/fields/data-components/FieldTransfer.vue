@@ -16,6 +16,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。
+ */
 import type { SparkNode } from '../../internal'
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'

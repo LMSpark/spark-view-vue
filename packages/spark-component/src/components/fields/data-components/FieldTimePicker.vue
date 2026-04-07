@@ -19,6 +19,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。
+ */
 import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'

@@ -35,6 +35,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 import { useDockExtraction, TOOLBAR_DOCK_TYPES } from '../docks/dock-extraction'

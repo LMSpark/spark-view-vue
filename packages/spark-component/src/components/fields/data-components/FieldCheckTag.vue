@@ -11,6 +11,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。
+ */
 import { ref, watch } from 'vue'
 import { useSparkPageComponent, type SparkNode } from '../../internal'
 

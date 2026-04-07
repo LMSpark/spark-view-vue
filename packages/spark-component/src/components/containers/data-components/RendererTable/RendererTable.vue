@@ -141,6 +141,9 @@
 
 <script setup lang="ts">
 /**
+ * @skill-description 数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。
+ */
+/**
  * RendererTable - 表格容器组件
  *
  * 双模式：

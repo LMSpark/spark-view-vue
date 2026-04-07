@@ -104,6 +104,9 @@
 
 <script setup lang="ts">
 /**
+ * @skill-description 管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。
+ */
+/**
  * 管理仪表板页面 - Vue 组件页面示例
  * 
  * @component Dashboard

@@ -506,6 +506,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 平台首页，展示系统介绍、功能亮点和快速开始入口。
+ */
 import NavIcon from '@/components/NavIcon.vue'
 
 const year = new Date().getFullYear()

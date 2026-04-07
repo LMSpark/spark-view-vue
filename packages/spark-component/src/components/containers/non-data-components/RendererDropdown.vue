@@ -38,6 +38,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 

@@ -17,6 +17,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 标签展示组件，基于 el-tag 以彩色标签显示字段值，支持类型/尺寸/主题样式和可关闭功能。
+ */
 import { computed } from 'vue'
 import { useSparkPageComponent, type SparkNode } from '../../internal'
 import { useDisplayDataSource } from '../composables/useDisplayDataSource'

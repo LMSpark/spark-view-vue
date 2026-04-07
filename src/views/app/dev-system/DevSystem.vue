@@ -124,6 +124,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。
+ */
 import { computed, ref, watch, onMounted } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { PAGE_FILE_NAMES, useDevState } from './useDevState'

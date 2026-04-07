@@ -16,6 +16,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 尾部 dock，在 r-toolbar 中作为工具栏末尾区域提取渲染。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
 

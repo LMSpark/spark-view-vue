@@ -12,6 +12,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 内置操作按钮，基于 el-button 根据 action 类型（create/edit/delete/refresh 等）自动映射标签、图标和样式。
+ */
 import { computed } from 'vue'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { DATA_SOURCE, type SparkNode, useSparkComponent } from '../internal'

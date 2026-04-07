@@ -16,6 +16,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
 

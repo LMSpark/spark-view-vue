@@ -23,6 +23,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 

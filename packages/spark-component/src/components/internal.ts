@@ -18,6 +18,7 @@ export type {
   ResolvedSparkHost,
   UseSparkHostReturn,
   UseSparkHostScopeReturn,
+  SparkNodeInput,
 } from '../core/index.js'
 
 // ── 递归渲染器 ──

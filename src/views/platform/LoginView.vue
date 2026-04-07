@@ -131,6 +131,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 多租户登录页面，提供用户名/密码认证和租户选择入口。
+ */
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login, register, registerTenant } from '@/services/auth'

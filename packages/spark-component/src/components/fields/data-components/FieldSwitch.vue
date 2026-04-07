@@ -13,6 +13,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。
+ */
 import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useSwitchNullValue } from './composables/useSwitchNullValue'

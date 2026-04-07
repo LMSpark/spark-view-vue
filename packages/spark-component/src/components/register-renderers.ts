@@ -1,221 +1,107 @@
 /**
  * 一键注册所有内置 Renderer 容器 + 字段组件到 SPARK 注册表。
  *
- * 设计目标：
- * 1. 按“容器 / 展示 / Dock / 字段 / 支持组件”分类维护
- * 2. 用注册清单批量注册，减少手工散点重复
- * 3. 统一从分类 index 导入，避免深路径碎片化
+ * 架构：
+ *   Sync   — 首屏必需：数据容器 / 非数据容器 / 布局 / 核心字段 / Passthrough
+ *   Async  — 异步 `() => import()` 按需加载：低频容器 / 扩展字段 / 展示组件
+ *
+ * Passthrough 组件由 barrel (`non-data-components/index`) 统一创建，
+ * 此文件仅导入实例，不再本地调用 `createPassthrough()`。
  */
 import { Spark } from '../system/spark.js'
 
+// ── 数据容器 ──
 import {
-  RendererTable,
-  RendererForm,
-  RendererDetail,
-  RendererTree,
-  RendererList,
+  RendererTable, RendererForm, RendererDetail, RendererTree, RendererList,
 } from './containers/data-components/index.js'
 
+// ── Dock ──
 import {
-  RendererTabs,
-  RendererCollapse,
-  RendererDialog,
-  RendererDrawer,
-  RendererSteps,
-  RendererSection,
-  RendererToolbar,
-  RendererRow,
-  RendererCol,
-  RendererCard,
-  RendererSpace,
-  RendererDivider,
-  RendererButton,
-  RendererButtonGroup,
-  RendererLink,
-  RendererPageHeader,
-  RendererDropdown,
-  RendererTooltip,
-  RendererPopover,
-  RendererPopconfirm,
-  RendererBacktop,
-  RendererCarousel,
-  RendererCarouselItem,
-  RendererWatermark,
-  RendererAffix,
-  RendererScrollbar,
-  RendererTour,
-  RendererAnchor,
-  RendererAnchorLink,
-  RendererContainer,
-  RendererAside,
-  RendererMain,
-  RendererLayoutHeader,
-  RendererLayoutFooter,
-} from './containers/non-data-components/index.js'
-
-import { default as BuiltinActionButton } from './containers/BuiltinActionButton.vue'
-
-import {
-  DockActions,
-  DockFilter,
-  DockEditor,
-  DockHeader,
-  DockFooter,
-  DockTail,
+  DockActions, DockFilter, DockEditor, DockHeader, DockFooter, DockTail,
 } from './containers/docks/index.js'
 
-import {
-  DisplayStatistic,
-  DisplayProgress,
-  DisplayTag,
-  DisplayBadge,
-  DisplayAvatar,
-  DisplayText,
-  DisplayPagination,
-  DisplayDescriptions,
-  DisplayDescriptionsItem,
-  DisplayTimeline,
-  DisplayTimelineItem,
-  DisplayAlert,
-  DisplayEmpty,
-  DisplayResult,
-  DisplayBreadcrumb,
-  DisplayBreadcrumbItem,
-  DisplaySkeleton,
-  DisplayImage,
-  DisplayCalendar,
-  DisplayCountdown,
-  DisplayIcon,
-} from './display/index.js'
+// ── 内置操作按钮 ──
+import BuiltinActionButton from './containers/BuiltinActionButton.vue'
 
+// ── 非数据容器 + 布局 + Passthrough ──
 import {
-  FieldText,
-  FieldTextarea,
-  FieldHtmlEditor,
-  FieldNumber,
-  FieldDate,
-  FieldSelect,
-  FieldMultiSelect,
-  FieldRadio,
-  FieldCheckbox,
-  FieldCheckboxGroup,
-  FieldSwitch,
-  FieldSlider,
-  FieldRate,
-  FieldColor,
-  FieldIcon,
-  FieldImage,
-  FieldFilePath,
-  FieldFileBrowser,
-  FieldUpload,
-  FieldEntityPicker,
-  FieldUserPicker,
-  FieldDeptPicker,
-  FieldProductPicker,
-  FieldCascader,
-  FieldTreeSelect,
-  FieldTransfer,
-  FieldSegmented,
-  FieldCheckTag,
-  FieldMention,
-  FieldTimePicker,
-  FieldTimeSelect,
-  FieldAutocomplete,
+  RendererSection, RendererToolbar, RendererTabs, RendererCollapse,
+  RendererDialog, RendererDrawer, RendererSteps, RendererButton, RendererLink,
+  RendererCard, RendererSpace, RendererDivider, RendererDropdown,
+  RendererTooltip, RendererPopover,
+  RendererButtonGroup, RendererContainer, RendererMain, RendererAside,
+  RendererLayoutHeader, RendererLayoutFooter, RendererRow, RendererCol,
+  RendererAffix, RendererBacktop, RendererScrollbar,
+  RendererCarousel, RendererCarouselItem, RendererWatermark,
+} from './containers/non-data-components/index.js'
+
+// ── 核心字段 ──
+import {
+  FieldText, FieldTextarea, FieldNumber, FieldDate, FieldSelect,
+  FieldMultiSelect, FieldRadio, FieldCheckbox, FieldCheckboxGroup, FieldSwitch,
 } from './fields/data-components/index.js'
 
+// ── 非数据字段 ──
 import {
-  FieldContextRenderer,
-  FieldTreeNodeSummary,
+  FieldContextRenderer, FieldTreeNodeSummary,
 } from './fields/non-data-components/index.js'
 
+// ── 核心展示 ──
+import {
+  DisplayText, DisplayTag, DisplayPagination, DisplayStatistic,
+} from './display/data-components/index.js'
+import { DisplayAlert } from './display/non-data-components/index.js'
+
+// ── 支持组件（无 barrel）──
 import SparkCodeEditor from './support/SparkCodeEditor.vue'
 import SparkJsonEditor from './support/SparkJsonEditor.vue'
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 注册表
+// ═══════════════════════════════════════════════════════════════════════════════
 
 type RegisteredComponent = Parameters<typeof Spark.register>[1]
 type RegistrationEntry = readonly [string, RegisteredComponent]
 
-const CONTAINER_COMPONENTS: RegistrationEntry[] = [
+/** 同步注册：核心 + Passthrough */
+const CORE_COMPONENTS: RegistrationEntry[] = [
+  // 数据容器
   ['r-table', RendererTable],
   ['r-form', RendererForm],
   ['r-detail', RendererDetail],
   ['r-tree', RendererTree],
   ['r-list', RendererList],
-  ['r-tabs', RendererTabs],
-  ['r-collapse', RendererCollapse],
-  ['r-dialog', RendererDialog],
-  ['r-drawer', RendererDrawer],
-  ['r-steps', RendererSteps],
-  ['r-section', RendererSection],
-  ['r-block', RendererSection],
-  ['r-toolbar', RendererToolbar],
-  ['r-menu', RendererToolbar],
-  ['r-row', RendererRow],
-  ['r-col', RendererCol],
-  ['r-card', RendererCard],
-  ['r-space', RendererSpace],
-  ['r-divider', RendererDivider],
-  ['r-button', RendererButton],
-  ['r-button-group', RendererButtonGroup],
-  ['r-link', RendererLink],
-  ['r-page-header', RendererPageHeader],
-  ['r-dropdown', RendererDropdown],
-  ['r-tooltip', RendererTooltip],
-  ['r-popover', RendererPopover],
-  ['r-popconfirm', RendererPopconfirm],
-  ['r-backtop', RendererBacktop],
-  ['r-carousel', RendererCarousel],
-  ['r-carousel-item', RendererCarouselItem],
-  ['r-watermark', RendererWatermark],
-  ['r-affix', RendererAffix],
-  ['r-scrollbar', RendererScrollbar],
-  ['r-tour', RendererTour],
-  ['r-anchor', RendererAnchor],
-  ['r-anchor-link', RendererAnchorLink],
-  ['r-container', RendererContainer],
-  ['r-aside', RendererAside],
-  ['r-main', RendererMain],
-  ['r-layout-header', RendererLayoutHeader],
-  ['r-layout-footer', RendererLayoutFooter],
-  ['builtin-action', BuiltinActionButton],
-]
-
-const DISPLAY_COMPONENTS: RegistrationEntry[] = [
-  ['r-statistic', DisplayStatistic],
-  ['r-progress', DisplayProgress],
-  ['r-tag', DisplayTag],
-  ['r-badge', DisplayBadge],
-  ['r-avatar', DisplayAvatar],
-  ['r-text-display', DisplayText],
-  ['r-pagination', DisplayPagination],
-  ['r-descriptions', DisplayDescriptions],
-  ['r-descriptions-item', DisplayDescriptionsItem],
-  ['r-timeline', DisplayTimeline],
-  ['r-timeline-item', DisplayTimelineItem],
-  ['r-alert', DisplayAlert],
-  ['r-empty', DisplayEmpty],
-  ['r-result', DisplayResult],
-  ['r-breadcrumb', DisplayBreadcrumb],
-  ['r-breadcrumb-item', DisplayBreadcrumbItem],
-  ['r-skeleton', DisplaySkeleton],
-  ['display-image', DisplayImage],
-  ['display-calendar', DisplayCalendar],
-  ['display-countdown', DisplayCountdown],
-  ['display-icon', DisplayIcon],
-]
-
-const DOCK_COMPONENTS: RegistrationEntry[] = [
+  // Dock
   ['r-actions', DockActions],
   ['r-filter', DockFilter],
   ['r-editor', DockEditor],
   ['r-header', DockHeader],
   ['r-footer', DockFooter],
   ['r-tail', DockTail],
-]
-
-const FIELD_COMPONENTS: RegistrationEntry[] = [
+  // 内置操作
+  ['builtin-action', BuiltinActionButton],
+  // 核心非数据容器
+  ['r-section', RendererSection],
+  ['r-block', RendererSection],
+  ['r-toolbar', RendererToolbar],
+  ['r-menu', RendererToolbar],
+  ['r-tabs', RendererTabs],
+  ['r-collapse', RendererCollapse],
+  ['r-dialog', RendererDialog],
+  ['r-drawer', RendererDrawer],
+  ['r-steps', RendererSteps],
+  ['r-button', RendererButton],
+  ['r-link', RendererLink],
+  // 核心布局
+  ['r-card', RendererCard],
+  ['r-space', RendererSpace],
+  ['r-divider', RendererDivider],
+  ['r-dropdown', RendererDropdown],
+  ['r-tooltip', RendererTooltip],
+  ['r-popover', RendererPopover],
+  // 核心字段
   ['r-text', FieldText],
   ['r-textarea', FieldTextarea],
-  ['r-html-editor', FieldHtmlEditor],
   ['r-number', FieldNumber],
   ['r-date', FieldDate],
   ['r-select', FieldSelect],
@@ -224,48 +110,96 @@ const FIELD_COMPONENTS: RegistrationEntry[] = [
   ['r-checkbox', FieldCheckbox],
   ['r-checkbox-group', FieldCheckboxGroup],
   ['r-switch', FieldSwitch],
-  ['r-slider', FieldSlider],
-  ['r-rate', FieldRate],
-  ['r-color', FieldColor],
-  ['r-icon', FieldIcon],
-  ['r-image', FieldImage],
-  ['r-file-path', FieldFilePath],
-  ['r-file-browser', FieldFileBrowser],
-  ['r-upload', FieldUpload],
-  ['r-entity-picker', FieldEntityPicker],
-  ['r-user-picker', FieldUserPicker],
-  ['r-dept-picker', FieldDeptPicker],
-  ['r-product-picker', FieldProductPicker],
-  ['r-cascader', FieldCascader],
-  ['r-tree-select', FieldTreeSelect],
-  ['r-transfer', FieldTransfer],
-  ['r-segmented', FieldSegmented],
-  ['r-check-tag', FieldCheckTag],
-  ['r-mention', FieldMention],
-  ['r-time-picker', FieldTimePicker],
-  ['r-time-select', FieldTimeSelect],
-  ['r-autocomplete', FieldAutocomplete],
+  // 核心展示
+  ['r-text-display', DisplayText],
+  ['r-tag', DisplayTag],
+  ['r-pagination', DisplayPagination],
+  ['r-statistic', DisplayStatistic],
+  ['r-alert', DisplayAlert],
+  // 非数据字段
   ['r-column-group', FieldContextRenderer],
   ['r-tree-node-summary', FieldTreeNodeSummary],
-]
-
-const SUPPORT_COMPONENTS: RegistrationEntry[] = [
+  // 支持
   ['code-editor', SparkCodeEditor],
   ['json-editor', SparkJsonEditor],
+  // Passthrough（barrel 工厂实例）
+  ['r-button-group', RendererButtonGroup],
+  ['r-container', RendererContainer],
+  ['r-main', RendererMain],
+  ['r-aside', RendererAside],
+  ['r-layout-header', RendererLayoutHeader],
+  ['r-layout-footer', RendererLayoutFooter],
+  ['r-row', RendererRow],
+  ['r-col', RendererCol],
+  ['r-affix', RendererAffix],
+  ['r-backtop', RendererBacktop],
+  ['r-scrollbar', RendererScrollbar],
+  ['r-carousel', RendererCarousel],
+  ['r-carousel-item', RendererCarouselItem],
+  ['r-watermark', RendererWatermark],
 ]
 
-export function registerAllRenderers(): void {
-  const registrationGroups: readonly RegistrationEntry[][] = [
-    CONTAINER_COMPONENTS,
-    DISPLAY_COMPONENTS,
-    DOCK_COMPONENTS,
-    FIELD_COMPONENTS,
-    SUPPORT_COMPONENTS,
-  ]
+/** Tier 2: 异步按需注册 — Spark.register 检测到 function 自动包装 defineAsyncComponent */
+const ASYNC_COMPONENTS: ReadonlyArray<readonly [string, () => Promise<{ default: unknown }>]> = [
+  // 扩展容器
+  ['r-popconfirm', () => import('./containers/non-data-components/RendererPopconfirm.vue')],
+  ['r-page-header', () => import('./containers/non-data-components/RendererPageHeader.vue')],
+  ['r-tour', () => import('./containers/non-data-components/RendererTour.vue')],
+  ['r-anchor', () => import('./containers/non-data-components/RendererAnchor.vue')],
+  ['r-anchor-link', () => import('./containers/non-data-components/RendererAnchorLink.vue')],
+  // 扩展字段
+  ['r-html-editor', () => import('./fields/data-components/FieldHtmlEditor.vue')],
+  ['r-slider', () => import('./fields/data-components/FieldSlider.vue')],
+  ['r-rate', () => import('./fields/data-components/FieldRate.vue')],
+  ['r-color', () => import('./fields/data-components/FieldColor.vue')],
+  ['r-icon', () => import('./fields/data-components/FieldIcon.vue')],
+  ['r-image', () => import('./fields/data-components/FieldImage.vue')],
+  ['r-file-path', () => import('./fields/data-components/FieldFilePath.vue')],
+  ['r-file-browser', () => import('./fields/data-components/FieldFileBrowser.vue')],
+  ['r-upload', () => import('./fields/data-components/FieldUpload.vue')],
+  ['r-entity-picker', () => import('./fields/data-components/FieldEntityPicker.vue')],
+  ['r-user-picker', () => import('./fields/data-components/FieldUserPicker.vue')],
+  ['r-dept-picker', () => import('./fields/data-components/FieldDeptPicker.vue')],
+  ['r-product-picker', () => import('./fields/data-components/FieldProductPicker.vue')],
+  ['r-cascader', () => import('./fields/data-components/FieldCascader.vue')],
+  ['r-tree-select', () => import('./fields/data-components/FieldTreeSelect.vue')],
+  ['r-transfer', () => import('./fields/data-components/FieldTransfer.vue')],
+  ['r-segmented', () => import('./fields/data-components/FieldSegmented.vue')],
+  ['r-check-tag', () => import('./fields/data-components/FieldCheckTag.vue')],
+  ['r-mention', () => import('./fields/data-components/FieldMention.vue')],
+  ['r-time-picker', () => import('./fields/data-components/FieldTimePicker.vue')],
+  ['r-time-select', () => import('./fields/data-components/FieldTimeSelect.vue')],
+  ['r-autocomplete', () => import('./fields/data-components/FieldAutocomplete.vue')],
+  // 扩展展示
+  ['r-progress', () => import('./display/data-components/DisplayProgress.vue')],
+  ['r-badge', () => import('./display/data-components/DisplayBadge.vue')],
+  ['r-avatar', () => import('./display/data-components/DisplayAvatar.vue')],
+  ['r-descriptions', () => import('./display/non-data-components/DisplayDescriptions.vue')],
+  ['r-descriptions-item', () => import('./display/non-data-components/DisplayDescriptionsItem.vue')],
+  ['r-timeline', () => import('./display/non-data-components/DisplayTimeline.vue')],
+  ['r-timeline-item', () => import('./display/non-data-components/DisplayTimelineItem.vue')],
+  ['r-empty', () => import('./display/non-data-components/DisplayEmpty.vue')],
+  ['r-result', () => import('./display/non-data-components/DisplayResult.vue')],
+  ['r-breadcrumb', () => import('./display/non-data-components/DisplayBreadcrumb.vue')],
+  ['r-breadcrumb-item', () => import('./display/non-data-components/DisplayBreadcrumbItem.vue')],
+  ['r-skeleton', () => import('./display/non-data-components/DisplaySkeleton.vue')],
+  ['display-image', () => import('./display/data-components/DisplayImage.vue')],
+  ['display-calendar', () => import('./display/non-data-components/DisplayCalendar.vue')],
+  ['display-countdown', () => import('./display/non-data-components/DisplayCountdown.vue')],
+  ['display-icon', () => import('./display/non-data-components/DisplayIcon.vue')],
+]
 
-  for (const group of registrationGroups) {
-    for (const [type, component] of group) {
-      Spark.register(type, component)
-    }
+// ═══════════════════════════════════════════════════════════════════════════════
+// 公共 API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function registerAllRenderers(): void {
+  // Sync — 核心 + Passthrough
+  for (const [type, component] of CORE_COMPONENTS) {
+    Spark.register(type, component)
+  }
+  // Async — Spark.register 检测到 function 自动包装 defineAsyncComponent
+  for (const [type, loader] of ASYNC_COMPONENTS) {
+    Spark.register(type, loader)
   }
 }

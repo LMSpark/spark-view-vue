@@ -65,6 +65,9 @@
 
 <script setup lang="ts">
 /**
+ * @skill-description 树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。
+ */
+/**
  * RendererTree - 树形容器组件
  *
  * 内部通过 useSparkPageComponent + sparkConsume(PAGE_DATASET) 自行解析 dataKey。

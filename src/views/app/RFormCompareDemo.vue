@@ -116,6 +116,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。
+ */
 import { computed, ref } from 'vue'
 import {
   FieldNumber,

@@ -5,6 +5,7 @@
  * createSession() 自动为每个已注册域创建 state。
  */
 
+import type { SapCatalog } from '../catalog/sap-catalog-types'
 import type { IStillSession, DomainProvider } from './types'
 import { registerAll } from './dispatcher'
 
@@ -40,17 +41,22 @@ export function clearDomains(): void {
 // Session Factory
 // ═══════════════════════════════════════════════════════════
 
-function createBaseSession(): IStillSession {
+export interface CreateSessionOptions {
+  catalog?: SapCatalog
+}
+
+function createBaseSession(options?: CreateSessionOptions): IStillSession {
   return {
     blueprint: null,
     patchLog: [],
     domains: {},
+    catalog: options?.catalog ?? null,
   }
 }
 
 /** 创建会话：初始化框架字段 + 每个已注册域的 state */
-export function createSession(): IStillSession {
-  const session = createBaseSession()
+export function createSession(options?: CreateSessionOptions): IStillSession {
+  const session = createBaseSession(options)
 
   for (const [name, domain] of _domains) {
     session.domains[name] = domain.createState()

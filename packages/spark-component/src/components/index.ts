@@ -8,18 +8,6 @@ import { markSparkTemplateNodeComponent } from './support/SparkChild.shared.js'
 import { createTemplateDsl } from './template/createTemplateDsl.js'
 import {
   BuiltinActionButton,
-  RendererTable,
-  RendererForm,
-  RendererDetail,
-  RendererTree,
-  RendererList,
-  RendererTabs,
-  RendererCollapse,
-  RendererDialog,
-  RendererDrawer,
-  RendererSteps,
-  RendererSection,
-  RendererToolbar,
   RendererRow,
   RendererCol,
   RendererCard,
@@ -47,8 +35,6 @@ import {
   RendererLayoutHeader,
   RendererLayoutFooter,
   RendererButtonGroup,
-  RendererFieldScope,
-  RendererListItemScope,
 } from './containers/index.js'
 
 // ── 字段组件导入（用于 DSL 标记 + 别名导出）──────────────────────────────────
@@ -114,106 +100,112 @@ import {
   DisplayIcon,
 } from './display/index.js'
 
-// ── DSL 标记：使组件可作为模板 DSL 子节点编译为 SparkNode ─────────────────────
-type TemplateNodeComponent = Parameters<typeof markSparkTemplateNodeComponent>[0]
-type TemplateNodeEntry = readonly [TemplateNodeComponent, string]
+// ── DSL 定义：组件标记 + 模板别名合一 ─────────────────────────────────────────
+// 每条 [component, nodeType, dslName?] 同时驱动：
+//   1. markSparkTemplateNodeComponent — 编译时标记
+//   2. createTemplateDsl — 生成 R-前缀模板组件
+type DslDef = readonly [component: unknown, nodeType: string, dslName?: string]
 
-const FIELD_DSL_NODES: TemplateNodeEntry[] = [
-  [BuiltinActionButton, 'builtin-action'],
-  [FieldText, 'r-text'],
-  [FieldTextarea, 'r-textarea'],
-  [FieldHtmlEditor, 'r-html-editor'],
-  [FieldNumber, 'r-number'],
-  [FieldDate, 'r-date'],
-  [FieldSelect, 'r-select'],
-  [FieldMultiSelect, 'r-multi-select'],
-  [FieldRadio, 'r-radio'],
-  [FieldCheckbox, 'r-checkbox'],
-  [FieldCheckboxGroup, 'r-checkbox-group'],
-  [FieldSwitch, 'r-switch'],
-  [FieldSlider, 'r-slider'],
-  [FieldRate, 'r-rate'],
-  [FieldColor, 'r-color'],
-  [FieldIcon, 'r-icon'],
-  [FieldImage, 'r-image'],
-  [FieldFilePath, 'r-file-path'],
-  [FieldFileBrowser, 'r-file-browser'],
-  [FieldUpload, 'r-upload'],
-  [FieldEntityPicker, 'r-entity-picker'],
-  [FieldUserPicker, 'r-user-picker'],
-  [FieldDeptPicker, 'r-dept-picker'],
-  [FieldProductPicker, 'r-product-picker'],
-  [FieldCascader, 'r-cascader'],
-  [FieldTreeSelect, 'r-tree-select'],
-  [FieldTransfer, 'r-transfer'],
-  [FieldSegmented, 'r-segmented'],
-  [FieldCheckTag, 'r-check-tag'],
-  [FieldMention, 'r-mention'],
-  [FieldTimePicker, 'r-time-picker'],
-  [FieldTimeSelect, 'r-time-select'],
-  [FieldAutocomplete, 'r-autocomplete'],
-  [FieldContextRenderer, 'r-column-group'],
-  [FieldTreeNodeSummary, 'r-tree-node-summary'],
-]
-
-const PRESENTATION_DSL_NODES: TemplateNodeEntry[] = [
-  [RendererRow, 'r-row'],
-  [RendererCol, 'r-col'],
-  [RendererCard, 'r-card'],
-  [RendererSpace, 'r-space'],
-  [RendererDivider, 'r-divider'],
-  [RendererButton, 'r-button'],
-  [RendererLink, 'r-link'],
-  [RendererPageHeader, 'r-page-header'],
-  [RendererDropdown, 'r-dropdown'],
-  [RendererTooltip, 'r-tooltip'],
-  [RendererPopover, 'r-popover'],
-  [RendererPopconfirm, 'r-popconfirm'],
-  [RendererBacktop, 'r-backtop'],
-  [RendererCarousel, 'r-carousel'],
-  [RendererCarouselItem, 'r-carousel-item'],
-  [RendererWatermark, 'r-watermark'],
-  [RendererAffix, 'r-affix'],
-  [RendererScrollbar, 'r-scrollbar'],
-  [RendererTour, 'r-tour'],
-  [RendererAnchor, 'r-anchor'],
-  [RendererAnchorLink, 'r-anchor-link'],
-  [RendererContainer, 'r-container'],
-  [RendererAside, 'r-aside'],
-  [RendererMain, 'r-main'],
-  [RendererLayoutHeader, 'r-layout-header'],
-  [RendererLayoutFooter, 'r-layout-footer'],
-  [RendererButtonGroup, 'r-button-group'],
-  [DisplayStatistic, 'r-statistic'],
-  [DisplayProgress, 'r-progress'],
-  [DisplayTag, 'r-tag'],
-  [DisplayBadge, 'r-badge'],
-  [DisplayAvatar, 'r-avatar'],
-  [DisplayText, 'r-text-display'],
-  [DisplayPagination, 'r-pagination'],
-  [DisplayDescriptions, 'r-descriptions'],
-  [DisplayDescriptionsItem, 'r-descriptions-item'],
-  [DisplayTimeline, 'r-timeline'],
-  [DisplayTimelineItem, 'r-timeline-item'],
-  [DisplayAlert, 'r-alert'],
-  [DisplayEmpty, 'r-empty'],
-  [DisplayResult, 'r-result'],
-  [DisplayBreadcrumb, 'r-breadcrumb'],
-  [DisplayBreadcrumbItem, 'r-breadcrumb-item'],
-  [DisplaySkeleton, 'r-skeleton'],
-  [DisplayImage, 'display-image'],
-  [DisplayCalendar, 'display-calendar'],
-  [DisplayCountdown, 'display-countdown'],
-  [DisplayIcon, 'display-icon'],
-]
-
-for (const [component, nodeType] of FIELD_DSL_NODES) {
-  markSparkTemplateNodeComponent(component, { nodeType })
+function processDsl<T extends Readonly<Record<string, DslDef>>>(
+  defs: T,
+): { [K in keyof T]: ReturnType<typeof createTemplateDsl> } {
+  const result: Record<string, ReturnType<typeof createTemplateDsl>> = {}
+  for (const [alias, entry] of Object.entries(defs)) {
+    const [component, nodeType, dslName] = entry
+    markSparkTemplateNodeComponent(component, { nodeType })
+    result[alias] = createTemplateDsl(nodeType, dslName ?? alias)
+  }
+  return result as { [K in keyof T]: ReturnType<typeof createTemplateDsl> }
 }
 
-for (const [component, nodeType] of PRESENTATION_DSL_NODES) {
-  markSparkTemplateNodeComponent(component, { nodeType })
-}
+const FIELD_DSL = {
+  ElButton: [BuiltinActionButton, 'builtin-action', 'SparkDslBuiltinActionButton'],
+  RText: [FieldText, 'r-text'],
+  RTextarea: [FieldTextarea, 'r-textarea'],
+  RHtmlEditor: [FieldHtmlEditor, 'r-html-editor'],
+  RNumber: [FieldNumber, 'r-number'],
+  RDate: [FieldDate, 'r-date'],
+  RSelect: [FieldSelect, 'r-select'],
+  RMultiSelect: [FieldMultiSelect, 'r-multi-select'],
+  RRadio: [FieldRadio, 'r-radio'],
+  RCheckbox: [FieldCheckbox, 'r-checkbox'],
+  RCheckboxGroup: [FieldCheckboxGroup, 'r-checkbox-group'],
+  RSwitch: [FieldSwitch, 'r-switch'],
+  RSlider: [FieldSlider, 'r-slider'],
+  RRate: [FieldRate, 'r-rate'],
+  RColor: [FieldColor, 'r-color'],
+  RIcon: [FieldIcon, 'r-icon'],
+  RImage: [FieldImage, 'r-image'],
+  RFilePath: [FieldFilePath, 'r-file-path'],
+  RFileBrowser: [FieldFileBrowser, 'r-file-browser'],
+  RUpload: [FieldUpload, 'r-upload'],
+  REntityPicker: [FieldEntityPicker, 'r-entity-picker'],
+  RUserPicker: [FieldUserPicker, 'r-user-picker'],
+  RDeptPicker: [FieldDeptPicker, 'r-dept-picker'],
+  RProductPicker: [FieldProductPicker, 'r-product-picker'],
+  RCascader: [FieldCascader, 'r-cascader'],
+  RTreeSelect: [FieldTreeSelect, 'r-tree-select'],
+  RTransfer: [FieldTransfer, 'r-transfer'],
+  RSegmented: [FieldSegmented, 'r-segmented'],
+  RCheckTag: [FieldCheckTag, 'r-check-tag'],
+  RMention: [FieldMention, 'r-mention'],
+  RTimePicker: [FieldTimePicker, 'r-time-picker'],
+  RTimeSelect: [FieldTimeSelect, 'r-time-select'],
+  RAutocomplete: [FieldAutocomplete, 'r-autocomplete'],
+  RColumnGroup: [FieldContextRenderer, 'r-column-group'],
+  RTreeNodeSummary: [FieldTreeNodeSummary, 'r-tree-node-summary'],
+} as const satisfies Record<string, DslDef>
+
+const PRESENTATION_DSL = {
+  RRow: [RendererRow, 'r-row'],
+  RCol: [RendererCol, 'r-col'],
+  RCard: [RendererCard, 'r-card'],
+  RSpace: [RendererSpace, 'r-space'],
+  RDivider: [RendererDivider, 'r-divider'],
+  RButton: [RendererButton, 'r-button'],
+  RLink: [RendererLink, 'r-link'],
+  RPageHeader: [RendererPageHeader, 'r-page-header'],
+  RDropdown: [RendererDropdown, 'r-dropdown'],
+  RTooltip: [RendererTooltip, 'r-tooltip'],
+  RPopover: [RendererPopover, 'r-popover'],
+  RPopconfirm: [RendererPopconfirm, 'r-popconfirm'],
+  RBacktop: [RendererBacktop, 'r-backtop'],
+  RCarousel: [RendererCarousel, 'r-carousel'],
+  RCarouselItem: [RendererCarouselItem, 'r-carousel-item'],
+  RWatermark: [RendererWatermark, 'r-watermark'],
+  RAffix: [RendererAffix, 'r-affix'],
+  RScrollbar: [RendererScrollbar, 'r-scrollbar'],
+  RTour: [RendererTour, 'r-tour'],
+  RAnchor: [RendererAnchor, 'r-anchor'],
+  RAnchorLink: [RendererAnchorLink, 'r-anchor-link'],
+  RContainer: [RendererContainer, 'r-container'],
+  RAside: [RendererAside, 'r-aside'],
+  RMain: [RendererMain, 'r-main'],
+  RLayoutHeader: [RendererLayoutHeader, 'r-layout-header'],
+  RLayoutFooter: [RendererLayoutFooter, 'r-layout-footer'],
+  RButtonGroup: [RendererButtonGroup, 'r-button-group'],
+  RStatistic: [DisplayStatistic, 'r-statistic'],
+  RProgress: [DisplayProgress, 'r-progress'],
+  RTag: [DisplayTag, 'r-tag'],
+  RBadge: [DisplayBadge, 'r-badge'],
+  RAvatar: [DisplayAvatar, 'r-avatar'],
+  RTextDisplay: [DisplayText, 'r-text-display'],
+  RPagination: [DisplayPagination, 'r-pagination'],
+  RDescriptions: [DisplayDescriptions, 'r-descriptions'],
+  RDescriptionsItem: [DisplayDescriptionsItem, 'r-descriptions-item'],
+  RTimeline: [DisplayTimeline, 'r-timeline'],
+  RTimelineItem: [DisplayTimelineItem, 'r-timeline-item'],
+  RAlert: [DisplayAlert, 'r-alert'],
+  REmpty: [DisplayEmpty, 'r-empty'],
+  RResult: [DisplayResult, 'r-result'],
+  RBreadcrumb: [DisplayBreadcrumb, 'r-breadcrumb'],
+  RBreadcrumbItem: [DisplayBreadcrumbItem, 'r-breadcrumb-item'],
+  RSkeleton: [DisplaySkeleton, 'r-skeleton'],
+  RDisplayImage: [DisplayImage, 'display-image'],
+  RDisplayCalendar: [DisplayCalendar, 'display-calendar'],
+  RDisplayCountdown: [DisplayCountdown, 'display-countdown'],
+  RDisplayIcon: [DisplayIcon, 'display-icon'],
+} as const satisfies Record<string, DslDef>
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
@@ -235,119 +227,6 @@ export {
 } from './template/dsl-components.js'
 
 // ── DSL 字段别名（R-前缀快捷名）──────────────────────────────────────────────
-// 这些导出面向模板 authoring，统一返回固定 nodeType 的 DSL 包装组件；
-// 真实渲染组件仍通过 Field* / BuiltinActionButton 暴露。
-type TemplateDslAliasDefinition = readonly [nodeType: string, dslName?: string]
-type TemplateDslAliasDefinitions = Record<string, TemplateDslAliasDefinition>
-type TemplateDslAliases<T extends TemplateDslAliasDefinitions> = {
-  [K in keyof T]: ReturnType<typeof createTemplateDsl>
-}
-
-function createTemplateAliases<T extends TemplateDslAliasDefinitions>(
-  definitions: T,
-): TemplateDslAliases<T> {
-  const aliases = {} as TemplateDslAliases<T>
-  for (const [aliasName, definition] of Object.entries(definitions) as Array<
-    [keyof T & string, T[keyof T]]
-  >) {
-    const [nodeType, dslName] = definition
-    aliases[aliasName] = createTemplateDsl(nodeType, dslName ?? aliasName)
-  }
-  return aliases
-}
-
-const FIELD_TEMPLATE_ALIAS_DEFINITIONS = {
-  ElButton: ['builtin-action', 'SparkDslBuiltinActionButton'],
-  RText: ['r-text'],
-  RTextarea: ['r-textarea'],
-  RHtmlEditor: ['r-html-editor'],
-  RNumber: ['r-number'],
-  RDate: ['r-date'],
-  RSelect: ['r-select'],
-  RMultiSelect: ['r-multi-select'],
-  RRadio: ['r-radio'],
-  RCheckbox: ['r-checkbox'],
-  RCheckboxGroup: ['r-checkbox-group'],
-  RSwitch: ['r-switch'],
-  RSlider: ['r-slider'],
-  RRate: ['r-rate'],
-  RColor: ['r-color'],
-  RIcon: ['r-icon'],
-  RImage: ['r-image'],
-  RFilePath: ['r-file-path'],
-  RFileBrowser: ['r-file-browser'],
-  RUpload: ['r-upload'],
-  REntityPicker: ['r-entity-picker'],
-  RUserPicker: ['r-user-picker'],
-  RDeptPicker: ['r-dept-picker'],
-  RProductPicker: ['r-product-picker'],
-  RCascader: ['r-cascader'],
-  RTreeSelect: ['r-tree-select'],
-  RTransfer: ['r-transfer'],
-  RSegmented: ['r-segmented'],
-  RCheckTag: ['r-check-tag'],
-  RMention: ['r-mention'],
-  RTimePicker: ['r-time-picker'],
-  RTimeSelect: ['r-time-select'],
-  RAutocomplete: ['r-autocomplete'],
-  RColumnGroup: ['r-column-group'],
-  RTreeNodeSummary: ['r-tree-node-summary'],
-} as const
-
-const PRESENTATION_TEMPLATE_ALIAS_DEFINITIONS = {
-  RRow: ['r-row'],
-  RCol: ['r-col'],
-  RCard: ['r-card'],
-  RSpace: ['r-space'],
-  RDivider: ['r-divider'],
-  RButton: ['r-button'],
-  RLink: ['r-link'],
-  RPageHeader: ['r-page-header'],
-  RDropdown: ['r-dropdown'],
-  RTooltip: ['r-tooltip'],
-  RPopover: ['r-popover'],
-  RPopconfirm: ['r-popconfirm'],
-  RBacktop: ['r-backtop'],
-  RCarousel: ['r-carousel'],
-  RCarouselItem: ['r-carousel-item'],
-  RWatermark: ['r-watermark'],
-  RAffix: ['r-affix'],
-  RScrollbar: ['r-scrollbar'],
-  RTour: ['r-tour'],
-  RAnchor: ['r-anchor'],
-  RAnchorLink: ['r-anchor-link'],
-  RContainer: ['r-container'],
-  RAside: ['r-aside'],
-  RMain: ['r-main'],
-  RLayoutHeader: ['r-layout-header'],
-  RLayoutFooter: ['r-layout-footer'],
-  RButtonGroup: ['r-button-group'],
-  RStatistic: ['r-statistic'],
-  RProgress: ['r-progress'],
-  RTag: ['r-tag'],
-  RBadge: ['r-badge'],
-  RAvatar: ['r-avatar'],
-  RTextDisplay: ['r-text-display'],
-  RPagination: ['r-pagination'],
-  RDescriptions: ['r-descriptions'],
-  RDescriptionsItem: ['r-descriptions-item'],
-  RTimeline: ['r-timeline'],
-  RTimelineItem: ['r-timeline-item'],
-  RAlert: ['r-alert'],
-  REmpty: ['r-empty'],
-  RResult: ['r-result'],
-  RBreadcrumb: ['r-breadcrumb'],
-  RBreadcrumbItem: ['r-breadcrumb-item'],
-  RSkeleton: ['r-skeleton'],
-  RDisplayImage: ['display-image'],
-  RDisplayCalendar: ['display-calendar'],
-  RDisplayCountdown: ['display-countdown'],
-  RDisplayIcon: ['display-icon'],
-} as const
-
-const FIELD_TEMPLATE_ALIASES = createTemplateAliases(FIELD_TEMPLATE_ALIAS_DEFINITIONS)
-const PRESENTATION_TEMPLATE_ALIASES = createTemplateAliases(PRESENTATION_TEMPLATE_ALIAS_DEFINITIONS)
-
 export const {
   ElButton,
   RText,
@@ -384,7 +263,7 @@ export const {
   RAutocomplete,
   RColumnGroup,
   RTreeNodeSummary,
-} = FIELD_TEMPLATE_ALIASES
+} = processDsl(FIELD_DSL)
 
 // ── DSL 快捷名：布局/展示/反馈 ──────────────────────────────────────────────
 export const {
@@ -436,113 +315,17 @@ export const {
   RDisplayCalendar,
   RDisplayCountdown,
   RDisplayIcon,
-} = PRESENTATION_TEMPLATE_ALIASES
+} = processDsl(PRESENTATION_DSL)
 
-// ── 容器 Renderer 组件 ───────────────────────────────────────────────────────
-export {
-  BuiltinActionButton,
-  RendererTable,
-  RendererForm,
-  RendererDetail,
-  RendererTree,
-  RendererList,
-  RendererTabs,
-  RendererCollapse,
-  RendererDialog,
-  RendererDrawer,
-  RendererSteps,
-  RendererSection,
-  RendererToolbar,
-  RendererRow,
-  RendererCol,
-  RendererCard,
-  RendererSpace,
-  RendererDivider,
-  RendererButton,
-  RendererButtonGroup,
-  RendererLink,
-  RendererPageHeader,
-  RendererDropdown,
-  RendererTooltip,
-  RendererPopover,
-  RendererPopconfirm,
-  RendererBacktop,
-  RendererCarousel,
-  RendererCarouselItem,
-  RendererWatermark,
-  RendererAffix,
-  RendererScrollbar,
-  RendererTour,
-  RendererAnchor,
-  RendererAnchorLink,
-  RendererContainer,
-  RendererAside,
-  RendererMain,
-  RendererLayoutHeader,
-  RendererLayoutFooter,
-  RendererFieldScope,
-  RendererListItemScope,
-}
-
-// ── 字段组件 ──────────────────────────────────────────────────────────────────
-export { FieldText }
-export { FieldTextarea }
-export { FieldHtmlEditor }
-export { FieldNumber }
-export { FieldDate }
-export { FieldSelect }
-export { FieldMultiSelect }
-export { FieldRadio }
-export { FieldCheckbox }
-export { FieldCheckboxGroup }
-export { FieldSwitch }
-export { FieldSlider }
-export { FieldRate }
-export { FieldColor }
-export { FieldIcon }
-export { FieldImage }
-export { FieldFilePath }
-export { FieldFileBrowser }
-export { FieldUpload }
-export { FieldEntityPicker }
-export { FieldUserPicker }
-export { FieldDeptPicker }
-export { FieldProductPicker }
-export { FieldCascader }
-export { FieldTreeSelect }
-export { FieldTransfer }
-export { FieldSegmented }
-export { FieldCheckTag }
-export { FieldMention }
-export { FieldTimePicker }
-export { FieldTimeSelect }
-export { FieldAutocomplete }
-export { FieldContextRenderer }
-export { FieldContextRenderer as FieldColumnGroup }
-export { FieldTreeNodeSummary }
-
-// ── 展示组件导出 ──────────────────────────────────────────────────────────────
-export { DisplayStatistic }
-export { DisplayProgress }
-export { DisplayTag }
-export { DisplayBadge }
-export { DisplayAvatar }
-export { DisplayText }
-export { DisplayPagination }
-export { DisplayDescriptions }
-export { DisplayDescriptionsItem }
-export { DisplayTimeline }
-export { DisplayTimelineItem }
-export { DisplayAlert }
-export { DisplayEmpty }
-export { DisplayResult }
-export { DisplayBreadcrumb }
-export { DisplayBreadcrumbItem }
-export { DisplaySkeleton }
-export { DisplayImage }
-export { DisplayCalendar }
-export { DisplayCountdown }
-export { DisplayIcon }
+// ── 组件 re-exports（leaf barrel 统一导出）──────────────────────────────────
+export { BuiltinActionButton }
+export * from './containers/data-components/index.js'
+export * from './containers/non-data-components/index.js'
+export * from './containers/docks/index.js'
+export * from './fields/data-components/index.js'
+export * from './fields/non-data-components/index.js'
+export * from './display/data-components/index.js'
+export * from './display/non-data-components/index.js'
 
 // ── 注册 & composable ────────────────────────────────────────────────────────
 export { registerAllRenderers } from './register-renderers.js'

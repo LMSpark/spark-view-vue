@@ -26,6 +26,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 按钮组件，基于 el-button 可渲染子内容，支持 type/size/icon 等样式属性和点击事件。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 

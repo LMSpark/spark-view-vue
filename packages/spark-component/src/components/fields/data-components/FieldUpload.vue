@@ -27,6 +27,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。
+ */
 import { computed } from 'vue'
 import type { SparkNode } from '../../internal'
 import { useFileFieldActions } from '../actions/useFileFieldActions'

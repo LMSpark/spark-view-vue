@@ -69,6 +69,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。
+ */
 import { FieldNumber, FieldText, PAGE_DATASET, RendererTable, useSparkHostScope } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 

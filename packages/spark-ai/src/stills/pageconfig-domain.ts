@@ -36,6 +36,7 @@ import type {
   PageConfigValidationIssue,
 } from './pageconfig-types'
 import { getDataSetState } from './dataset-domain'
+import type { SapCatalog, SapComponentEntry } from '../catalog/sap-catalog-types'
 
 // ═══════════════════════════════════════════════════════════
 // 内部工具函数
@@ -47,6 +48,46 @@ function missingParam(name: string): string {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0
+}
+
+/**
+ * Catalog 校验：类型存在性 + props 名称。
+ * catalog 为 null 时跳过（降级模式）。
+ */
+function validateComponentAgainstCatalog(
+  catalog: SapCatalog | null,
+  type: string,
+  props?: Record<string, unknown>,
+): StillResult | null {
+  if (catalog === null) return null
+
+  const entry: SapComponentEntry | undefined = catalog.components[type]
+  if (entry === undefined) {
+    // 查找相似类型
+    const allTypes = Object.keys(catalog.components)
+    const candidates = allTypes
+      .filter((t) => t.includes(type) || type.includes(t))
+      .slice(0, 5)
+    const hint = candidates.length > 0
+      ? `相似组件: ${candidates.join(', ')}。`
+      : `可用容器: ${catalog.registry.containers.join(', ')}; 可用字段: ${catalog.registry.fields.join(', ')}`
+    return { ok: false, code: 'UNKNOWN_COMPONENT', msg: `未知组件类型 "${type}"。${hint}`, fix: '请用 catalog.query 查看可用组件列表' }
+  }
+
+  if (props !== undefined && entry.props.length > 0) {
+    const validPropNames = new Set(entry.props.map((p) => p.name))
+    const unknownProps = Object.keys(props).filter((k) => !validPropNames.has(k))
+    if (unknownProps.length > 0) {
+      return {
+        ok: false,
+        code: 'UNKNOWN_PROPS',
+        msg: `组件 "${type}" 不支持 props: ${unknownProps.join(', ')}。合法 props: ${entry.props.map((p) => p.name).join(', ')}`,
+        fix: `请用 catalog.query {"type":"${type}"} 查看该组件的合法 props`,
+      }
+    }
+  }
+
+  return null
 }
 
 /** 获取当前 pageconfig data，断言非 null */
@@ -272,6 +313,10 @@ const ruleAddComponent: StillDefinition<AddComponentParams, { id: string }> = {
     return null
   },
   execute: (session, params): StillResult<{ id: string }> => {
+    // catalog 校验（有 catalog 时启用）
+    const catalogError = validateComponentAgainstCatalog(session.catalog, params.type, params.props)
+    if (catalogError !== null) return catalogError as StillResult<{ id: string }>
+
     return withPC(session, (pc) => {
       const nodeId = params.id ?? nextNodeId(params.type)
       const newNode: SparkNode = {
@@ -339,6 +384,11 @@ const ruleSetProps: StillDefinition<SetPropsParams, void> = {
       if (node === null) {
         return { ok: false, code: 'NODE_NOT_FOUND', msg: `找不到节点 ${params.nodeId}`, fix: '确认 nodeId 正确' }
       }
+
+      // catalog props 校验
+      const catalogError = validateComponentAgainstCatalog(session.catalog, node.type, params.props)
+      if (catalogError !== null) return catalogError as StillResult<void>
+
       if (params.merge === false) {
         node.props = { ...params.props }
       } else {

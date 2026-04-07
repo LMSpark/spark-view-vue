@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-04-07T05:35:23.254Z
- * 条目数量：136
+ * 生成时间：2026-04-07T14:35:23.056Z
+ * 条目数量：122
  */
 import type { ComponentCatalog } from './types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-04-07T05:35:23.250Z",
-  "componentCount": 136,
+  "buildTime": "2026-04-07T14:35:23.046Z",
+  "componentCount": 122,
   "registry": {
     "containers": [
       "r-block",
@@ -41,25 +41,17 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-tree"
     ],
     "fields": [
-      "r-affix",
       "r-anchor",
       "r-anchor-link",
-      "r-aside",
       "r-autocomplete",
-      "r-backtop",
       "r-button",
-      "r-button-group",
       "r-card",
-      "r-carousel",
-      "r-carousel-item",
       "r-cascader",
       "r-check-tag",
       "r-checkbox",
       "r-checkbox-group",
-      "r-col",
       "r-collapse-item",
       "r-color",
-      "r-container",
       "r-context-renderer",
       "r-date",
       "r-dept-picker",
@@ -71,10 +63,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-html-editor",
       "r-icon",
       "r-image",
-      "r-layout-footer",
-      "r-layout-header",
       "r-link",
-      "r-main",
       "r-mention",
       "r-multi-select",
       "r-number",
@@ -84,8 +73,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-product-picker",
       "r-radio",
       "r-rate",
-      "r-row",
-      "r-scrollbar",
       "r-segmented",
       "r-select",
       "r-slider",
@@ -103,8 +90,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "r-transfer",
       "r-tree-select",
       "r-upload",
-      "r-user-picker",
-      "r-watermark"
+      "r-user-picker"
     ],
     "groups": [
       "r-column-group"
@@ -144,7 +130,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-table": {
       "type": "r-table",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。",
+      "description": "数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。",
       "props": [
         {
           "name": "dataKey",
@@ -198,7 +184,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-form": {
       "type": "r-form",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。",
+      "description": "数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。",
       "props": [
         {
           "name": "dataKey",
@@ -299,7 +285,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-detail": {
       "type": "r-detail",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。",
+      "description": "数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。",
       "props": [
         {
           "name": "dataKey",
@@ -402,7 +388,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-tree": {
       "type": "r-tree",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。",
+      "description": "树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。",
       "props": [
         {
           "name": "dataKey",
@@ -533,7 +519,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-list": {
       "type": "r-list",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。",
+      "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。",
       "props": [
         {
           "name": "dataKey",
@@ -605,7 +591,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式"
@@ -769,7 +755,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-tabs": {
       "type": "r-tabs",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。",
+      "description": "标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。",
       "props": [
         {
           "name": "modelValue",
@@ -849,7 +835,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-collapse": {
       "type": "r-collapse",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。",
+      "description": "折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。",
       "props": [
         {
           "name": "modelValue",
@@ -925,7 +911,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-steps": {
       "type": "r-steps",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。",
+      "description": "步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。",
       "props": [
         {
           "name": "modelValue",
@@ -1000,7 +986,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-dialog": {
       "type": "r-dialog",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。",
+      "description": "对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。",
       "props": [
         {
           "name": "header",
@@ -1163,7 +1149,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-drawer": {
       "type": "r-drawer",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。",
+      "description": "抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。",
       "props": [
         {
           "name": "header",
@@ -1306,7 +1292,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-section": {
       "type": "r-section",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。",
+      "description": "分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。",
       "props": [
         {
           "name": "header",
@@ -1358,7 +1344,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
@@ -1572,13 +1558,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-user-picker": {
       "type": "r-user-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。",
+      "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
       "props": [
-        {
-          "name": "width",
-          "type": "number",
-          "required": false
-        },
         {
           "name": "name",
           "type": "string",
@@ -1587,6 +1568,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "label",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -1699,13 +1685,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-dept-picker": {
       "type": "r-dept-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。",
+      "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
       "props": [
-        {
-          "name": "width",
-          "type": "number",
-          "required": false
-        },
         {
           "name": "name",
           "type": "string",
@@ -1714,6 +1695,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "label",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -1826,13 +1812,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-product-picker": {
       "type": "r-product-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。",
+      "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
       "props": [
-        {
-          "name": "width",
-          "type": "number",
-          "required": false
-        },
         {
           "name": "name",
           "type": "string",
@@ -1841,6 +1822,11 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         {
           "name": "label",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -1950,78 +1936,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         "hasOptions": true
       }
     },
-    "r-watermark": {
-      "type": "r-watermark",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。",
-      "props": [
-        {
-          "name": "content",
-          "type": "string | string[]",
-          "required": false
-        },
-        {
-          "name": "font",
-          "type": "WatermarkFont",
-          "required": false
-        },
-        {
-          "name": "gap",
-          "type": "[number, number]",
-          "required": false
-        },
-        {
-          "name": "offset",
-          "type": "[number, number]",
-          "required": false
-        },
-        {
-          "name": "rotate",
-          "type": "number",
-          "required": false,
-          "default": "-22"
-        },
-        {
-          "name": "zIndex",
-          "type": "number",
-          "required": false,
-          "default": "9"
-        },
-        {
-          "name": "width",
-          "type": "number",
-          "required": false
-        },
-        {
-          "name": "height",
-          "type": "number",
-          "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-watermark\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-tour": {
       "type": "r-tour",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tour\" 组织子组件。",
+      "description": "引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。",
       "props": [
         {
           "name": "steps",
@@ -2129,7 +2047,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-tooltip": {
       "type": "r-tooltip",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。",
+      "description": "文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。",
       "props": [
         {
           "name": "content",
@@ -2210,7 +2128,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-toolbar": {
       "type": "r-toolbar",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。",
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。",
       "props": [
         {
           "name": "tail",
@@ -2266,7 +2184,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-tab-pane": {
       "type": "r-tab-pane",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。",
+      "description": "标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。",
       "props": [
         {
           "name": "type",
@@ -2349,7 +2267,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-step-item": {
       "type": "r-step-item",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。",
+      "description": "步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。",
       "props": [
         {
           "name": "type",
@@ -2434,7 +2352,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-space": {
       "type": "r-space",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。",
+      "description": "间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。",
       "props": [
         {
           "name": "direction",
@@ -2487,140 +2405,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
-    "r-scrollbar": {
-      "type": "r-scrollbar",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。",
-      "props": [
-        {
-          "name": "height",
-          "type": "string | number",
-          "required": false
-        },
-        {
-          "name": "maxHeight",
-          "type": "string | number",
-          "required": false
-        },
-        {
-          "name": "native",
-          "type": "boolean",
-          "required": false,
-          "default": "false"
-        },
-        {
-          "name": "wrapStyle",
-          "type": "string | Record<string, string>",
-          "required": false
-        },
-        {
-          "name": "wrapClass",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "viewStyle",
-          "type": "string | Record<string, string>",
-          "required": false
-        },
-        {
-          "name": "viewClass",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "noresize",
-          "type": "boolean",
-          "required": false,
-          "default": "false"
-        },
-        {
-          "name": "always",
-          "type": "boolean",
-          "required": false,
-          "default": "false"
-        },
-        {
-          "name": "minSize",
-          "type": "number",
-          "required": false,
-          "default": "20"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-scrollbar\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
-    "r-row": {
-      "type": "r-row",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。",
-      "props": [
-        {
-          "name": "gutter",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "justify",
-          "type": "\"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\"",
-          "required": false,
-          "default": "\"start\""
-        },
-        {
-          "name": "align",
-          "type": "\"bottom\" | \"top\" | \"middle\"",
-          "required": false,
-          "default": "\"top\""
-        },
-        {
-          "name": "tag",
-          "type": "string",
-          "required": false,
-          "default": "\"div\""
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-row\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-popover": {
       "type": "r-popover",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。",
+      "description": "弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。",
       "props": [
         {
           "name": "title",
@@ -2706,7 +2494,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-popconfirm": {
       "type": "r-popconfirm",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。",
+      "description": "确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。",
       "props": [
         {
           "name": "title",
@@ -2797,7 +2585,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-page-header": {
       "type": "r-page-header",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。",
+      "description": "页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。",
       "props": [
         {
           "name": "title",
@@ -2842,36 +2630,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
-    "r-main": {
-      "type": "r-main",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-main\" 组织子组件。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-main\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-link": {
       "type": "r-link",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。",
+      "description": "链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。",
       "props": [
         {
           "name": "label",
@@ -2922,76 +2684,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
-    "r-layout-header": {
-      "type": "r-layout-header",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-header\" 组织子组件。",
-      "props": [
-        {
-          "name": "headerHeight",
-          "type": "string",
-          "required": false,
-          "default": "\"60px\"",
-          "description": "头部高度"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-layout-header\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
-    "r-layout-footer": {
-      "type": "r-layout-footer",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-footer\" 组织子组件。",
-      "props": [
-        {
-          "name": "footerHeight",
-          "type": "string",
-          "required": false,
-          "default": "\"60px\"",
-          "description": "底部高度"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-layout-footer\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-dropdown": {
       "type": "r-dropdown",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。",
+      "description": "下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。",
       "props": [
         {
           "name": "items",
@@ -3072,7 +2768,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-divider": {
       "type": "r-divider",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。",
+      "description": "分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。",
       "props": [
         {
           "name": "direction",
@@ -3118,42 +2814,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
-    "r-container": {
-      "type": "r-container",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-container\" 组织子组件。",
-      "props": [
-        {
-          "name": "direction",
-          "type": "\"horizontal\" | \"vertical\"",
-          "required": false,
-          "description": "布局方向，默认自动检测"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-container\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-collapse-item": {
       "type": "r-collapse-item",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。",
+      "description": "折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。",
       "props": [
         {
           "name": "type",
@@ -3218,219 +2882,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
-    "r-col": {
-      "type": "r-col",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。",
-      "props": [
-        {
-          "name": "span",
-          "type": "number",
-          "required": false,
-          "default": "24"
-        },
-        {
-          "name": "offset",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "push",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "pull",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "xs",
-          "type": "ResponsiveValue",
-          "required": false
-        },
-        {
-          "name": "sm",
-          "type": "ResponsiveValue",
-          "required": false
-        },
-        {
-          "name": "md",
-          "type": "ResponsiveValue",
-          "required": false
-        },
-        {
-          "name": "lg",
-          "type": "ResponsiveValue",
-          "required": false
-        },
-        {
-          "name": "xl",
-          "type": "ResponsiveValue",
-          "required": false
-        },
-        {
-          "name": "tag",
-          "type": "string",
-          "required": false,
-          "default": "\"div\""
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-col\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
-    "r-carousel-item": {
-      "type": "r-carousel-item",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。",
-      "props": [
-        {
-          "name": "itemName",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-carousel-item\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
-    "r-carousel": {
-      "type": "r-carousel",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。",
-      "props": [
-        {
-          "name": "height",
-          "type": "string",
-          "required": false,
-          "default": "\"200px\""
-        },
-        {
-          "name": "initialIndex",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "trigger",
-          "type": "\"click\" | \"hover\"",
-          "required": false,
-          "default": "\"hover\""
-        },
-        {
-          "name": "autoplay",
-          "type": "boolean",
-          "required": false,
-          "default": "true"
-        },
-        {
-          "name": "interval",
-          "type": "number",
-          "required": false,
-          "default": "3000"
-        },
-        {
-          "name": "indicatorPosition",
-          "type": "\"\" | \"none\" | \"outside\"",
-          "required": false,
-          "default": "\"\""
-        },
-        {
-          "name": "arrow",
-          "type": "\"always\" | \"hover\" | \"never\"",
-          "required": false,
-          "default": "\"hover\""
-        },
-        {
-          "name": "loop",
-          "type": "boolean",
-          "required": false,
-          "default": "true"
-        },
-        {
-          "name": "direction",
-          "type": "\"horizontal\" | \"vertical\"",
-          "required": false,
-          "default": "\"horizontal\""
-        },
-        {
-          "name": "pauseOnHover",
-          "type": "boolean",
-          "required": false,
-          "default": "true"
-        },
-        {
-          "name": "motionBlur",
-          "type": "boolean",
-          "required": false,
-          "default": "false"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-carousel\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-card": {
       "type": "r-card",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。",
+      "description": "卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。",
       "props": [
         {
           "name": "header",
@@ -3439,7 +2894,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "shadow",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "required": false,
           "default": "\"always\""
         },
@@ -3474,36 +2929,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
-    "r-button-group": {
-      "type": "r-button-group",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button-group\" 组织子组件。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-button-group\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-button": {
       "type": "r-button",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。",
+      "description": "按钮组件，基于 el-button 可渲染子内容，支持 type/size/icon 等样式属性和点击事件。",
       "props": [
         {
           "name": "label",
@@ -3602,92 +3031,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
-    "r-backtop": {
-      "type": "r-backtop",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。",
-      "props": [
-        {
-          "name": "target",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "visibilityHeight",
-          "type": "number",
-          "required": false,
-          "default": "200"
-        },
-        {
-          "name": "right",
-          "type": "number",
-          "required": false,
-          "default": "40"
-        },
-        {
-          "name": "bottom",
-          "type": "number",
-          "required": false,
-          "default": "40"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-backtop\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
-    "r-aside": {
-      "type": "r-aside",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-aside\" 组织子组件。",
-      "props": [
-        {
-          "name": "asideWidth",
-          "type": "string",
-          "required": false,
-          "default": "\"300px\"",
-          "description": "侧边栏宽度"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-aside\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-anchor-link": {
       "type": "r-anchor-link",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor-link\" 组织子组件。",
+      "description": "锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。",
       "props": [
         {
           "name": "href",
@@ -3725,7 +3072,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-anchor": {
       "type": "r-anchor",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor\" 组织子组件。",
+      "description": "锚点导航容器，基于 el-anchor 提供页面内锚点定位和跟随滚动高亮。",
       "props": [
         {
           "name": "container",
@@ -4137,59 +3484,10 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ]
     },
-    "r-affix": {
-      "type": "r-affix",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。",
-      "props": [
-        {
-          "name": "offset",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "position",
-          "type": "\"bottom\" | \"top\"",
-          "required": false,
-          "default": "\"top\""
-        },
-        {
-          "name": "target",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "zIndex",
-          "type": "number",
-          "required": false,
-          "default": "100"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-affix\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ]
-    },
     "r-upload": {
       "type": "r-upload",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。",
+      "description": "文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。",
       "props": [
         {
           "name": "field",
@@ -4321,7 +3619,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-tree-select": {
       "type": "r-tree-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。",
+      "description": "树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。",
       "props": [
         {
           "name": "field",
@@ -4474,7 +3772,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-transfer": {
       "type": "r-transfer",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。",
+      "description": "穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。",
       "props": [
         {
           "name": "field",
@@ -4603,7 +3901,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-time-select": {
       "type": "r-time-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-select\" 使用。",
+      "description": "时间间隔选择字段，绑定时间字符串值，基于 el-time-select 提供固定间隔的时间列表选择。",
       "props": [
         {
           "name": "field",
@@ -4711,7 +4009,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-time-picker": {
       "type": "r-time-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-picker\" 使用。",
+      "description": "时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。",
       "props": [
         {
           "name": "field",
@@ -4837,7 +4135,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-textarea": {
       "type": "r-textarea",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。",
+      "description": "多行文本字段，绑定 string 值，基于 el-input textarea 模式，支持自动高度和字数限制。",
       "props": [
         {
           "name": "field",
@@ -4932,7 +4230,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-text": {
       "type": "r-text",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。",
+      "description": "文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。",
       "props": [
         {
           "name": "field",
@@ -4993,7 +4291,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-switch": {
       "type": "r-switch",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。",
+      "description": "开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。",
       "props": [
         {
           "name": "field",
@@ -5078,7 +4376,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-slider": {
       "type": "r-slider",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。",
+      "description": "滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。",
       "props": [
         {
           "name": "field",
@@ -5167,7 +4465,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-select": {
       "type": "r-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。",
+      "description": "单选下拉字段，绑定 string/number 值，基于 el-select，支持静态选项列表或 optionKey 动态数据源绑定。",
       "props": [
         {
           "name": "field",
@@ -5283,7 +4581,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-segmented": {
       "type": "r-segmented",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-segmented\" 使用。",
+      "description": "分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。",
       "props": [
         {
           "name": "modelValue",
@@ -5370,7 +4668,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-rate": {
       "type": "r-rate",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。",
+      "description": "评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。",
       "props": [
         {
           "name": "field",
@@ -5445,7 +4743,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-radio": {
       "type": "r-radio",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。",
+      "description": "单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。",
       "props": [
         {
           "name": "field",
@@ -5547,7 +4845,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-number": {
       "type": "r-number",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。",
+      "description": "数字输入字段，绑定 number 值，基于 el-input-number，筛选模式下支持范围（最小-最大）双输入。",
       "props": [
         {
           "name": "field",
@@ -5654,7 +4952,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-multi-select": {
       "type": "r-multi-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。",
+      "description": "多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。",
       "props": [
         {
           "name": "field",
@@ -5799,7 +5097,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-mention": {
       "type": "r-mention",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-mention\" 使用。",
+      "description": "提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。",
       "props": [
         {
           "name": "modelValue",
@@ -5967,7 +5265,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-image": {
       "type": "r-image",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。",
+      "description": "图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。",
       "props": [
         {
           "name": "field",
@@ -6084,7 +5382,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-icon": {
       "type": "r-icon",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。",
+      "description": "图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。",
       "props": [
         {
           "name": "field",
@@ -6198,7 +5496,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-html-editor": {
       "type": "r-html-editor",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。",
+      "description": "富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。",
       "props": [
         {
           "name": "field",
@@ -6266,7 +5564,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-file-path": {
       "type": "r-file-path",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。",
+      "description": "文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。",
       "props": [
         {
           "name": "field",
@@ -6383,7 +5681,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-file-browser": {
       "type": "r-file-browser",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。",
+      "description": "文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。",
       "props": [
         {
           "name": "field",
@@ -6487,7 +5785,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-entity-picker": {
       "type": "r-entity-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。",
+      "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。",
       "props": [
         {
           "name": "field",
@@ -6648,7 +5946,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-date": {
       "type": "r-date",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。",
+      "description": "日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。",
       "props": [
         {
           "name": "field",
@@ -6791,7 +6089,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-color": {
       "type": "r-color",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。",
+      "description": "颜色选择字段，绑定十六进制颜色字符串，基于 el-color-picker，表格/详情模式显示色块预览。",
       "props": [
         {
           "name": "field",
@@ -6853,7 +6151,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-check-tag": {
       "type": "r-check-tag",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-check-tag\" 使用。",
+      "description": "标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。",
       "props": [
         {
           "name": "checked",
@@ -6922,7 +6220,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-checkbox-group": {
       "type": "r-checkbox-group",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。",
+      "description": "复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。",
       "props": [
         {
           "name": "field",
@@ -7032,7 +6330,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-checkbox": {
       "type": "r-checkbox",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。",
+      "description": "单个复选框字段，绑定 boolean 值，基于 el-checkbox，支持自定义选中/未选中显示文本。",
       "props": [
         {
           "name": "field",
@@ -7124,7 +6422,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-cascader": {
       "type": "r-cascader",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。",
+      "description": "级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。",
       "props": [
         {
           "name": "field",
@@ -7267,7 +6565,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-autocomplete": {
       "type": "r-autocomplete",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-autocomplete\" 使用。",
+      "description": "自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。",
       "props": [
         {
           "name": "field",
@@ -7541,91 +6839,91 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "tenant-config": {
       "type": "tenant-config",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。",
+      "description": "多租户配置管理页面，展示和编辑租户级别的系统配置项。",
       "props": []
     },
     "settings": {
       "type": "settings",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。",
+      "description": "系统设置面板，提供全局参数配置和偏好设置管理界面。",
       "props": []
     },
     "cache-manager": {
       "type": "cache-manager",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。",
+      "description": "缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存。",
       "props": []
     },
     "app-list": {
       "type": "app-list",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。",
+      "description": "应用列表页面，以卡片网格展示已创建的项目/应用及入口。",
       "props": []
     },
     "login-view": {
       "type": "login-view",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。",
+      "description": "多租户登录页面，提供用户名/密码认证和租户选择入口。",
       "props": []
     },
     "home-page": {
       "type": "home-page",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。",
+      "description": "平台首页，展示系统介绍、功能亮点和快速开始入口。",
       "props": []
     },
     "about": {
       "type": "about",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。",
+      "description": "关于页面，展示系统版本、技术栈和项目信息。",
       "props": []
     },
     "template-dsl-demo": {
       "type": "template-dsl-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。",
+      "description": "Vue 模板 DSL 演示页，展示通过 Vue SFC 模板直接使用 SPARK 组件的用法。",
       "props": []
     },
     "rform-compare-demo": {
       "type": "rform-compare-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。",
+      "description": "表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。",
       "props": []
     },
     "dashboard": {
       "type": "dashboard",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。",
+      "description": "管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。",
       "props": []
     },
     "custom-rtable-demo": {
       "type": "custom-rtable-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。",
+      "description": "自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。",
       "props": []
     },
     "capability-demo": {
       "type": "capability-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。",
+      "description": "能力系统演示页，展示 sparkProvide/sparkConsume 能力链的运行时行为。",
       "props": []
     },
     "dev-system": {
       "type": "dev-system",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。",
+      "description": "集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。",
       "props": []
     },
     "ai-studio-panel": {
       "type": "ai-studio-panel",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。",
+      "description": "AI 工作室面板，提供 AI 对话驱动的页面生成、迭代和预览功能。",
       "props": []
     },
     "spark-component-renderer": {
       "type": "spark-component-renderer",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。",
+      "description": "通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。",
       "props": [
         {
           "name": "parentContext",
@@ -7638,7 +6936,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "unregistered-node-fallback": {
       "type": "unregistered-node-fallback",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。",
+      "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。",
       "props": [
         {
           "name": "title",
@@ -7657,7 +6955,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "spark-json-editor": {
       "type": "spark-json-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。",
+      "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。",
       "props": [
         {
           "name": "modelValue",
@@ -7759,7 +7057,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "spark-code-editor": {
       "type": "spark-code-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。",
+      "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。",
       "props": [
         {
           "name": "modelValue",
@@ -7813,7 +7111,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "spark-child": {
       "type": "spark-child",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。",
+      "description": "子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。",
       "props": [
         {
           "name": "type",
@@ -7845,7 +7143,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "json-tree-editor": {
       "type": "json-tree-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"json-tree-editor\" 使用。",
+      "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。",
       "props": [
         {
           "name": "field",
@@ -7990,7 +7288,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "tree-node-summary": {
       "type": "tree-node-summary",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。",
+      "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。",
       "props": [
         {
           "name": "nameField",
@@ -8082,7 +7380,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "r-context-renderer": {
       "type": "r-context-renderer",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。",
+      "description": "语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。",
       "props": [
         {
           "name": "displayLabel",
@@ -8257,7 +7555,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-timeline-item": {
       "type": "display-timeline-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。",
+      "description": "时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。",
       "props": [
         {
           "name": "timestamp",
@@ -8334,7 +7632,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-timeline": {
       "type": "display-timeline",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。",
+      "description": "时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。",
       "props": [
         {
           "name": "type",
@@ -8360,7 +7658,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-skeleton": {
       "type": "display-skeleton",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。",
+      "description": "骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。",
       "props": [
         {
           "name": "rows",
@@ -8416,7 +7714,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-result": {
       "type": "display-result",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。",
+      "description": "结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。",
       "props": [
         {
           "name": "icon",
@@ -8458,7 +7756,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-icon": {
       "type": "display-icon",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-icon\" 使用。",
+      "description": "图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。",
       "props": [
         {
           "name": "icon",
@@ -8502,7 +7800,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-empty": {
       "type": "display-empty",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。",
+      "description": "空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。",
       "props": [
         {
           "name": "image",
@@ -8543,7 +7841,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-descriptions-item": {
       "type": "display-descriptions-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。",
+      "description": "描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。",
       "props": [
         {
           "name": "label",
@@ -8615,7 +7913,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-descriptions": {
       "type": "display-descriptions",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。",
+      "description": "描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。",
       "props": [
         {
           "name": "title",
@@ -8675,7 +7973,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-countdown": {
       "type": "display-countdown",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-countdown\" 使用。",
+      "description": "倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。",
       "props": [
         {
           "name": "value",
@@ -8749,7 +8047,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-calendar": {
       "type": "display-calendar",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-calendar\" 使用。",
+      "description": "日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。",
       "props": [
         {
           "name": "modelValue",
@@ -8791,7 +8089,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-breadcrumb-item": {
       "type": "display-breadcrumb-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。",
+      "description": "面包屑导航项，基于 el-breadcrumb-item 定义单个导航节点，支持链接跳转。",
       "props": [
         {
           "name": "label",
@@ -8833,7 +8131,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-breadcrumb": {
       "type": "display-breadcrumb",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。",
+      "description": "面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。",
       "props": [
         {
           "name": "separator",
@@ -8870,7 +8168,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-alert": {
       "type": "display-alert",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。",
+      "description": "警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。",
       "props": [
         {
           "name": "title",
@@ -8947,7 +8245,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-text": {
       "type": "display-text",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。",
+      "description": "文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。",
       "props": [
         {
           "name": "value",
@@ -9026,7 +8324,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-tag": {
       "type": "display-tag",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。",
+      "description": "标签展示组件，基于 el-tag 以彩色标签显示字段值，支持类型/尺寸/主题样式和可关闭功能。",
       "props": [
         {
           "name": "content",
@@ -9120,7 +8418,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-statistic": {
       "type": "display-statistic",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。",
+      "description": "统计数值展示组件，基于 el-statistic 格式化显示数字/字符串值，支持精度、前后缀和千分位分隔。",
       "props": [
         {
           "name": "title",
@@ -9202,7 +8500,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-progress": {
       "type": "display-progress",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。",
+      "description": "进度条展示组件，基于 el-progress 以条形或圆形显示百分比进度值，支持动态颜色。",
       "props": [
         {
           "name": "percentage",
@@ -9305,7 +8603,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-pagination": {
       "type": "display-pagination",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。",
+      "description": "分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。",
       "props": [
         {
           "name": "total",
@@ -9396,7 +8694,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-image": {
       "type": "display-image",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-image\" 使用。",
+      "description": "图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。",
       "props": [
         {
           "name": "src",
@@ -9518,7 +8816,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-badge": {
       "type": "display-badge",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。",
+      "description": "徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。",
       "props": [
         {
           "name": "badgeValue",
@@ -9609,7 +8907,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "display-avatar": {
       "type": "display-avatar",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。",
+      "description": "头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。",
       "props": [
         {
           "name": "avatarSize",
@@ -9688,7 +8986,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "builtin-action-button": {
       "type": "builtin-action-button",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。",
+      "description": "内置操作按钮，基于 el-button 根据 action 类型（create/edit/delete/refresh 等）自动映射标签、图标和样式。",
       "props": [
         {
           "name": "builtinAction",
@@ -10117,7 +9415,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "dock-tail": {
       "type": "dock-tail",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。",
+      "description": "尾部 dock，在 r-toolbar 中作为工具栏末尾区域提取渲染。",
       "props": [
         {
           "name": "type",
@@ -10141,7 +9439,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "dock-header": {
       "type": "dock-header",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。",
+      "description": "头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。",
       "props": [
         {
           "name": "type",
@@ -10165,7 +9463,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "dock-footer": {
       "type": "dock-footer",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。",
+      "description": "底部 dock，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。",
       "props": [
         {
           "name": "type",
@@ -10189,7 +9487,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "dock-filter": {
       "type": "dock-filter",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。",
+      "description": "筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。",
       "props": [
         {
           "name": "type",
@@ -10255,7 +9553,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "dock-editor": {
       "type": "dock-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。",
+      "description": "编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。",
       "props": [
         {
           "name": "type",
@@ -10270,7 +9568,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         },
         {
           "name": "position",
-          "type": "\"bottom\" | \"top\" | \"left\" | \"right\"",
+          "type": "\"bottom\" | \"left\" | \"right\" | \"top\"",
           "required": false,
           "description": "编辑区位置"
         },
@@ -10285,7 +9583,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
     "dock-actions": {
       "type": "dock-actions",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。",
+      "description": "操作列/区域 dock，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。",
       "props": [
         {
           "name": "type",
@@ -10477,9 +9775,9 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
 export const COMPONENT_DIRECTORY_DESCRIBE = {
   "hint": "session.describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 查询 specByType。",
   "summary": {
-    "total": 136,
+    "total": 122,
     "containers": 12,
-    "fields": 64,
+    "fields": 50,
     "groups": 1,
     "meta": 2,
     "features": 57
@@ -10500,25 +9798,17 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "r-tree"
     ],
     "fields": [
-      "r-affix",
       "r-anchor",
       "r-anchor-link",
-      "r-aside",
       "r-autocomplete",
-      "r-backtop",
       "r-button",
-      "r-button-group",
       "r-card",
-      "r-carousel",
-      "r-carousel-item",
       "r-cascader",
       "r-check-tag",
       "r-checkbox",
       "r-checkbox-group",
-      "r-col",
       "r-collapse-item",
       "r-color",
-      "r-container",
       "r-context-renderer",
       "r-date",
       "r-dept-picker",
@@ -10530,10 +9820,7 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "r-html-editor",
       "r-icon",
       "r-image",
-      "r-layout-footer",
-      "r-layout-header",
       "r-link",
-      "r-main",
       "r-mention",
       "r-multi-select",
       "r-number",
@@ -10543,8 +9830,6 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "r-product-picker",
       "r-radio",
       "r-rate",
-      "r-row",
-      "r-scrollbar",
       "r-segmented",
       "r-select",
       "r-slider",
@@ -10562,8 +9847,7 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "r-transfer",
       "r-tree-select",
       "r-upload",
-      "r-user-picker",
-      "r-watermark"
+      "r-user-picker"
     ],
     "groups": [
       "r-column-group"
@@ -10577,7 +9861,7 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
     {
       "type": "about",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。"
+      "description": "关于页面，展示系统版本、技术栈和项目信息。"
     },
     {
       "type": "ai-assistant-hub",
@@ -10597,12 +9881,12 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
     {
       "type": "ai-studio-panel",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。"
+      "description": "AI 工作室面板，提供 AI 对话驱动的页面生成、迭代和预览功能。"
     },
     {
       "type": "app-list",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。"
+      "description": "应用列表页面，以卡片网格展示已创建的项目/应用及入口。"
     },
     {
       "type": "builtin-action",
@@ -10612,17 +9896,17 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
     {
       "type": "builtin-action-button",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。"
+      "description": "内置操作按钮，基于 el-button 根据 action 类型（create/edit/delete/refresh 等）自动映射标签、图标和样式。"
     },
     {
       "type": "cache-manager",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。"
+      "description": "缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存。"
     },
     {
       "type": "capability-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。"
+      "description": "能力系统演示页，展示 sparkProvide/sparkConsume 能力链的运行时行为。"
     },
     {
       "type": "context-aware-fields-api",
@@ -10632,152 +9916,152 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
     {
       "type": "custom-rtable-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。"
+      "description": "自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。"
     },
     {
       "type": "dashboard",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。"
+      "description": "管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。"
     },
     {
       "type": "dev-system",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。"
+      "description": "集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。"
     },
     {
       "type": "display-alert",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。"
+      "description": "警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。"
     },
     {
       "type": "display-avatar",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。"
+      "description": "头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。"
     },
     {
       "type": "display-badge",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。"
+      "description": "徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。"
     },
     {
       "type": "display-breadcrumb",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。"
+      "description": "面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。"
     },
     {
       "type": "display-breadcrumb-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。"
+      "description": "面包屑导航项，基于 el-breadcrumb-item 定义单个导航节点，支持链接跳转。"
     },
     {
       "type": "display-calendar",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-calendar\" 使用。"
+      "description": "日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。"
     },
     {
       "type": "display-countdown",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-countdown\" 使用。"
+      "description": "倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。"
     },
     {
       "type": "display-descriptions",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。"
+      "description": "描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。"
     },
     {
       "type": "display-descriptions-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。"
+      "description": "描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。"
     },
     {
       "type": "display-empty",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。"
+      "description": "空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。"
     },
     {
       "type": "display-icon",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-icon\" 使用。"
+      "description": "图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。"
     },
     {
       "type": "display-image",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-image\" 使用。"
+      "description": "图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。"
     },
     {
       "type": "display-pagination",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。"
+      "description": "分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。"
     },
     {
       "type": "display-progress",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。"
+      "description": "进度条展示组件，基于 el-progress 以条形或圆形显示百分比进度值，支持动态颜色。"
     },
     {
       "type": "display-result",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。"
+      "description": "结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。"
     },
     {
       "type": "display-skeleton",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。"
+      "description": "骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。"
     },
     {
       "type": "display-statistic",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。"
+      "description": "统计数值展示组件，基于 el-statistic 格式化显示数字/字符串值，支持精度、前后缀和千分位分隔。"
     },
     {
       "type": "display-tag",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。"
+      "description": "标签展示组件，基于 el-tag 以彩色标签显示字段值，支持类型/尺寸/主题样式和可关闭功能。"
     },
     {
       "type": "display-text",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。"
+      "description": "文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。"
     },
     {
       "type": "display-timeline",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。"
+      "description": "时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。"
     },
     {
       "type": "display-timeline-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。"
+      "description": "时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。"
     },
     {
       "type": "dock-actions",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。"
+      "description": "操作列/区域 dock，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。"
     },
     {
       "type": "dock-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。"
+      "description": "编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。"
     },
     {
       "type": "dock-filter",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。"
+      "description": "筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。"
     },
     {
       "type": "dock-footer",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。"
+      "description": "底部 dock，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。"
     },
     {
       "type": "dock-header",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。"
+      "description": "头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。"
     },
     {
       "type": "dock-tail",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。"
+      "description": "尾部 dock，在 r-toolbar 中作为工具栏末尾区域提取渲染。"
     },
     {
       "type": "error-fallback",
@@ -10787,7 +10071,7 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
     {
       "type": "home-page",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。"
+      "description": "平台首页，展示系统介绍、功能亮点和快速开始入口。"
     },
     {
       "type": "icon-picker",
@@ -10797,12 +10081,12 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
     {
       "type": "json-tree-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"json-tree-editor\" 使用。"
+      "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。"
     },
     {
       "type": "login-view",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。"
+      "description": "多租户登录页面，提供用户名/密码认证和租户选择入口。"
     },
     {
       "type": "module-context-badge",
@@ -10815,34 +10099,19 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "description": "SPARK 组件，可在注册表中通过 type=\"nav-icon\" 使用。"
     },
     {
-      "type": "r-affix",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。"
-    },
-    {
       "type": "r-anchor",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor\" 组织子组件。"
+      "description": "锚点导航容器，基于 el-anchor 提供页面内锚点定位和跟随滚动高亮。"
     },
     {
       "type": "r-anchor-link",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor-link\" 组织子组件。"
-    },
-    {
-      "type": "r-aside",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-aside\" 组织子组件。"
+      "description": "锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。"
     },
     {
       "type": "r-autocomplete",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-autocomplete\" 使用。"
-    },
-    {
-      "type": "r-backtop",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。"
+      "description": "自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。"
     },
     {
       "type": "r-block",
@@ -10852,67 +10121,47 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
     {
       "type": "r-button",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。"
-    },
-    {
-      "type": "r-button-group",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button-group\" 组织子组件。"
+      "description": "按钮组件，基于 el-button 可渲染子内容，支持 type/size/icon 等样式属性和点击事件。"
     },
     {
       "type": "r-card",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。"
-    },
-    {
-      "type": "r-carousel",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。"
-    },
-    {
-      "type": "r-carousel-item",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。"
+      "description": "卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。"
     },
     {
       "type": "r-cascader",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。"
+      "description": "级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。"
     },
     {
       "type": "r-check-tag",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-check-tag\" 使用。"
+      "description": "标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。"
     },
     {
       "type": "r-checkbox",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。"
+      "description": "单个复选框字段，绑定 boolean 值，基于 el-checkbox，支持自定义选中/未选中显示文本。"
     },
     {
       "type": "r-checkbox-group",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。"
-    },
-    {
-      "type": "r-col",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。"
+      "description": "复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。"
     },
     {
       "type": "r-collapse",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。"
+      "description": "折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。"
     },
     {
       "type": "r-collapse-item",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。"
+      "description": "折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。"
     },
     {
       "type": "r-color",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。"
+      "description": "颜色选择字段，绑定十六进制颜色字符串，基于 el-color-picker，表格/详情模式显示色块预览。"
     },
     {
       "type": "r-column-group",
@@ -10920,289 +10169,254 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
       "description": ""
     },
     {
-      "type": "r-container",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-container\" 组织子组件。"
-    },
-    {
       "type": "r-context-renderer",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。"
+      "description": "语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。"
     },
     {
       "type": "r-date",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。"
+      "description": "日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。"
     },
     {
       "type": "r-dept-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。"
+      "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。"
     },
     {
       "type": "r-detail",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。"
+      "description": "数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。"
     },
     {
       "type": "r-dialog",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。"
+      "description": "对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。"
     },
     {
       "type": "r-divider",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。"
+      "description": "分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。"
     },
     {
       "type": "r-drawer",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。"
+      "description": "抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。"
     },
     {
       "type": "r-dropdown",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。"
+      "description": "下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。"
     },
     {
       "type": "r-entity-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。"
+      "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。"
     },
     {
       "type": "r-file-browser",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。"
+      "description": "文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。"
     },
     {
       "type": "r-file-path",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。"
+      "description": "文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。"
     },
     {
       "type": "r-form",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。"
+      "description": "数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。"
     },
     {
       "type": "r-html-editor",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。"
+      "description": "富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。"
     },
     {
       "type": "r-icon",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。"
+      "description": "图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。"
     },
     {
       "type": "r-image",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。"
-    },
-    {
-      "type": "r-layout-footer",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-footer\" 组织子组件。"
-    },
-    {
-      "type": "r-layout-header",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-header\" 组织子组件。"
+      "description": "图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。"
     },
     {
       "type": "r-link",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。"
+      "description": "链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。"
     },
     {
       "type": "r-list",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。"
-    },
-    {
-      "type": "r-main",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-main\" 组织子组件。"
+      "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。"
     },
     {
       "type": "r-mention",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-mention\" 使用。"
+      "description": "提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。"
     },
     {
       "type": "r-multi-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。"
+      "description": "多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。"
     },
     {
       "type": "r-number",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。"
+      "description": "数字输入字段，绑定 number 值，基于 el-input-number，筛选模式下支持范围（最小-最大）双输入。"
     },
     {
       "type": "r-page-header",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。"
+      "description": "页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。"
     },
     {
       "type": "r-popconfirm",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。"
+      "description": "确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。"
     },
     {
       "type": "r-popover",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。"
+      "description": "弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。"
     },
     {
       "type": "r-product-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。"
+      "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。"
     },
     {
       "type": "r-radio",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。"
+      "description": "单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。"
     },
     {
       "type": "r-rate",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。"
-    },
-    {
-      "type": "r-row",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。"
-    },
-    {
-      "type": "r-scrollbar",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。"
+      "description": "评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。"
     },
     {
       "type": "r-section",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。"
+      "description": "分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。"
     },
     {
       "type": "r-segmented",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-segmented\" 使用。"
+      "description": "分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。"
     },
     {
       "type": "r-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。"
+      "description": "单选下拉字段，绑定 string/number 值，基于 el-select，支持静态选项列表或 optionKey 动态数据源绑定。"
     },
     {
       "type": "r-slider",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。"
+      "description": "滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。"
     },
     {
       "type": "r-space",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。"
+      "description": "间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。"
     },
     {
       "type": "r-step-item",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。"
+      "description": "步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。"
     },
     {
       "type": "r-steps",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。"
+      "description": "步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。"
     },
     {
       "type": "r-switch",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。"
+      "description": "开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。"
     },
     {
       "type": "r-tab-pane",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。"
+      "description": "标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。"
     },
     {
       "type": "r-table",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。"
+      "description": "数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。"
     },
     {
       "type": "r-tabs",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。"
+      "description": "标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。"
     },
     {
       "type": "r-text",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。"
+      "description": "文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。"
     },
     {
       "type": "r-textarea",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。"
+      "description": "多行文本字段，绑定 string 值，基于 el-input textarea 模式，支持自动高度和字数限制。"
     },
     {
       "type": "r-time-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-picker\" 使用。"
+      "description": "时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。"
     },
     {
       "type": "r-time-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-select\" 使用。"
+      "description": "时间间隔选择字段，绑定时间字符串值，基于 el-time-select 提供固定间隔的时间列表选择。"
     },
     {
       "type": "r-toolbar",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。"
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。"
     },
     {
       "type": "r-tooltip",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。"
+      "description": "文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。"
     },
     {
       "type": "r-tour",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tour\" 组织子组件。"
+      "description": "引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。"
     },
     {
       "type": "r-transfer",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。"
+      "description": "穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。"
     },
     {
       "type": "r-tree",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。"
+      "description": "树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。"
     },
     {
       "type": "r-tree-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。"
+      "description": "树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。"
     },
     {
       "type": "r-upload",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。"
+      "description": "文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。"
     },
     {
       "type": "r-user-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。"
-    },
-    {
-      "type": "r-watermark",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。"
+      "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。"
     },
     {
       "type": "rform-compare-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。"
+      "description": "表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。"
     },
     {
       "type": "sap-chat-panel",
@@ -11212,47 +10426,47 @@ export const COMPONENT_DIRECTORY_DESCRIBE = {
     {
       "type": "settings",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。"
+      "description": "系统设置面板，提供全局参数配置和偏好设置管理界面。"
     },
     {
       "type": "spark-child",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。"
+      "description": "子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。"
     },
     {
       "type": "spark-code-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。"
+      "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。"
     },
     {
       "type": "spark-component-renderer",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。"
+      "description": "通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。"
     },
     {
       "type": "spark-json-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。"
+      "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。"
     },
     {
       "type": "template-dsl-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。"
+      "description": "Vue 模板 DSL 演示页，展示通过 Vue SFC 模板直接使用 SPARK 组件的用法。"
     },
     {
       "type": "tenant-config",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。"
+      "description": "多租户配置管理页面，展示和编辑租户级别的系统配置项。"
     },
     {
       "type": "tree-node-summary",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。"
+      "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。"
     },
     {
       "type": "unregistered-node-fallback",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。"
+      "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。"
     }
   ]
 }
@@ -11264,7 +10478,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "about": {
     "type": "about",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。",
+    "description": "关于页面，展示系统版本、技术栈和项目信息。",
     "props": []
   },
   "ai-assistant-hub": {
@@ -11359,13 +10573,13 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "ai-studio-panel": {
     "type": "ai-studio-panel",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。",
+    "description": "AI 工作室面板，提供 AI 对话驱动的页面生成、迭代和预览功能。",
     "props": []
   },
   "app-list": {
     "type": "app-list",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。",
+    "description": "应用列表页面，以卡片网格展示已创建的项目/应用及入口。",
     "props": []
   },
   "builtin-action": {
@@ -11390,7 +10604,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "builtin-action-button": {
     "type": "builtin-action-button",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。",
+    "description": "内置操作按钮，基于 el-button 根据 action 类型（create/edit/delete/refresh 等）自动映射标签、图标和样式。",
     "props": [
       {
         "name": "builtinAction",
@@ -11914,13 +11128,13 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "cache-manager": {
     "type": "cache-manager",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。",
+    "description": "缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存。",
     "props": []
   },
   "capability-demo": {
     "type": "capability-demo",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。",
+    "description": "能力系统演示页，展示 sparkProvide/sparkConsume 能力链的运行时行为。",
     "props": []
   },
   "context-aware-fields-api": {
@@ -11933,25 +11147,25 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "custom-rtable-demo": {
     "type": "custom-rtable-demo",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。",
+    "description": "自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。",
     "props": []
   },
   "dashboard": {
     "type": "dashboard",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。",
+    "description": "管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。",
     "props": []
   },
   "dev-system": {
     "type": "dev-system",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。",
+    "description": "集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。",
     "props": []
   },
   "display-alert": {
     "type": "display-alert",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。",
+    "description": "警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。",
     "props": [
       {
         "name": "title",
@@ -12070,7 +11284,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-avatar": {
     "type": "display-avatar",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。",
+    "description": "头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。",
     "props": [
       {
         "name": "avatarSize",
@@ -12178,7 +11392,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-badge": {
     "type": "display-badge",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。",
+    "description": "徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。",
     "props": [
       {
         "name": "badgeValue",
@@ -12321,7 +11535,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-breadcrumb": {
     "type": "display-breadcrumb",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。",
+    "description": "面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。",
     "props": [
       {
         "name": "separator",
@@ -12358,7 +11572,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-breadcrumb-item": {
     "type": "display-breadcrumb-item",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。",
+    "description": "面包屑导航项，基于 el-breadcrumb-item 定义单个导航节点，支持链接跳转。",
     "props": [
       {
         "name": "label",
@@ -12416,7 +11630,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-calendar": {
     "type": "display-calendar",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-calendar\" 使用。",
+    "description": "日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。",
     "props": [
       {
         "name": "modelValue",
@@ -12685,8 +11899,8 @@ export const COMPONENT_SPEC_BY_TYPE = {
               "required": true,
               "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
             },
-            "__@toPrimitive@937": {
-              "name": "__@toPrimitive@937",
+            "__@toPrimitive@956": {
+              "name": "__@toPrimitive@956",
               "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
               "required": true,
               "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -12965,8 +12179,8 @@ export const COMPONENT_SPEC_BY_TYPE = {
                   "required": true,
                   "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                 },
-                "__@toPrimitive@937": {
-                  "name": "__@toPrimitive@937",
+                "__@toPrimitive@956": {
+                  "name": "__@toPrimitive@956",
                   "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                   "required": true,
                   "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -13004,7 +12218,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-countdown": {
     "type": "display-countdown",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-countdown\" 使用。",
+    "description": "倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。",
     "props": [
       {
         "name": "value",
@@ -13086,7 +12300,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-descriptions": {
     "type": "display-descriptions",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。",
+    "description": "描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。",
     "props": [
       {
         "name": "title",
@@ -13171,7 +12385,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-descriptions-item": {
     "type": "display-descriptions-item",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。",
+    "description": "描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。",
     "props": [
       {
         "name": "label",
@@ -13261,7 +12475,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-empty": {
     "type": "display-empty",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。",
+    "description": "空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。",
     "props": [
       {
         "name": "image",
@@ -13302,7 +12516,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-icon": {
     "type": "display-icon",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-icon\" 使用。",
+    "description": "图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。",
     "props": [
       {
         "name": "icon",
@@ -13354,7 +12568,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-image": {
     "type": "display-image",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-image\" 使用。",
+    "description": "图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。",
     "props": [
       {
         "name": "src",
@@ -13535,7 +12749,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-pagination": {
     "type": "display-pagination",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。",
+    "description": "分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。",
     "props": [
       {
         "name": "total",
@@ -13650,7 +12864,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-progress": {
     "type": "display-progress",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。",
+    "description": "进度条展示组件，基于 el-progress 以条形或圆形显示百分比进度值，支持动态颜色。",
     "props": [
       {
         "name": "percentage",
@@ -13812,7 +13026,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-result": {
     "type": "display-result",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。",
+    "description": "结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。",
     "props": [
       {
         "name": "icon",
@@ -13864,7 +13078,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-skeleton": {
     "type": "display-skeleton",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。",
+    "description": "骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。",
     "props": [
       {
         "name": "rows",
@@ -13936,7 +13150,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-statistic": {
     "type": "display-statistic",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。",
+    "description": "统计数值展示组件，基于 el-statistic 格式化显示数字/字符串值，支持精度、前后缀和千分位分隔。",
     "props": [
       {
         "name": "title",
@@ -14034,7 +13248,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-tag": {
     "type": "display-tag",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。",
+    "description": "标签展示组件，基于 el-tag 以彩色标签显示字段值，支持类型/尺寸/主题样式和可关闭功能。",
     "props": [
       {
         "name": "content",
@@ -14189,7 +13403,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-text": {
     "type": "display-text",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。",
+    "description": "文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。",
     "props": [
       {
         "name": "value",
@@ -14286,7 +13500,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-timeline": {
     "type": "display-timeline",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。",
+    "description": "时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。",
     "props": [
       {
         "name": "type",
@@ -14312,7 +13526,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "display-timeline-item": {
     "type": "display-timeline-item",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。",
+    "description": "时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。",
     "props": [
       {
         "name": "timestamp",
@@ -14440,7 +13654,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "dock-actions": {
     "type": "dock-actions",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。",
+    "description": "操作列/区域 dock，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。",
     "props": [
       {
         "name": "type",
@@ -14523,7 +13737,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "dock-editor": {
     "type": "dock-editor",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。",
+    "description": "编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。",
     "props": [
       {
         "name": "type",
@@ -14538,17 +13752,17 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "position",
-        "type": "\"bottom\" | \"top\" | \"left\" | \"right\"",
+        "type": "\"bottom\" | \"left\" | \"right\" | \"top\"",
         "required": false,
         "description": "编辑区位置",
         "schema": {
           "kind": "enum",
-          "type": "\"bottom\" | \"top\" | \"left\" | \"right\"",
+          "type": "\"bottom\" | \"left\" | \"right\" | \"top\"",
           "variants": [
             "\"bottom\"",
-            "\"top\"",
             "\"left\"",
-            "\"right\""
+            "\"right\"",
+            "\"top\""
           ]
         }
       },
@@ -14571,7 +13785,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "dock-filter": {
     "type": "dock-filter",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。",
+    "description": "筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。",
     "props": [
       {
         "name": "type",
@@ -14675,7 +13889,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "dock-footer": {
     "type": "dock-footer",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。",
+    "description": "底部 dock，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。",
     "props": [
       {
         "name": "type",
@@ -14707,7 +13921,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "dock-header": {
     "type": "dock-header",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。",
+    "description": "头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。",
     "props": [
       {
         "name": "type",
@@ -14739,7 +13953,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "dock-tail": {
     "type": "dock-tail",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。",
+    "description": "尾部 dock，在 r-toolbar 中作为工具栏末尾区域提取渲染。",
     "props": [
       {
         "name": "type",
@@ -14810,7 +14024,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "home-page": {
     "type": "home-page",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。",
+    "description": "平台首页，展示系统介绍、功能亮点和快速开始入口。",
     "props": []
   },
   "icon-picker": {
@@ -14860,7 +14074,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "json-tree-editor": {
     "type": "json-tree-editor",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"json-tree-editor\" 使用。",
+    "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。",
     "props": [
       {
         "name": "field",
@@ -15108,7 +14322,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "login-view": {
     "type": "login-view",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。",
+    "description": "多租户登录页面，提供用户名/密码认证和租户选择入口。",
     "props": []
   },
   "module-context-badge": {
@@ -15163,67 +14377,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
       }
     ]
   },
-  "r-affix": {
-    "type": "r-affix",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。",
-    "props": [
-      {
-        "name": "offset",
-        "type": "number",
-        "required": false,
-        "default": "0"
-      },
-      {
-        "name": "position",
-        "type": "\"bottom\" | \"top\"",
-        "required": false,
-        "default": "\"top\"",
-        "schema": {
-          "kind": "enum",
-          "type": "\"bottom\" | \"top\"",
-          "variants": [
-            "\"bottom\"",
-            "\"top\""
-          ]
-        }
-      },
-      {
-        "name": "target",
-        "type": "string",
-        "required": false
-      },
-      {
-        "name": "zIndex",
-        "type": "number",
-        "required": false,
-        "default": "100"
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-affix\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-anchor": {
     "type": "r-anchor",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor\" 组织子组件。",
+    "description": "锚点导航容器，基于 el-anchor 提供页面内锚点定位和跟随滚动高亮。",
     "props": [
       {
         "name": "container",
@@ -15662,7 +14819,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-anchor-link": {
     "type": "r-anchor-link",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor-link\" 组织子组件。",
+    "description": "锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。",
     "props": [
       {
         "name": "href",
@@ -15697,43 +14854,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
       }
     ]
   },
-  "r-aside": {
-    "type": "r-aside",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-aside\" 组织子组件。",
-    "props": [
-      {
-        "name": "asideWidth",
-        "type": "string",
-        "required": false,
-        "default": "\"300px\"",
-        "description": "侧边栏宽度"
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-aside\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-autocomplete": {
     "type": "r-autocomplete",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-autocomplete\" 使用。",
+    "description": "自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。",
     "props": [
       {
         "name": "field",
@@ -15861,55 +14985,6 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "valueType": "string"
     }
   },
-  "r-backtop": {
-    "type": "r-backtop",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。",
-    "props": [
-      {
-        "name": "target",
-        "type": "string",
-        "required": false
-      },
-      {
-        "name": "visibilityHeight",
-        "type": "number",
-        "required": false,
-        "default": "200"
-      },
-      {
-        "name": "right",
-        "type": "number",
-        "required": false,
-        "default": "40"
-      },
-      {
-        "name": "bottom",
-        "type": "number",
-        "required": false,
-        "default": "40"
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-backtop\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-block": {
     "type": "r-block",
     "category": "container",
@@ -15962,7 +15037,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-button": {
     "type": "r-button",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。",
+    "description": "按钮组件，基于 el-button 可渲染子内容，支持 type/size/icon 等样式属性和点击事件。",
     "props": [
       {
         "name": "label",
@@ -16156,36 +15231,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
       }
     ]
   },
-  "r-button-group": {
-    "type": "r-button-group",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button-group\" 组织子组件。",
-    "props": [
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-button-group\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-card": {
     "type": "r-card",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。",
+    "description": "卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。",
     "props": [
       {
         "name": "header",
@@ -16194,15 +15243,15 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "shadow",
-        "type": "\"always\" | \"hover\" | \"never\"",
+        "type": "\"hover\" | \"always\" | \"never\"",
         "required": false,
         "default": "\"always\"",
         "schema": {
           "kind": "enum",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "variants": [
-            "\"always\"",
             "\"hover\"",
+            "\"always\"",
             "\"never\""
           ]
         }
@@ -16246,204 +15295,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
       }
     ]
   },
-  "r-carousel": {
-    "type": "r-carousel",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。",
-    "props": [
-      {
-        "name": "height",
-        "type": "string",
-        "required": false,
-        "default": "\"200px\""
-      },
-      {
-        "name": "initialIndex",
-        "type": "number",
-        "required": false,
-        "default": "0"
-      },
-      {
-        "name": "trigger",
-        "type": "\"click\" | \"hover\"",
-        "required": false,
-        "default": "\"hover\"",
-        "schema": {
-          "kind": "enum",
-          "type": "\"click\" | \"hover\"",
-          "variants": [
-            "\"click\"",
-            "\"hover\""
-          ]
-        }
-      },
-      {
-        "name": "autoplay",
-        "type": "boolean",
-        "required": false,
-        "default": "true",
-        "schema": {
-          "kind": "enum",
-          "type": "boolean",
-          "variants": [
-            "false",
-            "true"
-          ]
-        }
-      },
-      {
-        "name": "interval",
-        "type": "number",
-        "required": false,
-        "default": "3000"
-      },
-      {
-        "name": "indicatorPosition",
-        "type": "\"\" | \"none\" | \"outside\"",
-        "required": false,
-        "default": "\"\"",
-        "schema": {
-          "kind": "enum",
-          "type": "\"\" | \"none\" | \"outside\"",
-          "variants": [
-            "\"\"",
-            "\"none\"",
-            "\"outside\""
-          ]
-        }
-      },
-      {
-        "name": "arrow",
-        "type": "\"always\" | \"hover\" | \"never\"",
-        "required": false,
-        "default": "\"hover\"",
-        "schema": {
-          "kind": "enum",
-          "type": "\"always\" | \"hover\" | \"never\"",
-          "variants": [
-            "\"always\"",
-            "\"hover\"",
-            "\"never\""
-          ]
-        }
-      },
-      {
-        "name": "loop",
-        "type": "boolean",
-        "required": false,
-        "default": "true",
-        "schema": {
-          "kind": "enum",
-          "type": "boolean",
-          "variants": [
-            "false",
-            "true"
-          ]
-        }
-      },
-      {
-        "name": "direction",
-        "type": "\"horizontal\" | \"vertical\"",
-        "required": false,
-        "default": "\"horizontal\"",
-        "schema": {
-          "kind": "enum",
-          "type": "\"horizontal\" | \"vertical\"",
-          "variants": [
-            "\"horizontal\"",
-            "\"vertical\""
-          ]
-        }
-      },
-      {
-        "name": "pauseOnHover",
-        "type": "boolean",
-        "required": false,
-        "default": "true",
-        "schema": {
-          "kind": "enum",
-          "type": "boolean",
-          "variants": [
-            "false",
-            "true"
-          ]
-        }
-      },
-      {
-        "name": "motionBlur",
-        "type": "boolean",
-        "required": false,
-        "default": "false",
-        "schema": {
-          "kind": "enum",
-          "type": "boolean",
-          "variants": [
-            "false",
-            "true"
-          ]
-        }
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-carousel\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
-  "r-carousel-item": {
-    "type": "r-carousel-item",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。",
-    "props": [
-      {
-        "name": "itemName",
-        "type": "string",
-        "required": false
-      },
-      {
-        "name": "label",
-        "type": "string",
-        "required": false
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-carousel-item\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-cascader": {
     "type": "r-cascader",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。",
+    "description": "级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。",
     "props": [
       {
         "name": "field",
@@ -16634,7 +15489,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-check-tag": {
     "type": "r-check-tag",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-check-tag\" 使用。",
+    "description": "标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。",
     "props": [
       {
         "name": "checked",
@@ -16711,7 +15566,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-checkbox": {
     "type": "r-checkbox",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。",
+    "description": "单个复选框字段，绑定 boolean 值，基于 el-checkbox，支持自定义选中/未选中显示文本。",
     "props": [
       {
         "name": "field",
@@ -16811,7 +15666,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-checkbox-group": {
     "type": "r-checkbox-group",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。",
+    "description": "复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。",
     "props": [
       {
         "name": "field",
@@ -16942,131 +15797,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "hasOptions": true
     }
   },
-  "r-col": {
-    "type": "r-col",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。",
-    "props": [
-      {
-        "name": "span",
-        "type": "number",
-        "required": false,
-        "default": "24"
-      },
-      {
-        "name": "offset",
-        "type": "number",
-        "required": false,
-        "default": "0"
-      },
-      {
-        "name": "push",
-        "type": "number",
-        "required": false,
-        "default": "0"
-      },
-      {
-        "name": "pull",
-        "type": "number",
-        "required": false,
-        "default": "0"
-      },
-      {
-        "name": "xs",
-        "type": "ResponsiveValue",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "ResponsiveValue",
-          "variants": [
-            "number",
-            "{ span?: number; offset?: number; push?: number; pull?: number; }"
-          ]
-        }
-      },
-      {
-        "name": "sm",
-        "type": "ResponsiveValue",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "ResponsiveValue",
-          "variants": [
-            "number",
-            "{ span?: number; offset?: number; push?: number; pull?: number; }"
-          ]
-        }
-      },
-      {
-        "name": "md",
-        "type": "ResponsiveValue",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "ResponsiveValue",
-          "variants": [
-            "number",
-            "{ span?: number; offset?: number; push?: number; pull?: number; }"
-          ]
-        }
-      },
-      {
-        "name": "lg",
-        "type": "ResponsiveValue",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "ResponsiveValue",
-          "variants": [
-            "number",
-            "{ span?: number; offset?: number; push?: number; pull?: number; }"
-          ]
-        }
-      },
-      {
-        "name": "xl",
-        "type": "ResponsiveValue",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "ResponsiveValue",
-          "variants": [
-            "number",
-            "{ span?: number; offset?: number; push?: number; pull?: number; }"
-          ]
-        }
-      },
-      {
-        "name": "tag",
-        "type": "string",
-        "required": false,
-        "default": "\"div\""
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-col\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-collapse": {
     "type": "r-collapse",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。",
+    "description": "折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。",
     "props": [
       {
         "name": "modelValue",
@@ -17151,7 +15885,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-collapse-item": {
     "type": "r-collapse-item",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。",
+    "description": "折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。",
     "props": [
       {
         "name": "type",
@@ -17251,7 +15985,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-color": {
     "type": "r-color",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。",
+    "description": "颜色选择字段，绑定十六进制颜色字符串，基于 el-color-picker，表格/详情模式显示色块预览。",
     "props": [
       {
         "name": "field",
@@ -17317,50 +16051,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
     "props": [],
     "notes": "【使用场景】复杂表格需要多级表头分组，例如「基本信息」下包含「姓名」「年龄」「邮箱」\n\n【示例】\n{ \"type\": \"r-column-group\", \"props\": { \"label\": \"基本信息\" }, \"children\": [\n  { \"type\": \"r-text\", \"field\": \"name\", \"props\": { \"label\": \"姓名\" } },\n  { \"type\": \"r-number\", \"field\": \"age\", \"props\": { \"label\": \"年龄\" } }\n]}\nchildren 内放 r-* 字段组件作为实际数据列"
   },
-  "r-container": {
-    "type": "r-container",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-container\" 组织子组件。",
-    "props": [
-      {
-        "name": "direction",
-        "type": "\"horizontal\" | \"vertical\"",
-        "required": false,
-        "description": "布局方向，默认自动检测",
-        "schema": {
-          "kind": "enum",
-          "type": "\"horizontal\" | \"vertical\"",
-          "variants": [
-            "\"horizontal\"",
-            "\"vertical\""
-          ]
-        }
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-container\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-context-renderer": {
     "type": "r-context-renderer",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。",
+    "description": "语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。",
     "props": [
       {
         "name": "displayLabel",
@@ -17753,7 +16447,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-date": {
     "type": "r-date",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。",
+    "description": "日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。",
     "props": [
       {
         "name": "field",
@@ -17937,13 +16631,8 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-dept-picker": {
     "type": "r-dept-picker",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。",
+    "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
     "props": [
-      {
-        "name": "width",
-        "type": "number",
-        "required": false
-      },
       {
         "name": "name",
         "type": "string",
@@ -17952,6 +16641,11 @@ export const COMPONENT_SPEC_BY_TYPE = {
       {
         "name": "label",
         "type": "string",
+        "required": false
+      },
+      {
+        "name": "width",
+        "type": "number",
         "required": false
       },
       {
@@ -18108,7 +16802,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-detail": {
     "type": "r-detail",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。",
+    "description": "数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。",
     "props": [
       {
         "name": "dataKey",
@@ -18237,7 +16931,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-dialog": {
     "type": "r-dialog",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。",
+    "description": "对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。",
     "props": [
       {
         "name": "header",
@@ -18416,7 +17110,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-divider": {
     "type": "r-divider",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。",
+    "description": "分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。",
     "props": [
       {
         "name": "direction",
@@ -18493,7 +17187,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-drawer": {
     "type": "r-drawer",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。",
+    "description": "抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。",
     "props": [
       {
         "name": "header",
@@ -18652,7 +17346,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-dropdown": {
     "type": "r-dropdown",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。",
+    "description": "下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。",
     "props": [
       {
         "name": "items",
@@ -18819,7 +17513,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-entity-picker": {
     "type": "r-entity-picker",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。",
+    "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。",
     "props": [
       {
         "name": "field",
@@ -19024,7 +17718,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-file-browser": {
     "type": "r-file-browser",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。",
+    "description": "文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。",
     "props": [
       {
         "name": "field",
@@ -19144,7 +17838,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-file-path": {
     "type": "r-file-path",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。",
+    "description": "文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。",
     "props": [
       {
         "name": "field",
@@ -19277,7 +17971,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-form": {
     "type": "r-form",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。",
+    "description": "数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。",
     "props": [
       {
         "name": "dataKey",
@@ -19386,7 +18080,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-html-editor": {
     "type": "r-html-editor",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。",
+    "description": "富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。",
     "props": [
       {
         "name": "field",
@@ -19454,7 +18148,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-icon": {
     "type": "r-icon",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。",
+    "description": "图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。",
     "props": [
       {
         "name": "field",
@@ -19584,7 +18278,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-image": {
     "type": "r-image",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。",
+    "description": "图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。",
     "props": [
       {
         "name": "field",
@@ -19714,76 +18408,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "valueType": "string"
     }
   },
-  "r-layout-footer": {
-    "type": "r-layout-footer",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-footer\" 组织子组件。",
-    "props": [
-      {
-        "name": "footerHeight",
-        "type": "string",
-        "required": false,
-        "default": "\"60px\"",
-        "description": "底部高度"
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-layout-footer\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
-  "r-layout-header": {
-    "type": "r-layout-header",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-header\" 组织子组件。",
-    "props": [
-      {
-        "name": "headerHeight",
-        "type": "string",
-        "required": false,
-        "default": "\"60px\"",
-        "description": "头部高度"
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-layout-header\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-link": {
     "type": "r-link",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。",
+    "description": "链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。",
     "props": [
       {
         "name": "label",
@@ -19868,7 +18496,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-list": {
     "type": "r-list",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。",
+    "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。",
     "props": [
       {
         "name": "dataKey",
@@ -19956,16 +18584,16 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "cardShadow",
-        "type": "\"always\" | \"hover\" | \"never\"",
+        "type": "\"hover\" | \"always\" | \"never\"",
         "required": false,
         "default": "\"hover\"",
         "description": "卡片阴影模式",
         "schema": {
           "kind": "enum",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "variants": [
-            "\"always\"",
             "\"hover\"",
+            "\"always\"",
             "\"never\""
           ]
         }
@@ -20134,36 +18762,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
     },
     "notes": "**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\ndock='actions' children — 列表项动作节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE"
   },
-  "r-main": {
-    "type": "r-main",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-main\" 组织子组件。",
-    "props": [
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-main\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-mention": {
     "type": "r-mention",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-mention\" 使用。",
+    "description": "提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。",
     "props": [
       {
         "name": "modelValue",
@@ -20423,7 +19025,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-multi-select": {
     "type": "r-multi-select",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。",
+    "description": "多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。",
     "props": [
       {
         "name": "field",
@@ -20616,7 +19218,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-number": {
     "type": "r-number",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。",
+    "description": "数字输入字段，绑定 number 值，基于 el-input-number，筛选模式下支持范围（最小-最大）双输入。",
     "props": [
       {
         "name": "field",
@@ -20739,7 +19341,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-page-header": {
     "type": "r-page-header",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。",
+    "description": "页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。",
     "props": [
       {
         "name": "title",
@@ -20787,7 +19389,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-popconfirm": {
     "type": "r-popconfirm",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。",
+    "description": "确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。",
     "props": [
       {
         "name": "title",
@@ -20920,7 +19522,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-popover": {
     "type": "r-popover",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。",
+    "description": "弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。",
     "props": [
       {
         "name": "title",
@@ -21040,13 +19642,8 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-product-picker": {
     "type": "r-product-picker",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。",
+    "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
     "props": [
-      {
-        "name": "width",
-        "type": "number",
-        "required": false
-      },
       {
         "name": "name",
         "type": "string",
@@ -21055,6 +19652,11 @@ export const COMPONENT_SPEC_BY_TYPE = {
       {
         "name": "label",
         "type": "string",
+        "required": false
+      },
+      {
+        "name": "width",
+        "type": "number",
         "required": false
       },
       {
@@ -21211,7 +19813,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-radio": {
     "type": "r-radio",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。",
+    "description": "单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。",
     "props": [
       {
         "name": "field",
@@ -21329,7 +19931,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-rate": {
     "type": "r-rate",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。",
+    "description": "评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。",
     "props": [
       {
         "name": "field",
@@ -21409,217 +20011,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
       "valueType": "string"
     }
   },
-  "r-row": {
-    "type": "r-row",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。",
-    "props": [
-      {
-        "name": "gutter",
-        "type": "number",
-        "required": false,
-        "default": "0"
-      },
-      {
-        "name": "justify",
-        "type": "\"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\"",
-        "required": false,
-        "default": "\"start\"",
-        "schema": {
-          "kind": "enum",
-          "type": "\"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\"",
-          "variants": [
-            "\"start\"",
-            "\"center\"",
-            "\"end\"",
-            "\"space-between\"",
-            "\"space-around\"",
-            "\"space-evenly\""
-          ]
-        }
-      },
-      {
-        "name": "align",
-        "type": "\"bottom\" | \"top\" | \"middle\"",
-        "required": false,
-        "default": "\"top\"",
-        "schema": {
-          "kind": "enum",
-          "type": "\"bottom\" | \"top\" | \"middle\"",
-          "variants": [
-            "\"bottom\"",
-            "\"top\"",
-            "\"middle\""
-          ]
-        }
-      },
-      {
-        "name": "tag",
-        "type": "string",
-        "required": false,
-        "default": "\"div\""
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-row\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
-  "r-scrollbar": {
-    "type": "r-scrollbar",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。",
-    "props": [
-      {
-        "name": "height",
-        "type": "string | number",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "string | number",
-          "variants": [
-            "string",
-            "number"
-          ]
-        }
-      },
-      {
-        "name": "maxHeight",
-        "type": "string | number",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "string | number",
-          "variants": [
-            "string",
-            "number"
-          ]
-        }
-      },
-      {
-        "name": "native",
-        "type": "boolean",
-        "required": false,
-        "default": "false",
-        "schema": {
-          "kind": "enum",
-          "type": "boolean",
-          "variants": [
-            "false",
-            "true"
-          ]
-        }
-      },
-      {
-        "name": "wrapStyle",
-        "type": "string | Record<string, string>",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "string | Record<string, string>",
-          "variants": [
-            "string",
-            "Record<string, string>"
-          ]
-        }
-      },
-      {
-        "name": "wrapClass",
-        "type": "string",
-        "required": false
-      },
-      {
-        "name": "viewStyle",
-        "type": "string | Record<string, string>",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "string | Record<string, string>",
-          "variants": [
-            "string",
-            "Record<string, string>"
-          ]
-        }
-      },
-      {
-        "name": "viewClass",
-        "type": "string",
-        "required": false
-      },
-      {
-        "name": "noresize",
-        "type": "boolean",
-        "required": false,
-        "default": "false",
-        "schema": {
-          "kind": "enum",
-          "type": "boolean",
-          "variants": [
-            "false",
-            "true"
-          ]
-        }
-      },
-      {
-        "name": "always",
-        "type": "boolean",
-        "required": false,
-        "default": "false",
-        "schema": {
-          "kind": "enum",
-          "type": "boolean",
-          "variants": [
-            "false",
-            "true"
-          ]
-        }
-      },
-      {
-        "name": "minSize",
-        "type": "number",
-        "required": false,
-        "default": "20"
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-scrollbar\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "r-section": {
     "type": "r-section",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。",
+    "description": "分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。",
     "props": [
       {
         "name": "header",
@@ -21703,16 +20098,16 @@ export const COMPONENT_SPEC_BY_TYPE = {
       },
       {
         "name": "cardShadow",
-        "type": "\"always\" | \"hover\" | \"never\"",
+        "type": "\"hover\" | \"always\" | \"never\"",
         "required": false,
         "default": "\"never\"",
         "description": "卡片阴影模式",
         "schema": {
           "kind": "enum",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "variants": [
-            "\"always\"",
             "\"hover\"",
+            "\"always\"",
             "\"never\""
           ]
         }
@@ -21893,7 +20288,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-segmented": {
     "type": "r-segmented",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-segmented\" 使用。",
+    "description": "分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。",
     "props": [
       {
         "name": "modelValue",
@@ -22020,7 +20415,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-select": {
     "type": "r-select",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。",
+    "description": "单选下拉字段，绑定 string/number 值，基于 el-select，支持静态选项列表或 optionKey 动态数据源绑定。",
     "props": [
       {
         "name": "field",
@@ -22160,7 +20555,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-slider": {
     "type": "r-slider",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。",
+    "description": "滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。",
     "props": [
       {
         "name": "field",
@@ -22257,7 +20652,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-space": {
     "type": "r-space",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。",
+    "description": "间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。",
     "props": [
       {
         "name": "direction",
@@ -22356,7 +20751,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-step-item": {
     "type": "r-step-item",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。",
+    "description": "步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。",
     "props": [
       {
         "name": "type",
@@ -22473,7 +20868,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-steps": {
     "type": "r-steps",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。",
+    "description": "步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。",
     "props": [
       {
         "name": "modelValue",
@@ -22556,7 +20951,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-switch": {
     "type": "r-switch",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。",
+    "description": "开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。",
     "props": [
       {
         "name": "field",
@@ -22650,7 +21045,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-tab-pane": {
     "type": "r-tab-pane",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。",
+    "description": "标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。",
     "props": [
       {
         "name": "type",
@@ -22789,7 +21184,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-table": {
     "type": "r-table",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。",
+    "description": "数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。",
     "props": [
       {
         "name": "dataKey",
@@ -22843,7 +21238,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-tabs": {
     "type": "r-tabs",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。",
+    "description": "标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。",
     "props": [
       {
         "name": "modelValue",
@@ -22931,7 +21326,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-text": {
     "type": "r-text",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。",
+    "description": "文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。",
     "props": [
       {
         "name": "field",
@@ -22992,7 +21387,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-textarea": {
     "type": "r-textarea",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。",
+    "description": "多行文本字段，绑定 string 值，基于 el-input textarea 模式，支持自动高度和字数限制。",
     "props": [
       {
         "name": "field",
@@ -23104,7 +21499,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-time-picker": {
     "type": "r-time-picker",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-picker\" 使用。",
+    "description": "时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。",
     "props": [
       {
         "name": "field",
@@ -23262,7 +21657,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-time-select": {
     "type": "r-time-select",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-select\" 使用。",
+    "description": "时间间隔选择字段，绑定时间字符串值，基于 el-time-select 提供固定间隔的时间列表选择。",
     "props": [
       {
         "name": "field",
@@ -23378,7 +21773,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-toolbar": {
     "type": "r-toolbar",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。",
+    "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。",
     "props": [
       {
         "name": "tail",
@@ -23470,7 +21865,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-tooltip": {
     "type": "r-tooltip",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。",
+    "description": "文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。",
     "props": [
       {
         "name": "content",
@@ -23583,7 +21978,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-tour": {
     "type": "r-tour",
     "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tour\" 组织子组件。",
+    "description": "引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。",
     "props": [
       {
         "name": "steps",
@@ -23805,7 +22200,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-transfer": {
     "type": "r-transfer",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。",
+    "description": "穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。",
     "props": [
       {
         "name": "field",
@@ -23965,7 +22360,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-tree": {
     "type": "r-tree",
     "category": "container",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。",
+    "description": "树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。",
     "props": [
       {
         "name": "dataKey",
@@ -24130,7 +22525,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-tree-select": {
     "type": "r-tree-select",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。",
+    "description": "树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。",
     "props": [
       {
         "name": "field",
@@ -24342,7 +22737,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-upload": {
     "type": "r-upload",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。",
+    "description": "文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。",
     "props": [
       {
         "name": "field",
@@ -24499,13 +22894,8 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "r-user-picker": {
     "type": "r-user-picker",
     "category": "field",
-    "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。",
+    "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
     "props": [
-      {
-        "name": "width",
-        "type": "number",
-        "required": false
-      },
       {
         "name": "name",
         "type": "string",
@@ -24514,6 +22904,11 @@ export const COMPONENT_SPEC_BY_TYPE = {
       {
         "name": "label",
         "type": "string",
+        "required": false
+      },
+      {
+        "name": "width",
+        "type": "number",
         "required": false
       },
       {
@@ -24667,122 +23062,10 @@ export const COMPONENT_SPEC_BY_TYPE = {
     },
     "notes": "**r-user-picker** — 用户选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户"
   },
-  "r-watermark": {
-    "type": "r-watermark",
-    "category": "field",
-    "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。",
-    "props": [
-      {
-        "name": "content",
-        "type": "string | string[]",
-        "required": false,
-        "schema": {
-          "kind": "enum",
-          "type": "string | string[]",
-          "variants": [
-            "string",
-            "string[]"
-          ]
-        }
-      },
-      {
-        "name": "font",
-        "type": "WatermarkFont",
-        "required": false,
-        "schema": {
-          "kind": "object",
-          "type": "WatermarkFont",
-          "properties": {
-            "color": {
-              "name": "color",
-              "type": "string",
-              "required": false
-            },
-            "fontSize": {
-              "name": "fontSize",
-              "type": "number",
-              "required": false
-            },
-            "fontWeight": {
-              "name": "fontWeight",
-              "type": "string",
-              "required": false
-            },
-            "fontFamily": {
-              "name": "fontFamily",
-              "type": "string",
-              "required": false
-            },
-            "fontStyle": {
-              "name": "fontStyle",
-              "type": "string",
-              "required": false
-            },
-            "textAlign": {
-              "name": "textAlign",
-              "type": "string",
-              "required": false
-            }
-          }
-        }
-      },
-      {
-        "name": "gap",
-        "type": "[number, number]",
-        "required": false
-      },
-      {
-        "name": "offset",
-        "type": "[number, number]",
-        "required": false
-      },
-      {
-        "name": "rotate",
-        "type": "number",
-        "required": false,
-        "default": "-22"
-      },
-      {
-        "name": "zIndex",
-        "type": "number",
-        "required": false,
-        "default": "9"
-      },
-      {
-        "name": "width",
-        "type": "number",
-        "required": false
-      },
-      {
-        "name": "height",
-        "type": "number",
-        "required": false
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": false,
-        "default": "\"r-watermark\"",
-        "description": "组件类型（对应 ComponentDefinition.type）"
-      },
-      {
-        "name": "props",
-        "type": "Record<string, unknown>",
-        "required": false,
-        "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-      },
-      {
-        "name": "id",
-        "type": "string",
-        "required": false,
-        "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-      }
-    ]
-  },
   "rform-compare-demo": {
     "type": "rform-compare-demo",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。",
+    "description": "表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。",
     "props": []
   },
   "sap-chat-panel": {
@@ -24837,13 +23120,13 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "settings": {
     "type": "settings",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。",
+    "description": "系统设置面板，提供全局参数配置和偏好设置管理界面。",
     "props": []
   },
   "spark-child": {
     "type": "spark-child",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。",
+    "description": "子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。",
     "props": [
       {
         "name": "type",
@@ -24891,7 +23174,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "spark-code-editor": {
     "type": "spark-code-editor",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。",
+    "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。",
     "props": [
       {
         "name": "modelValue",
@@ -24977,7 +23260,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "spark-component-renderer": {
     "type": "spark-component-renderer",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。",
+    "description": "通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。",
     "props": [
       {
         "name": "parentContext",
@@ -25017,7 +23300,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "spark-json-editor": {
     "type": "spark-json-editor",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。",
+    "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。",
     "props": [
       {
         "name": "modelValue",
@@ -25216,19 +23499,19 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "template-dsl-demo": {
     "type": "template-dsl-demo",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。",
+    "description": "Vue 模板 DSL 演示页，展示通过 Vue SFC 模板直接使用 SPARK 组件的用法。",
     "props": []
   },
   "tenant-config": {
     "type": "tenant-config",
     "category": "feature",
-    "description": "SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。",
+    "description": "多租户配置管理页面，展示和编辑租户级别的系统配置项。",
     "props": []
   },
   "tree-node-summary": {
     "type": "tree-node-summary",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。",
+    "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。",
     "props": [
       {
         "name": "nameField",
@@ -25360,7 +23643,7 @@ export const COMPONENT_SPEC_BY_TYPE = {
   "unregistered-node-fallback": {
     "type": "unregistered-node-fallback",
     "category": "feature",
-    "description": "SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。",
+    "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。",
     "props": [
       {
         "name": "title",
@@ -25388,7 +23671,7 @@ export function getComponentSpec(type: string): Record<string, unknown> | null {
 /**
  * 供 AI 先做“有哪些组件”判断的组件目录。
  */
-export const COMPONENT_DIRECTORY_PROMPT = "## 组件目录\n\n## 组件注册表\n\n| 分组 | 允许的 type |\n|------|------------|\n| SPARK 容器 | r-block, r-collapse, r-detail, r-dialog, r-drawer, r-form, r-list, r-section, r-steps, r-table, r-tabs, r-tree |\n| SPARK 字段 | r-affix, r-anchor, r-anchor-link, r-aside, r-autocomplete, r-backtop, r-button, r-button-group, r-card, r-carousel, r-carousel-item, r-cascader, r-check-tag, r-checkbox, r-checkbox-group, r-col, r-collapse-item, r-color, r-container, r-context-renderer, r-date, r-dept-picker, r-divider, r-dropdown, r-entity-picker, r-file-browser, r-file-path, r-html-editor, r-icon, r-image, r-layout-footer, r-layout-header, r-link, r-main, r-mention, r-multi-select, r-number, r-page-header, r-popconfirm, r-popover, r-product-picker, r-radio, r-rate, r-row, r-scrollbar, r-segmented, r-select, r-slider, r-space, r-step-item, r-switch, r-tab-pane, r-text, r-textarea, r-time-picker, r-time-select, r-toolbar, r-tooltip, r-tour, r-transfer, r-tree-select, r-upload, r-user-picker, r-watermark |\n| SPARK 分组 | r-column-group |\n\n## 组件索引\n\n| type | 分类 | 描述 |\n|------|------|------|\n| context-aware-fields-api | meta | 语境感知字段渲染能力总览 |\n| builtin-action | meta | 声明式动作节点（零代码优先） |\n| r-table | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。 |\n| r-form | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。 |\n| r-detail | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。 |\n| r-tree | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。 |\n| r-list | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。 |\n| r-tabs | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。 |\n| r-collapse | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。 |\n| r-steps | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。 |\n| r-dialog | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。 |\n| r-drawer | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。 |\n| r-section | container | SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。 |\n| r-block | container | 块容器（轻量分区） |\n| r-user-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。 |\n| r-dept-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。 |\n| r-product-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。 |\n| r-watermark | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。 |\n| r-tour | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tour\" 组织子组件。 |\n| r-tooltip | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。 |\n| r-toolbar | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。 |\n| r-tab-pane | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。 |\n| r-step-item | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。 |\n| r-space | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。 |\n| r-scrollbar | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。 |\n| r-row | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。 |\n| r-popover | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。 |\n| r-popconfirm | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。 |\n| r-page-header | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。 |\n| r-main | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-main\" 组织子组件。 |\n| r-link | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。 |\n| r-layout-header | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-header\" 组织子组件。 |\n| r-layout-footer | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-footer\" 组织子组件。 |\n| r-dropdown | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。 |\n| r-divider | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。 |\n| r-container | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-container\" 组织子组件。 |\n| r-collapse-item | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。 |\n| r-col | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。 |\n| r-carousel-item | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。 |\n| r-carousel | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。 |\n| r-card | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。 |\n| r-button-group | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-button-group\" 组织子组件。 |\n| r-button | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。 |\n| r-backtop | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。 |\n| r-aside | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-aside\" 组织子组件。 |\n| r-anchor-link | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor-link\" 组织子组件。 |\n| r-anchor | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor\" 组织子组件。 |\n| r-affix | field | SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。 |\n| r-upload | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。 |\n| r-tree-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。 |\n| r-transfer | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。 |\n| r-time-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-select\" 使用。 |\n| r-time-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-picker\" 使用。 |\n| r-textarea | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。 |\n| r-text | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。 |\n| r-switch | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。 |\n| r-slider | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。 |\n| r-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。 |\n| r-segmented | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-segmented\" 使用。 |\n| r-rate | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。 |\n| r-radio | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。 |\n| r-number | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。 |\n| r-multi-select | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。 |\n| r-mention | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-mention\" 使用。 |\n| r-image | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。 |\n| r-icon | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。 |\n| r-html-editor | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。 |\n| r-file-path | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。 |\n| r-file-browser | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。 |\n| r-entity-picker | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。 |\n| r-date | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。 |\n| r-color | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。 |\n| r-check-tag | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-check-tag\" 使用。 |\n| r-checkbox-group | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。 |\n| r-checkbox | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。 |\n| r-cascader | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。 |\n| r-autocomplete | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-autocomplete\" 使用。 |\n| sap-chat-panel | feature | SPARK 组件，可在注册表中通过 type=\"sap-chat-panel\" 使用。 |\n| nav-icon | feature | SPARK 组件，可在注册表中通过 type=\"nav-icon\" 使用。 |\n| module-context-badge | feature | SPARK 组件，可在注册表中通过 type=\"module-context-badge\" 使用。 |\n| icon-picker | feature | SPARK 组件，可在注册表中通过 type=\"icon-picker\" 使用。 |\n| error-fallback | feature | SPARK 组件，可在注册表中通过 type=\"error-fallback\" 使用。 |\n| ai-chat-widget | feature | SPARK 组件，可在注册表中通过 type=\"ai-chat-widget\" 使用。 |\n| ai-chat-panel | feature | SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。 |\n| ai-assistant-hub | feature | SPARK 组件，可在注册表中通过 type=\"ai-assistant-hub\" 使用。 |\n| tenant-config | feature | SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。 |\n| settings | feature | SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。 |\n| cache-manager | feature | SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。 |\n| app-list | feature | SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。 |\n| login-view | feature | SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。 |\n| home-page | feature | SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。 |\n| about | feature | SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。 |\n| template-dsl-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。 |\n| rform-compare-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。 |\n| dashboard | feature | SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。 |\n| custom-rtable-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。 |\n| capability-demo | feature | SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。 |\n| dev-system | feature | SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。 |\n| ai-studio-panel | feature | SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。 |\n| spark-component-renderer | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。 |\n| unregistered-node-fallback | feature | SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。 |\n| spark-json-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。 |\n| spark-code-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。 |\n| spark-child | feature | SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。 |\n| json-tree-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"json-tree-editor\" 使用。 |\n| tree-node-summary | feature | SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。 |\n| r-context-renderer | field | SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。 |\n| display-timeline-item | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。 |\n| display-timeline | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。 |\n| display-skeleton | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。 |\n| display-result | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。 |\n| display-icon | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-icon\" 使用。 |\n| display-empty | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。 |\n| display-descriptions-item | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。 |\n| display-descriptions | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。 |\n| display-countdown | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-countdown\" 使用。 |\n| display-calendar | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-calendar\" 使用。 |\n| display-breadcrumb-item | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。 |\n| display-breadcrumb | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。 |\n| display-alert | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。 |\n| display-text | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。 |\n| display-tag | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。 |\n| display-statistic | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。 |\n| display-progress | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。 |\n| display-pagination | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。 |\n| display-image | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-image\" 使用。 |\n| display-badge | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。 |\n| display-avatar | feature | SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。 |\n| builtin-action-button | feature | SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。 |\n| dock-tail | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。 |\n| dock-header | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。 |\n| dock-footer | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。 |\n| dock-filter | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。 |\n| dock-editor | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。 |\n| dock-actions | feature | SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。 |\n| r-column-group | group |  |"
+export const COMPONENT_DIRECTORY_PROMPT = "## 组件目录\n\n## 组件注册表\n\n| 分组 | 允许的 type |\n|------|------------|\n| SPARK 容器 | r-block, r-collapse, r-detail, r-dialog, r-drawer, r-form, r-list, r-section, r-steps, r-table, r-tabs, r-tree |\n| SPARK 字段 | r-anchor, r-anchor-link, r-autocomplete, r-button, r-card, r-cascader, r-check-tag, r-checkbox, r-checkbox-group, r-collapse-item, r-color, r-context-renderer, r-date, r-dept-picker, r-divider, r-dropdown, r-entity-picker, r-file-browser, r-file-path, r-html-editor, r-icon, r-image, r-link, r-mention, r-multi-select, r-number, r-page-header, r-popconfirm, r-popover, r-product-picker, r-radio, r-rate, r-segmented, r-select, r-slider, r-space, r-step-item, r-switch, r-tab-pane, r-text, r-textarea, r-time-picker, r-time-select, r-toolbar, r-tooltip, r-tour, r-transfer, r-tree-select, r-upload, r-user-picker |\n| SPARK 分组 | r-column-group |\n\n## 组件索引\n\n| type | 分类 | 描述 |\n|------|------|------|\n| context-aware-fields-api | meta | 语境感知字段渲染能力总览 |\n| builtin-action | meta | 声明式动作节点（零代码优先） |\n| r-table | container | 数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。 |\n| r-form | container | 数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。 |\n| r-detail | container | 数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。 |\n| r-tree | container | 树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。 |\n| r-list | container | 列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。 |\n| r-tabs | container | 标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。 |\n| r-collapse | container | 折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。 |\n| r-steps | container | 步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。 |\n| r-dialog | container | 对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。 |\n| r-drawer | container | 抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。 |\n| r-section | container | 分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。 |\n| r-block | container | 块容器（轻量分区） |\n| r-user-picker | field | 用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 |\n| r-dept-picker | field | 部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 |\n| r-product-picker | field | 产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 |\n| r-tour | field | 引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。 |\n| r-tooltip | field | 文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。 |\n| r-toolbar | field | 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。 |\n| r-tab-pane | field | 标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。 |\n| r-step-item | field | 步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。 |\n| r-space | field | 间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。 |\n| r-popover | field | 弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。 |\n| r-popconfirm | field | 确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。 |\n| r-page-header | field | 页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。 |\n| r-link | field | 链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。 |\n| r-dropdown | field | 下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。 |\n| r-divider | field | 分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。 |\n| r-collapse-item | field | 折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。 |\n| r-card | field | 卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。 |\n| r-button | field | 按钮组件，基于 el-button 可渲染子内容，支持 type/size/icon 等样式属性和点击事件。 |\n| r-anchor-link | field | 锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。 |\n| r-anchor | field | 锚点导航容器，基于 el-anchor 提供页面内锚点定位和跟随滚动高亮。 |\n| r-upload | field | 文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。 |\n| r-tree-select | field | 树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。 |\n| r-transfer | field | 穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。 |\n| r-time-select | field | 时间间隔选择字段，绑定时间字符串值，基于 el-time-select 提供固定间隔的时间列表选择。 |\n| r-time-picker | field | 时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。 |\n| r-textarea | field | 多行文本字段，绑定 string 值，基于 el-input textarea 模式，支持自动高度和字数限制。 |\n| r-text | field | 文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。 |\n| r-switch | field | 开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。 |\n| r-slider | field | 滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。 |\n| r-select | field | 单选下拉字段，绑定 string/number 值，基于 el-select，支持静态选项列表或 optionKey 动态数据源绑定。 |\n| r-segmented | field | 分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。 |\n| r-rate | field | 评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。 |\n| r-radio | field | 单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。 |\n| r-number | field | 数字输入字段，绑定 number 值，基于 el-input-number，筛选模式下支持范围（最小-最大）双输入。 |\n| r-multi-select | field | 多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。 |\n| r-mention | field | 提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。 |\n| r-image | field | 图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。 |\n| r-icon | field | 图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。 |\n| r-html-editor | field | 富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。 |\n| r-file-path | field | 文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。 |\n| r-file-browser | field | 文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。 |\n| r-entity-picker | field | 通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。 |\n| r-date | field | 日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。 |\n| r-color | field | 颜色选择字段，绑定十六进制颜色字符串，基于 el-color-picker，表格/详情模式显示色块预览。 |\n| r-check-tag | field | 标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。 |\n| r-checkbox-group | field | 复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。 |\n| r-checkbox | field | 单个复选框字段，绑定 boolean 值，基于 el-checkbox，支持自定义选中/未选中显示文本。 |\n| r-cascader | field | 级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。 |\n| r-autocomplete | field | 自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。 |\n| sap-chat-panel | feature | SPARK 组件，可在注册表中通过 type=\"sap-chat-panel\" 使用。 |\n| nav-icon | feature | SPARK 组件，可在注册表中通过 type=\"nav-icon\" 使用。 |\n| module-context-badge | feature | SPARK 组件，可在注册表中通过 type=\"module-context-badge\" 使用。 |\n| icon-picker | feature | SPARK 组件，可在注册表中通过 type=\"icon-picker\" 使用。 |\n| error-fallback | feature | SPARK 组件，可在注册表中通过 type=\"error-fallback\" 使用。 |\n| ai-chat-widget | feature | SPARK 组件，可在注册表中通过 type=\"ai-chat-widget\" 使用。 |\n| ai-chat-panel | feature | SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。 |\n| ai-assistant-hub | feature | SPARK 组件，可在注册表中通过 type=\"ai-assistant-hub\" 使用。 |\n| tenant-config | feature | 多租户配置管理页面，展示和编辑租户级别的系统配置项。 |\n| settings | feature | 系统设置面板，提供全局参数配置和偏好设置管理界面。 |\n| cache-manager | feature | 缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存。 |\n| app-list | feature | 应用列表页面，以卡片网格展示已创建的项目/应用及入口。 |\n| login-view | feature | 多租户登录页面，提供用户名/密码认证和租户选择入口。 |\n| home-page | feature | 平台首页，展示系统介绍、功能亮点和快速开始入口。 |\n| about | feature | 关于页面，展示系统版本、技术栈和项目信息。 |\n| template-dsl-demo | feature | Vue 模板 DSL 演示页，展示通过 Vue SFC 模板直接使用 SPARK 组件的用法。 |\n| rform-compare-demo | feature | 表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。 |\n| dashboard | feature | 管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。 |\n| custom-rtable-demo | feature | 自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。 |\n| capability-demo | feature | 能力系统演示页，展示 sparkProvide/sparkConsume 能力链的运行时行为。 |\n| dev-system | feature | 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。 |\n| ai-studio-panel | feature | AI 工作室面板，提供 AI 对话驱动的页面生成、迭代和预览功能。 |\n| spark-component-renderer | feature | 通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。 |\n| unregistered-node-fallback | feature | 未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。 |\n| spark-json-editor | feature | JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。 |\n| spark-code-editor | feature | 代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。 |\n| spark-child | feature | 子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。 |\n| json-tree-editor | feature | JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。 |\n| tree-node-summary | feature | 树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。 |\n| r-context-renderer | field | 语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。 |\n| display-timeline-item | feature | 时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。 |\n| display-timeline | feature | 时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。 |\n| display-skeleton | feature | 骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。 |\n| display-result | feature | 结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。 |\n| display-icon | feature | 图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。 |\n| display-empty | feature | 空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。 |\n| display-descriptions-item | feature | 描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。 |\n| display-descriptions | feature | 描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。 |\n| display-countdown | feature | 倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。 |\n| display-calendar | feature | 日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。 |\n| display-breadcrumb-item | feature | 面包屑导航项，基于 el-breadcrumb-item 定义单个导航节点，支持链接跳转。 |\n| display-breadcrumb | feature | 面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。 |\n| display-alert | feature | 警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。 |\n| display-text | feature | 文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。 |\n| display-tag | feature | 标签展示组件，基于 el-tag 以彩色标签显示字段值，支持类型/尺寸/主题样式和可关闭功能。 |\n| display-statistic | feature | 统计数值展示组件，基于 el-statistic 格式化显示数字/字符串值，支持精度、前后缀和千分位分隔。 |\n| display-progress | feature | 进度条展示组件，基于 el-progress 以条形或圆形显示百分比进度值，支持动态颜色。 |\n| display-pagination | feature | 分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。 |\n| display-image | feature | 图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。 |\n| display-badge | feature | 徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。 |\n| display-avatar | feature | 头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。 |\n| builtin-action-button | feature | 内置操作按钮，基于 el-button 根据 action 类型（create/edit/delete/refresh 等）自动映射标签、图标和样式。 |\n| dock-tail | feature | 尾部 dock，在 r-toolbar 中作为工具栏末尾区域提取渲染。 |\n| dock-header | feature | 头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。 |\n| dock-footer | feature | 底部 dock，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。 |\n| dock-filter | feature | 筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。 |\n| dock-editor | feature | 编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。 |\n| dock-actions | feature | 操作列/区域 dock，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。 |\n| r-column-group | group |  |"
 
 /**
  * 供 AI 按组件 type 精确查询的参数目录。
@@ -25396,81 +23679,67 @@ export const COMPONENT_DIRECTORY_PROMPT = "## 组件目录\n\n## 组件注册表
 export const COMPONENT_PROMPT_BY_TYPE: Record<string, string> = {
   "context-aware-fields-api": "**context-aware-fields-api** — 语境感知字段渲染能力总览\n\n**context-aware-fields-api** — 语境感知字段渲染能力总览\n\n【核心能力】\n- 子组件渲染由父容器语境决定：r-table(table) / r-form(form) / r-detail(detail) / r-list(list) / r-tree(tree)\n- 同一 r-* 字段组件可跨语境复用，不复制多套组件\n- 字段组件必须处于容器 children 中，禁止顶层裸放（会丢失语境）\n\n【关键约束】\n- r-table children 仅放 r-* 字段组件，禁止 el-table-column\n- 事件逻辑优先用根级 on + script.js 函数，不在组件层硬编码父级判断\n- 字段绑定用根级 field\n\n【建议组合查询】\n- r-table, r-form, r-detail, r-text, r-number, r-select, builtin-action",
   "builtin-action": "**builtin-action** — 声明式动作节点（零代码优先）\n\n【根级字段】\ntype: \"builtin-action\"\nprops.builtinAction: string — 动作类型\n\n**builtin-action** — 声明式动作节点（零代码优先）\n\n【节点形态】\ntype: \"builtin-action\"\nprops.builtinAction: string — 动作类型\nprops.label?: string — 按钮文案\nprops.type?: 'primary'|'success'|'warning'|'danger'|'info'\nprops.confirmTitle?: string — 删除类动作确认标题\nprops.confirmMessage?: string — 删除类动作确认文案\nprops.silent?: boolean — true 时关闭默认消息提示\n\n【常用动作】\nappend-row | refresh | patch-row | patch-current | patch-selected | delete-row | delete-selected | message-row\n\n【放置位置】\n- children + dock: 'toolbar'（工具栏动作）\n- children + dock: 'actions'（行/项动作）\n\n适用于 r-table / r-list / r-form / r-detail 的常见 CRUD 场景",
-  "r-table": "**r-table** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。\n\n【Props】\ndataKey?: string — DataKey 格式：tableName@field\nactions?: unknown — 结构化行动作 dock\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-table\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\non.rowDblclick: string — 行双击（→ script.js 函数名）\n\n**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【筛选区】\nchildren 中声明 dock: 'filter' 的字段节点会渲染到筛选区。\nprops.docks.filter.collapsible: boolean — 可折叠，默认 false\nprops.docks.filter.defaultCollapsed: boolean — 默认折叠，默认 false\nprops.docks.filter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nprops.docks.filter.class: string — 筛选区 CSS 类名\nprops.docks.filter.itemSpan: number — 每项跨列数，默认 1\nprops.docks.filter.gridColumns: number — 栅格总列数，默认 24\nprops.docks.filter.gridGap: number | string — 间距，默认 12\nprops.docks.filter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【工具栏】\nchildren 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\n\n【行操作区】\nchildren 中声明 dock: 'actions' 的节点会渲染为行操作区（优先 builtin-action）。\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.label: string — 操作列标题，默认 '操作'\nprops.docks.actions.width: number — 操作列宽度，默认 160\nprops.docks.actions.align: 'left' | 'center' | 'right' — 默认 'left'\nprops.docks.actions.fixed: boolean | 'left' | 'right' — 固定方向\nprops.docks.actions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
-  "r-form": "**r-form** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键，如 \"Users@currentRow\"\nlabelWidth?: string — 表单标签宽度 (默认 \"100px\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-form\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
-  "r-detail": "**r-detail** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntitleAlign?: \"center\" | \"left\" | \"right\" — 标题对齐 (默认 \"left\")\nvalueAlign?: \"center\" | \"left\" | \"right\" — 值对齐 (默认 \"left\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-detail\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
-  "r-tree": "**r-tree** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键，如 \"TreeData@rows\"\nactions?: unknown — 结构化节点动作 dock\neditor?: unknown — 结构化编辑区 dock\nnodeKey?: string — 节点主键字段名，默认取 treeConfig.idField\ncurrentKey?: string | number | null — 当前选中节点 ID\nexpandToKey?: string | number | null — 初始化展开并定位到目标节点 ID\nexpandLevel?: number — 初始化自动展开到指定层级（根节点为第 1 层）\nallowAppend?: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete?: boolean — 允许删除节点（自动生成删除按钮）\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n\n**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA",
-  "r-list": "**r-list** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。\n\n【Props】\ndataKey?: string — 数据绑定键\nactions?: unknown — 结构化列表项动作 dock\ncolumns?: number — 列数 (默认 1)\ngap?: string | number — 列表项间距 (默认 0)\nminItemWidth?: string — 最小项宽度 (默认 \"\")\nrowKey?: string — 行唯一键字段 (默认 \"id\")\nemptyText?: string — 空数据提示文案 (默认 \"\\u6682\\u65E0\\u6570\\u636E\")\nitemClass?: string — 列表项 CSS 类名 (默认 \"\")\nitemStyle?: CSSProperties — 列表项行内样式 (默认 {})\nuseCard?: boolean — 使用卡片包裹 (默认 false)\ncardShadow?: \"always\" | \"hover\" | \"never\" — 卡片阴影模式 (默认 \"hover\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\nitemColSpan?: number — 项跨列数\nitemRowSpan?: number — 项跨行数 (默认 1)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-list\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\ndock='actions' children — 列表项动作节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
-  "r-tabs": "**r-tabs** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。\n\n【Props】\nmodelValue?: string | number — 当前激活标签页\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tabs\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\n\n【事件】\nupdate:modelValue: [value: string | number]\n\n**r-tabs** — 标签页容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\nchildren 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）",
-  "r-collapse": "**r-collapse** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。\n\n【Props】\nmodelValue?: CollapseValue — 当前展开的面板\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-collapse\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\n\n【事件】\nupdate:modelValue: [value: CollapseValue]\n\n**r-collapse** — 折叠面板容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\nchildren 内放 r-collapse-item",
-  "r-steps": "**r-steps** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。\n\n【Props】\nmodelValue?: string | number — 当前步骤\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-steps\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\n\n【事件】\nupdate:modelValue: [value: string | number]\n\n**r-steps** — 步骤条容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\nchildren 内放 r-step",
-  "r-dialog": "**r-dialog** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。\n\n【Props】\nheader?: unknown — 结构化头部 dock\nfooter?: unknown — 结构化底部 dock\ntitle?: string — 对话框标题 (默认 \"\")\nmodelValue?: boolean — 控制显隐（v-model） (默认 false)\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-dialog\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调\n\n【事件】\nupdate:modelValue: [value: boolean]\n\n**r-dialog** — 对话框容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调",
-  "r-drawer": "**r-drawer** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。\n\n【Props】\nheader?: unknown — 结构化头部 dock\nfooter?: unknown — 结构化底部 dock\ntitle?: string — 抽屉标题 (默认 \"\")\nmodelValue?: boolean — 控制显隐（v-model） (默认 false)\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-drawer\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【事件】\nupdate:modelValue: [value: boolean]\n\n**r-drawer** — 抽屉容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen / onClose / onOpened / onClosed: string — 生命周期回调",
-  "r-section": "**r-section** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。\n\n【Props】\nheader?: unknown — 结构化头部 dock\ntitle?: string — 分区标题 (默认 \"\")\ndescription?: string — 分区描述 (默认 \"\")\ncollapsible?: boolean — 是否可折叠 (默认 false)\ndefaultCollapsed?: boolean — 默认折叠 (默认 false)\nbordered?: boolean — 显示边框 (默认 true)\nuseCard?: boolean — 使用卡片样式 (默认 false)\ncardShadow?: \"always\" | \"hover\" | \"never\" — 卡片阴影模式 (默认 \"never\")\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\nexpandText?: string — 展开文案 (默认 \"\\u5C55\\u5F00\")\ncollapseText?: string — 收起文案 (默认 \"\\u6536\\u8D77\")\nshowToggleIcon?: boolean — 显示切换图标 (默认 true)\nexpandIconText?: string — 展开图标文案 (默认 \">\")\ncollapseIconText?: string — 收起图标文案 (默认 \"v\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-section\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高\n\n**r-section** — 分区容器\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高",
+  "r-table": "**r-table** — 数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。\n\n【Props】\ndataKey?: string — DataKey 格式：tableName@field\nactions?: unknown — 结构化行动作 dock\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-table\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\non.rowDblclick: string — 行双击（→ script.js 函数名）\n\n**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【筛选区】\nchildren 中声明 dock: 'filter' 的字段节点会渲染到筛选区。\nprops.docks.filter.collapsible: boolean — 可折叠，默认 false\nprops.docks.filter.defaultCollapsed: boolean — 默认折叠，默认 false\nprops.docks.filter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nprops.docks.filter.class: string — 筛选区 CSS 类名\nprops.docks.filter.itemSpan: number — 每项跨列数，默认 1\nprops.docks.filter.gridColumns: number — 栅格总列数，默认 24\nprops.docks.filter.gridGap: number | string — 间距，默认 12\nprops.docks.filter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【工具栏】\nchildren 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\n\n【行操作区】\nchildren 中声明 dock: 'actions' 的节点会渲染为行操作区（优先 builtin-action）。\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.label: string — 操作列标题，默认 '操作'\nprops.docks.actions.width: number — 操作列宽度，默认 160\nprops.docks.actions.align: 'left' | 'center' | 'right' — 默认 'left'\nprops.docks.actions.fixed: boolean | 'left' | 'right' — 固定方向\nprops.docks.actions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
+  "r-form": "**r-form** — 数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。\n\n【Props】\ndataKey?: string — 数据绑定键，如 \"Users@currentRow\"\nlabelWidth?: string — 表单标签宽度 (默认 \"100px\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-form\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
+  "r-detail": "**r-detail** — 数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。\n\n【Props】\ndataKey?: string — 数据绑定键\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntitleAlign?: \"center\" | \"left\" | \"right\" — 标题对齐 (默认 \"left\")\nvalueAlign?: \"center\" | \"left\" | \"right\" — 值对齐 (默认 \"left\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-detail\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
+  "r-tree": "**r-tree** — 树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。\n\n【Props】\ndataKey?: string — 数据绑定键，如 \"TreeData@rows\"\nactions?: unknown — 结构化节点动作 dock\neditor?: unknown — 结构化编辑区 dock\nnodeKey?: string — 节点主键字段名，默认取 treeConfig.idField\ncurrentKey?: string | number | null — 当前选中节点 ID\nexpandToKey?: string | number | null — 初始化展开并定位到目标节点 ID\nexpandLevel?: number — 初始化自动展开到指定层级（根节点为第 1 层）\nallowAppend?: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete?: boolean — 允许删除节点（自动生成删除按钮）\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n\n**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA",
+  "r-list": "**r-list** — 列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。\n\n【Props】\ndataKey?: string — 数据绑定键\nactions?: unknown — 结构化列表项动作 dock\ncolumns?: number — 列数 (默认 1)\ngap?: string | number — 列表项间距 (默认 0)\nminItemWidth?: string — 最小项宽度 (默认 \"\")\nrowKey?: string — 行唯一键字段 (默认 \"id\")\nemptyText?: string — 空数据提示文案 (默认 \"\\u6682\\u65E0\\u6570\\u636E\")\nitemClass?: string — 列表项 CSS 类名 (默认 \"\")\nitemStyle?: CSSProperties — 列表项行内样式 (默认 {})\nuseCard?: boolean — 使用卡片包裹 (默认 false)\ncardShadow?: \"hover\" | \"always\" | \"never\" — 卡片阴影模式 (默认 \"hover\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\nitemColSpan?: number — 项跨列数\nitemRowSpan?: number — 项跨行数 (默认 1)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-list\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ndataKey: string — 数据绑定键\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\ndock='actions' children — 列表项动作节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
+  "r-tabs": "**r-tabs** — 标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。\n\n【Props】\nmodelValue?: string | number — 当前激活标签页\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tabs\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\n\n【事件】\nupdate:modelValue: [value: string | number]\n\n**r-tabs** — 标签页容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前激活 tab\nonTabChange: string — 切换回调\nonTabClick: string — 点击回调\nchildren 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）",
+  "r-collapse": "**r-collapse** — 折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。\n\n【Props】\nmodelValue?: CollapseValue — 当前展开的面板\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-collapse\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\n\n【事件】\nupdate:modelValue: [value: CollapseValue]\n\n**r-collapse** — 折叠面板容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number | Array — 展开的面板\nonChange: string — 切换回调\nchildren 内放 r-collapse-item",
+  "r-steps": "**r-steps** — 步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。\n\n【Props】\nmodelValue?: string | number — 当前步骤\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-steps\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\n\n【事件】\nupdate:modelValue: [value: string | number]\n\n**r-steps** — 步骤条容器\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nmodelValue: string | number — 当前步骤\nonStepChange: string — 步骤切换回调\nchildren 内放 r-step",
+  "r-dialog": "**r-dialog** — 对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。\n\n【Props】\nheader?: unknown — 结构化头部 dock\nfooter?: unknown — 结构化底部 dock\ntitle?: string — 对话框标题 (默认 \"\")\nmodelValue?: boolean — 控制显隐（v-model） (默认 false)\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-dialog\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调\n\n【事件】\nupdate:modelValue: [value: boolean]\n\n**r-dialog** — 对话框容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen: string — 打开回调\nonClose: string — 关闭回调\nonOpened: string — 打开动画结束回调\nonClosed: string — 关闭动画结束回调",
+  "r-drawer": "**r-drawer** — 抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。\n\n【Props】\nheader?: unknown — 结构化头部 dock\nfooter?: unknown — 结构化底部 dock\ntitle?: string — 抽屉标题 (默认 \"\")\nmodelValue?: boolean — 控制显隐（v-model） (默认 false)\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-drawer\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【事件】\nupdate:modelValue: [value: boolean]\n\n**r-drawer** — 抽屉容器\ntitle: string — 标题\nmodelValue: boolean — 控制显隐\ndock='header' children — 头部动作区\ndock='footer' children — 底部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbodyClass: string — 内容区 CSS 类名\nprops.docks.footer.class: string — 底部 CSS 类名\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nonOpen / onClose / onOpened / onClosed: string — 生命周期回调",
+  "r-section": "**r-section** — 分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。\n\n【Props】\nheader?: unknown — 结构化头部 dock\ntitle?: string — 分区标题 (默认 \"\")\ndescription?: string — 分区描述 (默认 \"\")\ncollapsible?: boolean — 是否可折叠 (默认 false)\ndefaultCollapsed?: boolean — 默认折叠 (默认 false)\nbordered?: boolean — 显示边框 (默认 true)\nuseCard?: boolean — 使用卡片样式 (默认 false)\ncardShadow?: \"hover\" | \"always\" | \"never\" — 卡片阴影模式 (默认 \"never\")\nbodyClass?: string — 内容区 CSS 类名 (默认 \"\")\nexpandText?: string — 展开文案 (默认 \"\\u5C55\\u5F00\")\ncollapseText?: string — 收起文案 (默认 \"\\u6536\\u8D77\")\nshowToggleIcon?: boolean — 显示切换图标 (默认 true)\nexpandIconText?: string — 展开图标文案 (默认 \">\")\ncollapseIconText?: string — 收起图标文案 (默认 \"v\")\ngridColumns?: number — CSS Grid 列数 (默认 24)\ngridGap?: string | number — 栅格间距 (默认 0)\ngridAutoRows?: string — 栅格行高 (默认 \"minmax(32px, auto)\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-section\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【根级字段】\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高\n\n**r-section** — 分区容器\ntitle: string — 标题\ndescription: string — 描述\ncollapsible: boolean — 是否可折叠\ndefaultCollapsed: boolean — 默认折叠\nbordered: boolean — 显示边框，默认 true\nuseCard: boolean — 使用卡片样式，默认 false\ncardShadow: string — 卡片阴影\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nexpandText: string — 展开文案，默认 '展开'\ncollapseText: string — 收起文案，默认 '收起'\nshowToggleIcon: boolean — 显示切换图标，默认 true\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高",
   "r-block": "**r-block** — 块容器（轻量分区）\n\n【根级字段】\ntitle: string — 标题\ndescription: string — 描述\nprops.docks.header.class: string — 头部 CSS 类名\nbordered: boolean — 边框，默认 true\nuseCard: boolean — 卡片样式，默认 false\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高定义\n\n**r-block** — 块容器（轻量分区）\ntitle: string — 标题\ndescription: string — 描述\ndock='header' children — 头部动作区\nprops.docks.header.class: string — 头部 CSS 类名\nbordered: boolean — 边框，默认 true\nuseCard: boolean — 卡片样式，默认 false\ngridColumns: number — 默认 24\ngridGap: number — 默认 0\ngridAutoRows: string — 行高定义\n适合做页面中的局部块，不强制数据绑定",
-  "r-user-picker": "**r-user-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。\n\n【Props】\nwidth?: number\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户\n\n【事件】\nupdate:modelValue: any[]\n\n**r-user-picker** — 用户选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户",
-  "r-dept-picker": "**r-dept-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。\n\n【Props】\nwidth?: number\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径\n\n【事件】\nupdate:modelValue: any[]\n\n**r-dept-picker** — 部门选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径",
-  "r-product-picker": "**r-product-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。\n\n【Props】\nwidth?: number\nname?: string\nlabel?: string\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存\n\n【事件】\nupdate:modelValue: any[]\n\n**r-product-picker** — 产品选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存",
-  "r-watermark": "**r-watermark** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。\n\n【Props】\ncontent?: string | string[]\nfont?: WatermarkFont\ngap?: [number, number]\noffset?: [number, number]\nrotate?: number (默认 -22)\nzIndex?: number (默认 9)\nwidth?: number\nheight?: number\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-watermark\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-tour": "**r-tour** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tour\" 组织子组件。\n\n【Props】\nsteps?: TourStep[] — 步骤配置列表\nopen?: boolean — 是否显示\nplacement?: string — 弹出位置（默认）\nshowArrow?: boolean — 是否显示箭头 (默认 true)\nmask?: boolean — 是否显示遮罩 (默认 true)\ntourType?: \"default\" | \"primary\" — 引导类型 (默认 \"default\")\ncloseOnPressEscape?: boolean — ESC 关闭 (默认 true)\nscrollIntoViewOptions?: boolean | ScrollIntoViewOptions — 滚动选项\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tour\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclose: [current: number]\nfinish: []\nchange: [current: number]\nupdate:open: [value: boolean]",
-  "r-tooltip": "**r-tooltip** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。\n\n【Props】\ncontent?: string\nplacement?: string (默认 \"bottom\")\neffect?: \"dark\" | \"light\" (默认 \"dark\")\noffset?: number\nshowAfter?: number\nhideAfter?: number\nshowArrow?: boolean (默认 true)\nenterable?: boolean (默认 true)\npopperClass?: string\nrawContent?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tooltip\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-toolbar": "**r-toolbar** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。\n\n【Props】\ntail?: unknown — 结构化尾区 dock\ngap?: string | number — 单个子项之间的间距（同一区域内部）\nzoneGap?: string | number — 主区与尾区之间的间距（区域级）\nalign?: InlineAlign — 区域内部子项的交叉轴对齐\njustify?: InlineJustify — 主区内部子项的主轴分布方式\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-toolbar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-tab-pane": "**r-tab-pane** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。\n\n【Props】\ntype?: string (默认 \"r-tab-pane\")\nprops?: Record<string, unknown>\nid?: string\nname?: string | number\nvalue?: string | number\nlabel?: string\ntitle?: string\ndisabled?: boolean\nlazy?: boolean\nclosable?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number",
-  "r-step-item": "**r-step-item** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。\n\n【Props】\ntype?: string (默认 \"r-step\")\nprops?: Record<string, unknown>\nid?: string\ntitle?: string\nlabel?: string\ndescription?: string\nstatus?: string\ndisabled?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number\nmode: \"content\" | \"header\"\n\n【事件】\nactivate: [index: number]",
-  "r-space": "**r-space** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。\n\n【Props】\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\nsize?: string | number (默认 12)\nwrap?: boolean (默认 false)\nfill?: boolean (默认 false)\nalignment?: \"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\" (默认 \"center\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-space\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-scrollbar": "**r-scrollbar** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。\n\n【Props】\nheight?: string | number\nmaxHeight?: string | number\nnative?: boolean (默认 false)\nwrapStyle?: string | Record<string, string>\nwrapClass?: string\nviewStyle?: string | Record<string, string>\nviewClass?: string\nnoresize?: boolean (默认 false)\nalways?: boolean (默认 false)\nminSize?: number (默认 20)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-scrollbar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-row": "**r-row** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。\n\n【Props】\ngutter?: number (默认 0)\njustify?: \"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\" (默认 \"start\")\nalign?: \"bottom\" | \"top\" | \"middle\" (默认 \"top\")\ntag?: string (默认 \"div\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-row\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-popover": "**r-popover** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。\n\n【Props】\ntitle?: string\ncontent?: string\nplacement?: string (默认 \"bottom\")\nwidth?: string | number (默认 150)\ntrigger?: \"click\" | \"hover\" | \"focus\" | \"contextmenu\" (默认 \"click\")\neffect?: \"dark\" | \"light\" (默认 \"light\")\noffset?: number\nshowAfter?: number\nhideAfter?: number\nshowArrow?: boolean (默认 true)\npopperClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-popover\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-popconfirm": "**r-popconfirm** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。\n\n【Props】\ntitle?: string\nconfirmButtonText?: string\ncancelButtonText?: string\nconfirmButtonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"primary\")\ncancelButtonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"\")\nicon?: string\niconColor?: string (默认 \"#f90\")\nhideIcon?: boolean (默认 false)\nhideAfter?: number\nwidth?: string | number (默认 150)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-popconfirm\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nconfirm: []\ncancel: []",
-  "r-page-header": "**r-page-header** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。\n\n【Props】\ntitle?: string (默认 \"\\u8FD4\\u56DE\")\nicon?: string\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-page-header\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nback: []",
-  "r-main": "**r-main** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-main\" 组织子组件。\n\n【Props】\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-main\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-link": "**r-link** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。\n\n【Props】\nlabel?: string\nlinkType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"default\")\nunderline?: boolean (默认 true)\nhref?: string\ntarget?: \"_self\" | \"_blank\" | \"_parent\" | \"_top\" (默认 \"_self\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-link\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-layout-header": "**r-layout-header** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-header\" 组织子组件。\n\n【Props】\nheaderHeight?: string — 头部高度 (默认 \"60px\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-layout-header\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-layout-footer": "**r-layout-footer** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-footer\" 组织子组件。\n\n【Props】\nfooterHeight?: string — 底部高度 (默认 \"60px\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-layout-footer\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-dropdown": "**r-dropdown** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。\n\n【Props】\nitems?: DropdownItem[]\ntrigger?: \"click\" | \"hover\" | \"contextmenu\" (默认 \"hover\")\neffect?: \"dark\" | \"light\" (默认 \"light\")\nplacement?: string (默认 \"bottom\")\nhideOnClick?: boolean (默认 true)\nshowTimeout?: number\nhideTimeout?: number\nsplitButton?: boolean (默认 false)\npopperClass?: string\nmaxHeight?: string | number\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-dropdown\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-divider": "**r-divider** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。\n\n【Props】\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\nborderStyle?: \"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\" (默认 \"solid\")\ncontentPosition?: \"center\" | \"left\" | \"right\" (默认 \"center\")\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-divider\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-container": "**r-container** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-container\" 组织子组件。\n\n【Props】\ndirection?: \"horizontal\" | \"vertical\" — 布局方向，默认自动检测\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-container\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-collapse-item": "**r-collapse-item** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。\n\n【Props】\ntype?: string (默认 \"r-collapse-item\")\nprops?: Record<string, unknown>\nid?: string\nname?: string | number\ntitle?: string\nlabel?: string\ndisabled?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number",
-  "r-col": "**r-col** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。\n\n【Props】\nspan?: number (默认 24)\noffset?: number (默认 0)\npush?: number (默认 0)\npull?: number (默认 0)\nxs?: ResponsiveValue\nsm?: ResponsiveValue\nmd?: ResponsiveValue\nlg?: ResponsiveValue\nxl?: ResponsiveValue\ntag?: string (默认 \"div\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-col\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-carousel-item": "**r-carousel-item** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。\n\n【Props】\nitemName?: string\nlabel?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-carousel-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-carousel": "**r-carousel** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。\n\n【Props】\nheight?: string (默认 \"200px\")\ninitialIndex?: number (默认 0)\ntrigger?: \"click\" | \"hover\" (默认 \"hover\")\nautoplay?: boolean (默认 true)\ninterval?: number (默认 3000)\nindicatorPosition?: \"\" | \"none\" | \"outside\" (默认 \"\")\narrow?: \"always\" | \"hover\" | \"never\" (默认 \"hover\")\nloop?: boolean (默认 true)\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\npauseOnHover?: boolean (默认 true)\nmotionBlur?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-carousel\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-card": "**r-card** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。\n\n【Props】\nheader?: string\nshadow?: \"always\" | \"hover\" | \"never\" (默认 \"always\")\nbodyStyle?: string | Record<string, string>\nbodyClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-card\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-button-group": "**r-button-group** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-button-group\" 组织子组件。\n\n【Props】\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-button-group\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-button": "**r-button** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。\n\n【Props】\nlabel?: string\nbuttonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | \"text\" (默认 \"default\")\nbuttonSize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\nplain?: boolean (默认 false)\ntextMode?: boolean (默认 false)\nbg?: boolean (默认 false)\nlinkMode?: boolean (默认 false)\nround?: boolean (默认 false)\ncircle?: boolean (默认 false)\nloading?: boolean (默认 false)\nautoInsertSpace?: boolean (默认 false)\ncolor?: string\ndark?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-button\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-backtop": "**r-backtop** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。\n\n【Props】\ntarget?: string\nvisibilityHeight?: number (默认 200)\nright?: number (默认 40)\nbottom?: number (默认 40)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-backtop\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-aside": "**r-aside** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-aside\" 组织子组件。\n\n【Props】\nasideWidth?: string — 侧边栏宽度 (默认 \"300px\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-aside\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-anchor-link": "**r-anchor-link** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor-link\" 组织子组件。\n\n【Props】\nhref?: string — 锚点链接\ntitle?: string — 链接标题\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-anchor-link\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-anchor": "**r-anchor** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor\" 组织子组件。\n\n【Props】\ncontainer?: string — 滚动容器选择器\noffset?: number — 偏移量 (默认 0)\nbound?: number — 边界值 (默认 15)\nduration?: number — 滚动动画时长 (默认 300)\nmarker?: boolean — 是否显示标记 (默认 true)\ndirection?: \"horizontal\" | \"vertical\" — 排列方向 (默认 \"vertical\")\nanchorType?: \"default\" | \"underline\" — 锚点类型（避免与 SparkNode.type 冲突） (默认 \"default\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-anchor\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nchange: [href: string]\nclick: [e: MouseEvent, href?: string]",
-  "r-affix": "**r-affix** — SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。\n\n【Props】\noffset?: number (默认 0)\nposition?: \"bottom\" | \"top\" (默认 \"top\")\ntarget?: string\nzIndex?: number (默认 100)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-affix\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-upload": "**r-upload** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（文件路径）\naction?: string — 上传 URL (默认 \"#\")\naccept?: string — 接受文件类型 (默认 \"\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u70B9\\u51FB\\u4E0A\\u4F20\")\nautoUpload?: boolean — 自动上传 (默认 true)\nshowFileList?: boolean — 显示文件列表 (默认 true)\nlimit?: number — 最大文件数 (默认 1)\nlistType?: \"text\" | \"picture\" | \"picture-card\" — 列表展示类型 (默认 \"text\")\nseparator?: string — 多文件分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u6D4F\\u89C8\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-upload\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\n\n透传到 el-upload: autoUpload(默认 true), showFileList(默认 true), limit(默认 1), listType('text'|'picture'|'picture-card')",
-  "r-tree-select": "**r-tree-select** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: TreeSelectValue — 双向绑定值\noptions?: unknown[] — 树形选项（嵌套结构）\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\noptionChildrenField?: string — 子节点字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\nmultiple?: boolean — 多选模式 (默认 false)\ncheckStrictly?: boolean — 父子不关联勾选 (默认 false)\ndefaultExpandAll?: boolean — 默认展开所有节点 (默认 false)\nrenderAfterExpand?: boolean — 展开后才渲染子节点 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: TreeSelectValue]",
-  "r-transfer": "**r-transfer** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: TransferValue — 双向绑定值（已选值数组）\noptions?: unknown[] — 数据源（左侧候选列表）\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\ntitles?: [string, string] — 左右面板标题 (默认 [\"\\u5F85\\u9009\", \"\\u5DF2\\u9009\"] as [\n    string,\n    string\n])\nfilterable?: boolean — 可搜索 (默认 false)\nfilterPlaceholder?: string — 搜索框占位符 (默认 \"\\u8BF7\\u8F93\\u5165\\u5173\\u952E\\u8BCD\")\ntargetOrder?: \"push\" | \"unshift\" | \"original\" — 右侧排序方式 (默认 \"original\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-transfer\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: TransferValue]",
-  "r-time-select": "**r-time-select** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-select\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\nplaceholder?: string — 占位文本 (默认 \"\\u9009\\u62E9\\u65F6\\u95F4\")\nstart?: string — 起始时间 (默认 \"08:30\")\nend?: string — 结束时间 (默认 \"18:30\")\nstep?: string — 时间间隔步长 (默认 \"00:15\")\nminTime?: string — 最小可选时间\nmaxTime?: string — 最大可选时间\nclearable?: boolean — 可清空 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-time-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
-  "r-time-picker": "**r-time-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-picker\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string | Date — 双向绑定值\nplaceholder?: string — 占位文本 (默认 \"\\u9009\\u62E9\\u65F6\\u95F4\")\nisRange?: boolean — 是否为范围选择 (默认 false)\nrangeSeparator?: string — 范围分隔符 (默认 \"\\u81F3\")\nstartPlaceholder?: string — 范围开始占位 (默认 \"\\u5F00\\u59CB\\u65F6\\u95F4\")\nendPlaceholder?: string — 范围结束占位 (默认 \"\\u7ED3\\u675F\\u65F6\\u95F4\")\narrowControl?: boolean — 箭头控制 (默认 false)\nformat?: string — 时间格式 (默认 \"HH:mm:ss\")\nclearable?: boolean — 可清空 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-time-picker\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string | Date]",
-  "r-textarea": "**r-textarea** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\nrows?: number — 行数 (默认 4)\nautosize?: boolean | { minRows?: number; maxRows?: number; } — 自适应高度 (默认 false)\nmaxlength?: number — 最大长度\nshowWordLimit?: boolean — 显示字数统计 (默认 false)\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u8F93\\u5165\\u5185\\u5BB9\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-textarea\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
-  "r-text": "**r-text** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。\n\n【Props】\nfield?: string — 字段绑定名，映射到 DataView 行字段\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-text\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
-  "r-switch": "**r-switch** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: boolean | null — 双向绑定值\nactiveText?: string — 激活时文案 (默认 \"\\u662F\")\ninactiveText?: string — 未激活时文案 (默认 \"\\u5426\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-switch\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: boolean | null]",
-  "r-slider": "**r-slider** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: number — 双向绑定值\nmin?: number — 最小值 (默认 0)\nmax?: number — 最大值 (默认 100)\nstep?: number — 步长 (默认 1)\nshowInput?: boolean — 显示输入框 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-slider\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: number]",
-  "r-select": "**r-select** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string | number — 双向绑定值\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string | number]",
-  "r-segmented": "**r-segmented** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-segmented\" 使用。\n\n【Props】\nmodelValue?: string | number — 当前选中值\noptions?: SegmentedOption[] — 选项列表\nsize?: \"default\" | \"large\" | \"small\" — 尺寸 (默认 \"default\")\nblock?: boolean — 是否撑满父容器 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-segmented\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nchange: [value: string | number]\nupdate:modelValue: [value: string | number]",
-  "r-rate": "**r-rate** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: number — 双向绑定值\nmax?: number — 最大值 (默认 5)\nallowHalf?: boolean — 允许半星 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-rate\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: number]",
-  "r-radio": "**r-radio** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string | number — 双向绑定值\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nbuttonStyle?: boolean — 按钮风格 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-radio\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string | number]",
-  "r-number": "**r-number** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: number | [number | undefined, number | undefined] — 双向绑定值，范围模式时为元组\nmin?: number — 最小值\nmax?: number — 最大值\nprecision?: number — 小数精度\nfilterMode?: string — 筛选模式（'range' 启用范围输入）\nfilterVariant?: string — 筛选变体\nfilterRange?: boolean — 范围筛选标记\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-number\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: number | [number | undefined, number | undefined]]\n\nfilterMode: 'range' — 启用范围过滤模式",
-  "r-multi-select": "**r-multi-select** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: MultiValue — 双向绑定值（数组）\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\ncollapseTags?: boolean — 折叠已选标签 (默认 false)\ncollapseTagsTooltip?: boolean — 折叠标签提示 (默认 false)\nmaxCollapseTags?: number — 最大显示标签数 (默认 1)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-multi-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: MultiValue]",
-  "r-mention": "**r-mention** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-mention\" 使用。\n\n【Props】\nmodelValue?: string — 文本内容\noptions?: MentionOption[] — 选项列表\nprefix?: string | string[] — 触发前缀字符 (默认 \"@\")\nsplit?: string — 分隔符 (默认 \" \")\nfilterOption?: boolean | ((pattern: string, option: MentionOption) => boolean) — 自定义过滤\nplacement?: \"bottom\" | \"top\" — 弹出位置 (默认 \"bottom\")\nshowArrow?: boolean — 显示箭头 (默认 false)\noffset?: number — 偏移量\nwhole?: boolean — 匹配整体\ncheckIsWhole?: (pattern: string, prefix: string) => boolean — 校验整体函数\nloading?: boolean — 加载状态\ninputType?: \"text\" | \"textarea\" — 输入类型 (默认 \"text\")\nplaceholder?: string — 占位提示\nrows?: number — textarea 行数 (默认 3)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-mention\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\nsearch: [pattern: string, prefix: string]\nselect: [option: MentionOption, prefix: string]",
-  "r-image": "**r-image** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（图片路径）\naction?: string — 上传 URL (默认 \"#\")\naccept?: string — 接受文件类型 (默认 \"image/*\")\nmultiple?: boolean — 多选 (默认 false)\nseparator?: string — 多图分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u56FE\\u7247\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u4E0A\\u4F20\\u56FE\\u7247\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u6D4F\\u89C8\")\nclearable?: boolean — 可清除 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-image\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
-  "r-icon": "**r-icon** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（图标名）\noptions?: unknown[] — 图标选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u56FE\\u6807\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 true)\nclassPrefix?: string — 图标 CSS 类名前缀 (默认 \"\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-icon\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
-  "r-html-editor": "**r-html-editor** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（HTML 字符串）\nrows?: number — 编辑器高度行数 (默认 10)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-html-editor\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
-  "r-file-path": "**r-file-path** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（文件路径）\naction?: string — 上传 URL (默认 \"#\")\naccept?: string — 接受文件类型 (默认 \"\")\nmultiple?: boolean — 多选 (默认 false)\nseparator?: string — 多文件分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\\u8DEF\\u5F84\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u4E0A\\u4F20\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u6D4F\\u89C8\")\nclearable?: boolean — 可清除 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-file-path\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
-  "r-file-browser": "**r-file-browser** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（文件路径）\naccept?: string — 接受文件类型 (默认 \"\")\nmultiple?: boolean — 多选 (默认 false)\nclearable?: boolean — 可清除 (默认 true)\nseparator?: string — 多文件分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u6D4F\\u89C8\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-file-browser\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\n\n⚠️ 与 r-file-path 基本一致，差异在于内置的浏览器 UI 体验",
-  "r-entity-picker": "**r-entity-picker** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: EntityPickerValue — 双向绑定值\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nbuttonText?: string — 选择按钮文案 (默认 \"\\u9009\\u62E9\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u67E5\\u770B\")\nclearable?: boolean — 可清除 (默认 true)\nmultiple?: boolean — 多选 (默认 false)\nsearchable?: boolean — 可搜索 (默认 true)\nseparator?: string — 多值分隔符 (默认 \", \")\nvalueMode?: \"auto\" | \"array\" | \"comma-string\" — 值模式 (默认 \"auto\")\nentityName?: string — 实体名称 (默认 \"\\u9879\\u76EE\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-entity-picker\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: EntityPickerValue]",
-  "r-date": "**r-date** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string | Date | (string | Date)[] — 双向绑定值，日期范围时为数组\ndateType?: DatePickerType — 日期选择器类型\nplaceholder?: string — 占位文本 (默认 \"\\u9009\\u62E9\\u65E5\\u671F\")\nstartPlaceholder?: string — 范围开始占位 (默认 \"\\u5F00\\u59CB\\u65E5\\u671F\")\nendPlaceholder?: string — 范围结束占位 (默认 \"\\u7ED3\\u675F\\u65E5\\u671F\")\nrangeSeparator?: string — 范围分隔符 (默认 \"\\u81F3\")\nformat?: string — 显示格式\nvalueFormat?: string — 值格式\nclearable?: boolean — 可清空 (默认 true)\nfilterMode?: string — 筛选模式\nfilterVariant?: string — 筛选变体\nfilterRange?: boolean — 范围筛选标记\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-date\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string | Date | (string | Date)[]]\n\n透传到 el-date-picker: type('date'/'datetime'/'daterange'), format, valueFormat 等",
-  "r-color": "**r-color** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（颜色字符串，透传 el-color-picker）\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-color\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\n\n透传到 el-color-picker: showAlpha, colorFormat('hex'|'rgb'|'hsl'|'hsv'), predefine(string[])",
-  "r-check-tag": "**r-check-tag** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-check-tag\" 使用。\n\n【Props】\nchecked?: boolean — 是否选中 (默认 false)\nlabel?: string — 标签文本\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-check-tag\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nchange: [checked: boolean]\nupdate:checked: [checked: boolean]",
-  "r-checkbox-group": "**r-checkbox-group** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: MultiValue — 双向绑定值（数组）\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nbuttonStyle?: boolean — 按钮风格 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-checkbox-group\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: MultiValue]",
-  "r-checkbox": "**r-checkbox** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: boolean — 双向绑定值\ncheckedText?: string — 选中时显示文案 (默认 \"\\u662F\")\nuncheckedText?: string — 未选时显示文案 (默认 \"\\u5426\")\ncheckboxText?: string — 复选框右侧文案 (默认 \"\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-checkbox\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: boolean]\n\n⚠️ 用 checkedText / uncheckedText 代替 trueLabel / falseLabel",
-  "r-cascader": "**r-cascader** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: CascaderValue — 双向绑定值\noptions?: unknown[] — 树形选项（嵌套结构）\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\noptionChildrenField?: string — 子节点字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\nmultiple?: boolean — 多选模式 (默认 false)\ncheckStrictly?: boolean — 父子不关联勾选 (默认 false)\nemitPath?: boolean — 值是否为完整路径数组 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-cascader\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: CascaderValue]",
-  "r-autocomplete": "**r-autocomplete** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-autocomplete\" 使用。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\nplaceholder?: string — 占位文本 (默认 \"\\u8BF7\\u8F93\\u5165\")\nfetchSuggestions?: (queryString: string, cb: FetchSuggestionsCallback) => void — 获取建议的回调函数\ntriggerOnFocus?: boolean — 聚焦时是否触发建议 (默认 true)\nhighlightFirstItem?: boolean — 高亮第一项 (默认 false)\nclearable?: boolean — 可清空 (默认 true)\nvalueKey?: string — 建议项的取值键 (默认 \"value\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-autocomplete\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\nselect: [item: SuggestionItem]",
+  "r-user-picker": "**r-user-picker** — 用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。\n\n【Props】\nname?: string\nlabel?: string\nwidth?: number\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户\n\n【事件】\nupdate:modelValue: any[]\n\n**r-user-picker** — 用户选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ndeptScope: string — 部门范围\nincludeDisabled: boolean — 包含禁用用户",
+  "r-dept-picker": "**r-dept-picker** — 部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。\n\n【Props】\nname?: string\nlabel?: string\nwidth?: number\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径\n\n【事件】\nupdate:modelValue: any[]\n\n**r-dept-picker** — 部门选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncheckStrictly: boolean — 父子不关联勾选\nshowPath: boolean — 展示完整路径",
+  "r-product-picker": "**r-product-picker** — 产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。\n\n【Props】\nname?: string\nlabel?: string\nwidth?: number\nmodelValue?: EntityPickerValue\nplaceholder?: string\nfield?: string\noptions?: unknown[]\noptionKey?: string\noptionLabelField?: string\noptionValueField?: string\nbuttonText?: string\nreadonlyButtonText?: string\nclearable?: boolean\nmultiple?: boolean\nsearchable?: boolean\nseparator?: string\nvalueMode?: \"auto\" | \"array\" | \"comma-string\"\nentityName?: string\n\n【根级字段】\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存\n\n【事件】\nupdate:modelValue: any[]\n\n**r-product-picker** — 产品选择器\nfield / label / width — 同 r-text\nmultiple: boolean — 多选\ncategoryFilter: string[] — 类目过滤\nshowStock: boolean — 显示库存",
+  "r-tour": "**r-tour** — 引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。\n\n【Props】\nsteps?: TourStep[] — 步骤配置列表\nopen?: boolean — 是否显示\nplacement?: string — 弹出位置（默认）\nshowArrow?: boolean — 是否显示箭头 (默认 true)\nmask?: boolean — 是否显示遮罩 (默认 true)\ntourType?: \"default\" | \"primary\" — 引导类型 (默认 \"default\")\ncloseOnPressEscape?: boolean — ESC 关闭 (默认 true)\nscrollIntoViewOptions?: boolean | ScrollIntoViewOptions — 滚动选项\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tour\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclose: [current: number]\nfinish: []\nchange: [current: number]\nupdate:open: [value: boolean]",
+  "r-tooltip": "**r-tooltip** — 文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。\n\n【Props】\ncontent?: string\nplacement?: string (默认 \"bottom\")\neffect?: \"dark\" | \"light\" (默认 \"dark\")\noffset?: number\nshowAfter?: number\nhideAfter?: number\nshowArrow?: boolean (默认 true)\nenterable?: boolean (默认 true)\npopperClass?: string\nrawContent?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tooltip\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-toolbar": "**r-toolbar** — 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。\n\n【Props】\ntail?: unknown — 结构化尾区 dock\ngap?: string | number — 单个子项之间的间距（同一区域内部）\nzoneGap?: string | number — 主区与尾区之间的间距（区域级）\nalign?: InlineAlign — 区域内部子项的交叉轴对齐\njustify?: InlineJustify — 主区内部子项的主轴分布方式\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-toolbar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-tab-pane": "**r-tab-pane** — 标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。\n\n【Props】\ntype?: string (默认 \"r-tab-pane\")\nprops?: Record<string, unknown>\nid?: string\nname?: string | number\nvalue?: string | number\nlabel?: string\ntitle?: string\ndisabled?: boolean\nlazy?: boolean\nclosable?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number",
+  "r-step-item": "**r-step-item** — 步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。\n\n【Props】\ntype?: string (默认 \"r-step\")\nprops?: Record<string, unknown>\nid?: string\ntitle?: string\nlabel?: string\ndescription?: string\nstatus?: string\ndisabled?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number\nmode: \"content\" | \"header\"\n\n【事件】\nactivate: [index: number]",
+  "r-space": "**r-space** — 间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。\n\n【Props】\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\nsize?: string | number (默认 12)\nwrap?: boolean (默认 false)\nfill?: boolean (默认 false)\nalignment?: \"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\" (默认 \"center\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-space\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-popover": "**r-popover** — 弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。\n\n【Props】\ntitle?: string\ncontent?: string\nplacement?: string (默认 \"bottom\")\nwidth?: string | number (默认 150)\ntrigger?: \"click\" | \"hover\" | \"focus\" | \"contextmenu\" (默认 \"click\")\neffect?: \"dark\" | \"light\" (默认 \"light\")\noffset?: number\nshowAfter?: number\nhideAfter?: number\nshowArrow?: boolean (默认 true)\npopperClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-popover\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-popconfirm": "**r-popconfirm** — 确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。\n\n【Props】\ntitle?: string\nconfirmButtonText?: string\ncancelButtonText?: string\nconfirmButtonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"primary\")\ncancelButtonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"\")\nicon?: string\niconColor?: string (默认 \"#f90\")\nhideIcon?: boolean (默认 false)\nhideAfter?: number\nwidth?: string | number (默认 150)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-popconfirm\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nconfirm: []\ncancel: []",
+  "r-page-header": "**r-page-header** — 页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。\n\n【Props】\ntitle?: string (默认 \"\\u8FD4\\u56DE\")\nicon?: string\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-page-header\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nback: []",
+  "r-link": "**r-link** — 链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。\n\n【Props】\nlabel?: string\nlinkType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"default\")\nunderline?: boolean (默认 true)\nhref?: string\ntarget?: \"_self\" | \"_blank\" | \"_parent\" | \"_top\" (默认 \"_self\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-link\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-dropdown": "**r-dropdown** — 下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。\n\n【Props】\nitems?: DropdownItem[]\ntrigger?: \"click\" | \"hover\" | \"contextmenu\" (默认 \"hover\")\neffect?: \"dark\" | \"light\" (默认 \"light\")\nplacement?: string (默认 \"bottom\")\nhideOnClick?: boolean (默认 true)\nshowTimeout?: number\nhideTimeout?: number\nsplitButton?: boolean (默认 false)\npopperClass?: string\nmaxHeight?: string | number\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-dropdown\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-divider": "**r-divider** — 分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。\n\n【Props】\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\nborderStyle?: \"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\" (默认 \"solid\")\ncontentPosition?: \"center\" | \"left\" | \"right\" (默认 \"center\")\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-divider\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-collapse-item": "**r-collapse-item** — 折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。\n\n【Props】\ntype?: string (默认 \"r-collapse-item\")\nprops?: Record<string, unknown>\nid?: string\nname?: string | number\ntitle?: string\nlabel?: string\ndisabled?: boolean\nbodyClass?: string\ngridColumns?: string | number\ngridAutoRows?: string\ngridGap?: string | number\nindex: number",
+  "r-card": "**r-card** — 卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。\n\n【Props】\nheader?: string\nshadow?: \"hover\" | \"always\" | \"never\" (默认 \"always\")\nbodyStyle?: string | Record<string, string>\nbodyClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-card\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-button": "**r-button** — 按钮组件，基于 el-button 可渲染子内容，支持 type/size/icon 等样式属性和点击事件。\n\n【Props】\nlabel?: string\nbuttonType?: \"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | \"text\" (默认 \"default\")\nbuttonSize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\nplain?: boolean (默认 false)\ntextMode?: boolean (默认 false)\nbg?: boolean (默认 false)\nlinkMode?: boolean (默认 false)\nround?: boolean (默认 false)\ncircle?: boolean (默认 false)\nloading?: boolean (默认 false)\nautoInsertSpace?: boolean (默认 false)\ncolor?: string\ndark?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-button\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-anchor-link": "**r-anchor-link** — 锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。\n\n【Props】\nhref?: string — 锚点链接\ntitle?: string — 链接标题\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-anchor-link\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-anchor": "**r-anchor** — 锚点导航容器，基于 el-anchor 提供页面内锚点定位和跟随滚动高亮。\n\n【Props】\ncontainer?: string — 滚动容器选择器\noffset?: number — 偏移量 (默认 0)\nbound?: number — 边界值 (默认 15)\nduration?: number — 滚动动画时长 (默认 300)\nmarker?: boolean — 是否显示标记 (默认 true)\ndirection?: \"horizontal\" | \"vertical\" — 排列方向 (默认 \"vertical\")\nanchorType?: \"default\" | \"underline\" — 锚点类型（避免与 SparkNode.type 冲突） (默认 \"default\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-anchor\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nchange: [href: string]\nclick: [e: MouseEvent, href?: string]",
+  "r-upload": "**r-upload** — 文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（文件路径）\naction?: string — 上传 URL (默认 \"#\")\naccept?: string — 接受文件类型 (默认 \"\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u70B9\\u51FB\\u4E0A\\u4F20\")\nautoUpload?: boolean — 自动上传 (默认 true)\nshowFileList?: boolean — 显示文件列表 (默认 true)\nlimit?: number — 最大文件数 (默认 1)\nlistType?: \"text\" | \"picture\" | \"picture-card\" — 列表展示类型 (默认 \"text\")\nseparator?: string — 多文件分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u6D4F\\u89C8\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-upload\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\n\n透传到 el-upload: autoUpload(默认 true), showFileList(默认 true), limit(默认 1), listType('text'|'picture'|'picture-card')",
+  "r-tree-select": "**r-tree-select** — 树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: TreeSelectValue — 双向绑定值\noptions?: unknown[] — 树形选项（嵌套结构）\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\noptionChildrenField?: string — 子节点字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\nmultiple?: boolean — 多选模式 (默认 false)\ncheckStrictly?: boolean — 父子不关联勾选 (默认 false)\ndefaultExpandAll?: boolean — 默认展开所有节点 (默认 false)\nrenderAfterExpand?: boolean — 展开后才渲染子节点 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: TreeSelectValue]",
+  "r-transfer": "**r-transfer** — 穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: TransferValue — 双向绑定值（已选值数组）\noptions?: unknown[] — 数据源（左侧候选列表）\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\ntitles?: [string, string] — 左右面板标题 (默认 [\"\\u5F85\\u9009\", \"\\u5DF2\\u9009\"] as [\n    string,\n    string\n])\nfilterable?: boolean — 可搜索 (默认 false)\nfilterPlaceholder?: string — 搜索框占位符 (默认 \"\\u8BF7\\u8F93\\u5165\\u5173\\u952E\\u8BCD\")\ntargetOrder?: \"push\" | \"unshift\" | \"original\" — 右侧排序方式 (默认 \"original\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-transfer\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: TransferValue]",
+  "r-time-select": "**r-time-select** — 时间间隔选择字段，绑定时间字符串值，基于 el-time-select 提供固定间隔的时间列表选择。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\nplaceholder?: string — 占位文本 (默认 \"\\u9009\\u62E9\\u65F6\\u95F4\")\nstart?: string — 起始时间 (默认 \"08:30\")\nend?: string — 结束时间 (默认 \"18:30\")\nstep?: string — 时间间隔步长 (默认 \"00:15\")\nminTime?: string — 最小可选时间\nmaxTime?: string — 最大可选时间\nclearable?: boolean — 可清空 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-time-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
+  "r-time-picker": "**r-time-picker** — 时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string | Date — 双向绑定值\nplaceholder?: string — 占位文本 (默认 \"\\u9009\\u62E9\\u65F6\\u95F4\")\nisRange?: boolean — 是否为范围选择 (默认 false)\nrangeSeparator?: string — 范围分隔符 (默认 \"\\u81F3\")\nstartPlaceholder?: string — 范围开始占位 (默认 \"\\u5F00\\u59CB\\u65F6\\u95F4\")\nendPlaceholder?: string — 范围结束占位 (默认 \"\\u7ED3\\u675F\\u65F6\\u95F4\")\narrowControl?: boolean — 箭头控制 (默认 false)\nformat?: string — 时间格式 (默认 \"HH:mm:ss\")\nclearable?: boolean — 可清空 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-time-picker\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string | Date]",
+  "r-textarea": "**r-textarea** — 多行文本字段，绑定 string 值，基于 el-input textarea 模式，支持自动高度和字数限制。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\nrows?: number — 行数 (默认 4)\nautosize?: boolean | { minRows?: number; maxRows?: number; } — 自适应高度 (默认 false)\nmaxlength?: number — 最大长度\nshowWordLimit?: boolean — 显示字数统计 (默认 false)\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u8F93\\u5165\\u5185\\u5BB9\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-textarea\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
+  "r-text": "**r-text** — 文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。\n\n【Props】\nfield?: string — 字段绑定名，映射到 DataView 行字段\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-text\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
+  "r-switch": "**r-switch** — 开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: boolean | null — 双向绑定值\nactiveText?: string — 激活时文案 (默认 \"\\u662F\")\ninactiveText?: string — 未激活时文案 (默认 \"\\u5426\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-switch\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: boolean | null]",
+  "r-slider": "**r-slider** — 滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: number — 双向绑定值\nmin?: number — 最小值 (默认 0)\nmax?: number — 最大值 (默认 100)\nstep?: number — 步长 (默认 1)\nshowInput?: boolean — 显示输入框 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-slider\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: number]",
+  "r-select": "**r-select** — 单选下拉字段，绑定 string/number 值，基于 el-select，支持静态选项列表或 optionKey 动态数据源绑定。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string | number — 双向绑定值\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string | number]",
+  "r-segmented": "**r-segmented** — 分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。\n\n【Props】\nmodelValue?: string | number — 当前选中值\noptions?: SegmentedOption[] — 选项列表\nsize?: \"default\" | \"large\" | \"small\" — 尺寸 (默认 \"default\")\nblock?: boolean — 是否撑满父容器 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-segmented\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nchange: [value: string | number]\nupdate:modelValue: [value: string | number]",
+  "r-rate": "**r-rate** — 评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: number — 双向绑定值\nmax?: number — 最大值 (默认 5)\nallowHalf?: boolean — 允许半星 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-rate\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: number]",
+  "r-radio": "**r-radio** — 单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string | number — 双向绑定值\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nbuttonStyle?: boolean — 按钮风格 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-radio\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string | number]",
+  "r-number": "**r-number** — 数字输入字段，绑定 number 值，基于 el-input-number，筛选模式下支持范围（最小-最大）双输入。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: number | [number | undefined, number | undefined] — 双向绑定值，范围模式时为元组\nmin?: number — 最小值\nmax?: number — 最大值\nprecision?: number — 小数精度\nfilterMode?: string — 筛选模式（'range' 启用范围输入）\nfilterVariant?: string — 筛选变体\nfilterRange?: boolean — 范围筛选标记\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-number\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: number | [number | undefined, number | undefined]]\n\nfilterMode: 'range' — 启用范围过滤模式",
+  "r-multi-select": "**r-multi-select** — 多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: MultiValue — 双向绑定值（数组）\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\ncollapseTags?: boolean — 折叠已选标签 (默认 false)\ncollapseTagsTooltip?: boolean — 折叠标签提示 (默认 false)\nmaxCollapseTags?: number — 最大显示标签数 (默认 1)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-multi-select\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: MultiValue]",
+  "r-mention": "**r-mention** — 提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。\n\n【Props】\nmodelValue?: string — 文本内容\noptions?: MentionOption[] — 选项列表\nprefix?: string | string[] — 触发前缀字符 (默认 \"@\")\nsplit?: string — 分隔符 (默认 \" \")\nfilterOption?: boolean | ((pattern: string, option: MentionOption) => boolean) — 自定义过滤\nplacement?: \"bottom\" | \"top\" — 弹出位置 (默认 \"bottom\")\nshowArrow?: boolean — 显示箭头 (默认 false)\noffset?: number — 偏移量\nwhole?: boolean — 匹配整体\ncheckIsWhole?: (pattern: string, prefix: string) => boolean — 校验整体函数\nloading?: boolean — 加载状态\ninputType?: \"text\" | \"textarea\" — 输入类型 (默认 \"text\")\nplaceholder?: string — 占位提示\nrows?: number — textarea 行数 (默认 3)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-mention\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\nsearch: [pattern: string, prefix: string]\nselect: [option: MentionOption, prefix: string]",
+  "r-image": "**r-image** — 图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（图片路径）\naction?: string — 上传 URL (默认 \"#\")\naccept?: string — 接受文件类型 (默认 \"image/*\")\nmultiple?: boolean — 多选 (默认 false)\nseparator?: string — 多图分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u56FE\\u7247\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u4E0A\\u4F20\\u56FE\\u7247\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u6D4F\\u89C8\")\nclearable?: boolean — 可清除 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-image\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
+  "r-icon": "**r-icon** — 图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（图标名）\noptions?: unknown[] — 图标选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u56FE\\u6807\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 true)\nclassPrefix?: string — 图标 CSS 类名前缀 (默认 \"\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-icon\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
+  "r-html-editor": "**r-html-editor** — 富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（HTML 字符串）\nrows?: number — 编辑器高度行数 (默认 10)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-html-editor\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
+  "r-file-path": "**r-file-path** — 文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（文件路径）\naction?: string — 上传 URL (默认 \"#\")\naccept?: string — 接受文件类型 (默认 \"\")\nmultiple?: boolean — 多选 (默认 false)\nseparator?: string — 多文件分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\\u8DEF\\u5F84\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u4E0A\\u4F20\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u6D4F\\u89C8\")\nclearable?: boolean — 可清除 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-file-path\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]",
+  "r-file-browser": "**r-file-browser** — 文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（文件路径）\naccept?: string — 接受文件类型 (默认 \"\")\nmultiple?: boolean — 多选 (默认 false)\nclearable?: boolean — 可清除 (默认 true)\nseparator?: string — 多文件分隔符 (默认 \", \")\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\")\nbuttonText?: string — 上传按钮文案 (默认 \"\\u6D4F\\u89C8\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-file-browser\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\n\n⚠️ 与 r-file-path 基本一致，差异在于内置的浏览器 UI 体验",
+  "r-entity-picker": "**r-entity-picker** — 通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: EntityPickerValue — 双向绑定值\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nbuttonText?: string — 选择按钮文案 (默认 \"\\u9009\\u62E9\")\nreadonlyButtonText?: string — 只读模式按钮文案 (默认 \"\\u67E5\\u770B\")\nclearable?: boolean — 可清除 (默认 true)\nmultiple?: boolean — 多选 (默认 false)\nsearchable?: boolean — 可搜索 (默认 true)\nseparator?: string — 多值分隔符 (默认 \", \")\nvalueMode?: \"auto\" | \"array\" | \"comma-string\" — 值模式 (默认 \"auto\")\nentityName?: string — 实体名称 (默认 \"\\u9879\\u76EE\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-entity-picker\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: EntityPickerValue]",
+  "r-date": "**r-date** — 日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string | Date | (string | Date)[] — 双向绑定值，日期范围时为数组\ndateType?: DatePickerType — 日期选择器类型\nplaceholder?: string — 占位文本 (默认 \"\\u9009\\u62E9\\u65E5\\u671F\")\nstartPlaceholder?: string — 范围开始占位 (默认 \"\\u5F00\\u59CB\\u65E5\\u671F\")\nendPlaceholder?: string — 范围结束占位 (默认 \"\\u7ED3\\u675F\\u65E5\\u671F\")\nrangeSeparator?: string — 范围分隔符 (默认 \"\\u81F3\")\nformat?: string — 显示格式\nvalueFormat?: string — 值格式\nclearable?: boolean — 可清空 (默认 true)\nfilterMode?: string — 筛选模式\nfilterVariant?: string — 筛选变体\nfilterRange?: boolean — 范围筛选标记\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-date\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string | Date | (string | Date)[]]\n\n透传到 el-date-picker: type('date'/'datetime'/'daterange'), format, valueFormat 等",
+  "r-color": "**r-color** — 颜色选择字段，绑定十六进制颜色字符串，基于 el-color-picker，表格/详情模式显示色块预览。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值（颜色字符串，透传 el-color-picker）\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-color\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\n\n透传到 el-color-picker: showAlpha, colorFormat('hex'|'rgb'|'hsl'|'hsv'), predefine(string[])",
+  "r-check-tag": "**r-check-tag** — 标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。\n\n【Props】\nchecked?: boolean — 是否选中 (默认 false)\nlabel?: string — 标签文本\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-check-tag\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nchange: [checked: boolean]\nupdate:checked: [checked: boolean]",
+  "r-checkbox-group": "**r-checkbox-group** — 复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: MultiValue — 双向绑定值（数组）\noptions?: unknown[] — 选项列表\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\nbuttonStyle?: boolean — 按钮风格 (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-checkbox-group\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: MultiValue]",
+  "r-checkbox": "**r-checkbox** — 单个复选框字段，绑定 boolean 值，基于 el-checkbox，支持自定义选中/未选中显示文本。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: boolean — 双向绑定值\ncheckedText?: string — 选中时显示文案 (默认 \"\\u662F\")\nuncheckedText?: string — 未选时显示文案 (默认 \"\\u5426\")\ncheckboxText?: string — 复选框右侧文案 (默认 \"\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-checkbox\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: boolean]\n\n⚠️ 用 checkedText / uncheckedText 代替 trueLabel / falseLabel",
+  "r-cascader": "**r-cascader** — 级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: CascaderValue — 双向绑定值\noptions?: unknown[] — 树形选项（嵌套结构）\noptionKey?: string — 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项\noptionLabelField?: string — 选项标签字段\noptionValueField?: string — 选项值字段\noptionChildrenField?: string — 子节点字段\nplaceholder?: string — 占位提示 (默认 \"\\u8BF7\\u9009\\u62E9\")\nclearable?: boolean — 可清除 (默认 true)\nfilterable?: boolean — 可搜索 (默认 false)\nmultiple?: boolean — 多选模式 (默认 false)\ncheckStrictly?: boolean — 父子不关联勾选 (默认 false)\nemitPath?: boolean — 值是否为完整路径数组 (默认 true)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-cascader\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: CascaderValue]",
+  "r-autocomplete": "**r-autocomplete** — 自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。\n\n【Props】\nfield?: string — 字段绑定名\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string — 双向绑定值\nplaceholder?: string — 占位文本 (默认 \"\\u8BF7\\u8F93\\u5165\")\nfetchSuggestions?: (queryString: string, cb: FetchSuggestionsCallback) => void — 获取建议的回调函数\ntriggerOnFocus?: boolean — 聚焦时是否触发建议 (默认 true)\nhighlightFirstItem?: boolean — 高亮第一项 (默认 false)\nclearable?: boolean — 可清空 (默认 true)\nvalueKey?: string — 建议项的取值键 (默认 \"value\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-autocomplete\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\nselect: [item: SuggestionItem]",
   "sap-chat-panel": "**sap-chat-panel** — SPARK 组件，可在注册表中通过 type=\"sap-chat-panel\" 使用。\n\n【Props】\nembedded?: boolean (默认 false)\nforceOpen?: boolean (默认 false)\nmode?: \"sap\" | \"stills\" (默认 \"sap\")",
   "nav-icon": "**nav-icon** — SPARK 组件，可在注册表中通过 type=\"nav-icon\" 使用。\n\n【Props】\nname?: string | undefined\nsize?: number | undefined",
   "module-context-badge": "**module-context-badge** — SPARK 组件，可在注册表中通过 type=\"module-context-badge\" 使用。\n\n【Props】\nlabel?: string (默认 \"\\u4E0A\\u4E0B\\u6587\")\nemptyText?: string (默认 \"\\u672A\\u9009\\u62E9\")",
@@ -25479,56 +23748,56 @@ export const COMPONENT_PROMPT_BY_TYPE: Record<string, string> = {
   "ai-chat-widget": "**ai-chat-widget** — SPARK 组件，可在注册表中通过 type=\"ai-chat-widget\" 使用。\n\n【Props】\nmode?: ChatMode\nsystemPrompt?: string\ntitle?: string\nplaceholder?: string\ncompact?: boolean",
   "ai-chat-panel": "**ai-chat-panel** — SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。\n\n【Props】\nembedded?: boolean (默认 false)\nforceOpen?: boolean (默认 false)",
   "ai-assistant-hub": "**ai-assistant-hub** — SPARK 组件，可在注册表中通过 type=\"ai-assistant-hub\" 使用。",
-  "tenant-config": "**tenant-config** — SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。",
-  "settings": "**settings** — SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。",
-  "cache-manager": "**cache-manager** — SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。",
-  "app-list": "**app-list** — SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。",
-  "login-view": "**login-view** — SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。",
-  "home-page": "**home-page** — SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。",
-  "about": "**about** — SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。",
-  "template-dsl-demo": "**template-dsl-demo** — SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。",
-  "rform-compare-demo": "**rform-compare-demo** — SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。",
-  "dashboard": "**dashboard** — SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。",
-  "custom-rtable-demo": "**custom-rtable-demo** — SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。",
-  "capability-demo": "**capability-demo** — SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。",
-  "dev-system": "**dev-system** — SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。",
-  "ai-studio-panel": "**ai-studio-panel** — SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。",
-  "spark-component-renderer": "**spark-component-renderer** — SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。\n\n【Props】\nparentContext?: ICapabilityContext — 显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
-  "unregistered-node-fallback": "**unregistered-node-fallback** — SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。\n\n【Props】\ntitle?: string (默认 \"\\u672A\\u6CE8\\u518C\\u7684\\u7EC4\\u4EF6\\u7C7B\\u578B\")\ndescription?: string (默认 \"\")",
-  "spark-json-editor": "**spark-json-editor** — SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。\n\n【Props】\nmodelValue?: string (默认 \"\")\nreadOnly?: boolean (默认 false)\nheight?: string | number (默认 360)\nmode?: SparkJsonEditorMode (默认 \"text\")\nindentation?: string | number (默认 2)\ntabSize?: number (默认 2)\nmainMenuBar?: boolean (默认 true)\nnavigationBar?: boolean (默认 true)\nstatusBar?: boolean (默认 true)\naskToFormat?: boolean (默认 false)\nschema?: SparkJsonSchema | null (默认 null)\nschemaDefinitions?: SparkJsonSchema | null (默认 null)\nenableSchemaValidation?: boolean (默认 true)\nenableSchemaEnumRenderer?: boolean (默认 true)\n\n【事件】\nupdate:modelValue: [value: string]",
-  "spark-code-editor": "**spark-code-editor** — SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。\n\n【Props】\nmodelValue?: string (默认 \"\")\nlanguage?: SparkCodeLanguage (默认 \"javascript\")\nreadOnly?: boolean (默认 false)\nheight?: string | number (默认 360)\ntabSize?: number (默认 2)\nlineWrapping?: boolean (默认 false)\n\n【事件】\nupdate:modelValue: [value: string]",
-  "spark-child": "**spark-child** — SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。\n\n【Props】\ntype: string\nid?: string\nnodeId?: string\ncolSpan?: string | number\nrowSpan?: string | number",
-  "json-tree-editor": "**json-tree-editor** — SPARK 包组件，可在 rule.json 中通过 type=\"json-tree-editor\" 使用。\n\n【Props】\nfield?: string — 字段绑定名，映射到 DataView 行字段\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string (默认 \"\")\ndocumentValue?: JsonDocument | null (默认 null)\nheight?: string | number (默认 420)\nreadOnly?: boolean (默认 false)\nschema?: Record<string, unknown> | null (默认 null)\nfilterPlaceholder?: string (默认 \"\\u7B5B\\u9009\\u8DEF\\u5F84 / \\u952E\\u540D / \\u503C\")\npolicy?: Partial<JsonTreePolicy>\nrootLabel?: string\nisProtected?: (path: JsonPath) => boolean\ncanEditKey?: (path: JsonPath) => boolean\ncanEditType?: (path: JsonPath) => boolean\nsuggestChildKey?: (target: JsonObject, parentPath: JsonPath) => string\ncreateDefaultArrayItem?: (parentPath: JsonPath) => JsonValue\ncreateDefaultObjectValue?: (parentPath: JsonPath, key: string) => JsonValue\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"json-tree-editor\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\nupdate:documentValue: [value: JsonDocument]",
-  "tree-node-summary": "**tree-node-summary** — SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。\n\n【Props】\nnameField?: string (默认 \"name\")\ntypeField?: string (默认 \"type\")\nstatusField?: string (默认 \"status\")\nownerField?: string (默认 \"owner\")\nmetaField?: string (默认 \"route\")\nextraField?: string (默认 \"childPlacement\")\nshowType?: boolean (默认 true)\nshowStatus?: boolean (默认 true)\nshowOwner?: boolean (默认 false)\nshowMeta?: boolean (默认 true)\nshowExtra?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree-node-summary\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "r-context-renderer": "**r-context-renderer** — SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。\n\n【Props】\ndisplayLabel?: string | undefined — 显示标签\nlabel?: string | undefined — 直接传入的标签（供 r-column-group 直连使用）\nfieldName?: string | undefined — 字段绑定名\nfield?: string | undefined — 直接传入的字段名（供裸列节点使用）\nwidth?: string | number | undefined — 列宽\nsortable?: boolean | \"custom\" | undefined — Element Plus 表格列排序能力\nfilterable?: boolean | undefined — 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning\nminWidth?: string | number | undefined — 最小列宽\nfixed?: boolean | \"left\" | \"right\" | undefined — 固定列方向\nalign?: TextAlign | undefined — 列对齐\nheaderAlign?: TextAlign | undefined — 表头对齐\nisCurrentFieldHidden?: boolean | undefined — 当前字段是否隐藏\nshouldRenderCurrentField?: boolean | undefined — 当前宿主下字段是否应渲染\ncurrentDisplayValue?: string | undefined — 当前显示值\nisTableCellHidden?: ((row: IDataRow) => boolean) | undefined — 表格行级隐藏判断\ngetTableCellDisplayValue?: ((row: IDataRow) => string) | undefined — 表格行级显示值获取\nvalidationRules?: FormItemRule[] | undefined — 表单验证规则\ntitleAlign?: TextAlign | undefined — 标题对齐（table/detail）\nvalueAlign?: TextAlign | undefined — 值对齐（table/detail）\nheaderCellClassName?: string | undefined — 表头 class（table）\nlabelClassName?: string | undefined — 兼容直接传入的列头 class\ncellClassName?: string | undefined — 单元格 class（table）\nclassName?: string | undefined — 兼容直接传入的列 class\ntitleClassName?: string | undefined — 标题 class（detail）\nvalueClassName?: string | undefined — 值 class（detail/table value）\ntype: string — 组件类型（对应 ComponentDefinition.type）\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-timeline-item": "**display-timeline-item** — SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。\n\n【Props】\ntimestamp?: string\nhideTimestamp?: boolean (默认 false)\ncenter?: boolean (默认 false)\nplacement?: \"bottom\" | \"top\" (默认 \"bottom\")\nitemType?: \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"primary\")\ncolor?: string\nitemSize?: \"large\" | \"normal\" (默认 \"normal\")\nhollow?: boolean (默认 false)\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-timeline-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-timeline": "**display-timeline** — SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。\n\n【Props】\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-timeline\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-skeleton": "**display-skeleton** — SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。\n\n【Props】\nrows?: number (默认 3)\ncount?: number (默认 1)\nloading?: boolean (默认 true)\nanimated?: boolean (默认 false)\nthrottle?: number (默认 0)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-skeleton\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-result": "**display-result** — SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。\n\n【Props】\nicon?: \"success\" | \"warning\" | \"info\" | \"error\" (默认 \"info\")\ntitle?: string\nsubTitle?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-result\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-icon": "**display-icon** — SPARK 包组件，可在 rule.json 中通过 type=\"display-icon\" 使用。\n\n【Props】\nicon?: string — 图标名称（Element Plus 图标名，如 'Edit', 'Delete', 'Search'）\niconSize?: string | number — 图标大小\ncolor?: string — 图标颜色\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"display-icon\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-empty": "**display-empty** — SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。\n\n【Props】\nimage?: string\nimageSize?: number\ndescription?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-empty\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-descriptions-item": "**display-descriptions-item** — SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。\n\n【Props】\nlabel?: string\nspan?: number (默认 1)\nlabelAlign?: \"center\" | \"left\" | \"right\"\ncontentAlign?: \"center\" | \"left\" | \"right\"\nlabelClassName?: string\nclassName?: string\ncontent?: string\nvalue?: unknown\nfield?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-descriptions-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-descriptions": "**display-descriptions** — SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。\n\n【Props】\ntitle?: string\nextra?: string\nborder?: boolean (默认 false)\ncolumn?: number (默认 3)\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\ndescriptionsSize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-descriptions\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-countdown": "**display-countdown** — SPARK 包组件，可在 rule.json 中通过 type=\"display-countdown\" 使用。\n\n【Props】\nvalue?: number | Date — 目标时间（时间戳或 Date）\nformat?: string — 格式化字符串，如 HH:mm:ss (默认 \"HH:mm:ss\")\nprefix?: string — 前缀文本\nsuffix?: string — 后缀文本\ntitle?: string — 标题\nvalueStyle?: CSSProperties — 值样式\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"display-countdown\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nfinish: []\nchange: [value: number]",
-  "display-calendar": "**display-calendar** — SPARK 包组件，可在 rule.json 中通过 type=\"display-calendar\" 使用。\n\n【Props】\nmodelValue?: Date — 当前日期\nrange?: [Date, Date] — 日期范围 [start, end]\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"display-calendar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-breadcrumb-item": "**display-breadcrumb-item** — SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。\n\n【Props】\nlabel?: string\nto?: string | Record<string, unknown>\nreplace?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-breadcrumb-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-breadcrumb": "**display-breadcrumb** — SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。\n\n【Props】\nseparator?: string (默认 \"/\")\nseparatorIcon?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-breadcrumb\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-alert": "**display-alert** — SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。\n\n【Props】\ntitle?: string\ndescription?: string\nalertType?: \"success\" | \"warning\" | \"info\" | \"error\" (默认 \"info\")\nclosable?: boolean (默认 true)\ncloseText?: string\ncenter?: boolean (默认 false)\nshowIcon?: boolean (默认 false)\neffect?: \"dark\" | \"light\" (默认 \"light\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-alert\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclose: []",
-  "display-text": "**display-text** — SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。\n\n【Props】\nvalue?: unknown\nfield?: string\ntag?: string (默认 \"span\")\nprefix?: string\nsuffix?: string\nformat?: \"number\" | \"date\" | \"currency\" | \"percent\"\nprecision?: number (默认 2)\nplaceholder?: string (默认 \"-\")\ntextClass?: string\ntextStyle?: string | Record<string, string>\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-text-display\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-tag": "**display-tag** — SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。\n\n【Props】\ncontent?: string\nvalue?: string\nfield?: string\ntagType?: \"\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"\")\nclosable?: boolean (默认 false)\ndisableTransitions?: boolean (默认 false)\nhit?: boolean (默认 false)\nround?: boolean (默认 false)\ncolor?: string\nsize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\neffect?: \"dark\" | \"light\" | \"plain\" (默认 \"light\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tag\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclose: []",
-  "display-statistic": "**display-statistic** — SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。\n\n【Props】\ntitle?: string\nvalue?: string | number\ndataKey?: string\nfield?: string\nprecision?: number (默认 0)\ndecimalSeparator?: string (默认 \".\")\ngroupSeparator?: string (默认 \",\")\nprefix?: string\nsuffix?: string\nvalueStyle?: string | Record<string, string>\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-statistic\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-progress": "**display-progress** — SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。\n\n【Props】\npercentage?: number\nvalue?: number\nfield?: string\nprogressType?: \"circle\" | \"line\" | \"dashboard\" (默认 \"line\")\nstrokeWidth?: number (默认 6)\ntextInside?: boolean (默认 false)\nstatus?: \"success\" | \"warning\" | \"exception\"\nindeterminate?: boolean (默认 false)\nduration?: number (默认 3)\ncolor?: ProgressColor\ncircleWidth?: number\nshowText?: boolean (默认 true)\nstrokeLinecap?: \"round\" | \"butt\" | \"square\" (默认 \"round\")\nformatText?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-progress\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-pagination": "**display-pagination** — SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。\n\n【Props】\ntotal?: number\npageSize?: number (默认 10)\ncurrentPage?: number (默认 1)\npageSizes?: number[] (默认 [10, 20, 50, 100])\npagerCount?: number (默认 7)\nlayout?: string (默认 \"total, sizes, prev, pager, next, jumper\")\nbackground?: boolean (默认 true)\nsmall?: boolean (默认 false)\nhideOnSinglePage?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-pagination\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:currentPage: [page: number]\nupdate:pageSize: [size: number]",
-  "display-image": "**display-image** — SPARK 包组件，可在 rule.json 中通过 type=\"display-image\" 使用。\n\n【Props】\nsrc?: string — 图片 URL（静态传入）\nfield?: string — 字段名（从当前行读取 URL）\nvalue?: string — 静态值\nfit?: \"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" — 图片适应模式 (默认 \"cover\")\nalt?: string — 替代文本\nlazy?: boolean — 是否懒加载 (默认 false)\npreviewSrcList?: string[] — 预览图列表（静态传入）\npreviewField?: string — 预览图字段名（从当前行读取数组）\ninitialIndex?: number — 初始预览索引 (默认 0)\nzIndex?: number — 预览层级\nhideOnClickModal?: boolean — 点击蒙层关闭预览 (默认 false)\npreviewTeleported?: boolean — 预览传送至 body (默认 true)\ncloseOnPressEscape?: boolean — ESC 关闭预览 (默认 true)\nwidth?: string | number — 图片宽度\nheight?: string | number — 图片高度\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"display-image\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-badge": "**display-badge** — SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。\n\n【Props】\nbadgeValue?: string | number\nvalue?: string | number\nfield?: string\nmax?: number (默认 99)\nisDot?: boolean (默认 false)\nhiddenBadge?: boolean (默认 false)\nbadgeType?: \"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"danger\")\nshowZero?: boolean (默认 true)\ncolor?: string\noffset?: [number, number]\nbadgeStyle?: Record<string, string>\nbadgeClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-badge\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "display-avatar": "**display-avatar** — SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。\n\n【Props】\navatarSize?: number | \"default\" | \"large\" | \"small\" (默认 \"default\")\nshape?: \"circle\" | \"square\" (默认 \"circle\")\nsrc?: string\nvalue?: string\nfield?: string\nsrcSet?: string\nalt?: string\nfit?: \"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" (默认 \"cover\")\ntext?: string\nicon?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-avatar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
-  "builtin-action-button": "**builtin-action-button** — SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。\n\n【Props】\nbuiltinAction?: string\nlabel?: string\nbuttonType?: string\nbuttonSize?: string\nbuttonPlain?: boolean\nbuttonText?: boolean\nbuttonLink?: boolean\nbuttonClass?: string\nbuttonDisabled?: boolean\ndisabled?: boolean\ndisabledWhenRow?: Record<string, unknown>\nrow?: IDataRow\nrowIndex?: number\ndata?: unknown\ndataSource?: unknown\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"builtin-action\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclick: [event: MouseEvent]",
-  "dock-tail": "**dock-tail** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。\n\n【Props】\ntype?: string (默认 \"r-tail\")\nid?: string\nwidth?: string | number — 尾区宽度",
-  "dock-header": "**dock-header** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。\n\n【Props】\ntype?: string (默认 \"r-header\")\nid?: string\nwidth?: string | number — 区域宽度",
-  "dock-footer": "**dock-footer** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。\n\n【Props】\ntype?: string (默认 \"r-footer\")\nid?: string\nwidth?: string | number — 区域宽度",
-  "dock-filter": "**dock-filter** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。\n\n【Props】\ntype?: string (默认 \"r-filter\")\nid?: string\ncolumns?: (string | DockFilterItem)[] — 筛选列\ncollapsible?: boolean — 是否可折叠\ndefaultCollapsed?: boolean — 默认折叠\nautoFitMinWidth?: string — 自适应最小宽度\nitemSpan?: number — 单项跨列数\ngridColumns?: number — 网格列数\ngridGap?: string | number — 网格间距\ngridAutoRows?: string — 网格行高",
-  "dock-editor": "**dock-editor** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。\n\n【Props】\ntype?: string (默认 \"r-editor\")\nid?: string\nposition?: \"bottom\" | \"top\" | \"left\" | \"right\" — 编辑区位置\nwidth?: string | number — 编辑区宽度",
-  "dock-actions": "**dock-actions** — SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。\n\n【Props】\ntype?: string (默认 \"r-actions\")\nid?: string\nposition?: \"left\" | \"right\" — 操作列位置\nlabel?: string — 列标题\nwidth?: string | number — 列宽\nalign?: \"center\" | \"left\" | \"right\" — 对齐方式\nfixed?: boolean | \"left\" | \"right\" — 固定列",
+  "tenant-config": "**tenant-config** — 多租户配置管理页面，展示和编辑租户级别的系统配置项。",
+  "settings": "**settings** — 系统设置面板，提供全局参数配置和偏好设置管理界面。",
+  "cache-manager": "**cache-manager** — 缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存。",
+  "app-list": "**app-list** — 应用列表页面，以卡片网格展示已创建的项目/应用及入口。",
+  "login-view": "**login-view** — 多租户登录页面，提供用户名/密码认证和租户选择入口。",
+  "home-page": "**home-page** — 平台首页，展示系统介绍、功能亮点和快速开始入口。",
+  "about": "**about** — 关于页面，展示系统版本、技术栈和项目信息。",
+  "template-dsl-demo": "**template-dsl-demo** — Vue 模板 DSL 演示页，展示通过 Vue SFC 模板直接使用 SPARK 组件的用法。",
+  "rform-compare-demo": "**rform-compare-demo** — 表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。",
+  "dashboard": "**dashboard** — 管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。",
+  "custom-rtable-demo": "**custom-rtable-demo** — 自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。",
+  "capability-demo": "**capability-demo** — 能力系统演示页，展示 sparkProvide/sparkConsume 能力链的运行时行为。",
+  "dev-system": "**dev-system** — 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。",
+  "ai-studio-panel": "**ai-studio-panel** — AI 工作室面板，提供 AI 对话驱动的页面生成、迭代和预览功能。",
+  "spark-component-renderer": "**spark-component-renderer** — 通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。\n\n【Props】\nparentContext?: ICapabilityContext — 显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
+  "unregistered-node-fallback": "**unregistered-node-fallback** — 未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。\n\n【Props】\ntitle?: string (默认 \"\\u672A\\u6CE8\\u518C\\u7684\\u7EC4\\u4EF6\\u7C7B\\u578B\")\ndescription?: string (默认 \"\")",
+  "spark-json-editor": "**spark-json-editor** — JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。\n\n【Props】\nmodelValue?: string (默认 \"\")\nreadOnly?: boolean (默认 false)\nheight?: string | number (默认 360)\nmode?: SparkJsonEditorMode (默认 \"text\")\nindentation?: string | number (默认 2)\ntabSize?: number (默认 2)\nmainMenuBar?: boolean (默认 true)\nnavigationBar?: boolean (默认 true)\nstatusBar?: boolean (默认 true)\naskToFormat?: boolean (默认 false)\nschema?: SparkJsonSchema | null (默认 null)\nschemaDefinitions?: SparkJsonSchema | null (默认 null)\nenableSchemaValidation?: boolean (默认 true)\nenableSchemaEnumRenderer?: boolean (默认 true)\n\n【事件】\nupdate:modelValue: [value: string]",
+  "spark-code-editor": "**spark-code-editor** — 代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。\n\n【Props】\nmodelValue?: string (默认 \"\")\nlanguage?: SparkCodeLanguage (默认 \"javascript\")\nreadOnly?: boolean (默认 false)\nheight?: string | number (默认 360)\ntabSize?: number (默认 2)\nlineWrapping?: boolean (默认 false)\n\n【事件】\nupdate:modelValue: [value: string]",
+  "spark-child": "**spark-child** — 子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。\n\n【Props】\ntype: string\nid?: string\nnodeId?: string\ncolSpan?: string | number\nrowSpan?: string | number",
+  "json-tree-editor": "**json-tree-editor** — JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。\n\n【Props】\nfield?: string — 字段绑定名，映射到 DataView 行字段\nlabel?: string — 显示标签\nwidth?: number — r-table 内列宽\nmodelValue?: string (默认 \"\")\ndocumentValue?: JsonDocument | null (默认 null)\nheight?: string | number (默认 420)\nreadOnly?: boolean (默认 false)\nschema?: Record<string, unknown> | null (默认 null)\nfilterPlaceholder?: string (默认 \"\\u7B5B\\u9009\\u8DEF\\u5F84 / \\u952E\\u540D / \\u503C\")\npolicy?: Partial<JsonTreePolicy>\nrootLabel?: string\nisProtected?: (path: JsonPath) => boolean\ncanEditKey?: (path: JsonPath) => boolean\ncanEditType?: (path: JsonPath) => boolean\nsuggestChildKey?: (target: JsonObject, parentPath: JsonPath) => string\ncreateDefaultArrayItem?: (parentPath: JsonPath) => JsonValue\ncreateDefaultObjectValue?: (parentPath: JsonPath, key: string) => JsonValue\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"json-tree-editor\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:modelValue: [value: string]\nupdate:documentValue: [value: JsonDocument]",
+  "tree-node-summary": "**tree-node-summary** — 树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。\n\n【Props】\nnameField?: string (默认 \"name\")\ntypeField?: string (默认 \"type\")\nstatusField?: string (默认 \"status\")\nownerField?: string (默认 \"owner\")\nmetaField?: string (默认 \"route\")\nextraField?: string (默认 \"childPlacement\")\nshowType?: boolean (默认 true)\nshowStatus?: boolean (默认 true)\nshowOwner?: boolean (默认 false)\nshowMeta?: boolean (默认 true)\nshowExtra?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tree-node-summary\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "r-context-renderer": "**r-context-renderer** — 语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。\n\n【Props】\ndisplayLabel?: string | undefined — 显示标签\nlabel?: string | undefined — 直接传入的标签（供 r-column-group 直连使用）\nfieldName?: string | undefined — 字段绑定名\nfield?: string | undefined — 直接传入的字段名（供裸列节点使用）\nwidth?: string | number | undefined — 列宽\nsortable?: boolean | \"custom\" | undefined — Element Plus 表格列排序能力\nfilterable?: boolean | undefined — 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning\nminWidth?: string | number | undefined — 最小列宽\nfixed?: boolean | \"left\" | \"right\" | undefined — 固定列方向\nalign?: TextAlign | undefined — 列对齐\nheaderAlign?: TextAlign | undefined — 表头对齐\nisCurrentFieldHidden?: boolean | undefined — 当前字段是否隐藏\nshouldRenderCurrentField?: boolean | undefined — 当前宿主下字段是否应渲染\ncurrentDisplayValue?: string | undefined — 当前显示值\nisTableCellHidden?: ((row: IDataRow) => boolean) | undefined — 表格行级隐藏判断\ngetTableCellDisplayValue?: ((row: IDataRow) => string) | undefined — 表格行级显示值获取\nvalidationRules?: FormItemRule[] | undefined — 表单验证规则\ntitleAlign?: TextAlign | undefined — 标题对齐（table/detail）\nvalueAlign?: TextAlign | undefined — 值对齐（table/detail）\nheaderCellClassName?: string | undefined — 表头 class（table）\nlabelClassName?: string | undefined — 兼容直接传入的列头 class\ncellClassName?: string | undefined — 单元格 class（table）\nclassName?: string | undefined — 兼容直接传入的列 class\ntitleClassName?: string | undefined — 标题 class（detail）\nvalueClassName?: string | undefined — 值 class（detail/table value）\ntype: string — 组件类型（对应 ComponentDefinition.type）\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-timeline-item": "**display-timeline-item** — 时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。\n\n【Props】\ntimestamp?: string\nhideTimestamp?: boolean (默认 false)\ncenter?: boolean (默认 false)\nplacement?: \"bottom\" | \"top\" (默认 \"bottom\")\nitemType?: \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"primary\")\ncolor?: string\nitemSize?: \"large\" | \"normal\" (默认 \"normal\")\nhollow?: boolean (默认 false)\ncontent?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-timeline-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-timeline": "**display-timeline** — 时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。\n\n【Props】\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-timeline\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-skeleton": "**display-skeleton** — 骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。\n\n【Props】\nrows?: number (默认 3)\ncount?: number (默认 1)\nloading?: boolean (默认 true)\nanimated?: boolean (默认 false)\nthrottle?: number (默认 0)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-skeleton\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-result": "**display-result** — 结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。\n\n【Props】\nicon?: \"success\" | \"warning\" | \"info\" | \"error\" (默认 \"info\")\ntitle?: string\nsubTitle?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-result\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-icon": "**display-icon** — 图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。\n\n【Props】\nicon?: string — 图标名称（Element Plus 图标名，如 'Edit', 'Delete', 'Search'）\niconSize?: string | number — 图标大小\ncolor?: string — 图标颜色\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"display-icon\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-empty": "**display-empty** — 空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。\n\n【Props】\nimage?: string\nimageSize?: number\ndescription?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-empty\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-descriptions-item": "**display-descriptions-item** — 描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。\n\n【Props】\nlabel?: string\nspan?: number (默认 1)\nlabelAlign?: \"center\" | \"left\" | \"right\"\ncontentAlign?: \"center\" | \"left\" | \"right\"\nlabelClassName?: string\nclassName?: string\ncontent?: string\nvalue?: unknown\nfield?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-descriptions-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-descriptions": "**display-descriptions** — 描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。\n\n【Props】\ntitle?: string\nextra?: string\nborder?: boolean (默认 false)\ncolumn?: number (默认 3)\ndirection?: \"horizontal\" | \"vertical\" (默认 \"horizontal\")\ndescriptionsSize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-descriptions\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-countdown": "**display-countdown** — 倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。\n\n【Props】\nvalue?: number | Date — 目标时间（时间戳或 Date）\nformat?: string — 格式化字符串，如 HH:mm:ss (默认 \"HH:mm:ss\")\nprefix?: string — 前缀文本\nsuffix?: string — 后缀文本\ntitle?: string — 标题\nvalueStyle?: CSSProperties — 值样式\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"display-countdown\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nfinish: []\nchange: [value: number]",
+  "display-calendar": "**display-calendar** — 日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。\n\n【Props】\nmodelValue?: Date — 当前日期\nrange?: [Date, Date] — 日期范围 [start, end]\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"display-calendar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-breadcrumb-item": "**display-breadcrumb-item** — 面包屑导航项，基于 el-breadcrumb-item 定义单个导航节点，支持链接跳转。\n\n【Props】\nlabel?: string\nto?: string | Record<string, unknown>\nreplace?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-breadcrumb-item\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-breadcrumb": "**display-breadcrumb** — 面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。\n\n【Props】\nseparator?: string (默认 \"/\")\nseparatorIcon?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-breadcrumb\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-alert": "**display-alert** — 警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。\n\n【Props】\ntitle?: string\ndescription?: string\nalertType?: \"success\" | \"warning\" | \"info\" | \"error\" (默认 \"info\")\nclosable?: boolean (默认 true)\ncloseText?: string\ncenter?: boolean (默认 false)\nshowIcon?: boolean (默认 false)\neffect?: \"dark\" | \"light\" (默认 \"light\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-alert\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclose: []",
+  "display-text": "**display-text** — 文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。\n\n【Props】\nvalue?: unknown\nfield?: string\ntag?: string (默认 \"span\")\nprefix?: string\nsuffix?: string\nformat?: \"number\" | \"date\" | \"currency\" | \"percent\"\nprecision?: number (默认 2)\nplaceholder?: string (默认 \"-\")\ntextClass?: string\ntextStyle?: string | Record<string, string>\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-text-display\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-tag": "**display-tag** — 标签展示组件，基于 el-tag 以彩色标签显示字段值，支持类型/尺寸/主题样式和可关闭功能。\n\n【Props】\ncontent?: string\nvalue?: string\nfield?: string\ntagType?: \"\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"\")\nclosable?: boolean (默认 false)\ndisableTransitions?: boolean (默认 false)\nhit?: boolean (默认 false)\nround?: boolean (默认 false)\ncolor?: string\nsize?: \"default\" | \"large\" | \"small\" (默认 \"default\")\neffect?: \"dark\" | \"light\" | \"plain\" (默认 \"light\")\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-tag\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclose: []",
+  "display-statistic": "**display-statistic** — 统计数值展示组件，基于 el-statistic 格式化显示数字/字符串值，支持精度、前后缀和千分位分隔。\n\n【Props】\ntitle?: string\nvalue?: string | number\ndataKey?: string\nfield?: string\nprecision?: number (默认 0)\ndecimalSeparator?: string (默认 \".\")\ngroupSeparator?: string (默认 \",\")\nprefix?: string\nsuffix?: string\nvalueStyle?: string | Record<string, string>\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-statistic\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-progress": "**display-progress** — 进度条展示组件，基于 el-progress 以条形或圆形显示百分比进度值，支持动态颜色。\n\n【Props】\npercentage?: number\nvalue?: number\nfield?: string\nprogressType?: \"circle\" | \"line\" | \"dashboard\" (默认 \"line\")\nstrokeWidth?: number (默认 6)\ntextInside?: boolean (默认 false)\nstatus?: \"success\" | \"warning\" | \"exception\"\nindeterminate?: boolean (默认 false)\nduration?: number (默认 3)\ncolor?: ProgressColor\ncircleWidth?: number\nshowText?: boolean (默认 true)\nstrokeLinecap?: \"round\" | \"butt\" | \"square\" (默认 \"round\")\nformatText?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-progress\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-pagination": "**display-pagination** — 分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。\n\n【Props】\ntotal?: number\npageSize?: number (默认 10)\ncurrentPage?: number (默认 1)\npageSizes?: number[] (默认 [10, 20, 50, 100])\npagerCount?: number (默认 7)\nlayout?: string (默认 \"total, sizes, prev, pager, next, jumper\")\nbackground?: boolean (默认 true)\nsmall?: boolean (默认 false)\nhideOnSinglePage?: boolean (默认 false)\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-pagination\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nupdate:currentPage: [page: number]\nupdate:pageSize: [size: number]",
+  "display-image": "**display-image** — 图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。\n\n【Props】\nsrc?: string — 图片 URL（静态传入）\nfield?: string — 字段名（从当前行读取 URL）\nvalue?: string — 静态值\nfit?: \"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" — 图片适应模式 (默认 \"cover\")\nalt?: string — 替代文本\nlazy?: boolean — 是否懒加载 (默认 false)\npreviewSrcList?: string[] — 预览图列表（静态传入）\npreviewField?: string — 预览图字段名（从当前行读取数组）\ninitialIndex?: number — 初始预览索引 (默认 0)\nzIndex?: number — 预览层级\nhideOnClickModal?: boolean — 点击蒙层关闭预览 (默认 false)\npreviewTeleported?: boolean — 预览传送至 body (默认 true)\ncloseOnPressEscape?: boolean — ESC 关闭预览 (默认 true)\nwidth?: string | number — 图片宽度\nheight?: string | number — 图片高度\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"display-image\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-badge": "**display-badge** — 徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。\n\n【Props】\nbadgeValue?: string | number\nvalue?: string | number\nfield?: string\nmax?: number (默认 99)\nisDot?: boolean (默认 false)\nhiddenBadge?: boolean (默认 false)\nbadgeType?: \"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" (默认 \"danger\")\nshowZero?: boolean (默认 true)\ncolor?: string\noffset?: [number, number]\nbadgeStyle?: Record<string, string>\nbadgeClass?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-badge\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "display-avatar": "**display-avatar** — 头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。\n\n【Props】\navatarSize?: number | \"default\" | \"large\" | \"small\" (默认 \"default\")\nshape?: \"circle\" | \"square\" (默认 \"circle\")\nsrc?: string\nvalue?: string\nfield?: string\nsrcSet?: string\nalt?: string\nfit?: \"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" (默认 \"cover\")\ntext?: string\nicon?: string\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"r-avatar\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。",
+  "builtin-action-button": "**builtin-action-button** — 内置操作按钮，基于 el-button 根据 action 类型（create/edit/delete/refresh 等）自动映射标签、图标和样式。\n\n【Props】\nbuiltinAction?: string\nlabel?: string\nbuttonType?: string\nbuttonSize?: string\nbuttonPlain?: boolean\nbuttonText?: boolean\nbuttonLink?: boolean\nbuttonClass?: string\nbuttonDisabled?: boolean\ndisabled?: boolean\ndisabledWhenRow?: Record<string, unknown>\nrow?: IDataRow\nrowIndex?: number\ndata?: unknown\ndataSource?: unknown\ntype?: string — 组件类型（对应 ComponentDefinition.type） (默认 \"builtin-action\")\nprops?: Record<string, unknown> — 组件属性（所有组件可见的数据均通过 props 传递）\nid?: string — 节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。\n\n【事件】\nclick: [event: MouseEvent]",
+  "dock-tail": "**dock-tail** — 尾部 dock，在 r-toolbar 中作为工具栏末尾区域提取渲染。\n\n【Props】\ntype?: string (默认 \"r-tail\")\nid?: string\nwidth?: string | number — 尾区宽度",
+  "dock-header": "**dock-header** — 头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。\n\n【Props】\ntype?: string (默认 \"r-header\")\nid?: string\nwidth?: string | number — 区域宽度",
+  "dock-footer": "**dock-footer** — 底部 dock，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。\n\n【Props】\ntype?: string (默认 \"r-footer\")\nid?: string\nwidth?: string | number — 区域宽度",
+  "dock-filter": "**dock-filter** — 筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。\n\n【Props】\ntype?: string (默认 \"r-filter\")\nid?: string\ncolumns?: (string | DockFilterItem)[] — 筛选列\ncollapsible?: boolean — 是否可折叠\ndefaultCollapsed?: boolean — 默认折叠\nautoFitMinWidth?: string — 自适应最小宽度\nitemSpan?: number — 单项跨列数\ngridColumns?: number — 网格列数\ngridGap?: string | number — 网格间距\ngridAutoRows?: string — 网格行高",
+  "dock-editor": "**dock-editor** — 编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。\n\n【Props】\ntype?: string (默认 \"r-editor\")\nid?: string\nposition?: \"bottom\" | \"left\" | \"right\" | \"top\" — 编辑区位置\nwidth?: string | number — 编辑区宽度",
+  "dock-actions": "**dock-actions** — 操作列/区域 dock，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。\n\n【Props】\ntype?: string (默认 \"r-actions\")\nid?: string\nposition?: \"left\" | \"right\" — 操作列位置\nlabel?: string — 列标题\nwidth?: string | number — 列宽\nalign?: \"center\" | \"left\" | \"right\" — 对齐方式\nfixed?: boolean | \"left\" | \"right\" — 固定列",
   "r-column-group": "**r-column-group** — \n\n【使用场景】复杂表格需要多级表头分组，例如「基本信息」下包含「姓名」「年龄」「邮箱」\n\n【示例】\n{ \"type\": \"r-column-group\", \"props\": { \"label\": \"基本信息\" }, \"children\": [\n  { \"type\": \"r-text\", \"field\": \"name\", \"props\": { \"label\": \"姓名\" } },\n  { \"type\": \"r-number\", \"field\": \"age\", \"props\": { \"label\": \"年龄\" } }\n]}\nchildren 内放 r-* 字段组件作为实际数据列"
 }
 

@@ -11,6 +11,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。
+ */
 import { computed } from 'vue'
 import { useSparkPageComponent, type SparkNode } from '../../internal'
 import { useDisplayDataSource } from '../composables/useDisplayDataSource'

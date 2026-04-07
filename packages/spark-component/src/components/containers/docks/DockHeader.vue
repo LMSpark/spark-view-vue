@@ -16,6 +16,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
 

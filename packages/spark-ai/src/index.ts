@@ -90,6 +90,9 @@ export type {
   RootFieldEntry,
 } from './catalog/types'
 
+// ── SAP Catalog (Lightweight) ────────────────────────────────────────────────
+export type { SapCatalog, SapCatalogRegistry, SapComponentEntry, SapPropEntry } from './catalog/sap-catalog-types'
+
 // ── Shared Constants ─────────────────────────────────────────────────────────
 export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './validation/shared-constants'
 

@@ -26,6 +26,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 

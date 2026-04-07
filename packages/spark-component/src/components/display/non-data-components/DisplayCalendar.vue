@@ -15,6 +15,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。
+ */
 import { ref } from 'vue'
 import { useSparkPageComponent, type SparkNode } from '../../internal'
 

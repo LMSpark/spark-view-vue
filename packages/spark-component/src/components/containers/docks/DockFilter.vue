@@ -16,6 +16,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
 import type { DockFilterItem } from '../../../core/types.js'

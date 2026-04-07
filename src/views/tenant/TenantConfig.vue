@@ -123,6 +123,9 @@
 
 <script setup lang="ts">
 /**
+ * @skill-description 多租户配置管理页面，展示和编辑租户级别的系统配置项。
+ */
+/**
  * 多租户配置演示页面 - 租户隔离和配置管理
  * 
  * @component TenantConfigDemo

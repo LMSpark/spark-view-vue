@@ -4,6 +4,7 @@
 
 import type { JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '@spark-view/spark-component'
 import { ensureUniqueObjectKey } from '@spark-view/spark-component'
+import { COMPONENT_PROP_NAMES, COMPONENT_PROP_ENUMS } from './_generated-catalog'
 
 // ── SparkNode 结构键 ─────────────────────────────────────────
 //
@@ -111,11 +112,20 @@ function suggestChildKey(target: JsonObject, parentPath: JsonPath): string {
     return ensureUniqueObjectKey(target, 'custom')
   }
 
-  // 在 props 内添加
+  // 在 props 内添加 — 基于组件类型建议已知属性
   if (isPropsObject(parentPath)) {
+    // 优先建议通用高频属性
     const preferredProps = ['dataKey', 'field', 'label', 'visible', 'disabled']
     for (const key of preferredProps) {
       if (!(key in target)) return key
+    }
+    // 从 catalog 补充该组件类型的专属属性
+    const sparkNode = parentPath.length >= 2 ? undefined : target
+    const typeValue = sparkNode !== undefined ? (sparkNode as Record<string, unknown>)['type'] : undefined
+    if (typeof typeValue === 'string' && COMPONENT_PROP_NAMES[typeValue] !== undefined) {
+      for (const key of COMPONENT_PROP_NAMES[typeValue]) {
+        if (!(key in target)) return key
+      }
     }
     return ensureUniqueObjectKey(target, 'newProp')
   }
@@ -149,6 +159,19 @@ function createDefaultObjectValue(parentPath: JsonPath, key: string): JsonValue 
   return ''
 }
 
+/**
+ * 判断路径是否指向 props 内的某个属性值。
+ * 模式：...[SparkNodeRoot].props.{propName}
+ */
+function isPropsChildValue(path: JsonPath): { propName: string } | null {
+  if (path.length < 2) return null
+  const last = path[path.length - 1]
+  if (typeof last !== 'string') return null
+  const parentPath = path.slice(0, -1)
+  if (isPropsObject(parentPath)) return { propName: last }
+  return null
+}
+
 // ── 导出策略对象 ──────────────────────────────────────────────
 
 export const rulePolicy: JsonTreePolicy = {
@@ -159,4 +182,18 @@ export const rulePolicy: JsonTreePolicy = {
   suggestChildKey,
   createDefaultArrayItem,
   createDefaultObjectValue,
+  getValueOptions(path: JsonPath): string[] | undefined {
+    // props 内的属性值 — 如果 catalog 有枚举定义则返回
+    const propInfo = isPropsChildValue(path)
+    if (propInfo === null) return undefined
+    // 遍历所有组件类型的该属性枚举，合并去重
+    const merged = new Set<string>()
+    for (const typeEnums of Object.values(COMPONENT_PROP_ENUMS)) {
+      const vals = typeEnums[propInfo.propName]
+      if (vals !== undefined) {
+        for (const v of vals) merged.add(v)
+      }
+    }
+    return merged.size > 0 ? [...merged] : undefined
+  },
 }

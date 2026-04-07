@@ -61,6 +61,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。
+ */
 import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'

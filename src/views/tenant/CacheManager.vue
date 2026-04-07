@@ -119,6 +119,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存。
+ */
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Coin, Refresh, Delete } from '@element-plus/icons-vue'

@@ -103,6 +103,9 @@
 
 <script setup lang="ts">
 /**
+ * @skill-description 关于页面，展示系统版本、技术栈和项目信息。
+ */
+/**
  * 关于页面 - 系统介绍和架构说明
  * 
  * @component About

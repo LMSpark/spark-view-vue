@@ -14,6 +14,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 统计数值展示组件，基于 el-statistic 格式化显示数字/字符串值，支持精度、前后缀和千分位分隔。
+ */
 import { computed } from 'vue'
 import { useSparkPageComponent, type SparkNode } from '../../internal'
 import { useDisplayDataSource } from '../composables/useDisplayDataSource'

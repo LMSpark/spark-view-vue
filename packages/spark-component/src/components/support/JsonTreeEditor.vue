@@ -180,6 +180,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。
+ */
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import type { SparkNode } from '../internal'
@@ -386,7 +389,8 @@ const allRows = computed<DisplayRow[]>(() => {
   const rawRows = toDisplayRows(treeModelRef.value, mergedPolicy.value)
   const schemaCache = new Map<string, ReturnType<typeof resolveSchemaInfoForPath>>()
   const rootLabel = mergedPolicy.value.rootLabel ?? '$'
-  for (const row of rawRows) enrichRow(row, schemaCache, rootLabel)
+  const policy = mergedPolicy.value
+  for (const row of rawRows) enrichRow(row, schemaCache, rootLabel, policy)
   return rawRows as DisplayRow[]
 })
 
@@ -496,6 +500,7 @@ function enrichRow(
   row: TreeDisplayNode,
   schemaCache: Map<string, ReturnType<typeof resolveSchemaInfoForPath>>,
   rootLabel: string,
+  policy: Partial<JsonTreePolicy>,
 ): DisplayRow {
   const isContainer = row.type === 'object' || row.type === 'array'
   const displayKey = row.depth === 0 ? rootLabel
@@ -508,6 +513,11 @@ function enrichRow(
   const cacheKey = row.id
   const schemaInfo = schemaCache.get(cacheKey) ?? resolveSchemaInfoForPath(props.schema, row.path)
   schemaCache.set(cacheKey, schemaInfo)
+
+  // Policy 提供的值选项（仅当 Schema 无 enum 时使用）
+  const policyOptions = schemaInfo.enumValues.length === 0
+    ? policy.getValueOptions?.(row.path)
+    : undefined
 
   const searchText = [
     displayKey,
@@ -529,7 +539,10 @@ function enrichRow(
   display._schemaTitle = schemaInfo.title
   display._schemaDescription = schemaInfo.description
   display._schemaRequired = schemaInfo.required
-  display._schemaEnumValues = schemaInfo.enumValues
+  // Schema enum 优先；若 Schema 无 enum，回退到 policy.getValueOptions
+  display._schemaEnumValues = schemaInfo.enumValues.length > 0
+    ? schemaInfo.enumValues
+    : (policyOptions ?? [])
   return display
 }
 

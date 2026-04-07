@@ -17,6 +17,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。
+ */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 /**
+ * @skill-description AI 工作室面板，提供 AI 对话驱动的页面生成、迭代和预览功能。
+ */
+/**
  * AI Studio — 可视化 AI 页面配置闭环操作面板
  *
  * 功能：

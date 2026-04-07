@@ -76,6 +76,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 应用列表页面，以卡片网格展示已创建的项目/应用及入口。
+ */
 import { ref, onMounted, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'

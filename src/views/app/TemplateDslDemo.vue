@@ -172,6 +172,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description Vue 模板 DSL 演示页，展示通过 Vue SFC 模板直接使用 SPARK 组件的用法。
+ */
 import { ref } from 'vue'
 import {
   ElButton,

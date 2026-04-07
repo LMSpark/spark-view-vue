@@ -130,6 +130,8 @@ export interface JsonTreePolicy {
   createDefaultArrayItem?(parentPath: JsonPath): JsonValue
   /** 为对象添加子项时的默认值 */
   createDefaultObjectValue?(parentPath: JsonPath, key: string): JsonValue
+  /** 返回该路径的可选值列表（用于下拉选择，优先级低于 Schema enum） */
+  getValueOptions?(path: JsonPath): string[] | undefined
 }
 
 // ════════════════════════════════════════════════════════════
@@ -633,6 +635,7 @@ const DEFAULT_POLICY: ResolvedPolicy = {
   suggestChildKey: (target) => ensureUniqueObjectKey(target, 'newKey'),
   createDefaultArrayItem: () => '',
   createDefaultObjectValue: () => '',
+  getValueOptions: () => undefined,
 }
 
 function resolvePolicy(partial?: Partial<JsonTreePolicy>): ResolvedPolicy {
@@ -645,6 +648,7 @@ function resolvePolicy(partial?: Partial<JsonTreePolicy>): ResolvedPolicy {
     suggestChildKey: partial.suggestChildKey ?? DEFAULT_POLICY.suggestChildKey,
     createDefaultArrayItem: partial.createDefaultArrayItem ?? DEFAULT_POLICY.createDefaultArrayItem,
     createDefaultObjectValue: partial.createDefaultObjectValue ?? DEFAULT_POLICY.createDefaultObjectValue,
+    getValueOptions: partial.getValueOptions ?? DEFAULT_POLICY.getValueOptions,
   }
 }
 

@@ -86,20 +86,29 @@ export interface SkillMeta {
 }
 
 /**
- * 从 .vue 文件顶部 JSDoc 中提取 Skill 元数据。
- * 只读取文件前 60 行，避免全量读取大文件。
+ * 从 .vue 文件 `<script>` 块首部 JSDoc 中提取 Skill 元数据。
+ *
+ * 策略：定位 `<script` 标签后的前 20 行，在其中查找 `@skill-description`。
+ * 若 `<script` 标签不存在则回退扫描文件前 60 行（兼容纯 .ts 场景）。
  */
 export function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta | null {
-  let content: string
+  let raw: string
   try {
-    const raw = readFileSync(absolutePath, 'utf-8')
-    content = raw.split('\n').slice(0, 60).join('\n')
+    raw = readFileSync(absolutePath, 'utf-8')
   } catch {
     return null
   }
 
   const skillType = inferSkillType(absolutePath, fallbackType)
   if (skillType === null) return null
+
+  // 定位 <script 标签后的区域（覆盖大型 template 场景）
+  const allLines = raw.split('\n')
+  const scriptIdx = allLines.findIndex((l) => /^\s*<script\b/.test(l))
+  const searchLines = scriptIdx >= 0
+    ? allLines.slice(scriptIdx, scriptIdx + 20)
+    : allLines.slice(0, 60)
+  const content = searchLines.join('\n')
 
   // 查找第一个 JSDoc 块
   const jsdocRegex = /\/\*\*\s*([\s\S]*?)\s*\*\//

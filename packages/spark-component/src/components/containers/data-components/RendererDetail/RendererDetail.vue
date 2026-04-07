@@ -45,6 +45,9 @@
 
 <script setup lang="ts">
 /**
+ * @skill-description 数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。
+ */
+/**
  * RendererDetail - 详情展示容器组件
  */
 import { SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'

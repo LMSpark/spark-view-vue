@@ -18,6 +18,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。
+ */
 import { computed } from 'vue'
 import { useSparkPageComponent, useSparkConsume, DATA_SOURCE, type SparkNode } from '../../internal'
 

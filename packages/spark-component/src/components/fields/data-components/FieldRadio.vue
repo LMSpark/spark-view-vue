@@ -17,6 +17,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。
+ */
 import type { SparkNode } from '../../internal'
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'

@@ -26,6 +26,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。
+ */
 import type { SparkNode } from '../../internal'
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'

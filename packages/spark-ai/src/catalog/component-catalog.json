@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-07T05:35:23.250Z",
-  "componentCount": 136,
+  "buildTime": "2026-04-07T14:35:23.046Z",
+  "componentCount": 122,
   "registry": {
     "containers": [
       "r-block",
@@ -18,25 +18,17 @@
       "r-tree"
     ],
     "fields": [
-      "r-affix",
       "r-anchor",
       "r-anchor-link",
-      "r-aside",
       "r-autocomplete",
-      "r-backtop",
       "r-button",
-      "r-button-group",
       "r-card",
-      "r-carousel",
-      "r-carousel-item",
       "r-cascader",
       "r-check-tag",
       "r-checkbox",
       "r-checkbox-group",
-      "r-col",
       "r-collapse-item",
       "r-color",
-      "r-container",
       "r-context-renderer",
       "r-date",
       "r-dept-picker",
@@ -48,10 +40,7 @@
       "r-html-editor",
       "r-icon",
       "r-image",
-      "r-layout-footer",
-      "r-layout-header",
       "r-link",
-      "r-main",
       "r-mention",
       "r-multi-select",
       "r-number",
@@ -61,8 +50,6 @@
       "r-product-picker",
       "r-radio",
       "r-rate",
-      "r-row",
-      "r-scrollbar",
       "r-segmented",
       "r-select",
       "r-slider",
@@ -80,8 +67,7 @@
       "r-transfer",
       "r-tree-select",
       "r-upload",
-      "r-user-picker",
-      "r-watermark"
+      "r-user-picker"
     ],
     "groups": [
       "r-column-group"
@@ -298,7 +284,7 @@
     "r-table": {
       "type": "r-table",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-table\" 组织子组件。",
+      "description": "数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。",
       "props": [
         {
           "name": "dataKey",
@@ -340,14 +326,14 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点列表（列节点 + dock 节点）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点列表（列节点 + dock 节点）"
         },
         {
           "name": "id",
@@ -963,7 +949,7 @@
     "r-form": {
       "type": "r-form",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-form\" 组织子组件。",
+      "description": "数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。",
       "props": [
         {
           "name": "dataKey",
@@ -1088,14 +1074,14 @@
           }
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点列表"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点列表"
         },
         {
           "name": "id",
@@ -1340,7 +1326,7 @@
     "r-detail": {
       "type": "r-detail",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-detail\" 组织子组件。",
+      "description": "数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。",
       "props": [
         {
           "name": "dataKey",
@@ -1507,14 +1493,14 @@
           }
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点列表"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点列表"
         },
         {
           "name": "id",
@@ -1734,7 +1720,7 @@
     "r-tree": {
       "type": "r-tree",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tree\" 组织子组件。",
+      "description": "树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。",
       "props": [
         {
           "name": "dataKey",
@@ -1852,14 +1838,14 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点（树节点内容配置）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（树节点内容配置）"
         },
         {
           "name": "id",
@@ -2251,7 +2237,7 @@
     "r-list": {
       "type": "r-list",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-list\" 组织子组件。",
+      "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。",
       "props": [
         {
           "name": "dataKey",
@@ -2339,16 +2325,16 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式",
           "schema": {
             "kind": "enum",
-            "type": "\"always\" | \"hover\" | \"never\"",
+            "type": "\"hover\" | \"always\" | \"never\"",
             "variants": [
-              "\"always\"",
               "\"hover\"",
+              "\"always\"",
               "\"never\""
             ]
           }
@@ -2418,6 +2404,11 @@
       "emits": [],
       "exposed": [
         {
+          "name": "type",
+          "type": "string",
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        {
           "name": "gap",
           "type": "string | number | undefined",
           "description": "列表项间距",
@@ -2430,11 +2421,6 @@
               "number"
             ]
           }
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
           "name": "gridColumns",
@@ -2492,15 +2478,15 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\" | undefined",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "description": "卡片阴影模式",
           "schema": {
             "kind": "enum",
-            "type": "\"always\" | \"hover\" | \"never\" | undefined",
+            "type": "\"hover\" | \"always\" | \"never\" | undefined",
             "variants": [
               "undefined",
-              "\"always\"",
               "\"hover\"",
+              "\"always\"",
               "\"never\""
             ]
           }
@@ -2589,14 +2575,14 @@
           }
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点（列表项内容配置）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（列表项内容配置）"
         },
         {
           "name": "id",
@@ -3161,7 +3147,7 @@
     "r-tabs": {
       "type": "r-tabs",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tabs\" 组织子组件。",
+      "description": "标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。",
       "props": [
         {
           "name": "modelValue",
@@ -3220,14 +3206,14 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点（标签面板配置）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（标签面板配置）"
         },
         {
           "name": "id",
@@ -3340,7 +3326,7 @@
     "r-collapse": {
       "type": "r-collapse",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse\" 组织子组件。",
+      "description": "折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。",
       "props": [
         {
           "name": "modelValue",
@@ -3401,14 +3387,14 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点（折叠项配置）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（折叠项配置）"
         },
         {
           "name": "id",
@@ -3521,7 +3507,7 @@
     "r-steps": {
       "type": "r-steps",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-steps\" 组织子组件。",
+      "description": "步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。",
       "props": [
         {
           "name": "modelValue",
@@ -3580,14 +3566,14 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点（步骤配置）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点（步骤配置）"
         },
         {
           "name": "id",
@@ -3710,7 +3696,7 @@
     "r-dialog": {
       "type": "r-dialog",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dialog\" 组织子组件。",
+      "description": "对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。",
       "props": [
         {
           "name": "header",
@@ -3905,14 +3891,14 @@
           }
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点"
         },
         {
           "name": "id",
@@ -4128,7 +4114,7 @@
     "r-drawer": {
       "type": "r-drawer",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-drawer\" 组织子组件。",
+      "description": "抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。",
       "props": [
         {
           "name": "header",
@@ -4323,14 +4309,14 @@
           }
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点"
         },
         {
           "name": "id",
@@ -4526,7 +4512,7 @@
     "r-section": {
       "type": "r-section",
       "category": "container",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-section\" 组织子组件。",
+      "description": "分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。",
       "props": [
         {
           "name": "header",
@@ -4610,16 +4596,16 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式",
           "schema": {
             "kind": "enum",
-            "type": "\"always\" | \"hover\" | \"never\"",
+            "type": "\"hover\" | \"always\" | \"never\"",
             "variants": [
-              "\"always\"",
               "\"hover\"",
+              "\"always\"",
               "\"never\""
             ]
           }
@@ -4867,15 +4853,15 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\" | undefined",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "description": "卡片阴影模式",
           "schema": {
             "kind": "enum",
-            "type": "\"always\" | \"hover\" | \"never\" | undefined",
+            "type": "\"hover\" | \"always\" | \"never\" | undefined",
             "variants": [
               "undefined",
-              "\"always\"",
               "\"hover\"",
+              "\"always\"",
               "\"never\""
             ]
           }
@@ -4947,14 +4933,14 @@
           }
         },
         {
-          "name": "children",
-          "type": "SparkNode[]",
-          "description": "子节点"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "description": "子节点"
         },
         {
           "name": "id",
@@ -5152,13 +5138,8 @@
     "r-user-picker": {
       "type": "r-user-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。",
+      "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
       "props": [
-        {
-          "name": "width",
-          "type": "number",
-          "required": false
-        },
         {
           "name": "name",
           "type": "string",
@@ -5167,6 +5148,11 @@
         {
           "name": "label",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -5324,13 +5310,8 @@
     "r-dept-picker": {
       "type": "r-dept-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。",
+      "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
       "props": [
-        {
-          "name": "width",
-          "type": "number",
-          "required": false
-        },
         {
           "name": "name",
           "type": "string",
@@ -5339,6 +5320,11 @@
         {
           "name": "label",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -5496,13 +5482,8 @@
     "r-product-picker": {
       "type": "r-product-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。",
+      "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
       "props": [
-        {
-          "name": "width",
-          "type": "number",
-          "required": false
-        },
         {
           "name": "name",
           "type": "string",
@@ -5511,6 +5492,11 @@
         {
           "name": "label",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -5665,124 +5651,10 @@
         "hasOptions": true
       }
     },
-    "r-watermark": {
-      "type": "r-watermark",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-watermark\" 组织子组件。",
-      "props": [
-        {
-          "name": "content",
-          "type": "string | string[]",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "string | string[]",
-            "variants": [
-              "string",
-              "string[]"
-            ]
-          }
-        },
-        {
-          "name": "font",
-          "type": "WatermarkFont",
-          "required": false,
-          "schema": {
-            "kind": "object",
-            "type": "WatermarkFont",
-            "properties": {
-              "color": {
-                "name": "color",
-                "type": "string",
-                "required": false
-              },
-              "fontSize": {
-                "name": "fontSize",
-                "type": "number",
-                "required": false
-              },
-              "fontWeight": {
-                "name": "fontWeight",
-                "type": "string",
-                "required": false
-              },
-              "fontFamily": {
-                "name": "fontFamily",
-                "type": "string",
-                "required": false
-              },
-              "fontStyle": {
-                "name": "fontStyle",
-                "type": "string",
-                "required": false
-              },
-              "textAlign": {
-                "name": "textAlign",
-                "type": "string",
-                "required": false
-              }
-            }
-          }
-        },
-        {
-          "name": "gap",
-          "type": "[number, number]",
-          "required": false
-        },
-        {
-          "name": "offset",
-          "type": "[number, number]",
-          "required": false
-        },
-        {
-          "name": "rotate",
-          "type": "number",
-          "required": false,
-          "default": "-22"
-        },
-        {
-          "name": "zIndex",
-          "type": "number",
-          "required": false,
-          "default": "9"
-        },
-        {
-          "name": "width",
-          "type": "number",
-          "required": false
-        },
-        {
-          "name": "height",
-          "type": "number",
-          "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-watermark\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-tour": {
       "type": "r-tour",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tour\" 组织子组件。",
+      "description": "引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。",
       "props": [
         {
           "name": "steps",
@@ -6005,7 +5877,7 @@
     "r-tooltip": {
       "type": "r-tooltip",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tooltip\" 组织子组件。",
+      "description": "文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。",
       "props": [
         {
           "name": "content",
@@ -6120,7 +5992,7 @@
     "r-toolbar": {
       "type": "r-toolbar",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-toolbar\" 组织子组件。",
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。",
       "props": [
         {
           "name": "tail",
@@ -6214,7 +6086,7 @@
     "r-tab-pane": {
       "type": "r-tab-pane",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-tab-pane\" 组织子组件。",
+      "description": "标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。",
       "props": [
         {
           "name": "type",
@@ -6361,7 +6233,7 @@
     "r-step-item": {
       "type": "r-step-item",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-step-item\" 组织子组件。",
+      "description": "步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。",
       "props": [
         {
           "name": "type",
@@ -6485,7 +6357,7 @@
     "r-space": {
       "type": "r-space",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-space\" 组织子组件。",
+      "description": "间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。",
       "props": [
         {
           "name": "direction",
@@ -6583,221 +6455,10 @@
       "emits": [],
       "source": "vcm"
     },
-    "r-scrollbar": {
-      "type": "r-scrollbar",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-scrollbar\" 组织子组件。",
-      "props": [
-        {
-          "name": "height",
-          "type": "string | number",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "maxHeight",
-          "type": "string | number",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "native",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "wrapStyle",
-          "type": "string | Record<string, string>",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "string | Record<string, string>",
-            "variants": [
-              "string",
-              "Record<string, string>"
-            ]
-          }
-        },
-        {
-          "name": "wrapClass",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "viewStyle",
-          "type": "string | Record<string, string>",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "string | Record<string, string>",
-            "variants": [
-              "string",
-              "Record<string, string>"
-            ]
-          }
-        },
-        {
-          "name": "viewClass",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "noresize",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "always",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "minSize",
-          "type": "number",
-          "required": false,
-          "default": "20"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-scrollbar\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "r-row": {
-      "type": "r-row",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row\" 组织子组件。",
-      "props": [
-        {
-          "name": "gutter",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "justify",
-          "type": "\"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\"",
-          "required": false,
-          "default": "\"start\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"start\" | \"center\" | \"end\" | \"space-between\" | \"space-around\" | \"space-evenly\"",
-            "variants": [
-              "\"start\"",
-              "\"center\"",
-              "\"end\"",
-              "\"space-between\"",
-              "\"space-around\"",
-              "\"space-evenly\""
-            ]
-          }
-        },
-        {
-          "name": "align",
-          "type": "\"bottom\" | \"top\" | \"middle\"",
-          "required": false,
-          "default": "\"top\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"bottom\" | \"top\" | \"middle\"",
-            "variants": [
-              "\"bottom\"",
-              "\"top\"",
-              "\"middle\""
-            ]
-          }
-        },
-        {
-          "name": "tag",
-          "type": "string",
-          "required": false,
-          "default": "\"div\""
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-row\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-popover": {
       "type": "r-popover",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popover\" 组织子组件。",
+      "description": "弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。",
       "props": [
         {
           "name": "title",
@@ -6919,7 +6580,7 @@
     "r-popconfirm": {
       "type": "r-popconfirm",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-popconfirm\" 组织子组件。",
+      "description": "确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。",
       "props": [
         {
           "name": "title",
@@ -7053,7 +6714,7 @@
     "r-page-header": {
       "type": "r-page-header",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-page-header\" 组织子组件。",
+      "description": "页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。",
       "props": [
         {
           "name": "title",
@@ -7099,38 +6760,10 @@
       ],
       "source": "vcm"
     },
-    "r-main": {
-      "type": "r-main",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-main\" 组织子组件。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-main\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-link": {
       "type": "r-link",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-link\" 组织子组件。",
+      "description": "链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。",
       "props": [
         {
           "name": "label",
@@ -7214,80 +6847,10 @@
       "emits": [],
       "source": "vcm"
     },
-    "r-layout-header": {
-      "type": "r-layout-header",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-header\" 组织子组件。",
-      "props": [
-        {
-          "name": "headerHeight",
-          "type": "string",
-          "required": false,
-          "default": "\"60px\"",
-          "description": "头部高度"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-layout-header\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "r-layout-footer": {
-      "type": "r-layout-footer",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-layout-footer\" 组织子组件。",
-      "props": [
-        {
-          "name": "footerHeight",
-          "type": "string",
-          "required": false,
-          "default": "\"60px\"",
-          "description": "底部高度"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-layout-footer\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-dropdown": {
       "type": "r-dropdown",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-dropdown\" 组织子组件。",
+      "description": "下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。",
       "props": [
         {
           "name": "items",
@@ -7456,7 +7019,7 @@
     "r-divider": {
       "type": "r-divider",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-divider\" 组织子组件。",
+      "description": "分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。",
       "props": [
         {
           "name": "direction",
@@ -7532,52 +7095,10 @@
       "emits": [],
       "source": "vcm"
     },
-    "r-container": {
-      "type": "r-container",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-container\" 组织子组件。",
-      "props": [
-        {
-          "name": "direction",
-          "type": "\"horizontal\" | \"vertical\"",
-          "required": false,
-          "description": "布局方向，默认自动检测",
-          "schema": {
-            "kind": "enum",
-            "type": "\"horizontal\" | \"vertical\"",
-            "variants": [
-              "\"horizontal\"",
-              "\"vertical\""
-            ]
-          }
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-container\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-collapse-item": {
       "type": "r-collapse-item",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-collapse-item\" 组织子组件。",
+      "description": "折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。",
       "props": [
         {
           "name": "type",
@@ -7682,331 +7203,10 @@
       ],
       "source": "vcm"
     },
-    "r-col": {
-      "type": "r-col",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-col\" 组织子组件。",
-      "props": [
-        {
-          "name": "span",
-          "type": "number",
-          "required": false,
-          "default": "24"
-        },
-        {
-          "name": "offset",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "push",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "pull",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "xs",
-          "type": "ResponsiveValue",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "ResponsiveValue",
-            "variants": [
-              "number",
-              "{ span?: number; offset?: number; push?: number; pull?: number; }"
-            ]
-          }
-        },
-        {
-          "name": "sm",
-          "type": "ResponsiveValue",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "ResponsiveValue",
-            "variants": [
-              "number",
-              "{ span?: number; offset?: number; push?: number; pull?: number; }"
-            ]
-          }
-        },
-        {
-          "name": "md",
-          "type": "ResponsiveValue",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "ResponsiveValue",
-            "variants": [
-              "number",
-              "{ span?: number; offset?: number; push?: number; pull?: number; }"
-            ]
-          }
-        },
-        {
-          "name": "lg",
-          "type": "ResponsiveValue",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "ResponsiveValue",
-            "variants": [
-              "number",
-              "{ span?: number; offset?: number; push?: number; pull?: number; }"
-            ]
-          }
-        },
-        {
-          "name": "xl",
-          "type": "ResponsiveValue",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "ResponsiveValue",
-            "variants": [
-              "number",
-              "{ span?: number; offset?: number; push?: number; pull?: number; }"
-            ]
-          }
-        },
-        {
-          "name": "tag",
-          "type": "string",
-          "required": false,
-          "default": "\"div\""
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-col\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "r-carousel-item": {
-      "type": "r-carousel-item",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel-item\" 组织子组件。",
-      "props": [
-        {
-          "name": "itemName",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-carousel-item\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "r-carousel": {
-      "type": "r-carousel",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-carousel\" 组织子组件。",
-      "props": [
-        {
-          "name": "height",
-          "type": "string",
-          "required": false,
-          "default": "\"200px\""
-        },
-        {
-          "name": "initialIndex",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "trigger",
-          "type": "\"click\" | \"hover\"",
-          "required": false,
-          "default": "\"hover\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"click\" | \"hover\"",
-            "variants": [
-              "\"click\"",
-              "\"hover\""
-            ]
-          }
-        },
-        {
-          "name": "autoplay",
-          "type": "boolean",
-          "required": false,
-          "default": "true",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "interval",
-          "type": "number",
-          "required": false,
-          "default": "3000"
-        },
-        {
-          "name": "indicatorPosition",
-          "type": "\"\" | \"none\" | \"outside\"",
-          "required": false,
-          "default": "\"\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"\" | \"none\" | \"outside\"",
-            "variants": [
-              "\"\"",
-              "\"none\"",
-              "\"outside\""
-            ]
-          }
-        },
-        {
-          "name": "arrow",
-          "type": "\"always\" | \"hover\" | \"never\"",
-          "required": false,
-          "default": "\"hover\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"always\" | \"hover\" | \"never\"",
-            "variants": [
-              "\"always\"",
-              "\"hover\"",
-              "\"never\""
-            ]
-          }
-        },
-        {
-          "name": "loop",
-          "type": "boolean",
-          "required": false,
-          "default": "true",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "direction",
-          "type": "\"horizontal\" | \"vertical\"",
-          "required": false,
-          "default": "\"horizontal\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"horizontal\" | \"vertical\"",
-            "variants": [
-              "\"horizontal\"",
-              "\"vertical\""
-            ]
-          }
-        },
-        {
-          "name": "pauseOnHover",
-          "type": "boolean",
-          "required": false,
-          "default": "true",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "motionBlur",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-carousel\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-card": {
       "type": "r-card",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-card\" 组织子组件。",
+      "description": "卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。",
       "props": [
         {
           "name": "header",
@@ -8015,15 +7215,15 @@
         },
         {
           "name": "shadow",
-          "type": "\"always\" | \"hover\" | \"never\"",
+          "type": "\"hover\" | \"always\" | \"never\"",
           "required": false,
           "default": "\"always\"",
           "schema": {
             "kind": "enum",
-            "type": "\"always\" | \"hover\" | \"never\"",
+            "type": "\"hover\" | \"always\" | \"never\"",
             "variants": [
-              "\"always\"",
               "\"hover\"",
+              "\"always\"",
               "\"never\""
             ]
           }
@@ -8075,38 +7275,10 @@
       ],
       "source": "vcm"
     },
-    "r-button-group": {
-      "type": "r-button-group",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button-group\" 组织子组件。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-button-group\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-button": {
       "type": "r-button",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-button\" 组织子组件。",
+      "description": "按钮组件，基于 el-button 可渲染子内容，支持 type/size/icon 等样式属性和点击事件。",
       "props": [
         {
           "name": "label",
@@ -8302,96 +7474,10 @@
       "emits": [],
       "source": "vcm"
     },
-    "r-backtop": {
-      "type": "r-backtop",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-backtop\" 组织子组件。",
-      "props": [
-        {
-          "name": "target",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "visibilityHeight",
-          "type": "number",
-          "required": false,
-          "default": "200"
-        },
-        {
-          "name": "right",
-          "type": "number",
-          "required": false,
-          "default": "40"
-        },
-        {
-          "name": "bottom",
-          "type": "number",
-          "required": false,
-          "default": "40"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-backtop\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "r-aside": {
-      "type": "r-aside",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-aside\" 组织子组件。",
-      "props": [
-        {
-          "name": "asideWidth",
-          "type": "string",
-          "required": false,
-          "default": "\"300px\"",
-          "description": "侧边栏宽度"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-aside\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-anchor-link": {
       "type": "r-anchor-link",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor-link\" 组织子组件。",
+      "description": "锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。",
       "props": [
         {
           "name": "href",
@@ -8441,7 +7527,7 @@
     "r-anchor": {
       "type": "r-anchor",
       "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-anchor\" 组织子组件。",
+      "description": "锚点导航容器，基于 el-anchor 提供页面内锚点定位和跟随滚动高亮。",
       "props": [
         {
           "name": "container",
@@ -8878,69 +7964,10 @@
       ],
       "source": "vcm"
     },
-    "r-affix": {
-      "type": "r-affix",
-      "category": "field",
-      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-affix\" 组织子组件。",
-      "props": [
-        {
-          "name": "offset",
-          "type": "number",
-          "required": false,
-          "default": "0"
-        },
-        {
-          "name": "position",
-          "type": "\"bottom\" | \"top\"",
-          "required": false,
-          "default": "\"top\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"bottom\" | \"top\"",
-            "variants": [
-              "\"bottom\"",
-              "\"top\""
-            ]
-          }
-        },
-        {
-          "name": "target",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "zIndex",
-          "type": "number",
-          "required": false,
-          "default": "100"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-affix\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "r-upload": {
       "type": "r-upload",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。",
+      "description": "文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。",
       "props": [
         {
           "name": "field",
@@ -9098,7 +8125,7 @@
     "r-tree-select": {
       "type": "r-tree-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。",
+      "description": "树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。",
       "props": [
         {
           "name": "field",
@@ -9311,7 +8338,7 @@
     "r-transfer": {
       "type": "r-transfer",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。",
+      "description": "穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。",
       "props": [
         {
           "name": "field",
@@ -9472,7 +8499,7 @@
     "r-time-select": {
       "type": "r-time-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-select\" 使用。",
+      "description": "时间间隔选择字段，绑定时间字符串值，基于 el-time-select 提供固定间隔的时间列表选择。",
       "props": [
         {
           "name": "field",
@@ -9589,7 +8616,7 @@
     "r-time-picker": {
       "type": "r-time-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-time-picker\" 使用。",
+      "description": "时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。",
       "props": [
         {
           "name": "field",
@@ -9748,7 +8775,7 @@
     "r-textarea": {
       "type": "r-textarea",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。",
+      "description": "多行文本字段，绑定 string 值，基于 el-input textarea 模式，支持自动高度和字数限制。",
       "props": [
         {
           "name": "field",
@@ -9861,7 +8888,7 @@
     "r-text": {
       "type": "r-text",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。",
+      "description": "文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。",
       "props": [
         {
           "name": "field",
@@ -9923,7 +8950,7 @@
     "r-switch": {
       "type": "r-switch",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。",
+      "description": "开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。",
       "props": [
         {
           "name": "field",
@@ -10018,7 +9045,7 @@
     "r-slider": {
       "type": "r-slider",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。",
+      "description": "滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。",
       "props": [
         {
           "name": "field",
@@ -10116,7 +9143,7 @@
     "r-select": {
       "type": "r-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。",
+      "description": "单选下拉字段，绑定 string/number 值，基于 el-select，支持静态选项列表或 optionKey 动态数据源绑定。",
       "props": [
         {
           "name": "field",
@@ -10257,7 +9284,7 @@
     "r-segmented": {
       "type": "r-segmented",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-segmented\" 使用。",
+      "description": "分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。",
       "props": [
         {
           "name": "modelValue",
@@ -10385,7 +9412,7 @@
     "r-rate": {
       "type": "r-rate",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。",
+      "description": "评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。",
       "props": [
         {
           "name": "field",
@@ -10469,7 +9496,7 @@
     "r-radio": {
       "type": "r-radio",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。",
+      "description": "单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。",
       "props": [
         {
           "name": "field",
@@ -10588,7 +9615,7 @@
     "r-number": {
       "type": "r-number",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。",
+      "description": "数字输入字段，绑定 number 值，基于 el-input-number，筛选模式下支持范围（最小-最大）双输入。",
       "props": [
         {
           "name": "field",
@@ -10712,7 +9739,7 @@
     "r-multi-select": {
       "type": "r-multi-select",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。",
+      "description": "多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。",
       "props": [
         {
           "name": "field",
@@ -10906,7 +9933,7 @@
     "r-mention": {
       "type": "r-mention",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-mention\" 使用。",
+      "description": "提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。",
       "props": [
         {
           "name": "modelValue",
@@ -11167,7 +10194,7 @@
     "r-image": {
       "type": "r-image",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。",
+      "description": "图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。",
       "props": [
         {
           "name": "field",
@@ -11301,7 +10328,7 @@
     "r-icon": {
       "type": "r-icon",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。",
+      "description": "图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。",
       "props": [
         {
           "name": "field",
@@ -11432,7 +10459,7 @@
     "r-html-editor": {
       "type": "r-html-editor",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。",
+      "description": "富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。",
       "props": [
         {
           "name": "field",
@@ -11501,7 +10528,7 @@
     "r-file-path": {
       "type": "r-file-path",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。",
+      "description": "文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。",
       "props": [
         {
           "name": "field",
@@ -11635,7 +10662,7 @@
     "r-file-browser": {
       "type": "r-file-browser",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。",
+      "description": "文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。",
       "props": [
         {
           "name": "field",
@@ -11756,7 +10783,7 @@
     "r-entity-picker": {
       "type": "r-entity-picker",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。",
+      "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。",
       "props": [
         {
           "name": "field",
@@ -11962,7 +10989,7 @@
     "r-date": {
       "type": "r-date",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。",
+      "description": "日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。",
       "props": [
         {
           "name": "field",
@@ -12147,7 +11174,7 @@
     "r-color": {
       "type": "r-color",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。",
+      "description": "颜色选择字段，绑定十六进制颜色字符串，基于 el-color-picker，表格/详情模式显示色块预览。",
       "props": [
         {
           "name": "field",
@@ -12210,7 +11237,7 @@
     "r-check-tag": {
       "type": "r-check-tag",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-check-tag\" 使用。",
+      "description": "标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。",
       "props": [
         {
           "name": "checked",
@@ -12294,7 +11321,7 @@
     "r-checkbox-group": {
       "type": "r-checkbox-group",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。",
+      "description": "复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。",
       "props": [
         {
           "name": "field",
@@ -12429,7 +11456,7 @@
     "r-checkbox": {
       "type": "r-checkbox",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。",
+      "description": "单个复选框字段，绑定 boolean 值，基于 el-checkbox，支持自定义选中/未选中显示文本。",
       "props": [
         {
           "name": "field",
@@ -12530,7 +11557,7 @@
     "r-cascader": {
       "type": "r-cascader",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。",
+      "description": "级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。",
       "props": [
         {
           "name": "field",
@@ -12722,7 +11749,7 @@
     "r-autocomplete": {
       "type": "r-autocomplete",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-autocomplete\" 使用。",
+      "description": "自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。",
       "props": [
         {
           "name": "field",
@@ -13142,7 +12169,7 @@
     "tenant-config": {
       "type": "tenant-config",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。",
+      "description": "多租户配置管理页面，展示和编辑租户级别的系统配置项。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13150,7 +12177,7 @@
     "settings": {
       "type": "settings",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。",
+      "description": "系统设置面板，提供全局参数配置和偏好设置管理界面。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13158,7 +12185,7 @@
     "cache-manager": {
       "type": "cache-manager",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。",
+      "description": "缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13166,7 +12193,7 @@
     "app-list": {
       "type": "app-list",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。",
+      "description": "应用列表页面，以卡片网格展示已创建的项目/应用及入口。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13174,7 +12201,7 @@
     "login-view": {
       "type": "login-view",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。",
+      "description": "多租户登录页面，提供用户名/密码认证和租户选择入口。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13182,7 +12209,7 @@
     "home-page": {
       "type": "home-page",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。",
+      "description": "平台首页，展示系统介绍、功能亮点和快速开始入口。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13190,7 +12217,7 @@
     "about": {
       "type": "about",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。",
+      "description": "关于页面，展示系统版本、技术栈和项目信息。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13198,7 +12225,7 @@
     "template-dsl-demo": {
       "type": "template-dsl-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"template-dsl-demo\" 引用。",
+      "description": "Vue 模板 DSL 演示页，展示通过 Vue SFC 模板直接使用 SPARK 组件的用法。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13206,7 +12233,7 @@
     "rform-compare-demo": {
       "type": "rform-compare-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"rform-compare-demo\" 引用。",
+      "description": "表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13214,7 +12241,7 @@
     "dashboard": {
       "type": "dashboard",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。",
+      "description": "管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13222,7 +12249,7 @@
     "custom-rtable-demo": {
       "type": "custom-rtable-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"custom-rtable-demo\" 引用。",
+      "description": "自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13230,7 +12257,7 @@
     "capability-demo": {
       "type": "capability-demo",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。",
+      "description": "能力系统演示页，展示 sparkProvide/sparkConsume 能力链的运行时行为。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13238,7 +12265,7 @@
     "dev-system": {
       "type": "dev-system",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。",
+      "description": "集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13246,7 +12273,7 @@
     "ai-studio-panel": {
       "type": "ai-studio-panel",
       "category": "feature",
-      "description": "SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。",
+      "description": "AI 工作室面板，提供 AI 对话驱动的页面生成、迭代和预览功能。",
       "props": [],
       "emits": [],
       "source": "vcm"
@@ -13254,7 +12281,7 @@
     "spark-component-renderer": {
       "type": "spark-component-renderer",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-component-renderer\" 使用。",
+      "description": "通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。",
       "props": [
         {
           "name": "parentContext",
@@ -13296,7 +12323,7 @@
     "unregistered-node-fallback": {
       "type": "unregistered-node-fallback",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"unregistered-node-fallback\" 使用。",
+      "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。",
       "props": [
         {
           "name": "title",
@@ -13323,7 +12350,7 @@
     "spark-json-editor": {
       "type": "spark-json-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-json-editor\" 使用。",
+      "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。",
       "props": [
         {
           "name": "modelValue",
@@ -13523,7 +12550,7 @@
     "spark-code-editor": {
       "type": "spark-code-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-code-editor\" 使用。",
+      "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。",
       "props": [
         {
           "name": "modelValue",
@@ -13610,7 +12637,7 @@
     "spark-child": {
       "type": "spark-child",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"spark-child\" 使用。",
+      "description": "子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。",
       "props": [
         {
           "name": "type",
@@ -13660,7 +12687,7 @@
     "json-tree-editor": {
       "type": "json-tree-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"json-tree-editor\" 使用。",
+      "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。",
       "props": [
         {
           "name": "field",
@@ -13909,7 +12936,7 @@
     "tree-node-summary": {
       "type": "tree-node-summary",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"tree-node-summary\" 使用。",
+      "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。",
       "props": [
         {
           "name": "nameField",
@@ -14043,7 +13070,7 @@
     "r-context-renderer": {
       "type": "r-context-renderer",
       "category": "field",
-      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-context-renderer\" 使用。",
+      "description": "语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。",
       "props": [
         {
           "name": "displayLabel",
@@ -14519,7 +13546,7 @@
     "display-timeline-item": {
       "type": "display-timeline-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline-item\" 使用。",
+      "description": "时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。",
       "props": [
         {
           "name": "timestamp",
@@ -14649,7 +13676,7 @@
     "display-timeline": {
       "type": "display-timeline",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-timeline\" 使用。",
+      "description": "时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。",
       "props": [
         {
           "name": "type",
@@ -14677,7 +13704,7 @@
     "display-skeleton": {
       "type": "display-skeleton",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-skeleton\" 使用。",
+      "description": "骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。",
       "props": [
         {
           "name": "rows",
@@ -14751,7 +13778,7 @@
     "display-result": {
       "type": "display-result",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-result\" 使用。",
+      "description": "结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。",
       "props": [
         {
           "name": "icon",
@@ -14805,7 +13832,7 @@
     "display-icon": {
       "type": "display-icon",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-icon\" 使用。",
+      "description": "图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。",
       "props": [
         {
           "name": "icon",
@@ -14859,7 +13886,7 @@
     "display-empty": {
       "type": "display-empty",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-empty\" 使用。",
+      "description": "空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。",
       "props": [
         {
           "name": "image",
@@ -14902,7 +13929,7 @@
     "display-descriptions-item": {
       "type": "display-descriptions-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions-item\" 使用。",
+      "description": "描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。",
       "props": [
         {
           "name": "label",
@@ -14994,7 +14021,7 @@
     "display-descriptions": {
       "type": "display-descriptions",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-descriptions\" 使用。",
+      "description": "描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。",
       "props": [
         {
           "name": "title",
@@ -15081,7 +14108,7 @@
     "display-countdown": {
       "type": "display-countdown",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-countdown\" 使用。",
+      "description": "倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。",
       "props": [
         {
           "name": "value",
@@ -15164,7 +14191,7 @@
     "display-calendar": {
       "type": "display-calendar",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-calendar\" 使用。",
+      "description": "日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。",
       "props": [
         {
           "name": "modelValue",
@@ -15433,8 +14460,8 @@
                 "required": true,
                 "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
               },
-              "__@toPrimitive@937": {
-                "name": "__@toPrimitive@937",
+              "__@toPrimitive@956": {
+                "name": "__@toPrimitive@956",
                 "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                 "required": true,
                 "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -15713,8 +14740,8 @@
                     "required": true,
                     "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                   },
-                  "__@toPrimitive@937": {
-                    "name": "__@toPrimitive@937",
+                  "__@toPrimitive@956": {
+                    "name": "__@toPrimitive@956",
                     "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                     "required": true,
                     "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -15764,7 +14791,7 @@
     "display-breadcrumb-item": {
       "type": "display-breadcrumb-item",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb-item\" 使用。",
+      "description": "面包屑导航项，基于 el-breadcrumb-item 定义单个导航节点，支持链接跳转。",
       "props": [
         {
           "name": "label",
@@ -15824,7 +14851,7 @@
     "display-breadcrumb": {
       "type": "display-breadcrumb",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-breadcrumb\" 使用。",
+      "description": "面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。",
       "props": [
         {
           "name": "separator",
@@ -15863,7 +14890,7 @@
     "display-alert": {
       "type": "display-alert",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-alert\" 使用。",
+      "description": "警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。",
       "props": [
         {
           "name": "title",
@@ -15983,7 +15010,7 @@
     "display-text": {
       "type": "display-text",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-text\" 使用。",
+      "description": "文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。",
       "props": [
         {
           "name": "value",
@@ -16082,7 +15109,7 @@
     "display-tag": {
       "type": "display-tag",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-tag\" 使用。",
+      "description": "标签展示组件，基于 el-tag 以彩色标签显示字段值，支持类型/尺寸/主题样式和可关闭功能。",
       "props": [
         {
           "name": "content",
@@ -16238,7 +15265,7 @@
     "display-statistic": {
       "type": "display-statistic",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-statistic\" 使用。",
+      "description": "统计数值展示组件，基于 el-statistic 格式化显示数字/字符串值，支持精度、前后缀和千分位分隔。",
       "props": [
         {
           "name": "title",
@@ -16338,7 +15365,7 @@
     "display-progress": {
       "type": "display-progress",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-progress\" 使用。",
+      "description": "进度条展示组件，基于 el-progress 以条形或圆形显示百分比进度值，支持动态颜色。",
       "props": [
         {
           "name": "percentage",
@@ -16502,7 +15529,7 @@
     "display-pagination": {
       "type": "display-pagination",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-pagination\" 使用。",
+      "description": "分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。",
       "props": [
         {
           "name": "total",
@@ -16618,7 +15645,7 @@
     "display-image": {
       "type": "display-image",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-image\" 使用。",
+      "description": "图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。",
       "props": [
         {
           "name": "src",
@@ -16811,7 +15838,7 @@
     "display-badge": {
       "type": "display-badge",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-badge\" 使用。",
+      "description": "徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。",
       "props": [
         {
           "name": "badgeValue",
@@ -16956,7 +15983,7 @@
     "display-avatar": {
       "type": "display-avatar",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"display-avatar\" 使用。",
+      "description": "头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。",
       "props": [
         {
           "name": "avatarSize",
@@ -17066,7 +16093,7 @@
     "builtin-action-button": {
       "type": "builtin-action-button",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"builtin-action-button\" 使用。",
+      "description": "内置操作按钮，基于 el-button 根据 action 类型（create/edit/delete/refresh 等）自动映射标签、图标和样式。",
       "props": [
         {
           "name": "builtinAction",
@@ -17591,7 +16618,7 @@
     "dock-tail": {
       "type": "dock-tail",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-tail\" 使用。",
+      "description": "尾部 dock，在 r-toolbar 中作为工具栏末尾区域提取渲染。",
       "props": [
         {
           "name": "type",
@@ -17625,7 +16652,7 @@
     "dock-header": {
       "type": "dock-header",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-header\" 使用。",
+      "description": "头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。",
       "props": [
         {
           "name": "type",
@@ -17659,7 +16686,7 @@
     "dock-footer": {
       "type": "dock-footer",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-footer\" 使用。",
+      "description": "底部 dock，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。",
       "props": [
         {
           "name": "type",
@@ -17693,7 +16720,7 @@
     "dock-filter": {
       "type": "dock-filter",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-filter\" 使用。",
+      "description": "筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。",
       "props": [
         {
           "name": "type",
@@ -17799,7 +16826,7 @@
     "dock-editor": {
       "type": "dock-editor",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-editor\" 使用。",
+      "description": "编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。",
       "props": [
         {
           "name": "type",
@@ -17814,17 +16841,17 @@
         },
         {
           "name": "position",
-          "type": "\"bottom\" | \"top\" | \"left\" | \"right\"",
+          "type": "\"bottom\" | \"left\" | \"right\" | \"top\"",
           "required": false,
           "description": "编辑区位置",
           "schema": {
             "kind": "enum",
-            "type": "\"bottom\" | \"top\" | \"left\" | \"right\"",
+            "type": "\"bottom\" | \"left\" | \"right\" | \"top\"",
             "variants": [
               "\"bottom\"",
-              "\"top\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"top\""
             ]
           }
         },
@@ -17849,7 +16876,7 @@
     "dock-actions": {
       "type": "dock-actions",
       "category": "feature",
-      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"dock-actions\" 使用。",
+      "description": "操作列/区域 dock，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。",
       "props": [
         {
           "name": "type",

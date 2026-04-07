@@ -27,6 +27,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。
+ */
 import { computed } from 'vue'
 import type { SparkNode } from '../../internal'
 import { useFileFieldActions } from '../actions/useFileFieldActions'

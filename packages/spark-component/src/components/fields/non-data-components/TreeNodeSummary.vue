@@ -11,6 +11,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @skill-description 树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。
+ */
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import { DATA_ROW, useSparkComponent } from '../../internal'
