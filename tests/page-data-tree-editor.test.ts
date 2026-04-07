@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import {
   addChildNode,
-  buildJsonTreeRows,
-  filterJsonTreeRows,
+  buildTreeModel,
+  exportJsonDocument,
+  filterTreeNodes,
   resolveSchemaInfoForPath,
+  rootOf,
+  toDisplayRows,
   type JsonObject,
+  type TreeModel,
 } from '@spark-view/spark-component'
 import { PAGE_DATA_JSON_SCHEMA } from '../src/views/app/dev-system/policies/pageDataJsonSchema'
 import { pageDataPolicy } from '../src/views/app/dev-system/policies/pageDataPolicy'
@@ -31,6 +35,18 @@ function createSamplePageData(): JsonObject {
   }
 }
 
+/** 按路径段查找节点 id */
+function findId(model: TreeModel, path: Array<string | number>): string {
+  let id = rootOf(model)
+  for (const seg of path) {
+    const node = model.get(id)!
+    const child = node.childIds.find(c => model.get(c)!.segment === seg)
+    if (!child) throw new Error(`Path segment "${String(seg)}" not found`)
+    id = child
+  }
+  return id
+}
+
 describe('jsonTreeEditor (pageData policy)', () => {
   it('should resolve schema info through additionalProperties and array items', () => {
     const tablesInfo = resolveSchemaInfoForPath(PAGE_DATA_JSON_SCHEMA, ['tables'])
@@ -46,26 +62,30 @@ describe('jsonTreeEditor (pageData policy)', () => {
   })
 
   it('should keep ancestors when filtering flat tree rows', () => {
-    const rows = buildJsonTreeRows(createSamplePageData(), pageDataPolicy)
-    const filtered = filterJsonTreeRows(rows, (row) => row.displayKey === 'columns')
+    const rows = toDisplayRows(buildTreeModel(createSamplePageData(), pageDataPolicy), pageDataPolicy)
+    const filtered = filterTreeNodes(rows, (row) => row.segment === 'columns')
 
     // 平坦行模型：命中行 + 所有祖先行均被保留
-    const ids = filtered.map((r) => r.displayKey)
-    expect(ids).toContain('pagedata')
-    expect(ids).toContain('tables')
-    expect(ids).toContain('Users')
-    expect(ids).toContain('columns')
+    const segments = filtered.map((r) => r.segment)
+    expect(segments).toContain('pagedata')
+    expect(segments).toContain('tables')
+    expect(segments).toContain('Users')
+    expect(segments).toContain('columns')
 
     // columns 的 parentId 应指向 Users 行
-    const columnsRow = filtered.find((r) => r.displayKey === 'columns')
-    const usersRow = filtered.find((r) => r.displayKey === 'Users')
+    const columnsRow = filtered.find((r) => r.segment === 'columns')
+    const usersRow = filtered.find((r) => r.segment === 'Users')
     expect(columnsRow?.parentId).toBe(usersRow?.id)
   })
 
   it('should add semantic default nodes for tables and relations', () => {
     const sample = createSamplePageData()
-    const withNewTable = addChildNode(sample, ['tables'], pageDataPolicy) as JsonObject
-    const nextTables = withNewTable['tables'] as Record<string, JsonObject>
+    const model = buildTreeModel(sample, pageDataPolicy)
+
+    const tablesId = findId(model, ['tables'])
+    const result = addChildNode(model, tablesId, pageDataPolicy)
+    const doc = exportJsonDocument(result.model) as JsonObject
+    const nextTables = doc['tables'] as Record<string, JsonObject>
     const newTableEntry = Object.entries(nextTables).find(([key]) => key !== 'Users')
 
     expect(newTableEntry).toBeDefined()
@@ -74,8 +94,10 @@ describe('jsonTreeEditor (pageData policy)', () => {
       views: { default: {} },
     })
 
-    const withRelation = addChildNode(sample, ['tableRelations'], pageDataPolicy) as JsonObject
-    expect(withRelation['tableRelations']).toEqual([
+    const relId = findId(model, ['tableRelations'])
+    const relResult = addChildNode(model, relId, pageDataPolicy)
+    const relDoc = exportJsonDocument(relResult.model) as JsonObject
+    expect(relDoc['tableRelations']).toEqual([
       {
         parentTable: 'ParentTable',
         childTable: 'ChildTable',

@@ -1,449 +1,480 @@
 # spark-ai 架构全景
 
-> 更新于 2026-04-03，基于 19 个源文件的代码审计。
+> 更新于 2026-04-07，基于当前 packages/spark-ai 源码、主应用接入方式与 spark-ai-server 后端接口核对。
 
 ---
 
 ## 目录
 
-- [1. 模块依赖关系](#1-模块依赖关系)
-- [2. AIPageLoop 主循环](#2-aipageloop-主循环)
-- [3. SSE 流式处理](#3-sse-流式处理)
+- [1. 包定位](#1-包定位)
+- [2. 当前模块图](#2-当前模块图)
+- [3. 页面生成闭环](#3-页面生成闭环)
 - [4. Stills 动作引擎](#4-stills-动作引擎)
-- [5. SAP Runtime 桥接](#5-sap-runtime-桥接)
-- [6. Config Validation 校验](#6-config-validation-校验)
+- [5. 会话编排器](#5-会话编排器)
+- [6. 提示词、目录与校验](#6-提示词目录与校验)
+- [7. 与主应用和后端的边界](#7-与主应用和后端的边界)
+- [8. 当前事实基线](#8-当前事实基线)
+- [9. 当前风险](#9-当前风险)
 
 ---
 
-## 1. 模块依赖关系
+## 1. 包定位
 
-19 个源文件的 import 方向 + 外部依赖一览。
+@spark-view/spark-ai 当前不是一个“通用 AI SDK”，也不是“直接接管代码仓库的 agent 框架”。
+
+它在 SPARK 里的真实定位是一个 AI 运行时协调层，承担四类职责：
+
+1. 页面配置生成闭环。
+2. SAP / Stills 协议运行时。
+3. 提示词、组件目录、配置校验的桥接层。
+4. 页面缓存刷新、导航自动注册、日志诊断采样等运行时支撑。
+
+它依赖但不替代以下层次：
+
+- @spark-view/spark-data：真实数据模型和 DataSet 运行时。
+- @spark-view/spark-component：SparkNode、组件树、页面渲染契约。
+- @spark-view/spark-utils：HTTP、日志、SSE 事件桥、导航类型等基础设施。
+- spark-ai-server：LLM 调用、页面文件持久化、导航树存储、版本管理、SSE 广播、SAP 会话存储。
+
+---
+
+## 2. 当前模块图
 
 ```mermaid
 graph TB
-    subgraph "spark-ai 包架构"
-        IDX["index.ts<br/>统一导出入口"]
+    subgraph APP[主应用层]
+        MAIN[src/main.ts]
+        AIPANEL[AiChatPanel.vue]
+        SAPPANEL[SapChatPanel.vue]
+        AIPROTO[src/services/ai-protocol.ts]
+    end
 
-        subgraph "runtime/ — 页面循环引擎"
-            LOOP["ai-loop.ts<br/>核心引擎 ~950行"]
-            NAV["nav-register.ts<br/>导航自动注册"]
-            PC["page-cache.ts<br/>缓存管理"]
+    subgraph PKG[spark-ai 包内]
+        IDX[index.ts]
+
+        subgraph RUNTIME[runtime/]
+            LOOP[ai-loop.ts]
+            CACHE[page-cache.ts]
+            NAV[nav-register.ts]
+            ORCH[session-orchestrator.ts]
+            MON[monitors/*]
         end
 
-        subgraph "stills/ — SAP 动作引擎"
-            DISP["dispatcher.ts<br/>注册表+分发管线"]
-            DOM["domain.ts<br/>域注册+会话工厂"]
-            DS_DOM["dataset-domain.ts<br/>DataSet 域 24 stills"]
-            BP["blueprint-methods.ts<br/>蓝图编排 4 stills"]
-            META["meta-methods.ts<br/>自省层 3 stills"]
-            TYPES["types.ts<br/>类型定义"]
+        subgraph STILLS[stills/]
+            DISP[dispatcher.ts]
+            DOM[domain.ts]
+            DS[dataset-domain.ts]
+            BP[blueprint-domain.ts]
+            PCFG[pageconfig-domain.ts]
+            META[meta-methods.ts]
+            TYPES[types.ts]
         end
 
-        subgraph "protocol/ — 协议解析"
-            PROTO["protocol.ts<br/>@@ 块解析 ~270行"]
-            SAP["sap-runtime.ts<br/>协议→stills 桥接"]
+        subgraph CORE[协议与桥接]
+            PROTO[protocol.ts]
+            SAPRT[sap-runtime.ts]
         end
 
-        subgraph "validation/ — 配置校验"
-            VALID["config-validator.ts<br/>4类校验 ~320行"]
-            SC["shared-constants.ts<br/>DATAKEY_RE / HTML_TYPES"]
-        end
-
-        subgraph "catalog/ — 组件元数据"
-            CPC["component-props-catalog.ts<br/>组件 Props 字典"]
-            CT["types.ts<br/>Catalog 类型"]
-            CJ["component-catalog.json<br/>静态 JSON"]
-        end
-
-        subgraph "prompts/"
-            NP["nav-planner-prompt.ts<br/>导航提示词"]
+        subgraph KNOWLEDGE[知识层]
+            PROMPTS[prompts/*]
+            CATALOG[catalog/*]
+            VALID[validation/*]
         end
     end
 
-    subgraph "外部依赖"
-        SU["spark-utils<br/>createRequest / NavNode"]
-        SD["spark-data<br/>IDataSetMetadata / meta*"]
-        BE["Java 后端<br/>Spring Boot 8080"]
+    subgraph SERVER[spark-ai-server]
+        AICTRL[AiChatController]
+        PAGECTRL[PageConfigController]
+        NAVCTRL[NavigationController]
+        SAPCTRL[SapController]
+        AIPS[AiPageService]
+        PAGESVC[PageConfigService]
+        SSE[SseService]
+        STS[StillsSessionService]
     end
 
-    IDX --> LOOP & DISP & SAP & VALID & PROTO & NAV & PC & CPC & NP
+    IDX --> LOOP & CACHE & NAV & ORCH & DISP & DOM & DS & BP & PCFG & META & PROTO & SAPRT & PROMPTS & CATALOG & VALID
 
-    LOOP -->|"validateGeneratedConfig"| VALID
-    LOOP -->|"clearPageCache"| PC
-    LOOP -->|"registerPageNavigation"| NAV
-    LOOP -->|"consumeSSEStream"| PROTO
-    VALID -->|"DATAKEY_RE"| SC
-    SAP -->|"extractToolBlocks"| PROTO
-    SAP -->|"executeStill"| DISP
-    DOM -->|"registerStill"| DISP
-    DS_DOM -->|"registerDomain"| DOM
-    DS_DOM -->|"meta*"| SD
-    BP -->|"registerStill"| DISP
-    META -->|"getAllStills"| DISP
+    MAIN --> LOOP
+    MAIN --> CACHE
+    MAIN --> NAV
+    AIPANEL --> LOOP
+    SAPPANEL --> PROTO
+    SAPPANEL --> DISP
+    AIPROTO --> PROTO
 
-    LOOP --> SU
-    NAV --> SU
-    DS_DOM --> SD
+    LOOP --> VALID
+    LOOP --> CACHE
+    LOOP --> NAV
+    ORCH --> PROTO
+    ORCH --> SAPRT
+    ORCH --> MON
+    SAPRT --> DISP
+    DOM --> DISP
+
+    LOOP --> AICTRL
+    LOOP --> PAGECTRL
+    LOOP --> NAVCTRL
+    LOOP --> SSE
+    ORCH -. 目标接入 .-> SAPCTRL
+    AICTRL --> AIPS
+    PAGECTRL --> PAGESVC
+    PAGECTRL --> SSE
+    SAPCTRL --> STS
 ```
 
-### 依赖规则
+### 分层原则
 
-| 层 | 文件 | 内部依赖 |
+| 层 | 代表文件 | 主要职责 |
 |---|---|---|
-| **零依赖** | `protocol.ts`, `page-cache.ts`, `shared-constants.ts`, `nav-planner-prompt.ts`, `component-props-catalog.ts`, `types.ts`(stills) | 无 |
-| **基础层** | `config-validator.ts` | shared-constants |
-| **基础层** | `dispatcher.ts` | types |
-| **基础层** | `domain.ts` | dispatcher, types |
-| **域层** | `dataset-domain.ts` | domain, dispatcher, types + spark-data |
-| **域层** | `blueprint-methods.ts`, `meta-methods.ts` | dispatcher, types |
-| **桥接层** | `sap-runtime.ts` | protocol, dispatcher, types |
-| **引擎层** | `ai-loop.ts` | config-validator, page-cache, nav-register, protocol + spark-utils |
+| 协议原语层 | protocol.ts | @@ 块提取、JSON 体解析、SSE 回调类型 |
+| 桥接层 | sap-runtime.ts | 协议块到 still 执行结果的桥接 |
+| 动作层 | stills/* | 原子动作、域状态、guard/validate/execute |
+| 运行时层 | runtime/* | 页面闭环、缓存、导航、编排器、监控器 |
+| 知识层 | prompts/*、catalog/*、validation/* | 提示词、组件知识、结构化质量门 |
 
 ---
 
-## 2. AIPageLoop 主循环
+## 3. 页面生成闭环
 
-4 个入口点 → `_callAI` / `_callAIStream` → 统一 `_postProcess` 后处理 → 自动迭代守卫。
+页面生成闭环由 src/runtime/ai-loop.ts 驱动，是当前包内最成熟、也已真正接入主应用的能力。
+
+### 3.1 入口能力
+
+- generate(pageId, prompt)
+- iterate(pageId, feedback)
+- generateStream(pageId, prompt, callbacks)
+- iterateStream(pageId, feedback, callbacks)
+
+### 3.2 主流程
 
 ```mermaid
 flowchart TD
-    START(["用户调用"])
+    START[用户请求]
+    START --> G1[generate / iterate]
+    START --> G2[generateStream / iterateStream]
 
-    subgraph "入口点"
-        GEN["generate(prompt, pageId)"]
-        ITER["iterate(prompt, pageId, files)"]
-        GS["generateStream(prompt, pageId, cb)"]
-        IS["iterateStream(prompt, pageId, files, cb)"]
+    subgraph CALL[请求 AI]
+        C1[_callAI -> POST /api/ai/chat]
+        C2[_callAIStream -> POST /api/ai/chat/stream-page]
+        C3[consumeSSEStream]
     end
 
-    START --> GEN & ITER & GS & IS
+    G1 --> C1
+    G2 --> C2 --> C3
 
-    subgraph "_callAI — 同步路径"
-        INJ["注入 skillCatalog → system prompt"]
-        POST["http.post('/api/ai/chat')<br/>mode: generate | iterate"]
-        RESP["AIResponse { files, explanation, needsIteration }"]
+    subgraph POST[统一后处理]
+        P1[withValidationReport]
+        P2[onResponseProcessed]
+        P3[writePageFiles]
+        P4[registerPageNavigation]
     end
 
-    GEN & ITER --> INJ --> POST --> RESP
-
-    subgraph "_callAIStream — 流式路径"
-        FETCH["fetch('/api/ai/chat/stream-page')"]
-        SSE["consumeSSEStream()"]
-        EVENTS["事件: delta / reasoning / phase<br/>usage / result / done / error"]
-        FINAL["finalResult → AIResponse"]
-    end
-
-    GS & IS --> FETCH --> SSE --> EVENTS --> FINAL
-
-    subgraph "_postProcess — 统一后处理"
-        PP1["① withValidationReport(files)"]
-        PP2["② onResponseProcessed?.(resp)"]
-        PP3{"resp.files 存在？"}
-        PP4["③ writePageFiles → PUT /__batch"]
-        PP5{"generate 且 autoRegisterNav?"}
-        PP6["④ registerPageNavigation"]
-        PP7["⑤ onFilesUpdated?.(resp)"]
-    end
-
-    RESP & FINAL --> PP1 --> PP2 --> PP3
-    PP3 -->|是| PP4 --> PP5
-    PP3 -->|否| PP7
-    PP5 -->|是| PP6 --> PP7
-    PP5 -->|否| PP7
-
-    subgraph "自动迭代守卫"
-        AUTO{"needsIteration 且非自动迭代中?"}
-        SET["setAutoIterating(true)"]
-        TMO["setTimeout 超时保护"]
-        CALL["iterate() 递归"]
-        DONE["setAutoIterating(false)"]
-    end
-
-    PP7 --> AUTO
-    AUTO -->|触发| SET --> TMO --> CALL --> DONE
-    AUTO -->|不触发| END(["流程结束"])
-    DONE --> END
+    C1 --> P1
+    C3 --> P1
+    P1 --> P2 --> P3 --> P4
 ```
 
-### 构造器选项
+### 3.3 关键组成
 
-| 选项 | 类型 | 说明 |
-|------|------|------|
-| `aiEndpoint` | `string` | AI 后端地址 |
-| `onFilesUpdated` | `(pageId, files) => void` | 文件写入后回调 |
-| `onError` | `(err) => void` | 错误回调 |
-| `logCollectDelay` | `number` | 日志收集延迟 ms |
-| `skillCatalog` | `string` | 技能目录文本（注入到每个请求） |
-| `includeGlobalDiagnostics` | `boolean` | 是否包含全局诊断 |
-| `autoRegisterNav` | `boolean` | generate 后自动注册导航 |
-| `onNavigationRegistered` | `(pageId, result) => void` | 导航注册成功回调 |
-| `autoIterateTimeout` | `number` | 自动迭代超时 ms |
-| `catalogValidator` | `(files) => Report` | 可选增强校验器（基于 ComponentCatalog） |
-| `onResponseProcessed` | `(resp, pageId) => resp` | AI 响应后处理钩子 |
+#### configureAILoopHttp
 
-### 全局配置
+负责从应用层注入三类环境信息：
 
-```typescript
-configureAILoopHttp({
-  getHeaders: () => ({ Authorization, 'X-Tenant-Id', 'X-Project-Id' }),
-  getPageApiUrl: (pageId) => `/api/tenants/.../pages-config/${pageId}`,
-  getNavApiUrl: () => `/api/tenants/.../navigation/nodes`,
-})
-```
+- 认证头。
+- 页面配置 API 基础路径。
+- 导航 API 基础路径。
 
----
+#### PageLogCollector
 
-## 3. SSE 流式处理
+负责缓存页面运行日志，并生成去重后的诊断摘要，供 iterate 调用发回 AI。
 
-`_callAIStream` 替换端点为 `/chat/stream-page`，通过 `consumeSSEStream` 逐块解析。
+#### consumeSSEStream
 
-```mermaid
-sequenceDiagram
-    participant UI as 前端 UI
-    participant Loop as AIPageLoop
-    participant BE as Java 后端
-    participant SSE as consumeSSEStream
+消费 chat/stream-page 的以下事件：
 
-    UI->>Loop: generateStream(prompt, pageId, callbacks)
-    Loop->>Loop: 替换 /chat → /chat/stream-page
-    Loop->>BE: fetch(POST, ReadableStream)
-    BE-->>Loop: Response.body
+- phase
+- delta
+- reasoning
+- usage
+- result
+- done
+- error
 
-    Loop->>SSE: consumeSSEStream(reader, callbacks)
-    activate SSE
+实现上遵循 fail-fast：
 
-    loop 每个 SSE 事件
-        SSE->>SSE: TextDecoder 解析 event: / data:
+- 流结束但没拿到 result 会报错。
+- 收到 error 事件会抛异常。
 
-        alt event: delta
-            SSE-->>UI: onDelta(text) — 实时文本
-        else event: reasoning
-            SSE-->>UI: onReasoning(text) — 推理过程
-        else event: phase
-            SSE-->>UI: onPhase(name) — 阶段标识
-        else event: usage
-            SSE-->>UI: onUsage(tokenUsage) — Token统计
-        else event: result
-            SSE->>SSE: JSON.parse → 暂存 finalResult
-        else event: error
-            SSE-->>UI: onError(msg)
-            SSE->>SSE: throw Error
-        else event: done
-            SSE->>SSE: 结束读取
-        end
-    end
+### 3.4 当前已知设计特点
 
-    deactivate SSE
+- 支持租户 / 项目作用域 API 注入。
+- 支持自动迭代期间跳过页面 reload，避免整页刷新杀死面板状态。
+- 文件读写完全走后端页面 API，不直接操作工作区磁盘。
 
-    alt finalResult 存在
-        SSE-->>Loop: return AIResponse
-    else 无 result
-        SSE-->>Loop: throw "Stream ended without result"
-    end
+### 3.5 当前设计缺口
 
-    Loop->>Loop: _postProcess(response)
-    Loop-->>UI: 完成
-```
+- getPageApiUrl() 未注入时仍回退 /api/pages-config。
+- 导航注册未注入作用域路径时仍回退 /api/navigation。
+- writePageFiles() 出错只回调 onError，不会阻断主返回值。
 
-### StreamCallbacks
-
-| 回调 | 触发时机 |
-|------|---------|
-| `onDelta(text)` | 每个 delta 文本片段 |
-| `onReasoning(text)` | 推理 token |
-| `onPhase(name)` | 阶段切换 |
-| `onUsage(usage)` | Token 用量 |
-| `onError(msg)` | 错误事件 |
+这三点都偏“软失败”，与仓库当前更偏好的 fail-fast 风格不完全一致。
 
 ---
 
 ## 4. Stills 动作引擎
 
-Stills 是 SAP 协议驱动的**原子动作系统**。
+Stills 是 spark-ai 的第二条核心主线：把“AI 可调用能力”收敛为受守卫、可验证、可记录的原子动作。
 
-### 核心概念
+### 4.1 执行管线
 
-| 概念 | 说明 |
-|------|------|
-| **Still** | 原子动作单元（`StillDefinition`），含 guard / validate / execute 三阶段 |
-| **Session** | 域无关容器（`IStillSession`），持有 blueprint + patchLog + 各域 slot |
-| **Domain** | 领域提供者（`DomainProvider`），注册一组 stills 并管理域 slot |
-| **Blueprint** | 执行蓝图（`ExecutionBlueprint`），由检查点序列驱动多步任务编排 |
-| **PatchLog** | 操作日志（`PatchEntry[]`），记录每次 request 类型 still 的执行摘要 |
+src/stills/dispatcher.ts 中，executeStill(action, params, session, requestId) 是唯一执行入口：
 
-### 执行管线（dispatcher.ts）
-
-`executeStill(action, params, session, requestId)` 是唯一执行入口：
-
-```
-1. 查找 → _registry.get(action)       → 未知: UNKNOWN_ACTION
-2. Guard → still.guard(session)        → 不通过: 返回 guard 错误
-3. Validate → still.validate(params)   → 不通过: INVALID_PARAMS
-4. Execute → still.execute(session, params) → StillResult
-5. PatchLog → 仅 ok + type=request 才写日志（describe 不产生变更记录）
+```text
+1. lookup still
+2. guard
+3. validate
+4. execute
+5. postValidate
+6. request 成功后写 patchLog
 ```
 
-### 域体系（domain.ts + dataset-domain.ts）
+### 4.2 域注册与会话工厂
 
-**域注册**：`registerDomain(provider)` 双写——①写入域注册表；②把域内 stills 批量注册到 dispatcher。
+src/stills/domain.ts 做两件事：
 
-**会话工厂**：`createSession()` 创建空 `IStillSession`，遍历所有已注册域调用 `createState()` 初始化各域 state。
+1. registerDomain()：把 domain 写入 domain registry，并把动作批量注册到 dispatcher。
+2. createSession()：为每个已注册 domain 初始化 state，并对 session.blueprint 做兼容代理。
 
-**DataSet 域**（24 stills，6 命名空间）：
+### 4.3 当前动作基线
 
-| 命名空间 | stills | 说明 |
-|----------|--------|------|
-| `dataset.*` | init, describe, validate, export, reset | 整体初始化/查询/校验/导出/重置 |
-| `datatable.*` | create, describe, addColumns, updateColumn, removeColumn, setApi, addRows | 表结构操作 |
-| `relation.*` | add, remove, list | DataRelation 管理 |
-| `schema.*` | lock, unlock | 结构锁定/解锁 |
-| `dataview.*` | create, describe, configure, setAggregates, setTreeConfig | 视图配置 |
-| `dependency.*` | add, remove | ViewDependency 管理 |
+| 域 | 动作数 | 当前说明 |
+|---|---:|---|
+| DataSet | 24 | DataSet、表、关系、视图、依赖、schema lock |
+| Blueprint | 8 | 蓝图创建、推进、修订、覆盖检查、自检 |
+| PageConfig | 18 | 组件树、脚本、样式、页面导出与校验 |
+| Meta | 3 | 能力目录、自省、session.describe |
+| 合计 | 53 | 当前源码真实动作总数 |
 
-**Guard 分级**（组合式，实现阶段约束）：
+### 4.4 DataSet 域
 
-| Guard | 场景 |
-|-------|------|
-| `noGuard` | 无约束 |
-| `requireBlueprint` | 需要蓝图存在 |
-| `guardDatasetOnly` | 需要 dataset slot 已初始化 |
-| `guardBlueprintAndDataset` | 需要蓝图 + dataset |
-| `guardSchemaUnlocked` | 结构编辑（建表/改列） |
-| `guardSchemaLocked` | 后置配置（视图/API/依赖） |
+src/stills/dataset-domain.ts 的 24 个动作分为 6 组：
 
-### 蓝图编排（blueprint-methods.ts）
+- dataset.*
+- datatable.*
+- relation.*
+- schema.*
+- dataview.*
+- dependency.*
 
-| Still | 类型 | 说明 |
-|-------|------|------|
-| `blueprint.create` | request | 生成蓝图 + checkpoints 序列 |
-| `blueprint.describe` | describe | 查询蓝图进度 |
-| `blueprint.advance` | request | 标记当前 checkpoint 完成，推进到下一个 |
-| `blueprint.revise` | request | 增删 checkpoint + 更新 openQuestions |
+它不替代 spark-data，而是把 spark-data 暴露给 AI 的可变更面包装成 still 动作。
 
-### 自省层（meta-methods.ts）
+### 4.5 Blueprint 域
 
-| Still | 类型 | 说明 |
-|-------|------|------|
-| `stills.capabilities` | describe | 枚举全部已注册 action + params + example |
-| `stills.actionSpec` | describe | 查询单个 action 的详细规格 |
-| `session.describe` | describe | 汇总当前 step/lock/dataset/blueprint/patchCount |
+src/stills/blueprint-domain.ts 当前包含：
 
-### 31 Stills 一览
+- blueprint.create
+- blueprint.describe
+- blueprint.advance
+- blueprint.item.advance
+- blueprint.revise
+- blueprint.validateCoverage
+- blueprint.selfCheck
 
-```
-# 框架级（7）
-stills.capabilities    stills.actionSpec    session.describe
-blueprint.create       blueprint.describe   blueprint.advance   blueprint.revise
+以及状态工厂与域注册。
 
-# DataSet 域（24）
-dataset.init           dataset.describe     dataset.validate    dataset.export      dataset.reset
-datatable.create       datatable.describe   datatable.addColumns datatable.updateColumn
-datatable.removeColumn datatable.setApi     datatable.addRows
-relation.add           relation.remove      relation.list
-schema.lock            schema.unlock
-dataview.create        dataview.describe    dataview.configure  dataview.setAggregates dataview.setTreeConfig
-dependency.add         dependency.remove
-```
+Blueprint 域负责“多步任务流程骨架”，不负责业务数据本身。
+
+### 4.6 PageConfig 域
+
+src/stills/pageconfig-domain.ts 管理四份页面记忆体：
+
+- rule
+- scriptMap
+- scriptVars
+- styleMap
+
+它把页面配置拆成三块受控变更面：
+
+- rule.*：组件树结构。
+- script.*：页面脚本。
+- style.*：页面样式。
+
+最终由 pageconfig.export 导出为 4 文件。
+
+### 4.7 Meta 动作
+
+src/stills/meta-methods.ts 当前提供：
+
+- stills.capabilities
+- stills.actionSpec
+- session.describe
+
+这 3 个动作构成了 stills 运行时的“自我说明层”。
 
 ---
 
-## 5. SAP Runtime 桥接
+## 5. 会话编排器
 
-`sap-runtime.ts` 是纯函数管道，将 SAP 协议文本路由到 Stills 引擎。
+src/runtime/session-orchestrator.ts 是当前包里最有潜力、但还未完全接入主应用的能力。
 
-```mermaid
-flowchart LR
-    RAW["Raw AI text"]
-    EXT["extractToolBlocks(text)"]
-    PARSE["parseToolPayload(block)"]
-    EXEC["executeStill(action, params, session)"]
-    FMT["formatResponseBlock(action, id, result)"]
-    OUT["@@result / @@error 文本"]
+### 5.1 设计目标
 
-    RAW --> EXT --> PARSE --> EXEC --> FMT --> OUT
-```
+编排器通过 SessionBackend 接口把职责切成两半：
 
-### processSapBlocks(text, session, options?)
+- 后端负责：会话存储、滑动窗口、LLM 调用。
+- 前端 / 本地负责：块提取、still 执行、follow-up 注入、终止判断。
 
-批量处理入口，返回三部分：
-
-| 字段 | 说明 |
-|------|------|
-| `dispatched` | `SapDispatchResult[]` — 每个块的调度结果 |
-| `naturalText` | 去除协议块后的自然语言文本 |
-| `fullResponse` | 所有 `@@result/@@error` 拼接 |
-
-**关键设计**：
-- 默认 `maxBlocks=1`，只处理第一个协议块
-- 完整错误链：块类型非法 → `INVALID_BLOCK_TYPE`；JSON 解析失败 → `INVALID_JSON`；后续进入 dispatcher 管线
-
----
-
-## 6. Config Validation 校验
-
-`validateGeneratedConfig(files)` 对 AI 生成的页面配置文件做 4 类结构化检查。
+### 5.2 主循环
 
 ```mermaid
 flowchart TD
-    IN(["validateGeneratedConfig(files)"])
+    START[runStillsLoop]
+    START --> S1[backend.createSession]
+    S1 --> LOOP{round < maxRounds}
 
-    subgraph "输入解析"
-        RULE["JSON.parse(rule.json) → ruleJson"]
-        PD["JSON.parse(pagedata.json) → pageDataJson"]
-        SCR["extractScriptFunctions(script.js)<br/>3种模式: function / 箭头 / 表达式<br/>→ scriptFunctions: Set"]
-        TBL["extractTableNames(pageDataJson)<br/>→ tableNames: Set"]
-        NODES["collectRuleNodes(ruleJson)<br/>递归收集 → RuleNodeSnapshot[]"]
-    end
-
-    IN --> RULE & PD & SCR
-    PD --> TBL
-    RULE --> NODES
-
-    subgraph "① component 检查"
-        C1["rule.json 无效 JSON → error"]
-        C2["组件 type 不在 HTML_TYPES 且无合法前缀 → warning"]
-        C3["r-* 使用废弃 name 属性 → warning"]
-    end
-
-    subgraph "② dataKey 检查"
-        D1["pagedata.json 无效 JSON → warning"]
-        D2["dataKey 不匹配 DATAKEY_RE → error"]
-        D3["dataKey 引用表名不在 pagedata → error"]
-    end
-
-    subgraph "③ render 检查"
-        R1["Render* 组件未在 script.js 定义 → error"]
-    end
-
-    subgraph "④ handler 检查"
-        H1["on.event 函数未在 script.js 定义 → error"]
-    end
-
-    subgraph "⑤ 交叉检查"
-        X1["使用 @currentRow 但未声明<br/>highlightCurrentRow → warning"]
-    end
-
-    NODES --> C1 & C2 & C3 & R1 & H1 & X1
-    TBL --> D1 & D2 & D3
-    SCR --> R1 & H1
-
-    subgraph "输出"
-        RPT["ConfigValidationReport<br/>valid: errors === 0<br/>summary: { total, errors, warnings, byCategory }<br/>issues: ConfigValidationIssue[]"]
-    end
-
-    C1 & C2 & C3 & D1 & D2 & D3 & R1 & H1 & X1 --> RPT
+    LOOP --> S2[backend.executeTurn]
+    S2 --> S3[extractToolBlocks]
+    S3 --> S4[dispatchBlock]
+    S4 --> S5[收集 followUp]
+    S5 --> S6[backend.appendMessages]
+    S6 --> S7{export 完成且 blueprint 无待办?}
+    S7 -->|否| LOOP
+    S7 -->|是| END[返回 OrchestratorResult]
 ```
 
-### 检查清单速查
+### 5.3 当前监控器
 
-| 类别 | 检查项 | 级别 |
-|------|--------|------|
-| component | rule.json 无效 JSON | error |
-| component | 未知组件 type | warning |
-| component | r-* 使用废弃 `name`（应为 `field`） | warning |
-| component | @currentRow 缺少 highlightCurrentRow | warning |
-| dataKey | pagedata.json 无效 JSON | warning |
-| dataKey | dataKey 格式不匹配 | error |
-| dataKey | dataKey 引用不存在的表 | error |
-| render | Render* 函数未定义 | error |
-| handler | 事件处理函数未定义 | error |
+- repeat-detection-monitor
+- blueprint-orchestration-monitor
+- terminal-actions-monitor
+
+这些监控器通过 SessionMonitor 接口接入，不要求改动编排器主体。
+
+### 5.4 当前落地状态
+
+当前状态必须明确区分：
+
+- runStillsLoop、SessionBackend、SessionMonitor 已导出。
+- 主应用里目前没有任何地方真正实例化 SessionBackend 并接入 runStillsLoop。
+
+因此它现在属于“实现完成但未接线”的能力，不应误记为“已形成默认业务路径”。
+
+---
+
+## 6. 提示词、目录与校验
+
+### 6.1 提示词层
+
+src/prompts/prompt-builder.ts 已经把后端 AiPageService.buildSystemPrompt() 的主要拼接策略迁入前端，包括：
+
+- 从 prompt / feedback / currentFiles / logs 检测相关 skill 类型。
+- 优先拼装 Skill Index + 定向 skill 详情。
+- 其次使用 compact prompt。
+- 最后回退到 skillCatalog 字符串。
+
+但当前仍有双轨并存现象：
+
+- 前端有 buildPageSystemPrompt()。
+- 后端 AiPageService.buildSystemPrompt() 仍是页面生成链路实际使用者。
+
+### 6.2 组件目录层
+
+src/catalog/component-props-catalog.ts 和 component-catalog.json 提供组件知识，用于：
+
+- 提示词补充。
+- 目录查询。
+- 可选的 catalog 驱动校验。
+
+### 6.3 结构化校验层
+
+src/validation/config-validator.ts 当前主要负责：
+
+- 组件类型检查。
+- dataKey 格式与表引用检查。
+- Render* 函数存在性检查。
+- handler 存在性检查。
+- style/class 顶层误写提示。
+- aggregates 配置检查。
+
+这层已被仓库根测试覆盖，是页面生成闭环最关键的 fail-fast 质量门之一。
+
+---
+
+## 7. 与主应用和后端的边界
+
+### 7.1 主应用接入
+
+当前主应用里，spark-ai 的接入主要集中在：
+
+- src/main.ts：统一初始化 AI loop、注入 headers / page API / nav API、设置 configLoader、接 page refresh。
+- src/components/AiChatPanel.vue：页面生成、调试、日志采样、自动迭代 UX。
+- src/components/SapChatPanel.vue：通用 SAP 对话流与前端本地 stills 模式。
+- src/services/ai-protocol.ts：复用协议解析并封装 /api/ai/chat/stream 的 SSE 传输。
+
+### 7.2 后端关联
+
+当前包与 spark-ai-server 的主要对接关系如下：
+
+| 前端 / 包内入口 | 后端接口 | 对应控制器 |
+|---|---|---|
+| AIPageLoop.generate/iterate | POST /api/ai/chat | AiChatController |
+| AIPageLoop.generateStream/iterateStream | POST /api/ai/chat/stream-page | AiChatController |
+| readPageFile(s) / writePageFiles | /api/tenants/{tenantId}/projects/{projectId}/pages-config/** | PageConfigController |
+| registerPageNavigation | /api/tenants/{tenantId}/projects/{projectId}/navigation/nodes | NavigationController |
+| 热更新与调试桥 | GET /api/events | PageConfigController + SseService |
+| SessionBackend 目标适配 | POST /api/sap/stills/* | SapController |
+
+### 7.3 明确不由本包负责的事情
+
+- 页面文件持久化、版本链和磁盘命名规则。
+- 导航树的真实存储与冲突判定。
+- LLM 远端调用。
+- stills 会话窗口裁剪与过期清理。
+- 多租户 / 项目作用域的真实路由与认证体系。
+
+---
+
+## 8. 当前事实基线
+
+以下信息已按当前源码核对：
+
+- packages/spark-ai/tests/ 目录当前为空。
+- 包能力主要由仓库根测试覆盖，例如：
+  - tests/prompt-builder.test.ts
+  - tests/nav-register.test.ts
+  - tests/config-validation-report.test.ts
+- runStillsLoop 当前只在包内导出，尚未被主应用引用。
+- StillsSessionService 当前以 sessionId -> Session 存储会话，不是更复杂的 userId 嵌套模型。
+- SseService 当前是全局 emitter 广播，不按 tenant / project / user 分桶。
+
+---
+
+## 9. 当前风险
+
+### 9.1 文档漂移
+
+旧版架构文档长期停留在 31 stills 和旧文件数量口径，容易让后续设计评审低估当前包复杂度。
+
+### 9.2 端点回退过软
+
+页面 API 和导航 API 都还存在默认兜底路径，容易让作用域配置缺失延后到运行期才暴露。
+
+### 9.3 文件写入语义偏软
+
+writePageFiles() 当前是逐文件 PUT，失败时只回调 onError，不会阻断整个主流程返回。
+
+### 9.4 编排器尚未形成业务主路径
+
+SessionBackend 适配层还没在主应用落地，导致 stills 编排能力仍停留在“已实现、未接线”的阶段。
+
+### 9.5 Prompt 仍是双轨并存
+
+前后端都具备系统提示词拼接能力，但当前页面生成链路的最终拼装仍在后端，不是单一来源。
+
+---
+
+## 相关文档
+
+- ../../docs/architecture/SPARK_AI_PACKAGE_FULL_DESIGN.md
+- ../../docs/ai/README.md

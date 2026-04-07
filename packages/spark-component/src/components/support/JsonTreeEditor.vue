@@ -159,14 +159,14 @@
         </vxe-column>
 
         <!-- 列 6: 路径 -->
-        <vxe-column field="pathText" title="路径" min-width="220" />
+        <vxe-column field="id" title="路径" min-width="220" />
 
         <!-- 列 7: 操作 -->
         <vxe-column v-if="isEditable" title="操作" width="210">
           <template #default="{ row }">
             <div class="vxe-json-tree-editor__action-cell">
               <template v-if="isRowActive(row)">
-                <el-button v-if="row.isContainer" size="small" link type="primary" @click="handleAddChild(row)">加子项</el-button>
+                <el-button v-if="row.type === 'object' || row.type === 'array'" size="small" link type="primary" @click="handleAddChild(row)">加子项</el-button>
                 <el-button v-if="row.depth > 0" size="small" link type="primary" @click="handleAddSibling(row)">加同级</el-button>
                 <el-button v-if="row.deletable" size="small" link type="danger" @click="handleDelete(row)">删除</el-button>
               </template>
@@ -187,29 +187,38 @@ import { useBasicFieldState } from '../fields/data-components/composables/useBas
 import {
   addChildNode,
   addSiblingNode,
-  buildJsonTreeRows,
+  buildTreeModel,
   deleteNode,
-  filterJsonTreeRows,
+  exportJsonDocument,
+  filterTreeNodes,
+  formatValuePreview,
+  rootOf,
   parseJsonDocument,
   renameNodeKey,
   resolveSchemaInfoForPath,
   serializeJsonDocument,
-  updateNodeBooleanValue,
-  updateNodeNumberValue,
-  updateNodeStringValue,
+  toDisplayRows,
   updateNodeType,
+  updateNodeValue,
   type JsonDocument,
   type JsonNodeType,
   type JsonObject,
   type JsonPath,
   type JsonTreePolicy,
-  type JsonTreeRow,
   type JsonValue,
+  type MutationResult,
+  type TreeModel,
+  type TreeDisplayNode,
 } from './jsonTreeEditor'
 
 // ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
 
-interface DisplayRow extends JsonTreeRow {
+interface DisplayRow extends TreeDisplayNode {
+  displayKey: string
+  valuePreview: string
+  stringValue: string
+  numberValue: number | null
+  booleanValue: boolean
   _searchText: string
   _schemaTitle: string
   _schemaDescription: string
@@ -310,8 +319,8 @@ const keyword = ref('')
 const typeFilter = ref<'all' | JsonNodeType>('all')
 const schemaOnly = ref(false)
 const parseError = ref<string | null>(null)
-const documentRef = shallowRef<JsonDocument>({})
-const currentRowId = ref('$')
+const treeModelRef = shallowRef<TreeModel>(buildTreeModel({}))
+const currentRowId = ref(rootOf(treeModelRef.value))
 let keywordTimer: ReturnType<typeof setTimeout> | undefined
 let lastEmittedModelValue: string | null = null
 let tableStateInitialized = false
@@ -373,9 +382,11 @@ const hasActiveFilter = computed(() => {
 // ── 数据管线 ─────────────────────────────────────────────────
 
 const allRows = computed<DisplayRow[]>(() => {
-  const rawRows = buildJsonTreeRows(documentRef.value, mergedPolicy.value)
+  const rawRows = toDisplayRows(treeModelRef.value, mergedPolicy.value)
   const schemaCache = new Map<string, ReturnType<typeof resolveSchemaInfoForPath>>()
-  return rawRows.map((row) => enrichRow(row, schemaCache))
+  const rootLabel = mergedPolicy.value.rootLabel ?? '$'
+  for (const row of rawRows) enrichRow(row, schemaCache, rootLabel)
+  return rawRows as DisplayRow[]
 })
 
 const filteredRows = computed<DisplayRow[]>(() => {
@@ -385,8 +396,8 @@ const filteredRows = computed<DisplayRow[]>(() => {
 
   if (!hasFilter) return allRows.value
 
-  return filterJsonTreeRows<DisplayRow>(allRows.value, (row) => {
-    if (row.type !== 'root' && typeFilter.value !== 'all' && row.type !== typeFilter.value) {
+  return filterTreeNodes<DisplayRow>(allRows.value, (row) => {
+    if (row.depth > 0 && typeFilter.value !== 'all' && row.type !== typeFilter.value) {
       return false
     }
     if (schemaOnly.value && row._schemaTitle === '' && row._schemaDescription === '') {
@@ -431,12 +442,13 @@ onBeforeUnmount(() => {
 
 function syncDocument(rawText: string): void {
   if (rawText.trim() === '') {
-    documentRef.value = {}
+    treeModelRef.value = buildTreeModel({}, mergedPolicy.value)
     parseError.value = null
     return
   }
   try {
-    documentRef.value = parseJsonDocument(rawText)
+    const doc = parseJsonDocument(rawText)
+    treeModelRef.value = buildTreeModel(doc, mergedPolicy.value)
     parseError.value = null
   } catch (error) {
     parseError.value = error instanceof Error ? error.message : String(error)
@@ -450,38 +462,51 @@ function syncDocumentValue(value: JsonDocument): void {
     lastEmittedModelValue = null
     return
   }
-  documentRef.value = nextDocument
+  treeModelRef.value = buildTreeModel(nextDocument, mergedPolicy.value)
   parseError.value = null
 }
 
 // ── 行增强（schema + 搜索文本）──────────────────────────────
 
 function enrichRow(
-  row: JsonTreeRow,
+  row: TreeDisplayNode,
   schemaCache: Map<string, ReturnType<typeof resolveSchemaInfoForPath>>,
+  rootLabel: string,
 ): DisplayRow {
-  const cacheKey = row.pathText
+  const isContainer = row.type === 'object' || row.type === 'array'
+  const displayKey = row.depth === 0 ? rootLabel
+    : (typeof row.segment === 'number' ? `[${row.segment}]` : row.segment)
+  const valuePreview = formatValuePreview(row.type, isContainer ? null : row.value, row.childIds.length)
+  const stringValue = typeof row.value === 'string' ? row.value : ''
+  const numberValue = typeof row.value === 'number' ? row.value : null
+  const booleanValue = row.value === true
+
+  const cacheKey = row.id
   const schemaInfo = schemaCache.get(cacheKey) ?? resolveSchemaInfoForPath(props.schema, row.path)
   schemaCache.set(cacheKey, schemaInfo)
 
   const searchText = [
-    row.displayKey,
-    row.pathText,
-    row.valuePreview,
-    row.stringValue,
+    displayKey,
+    row.id,
+    valuePreview,
+    stringValue,
     schemaInfo.title,
     schemaInfo.description,
     schemaInfo.enumValues.join(' '),
   ].join(' ').toLowerCase()
 
-  return {
-    ...row,
-    _searchText: searchText,
-    _schemaTitle: schemaInfo.title,
-    _schemaDescription: schemaInfo.description,
-    _schemaRequired: schemaInfo.required,
-    _schemaEnumValues: schemaInfo.enumValues,
-  }
+  const display = row as DisplayRow
+  display.displayKey = displayKey
+  display.valuePreview = valuePreview
+  display.stringValue = stringValue
+  display.numberValue = numberValue
+  display.booleanValue = booleanValue
+  display._searchText = searchText
+  display._schemaTitle = schemaInfo.title
+  display._schemaDescription = schemaInfo.description
+  display._schemaRequired = schemaInfo.required
+  display._schemaEnumValues = schemaInfo.enumValues
+  return display
 }
 
 // ── 工具栏交互 ──────────────────────────────────────────────
@@ -522,53 +547,52 @@ function isRowActive(row: Pick<DisplayRow, 'id'>): boolean {
 
 function handleKeyChange(row: DisplayRow, value: string | number): void {
   if (typeof value !== 'string') return
-  pendingExpandRowId = row.parentId
-  mutateDocument((current) => renameNodeKey(current, row.path, value, mergedPolicy.value))
+  mutateModel((current) => renameNodeKey(current, row.id, value, mergedPolicy.value))
 }
 
 function handleTypeChange(row: DisplayRow, value: JsonNodeType): void {
   if (value === undefined || value === null) return
-  mutateDocument((current) => updateNodeType(current, row.path, value, mergedPolicy.value))
+  mutateModel((current) => updateNodeType(current, row.id, value, mergedPolicy.value))
 }
 
 function handleStringUpdate(row: DisplayRow, value: string | undefined): void {
-  mutateDocument((current) => updateNodeStringValue(current, row.path, value ?? ''))
+  mutateModel((current) => updateNodeValue(current, row.id, value ?? ''))
 }
 
 function handleStringChange(row: DisplayRow, value: string | number): void {
-  mutateDocument((current) => updateNodeStringValue(current, row.path, String(value)))
+  mutateModel((current) => updateNodeValue(current, row.id, String(value)))
 }
 
 function handleNumberChange(row: DisplayRow, value: string | number | null | undefined): void {
   const nextValue = typeof value === 'number' ? value : Number(value)
-  mutateDocument((current) => updateNodeNumberValue(current, row.path, Number.isFinite(nextValue) ? nextValue : 0))
+  mutateModel((current) => updateNodeValue(current, row.id, Number.isFinite(nextValue) ? nextValue : 0))
 }
 
 function handleBooleanChange(row: DisplayRow, value: boolean): void {
-  mutateDocument((current) => updateNodeBooleanValue(current, row.path, value))
+  mutateModel((current) => updateNodeValue(current, row.id, value))
 }
 
 function handleAddChild(row: DisplayRow): void {
-  pendingExpandRowId = row.id
-  mutateDocument((current) => addChildNode(current, row.path, mergedPolicy.value))
+  mutateModel((current) => addChildNode(current, row.id, mergedPolicy.value))
 }
 
 function handleAddSibling(row: DisplayRow): void {
-  pendingExpandRowId = row.parentId
-  mutateDocument((current) => addSiblingNode(current, row.path, mergedPolicy.value))
+  mutateModel((current) => addSiblingNode(current, row.id, mergedPolicy.value))
 }
 
 function handleDelete(row: DisplayRow): void {
-  pendingExpandRowId = row.parentId
-  currentRowId.value = row.parentId ?? '$'
-  mutateDocument((current) => deleteNode(current, row.path, mergedPolicy.value))
+  mutateModel((current) => deleteNode(current, row.id, mergedPolicy.value))
 }
 
-function mutateDocument(mutator: (current: JsonDocument) => JsonDocument): void {
+function mutateModel(mutator: (current: TreeModel) => MutationResult): void {
   if (!isEditable.value) return
-  const nextDocument = mutator(documentRef.value)
+  const result = mutator(treeModelRef.value)
+  // uid 稳定标识，直接用作焦点/展开行，无数组索引偏移问题
+  currentRowId.value = result.focusId
+  pendingExpandRowId = result.expandId
+  treeModelRef.value = result.model
+  const nextDocument = exportJsonDocument(result.model)
   const nextText = serializeJsonDocument(nextDocument)
-  documentRef.value = nextDocument
   parseError.value = null
   lastEmittedModelValue = nextText
   emit('update:documentValue', cloneDocument(nextDocument))
@@ -583,9 +607,8 @@ function cloneDocument(value: JsonDocument): JsonDocument {
 
 // ── 类型标签 ──────────────────────────────────────────────────
 
-function renderTypeLabel(type: JsonNodeType | 'root'): string {
+function renderTypeLabel(type: JsonNodeType): string {
   switch (type) {
-    case 'root': return '根节点'
     case 'object': return '对象'
     case 'array': return '数组'
     case 'number': return '数字'

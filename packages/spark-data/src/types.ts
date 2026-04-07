@@ -110,28 +110,49 @@ export type IDataRow = Record<string, unknown> & {
   _perm?: IInstancePermission
 }
 
-/** 数据源（带权限、分页和元数据） */
-export interface IDataSource {
+// ── 数据源接口（分层，ISP）──────────────────
+
+/**
+ * 最小行数据源——提供行集合 + 列元数据。
+ *
+ * r-table 等纯列表容器仅需此接口。
+ */
+export interface IRowDataSource {
   rows?: readonly IDataRow[]
-  _modelPerm?: IModelPermission
-  total?: number
-  page?: number
-  pageSize?: number
-  /** 当前聚焦行（UI 高亮行 / 级联父行） */
-  currentRow?: IDataRow | null
-  /** 当前选中行集合（勾选行 / 级联选中行） */
-  selectedRows?: readonly IDataRow[]
-  /** 视图聚合汇总行（由 view.aggregates 配置驱动，行变更后自动重算） */
-  summaryRow?: Readonly<IDataRow>
-  /** 选中行聚合汇总行（仅对 selectedRows 执行聚合，选中/数据变更后自动重算） */
-  selectionSummaryRow?: Readonly<IDataRow>
-
-  // ===== 表元数据（列定义、表名）=====
-
   /** 列定义数组（只读，来自 DataTable.columns）。UI 组件据此渲染表头 / 表单标签 */
   columns?: readonly DataColumn[]
   /** 表名（来自 DataView.tableName） */
   tableName?: string
+  /** 数据加载状态（Idle / Loading / Loaded / Failed） */
+  requestState?: RequestState
+}
+
+/**
+ * 当前行数据源——扩展行集合，增加聚焦行 + 选中行。
+ *
+ * r-form / r-detail 等详情容器消费此接口。
+ */
+export interface ICurrentRowSource extends IRowDataSource {
+  /** 当前聚焦行（UI 高亮行 / 级联父行） */
+  currentRow?: IDataRow | null
+  /** 当前选中行集合（勾选行 / 级联选中行） */
+  selectedRows?: readonly IDataRow[]
+}
+
+/**
+ * 完整数据源——向后兼容的全量接口，包含分页、聚合、权限、值序列化。
+ *
+ * DataView 实现此接口。所有已有消费者无需改动。
+ */
+export interface IDataSource extends ICurrentRowSource {
+  _modelPerm?: IModelPermission
+  total?: number
+  page?: number
+  pageSize?: number
+  /** 视图聚合汇总行（由 view.aggregates 配置驱动，行变更后自动重算） */
+  summaryRow?: Readonly<IDataRow>
+  /** 选中行聚合汇总行（仅对 selectedRows 执行聚合，选中/数据变更后自动重算） */
+  selectionSummaryRow?: Readonly<IDataRow>
 
   // ===== 选中值序列化（el-select / el-radio-group 等值型组件消费） =====
 
@@ -141,11 +162,6 @@ export interface IDataSource {
   label?: string | null
   /** 选中行标签数组 */
   labels?: readonly string[]
-
-  // ===== 请求状态（加载指示器消费） =====
-
-  /** 数据加载状态（Idle / Loading / Loaded / Failed） */
-  requestState?: RequestState
 }
 
 // ===== 数据模型类型 =====

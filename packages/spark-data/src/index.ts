@@ -55,8 +55,10 @@ export type { DataKeyBinding } from './core/data-key'
 // ===== 核心类型 =====
 
 export type {
-  // 基础数据行 / 数据源接口
+  // 基础数据行 / 数据源接口（分层 ISP）
   IDataRow,
+  IRowDataSource,
+  ICurrentRowSource,
   IDataSource,
   IDataSet,
 

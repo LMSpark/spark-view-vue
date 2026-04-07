@@ -2,10 +2,12 @@
 // jsonTreeEditor.ts — 通用 JSON 树编辑器核心
 //
 // 设计原则：
-//   - 路径即 ID：formatJsonPath(path) 保证唯一，天然表达父子关系
-//   - 平坦行输出：直供 VXE treeConfig.transform = true
-//   - 策略注入：领域特化逻辑（保护规则、默认值）通过 JsonTreePolicy 外部提供
-//   - 不可变变更：所有 mutation 返回新根对象，不修改原始数据
+//   - UUID 稳定标识：每个节点有唯一 id，数组增删不影响其他节点身份
+//   - 内部树模型：TreeModel（Map<id, TreeNode>）为唯一可变状态
+//   - 平坦行输出：toDisplayRows() 直供 VXE treeConfig.transform = true
+//   - 导出即转换：exportJsonDocument() 从 TreeModel 重建 JSON
+//   - 策略注入：领域特化逻辑通过 JsonTreePolicy 外部提供
+//   - 不可变变更：所有 mutation 返回新 TreeModel，不修改原模型
 // ══════════════════════════════════════════════════════════════
 
 // ── 基础 JSON 类型 ──────────────────────────────────────────
@@ -30,47 +32,6 @@ export type JsonPath = JsonPathSegment[]
 
 export type JsonNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null'
 
-// ── 树行（平坦、parentId 驱动）──────────────────────────────
-
-export interface JsonTreeRow {
-  /** 行 ID = formatJsonPath(path)，树内唯一 */
-  id: string
-  /** 父行 ID；根节点为 null */
-  parentId: string | null
-  /** 原始路径段 */
-  path: JsonPath
-  /** 路径文本（= id，显示用） */
-  pathText: string
-  /** 嵌套深度（根 = 0） */
-  depth: number
-  /** 最后一段的原始键 */
-  key: string
-  /** 显示用键名 */
-  displayKey: string
-  /** 节点类型（根节点为 'root'） */
-  type: JsonNodeType | 'root'
-  /** 父节点类型 */
-  parentType: (JsonNodeType | 'root') | null
-  /** 是否容器（object / array / root） */
-  isContainer: boolean
-  /** 直接子节点数 */
-  childCount: number
-  /** 值预览文本 */
-  valuePreview: string
-  /** string 类型的实际值 */
-  stringValue: string
-  /** number 类型的实际值 */
-  numberValue: number | null
-  /** boolean 类型的实际值 */
-  booleanValue: boolean
-  /** 键是否可重命名 */
-  keyEditable: boolean
-  /** 类型是否可切换 */
-  typeEditable: boolean
-  /** 是否可删除 */
-  deletable: boolean
-}
-
 // ── Schema 信息 ──────────────────────────────────────────────
 
 export interface JsonSchemaInfo {
@@ -79,6 +40,66 @@ export interface JsonSchemaInfo {
   required: boolean
   enumValues: string[]
 }
+
+// ── Mutation 结果（模型 + 焦点/展开 UID）────────────────────
+
+export interface MutationResult {
+  /** 变更后的新树模型 */
+  readonly model: TreeModel
+  /** 操作后应聚焦的节点 ID */
+  readonly focusId: string
+  /** 操作后应展开的节点 ID（null 表示无需展开） */
+  readonly expandId: string | null
+}
+
+// ── 树节点（纯模型，6 字段）─────────────────────────────────
+
+export interface TreeNode {
+  /** 节点 UUID */
+  readonly id: string
+  /** 父节点 ID；根节点为 null */
+  readonly parentId: string | null
+  /** 在父容器中的键 (string) 或索引 (number) */
+  readonly segment: string | number
+  /** 节点类型 */
+  readonly type: JsonNodeType
+  /** 叶子节点的原始值 */
+  readonly value: string | number | boolean | null
+  /** 子节点 ID（有序） */
+  readonly childIds: readonly string[]
+}
+
+// ── 显示行（toDisplayRows 输出，附加遍历上下文 + 策略字段）──
+
+export interface TreeDisplayNode extends TreeNode {
+  /** 嵌套深度（根 = 0） */
+  readonly depth: number
+  /** 从根到此节点的路径 */
+  readonly path: JsonPath
+  /** 键是否可重命名 */
+  readonly keyEditable: boolean
+  /** 类型是否可切换 */
+  readonly typeEditable: boolean
+  /** 是否可删除 */
+  readonly deletable: boolean
+}
+
+export type TreeModel = ReadonlyMap<string, TreeNode>
+
+/** 查找根节点 ID（parentId === null 的唯一节点） */
+export function rootOf(model: TreeModel): string {
+  for (const [id, node] of model) {
+    if (node.parentId === null) return id
+  }
+  throw new Error('TreeModel has no root node')
+}
+
+/** UID 计数器（单调递增，确保唯一） */
+let _treeUidCounter = 0
+function generateUid(): string { return `n${++_treeUidCounter}` }
+
+/** 测试时重置计数器 */
+export function resetTreeUidCounter(): void { _treeUidCounter = 0 }
 
 // ── 策略接口（领域特化注入点）────────────────────────────────
 
@@ -131,111 +152,126 @@ export function formatJsonPath(path: JsonPath): string {
 
 export function parseJsonDocument(rawText: string): JsonDocument {
   const parsed: unknown = JSON.parse(rawText)
-  if (isJsonObject(parsed)) return parsed
-  if (Array.isArray(parsed)) return parsed as JsonValue[]
-  throw new Error('JSON 顶层必须是对象或数组')
+  return normalizeJsonDocument(parsed)
 }
 
 export function serializeJsonDocument(value: JsonDocument): string {
   return `${JSON.stringify(value, null, 2)}\n`
 }
 
+/**
+ * 归一化任意值为 JsonDocument（顶层仅允许对象或数组）。
+ */
+export function normalizeJsonDocument(value: unknown): JsonDocument {
+  if (isJsonObject(value)) return value
+  if (Array.isArray(value)) return value as JsonValue[]
+  throw new Error('JSON 顶层必须是对象或数组')
+}
+
 // ════════════════════════════════════════════════════════════
-// 构建平坦树行
+// TreeModel 构建 / 导出 / 显示行
 // ════════════════════════════════════════════════════════════
 
-/**
- * 将 JSON 对象递归展开为平坦行数组（深度优先序）。
- *
- * 每行的 `id = formatJsonPath(path)` 保证唯一，`parentId` 指向父行 id。
- * 可直接喂给 VXE 的 `treeConfig.transform = true`。
- */
-export function buildJsonTreeRows(
-  value: JsonDocument,
-  policy?: Partial<JsonTreePolicy>,
-): JsonTreeRow[] {
+/** 将 JsonValue 子树递归写入 mutable nodes Map，返回节点 id */
+function addNodeToMap(
+  nodes: Map<string, TreeNode>,
+  value: JsonValue,
+  parentId: string | null,
+  segment: string | number,
+): string {
+  const id = generateUid()
+  const type = inferNodeType(value)
+  const isContainer = type === 'object' || type === 'array'
+  const childIds: string[] = []
+
+  if (isContainer && Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++)
+      childIds.push(addNodeToMap(nodes, value[i] as JsonValue, id, i))
+  } else if (isContainer && isJsonObject(value)) {
+    for (const [k, v] of Object.entries(value))
+      childIds.push(addNodeToMap(nodes, v, id, k))
+  }
+
+  nodes.set(id, {
+    id, parentId, segment, type,
+    value: isContainer ? null : (value as string | number | boolean | null),
+    childIds,
+  })
+  return id
+}
+
+/** 将节点子树递归序列化回 JsonValue */
+function toJsonValue(nodes: ReadonlyMap<string, TreeNode>, uid: string): JsonValue {
+  const n = nodes.get(uid)
+  if (!n) throw new Error(`toJsonValue: node "${uid}" not found`)
+  if (n.type === 'array') return n.childIds.map(c => toJsonValue(nodes, c))
+  if (n.type === 'object') {
+    const obj: JsonObject = {}
+    for (const c of n.childIds) { const ch = nodes.get(c); if (ch) obj[ch.segment as string] = toJsonValue(nodes, c) }
+    return obj
+  }
+  return n.value as JsonValue
+}
+
+/** 从 JSON 文档构建内部树模型 */
+export function buildTreeModel(doc: JsonDocument, policy?: Partial<JsonTreePolicy>): TreeModel {
+  const nodes = new Map<string, TreeNode>()
+  addNodeToMap(nodes, doc as JsonValue, null, resolvePolicy(policy).rootLabel)
+  return nodes
+}
+
+/** 从 TreeModel 重建 JSON 文档 */
+export function exportJsonDocument(model: TreeModel): JsonDocument {
+  return toJsonValue(model, rootOf(model)) as JsonDocument
+}
+
+/** 从根到目标节点重建 JsonPath */
+export function getNodePath(model: TreeModel, uid: string): JsonPath {
+  const segments: JsonPathSegment[] = []
+  let current = model.get(uid)
+  while (current?.parentId !== undefined && current.parentId !== null) {
+    segments.unshift(current.segment)
+    current = model.get(current.parentId)
+  }
+  return segments
+}
+
+/** 将 TreeModel 展开为平坦行数组（深度优先序） */
+export function toDisplayRows(model: TreeModel, policy?: Partial<JsonTreePolicy>): TreeDisplayNode[] {
   const p = resolvePolicy(policy)
-  const rows: JsonTreeRow[] = []
-  appendRow(rows, value, [], p.rootLabel, 'root', null, p)
+  const rows: TreeDisplayNode[] = []
+
+  function walk(uid: string, depth: number, path: JsonPath): void {
+    const node = model.get(uid)
+    if (!node) return
+    rows.push({
+      ...node, depth, path,
+      keyEditable: p.canEditKey(path),
+      typeEditable: p.canEditType(path),
+      deletable: depth > 0 && !p.isProtected(path),
+    })
+    for (const childId of node.childIds) {
+      const ch = model.get(childId)
+      if (ch) walk(childId, depth + 1, [...path, ch.segment])
+    }
+  }
+
+  walk(rootOf(model), 0, [])
   return rows
 }
 
-function appendRow(
-  out: JsonTreeRow[],
-  value: JsonValue,
-  path: JsonPath,
-  displayKey: string,
-  explicitType: JsonNodeType | 'root',
-  parentType: (JsonNodeType | 'root') | null,
-  policy: ResolvedPolicy,
-): void {
-  const actualType = explicitType === 'root' ? 'root' : inferNodeType(value)
-  const id = formatJsonPath(path)
-  const parentId = path.length === 0 ? null : formatJsonPath(path.slice(0, -1))
-  const lastSegment = path[path.length - 1]
-  const key = typeof lastSegment === 'string' ? lastSegment : displayKey
-
-  let childCount = 0
-  if (actualType === 'root') {
-    childCount = Array.isArray(value) ? value.length : (isJsonObject(value) ? Object.keys(value).length : 0)
-  } else if (actualType === 'object') {
-    childCount = isJsonObject(value) ? Object.keys(value).length : 0
-  } else if (actualType === 'array') {
-    childCount = Array.isArray(value) ? value.length : 0
-  }
-
-  out.push({
-    id,
-    parentId,
-    path: [...path],
-    pathText: id,
-    depth: path.length,
-    key,
-    displayKey,
-    type: actualType,
-    parentType,
-    isContainer: actualType === 'root' || actualType === 'object' || actualType === 'array',
-    childCount,
-    valuePreview: formatValuePreview(actualType, value, childCount),
-    stringValue: typeof value === 'string' ? value : '',
-    numberValue: typeof value === 'number' ? value : null,
-    booleanValue: value === true,
-    keyEditable: policy.canEditKey(path),
-    typeEditable: policy.canEditType(path),
-    deletable: path.length > 0 && !policy.isProtected(path),
-  })
-
-  // 递归子节点
-  if (actualType === 'root') {
-    if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; i++) {
-        const item = value[i] as JsonValue
-        appendRow(out, item, [...path, i], `[${i}]`, inferNodeType(item), actualType, policy)
-      }
-    } else if (isJsonObject(value)) {
-      for (const [childKey, childValue] of Object.entries(value)) {
-        appendRow(out, childValue, [...path, childKey], childKey, inferNodeType(childValue), actualType, policy)
-      }
-    }
-  } else if (actualType === 'object') {
-    const obj = value as JsonObject
-    for (const [childKey, childValue] of Object.entries(obj)) {
-      appendRow(out, childValue, [...path, childKey], childKey, inferNodeType(childValue), actualType, policy)
-    }
-  } else if (actualType === 'array') {
-    const arr = value as JsonValue[]
-    for (let i = 0; i < arr.length; i++) {
-      const item = arr[i] as JsonValue
-      appendRow(out, item, [...path, i], `[${i}]`, inferNodeType(item), actualType, policy)
-    }
-  }
+/**
+ * 便捷入口：直接将对象/数组文档展开为平坦树行。
+ */
+export function buildJsonTreeRows(doc: JsonDocument, policy?: Partial<JsonTreePolicy>): TreeDisplayNode[] {
+  return toDisplayRows(buildTreeModel(doc, policy), policy)
 }
 
 // ════════════════════════════════════════════════════════════
 // 过滤（保留命中行的所有祖先）
 // ════════════════════════════════════════════════════════════
 
-export function filterJsonTreeRows<T extends JsonTreeRow>(
+export function filterTreeNodes<T extends Pick<TreeNode, 'id' | 'parentId'>>(
   rows: T[],
   predicate: (row: T) => boolean,
 ): T[] {
@@ -258,176 +294,177 @@ export function filterJsonTreeRows<T extends JsonTreeRow>(
 }
 
 // ════════════════════════════════════════════════════════════
-// 变更操作（纯函数，不可变，返回新根对象）
+// 变更操作（纯函数，不可变，基于 TreeModel）
 // ════════════════════════════════════════════════════════════
 
-/**
- * 在 path 指向的容器节点内添加一个子项。
- * - 对象：用 policy.suggestChildKey + createDefaultObjectValue
- * - 数组：用 policy.createDefaultArrayItem 追加末尾
- */
-export function addChildNode(
-  root: JsonDocument,
-  path: JsonPath,
-  policy?: Partial<JsonTreePolicy>,
-): JsonDocument {
-  const p = resolvePolicy(policy)
-  const target = getValueAtPath(root, path)
-
-  if (Array.isArray(target)) {
-    const nextItem = p.createDefaultArrayItem(path)
-    return updateValueAtPath(root, path, [...target, nextItem])
-  }
-
-  if (!isJsonObject(target)) return root
-
-  const nextKey = p.suggestChildKey(target, path)
-  const nextValue = p.createDefaultObjectValue(path, nextKey)
-  return updateValueAtPath(root, path, { ...target, [nextKey]: nextValue })
+function unchanged(model: TreeModel, uid: string): MutationResult {
+  return { model, focusId: uid, expandId: null }
 }
 
-/**
- * 在 path 指向的节点的同级位置（后方）添加一个兄弟项。
- * - 数组：在当前索引 +1 处插入
- * - 对象：在父对象中添加新键
- */
-export function addSiblingNode(
-  root: JsonDocument,
-  path: JsonPath,
-  policy?: Partial<JsonTreePolicy>,
-): JsonDocument {
-  if (path.length === 0) return addChildNode(root, path, policy)
-
-  const p = resolvePolicy(policy)
-  const parentPath = path.slice(0, -1)
-  const parentValue = getValueAtPath(root, parentPath)
-  const currentSegment = path[path.length - 1]
-
-  if (Array.isArray(parentValue) && typeof currentSegment === 'number') {
-    const nextItem = p.createDefaultArrayItem(parentPath)
-    const nextArray = [...parentValue]
-    nextArray.splice(currentSegment + 1, 0, nextItem)
-    return updateValueAtPath(root, parentPath, nextArray)
-  }
-
-  if (isJsonObject(parentValue)) {
-    const nextKey = p.suggestChildKey(parentValue, parentPath)
-    const nextValue = p.createDefaultObjectValue(parentPath, nextKey)
-    return updateValueAtPath(root, parentPath, { ...parentValue, [nextKey]: nextValue })
-  }
-
-  return root
+function makeResult(nodes: Map<string, TreeNode>, focusId: string, expandId: string | null = null): MutationResult {
+  return { model: nodes, focusId, expandId }
 }
 
-/**
- * 删除 path 指向的节点。根节点和受保护节点不可删除。
- */
-export function deleteNode(
-  root: JsonDocument,
-  path: JsonPath,
-  policy?: Partial<JsonTreePolicy>,
-): JsonDocument {
-  const p = resolvePolicy(policy)
-  if (path.length === 0 || p.isProtected(path)) return root
-
-  const parentPath = path.slice(0, -1)
-  const parentValue = getValueAtPath(root, parentPath)
-  const currentSegment = path[path.length - 1]
-
-  if (Array.isArray(parentValue) && typeof currentSegment === 'number') {
-    const nextArray = [...parentValue]
-    nextArray.splice(currentSegment, 1)
-    return updateValueAtPath(root, parentPath, nextArray)
-  }
-
-  if (isJsonObject(parentValue) && typeof currentSegment === 'string') {
-    const nextObject = Object.fromEntries(
-      Object.entries(parentValue).filter(([key]) => key !== currentSegment),
-    ) as JsonObject
-    return updateValueAtPath(root, parentPath, nextObject)
-  }
-
-  return root
+/** 递归移除子树 */
+function removeSubtree(nodes: Map<string, TreeNode>, uid: string): void {
+  const n = nodes.get(uid)
+  if (!n) return
+  for (const c of n.childIds) removeSubtree(nodes, c)
+  nodes.delete(uid)
 }
 
-/**
- * 重命名 path 指向的对象键。保持键在父对象中的顺序。
- */
-export function renameNodeKey(
-  root: JsonDocument,
-  path: JsonPath,
-  nextKeyInput: string,
-  policy?: Partial<JsonTreePolicy>,
-): JsonDocument {
+/** 修正数组子节点的 segment 索引（插入/删除后） */
+function reindexChildren(nodes: Map<string, TreeNode>, childIds: readonly string[], fromIdx: number): void {
+  for (let i = fromIdx; i < childIds.length; i++) {
+    const cid = childIds[i]
+    if (!cid) continue
+    const c = nodes.get(cid)
+    if (c) nodes.set(c.id, { ...c, segment: i })
+  }
+}
+
+/** 收集父节点下所有字符串键（供 suggestChildKey 判重） */
+function collectSiblingKeys(model: TreeModel, parentId: string): JsonObject {
+  const obj: JsonObject = {}
+  const parent = model.get(parentId)
+  if (!parent) return obj
+  for (const c of parent.childIds) {
+    const ch = model.get(c)
+    if (ch && typeof ch.segment === 'string') obj[ch.segment] = null as unknown as JsonValue
+  }
+  return obj
+}
+
+/** 在容器节点内添加子项 */
+export function addChildNode(model: TreeModel, uid: string, policy?: Partial<JsonTreePolicy>): MutationResult {
+  const target = model.get(uid)
+  if (!target || (target.type !== 'object' && target.type !== 'array')) return unchanged(model, uid)
+
   const p = resolvePolicy(policy)
-  if (!p.canEditKey(path)) return root
+  const path = getNodePath(model, uid)
+  const nodes = new Map(model)
+  let newId: string
+
+  if (target.type === 'array') {
+    newId = addNodeToMap(nodes, p.createDefaultArrayItem(path), uid, target.childIds.length)
+  } else {
+    const nextKey = p.suggestChildKey(collectSiblingKeys(model, uid), path)
+    newId = addNodeToMap(nodes, p.createDefaultObjectValue(path, nextKey), uid, nextKey)
+  }
+  nodes.set(uid, { ...target, childIds: [...target.childIds, newId] })
+  return makeResult(nodes, newId, uid)
+}
+
+/** 在同级位置（后方）添加兄弟项 */
+export function addSiblingNode(model: TreeModel, uid: string, policy?: Partial<JsonTreePolicy>): MutationResult {
+  const target = model.get(uid)
+  if (target?.parentId === undefined || target.parentId === null) return addChildNode(model, uid, policy)
+
+  const parent = model.get(target.parentId)
+  if (!parent) return unchanged(model, uid)
+  const p = resolvePolicy(policy)
+  const parentPath = getNodePath(model, parent.id)
+  const nodes = new Map(model)
+  let newId: string
+
+  if (parent.type === 'array') {
+    const idx = parent.childIds.indexOf(uid)
+    newId = addNodeToMap(nodes, p.createDefaultArrayItem(parentPath), parent.id, idx + 1)
+    const newChildIds = [...parent.childIds]
+    newChildIds.splice(idx + 1, 0, newId)
+    reindexChildren(nodes, newChildIds, idx + 1)
+    nodes.set(parent.id, { ...parent, childIds: newChildIds })
+  } else {
+    const nextKey = p.suggestChildKey(collectSiblingKeys(model, parent.id), parentPath)
+    newId = addNodeToMap(nodes, p.createDefaultObjectValue(parentPath, nextKey), parent.id, nextKey)
+    nodes.set(parent.id, { ...parent, childIds: [...parent.childIds, newId] })
+  }
+  return makeResult(nodes, newId, parent.id)
+}
+
+/** 删除节点（根节点和受保护节点不可删除） */
+export function deleteNode(model: TreeModel, uid: string, policy?: Partial<JsonTreePolicy>): MutationResult {
+  const target = model.get(uid)
+  if (target?.parentId === undefined || target.parentId === null) return unchanged(model, uid)
+  if (resolvePolicy(policy).isProtected(getNodePath(model, uid))) return unchanged(model, uid)
+
+  const parent = model.get(target.parentId)
+  if (!parent) return unchanged(model, uid)
+  const idx = parent.childIds.indexOf(uid)
+  const newChildIds = parent.childIds.filter(c => c !== uid)
+  const nodes = new Map(model)
+
+  if (parent.type === 'array') reindexChildren(nodes, newChildIds, idx)
+  nodes.set(parent.id, { ...parent, childIds: newChildIds })
+  removeSubtree(nodes, uid)
+  return makeResult(nodes, parent.id, parent.id)
+}
+
+/** 重命名对象键 */
+export function renameNodeKey(model: TreeModel, uid: string, nextKeyInput: string, policy?: Partial<JsonTreePolicy>): MutationResult {
+  const target = model.get(uid)
+  if (!target) return unchanged(model, uid)
+  if (!resolvePolicy(policy).canEditKey(getNodePath(model, uid))) return unchanged(model, uid)
 
   const nextKey = nextKeyInput.trim()
-  if (nextKey.length === 0) return root
+  if (nextKey.length === 0 || typeof target.segment !== 'string') return unchanged(model, uid)
 
-  const currentSegment = path[path.length - 1]
-  if (typeof currentSegment !== 'string') return root
-
-  const parentPath = path.slice(0, -1)
-  const parentValue = getValueAtPath(root, parentPath)
-  if (!isJsonObject(parentValue)) return root
-
-  const uniqueKey = ensureUniqueObjectKey(parentValue, nextKey, currentSegment)
-  if (uniqueKey === currentSegment) return root
-
-  // 保持键顺序，仅替换目标键名
-  const renamedEntries: Array<[string, JsonValue]> = Object.entries(parentValue).map(
-    ([key, value]) => key === currentSegment ? [uniqueKey, value] : [key, value],
+  const parent = target.parentId !== null ? (model.get(target.parentId) ?? null) : null
+  const uniqueKey = ensureUniqueObjectKey(
+    parent ? collectSiblingKeys(model, parent.id) : {},
+    nextKey, target.segment,
   )
-  return updateValueAtPath(root, parentPath, Object.fromEntries(renamedEntries) as JsonObject)
+  if (uniqueKey === target.segment) return unchanged(model, uid)
+
+  const nodes = new Map(model)
+  nodes.set(uid, { ...target, segment: uniqueKey })
+  return makeResult(nodes, uid, parent?.id ?? null)
 }
 
-/**
- * 切换 path 指向的节点类型。值会被替换为目标类型的默认值。
- */
-export function updateNodeType(
-  root: JsonDocument,
-  path: JsonPath,
-  nextType: JsonNodeType,
-  policy?: Partial<JsonTreePolicy>,
-): JsonDocument {
-  const p = resolvePolicy(policy)
-  if (!p.canEditType(path)) return root
-  return updateValueAtPath(root, path, createValueByType(nextType))
+/** 切换节点类型 */
+export function updateNodeType(model: TreeModel, uid: string, nextType: JsonNodeType, policy?: Partial<JsonTreePolicy>): MutationResult {
+  const target = model.get(uid)
+  if (!target) return unchanged(model, uid)
+  if (!resolvePolicy(policy).canEditType(getNodePath(model, uid))) return unchanged(model, uid)
+
+  const nodes = new Map(model)
+  for (const c of target.childIds) removeSubtree(nodes, c)
+
+  const isContainer = nextType === 'object' || nextType === 'array'
+  const defaultValue = createValueByType(nextType)
+  nodes.set(uid, {
+    ...target, type: nextType,
+    value: isContainer ? null : (defaultValue as string | number | boolean | null),
+    childIds: [],
+  })
+  return makeResult(nodes, uid)
 }
 
-/**
- * 更新字符串值。
- */
-export function updateNodeStringValue(
-  root: JsonDocument,
-  path: JsonPath,
-  nextValue: string,
-): JsonDocument {
-  return updateValueAtPath(root, path, nextValue)
-}
+/** 直接替换节点值 */
+export function updateNodeValue(model: TreeModel, uid: string, nextValue: JsonValue): MutationResult {
+  const target = model.get(uid)
+  if (!target) return unchanged(model, uid)
 
-/**
- * 更新数字值。非有限数回退为 0。
- */
-export function updateNodeNumberValue(
-  root: JsonDocument,
-  path: JsonPath,
-  nextValue: number | null | undefined,
-): JsonDocument {
-  const safeValue = typeof nextValue === 'number' && Number.isFinite(nextValue) ? nextValue : 0
-  return updateValueAtPath(root, path, safeValue)
-}
+  const nodes = new Map(model)
+  for (const c of target.childIds) removeSubtree(nodes, c)
 
-/**
- * 更新布尔值。
- */
-export function updateNodeBooleanValue(
-  root: JsonDocument,
-  path: JsonPath,
-  nextValue: boolean,
-): JsonDocument {
-  return updateValueAtPath(root, path, nextValue)
+  const newType = inferNodeType(nextValue)
+  const isContainer = newType === 'object' || newType === 'array'
+  if (isContainer) {
+    // 重建子树
+    const childIds: string[] = []
+    if (Array.isArray(nextValue)) {
+      for (let i = 0; i < nextValue.length; i++)
+        childIds.push(addNodeToMap(nodes, nextValue[i] as JsonValue, uid, i))
+    } else if (isJsonObject(nextValue)) {
+      for (const [k, v] of Object.entries(nextValue))
+        childIds.push(addNodeToMap(nodes, v, uid, k))
+    }
+    nodes.set(uid, { ...target, type: newType, value: null, childIds })
+  } else {
+    nodes.set(uid, { ...target, type: newType, value: nextValue as string | number | boolean | null, childIds: [] })
+  }
+  return makeResult(nodes, uid)
 }
 
 // ════════════════════════════════════════════════════════════
@@ -603,66 +640,13 @@ function inferNodeType(value: JsonValue): JsonNodeType {
   return 'null'
 }
 
-function formatValuePreview(type: JsonNodeType | 'root', value: JsonValue, childCount: number): string {
-  if (type === 'root' || type === 'object') return `${childCount} 个字段`
+export function formatValuePreview(type: JsonNodeType, value: JsonValue, childCount: number): string {
+  if (type === 'object') return `${childCount} 个字段`
   if (type === 'array') return `${childCount} 项`
   if (type === 'null') return 'null'
   if (typeof value === 'boolean') return value ? 'true' : 'false'
   if (typeof value === 'number') return String(value)
   return typeof value === 'string' ? value : ''
-}
-
-// ── 路径读写 ─────────────────────────────────────────────────
-
-function getValueAtPath(root: JsonDocument, path: JsonPath): JsonValue {
-  let current: JsonValue = root as JsonValue
-  for (const segment of path) {
-    if (typeof segment === 'number') {
-      if (!Array.isArray(current)) throw new Error(`路径不是数组: ${formatJsonPath(path)}`)
-      current = current[segment] as JsonValue
-    } else {
-      if (!isJsonObject(current)) throw new Error(`路径不是对象: ${formatJsonPath(path)}`)
-      current = current[segment] as JsonValue
-    }
-  }
-  return current
-}
-
-function updateValueAtPath(root: JsonDocument, path: JsonPath, nextValue: JsonValue): JsonDocument {
-  if (path.length === 0) {
-    if (isJsonObject(nextValue)) return nextValue
-    if (Array.isArray(nextValue)) return nextValue
-    return root
-  }
-  const result = applyPathUpdate(root as JsonValue, path, () => nextValue)
-  if (isJsonObject(result)) return result
-  if (Array.isArray(result)) return result as JsonValue[]
-  return root
-}
-
-function applyPathUpdate(
-  current: JsonValue,
-  path: JsonPath,
-  updater: (value: JsonValue) => JsonValue,
-): JsonValue {
-  if (path.length === 0) return updater(current)
-
-  const segment = path[0]
-  if (segment === undefined) return updater(current)
-  const rest = path.slice(1)
-
-  if (typeof segment === 'number') {
-    if (!Array.isArray(current)) throw new Error(`路径不是数组: ${formatJsonPath(path)}`)
-    const nextArray = [...current]
-    nextArray[segment] = applyPathUpdate(nextArray[segment] as JsonValue, rest, updater)
-    return nextArray
-  }
-
-  if (!isJsonObject(current)) throw new Error(`路径不是对象: ${formatJsonPath(path)}`)
-  return {
-    ...current,
-    [segment]: applyPathUpdate(current[segment] as JsonValue, rest, updater),
-  }
 }
 
 // ── 通用工具 ─────────────────────────────────────────────────
@@ -705,5 +689,132 @@ function asSchemaRecord(value: unknown): JsonSchemaRecord | null {
  * 从 JSON 对象中读取指定路径的值。路径不存在时抛异常。
  */
 export function getValueAtJsonPath(root: JsonDocument, path: JsonPath): JsonValue {
-  return getValueAtPath(root, path)
+  let current: JsonValue = root as JsonValue
+  for (const segment of path) {
+    if (typeof segment === 'number') {
+      if (!Array.isArray(current)) throw new Error(`路径不是数组: ${formatJsonPath(path)}`)
+      current = current[segment] as JsonValue
+    } else {
+      if (!isJsonObject(current)) throw new Error(`路径不是对象: ${formatJsonPath(path)}`)
+      current = current[segment] as JsonValue
+    }
+  }
+  return current
+}
+
+// ════════════════════════════════════════════════════════════
+// 平铺 ↔ 树往返管线（UUID 方案）
+// ════════════════════════════════════════════════════════════
+
+/** 平铺行（编辑态） */
+export interface FlatJsonRow {
+  readonly id: string
+  readonly parentId: string | null
+  readonly segment: string | number
+  readonly type: JsonNodeType
+  readonly value: string | number | boolean | null
+  /** 同级排序权重（拖拽后写入，restoreJsonDocumentFromFlat 按此排序） */
+  readonly order: number
+}
+
+/** 平铺文档（保留根类型，便于还原） */
+export interface FlatJsonTreeDocument {
+  readonly rootType: 'object' | 'array'
+  readonly rows: FlatJsonRow[]
+}
+
+/**
+ * 将 JsonDocument 展开为平铺行数组（带 UUID），用于编辑态。
+ *
+ * 不包含虚拟根节点——顶层条目的 parentId 为 null，根类型由 rootType 字段表达。
+ */
+export function flattenJsonDocumentForEdit(doc: JsonDocument): FlatJsonTreeDocument {
+  const rootType = Array.isArray(doc) ? 'array' as const : 'object' as const
+  const rows: FlatJsonRow[] = []
+
+  function walk(value: JsonValue, parentId: string | null, segment: string | number, order: number): void {
+    const id = generateUid()
+    const type = inferNodeType(value)
+    const isContainer = type === 'object' || type === 'array'
+
+    rows.push({
+      id, parentId, segment, type,
+      value: isContainer ? null : (value as string | number | boolean | null),
+      order,
+    })
+
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) walk(value[i] as JsonValue, id, i, i)
+    } else if (isJsonObject(value)) {
+      let idx = 0
+      for (const [k, v] of Object.entries(value)) walk(v, id, k, idx++)
+    }
+  }
+
+  if (Array.isArray(doc)) {
+    for (let i = 0; i < doc.length; i++) walk(doc[i] as JsonValue, null, i, i)
+  } else {
+    let idx = 0
+    for (const [k, v] of Object.entries(doc)) walk(v, null, k, idx++)
+  }
+
+  return { rootType, rows }
+}
+
+/**
+ * 从平铺行还原 JsonDocument。按 `order` 字段排序同级子节点。
+ *
+ * 失败快速：parentId 指向不存在的节点时抛异常。
+ */
+export function restoreJsonDocumentFromFlat(flat: FlatJsonTreeDocument): JsonDocument {
+  const { rows, rootType } = flat
+  const idMap = new Map<string, FlatJsonRow>()
+  const childrenMap = new Map<string | null, FlatJsonRow[]>()
+
+  for (const row of rows) {
+    idMap.set(row.id, row)
+    const siblings = childrenMap.get(row.parentId)
+    if (siblings) siblings.push(row)
+    else childrenMap.set(row.parentId, [row])
+  }
+
+  for (const row of rows) {
+    if (row.parentId !== null && !idMap.has(row.parentId)) {
+      throw new Error(`restoreJsonDocumentFromFlat: missing parent "${row.parentId}"`)
+    }
+  }
+
+  for (const siblings of childrenMap.values()) {
+    siblings.sort((a, b) => a.order - b.order)
+  }
+
+  function buildValue(row: FlatJsonRow): JsonValue {
+    const children = childrenMap.get(row.id)
+    if (row.type === 'array') return (children ?? []).map(c => buildValue(c))
+    if (row.type === 'object') {
+      const obj: JsonObject = {}
+      for (const c of children ?? []) obj[c.segment as string] = buildValue(c)
+      return obj
+    }
+    return row.value as JsonValue
+  }
+
+  const roots = childrenMap.get(null) ?? []
+  if (rootType === 'array') {
+    return roots.map(r => buildValue(r)) as JsonDocument
+  }
+  const obj: JsonObject = {}
+  for (const r of roots) obj[r.segment as string] = buildValue(r)
+  return obj as JsonDocument
+}
+
+/**
+ * 便捷入口：按 originalData 的类型还原（对象 → 对象，数组 → 数组）。
+ */
+export function restoreJsonDocumentByOriginalType(
+  rows: FlatJsonRow[],
+  originalData: JsonDocument,
+): JsonDocument {
+  const rootType = Array.isArray(originalData) ? 'array' as const : 'object' as const
+  return restoreJsonDocumentFromFlat({ rootType, rows })
 }
