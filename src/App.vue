@@ -105,10 +105,26 @@
         </div>
       </div>
       <keep-alive v-else-if="mode === 'multi'" :max="10">
-        <component :is="Component" :key="route.path" />
+        <component
+          v-if="isSparkRendererRoute"
+          :is="Component"
+          ref="activeSparkRendererHost"
+          :key="route.path"
+          :page-service="pageUiService"
+          :module-context="pageModuleContext"
+        />
+        <component v-else :is="Component" :key="route.path" />
       </keep-alive>
       <transition v-else name="fade" mode="out-in">
-        <component v-if="!contextGuard" :is="Component" :key="route.fullPath" />
+        <component
+          v-if="!contextGuard && isSparkRendererRoute"
+          :is="Component"
+          ref="activeSparkRendererHost"
+          :key="route.fullPath"
+          :page-service="pageUiService"
+          :module-context="pageModuleContext"
+        />
+        <component v-else-if="!contextGuard" :is="Component" :key="route.fullPath" />
       </transition>
     </router-view>
 
@@ -118,7 +134,8 @@
     </template>
   </AppLayout>
 
-  <!-- AI 聊天浮窗已下沉到 AppPageRendererBridge（仅配置页面渲染） -->
+  <!-- 单入口助手浮窗：应用层统一承载，配置页通过 page refresh 信号刷新当前激活实例 -->
+  <AiAssistantHub v-if="enableAI" />
 
   <!-- 主题配置抽屉 -->
   <ThemeConfigurator
@@ -138,7 +155,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
+import { appPageUiService, useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
 import { getToken, getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
@@ -151,7 +168,7 @@ import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import NavIcon from '@/components/NavIcon.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
-import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
+import { clearAllCache, getCacheStats, onPageRefresh } from '@spark-view/spark-ai'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { createAuthHeaders } from '@/services/http'
 import { startSseDebugScreenshotBridge } from '@/services/sse-debug-screenshot'
@@ -160,6 +177,7 @@ import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
 import { getPlatformPaths } from '@/config/vue-page-map'
+import type { IModuleContext } from '@spark-view/spark-utils'
 
 const route = useRoute()
 const router = useRouter()
@@ -182,6 +200,11 @@ const { mode, setMode } = useTabPages()
 useColorScheme()
 let _stopSseDebugScreenshot: (() => void) | null = null
 let _stopSseDebugRoute: (() => void) | null = null
+let _pageRefreshTimer: ReturnType<typeof setTimeout> | null = null
+
+interface ReloadableRouteComponent {
+  reload?: () => Promise<void> | void
+}
 
 interface AppContextGuardState {
   title: string
@@ -298,6 +321,37 @@ const nav = useNavigation(_navRoot, {
   onCrossAppNavigate: handleCrossAppNavigate,
   getHeaders: createAuthHeaders,
 })
+const pageUiService = appPageUiService
+const activeSparkRendererHost = ref<ReloadableRouteComponent | null>(null)
+const isSparkRendererRoute = computed(() => {
+  const routeType = route.meta['type']
+  return routeType === 'config-page' || routeType === 'cross-project-ref'
+})
+const pageModuleContext = computed<IModuleContext | null>(() => {
+  const state = nav.moduleContext.value
+  if (!state) return null
+  return {
+    selected: state.selected,
+    items: state.items,
+    nodeId: state.nodeId,
+  }
+})
+const _stopPageRefresh = onPageRefresh(() => {
+  if (!isSparkRendererRoute.value) return
+  if (_pageRefreshTimer !== null) {
+    clearTimeout(_pageRefreshTimer)
+  }
+  _pageRefreshTimer = setTimeout(() => {
+    _pageRefreshTimer = null
+    const reload = activeSparkRendererHost.value?.reload
+    if (typeof reload !== 'function') return
+    void Promise.resolve(reload.call(activeSparkRendererHost.value)).catch((error: unknown) => {
+      if (import.meta.env.DEV) {
+        console.error('[App] 当前激活页面刷新失败', error)
+      }
+    })
+  }, 120)
+})
 
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
 function applyNavTree(navData: AppNavRoot | null): void {
@@ -336,6 +390,11 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (_pageRefreshTimer !== null) {
+    clearTimeout(_pageRefreshTimer)
+    _pageRefreshTimer = null
+  }
+  _stopPageRefresh()
   _stopSseDebugScreenshot?.()
   _stopSseDebugScreenshot = null
   _stopSseDebugRoute?.()
@@ -430,6 +489,7 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatWidget = defineAsyncComponent(() => import('@/components/AiChatWidget.vue'))
+const AiAssistantHub = defineAsyncComponent(() => import('@/components/AiAssistantHub.vue'))
 const showAiChat = ref(false)
 
 /** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */

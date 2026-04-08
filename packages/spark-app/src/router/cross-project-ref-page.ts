@@ -1,4 +1,4 @@
-import { computed, defineComponent, h } from 'vue'
+import { computed, defineComponent, h, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { SparkPageRenderer } from '@spark-view/spark-component'
 import {
@@ -17,7 +17,11 @@ import type {
   RuleConfig,
 } from '@spark-view/spark-page-config'
 import { createRequest, Logger } from '@spark-view/spark-utils'
-import type { HttpClient, RequestConfig } from '@spark-view/spark-utils'
+import type { HttpClient, IModuleContext, IPageServiceCapability, RequestConfig } from '@spark-view/spark-utils'
+
+interface ReloadableRenderer {
+  reload?: () => Promise<void>
+}
 
 const logger = Logger('CrossProjectRefPage')
 
@@ -281,9 +285,24 @@ export const CrossProjectRefPage = defineComponent({
       type: Object as () => ConfigLoader,
       required: true,
     },
+    pageService: {
+      type: Object as () => Partial<IPageServiceCapability>,
+      required: false,
+    },
+    moduleContext: {
+      type: Object as () => IModuleContext | null,
+      default: null,
+    },
   },
-  setup(props) {
+  setup(props, { expose }) {
     const route = useRoute()
+    const pageRendererRef = ref<ReloadableRenderer | null>(null)
+
+    expose({
+      async reload() {
+        await pageRendererRef.value?.reload?.()
+      },
+    })
 
     const tenantId = computed(() => asNonEmptyString(route.params['tenantId']))
     const hostProjectId = computed(() => asNonEmptyString(route.params['projectId']))
@@ -337,9 +356,12 @@ export const CrossProjectRefPage = defineComponent({
       }
 
       return h(SparkPageRenderer, {
+        ref: pageRendererRef,
         key: `${targetProjectId.value}:${targetPageId.value}`,
         pageId: targetPageId.value,
         configLoader: scopedLoader.value,
+        ...(props.pageService !== undefined ? { pageService: props.pageService } : {}),
+        moduleContext: props.moduleContext,
       })
     }
   },

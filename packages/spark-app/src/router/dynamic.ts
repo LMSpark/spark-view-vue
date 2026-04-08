@@ -410,6 +410,7 @@ export class DynamicRouter {
           component: this.pageComponent,
           props: { configLoader: this.configLoader },
           meta: {
+            type: 'config-page',
             pageId,
             title: node.title,
             ...(node.description !== undefined && { description: node.description }),

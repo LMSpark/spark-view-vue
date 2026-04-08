@@ -269,7 +269,7 @@ async function startApp() {
 
     // 6. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
-    const AppPageRendererBridge = (await import('./AppPageRendererBridge.vue')).default
+    const { SparkPageRenderer } = await import('@spark-view/spark-component')
     
     await SparkApp.start({
       // === 应用根组件 ===
@@ -295,7 +295,7 @@ async function startApp() {
       // === 页面配置系统（路由从 DB 动态加载）===
       pageConfig: {
         ...appConfig.pageConfig,
-        pageComponent: AppPageRendererBridge,
+        pageComponent: SparkPageRenderer,
         componentMap,
         // 动态注入认证 / 租户请求头（FileLoader 使用 axios，不经过 fetch 拦截器）
         getHeaders: createAuthHeaders,
@@ -441,8 +441,8 @@ async function startApp() {
             _bufferedLogs.length = 0
             _loopCollector = loop.collector
 
-            // SSE 监听：AI 写入文件后自动清缓存 + 页面组件重建
-            // 通过 pageRefreshKey 递增让 router-view 内的组件重建，路由不变，AI 面板不受影响
+            // SSE 监听：AI 写入文件后自动清缓存 + 通知当前激活的配置页实例执行 reload()
+            // 刷新入口放在 App.vue，避免通过改 key 重挂载页面而破坏 SPA keep-alive 缓存语义
             setupHotReload(
               () => _currentPageId ?? '',
               () => { triggerPageRefresh() },
