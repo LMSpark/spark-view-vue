@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-08T17:50:01.964Z",
+  "buildTime": "2026-04-08T21:09:28.800Z",
   "componentCount": 121,
   "registry": {
     "containers": [
@@ -309,13 +309,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -328,17 +322,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点列表（列节点 + dock 节点）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "filter",
@@ -952,6 +941,11 @@
       "description": "数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。",
       "props": [
         {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
           "name": "dataKey",
           "type": "string",
           "required": false,
@@ -1004,13 +998,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -1076,7 +1064,7 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
@@ -1085,8 +1073,7 @@
         },
         {
           "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "type": "string"
         },
         {
           "name": "toolbar",
@@ -1329,6 +1316,11 @@
       "description": "数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。",
       "props": [
         {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
           "name": "dataKey",
           "type": "string",
           "required": false,
@@ -1406,13 +1398,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -1495,7 +1481,7 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
@@ -1504,8 +1490,7 @@
         },
         {
           "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "type": "string"
         },
         {
           "name": "toolbar",
@@ -1821,13 +1806,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -1840,17 +1819,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（树节点内容配置）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "toolbar",
@@ -2392,13 +2366,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -2577,17 +2545,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（列表项内容配置）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "toolbar",
@@ -3174,13 +3137,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -3208,17 +3165,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（标签面板配置）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "toolbar",
@@ -3354,13 +3306,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -3389,17 +3335,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（折叠项配置）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "onChange",
@@ -3534,13 +3475,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -3568,17 +3503,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（步骤配置）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "toolbar",
@@ -3779,13 +3709,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -3893,17 +3817,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "onClose",
@@ -4197,13 +4116,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -4311,17 +4224,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "onClose",
@@ -4700,13 +4608,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -4935,17 +4837,12 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
         },
         {
           "name": "header",
@@ -5833,13 +5730,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -5977,13 +5868,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -6071,13 +5956,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -6443,13 +6322,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -6565,13 +6438,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -6690,13 +6557,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -6743,13 +6604,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -6835,13 +6690,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -7004,13 +6853,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -7083,13 +6926,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -7257,13 +7094,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -7462,13 +7293,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -7502,13 +7327,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -7612,13 +7431,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -8099,13 +7912,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -8300,13 +8107,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -8458,13 +8259,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -8591,13 +8386,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -8741,13 +8530,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -8863,13 +8646,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -8925,13 +8702,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -9010,13 +8781,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -9118,13 +8883,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -9249,13 +9008,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -9363,13 +9116,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -9471,13 +9218,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -9580,13 +9321,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -9704,13 +9439,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -9890,13 +9619,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -10128,13 +9851,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -10303,13 +10020,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -10433,13 +10144,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -10503,13 +10208,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -10637,13 +10336,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -10757,13 +10450,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -10951,13 +10638,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -11138,13 +10819,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -11211,13 +10886,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -11271,13 +10940,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -11413,13 +11076,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -11522,13 +11179,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -11714,13 +11365,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -11851,13 +11496,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -12846,13 +12485,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -13004,13 +12637,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -13399,13 +13026,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -13610,13 +13231,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -13638,13 +13253,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -13712,13 +13321,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -13766,13 +13369,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -13820,13 +13417,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -13863,13 +13454,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -13955,13 +13540,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -14042,13 +13621,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -14115,13 +13688,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -14409,8 +13976,8 @@
                 "required": true,
                 "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
               },
-              "__@toPrimitive@956": {
-                "name": "__@toPrimitive@956",
+              "__@toPrimitive@955": {
+                "name": "__@toPrimitive@955",
                 "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                 "required": true,
                 "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -14689,8 +14256,8 @@
                     "required": true,
                     "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                   },
-                  "__@toPrimitive@956": {
-                    "name": "__@toPrimitive@956",
+                  "__@toPrimitive@955": {
+                    "name": "__@toPrimitive@955",
                     "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                     "required": true,
                     "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -14711,13 +14278,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -14785,13 +14346,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -14824,13 +14379,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -14939,13 +14488,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -15043,13 +14586,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -15194,13 +14731,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -15296,13 +14827,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -15463,13 +14988,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -15568,13 +15087,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -15762,13 +15275,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -15917,13 +15424,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -16027,13 +15528,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -16225,13 +15720,7 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递）"
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false,
-          "description": "节点唯一标识\r\n\r\n用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。\r\n绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。"
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
