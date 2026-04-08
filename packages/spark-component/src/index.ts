@@ -133,5 +133,4 @@ export type {
 export type {
   PageContext,
   PageConfig,
-  PageRendererProps,
 } from './page/index.js'

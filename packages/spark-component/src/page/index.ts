@@ -16,5 +16,3 @@ export type {
   PageContext,
   PageConfig,
 } from './context/types.js'
-
-export type { PageRendererProps } from './renderer/SparkPageRenderer.vue'

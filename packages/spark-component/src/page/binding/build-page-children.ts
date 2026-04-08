@@ -1,9 +1,9 @@
 /**
- * RuleConfig → SparkPageRenderer.children 归并器
+ * RuleConfig → page children 归并器
  *
  * 边界约束：
  * - spark-page-config 负责提供声明式 RuleConfig 树
- * - spark-component 负责将其物化为运行时 SparkNode.children
+ * - spark-component 负责将其物化为运行时 children（SparkNode[]）
  *
  * 归并内容：
  * - 根级业务字段收入 props
