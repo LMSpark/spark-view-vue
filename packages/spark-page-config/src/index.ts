@@ -11,6 +11,7 @@ export type {
   PageDataConfig,
   PageScriptConfig,
   PageCssConfig,
+  PageConfigFiles,
   PageConfig,
   ConfigLoaderOptions,
   ConfigLoadResult,

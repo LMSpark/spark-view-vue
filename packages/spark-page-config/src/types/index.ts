@@ -8,7 +8,12 @@ import type { HttpClient } from '@spark-view/spark-utils'
 
 /**
  * 页面规则配置（rule.json）
- * 组件树结构，描述页面如何渲染
+ *
+ * 这是 spark-page-config 侧的声明式组件树，只表达“页面想渲染什么”。
+ * 它不直接等同 spark-component 运行时的 SparkNode：
+ * - 根级业务字段仍保留在声明位置
+ * - on 仍是配置值，不是闭包
+ * - props 合并 / 事件绑定 / id 去重由 spark-component 的 binding 层完成
  */
 export interface RuleConfig {
   type: string // 组件类型，如 'div', 'el-button', 'r-table'
@@ -46,14 +51,27 @@ export type PageScriptConfig = string
 export type PageCssConfig = string
 
 /**
- * 完整页面配置
+ * 页面四文件载荷（不含 pageId）
+ *
+ * 只描述页面内容本身，不掺入路由、Vue、能力系统等运行时语义。
+ * SparkPageRenderer 会将该四文件 bundle 编排为：
+ * - rule   → pageChildren
+ * - data   → DataSet 运行时
+ * - script → 沙箱函数表
+ * - css    → 作用域样式文本
  */
-export interface PageConfig {
-  pageId: string
+export interface PageConfigFiles {
   rule: RuleConfig[]
   data: PageDataConfig
   script: PageScriptConfig | undefined
   css: PageCssConfig | undefined
+}
+
+/**
+ * 完整页面配置
+ */
+export interface PageConfig extends PageConfigFiles {
+  pageId: string
 }
 
 /**

@@ -12,13 +12,13 @@
     <!-- 动态注入页面样式（自动添加作用域） -->
     <component :is="'style'" v-if="scopedCss">{{ scopedCss }}</component>
 
-    <!-- 页面内容树（rule.json → normalizeRuleChildren → pageChildren，递归渲染） -->
+    <!-- 页面内容树（rule.json → buildPageChildren → pageChildren，递归渲染） -->
     <div ref="pageContainer" :data-page="currentPageId" class="spark-page-container">
       <slot name="content" :children="pageChildren" :rules="pageChildren">
         <SparkComponentRenderer
           v-for="(child, i) in pageChildren"
-          :key="nodeId(child as SparkNode) ?? `spark-child-${i}`"
-          :config="(child as SparkNode)"
+          :key="nodeId(child) ?? `spark-child-${i}`"
+          :config="child"
         />
       </slot>
     </div>
@@ -26,22 +26,27 @@
 </template>
 
 <script lang="ts">
-import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
+import type { ConfigLoader, PageConfig, PageConfigFiles } from '@spark-view/spark-page-config'
 import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
+
+export interface PageRendererConfigInput extends PageConfigFiles {
+  /** 直传四文件时可附带 pageId；未提供则回退到 props.pageId / route */
+  pageId?: string
+}
 
 /**
  * 页面渲染器 Props — 对齐 h(type, props, children)
  *
- * SparkPageRenderer 的输入本质是 PageConfig 四文件 + 运行时选项：
+ * SparkPageRenderer 的输入本质是 spark-page-config 定义的四文件 bundle + 运行时选项：
  *
  * | 四文件         | PageConfig 字段 | 渲染器视角                              |
  * |----------------|----------------|-----------------------------------------|
- * | rule.json      | config.rule    | → normalizeRuleChildren → **children**  |
+ * | rule.json      | config.rule    | → buildPageChildren → **children**      |
  * | pagedata.json  | config.data    | → DataSet → sparkProvide(PAGE_DATASET)  |
  * | script.js      | config.script  | → compileFunctions → Render* 注册       |
  * | style.css      | config.css     | → setScopedCss（作用域隔离注入）         |
  *
- * 四文件来源二选一：pageConfig（直传）或 configLoader + pageId（异步加载）。
+ * 四文件来源二选一：pageConfig（直传四文件）或 configLoader + pageId（异步加载）。
  */
 export interface PageRendererProps {
   // ── 四文件来源（二选一） ──────────────────────────────────────────
@@ -51,7 +56,7 @@ export interface PageRendererProps {
   /** 页面唯一标识符（优先级最高） */
   pageId?: string
   /** 页面配置对象（直接传入四文件，跳过加载） */
-  pageConfig?: PageConfig
+  pageConfig?: PageRendererConfigInput
 
   // ── 功能开关 ─────────────────────────────────────────────────────
 
@@ -100,24 +105,28 @@ export interface PageRendererProps {
  *
  * 对齐 h() 三段式模型：
  *   type     = 'spark-page'（隐式，本组件自身）
- *   props    = PageConfig 四文件（rule · data · script · css）+ 运行时选项
- *   children = rule.json 经 normalizeRuleChildren() 归一化后的 SparkNode[]
+ *   props    = PageConfigFiles 四文件（rule · data · script · css）+ 运行时选项
+ *   children = rule.json 经 buildPageChildren() 归并后的 SparkNode[]
  *
- * rule.json 是"声明式 children"：
- *   加载 → normalizeRuleChildren（根级字段收入 props、事件绑定、ID 去重）
+ * spark-page-config 负责四文件契约与加载：
+ *   rule / data / script / css 以中立配置形态进入渲染层
+ *
+ * spark-component 负责运行时物化：
+ *   rule.json 是"声明式 children"
+ *   加载 → buildPageChildren（根级字段收入 props、事件绑定、ID 去重）
  *   → pageChildren（SparkNode[]）→ SparkComponentRenderer 递归渲染
  *
  * 四文件加载流水线（applyConfig）：
  *   1. css    → setScopedCss（作用域隔离注入）
  *   2. script → compileFunctions → registerRenderComponents
  *   3. data   → DataSet 初始化 → sparkProvide(PAGE_DATASET)
- *   4. rule   → normalizeRuleChildren → pageChildren（驱动模板渲染）
+ *   4. rule   → buildPageChildren → pageChildren（驱动模板渲染）
  *
  * @component
  * @example
  * ```vue
- * <!-- 全量 PageConfig -->
- * <SparkPageRenderer :pageConfig="fullConfig" />
+ * <!-- 直传四文件 -->
+ * <SparkPageRenderer :pageConfig="pageFiles" pageId="user-list" />
  *
  * <!-- configLoader + pageId -->
  * <SparkPageRenderer :configLoader="loader" pageId="user-list" />
@@ -131,7 +140,7 @@ import { Logger, PAGE_SERVICE } from '@spark-view/spark-utils'
 import type { HttpClient } from '@spark-view/spark-utils'
 import type { DataSet } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '@spark-view/spark-utils'
-import { nodeId, SPARK_NODE_STRUCT_KEYS, type SparkNode } from '../../core/types'
+import { nodeId, type SparkNode } from '../../core/types'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE } from '../../core/capabilities'
 import { PAGE_PERMISSION_MODE } from '../../permission/page-permission-mode'
 import type { ModuleContextCapability, PageCssScopeCapability } from '../../core/capabilities'
@@ -143,7 +152,7 @@ import { buildPageService } from '../services/buildPageService'
 import { buildPageContext } from '../context/buildPageContext'
 import { buildPageRoute, resolvePageId } from '../context/buildPageRoute'
 import { registerRenderFunctions } from '../services/registerRenderFunctions'
-import { normalizeRuleEvents, normalizeOnProps } from '../binding/bind-normalize'
+import { buildPageChildren } from '../binding'
 import type { ActionExecutionContext } from '../actions'
 import type { PageContext } from '../context/types'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
@@ -174,9 +183,10 @@ sparkProvide(PAGE_SERVICE, pageService)
 // ==================== 响应式状态 ====================
 
 const currentPageId = ref('')
-/** rule.json 归一化后的页面子节点（SparkNode[]），驱动模板递归渲染 */
-const pageChildren = ref<unknown[]>([])
-const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
+/** PageConfig.rule 归并后的 SparkPageRenderer 实际 children，驱动模板递归渲染 */
+const pageChildren = ref<SparkNode[]>([])
+type PageFunctionsMap = Record<string, (...args: unknown[]) => unknown>
+const pageFunctions = ref<PageFunctionsMap>({})
 let _inFlightPageId: string | null = null
 const pageContainer = ref<HTMLElement | null>(null)
 type ModuleContextChangeHandler = (next: IModuleContext | null, prev: IModuleContext | null) => void
@@ -280,147 +290,39 @@ function executeScript(pageId: string, scriptText: string): void {
   }
 }
 
-/**
- * rule.json → pageChildren 归一化管线
- *
- * 职责（递归，深度优先）：
- * 1. 根级业务字段（id / on / field / dataKey …）收入 props（SPARK_NODE_STRUCT_KEYS 外的一切）
- * 2. on / ActionDescriptor → props 事件回调
- * 3. props 内嵌套数组/对象递归归一化
- * 4. children 递归
- * 5. ID 去重（同页面避免重复 id）
- */
-function normalizeRuleChildren(
-  rules: unknown[],
-  pageFunctionsMap: Record<string, (...args: unknown[]) => unknown>
-): unknown[] {
-  const callFunc = (functionName: string, ...args: unknown[]) => {
-    const fn = pageFunctionsMap[functionName]
-    if (typeof fn === 'function') return fn(...args)
-    if (import.meta.env.DEV) {
-      logger.warn(`[SparkPageRenderer] 事件函数未定义: ${functionName}`)
-    }
-    return undefined
+function callPageFunction(functionName: string, ...args: unknown[]): unknown {
+  const fn = pageFunctions.value[functionName]
+  if (typeof fn === 'function') return fn(...args)
+  if (import.meta.env.DEV) {
+    logger.warn(`[SparkPageRenderer] 事件函数未定义: ${functionName}`)
   }
+  return undefined
+}
 
-  // ── Action Descriptor 执行上下文（延迟求值） ──
-  const actionCtx: ActionExecutionContext = {
+function createPageActionContext(): ActionExecutionContext {
+  return {
     getDataSet: () => pds.dataSet,
     getPageService: () => pageService,
     getRouter: () => router,
-    callFunc,
+    callFunc: callPageFunction,
   }
-
-  // ── ID 去重 ──
-  // 局部 Set：每次绑定天然全新，SPA 页面切换无需额外清理。
-  const usedIds = new Set<string>()
-
-  /** 确保节点拥有全局唯一 ID */
-  function ensureUniqueId(type: string, existingId: string | undefined): string {
-    const base = existingId ?? type
-    if (!usedIds.has(base)) {
-      usedIds.add(base)
-      return base
-    }
-    let n = 2
-    while (usedIds.has(`${base}_${n}`)) n++
-    const unique = `${base}_${n}`
-    usedIds.add(unique)
-    return unique
-  }
-
-  // ── 结构键 vs 输入键 ──
-  // SPARK_NODE_STRUCT_KEYS（type/props/children）归框架所有；
-  // 根级业务输入在绑定阶段统一归集到 props，运行时只消费 props。
-
-  const bindNode = (node: unknown): unknown => {
-    if (Array.isArray(node)) return node.map(bindNode)
-    if (node === null || typeof node !== 'object') return node
-
-    const current = node as Record<string, unknown>
-
-    // 只对 SparkNode（有 type 属性的对象）做结构归一化；
-    // 纯数据对象（如 options: [{ label, value }]）原样保留，不做 props 包装。
-    if (typeof current['type'] !== 'string') return node
-
-    const cloned: Record<string, unknown> = {}
-
-    for (const key of SPARK_NODE_STRUCT_KEYS) {
-      if (key in current) cloned[key] = current[key]
-    }
-
-    const propsObj = current['props'] !== null && typeof current['props'] === 'object' && !Array.isArray(current['props'])
-      ? { ...(current['props'] as Record<string, unknown>) }
-      : {}
-
-    normalizeOnProps(propsObj, callFunc, actionCtx)
-
-    for (const [propName, propValue] of Object.entries(propsObj)) {
-      if (propName.startsWith('on')) continue
-      if (Array.isArray(propValue)) {
-        propsObj[propName] = propValue.map(bindNode)
-        continue
-      }
-      if (propValue !== null && typeof propValue === 'object') {
-        propsObj[propName] = bindNode(propValue)
-      }
-    }
-
-    for (const [key, value] of Object.entries(current)) {
-      if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
-
-      if (key === 'on') {
-        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-          const normalizedRootOn = normalizeRuleEvents(value as Record<string, unknown>, callFunc, actionCtx)
-          const existingOn = propsObj['on']
-          propsObj['on'] = existingOn !== null && typeof existingOn === 'object' && !Array.isArray(existingOn)
-            ? { ...normalizedRootOn, ...(existingOn as Record<string, unknown>) }
-            : normalizedRootOn
-        }
-        continue
-      }
-
-      if (key in propsObj) continue
-
-      if (Array.isArray(value)) {
-        propsObj[key] = value.map(bindNode)
-        continue
-      }
-
-      propsObj[key] = value !== null && typeof value === 'object'
-        ? bindNode(value)
-        : value
-    }
-
-    // ── children 递归 ──
-    if (Array.isArray(current['children'])) {
-      cloned['children'] = (current['children'] as unknown[]).map(bindNode)
-    }
-
-    if (Object.keys(propsObj).length > 0) {
-      cloned['props'] = propsObj
-    }
-
-    // ── ID 去重（从 props.id 读取） ──
-    const rawId = typeof propsObj['id'] === 'string' ? propsObj['id'] : undefined
-    if (rawId !== undefined) {
-      const nodeType = typeof cloned['type'] === 'string' ? cloned['type'] : 'unknown'
-      const finalId = ensureUniqueId(nodeType, rawId)
-      propsObj['id'] = finalId
-      cloned['props'] = propsObj
-    }
-
-    return cloned
-  }
-
-  return rules.map(bindNode)
 }
 
 // ==================== 配置加载流水线 ====================
 
-/** 通过 props.pageConfig 直传或 configLoader 异步加载页面配置。 */
+function toResolvedPageConfig(pageId: string, config: PageRendererConfigInput): PageConfig {
+  return {
+    pageId: config.pageId ?? pageId,
+    rule: config.rule,
+    data: config.data,
+    script: config.script,
+    css: config.css,
+  }
+}
+
+/** 通过 props.pageConfig 直传四文件或 configLoader 异步加载页面配置。 */
 async function fetchConfig(pageId: string): Promise<PageConfig> {
-  if (props.pageConfig) return props.pageConfig
+  if (props.pageConfig) return toResolvedPageConfig(pageId, props.pageConfig)
   if (props.configLoader) {
     const result = await props.configLoader.loadPageConfig(pageId)
     if (!result.success || !result.data) {
@@ -437,38 +339,57 @@ async function fetchConfig(pageId: string): Promise<PageConfig> {
 }
 
 /**
- * 四文件加载流水线：将 PageConfig 应用到渲染状态。
+ * 四文件加载流水线：将 PageConfigFiles 应用到渲染状态。
  *
  * 时序：
  *   1. css    → setScopedCss
  *   2. script → compileFunctions → registerRenderComponents
  *   3. data   → DataSet 初始化 → sparkProvide(PAGE_DATASET)
- *   4. rule   → normalizeRuleChildren → pageChildren（驱动模板渲染）
+ *   4. rule   → buildPageChildren → pageChildren（驱动模板渲染）
  *   ── loading=false → SparkComponentRenderer 挂载 ──
  *   5. nextTick → __init__ + initAutoSelection
  */
-function applyConfig(pageId: string, config: PageConfig): void {
+function applyPageCss(pageId: string, css: PageConfigFiles['css']): void {
+  if (css) setScopedCss(pageId, css)
+}
+
+function applyPageScript(pageId: string, script: PageConfigFiles['script']): void {
+  executeScript(pageId, script ?? '')
+  registerRenderComponents()
+}
+
+function applyPageData(data: PageConfigFiles['data']): void {
+  if (pds.dataSet) pds.clearDataSet()
+  pds.initDataSet(data)
+  const ds = pds.dataSet
+  if (!ds) return
+
+  const loaderClient = props.configLoader?.getHttpClient?.()
+  if (isHttpClient(loaderClient)) ds.setSharedHttpClient(loaderClient)
+  ds.setAppServices(appServices)
+  ds.setPageRoute(pageRoute)
+  sparkProvide(PAGE_DATASET, ds)
+}
+
+function applyPageChildren(rule: PageConfigFiles['rule']): void {
+  pageChildren.value = buildPageChildren(rule, {
+    callFunc: callPageFunction,
+    actionCtx: createPageActionContext(),
+  })
+}
+
+function applyConfig(pageId: string, config: PageConfigFiles): void {
   // 1. css → 作用域隔离
-  if (config.css) setScopedCss(pageId, config.css)
+  applyPageCss(pageId, config.css)
 
   // 2. script → 沙箱编译 + Render* 组件注册
-  executeScript(pageId, config.script ?? '')
-  registerRenderComponents()
+  applyPageScript(pageId, config.script)
 
   // 3. data → DataSet 初始化 + PAGE_DATASET 能力注入
-  if (pds.dataSet) pds.clearDataSet()
-  pds.initDataSet(config.data)
-  const ds = pds.dataSet
-  if (ds) {
-    const loaderClient = props.configLoader?.getHttpClient?.()
-    if (isHttpClient(loaderClient)) ds.setSharedHttpClient(loaderClient)
-    ds.setAppServices(appServices)
-    ds.setPageRoute(pageRoute)
-    sparkProvide(PAGE_DATASET, ds)
-  }
+  applyPageData(config.data)
 
-  // 4. rule → normalizeRuleChildren → pageChildren
-  pageChildren.value = normalizeRuleChildren(config.rule as unknown[], pageFunctions.value)
+  // 4. rule → buildPageChildren → pageChildren
+  applyPageChildren(config.rule)
 }
 
 // ==================== 加载入口 ====================
