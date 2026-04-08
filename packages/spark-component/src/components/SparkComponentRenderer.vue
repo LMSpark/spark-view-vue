@@ -405,19 +405,13 @@ function buildNodeForwardedProps(rawProps: NodeRuntimeProps): NodeRuntimeProps {
 }
 
 // 已注册组件额外收到的结构字段，只在 registry 分支透传。
-// SparkNode 四字段（type / props / children / id）全部在此向下桥接：
-//   type    → 组件 context.type
-// 已注册组件额外收到的结构字段，只在 registry 分支透传。
+// SparkNode 三字段（type / props / children）严格 h() 三段式。
 function buildRegistryStructuralProps(
   node: SparkNode,
   consumesChildrenProp: boolean,
 ): NodeRuntimeProps {
   const structuralProps: NodeRuntimeProps = {
     type: node.type,
-  }
-
-  if (node.id !== undefined) {
-    structuralProps['id'] = node.id
   }
 
   if (consumesChildrenProp && Array.isArray(node.children) && node.children.length > 0) {

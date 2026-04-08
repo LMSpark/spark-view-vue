@@ -32,18 +32,23 @@
 ═══════════════════════════════════════════════════
 
 rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
-每个 Rule 常用字段：
+每个节点严格对齐 h(type, props, children) 三段式：
 - type: 必填，组件类型
+- props: 组件全部属性（id、style、class、on、field、label、dataKey 等统统放在 props 内）
 - children: 子组件或文本数组
-- props: 组件 props
+
+props 内常用字段：
 - style: 内联样式对象或字符串；优先对象
 - class: CSS 类名
 - on: 事件处理器对象，值为 script.js 中的函数名字符串
 - field: SPARK 字段绑定名（r-* 组件的列/字段标识符）
-- label: 显示标签（r-* 字段组件的表头/标签，自动提升到 props.label）
+- label: 显示标签（r-* 字段组件的表头/标签）
 - value: 表单默认值
-- key: 组件唯一标识
+- id: 组件唯一标识
 - dataKey: SPARK 数据绑定键
+
+⚠️ 除 type/props/children 外，不要在节点根级写其他字段。
+运行时有兼容层会自动归并根级字段到 props，但新生成的配置必须遵守三段式。
 
 允许的组件分组：
 - HTML 标签：div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
@@ -447,7 +452,8 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 | 级联不生效 | 父表无 isPrimaryKey | 父主键列加 `"isPrimaryKey": true` |
 | 子表初始为空 | 主表无 autoCurrentFirst | 主表 views.default 加 `"autoCurrentFirst": true` |
 | el-table 行不高亮 | 没有 highlightCurrentRow | 显式加 `"highlightCurrentRow": true` |
-| r-table 列配置 | 用 el-table-column 或 prop 字段 | 用 r-text/r-number 等，列字段名用 field（顶层），表头用 label（顶层）或 props.label |
+| r-table 列配置 | 用 el-table-column 或 prop 字段 | 用 r-text/r-number 等，列字段名用 props.field，表头用 props.label |
+| 节点根级非结构字段 | `{ "type": "r-text", "field": "name", "label": "姓名" }` | `{ "type": "r-text", "props": { "field": "name", "label": "姓名" } }` |
 | 组件选型优先级 | 有 r-* 等价组件仍优先输出 el-* | 默认优先 r-*；仅在用户明确要求或 r-* 无法表达时使用 el-* |
 | Render* 引用非 HTML | `h('el-button', ...)` 或 `h('r-text', ...)` | `h('button', ...)` ← 只能原生 HTML 标签 |
 | on: 函数未在 script.js 定义 | rule.json 有 `"on": { "click": "handleXxx" }`，script.js 无此函数 | 确保 script.js 有 `function handleXxx() {...}` |

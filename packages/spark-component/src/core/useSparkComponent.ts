@@ -112,11 +112,6 @@ function buildEffectiveConfig(instance: RuntimeInstance, fallbackConfig?: SparkN
       : { ...base.props, ...runtimeProps }
   }
 
-  const runtimeId = typeof runtimeProps['id'] === 'string' ? runtimeProps['id'] : undefined
-  if (base.id === undefined && runtimeId !== undefined) {
-    base.id = runtimeId
-  }
-
   return normalizeSparkNode(base, 'unknown')
 }
 

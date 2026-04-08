@@ -247,7 +247,7 @@ function bindSparkRuleEvents(
   }
 
   // ── 结构键 vs 输入键 ──
-  // SPARK_NODE_STRUCT_KEYS（type/props/children/id/dock/order）归框架所有；
+  // SPARK_NODE_STRUCT_KEYS（type/props/children）归框架所有；
   // 根级业务输入在绑定阶段统一归集到 props，运行时只消费 props。
 
   const bindNode = (node: unknown): unknown => {
@@ -309,21 +309,22 @@ function bindSparkRuleEvents(
         : value
     }
 
-    if (Object.keys(propsObj).length > 0) {
-      cloned['props'] = propsObj
-    }
-
     // ── children 递归 ──
     if (Array.isArray(current['children'])) {
       cloned['children'] = (current['children'] as unknown[]).map(bindNode)
     }
 
-    // ── ID 去重（只处理顶层结构 id） ──
-    const rawId = typeof cloned['id'] === 'string' ? cloned['id'] : undefined
+    if (Object.keys(propsObj).length > 0) {
+      cloned['props'] = propsObj
+    }
+
+    // ── ID 去重（从 props.id 读取） ──
+    const rawId = typeof propsObj['id'] === 'string' ? propsObj['id'] : undefined
     if (rawId !== undefined) {
       const nodeType = typeof cloned['type'] === 'string' ? cloned['type'] : 'unknown'
       const finalId = ensureUniqueId(nodeType, rawId)
-      cloned['id'] = finalId
+      propsObj['id'] = finalId
+      cloned['props'] = propsObj
     }
 
     return cloned

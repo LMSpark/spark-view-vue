@@ -15,7 +15,7 @@ import { DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } f
 // - children 是 array（内含 SparkNode | string | number）
 // - 嵌套无限深
 
-const SPARK_NODE_STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])
+const SPARK_NODE_STRUCT_KEYS = new Set(['type', 'props', 'children'])
 
 /**
  * 判断路径是否指向一个 SparkNode 的根级位置。

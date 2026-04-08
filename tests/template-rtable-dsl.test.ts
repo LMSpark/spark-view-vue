@@ -257,9 +257,7 @@ describe('Template DSL — Production', () => {
       const children = capture.get().children.filter(
         (c): c is SparkNode => typeof c === 'object' && c !== null,
       )
-      expect(children[0]!.id).toBe('col-name')
-      // id should NOT be in business props
-      expect(children[0]!.props).not.toHaveProperty('id')
+      expect(children[0]!.props?.['id']).toBe('col-name')
     })
   })
 

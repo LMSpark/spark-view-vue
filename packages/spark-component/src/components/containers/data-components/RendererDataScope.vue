@@ -25,6 +25,7 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { useDataScope } from '../context/useDataScope'
 
 interface Props extends SparkNode {
+  id?: string
   /** 数据行/节点/模型 */
   data: IDataRow
 }

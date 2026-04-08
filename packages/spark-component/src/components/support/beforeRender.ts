@@ -80,7 +80,7 @@ export function resolveNodeBeforeRender(
 
   try {
     const result = (handler as BeforeRenderHandler)({
-      id: node.id,
+      id: typeof props['id'] === 'string' ? props['id'] : undefined,
       type: node.type,
       props: sanitizeContextProps(props),
       children: node.children,

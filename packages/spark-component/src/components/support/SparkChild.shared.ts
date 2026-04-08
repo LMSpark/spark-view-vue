@@ -293,7 +293,10 @@ export function buildTemplateNode(
   if (Object.keys(mergedProps).length > 0) node.props = mergedProps
 
   const resolvedId = resolveNodeId(raw, options.scope)
-  if (resolvedId !== undefined) node.id = resolvedId
+  if (resolvedId !== undefined) {
+    node.props ??= {}
+    node.props['id'] = resolvedId
+  }
 
   const nestedChildren = options.slotChildren ?? []
   if (nestedChildren.length > 0) {

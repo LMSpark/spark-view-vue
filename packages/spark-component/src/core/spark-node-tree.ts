@@ -1,4 +1,4 @@
-import { isSparkNode, type SparkNode, type SparkNodeChildren } from './types.js'
+import { isSparkNode, nodeId as readNodeId, type SparkNode, type SparkNodeChildren } from './types.js'
 import { SnapshotHistory } from '@spark-view/spark-utils'
 
 // ====================
@@ -902,13 +902,11 @@ function buildSparkNode(params: {
   type: string
   props?: Record<string, unknown>
   children?: SparkNodeChildren
-  id?: string
 }): SparkNode {
   return {
     type: params.type,
     ...(params.props !== undefined ? { props: params.props } : {}),
     ...(params.children !== undefined ? { children: params.children } : {}),
-    ...(params.id !== undefined ? { id: params.id } : {}),
   }
 }
 
@@ -920,17 +918,14 @@ function copySparkNode(
   nextType: string | KeepValue = KEEP,
   nextProps: Record<string, unknown> | undefined | KeepValue = KEEP,
   nextChildren: SparkNodeChildren | undefined | KeepValue = KEEP,
-  nextId: string | undefined | KeepValue = KEEP,
 ): SparkNode {
   const type = nextType === KEEP ? node.type : nextType
   const props = nextProps === KEEP ? node.props : nextProps
   const children = nextChildren === KEEP ? node.children : nextChildren
-  const id = nextId === KEEP ? node.id : nextId
   return buildSparkNode({
     type,
     ...(props !== undefined ? { props } : {}),
     ...(children !== undefined ? { children } : {}),
-    ...(id !== undefined ? { id } : {}),
   })
 }
 
@@ -944,7 +939,7 @@ function findLocationRecursive(
   index: number,
   depth: number,
 ): SparkNodeLocation | null {
-  if (current.id === nodeId) {
+  if (readNodeId(current) === nodeId) {
     return { node: current, parent, index, depth }
   }
 
@@ -1110,8 +1105,11 @@ function applyReorderChildren(
   const childMap = new Map<string, SparkNode>()
 
   for (const child of currentChildren) {
-    if (isSparkNode(child) && typeof child.id === 'string' && child.id.length > 0) {
-      childMap.set(child.id, child)
+    if (isSparkNode(child)) {
+      const childId = readNodeId(child)
+      if (typeof childId === 'string' && childId.length > 0) {
+        childMap.set(childId, child)
+      }
     }
   }
 
@@ -1128,8 +1126,9 @@ function applyReorderChildren(
   const addressedIds = new Set(params.childIds)
   const remainingChildren = currentChildren.filter((child) => {
     if (!isSparkNode(child)) return true
-    if (typeof child.id !== 'string' || child.id.length === 0) return true
-    return !addressedIds.has(child.id)
+    const cid = readNodeId(child)
+    if (typeof cid !== 'string' || cid.length === 0) return true
+    return !addressedIds.has(cid)
   })
 
   const nextChildren: SparkNodeChildren = [...orderedChildren, ...remainingChildren]
@@ -1166,7 +1165,7 @@ function rewriteNodeById<TResult>(
   index = -1,
   depth = 0,
 ): NodeRewriteResult<TResult> {
-  if (current.id === nodeId) {
+  if (readNodeId(current) === nodeId) {
     const updated = updater({ node: current, parent, index, depth })
     return {
       next: updated.nextNode,

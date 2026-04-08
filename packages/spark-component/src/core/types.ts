@@ -102,28 +102,20 @@ export type SparkNodeChildren = Array<SparkNode | SparkTextChild>
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
-  /** 组件属性（所有组件可见的数据均通过 props 传递） */
+  /** 组件属性（所有组件可见的数据均通过 props 传递，含 id） */
   props?: Record<string, unknown>
   /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组 */
   children?: SparkNodeChildren
-  /**
-   * 节点唯一标识
-   *
-   * 用途：渲染 key / 调试定位 / 脚本中通过 `$query('#id')` 引用。
-   * 绑定阶段**不收入 props**；SparkComponentRenderer 直接读取并传递给 Vue `:key`。
-   */
-  id?: string
 }
 
 // ── SparkNode 结构键（运行时） ────────────────────────────────────────────
 
 /**
- * SparkNode 结构键集合
+ * SparkNode 结构键集合（严格 h(type, props, children) 三段式）
  *
- * 这些键归 SPARK 框架所有（type/props/children = h() 三段式，id = 标识），
- * 结构键永远只保留在 SparkNode 自身，不属于组件输入。
+ * 只有这 3 个键归 SPARK 框架所有；id 是业务属性，存放在 props.id。
  */
-export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['type', 'props', 'children', 'id'])
+export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['type', 'props', 'children'])
 
 // ── SparkNode 归一化 ────────────────────────────────────────────
 
@@ -143,7 +135,6 @@ export function normalizeSparkNode(node: SparkNode, fallbackType: string = node.
     type: normalizedType,
     ...(node.props !== undefined ? { props: node.props } : {}),
     children: Array.isArray(node.children) ? node.children : [],
-    ...(node.id !== undefined ? { id: node.id } : {}),
   }
 }
 
@@ -162,13 +153,11 @@ export function getSparkNodeChildren(children: SparkNodeChildren | undefined): S
 }
 
 /**
- * 读取节点 id
- *
- * 结构标识只读取顶层 `node.id`
+ * 读取节点 id（严格从 props.id）
  */
-export function nodeId(node: { id?: string; props?: Record<string, unknown> }): string | undefined {
-  if (typeof node.id === 'string') return node.id
-  return undefined
+export function nodeId(node: { props?: Record<string, unknown> }): string | undefined {
+  const id = node.props?.['id']
+  return typeof id === 'string' ? id : undefined
 }
 
 /**

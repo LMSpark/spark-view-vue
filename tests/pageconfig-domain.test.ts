@@ -88,7 +88,7 @@ describe('pageconfig.init', () => {
     const pc = pcData()
     expect(pc.rule).not.toBeNull()
     expect(pc.rule!.type).toBe('div')
-    expect(pc.rule!.id).toBeTruthy()
+    expect(pc.rule!.props?.['id']).toBeTruthy()
     expect(pc.rule!.children).toEqual([])
     expect(pc.scriptMap).toEqual({})
     expect(pc.scriptVars).toEqual({})
@@ -129,14 +129,14 @@ describe('rule.addComponent', () => {
   it('adds component with custom id', () => {
     expectOk(exec('rule.addComponent', { parentId: null, type: 'r-form', id: 'my-form' }))
     const child = pcData().rule!.children![0]!
-    expect(typeof child !== 'string' && typeof child !== 'number' ? child.id : null).toBe('my-form')
+    expect(typeof child !== 'string' && typeof child !== 'number' ? child.props?.['id'] : null).toBe('my-form')
   })
 
   it('adds component at position', () => {
     expectOk(exec('rule.addComponent', { parentId: null, type: 'div', id: 'first' }))
     expectOk(exec('rule.addComponent', { parentId: null, type: 'div', id: 'second' }))
     expectOk(exec('rule.addComponent', { parentId: null, type: 'div', id: 'inserted', position: 1 }))
-    const ids = pcData().rule!.children!.map((c) => typeof c !== 'string' && typeof c !== 'number' ? c.id : null)
+    const ids = pcData().rule!.children!.map((c) => typeof c !== 'string' && typeof c !== 'number' ? c.props?.['id'] : null)
     expect(ids).toEqual(['first', 'inserted', 'second'])
   })
 
@@ -172,7 +172,7 @@ describe('rule.setProps', () => {
   it('merges props by default', () => {
     expectOk(exec('rule.setProps', { nodeId: 'tbl', props: { stripe: true } }))
     const node = pcData().rule!.children![0]!
-    expect(typeof node !== 'string' && typeof node !== 'number' ? node.props : null).toEqual({ border: true, stripe: true })
+    expect(typeof node !== 'string' && typeof node !== 'number' ? node.props : null).toEqual({ id: 'tbl', border: true, stripe: true })
   })
 
   it('replaces props with merge=false', () => {
@@ -203,7 +203,7 @@ describe('rule.removeComponent', () => {
   })
 
   it('cannot remove root', () => {
-    const rootId = pcData().rule!.id!
+    const rootId = pcData().rule!.props?.['id'] as string
     expectFail(exec('rule.removeComponent', { nodeId: rootId }), 'CANNOT_REMOVE_ROOT')
   })
 
@@ -227,7 +227,7 @@ describe('rule.reorder', () => {
 
   it('reorders children', () => {
     expectOk(exec('rule.reorder', { parentId: null, childIds: ['c', 'a', 'b'] }))
-    const ids = pcData().rule!.children!.map((c) => typeof c !== 'string' && typeof c !== 'number' ? c.id : null)
+    const ids = pcData().rule!.children!.map((c) => typeof c !== 'string' && typeof c !== 'number' ? c.props?.['id'] : null)
     expect(ids).toEqual(['c', 'a', 'b'])
   })
 })

@@ -596,8 +596,8 @@ test('SparkComponentRenderer fallback can expand node snapshot for unknown compo
     props: {
       config: {
         type: 'unknown-widget',
-        id: 'unknown-node-1',
         props: {
+          id: 'unknown-node-1',
           title: '测试节点',
           visible: true,
         },

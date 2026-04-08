@@ -44,6 +44,7 @@ import { useContainerGrid } from '../layout/useContainerGrid'
 import { useDataScope } from '../context/useDataScope'
 
 interface Props extends SparkNode {
+  id?: string
   /** 表单数据模型 */
   model: IDataRow
   /** 字段组件配置列表 */

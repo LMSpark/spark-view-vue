@@ -63,6 +63,7 @@ import {
 } from '../../support/index.js'
 
 interface Props extends SparkNode {
+  id?: string
   /** 数据绑定键 */
   dataKey?: string
   /** 结构化工具栏 dock */

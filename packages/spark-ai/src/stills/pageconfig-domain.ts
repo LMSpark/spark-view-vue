@@ -99,9 +99,15 @@ function withPC<T>(session: IStillSession, op: (pc: IPageConfigData) => StillRes
   return op(state.data)
 }
 
+/** 读取节点 id（从 props.id） */
+function readId(node: SparkNode): string | undefined {
+  const id = node.props?.['id']
+  return typeof id === 'string' ? id : undefined
+}
+
 /** 递归查找节点 by id */
 function findById(node: SparkNode, id: string): SparkNode | null {
-  if (node.id === id) return node
+  if (readId(node) === id) return node
   if (!Array.isArray(node.children)) return null
   for (const child of node.children) {
     if (typeof child === 'string' || typeof child === 'number') continue
@@ -116,7 +122,7 @@ function findParent(root: SparkNode, targetId: string): SparkNode | null {
   if (!Array.isArray(root.children)) return null
   for (const child of root.children) {
     if (typeof child === 'string' || typeof child === 'number') continue
-    if (child.id === targetId) return root
+    if (readId(child) === targetId) return root
     const found = findParent(child, targetId)
     if (found !== null) return found
   }
@@ -127,7 +133,7 @@ function findParent(root: SparkNode, targetId: string): SparkNode | null {
 function removeFromParent(parent: SparkNode, targetId: string): boolean {
   if (!Array.isArray(parent.children)) return false
   const index = parent.children.findIndex(
-    (child) => typeof child !== 'string' && typeof child !== 'number' && child.id === targetId,
+    (child) => typeof child !== 'string' && typeof child !== 'number' && readId(child) === targetId,
   )
   if (index === -1) return false
   parent.children.splice(index, 1)
@@ -261,8 +267,7 @@ const pageconfigInit: StillDefinition<PageConfigInitParams, IPageConfigData> = {
     const pc: IPageConfigData = {
       rule: {
         type: params.rootType ?? 'div',
-        id: rootId,
-        props: { class: 'page-root' },
+        props: { id: rootId, class: 'page-root' },
         children: [],
       },
       scriptMap: {},
@@ -318,11 +323,13 @@ const ruleAddComponent: StillDefinition<AddComponentParams, { id: string }> = {
     if (catalogError !== null) return catalogError as StillResult<{ id: string }>
 
     return withPC(session, (pc) => {
-      const nodeId = params.id ?? nextNodeId(params.type)
+      const newId = params.id ?? nextNodeId(params.type)
       const newNode: SparkNode = {
         type: params.type,
-        id: nodeId,
-        ...(params.props !== undefined ? { props: params.props } : {}),
+        props: {
+          id: newId,
+          ...(params.props ?? {}),
+        },
         ...(params.children !== undefined ? { children: params.children } : {}),
       }
 
@@ -343,7 +350,7 @@ const ruleAddComponent: StillDefinition<AddComponentParams, { id: string }> = {
       const state = getPageConfigState(session)
       if (state.phase === 'bootstrapped') state.phase = 'refining'
 
-      return { ok: true, data: { id: nodeId }, summary: `添加 <${params.type}> id=${nodeId} → parent=${params.parentId ?? 'root'}` }
+      return { ok: true, data: { id: newId }, summary: `添加 <${params.type}> id=${newId} → parent=${params.parentId ?? 'root'}` }
     })
   },
 }
@@ -423,7 +430,7 @@ const ruleRemoveComponent: StillDefinition<RemoveComponentParams, void> = {
       if (pc.rule === null) {
         return { ok: false, code: 'NO_RULE', msg: '组件树为空', fix: '先执行 pageconfig.init' }
       }
-      if (pc.rule.id === params.nodeId) {
+      if (readId(pc.rule) === params.nodeId) {
         return { ok: false, code: 'CANNOT_REMOVE_ROOT', msg: '不能移除根节点', fix: '移除根节点的子节点即可' }
       }
       const parent = findParent(pc.rule, params.nodeId)
@@ -480,8 +487,9 @@ const ruleReorder: StillDefinition<ReorderParams, void> = {
       for (const child of target.children) {
         if (typeof child === 'string' || typeof child === 'number') {
           textChildren.push(child)
-        } else if (child.id) {
-          nodeMap.set(child.id, child)
+        } else if (readId(child)) {
+          const childId = readId(child) as string
+          nodeMap.set(childId, child)
         }
       }
 

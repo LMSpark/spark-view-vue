@@ -65,6 +65,7 @@ import {
 } from '../../builtin-actions'
 
 interface Props extends SparkNode {
+  id?: string
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
   /** 结构化工具栏 dock */

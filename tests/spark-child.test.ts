@@ -32,8 +32,8 @@ describe('SparkChild', () => {
         return () => h('div', {
           class: 'spark-child-prop-capture',
           'data-id': componentProps.id,
-          'data-child-id': firstChild?.id ?? '',
-          'data-second-child-id': secondChild?.id ?? '',
+          'data-child-id': firstChild?.props?.['id'] ?? '',
+          'data-second-child-id': secondChild?.props?.['id'] ?? '',
         }, 'capture')
       },
     })
@@ -382,7 +382,7 @@ describe('SparkChild', () => {
     expect(firstChild).toBe('提交')
     expect(secondChild).toEqual(expect.objectContaining({
       type: 'slot-child-node',
-      id: 'slot-child-id',
+      props: expect.objectContaining({ id: 'slot-child-id' }),
     }))
   })
 
