@@ -25,6 +25,75 @@
   </div>
 </template>
 
+<script lang="ts">
+import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
+import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
+
+/**
+ * 页面渲染器 Props — 对齐 h(type, props, children)
+ *
+ * SparkPageRenderer 的输入本质是 PageConfig 四文件 + 运行时选项：
+ *
+ * | 四文件         | PageConfig 字段 | 渲染器视角                              |
+ * |----------------|----------------|-----------------------------------------|
+ * | rule.json      | config.rule    | → normalizeRuleChildren → **children**  |
+ * | pagedata.json  | config.data    | → DataSet → sparkProvide(PAGE_DATASET)  |
+ * | script.js      | config.script  | → compileFunctions → Render* 注册       |
+ * | style.css      | config.css     | → setScopedCss（作用域隔离注入）         |
+ *
+ * 四文件来源二选一：pageConfig（直传）或 configLoader + pageId（异步加载）。
+ */
+export interface PageRendererProps {
+  // ── 四文件来源（二选一） ──────────────────────────────────────────
+
+  /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
+  configLoader?: ConfigLoader
+  /** 页面唯一标识符（优先级最高） */
+  pageId?: string
+  /** 页面配置对象（直接传入四文件，跳过加载） */
+  pageConfig?: PageConfig
+
+  // ── 功能开关 ─────────────────────────────────────────────────────
+
+  /** 是否启用 CSS 作用域隔离 @default true */
+  enableCssScope?: boolean
+  /** 是否启用 DataSet 自动初始化 @default true */
+  enableDataSet?: boolean
+
+  // ── UI 服务注入（框架无关，可替换 ElementPlus 默认实现） ─────────
+
+  /** UI 消息服务接口 */
+  messageService?: {
+    success: (msg: string) => void
+    warning: (msg: string) => void
+    error: (msg: string) => void
+    info: (msg: string) => void
+  }
+  /** UI 确认对话框服务接口 */
+  confirmService?: {
+    confirm: (msg: string, title?: string) => Promise<unknown>
+    alert: (msg: string, title?: string) => Promise<unknown>
+    prompt?: (msg: string, title?: string) => Promise<string | null>
+  }
+  /** APP 层注入的页面服务扩展（弹层/文件能力等） */
+  pageService?: Partial<IPageServiceCapability>
+
+  // ── 外部上下文 ───────────────────────────────────────────────────
+
+  /** 模块级上下文（导航系统提供，注入沙箱 $moduleContext） */
+  moduleContext?: IModuleContext | null
+
+  // ── 生命周期钩子 ─────────────────────────────────────────────────
+
+  /** 页面加载前钩子（fetchConfig 之前） */
+  beforeLoad?: (pageId: string) => void | Promise<void>
+  /** 页面加载后钩子（applyConfig 之后） */
+  afterLoad?: (config: PageConfig) => void | Promise<void>
+  /** 错误处理函数 */
+  onError?: (error: Error) => void
+}
+</script>
+
 <script setup lang="ts">
 /**
  * SparkPageRenderer — 页面级 h(type, props, children) 渲染器
@@ -60,8 +129,6 @@ import {
 import { useRoute } from 'vue-router'
 import { Logger, PAGE_SERVICE } from '@spark-view/spark-utils'
 import type { HttpClient } from '@spark-view/spark-utils'
-import type { IModuleContext } from '@spark-view/spark-utils'
-import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '@spark-view/spark-utils'
 import { nodeId, SPARK_NODE_STRUCT_KEYS, type SparkNode } from '../../core/types'
@@ -78,7 +145,7 @@ import { buildPageRoute, resolvePageId } from '../context/buildPageRoute'
 import { registerRenderFunctions } from '../services/registerRenderFunctions'
 import { normalizeRuleEvents, normalizeOnProps } from '../binding/bind-normalize'
 import type { ActionExecutionContext } from '../actions'
-import type { PageContext, PageRendererProps } from '../context/types'
+import type { PageContext } from '../context/types'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
 
 const logger = Logger('SparkPageRenderer')

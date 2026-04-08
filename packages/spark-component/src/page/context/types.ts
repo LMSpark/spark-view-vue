@@ -1,14 +1,11 @@
 /**
- * 渲染器类型定义
+ * 渲染器类型定义 — 脚本沙箱上下文与组件访问 API（执行层）
  *
- * 功能分区：
- * 1) 脚本沙箱上下文与组件访问 API（执行层）
- * 2) 页面渲染器参数（编排层）
+ * 页面渲染器 Props（编排层）已迁移至 SparkPageRenderer.vue <script> 块。
  */
 
 import type { IDataSet, SparkData } from '@spark-view/spark-data'
-import type { ConfigLoader, PageConfig, IPageRoute, IScriptContext } from '@spark-view/spark-page-config'
-import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
+import type { PageConfig, IPageRoute, IScriptContext } from '@spark-view/spark-page-config'
 import type { PageComponentInstanceEntry } from '../../core/capabilities.js'
 
 // ── 基础重导出 ────────────────────────────────────────────────────────────
@@ -64,72 +61,4 @@ export interface PageContext extends IScriptContext {
   setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
   clearInterval: (id?: number) => void
 }
-
-// ── 分区 D：渲染器编排入参 ──────────────────────────────────────────────────
-
-/**
- * 页面渲染器 Props — 对齐 h(type, props, children)
- *
- * SparkPageRenderer 的输入本质是 PageConfig 四文件 + 运行时选项：
- *
- * | 四文件         | PageConfig 字段 | 渲染器视角                              |
- * |----------------|----------------|-----------------------------------------|
- * | rule.json      | config.rule    | → normalizeRuleChildren → **children**  |
- * | pagedata.json  | config.data    | → DataSet → sparkProvide(PAGE_DATASET)  |
- * | script.js      | config.script  | → compileFunctions → Render* 注册       |
- * | style.css      | config.css     | → setScopedCss（作用域隔离注入）         |
- *
- * 四文件来源二选一：pageConfig（直传）或 configLoader + pageId（异步加载）。
- */
-export interface PageRendererProps {
-  // ── 四文件来源（二选一） ──────────────────────────────────────────
-
-  /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
-  configLoader?: ConfigLoader
-  /** 页面唯一标识符（优先级最高） */
-  pageId?: string
-  /** 页面配置对象（直接传入四文件，跳过加载） */
-  pageConfig?: PageConfig
-
-  // ── 功能开关 ─────────────────────────────────────────────────────
-
-  /** 是否启用 CSS 作用域隔离 @default true */
-  enableCssScope?: boolean
-  /** 是否启用 DataSet 自动初始化 @default true */
-  enableDataSet?: boolean
-
-  // ── UI 服务注入（框架无关，可替换 ElementPlus 默认实现） ─────────
-
-  /** UI 消息服务接口 */
-  messageService?: {
-    success: (msg: string) => void
-    warning: (msg: string) => void
-    error: (msg: string) => void
-    info: (msg: string) => void
-  }
-  /** UI 确认对话框服务接口 */
-  confirmService?: {
-    confirm: (msg: string, title?: string) => Promise<unknown>
-    alert: (msg: string, title?: string) => Promise<unknown>
-    prompt?: (msg: string, title?: string) => Promise<string | null>
-  }
-  /** APP 层注入的页面服务扩展（弹层/文件能力等） */
-  pageService?: Partial<IPageServiceCapability>
-
-  // ── 外部上下文 ───────────────────────────────────────────────────
-
-  /** 模块级上下文（导航系统提供，注入沙箱 $moduleContext） */
-  moduleContext?: IModuleContext | null
-
-  // ── 生命周期钩子 ─────────────────────────────────────────────────
-
-  /** 页面加载前钩子（fetchConfig 之前） */
-  beforeLoad?: (pageId: string) => void | Promise<void>
-  /** 页面加载后钩子（applyConfig 之后） */
-  afterLoad?: (config: PageConfig) => void | Promise<void>
-  /** 错误处理函数 */
-  onError?: (error: Error) => void
-}
-
-
 
