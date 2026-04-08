@@ -12,13 +12,13 @@
     <!-- 动态注入页面样式（自动添加作用域） -->
     <component :is="'style'" v-if="scopedCss">{{ scopedCss }}</component>
 
-    <!-- 主内容（SPARK 原生渲染，通过 SparkComponentRenderer 递归） -->
+    <!-- 页面内容树（rule.json → normalizeRuleChildren → pageChildren，递归渲染） -->
     <div ref="pageContainer" :data-page="currentPageId" class="spark-page-container">
-      <slot name="content" :rules="resolvedRules">
+      <slot name="content" :children="pageChildren" :rules="pageChildren">
         <SparkComponentRenderer
-          v-for="(rule, i) in resolvedRules"
-          :key="nodeId(rule as SparkNode) ?? `spark-rule-${i}`"
-          :config="(rule as SparkNode)"
+          v-for="(child, i) in pageChildren"
+          :key="nodeId(child as SparkNode) ?? `spark-child-${i}`"
+          :config="(child as SparkNode)"
         />
       </slot>
     </div>
@@ -27,22 +27,27 @@
 
 <script setup lang="ts">
 /**
- * SparkPageRenderer - SPARK 原生页面渲染器
+ * SparkPageRenderer — 页面级 h(type, props, children) 渲染器
  *
- * 支持 PageRendererProps 配置，渲染走 SparkComponentRenderer
- * 递归引擎。
+ * 对齐 h() 三段式模型：
+ *   type     = 'spark-page'（隐式，本组件自身）
+ *   props    = PageConfig 四文件（rule · data · script · css）+ 运行时选项
+ *   children = rule.json 经 normalizeRuleChildren() 归一化后的 SparkNode[]
  *
- * 功能清单：
- * - 配置加载（pageConfig / configLoader + pageId）
- * - CSS 作用域隔离
- * - 脚本沙箱（compileFunctions + Render* 组件注册）
- * - DataSet 初始化 + PAGE_DATASET 能力注入
- * - 竞态保护（快速切换配置时丢弃旧请求）
+ * rule.json 是"声明式 children"：
+ *   加载 → normalizeRuleChildren（根级字段收入 props、事件绑定、ID 去重）
+ *   → pageChildren（SparkNode[]）→ SparkComponentRenderer 递归渲染
+ *
+ * 四文件加载流水线（applyConfig）：
+ *   1. css    → setScopedCss（作用域隔离注入）
+ *   2. script → compileFunctions → registerRenderComponents
+ *   3. data   → DataSet 初始化 → sparkProvide(PAGE_DATASET)
+ *   4. rule   → normalizeRuleChildren → pageChildren（驱动模板渲染）
  *
  * @component
  * @example
  * ```vue
- * <!-- 全量 PageConfig（rule + css + script + data） -->
+ * <!-- 全量 PageConfig -->
  * <SparkPageRenderer :pageConfig="fullConfig" />
  *
  * <!-- configLoader + pageId -->
@@ -102,7 +107,8 @@ sparkProvide(PAGE_SERVICE, pageService)
 // ==================== 响应式状态 ====================
 
 const currentPageId = ref('')
-const resolvedRules = ref<unknown[]>([])
+/** rule.json 归一化后的页面子节点（SparkNode[]），驱动模板递归渲染 */
+const pageChildren = ref<unknown[]>([])
 const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
 let _inFlightPageId: string | null = null
 const pageContainer = ref<HTMLElement | null>(null)
@@ -207,7 +213,17 @@ function executeScript(pageId: string, scriptText: string): void {
   }
 }
 
-function bindSparkRuleEvents(
+/**
+ * rule.json → pageChildren 归一化管线
+ *
+ * 职责（递归，深度优先）：
+ * 1. 根级业务字段（id / on / field / dataKey …）收入 props（SPARK_NODE_STRUCT_KEYS 外的一切）
+ * 2. on / ActionDescriptor → props 事件回调
+ * 3. props 内嵌套数组/对象递归归一化
+ * 4. children 递归
+ * 5. ID 去重（同页面避免重复 id）
+ */
+function normalizeRuleChildren(
   rules: unknown[],
   pageFunctionsMap: Record<string, (...args: unknown[]) => unknown>
 ): unknown[] {
@@ -354,20 +370,25 @@ async function fetchConfig(pageId: string): Promise<PageConfig> {
 }
 
 /**
- * 将配置应用到渲染状态。
+ * 四文件加载流水线：将 PageConfig 应用到渲染状态。
  *
  * 时序：
- * 1. rules / CSS 写入 → 脚本编译 → Render* 注册
- * 2. DataSet 初始化 → sparkProvide(PAGE_DATASET)
- * 3. loading=false → SparkComponentRenderer 挂载
- * 4. nextTick 后执行 __init__ + initAutoSelection
+ *   1. css    → setScopedCss
+ *   2. script → compileFunctions → registerRenderComponents
+ *   3. data   → DataSet 初始化 → sparkProvide(PAGE_DATASET)
+ *   4. rule   → normalizeRuleChildren → pageChildren（驱动模板渲染）
+ *   ── loading=false → SparkComponentRenderer 挂载 ──
+ *   5. nextTick → __init__ + initAutoSelection
  */
 function applyConfig(pageId: string, config: PageConfig): void {
+  // 1. css → 作用域隔离
   if (config.css) setScopedCss(pageId, config.css)
+
+  // 2. script → 沙箱编译 + Render* 组件注册
   executeScript(pageId, config.script ?? '')
   registerRenderComponents()
 
-  // DataSet 初始化
+  // 3. data → DataSet 初始化 + PAGE_DATASET 能力注入
   if (pds.dataSet) pds.clearDataSet()
   pds.initDataSet(config.data)
   const ds = pds.dataSet
@@ -379,7 +400,8 @@ function applyConfig(pageId: string, config: PageConfig): void {
     sparkProvide(PAGE_DATASET, ds)
   }
 
-  resolvedRules.value = bindSparkRuleEvents(config.rule as unknown[], pageFunctions.value)
+  // 4. rule → normalizeRuleChildren → pageChildren
+  pageChildren.value = normalizeRuleChildren(config.rule as unknown[], pageFunctions.value)
 }
 
 // ==================== 加载入口 ====================

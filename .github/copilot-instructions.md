@@ -583,7 +583,7 @@ SparkNode 严格对齐 Vue `h(type, props, children)` 三段式，**仅保留 3 
 - **props** → 组件接收的全部属性（id / dataKey / field / label / on / visible / disabled … 统统在此）
 - **children** → 嵌套子节点
 
-rule.json 允许将 dataKey / field / id / on / visible / disabled 等写在根级（便于阅读），绑定阶段（`bindSparkRuleEvents`）会**全部收入 `props`**，组件代码只需关心 `props`。
+rule.json 允许将 dataKey / field / id / on / visible / disabled 等写在根级（便于阅读），绑定阶段（`normalizeRuleChildren`）会**全部收入 `props`**，组件代码只需关心 `props`。
 
 ```typescript
 // SparkNode — 严格对齐 h(type, props, children)
@@ -605,7 +605,7 @@ nodeId(node) // → string | undefined
 ```
 rule.json
   { type: "r-table", dataKey: "Users@rows", children: [...] }
-    ↓ bindSparkRuleEvents()        ← 根级 dataKey/field 收入 props
+    ↓ normalizeRuleChildren()     ← 根级 dataKey/field 收入 props
     ↓ SparkComponentRenderer       ← v-bind="config.props" + children
     ↓
 RendererTable.vue
@@ -658,7 +658,7 @@ const { configChildren } = useContainerInput({
 
 ### ❗ 属性规范化（根级 → props）
 
-`bindSparkRuleEvents` 以结构键黑名单（`type/props/children`）实现规范化：所有非结构根级字段（包括 `id/on/visible/disabled/dataKey/field` 等）一律收入 `props`。因此：
+`normalizeRuleChildren` 以结构键黑名单（`type/props/children`）实现规范化：所有非结构根级字段（包括 `id/on/visible/disabled/dataKey/field` 等）一律收入 `props`。因此：
 
 - rule.json 中 `dataKey` / `field` / `label` / `optionKey` 写在根级或 props 内均可，最终都在 props 内
 - **组件代码一律通过 `defineProps` 接收属性，不读 SparkNode 根级**
