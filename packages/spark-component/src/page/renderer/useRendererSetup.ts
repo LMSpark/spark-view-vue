@@ -40,6 +40,8 @@ interface RendererSetupReturn {
   router: Router
   /** SPARK 能力提供函数（含 CapabilityTypeMap 类型重载） */
   sparkProvide: UseSparkComponentReturn['sparkProvide']
+  /** SPARK 能力消费函数（优先本地，再沿 parent 链查找） */
+  sparkConsume: UseSparkComponentReturn['sparkConsume']
   /** 是否正在加载 */
   loading: Ref<boolean>
   /** 加载失败的错误消息（空字符串表示无错误） */
@@ -79,12 +81,16 @@ export function useRendererSetup(
   // ── SPARK 能力上下文 ──
 
   const router = useRouter()
-  const { sparkProvide } = useSparkComponent({
+  const { sparkProvide, sparkConsume } = useSparkComponent({
     type: componentType,
     props: { id: `${componentType}-root` },
   })
   const componentRegistry = createPageComponentRegistry()
-  const appServices = buildAppServices(router, logger)
+  const inheritedAppServices = sparkConsume(APP_SERVICES) ?? {}
+  const appServices = {
+    ...inheritedAppServices,
+    ...buildAppServices(router, logger),
+  }
   sparkProvide(APP_SERVICES, appServices)
   sparkProvide(PAGE_COMPONENT_REGISTRY, componentRegistry)
 
@@ -121,5 +127,5 @@ export function useRendererSetup(
     }
   }
 
-  return { router, sparkProvide, loading, error, componentRegistry, appServices, runLoad }
+  return { router, sparkProvide, sparkConsume, loading, error, componentRegistry, appServices, runLoad }
 }

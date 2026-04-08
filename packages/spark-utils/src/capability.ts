@@ -165,6 +165,7 @@ export interface IAppServicesCapability {
   tenant?: { tenantId: string; tenantName?: string; [key: string]: unknown }
   configLoader?: unknown
   authService?: unknown
+  pageService?: Partial<IPageServiceCapability>
 }
 
 export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')

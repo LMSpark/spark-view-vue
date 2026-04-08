@@ -13,7 +13,7 @@
     <component :is="'style'" v-if="scopedCss">{{ scopedCss }}</component>
 
     <!-- 页面内容树（rule.json → buildPageChildren → children，递归渲染） -->
-    <div ref="pageContainer" :data-page="currentPageId" :data-node-type="props.type" class="spark-page-container">
+    <div ref="pageContainer" :data-page="currentPageId" class="spark-page-container">
       <slot name="content" :children="children">
         <SparkComponentRenderer
           v-for="(child, i) in children"
@@ -30,8 +30,8 @@
  * SparkPageRenderer — 页面级 h(type, props, children) 渲染器
  *
  * 对齐 h() 三段式模型：
- *   type     = 'spark-page'（根节点类型，本组件自身）
- *   props    = spark-page props（pageId + PageConfig 字段）
+ *   type     = 'spark-page'（隐式根节点类型）
+ *   props    = 页面加载参数与运行时选项
  *   children = rule.json 经 buildPageChildren() 归并后的 SparkNode[]
  *
  * spark-page-config 负责四文件契约与加载：
@@ -59,11 +59,11 @@
  * ```
  */
 import {
-  ref, onMounted, onUnmounted, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw,
+  ref, onMounted, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger, PAGE_SERVICE } from '@spark-view/spark-utils'
-import type { HttpClient, IModuleContext, IPageServiceCapability } from '@spark-view/spark-utils'
+import type { HttpClient } from '@spark-view/spark-utils'
 import type { DataSet } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '@spark-view/spark-utils'
 import type { ConfigLoader, IPageRoute, PageConfig } from '@spark-view/spark-page-config'
@@ -83,7 +83,6 @@ import type { PageContext } from '../context/types'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
 
 const logger = Logger('SparkPageRenderer')
-const SPARK_PAGE_TYPE = 'spark-page' as const
 
 type RenderFunction = (props?: Record<string, unknown>) => unknown
 const renderFunctionRegistry = new WeakMap<object, Map<string, ReturnType<typeof shallowRef<RenderFunction | null>>>>()
@@ -172,7 +171,9 @@ interface SparkPageNodePropsInput {
   css: PageConfig['css']
 }
 
-interface Props extends Partial<Pick<SparkNode, 'type'>> {
+interface SparkPageRendererConfig extends SparkNode {
+  /** 固定为 spark-page，不作为外部配置项暴露 */
+  type: 'spark-page'
   /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
   configLoader?: ConfigLoader
   /** 页面唯一标识符（优先级最高） */
@@ -187,10 +188,10 @@ interface Props extends Partial<Pick<SparkNode, 'type'>> {
   messageService?: MessageService
   /** UI 确认对话框服务接口 */
   confirmService?: ConfirmService
-  /** APP 层注入的页面服务扩展（弹层/文件能力等） */
-  pageService?: Partial<IPageServiceCapability>
-  /** 模块级上下文（导航系统提供，注入沙箱 $moduleContext） */
-  moduleContext?: IModuleContext | null
+  /** 根节点不直接暴露嵌套 props 容器 */
+  props?: never
+  /** 根节点 children 由 rule 归并生成，不直接作为外部输入 */
+  children?: never
   /** 页面加载前钩子（loadNodeProps 之前） */
   beforeLoad?: (pageId: string) => void | Promise<void>
   /** 页面加载后钩子（applyNodeProps 之后） */
@@ -199,23 +200,36 @@ interface Props extends Partial<Pick<SparkNode, 'type'>> {
   onError?: (error: Error) => void
 }
 
+interface Props {
+  configLoader?: SparkPageRendererConfig['configLoader']
+  pageId?: SparkPageRendererConfig['pageId']
+  pageConfig?: SparkPageRendererConfig['pageConfig']
+  enableCssScope?: SparkPageRendererConfig['enableCssScope']
+  enableDataSet?: SparkPageRendererConfig['enableDataSet']
+  messageService?: SparkPageRendererConfig['messageService']
+  confirmService?: SparkPageRendererConfig['confirmService']
+  beforeLoad?: SparkPageRendererConfig['beforeLoad']
+  afterLoad?: SparkPageRendererConfig['afterLoad']
+  onError?: SparkPageRendererConfig['onError']
+}
+
 const props = withDefaults(defineProps<Props>(), {
-  type: SPARK_PAGE_TYPE,
   enableCssScope: true,
   enableDataSet: true,
 })
 
 // ==================== 基础设施 ====================
 
-const { router, sparkProvide, loading, error, componentRegistry, appServices, runLoad } = useRendererSetup('spark-page-renderer', logger)
+const { router, sparkProvide, sparkConsume, loading, error, componentRegistry, appServices, runLoad } = useRendererSetup('spark-page', logger)
 const route = useRoute()
 const vueApp = getCurrentInstance()?.appContext.app
+const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
 
 // PAGE_SERVICE
 const pageService = buildPageService(router, {
   messageService: props.messageService,
   confirmService: props.confirmService,
-  pageService: props.pageService,
+  pageService: appServices.pageService,
 })
 sparkProvide(PAGE_SERVICE, pageService)
 
@@ -228,54 +242,6 @@ type PageFunctionsMap = Record<string, (...args: unknown[]) => unknown>
 const pageFunctions = ref<PageFunctionsMap>({})
 let _inFlightPageId: string | null = null
 const pageContainer = ref<HTMLElement | null>(null)
-type ModuleContextChangeHandler = (next: IModuleContext | null, prev: IModuleContext | null) => void
-const moduleContextListeners = new Set<ModuleContextChangeHandler>()
-
-function cloneModuleContext(value: IModuleContext | null | undefined): IModuleContext | null {
-  if (!value) return null
-  return {
-    nodeId: value.nodeId,
-    selected: value.selected,
-    items: value.items.map(item => ({ id: item.id, title: item.title })),
-  }
-}
-
-function moduleContextSignature(value: IModuleContext | null | undefined): string {
-  if (!value) return ''
-  return JSON.stringify({
-    nodeId: value.nodeId,
-    selected: value.selected,
-    items: value.items.map(item => ({ id: item.id, title: item.title })),
-  })
-}
-
-function emitModuleContextChange(
-  next: IModuleContext | null | undefined,
-  prev: IModuleContext | null | undefined,
-): void {
-  const nextSnapshot = cloneModuleContext(next)
-  const prevSnapshot = cloneModuleContext(prev)
-  for (const handler of moduleContextListeners) {
-    try {
-      handler(nextSnapshot, prevSnapshot)
-    } catch (error: unknown) {
-      logger.warn('模块上下文变化订阅回调执行失败', { error })
-    }
-  }
-}
-
-const moduleContextCapability: ModuleContextCapability = {
-  getCurrent() {
-    return cloneModuleContext(props.moduleContext ?? null)
-  },
-  subscribe(handler) {
-    moduleContextListeners.add(handler)
-    return () => {
-      moduleContextListeners.delete(handler)
-    }
-  },
-}
-sparkProvide(MODULE_CONTEXT, moduleContextCapability)
 
 function isHttpClient(client: unknown): client is HttpClient {
   if (client === null || client === undefined || typeof client !== 'object') return false
@@ -303,7 +269,7 @@ const pds = usePageDataSet({ enableDataSet: props.enableDataSet })
 const pageRoute = createPageRoute(route)
 const pageContext: PageContext = buildPageContext({
   getDataSet: () => pds.dataSet,
-  getModuleContext: () => cloneModuleContext(props.moduleContext ?? null),
+  getModuleContext: () => moduleContextCapability?.getCurrent() ?? null,
   getComponentRegistry: () => componentRegistry,
   pageRoute,
   pageContainer,
@@ -487,23 +453,6 @@ function requestLoad(): void {
 onMounted(() => {
   requestLoad()
 })
-
-onUnmounted(() => {
-  moduleContextListeners.clear()
-})
-
-// 用 signature 字符串作为 watch source，Vue 仅追踪 getter 中访问的属性。
-// 相比 deep:true（独立递归遍历 + callback 内 JSON.stringify），开销减半。
-let _prevModuleContext = props.moduleContext
-watch(
-  () => moduleContextSignature(props.moduleContext),
-  () => {
-    const next = props.moduleContext
-    const prev = _prevModuleContext
-    _prevModuleContext = next
-    emitModuleContextChange(next, prev)
-  },
-)
 
 // 页面加载输入 = 页面定位 + 四文件直传输入 + 配置加载器。
 // 这样同 pageId 下的 pageConfig 替换也会触发重载，避免“页面 ID 没变但四文件已更新”时 UI 停留旧状态。

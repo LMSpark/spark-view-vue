@@ -17,7 +17,7 @@ import type {
   RuleConfig,
 } from '@spark-view/spark-page-config'
 import { createRequest, Logger } from '@spark-view/spark-utils'
-import type { HttpClient, IModuleContext, IPageServiceCapability, RequestConfig } from '@spark-view/spark-utils'
+import type { HttpClient, RequestConfig } from '@spark-view/spark-utils'
 
 interface ReloadableRenderer {
   reload?: () => Promise<void>
@@ -285,14 +285,6 @@ export const CrossProjectRefPage = defineComponent({
       type: Object as () => ConfigLoader,
       required: true,
     },
-    pageService: {
-      type: Object as () => Partial<IPageServiceCapability>,
-      required: false,
-    },
-    moduleContext: {
-      type: Object as () => IModuleContext | null,
-      default: null,
-    },
   },
   setup(props, { expose }) {
     const route = useRoute()
@@ -360,8 +352,6 @@ export const CrossProjectRefPage = defineComponent({
         key: `${targetProjectId.value}:${targetPageId.value}`,
         pageId: targetPageId.value,
         configLoader: scopedLoader.value,
-        ...(props.pageService !== undefined ? { pageService: props.pageService } : {}),
-        moduleContext: props.moduleContext,
       })
     }
   },

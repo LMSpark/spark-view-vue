@@ -110,8 +110,6 @@
           :is="Component"
           ref="activeSparkRendererHost"
           :key="route.path"
-          :page-service="pageUiService"
-          :module-context="pageModuleContext"
         />
         <component v-else :is="Component" :key="route.path" />
       </keep-alive>
@@ -121,8 +119,6 @@
           :is="Component"
           ref="activeSparkRendererHost"
           :key="route.fullPath"
-          :page-service="pageUiService"
-          :module-context="pageModuleContext"
         />
         <component v-else-if="!contextGuard" :is="Component" :key="route.fullPath" />
       </transition>
@@ -157,6 +153,7 @@ import { computed, defineAsyncComponent, onMounted, onUnmounted, provide, reacti
 import { useRoute, useRouter } from 'vue-router'
 import { appPageUiService, useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
+import { MODULE_CONTEXT, useSparkComponent, type ModuleContextCapability } from '@spark-view/spark-component'
 import { getToken, getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
@@ -177,7 +174,9 @@ import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
 import { getPlatformPaths } from '@/config/vue-page-map'
-import type { IModuleContext } from '@spark-view/spark-utils'
+import { APP_SERVICES, type IModuleContext } from '@spark-view/spark-utils'
+
+const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
 
 const route = useRoute()
 const router = useRouter()
@@ -322,6 +321,7 @@ const nav = useNavigation(_navRoot, {
   getHeaders: createAuthHeaders,
 })
 const pageUiService = appPageUiService
+sparkProvide(APP_SERVICES, { pageService: pageUiService })
 const activeSparkRendererHost = ref<ReloadableRouteComponent | null>(null)
 const isSparkRendererRoute = computed(() => {
   const routeType = route.meta['type']
@@ -336,6 +336,68 @@ const pageModuleContext = computed<IModuleContext | null>(() => {
     nodeId: state.nodeId,
   }
 })
+type ModuleContextChangeHandler = (next: IModuleContext | null, prev: IModuleContext | null) => void
+const moduleContextListeners = new Set<ModuleContextChangeHandler>()
+
+function cloneModuleContext(value: IModuleContext | null | undefined): IModuleContext | null {
+  if (!value) return null
+  return {
+    nodeId: value.nodeId,
+    selected: value.selected,
+    items: value.items.map(item => ({ id: item.id, title: item.title })),
+  }
+}
+
+function moduleContextSignature(value: IModuleContext | null | undefined): string {
+  if (!value) return ''
+  return JSON.stringify({
+    nodeId: value.nodeId,
+    selected: value.selected,
+    items: value.items.map(item => ({ id: item.id, title: item.title })),
+  })
+}
+
+function emitModuleContextChange(
+  next: IModuleContext | null | undefined,
+  prev: IModuleContext | null | undefined,
+): void {
+  const nextSnapshot = cloneModuleContext(next)
+  const prevSnapshot = cloneModuleContext(prev)
+  for (const handler of moduleContextListeners) {
+    try {
+      handler(nextSnapshot, prevSnapshot)
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) {
+        console.error('[App] 模块上下文变化订阅回调执行失败', error)
+      }
+    }
+  }
+}
+
+const moduleContextCapability: ModuleContextCapability = {
+  getCurrent() {
+    return cloneModuleContext(pageModuleContext.value)
+  },
+  subscribe(handler) {
+    moduleContextListeners.add(handler)
+    return () => {
+      moduleContextListeners.delete(handler)
+    }
+  },
+}
+sparkProvide(MODULE_CONTEXT, moduleContextCapability)
+
+let _prevModuleContext = pageModuleContext.value
+watch(
+  () => moduleContextSignature(pageModuleContext.value),
+  () => {
+    const next = pageModuleContext.value
+    const prev = _prevModuleContext
+    _prevModuleContext = next
+    emitModuleContextChange(next, prev)
+  },
+)
+
 const _stopPageRefresh = onPageRefresh(() => {
   if (!isSparkRendererRoute.value) return
   if (_pageRefreshTimer !== null) {
@@ -390,6 +452,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  moduleContextListeners.clear()
   if (_pageRefreshTimer !== null) {
     clearTimeout(_pageRefreshTimer)
     _pageRefreshTimer = null
