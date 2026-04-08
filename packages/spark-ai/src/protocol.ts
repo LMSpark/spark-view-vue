@@ -1,14 +1,9 @@
 /**
  * 统一 @@ 协议解析原语
  *
- * SPARK AI 系统使用两种 @@ 定界协议：
+ * 通用块协议 — `@@type:name\n...\n@@end`（proposal / query / review / error）
  *
- * 1. **通用块协议** — `@@type:name\n...\n@@end`（proposal / query / review / error）
- *
- * 2. **工具块协议** — `@@type:action#id\n...\n@@end`（tool calling）
- *    由 SapChatPanel / AiChatPanel 消费
- *
- * 本模块是这两种协议的**唯一解析入口**，其他模块不应自行编写正则。
+ * 本模块是协议块的**唯一解析入口**，其他模块不应自行编写正则。
  */
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
@@ -29,20 +24,6 @@ export interface ProtocolBlock {
   /** 块体内容（@@行和@@end之间的文本） */
   payload: string
   /** 原始匹配文本（含定界符） */
-  raw: string
-}
-
-/** 工具协议块 — @@type:action#id ... @@end */
-export interface ToolProtocolBlock {
-  /** 工具类型：tool / sap / ... */
-  type: string
-  /** 工具动作（允许点号分隔）：page.auto / db.query / ... */
-  action: string
-  /** 唯一标识符 */
-  id: string
-  /** 块体内容 */
-  body: string
-  /** 原始匹配文本 */
   raw: string
 }
 
@@ -89,22 +70,10 @@ export interface ProtocolBlockFilter {
   names?: string[]
 }
 
-export interface ToolBlockFilter {
-  /** 仅匹配指定类型 */
-  type?: string
-  /** 仅匹配指定类型集合 */
-  types?: string[]
-  /** 仅匹配指定动作 */
-  actions?: string[]
-}
-
 // ── 正则常量 ──────────────────────────────────────────────────────────────────
 
 /** 通用块：@@type:name ... @@end（多行模式） */
 const BLOCK_RE = /^@@(\w+):([\w-]+)\s*$([\s\S]*?)^@@end\s*$/gm
-
-/** 工具块：@@type:action#id ... @@end（允许 action 含点号） */
-const TOOL_BLOCK_RE = /@@(\w+):([\w.]+)#([\w-]+)\n([\s\S]*?)\n@@end/g
 
 // ── 通用块解析 ────────────────────────────────────────────────────────────────
 
@@ -165,58 +134,6 @@ export function stripProposalBlocks(text: string, filter?: { names?: string[] })
     types: ['proposal'],
     ...(filter?.names !== undefined ? { names: filter.names } : {}),
   })
-}
-
-// ── 工具块解析 ─────────────────────────────────────────────────────────────────
-
-/**
- * 提取工具协议块（@@type:action#id ... @@end）
- */
-export function extractToolBlocks(text: string, filter?: ToolBlockFilter): ToolProtocolBlock[] {
-  const blocks: ToolProtocolBlock[] = []
-  TOOL_BLOCK_RE.lastIndex = 0
-
-  let match: RegExpExecArray | null
-  while ((match = TOOL_BLOCK_RE.exec(text)) !== null) {
-    const block: ToolProtocolBlock = {
-      type: match[1] ?? '',
-      action: match[2] ?? '',
-      id: match[3] ?? '',
-      body: match[4] ?? '',
-      raw: match[0],
-    }
-    if (filter?.type !== undefined && block.type !== filter.type) continue
-    if (filter?.types !== undefined && !filter.types.includes(block.type)) continue
-    if (filter?.actions !== undefined && !filter.actions.includes(block.action)) continue
-    blocks.push(block)
-  }
-
-  return blocks
-}
-
-/**
- * 从文本中去除匹配的工具协议块
- */
-export function stripToolBlocks(text: string, filter?: ToolBlockFilter): string {
-  TOOL_BLOCK_RE.lastIndex = 0
-  const stripped = text.replace(TOOL_BLOCK_RE, (raw: string, type: string, action: string) => {
-    if (filter?.type !== undefined && type !== filter.type) return raw
-    if (filter?.types !== undefined && !filter.types.includes(type)) return raw
-    if (filter?.actions !== undefined && !filter.actions.includes(action)) return raw
-    return ''
-  })
-  return collapseBlankLines(stripped)
-}
-
-/**
- * 解析工具块的 JSON body
- */
-export function parseToolPayload<T>(block: ToolProtocolBlock): T | null {
-  try {
-    return JSON.parse(block.body) as T
-  } catch {
-    return null
-  }
 }
 
 // ── 通用工具 ──────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
-package com.spark.ai.sap;
+package com.spark.ai.stills;
 
-import com.spark.ai.sap.model.SapProtocolBlock;
+import com.spark.ai.stills.model.StillsProtocolBlock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * SAP/1.0 协议文本解析器。
+ * Stills 协议文本解析器。
  *
  * <h3>协议格式</h3>
  * <pre>
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  *   <li>支持单次输入包含多个协议块</li>
  * </ul>
  */
-public class SapProtocolParser {
+public class StillsProtocolParser {
 
     /**
      * 匹配协议头：@@type:action#id（type/action 允许字母数字下划线点号，id 允许字母数字下划线横线）
@@ -35,20 +35,20 @@ public class SapProtocolParser {
     /** 协议结尾标记 */
     private static final String END_MARKER = "@@end";
 
-    private SapProtocolParser() {}
+    private StillsProtocolParser() {}
 
     /**
-     * 解析输入文本中的所有 SAP 协议块。
+     * 解析输入文本中的所有 Stills 协议块。
      *
      * @param rawText AI 输出的原始文本
      * @return 解析出的协议块列表（可能为空，但不为 null）
      */
-    public static List<SapProtocolBlock> parseAll(String rawText) {
+    public static List<StillsProtocolBlock> parseAll(String rawText) {
         if (rawText == null || rawText.isBlank()) {
             return List.of();
         }
 
-        List<SapProtocolBlock> blocks = new ArrayList<>();
+        List<StillsProtocolBlock> blocks = new ArrayList<>();
         Matcher headerMatcher = HEADER_PATTERN.matcher(rawText);
 
         while (headerMatcher.find()) {
@@ -67,7 +67,7 @@ public class SapProtocolParser {
             }
 
             String body = rawText.substring(bodyStart, endIdx).trim();
-            blocks.add(new SapProtocolBlock(type, action, id, body));
+            blocks.add(new StillsProtocolBlock(type, action, id, body));
 
             // 移动搜索起点到 @@end 之后，避免嵌套误解析
             // 由于 Matcher 会自动从上次成功位置继续，这里只需确保 endIdx 在下一个 header 之前
@@ -77,13 +77,13 @@ public class SapProtocolParser {
     }
 
     /**
-     * 解析输入文本中的第一个 SAP 协议块。
+     * 解析输入文本中的第一个 Stills 协议块。
      *
      * @param rawText AI 输出的原始文本
      * @return 第一个协议块，如果没有有效块则返回 null
      */
-    public static SapProtocolBlock parseFirst(String rawText) {
-        List<SapProtocolBlock> blocks = parseAll(rawText);
+    public static StillsProtocolBlock parseFirst(String rawText) {
+        List<StillsProtocolBlock> blocks = parseAll(rawText);
         return blocks.isEmpty() ? null : blocks.get(0);
     }
 }

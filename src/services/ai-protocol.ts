@@ -12,9 +12,6 @@ import { createAuthHeaders } from '@/services/http'
 // ── Re-export 协议解析原语（来自 spark-ai） ──────────────────────────────────
 // 消费方无需关心实现在哪个包，统一从这里导入
 export {
-  extractToolBlocks as extractToolProtocolBlocks,
-  stripToolBlocks as stripToolProtocolBlocks,
-  parseToolPayload as parseToolProtocolPayload,
   extractProposalBlocks as extractProposalProtocolBlocks,
   stripProposalBlocks as stripProposalProtocolBlocks,
   stripProtocolBlocksWithUnclosed,
@@ -25,9 +22,7 @@ export {
 export type {
   ProtocolRole,
   ProtocolMessage,
-  ToolProtocolBlock,
   ProposalProtocolBlock,
-  ToolBlockFilter,
   TokenUsage,
   StreamCallbacks,
 } from '@spark-view/spark-ai'

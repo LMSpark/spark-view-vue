@@ -121,7 +121,6 @@ export const COMPONENT_TYPES: string[] = [
   "r-upload",
   "r-user-picker",
   "rform-compare-demo",
-  "sap-chat-panel",
   "settings",
   "spark-child",
   "spark-code-editor",
@@ -1459,10 +1458,6 @@ export const COMPONENT_DESCRIPTIONS: Record<string, {
       "valueType": "string"
     }
   },
-  "sap-chat-panel": {
-    "category": "feature",
-    "description": "SPARK 组件，可在注册表中通过 type=\"sap-chat-panel\" 使用。"
-  },
   "nav-icon": {
     "category": "feature",
     "description": "SPARK 组件，可在注册表中通过 type=\"nav-icon\" 使用。"
@@ -2459,11 +2454,6 @@ export const COMPONENT_PROP_NAMES: Record<string, string[]> = {
     "clearable",
     "valueKey"
   ],
-  "sap-chat-panel": [
-    "embedded",
-    "forceOpen",
-    "mode"
-  ],
   "nav-icon": [
     "name",
     "size"
@@ -3066,12 +3056,6 @@ export const COMPONENT_PROP_ENUMS: Record<string, Record<string, string[]>> = {
       "auto",
       "array",
       "comma-string"
-    ]
-  },
-  "sap-chat-panel": {
-    "mode": [
-      "sap",
-      "stills"
     ]
   },
   "r-context-renderer": {
@@ -3912,11 +3896,6 @@ export const COMPONENT_PROP_TYPES: Record<string, Record<string, string>> = {
     "highlightFirstItem": "boolean",
     "clearable": "boolean",
     "valueKey": "string"
-  },
-  "sap-chat-panel": {
-    "embedded": "boolean",
-    "forceOpen": "boolean",
-    "mode": "\"sap\" | \"stills\""
   },
   "nav-icon": {
     "name": "string | undefined",
@@ -8681,26 +8660,6 @@ export const COMPONENT_API: Record<string, Array<{
       "required": false,
       "default": "\"value\"",
       "description": "建议项的取值键"
-    }
-  ],
-  "sap-chat-panel": [
-    {
-      "name": "embedded",
-      "type": "boolean",
-      "required": false,
-      "default": "false"
-    },
-    {
-      "name": "forceOpen",
-      "type": "boolean",
-      "required": false,
-      "default": "false"
-    },
-    {
-      "name": "mode",
-      "type": "\"sap\" | \"stills\"",
-      "required": false,
-      "default": "\"sap\""
     }
   ],
   "nav-icon": [

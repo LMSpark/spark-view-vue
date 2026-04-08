@@ -40,7 +40,7 @@ export function createRepeatDetectionMonitor(
     name: 'repeat-detection',
 
     afterStillExecution(ctx: MonitorContext): string[] {
-      const action = ctx.currentTurn.sapBlock?.action ?? ''
+      const action = ctx.currentTurn.toolBlock?.action ?? ''
       const sig = buildSignature(action, ctx.params)
 
       // ── 同签名计数 ──
@@ -63,7 +63,7 @@ export function createRepeatDetectionMonitor(
 
     shouldAbort(ctx: MonitorContext): { abort: boolean; reason?: string } {
       if (consecutiveSameCount >= maxSame) {
-        const action = ctx.currentTurn.sapBlock?.action ?? 'unknown'
+        const action = ctx.currentTurn.toolBlock?.action ?? 'unknown'
         return {
           abort: true,
           reason: `动作 ${action} 以相同参数连续执行 ${consecutiveSameCount} 次，疑似死循环`,

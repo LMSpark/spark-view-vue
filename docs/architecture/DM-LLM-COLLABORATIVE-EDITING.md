@@ -36,7 +36,7 @@
 | Q6 | 历史 | **A — 统一用 SparkNodeTree / DataSet history** | 两个类都有快照/undo，human 和 LLM 操作一视同仁 |
 | Q7 | 能力范围 | **A — 55 个操作全部开放**（17 nodeTree + 31 dataset + 4 file + 3 edit） | LLM 可自由决策；guard 机制已提供安全保障 |
 | Q8 | UI 入口 | **A/C — 复用 DevAiPanel 或独立面板** | Phase 1 在 DevAiPanel 中增加"编辑模式"；后续可独立 |
-| Q9 | 错误 UX | **F — AI 自我修正过程对用户可见** | 透明展示 SAP 交互流，用户可中断 |
+| Q9 | 错误 UX | **F — AI 自我修正过程对用户可见** | 透明展示 Stills 交互流，用户可中断 |
 | Q10 | 分期 | **C — pagedata 先行** | DataSet 是数据基础；rule 依赖 DataSet 表/列定义 |
 | 补充 | script.js / style.css | **文件级修改** | LLM 读取当前内容 → 整体修改 → 写回全文，不做增量 stills |
 | 评审 | multi-block/turn | **保持 single-block/turn** | batch 需求由 `addNodes` / `setPropsBatch` / `createTable(columns[])` 覆盖；跨域 multi-block 有依赖风险（block#1 失败 → block#2 基于错误状态） |
@@ -84,13 +84,13 @@
 │  ┌──────────────────────────────────────────────────────┐    │
 │  │              Edit-mode Stills Session                  │    │
 │  │  domains: { nodeTree, datasetEdit, file }             │    │
-│  │  catalog: SapCatalog (component types)                │    │
+│  │  catalog: StillsCatalog (component types)                │    │
 │  │  patchLog: human/LLM 操作审计流                        │    │
 │  └──────────────────────────────────────────────────────┘    │
 └──────────────────────────┬──────────────────────────────────┘
                            │
-                    SAP Protocol
-                    @@request / @@result / @@error
+                    Function Calling
+                    tool_call / tool_result
                            │
                            ▼
 ┌──────────────────────────────────────────────────────────────┐
@@ -295,9 +295,9 @@ interface EditLoopConfig {
 type EditLoopEvent =
   | { type: 'round-start'; round: number }
   | { type: 'llm-reply'; text: string; reasoning?: string }
-  | { type: 'sap-dispatch'; action: string; params: unknown }
-  | { type: 'sap-result'; action: string; result: StillResult }
-  | { type: 'sap-error'; action: string; error: StillResult }
+  | { type: 'tool-dispatch'; action: string; params: unknown }
+  | { type: 'tool-result'; action: string; result: StillResult }
+  | { type: 'tool-error'; action: string; error: StillResult }
   | { type: 'round-end'; round: number }
   | { type: 'done'; summary: string }
   | { type: 'aborted'; reason: string }
@@ -375,9 +375,9 @@ export function registerEditStills(): void {
    a. clearRegistry() + clearDomains() + registerEditStills()
    b. createSession() → session
    c. **前端（非 LLM）** 直接执行 edit.init（灌入当前 4 个文件内容）
-      — 注：edit.init 由前端编排层调用，不走 SAP 协议、不经 LLM
+      — 注：edit.init 由前端编排层调用，不走 Stills 协议、不经 LLM
 4. 启动 runEditLoop(userPrompt, session, backend)
-5. 事件流 → UI 展示 SAP 交互过程（F 决策）
+5. 事件流 → UI 展示 Stills 交互过程（F 决策）
 6. 循环结束 → 从 session 提取最新状态:
    a. state.nodeTree.root → rule.json editor
    b. state.datasetEdit.toJson() → pagedata.json editor
@@ -472,7 +472,7 @@ export const EDIT_MODE_PROMPT = `\
 |------|---|------|
 | T10 | DevSystem | DevAiPanel 增加"编辑模式" toggle |
 | T11 | DevSystem | useDevEditSession composable（管理 edit session 生命周期） |
-| T12 | DevSystem | SAP 交互日志面板（展示 @@request/@@result/@@error 流） |
+| T12 | DevSystem | Stills 交互日志面板（展示 @@request/@@result/@@error 流） |
 | T13 | DevSystem | 编辑完成 → 回写 pagedata.json editor |
 | T14 | e2e test | "在订单表加一列 total" 端到端验证 |
 
@@ -644,7 +644,7 @@ interface UseDevEditSessionReturn {
   isEditMode: Ref<boolean>
   /** 当前编辑会话 */
   session: Ref<IStillSession | null>
-  /** SAP 交互事件流 */
+  /** Stills 交互事件流 */
   events: Ref<EditLoopEvent[]>
   /** 启动编辑会话 */
   startEditSession(): Promise<void>
@@ -705,7 +705,7 @@ function undoTransaction(data: EditData, tx: EditTransaction): void {
 - `SnapshotHistory.cursor` 只读暴露给事务记录，回滚通过连续调用 `undo()` 实现
 - shistoryCursor` 只读暴露给事务记录（SparkNodeTree.historyCursor、DataSetCrudTool.historyCursor 各自委托 `SnapshotHistory.cursor`），回滚通过连续调用 `undo()` 实现
 - script/style 无快照数组，事务表直接记录原文（文件级，体积小）
-- 事务粒度 = 一次用户指令（非一个 SAP turn）
+- 事务粒度 = 一次用户指令（非一个 Stills turn）
 - createCheckpoint 接收 `EditData`（edit.init 后必存在），所有字段非 null — 消除 null 判断复杂度
 ---
 
@@ -714,7 +714,7 @@ function undoTransaction(data: EditData, tx: EditTransaction): void {
 | 风险 | 影响 | 缓解 |
 |------|------|------|
 | 全局 registry 互斥：切换模式需清空注册 | 模式切换时 stills 不可用 | 切换时 clearRegistry + clearDomains + 重新注册；或改为隔离 registry |
-| DataSetCrudTool 构造改造破坏现有 API | 影响 SAP/stills 现有用法 | 保持构造函数不变，仅新增静态工厂 |
+| DataSetCrudTool 构造改造破坏现有 API | 影响 Stills 现有用法 | 保持构造函数不变，仅新增静态工厂 |
 | LLM 上下文窗口不够放结构摘要 | 大页面配置可能超出 token 限制 | 渐进式摘要：首轮只放表名/列名，按需展开 |
 | script.js 文件级修改可能引入语法错误 | 保存后页面报错 | writeScript 后运行沙箱语法检查，失败则返回 @@error |
 | human 和 LLM 同时编辑冲突 | 数据不一致 | Q3-C 决策：请求-响应轮次，human 发指令期间不接受其他编辑 |

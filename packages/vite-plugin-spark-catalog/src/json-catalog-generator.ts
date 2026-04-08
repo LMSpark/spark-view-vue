@@ -534,11 +534,11 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
 }
 
 /* --------------------------------------------------------------------------
- * SAP Catalog 裁剪 + 输出
- * 类型与 spark-ai/catalog/sap-catalog-types.ts 保持同构
+ * Stills Catalog 裁剪 + 输出
+ * 类型与 spark-ai/catalog/stills-catalog-types.ts 保持同构
  * ----------------------------------------------------------------------- */
 
-interface SapPropEntry {
+interface StillsPropEntry {
   name: string
   type: string
   required: boolean
@@ -546,36 +546,36 @@ interface SapPropEntry {
   description?: string
 }
 
-interface SapEmitEntry {
+interface StillsEmitEntry {
   name: string
   description?: string
   type?: string
 }
 
-interface SapRootFieldEntry {
+interface StillsRootFieldEntry {
   name: string
   type: string
   description: string
 }
 
-interface SapNestingRule {
+interface StillsNestingRule {
   allowedChildren: string[]
   forbiddenChildren?: string[]
   note?: string
 }
 
-interface SapComponentEntry {
+interface StillsComponentEntry {
   category: string
   description: string
-  props: SapPropEntry[]
-  emits?: SapEmitEntry[]
-  rootFields?: SapRootFieldEntry[]
+  props: StillsPropEntry[]
+  emits?: StillsEmitEntry[]
+  rootFields?: StillsRootFieldEntry[]
   notes?: string
   binding?: Record<string, unknown>
-  nestingRule?: SapNestingRule
+  nestingRule?: StillsNestingRule
 }
 
-interface SapCatalog {
+interface StillsCatalog {
   version: string
   buildTime: string
   componentCount: number
@@ -585,22 +585,22 @@ interface SapCatalog {
     groups: string[]
     meta: string[]
   }
-  components: Record<string, SapComponentEntry>
+  components: Record<string, StillsComponentEntry>
 }
 
 /**
- * 从完整 VCM ComponentCatalog 裁剪出 SAP 版。
+ * 从完整 VCM ComponentCatalog 裁剪出 Stills 版。
  * props 合并 rootFields，附带 emits / notes / binding / nestingRule。
  */
-export function trimToSapCatalog(catalog: ComponentCatalog): SapCatalog {
-  const components: Record<string, SapComponentEntry> = {}
+export function trimToStillsCatalog(catalog: ComponentCatalog): StillsCatalog {
+  const components: Record<string, StillsComponentEntry> = {}
   for (const [type, entry] of Object.entries(catalog.components)) {
     // props: 合并 entry.props + entry.rootFields（去重）
     const seen = new Set<string>()
-    const props: SapPropEntry[] = []
+    const props: StillsPropEntry[] = []
     for (const p of entry.props) {
       seen.add(p.name)
-      const sp: SapPropEntry = { name: p.name, type: p.type, required: p.required }
+      const sp: StillsPropEntry = { name: p.name, type: p.type, required: p.required }
       if (p.default !== undefined) sp.default = p.default
       if (p.description) sp.description = p.description
       props.push(sp)
@@ -609,13 +609,13 @@ export function trimToSapCatalog(catalog: ComponentCatalog): SapCatalog {
       for (const rf of entry.rootFields) {
         if (seen.has(rf.name)) continue
         seen.add(rf.name)
-        const sp: SapPropEntry = { name: rf.name, type: rf.type, required: false }
+        const sp: StillsPropEntry = { name: rf.name, type: rf.type, required: false }
         if (rf.description) sp.description = rf.description
         props.push(sp)
       }
     }
 
-    const comp: SapComponentEntry = {
+    const comp: StillsComponentEntry = {
       category: entry.category,
       description: entry.description,
       props,
@@ -624,7 +624,7 @@ export function trimToSapCatalog(catalog: ComponentCatalog): SapCatalog {
     // emits
     if (entry.emits.length > 0) {
       comp.emits = entry.emits.map(e => {
-        const se: SapEmitEntry = { name: e.name }
+        const se: StillsEmitEntry = { name: e.name }
         if (e.description) se.description = e.description
         if (e.type) se.type = e.type
         return se
@@ -646,7 +646,7 @@ export function trimToSapCatalog(catalog: ComponentCatalog): SapCatalog {
     // nestingRule
     const nesting = catalog.constraints.nestingRules[type]
     if (nesting) {
-      const rule: SapNestingRule = { allowedChildren: nesting.allowedChildren }
+      const rule: StillsNestingRule = { allowedChildren: nesting.allowedChildren }
       if (nesting.forbiddenChildren && nesting.forbiddenChildren.length > 0) {
         rule.forbiddenChildren = nesting.forbiddenChildren
       }
@@ -666,12 +666,12 @@ export function trimToSapCatalog(catalog: ComponentCatalog): SapCatalog {
 }
 
 /**
- * 从 SapCatalog 生成 Markdown 提示文本。
+ * 从 StillsCatalog 生成 Markdown 提示文本。
  * 按 category 分组，每组一个表格列出 type/description/props 名列表。
  */
-export function generateSapPrompt(catalog: SapCatalog): string {
+export function generateStillsPrompt(catalog: StillsCatalog): string {
   const lines: string[] = [
-    '## 可用组件目录（SAP Catalog）',
+    '## 可用组件目录（Stills Catalog）',
     '',
     `共 ${catalog.componentCount} 个组件，构建时间 ${catalog.buildTime}`,
     '',
@@ -713,11 +713,11 @@ export function generateSapPrompt(catalog: SapCatalog): string {
 }
 
 /**
- * 生成 SAP Catalog TS 常量文件内容。
+ * 生成 Stills Catalog TS 常量文件内容。
  */
-export function generateSapCatalogTs(catalog: SapCatalog): string {
+export function generateStillsCatalogTs(catalog: StillsCatalog): string {
   return `/**
- * SAP 组件目录（轻量版）
+ * Stills 组件目录（轻量版）
  *
  * ⚠️ 自动生成 — 请勿手动编辑
  *
@@ -726,33 +726,33 @@ export function generateSapCatalogTs(catalog: SapCatalog): string {
  * 生成时间：${catalog.buildTime}
  * 条目数量：${catalog.componentCount}
  */
-import type { SapCatalog } from './sap-catalog-types'
+import type { StillsCatalog } from './stills-catalog-types'
 
-export const SAP_CATALOG: SapCatalog = ${JSON.stringify(catalog, null, 2)} as const
+export const STILLS_CATALOG: StillsCatalog = ${JSON.stringify(catalog, null, 2)} as const
 `
 }
 
 /**
- * 生成 SAP Catalog 三件套文件（JSON + Markdown prompt + TS 常量）
+ * 生成 Stills Catalog 三件套文件（JSON + Markdown prompt + TS 常量）
  */
-export function generateSapCatalogFiles(root: string, fullCatalog: ComponentCatalog): SapCatalog {
-  const sapCatalog = trimToSapCatalog(fullCatalog)
+export function generateStillsCatalogFiles(root: string, fullCatalog: ComponentCatalog): StillsCatalog {
+  const StillsCatalog = trimToStillsCatalog(fullCatalog)
 
-  // 1. sap-catalog.json
-  const jsonPath = resolve(root, 'packages/spark-ai/src/catalog/sap-catalog.json')
-  writeFileSync(jsonPath, JSON.stringify(sapCatalog, null, 2), 'utf-8')
+  // 1. stills-catalog.json
+  const jsonPath = resolve(root, 'packages/spark-ai/src/catalog/stills-catalog.json')
+  writeFileSync(jsonPath, JSON.stringify(StillsCatalog, null, 2), 'utf-8')
 
-  // 2. sap-catalog-prompt.md
-  const promptPath = resolve(root, 'packages/spark-ai/src/catalog/sap-catalog-prompt.md')
-  writeFileSync(promptPath, generateSapPrompt(sapCatalog), 'utf-8')
+  // 2. stills-catalog-prompt.md
+  const promptPath = resolve(root, 'packages/spark-ai/src/catalog/stills-catalog-prompt.md')
+  writeFileSync(promptPath, generateStillsPrompt(StillsCatalog), 'utf-8')
 
-  // 3. sap-catalog.ts
-  const tsPath = resolve(root, 'packages/spark-ai/src/catalog/sap-catalog.ts')
-  writeFileSync(tsPath, generateSapCatalogTs(sapCatalog), 'utf-8')
+  // 3. stills-catalog.ts
+  const tsPath = resolve(root, 'packages/spark-ai/src/catalog/stills-catalog.ts')
+  writeFileSync(tsPath, generateStillsCatalogTs(StillsCatalog), 'utf-8')
 
-  logger.info(`🔧 SAP Catalog 已生成: JSON + Markdown + TS (${sapCatalog.componentCount} 条目)`)
+  logger.info(`🔧 Stills Catalog 已生成: JSON + Markdown + TS (${StillsCatalog.componentCount} 条目)`)
 
-  return sapCatalog
+  return StillsCatalog
 }
 
 /* --------------------------------------------------------------------------

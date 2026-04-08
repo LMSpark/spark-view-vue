@@ -1,6 +1,6 @@
-package com.spark.ai.sap;
+package com.spark.ai.stills;
 
-import com.spark.ai.sap.model.SapProtocolBlock;
+import com.spark.ai.stills.model.StillsProtocolBlock;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -10,9 +10,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * SAP 协议解析器单元测试。
+ * Stills 协议解析器单元测试。
  */
-class SapProtocolParserTest {
+class StillsProtocolParserTest {
 
     @Nested
     @DisplayName("parseFirst")
@@ -23,11 +23,11 @@ class SapProtocolParserTest {
         void shouldParseFileWriteBlock() {
             String input = """
                     @@request:file.write#req001
-                    {"path":"hello.txt","content":"Hello SAP"}
+                    {"path":"hello.txt","content":"Hello Stills"}
                     @@end
                     """;
 
-            SapProtocolBlock block = SapProtocolParser.parseFirst(input);
+            StillsProtocolBlock block = StillsProtocolParser.parseFirst(input);
 
             assertNotNull(block);
             assertEquals("request", block.getType());
@@ -45,7 +45,7 @@ class SapProtocolParserTest {
                     @@end
                     """;
 
-            SapProtocolBlock block = SapProtocolParser.parseFirst(input);
+            StillsProtocolBlock block = StillsProtocolParser.parseFirst(input);
 
             assertNotNull(block);
             assertEquals("db.query", block.getAction());
@@ -57,7 +57,7 @@ class SapProtocolParserTest {
         void shouldParseDescribeType() {
             String input = "@@describe:system.capabilities#cap1\n{}\n@@end";
 
-            SapProtocolBlock block = SapProtocolParser.parseFirst(input);
+            StillsProtocolBlock block = StillsProtocolParser.parseFirst(input);
 
             assertNotNull(block);
             assertEquals("describe", block.getType());
@@ -67,33 +67,33 @@ class SapProtocolParserTest {
         @Test
         @DisplayName("null 输入返回 null")
         void shouldReturnNullForNullInput() {
-            assertNull(SapProtocolParser.parseFirst(null));
+            assertNull(StillsProtocolParser.parseFirst(null));
         }
 
         @Test
         @DisplayName("空白输入返回 null")
         void shouldReturnNullForBlankInput() {
-            assertNull(SapProtocolParser.parseFirst("   "));
+            assertNull(StillsProtocolParser.parseFirst("   "));
         }
 
         @Test
         @DisplayName("无 @@end 标记返回 null")
         void shouldReturnNullWhenNoEndMarker() {
             String input = "@@request:file.write#r1\n{\"path\":\"a.txt\"}";
-            assertNull(SapProtocolParser.parseFirst(input));
+            assertNull(StillsProtocolParser.parseFirst(input));
         }
 
         @Test
         @DisplayName("非协议文本返回 null")
         void shouldReturnNullForPlainText() {
-            assertNull(SapProtocolParser.parseFirst("这只是普通文本"));
+            assertNull(StillsProtocolParser.parseFirst("这只是普通文本"));
         }
 
         @Test
         @DisplayName("ID 支持横线")
         void shouldSupportHyphenInId() {
             String input = "@@request:file.write#req-001-abc\n{}\n@@end";
-            SapProtocolBlock block = SapProtocolParser.parseFirst(input);
+            StillsProtocolBlock block = StillsProtocolParser.parseFirst(input);
             assertNotNull(block);
             assertEquals("req-001-abc", block.getId());
         }
@@ -116,7 +116,7 @@ class SapProtocolParserTest {
                     @@end
                     """;
 
-            List<SapProtocolBlock> blocks = SapProtocolParser.parseAll(input);
+            List<StillsProtocolBlock> blocks = StillsProtocolParser.parseAll(input);
 
             assertEquals(2, blocks.size());
             assertEquals("file.write", blocks.get(0).getAction());
@@ -126,7 +126,7 @@ class SapProtocolParserTest {
         @Test
         @DisplayName("空输入返回空列表")
         void shouldReturnEmptyListForEmptyInput() {
-            assertTrue(SapProtocolParser.parseAll("").isEmpty());
+            assertTrue(StillsProtocolParser.parseAll("").isEmpty());
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.spark.ai.sap;
+package com.spark.ai.stills;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <h3>不做的事</h3>
  * <ul>
- *   <li>不理解 SAP 协议块内容（纯通信层）</li>
+ *   <li>不理解 Stills 协议块内容（纯通信层）</li>
  *   <li>不执行 still（由前端编排器负责）</li>
  *   <li>不管理 IStillSession 状态</li>
  * </ul>

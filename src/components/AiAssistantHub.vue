@@ -9,23 +9,14 @@
       <div v-if="isOpen" class="assistant-hub-panel">
         <div class="assistant-mode-switch" role="tablist" aria-label="assistant mode">
           <button
-            class="assistant-mode-btn"
-            :class="{ active: mode === 'ai' }"
-            @click="mode = 'ai'"
+            class="assistant-mode-btn active"
           >
             🤖 页面
-          </button>
-          <button
-            class="assistant-mode-btn"
-            :class="{ active: mode === 'sap' }"
-            @click="mode = 'sap'"
-          >
-            🔧 工具
           </button>
         </div>
 
         <KeepAlive>
-          <component :is="activeComponent" embedded :force-open="true" />
+          <AiChatPanel embedded :force-open="true" />
         </KeepAlive>
       </div>
     </Transition>
@@ -33,19 +24,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, watch } from 'vue'
+import { defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
-const SapChatPanel = defineAsyncComponent(() => import('@/components/SapChatPanel.vue'))
-
-type AssistantMode = 'ai' | 'sap'
 
 const route = useRoute()
 const isOpen = ref(false)
-const mode = ref<AssistantMode>('ai')
-
-const activeComponent = computed(() => (mode.value === 'ai' ? AiChatPanel : SapChatPanel))
 
 function togglePanel(): void {
   isOpen.value = !isOpen.value
@@ -53,7 +38,6 @@ function togglePanel(): void {
 
 watch(() => route.query['aiDebug'], (val) => {
   if (val === '1') {
-    mode.value = 'ai'
     isOpen.value = true
   }
 }, { immediate: true })

@@ -1,4 +1,4 @@
-package com.spark.ai.sap.handler;
+package com.spark.ai.stills.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +30,12 @@ public class ActionRegistry {
         for (ActionHandler handler : handlerList) {
             String action = handler.getAction();
             if (map.containsKey(action)) {
-                log.warn("[SAP] 重复注册的 action: {}，后者 {} 将覆盖前者 {}",
+                log.warn("[STILLS] 重复注册的 action: {}，后者 {} 将覆盖前者 {}",
                         action, handler.getClass().getSimpleName(),
                         map.get(action).getClass().getSimpleName());
             }
             map.put(action, handler);
-            log.info("[SAP] 注册 ActionHandler: {} → {}", action, handler.getClass().getSimpleName());
+            log.info("[STILLS] 注册 ActionHandler: {} → {}", action, handler.getClass().getSimpleName());
         }
         this.handlers = Collections.unmodifiableMap(map);
     }

@@ -5,7 +5,7 @@
  * createSession() 自动为每个已注册域创建 state。
  */
 
-import type { SapCatalog } from '../catalog/sap-catalog-types'
+import type { StillsCatalog } from '../catalog/stills-catalog-types'
 import type { IStillSession, DomainProvider } from './types'
 import { registerAll } from './dispatcher'
 
@@ -42,7 +42,7 @@ export function clearDomains(): void {
 // ═══════════════════════════════════════════════════════════
 
 export interface CreateSessionOptions {
-  catalog?: SapCatalog
+  catalog?: StillsCatalog
 }
 
 function createBaseSession(options?: CreateSessionOptions): IStillSession {

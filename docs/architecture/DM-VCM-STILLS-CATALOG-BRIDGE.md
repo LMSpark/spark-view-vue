@@ -1,4 +1,4 @@
-# DM: VCM → SAP Catalog 自动桥接方案
+# DM: VCM → Stills Catalog 自动桥接方案
 
 > **状态**: 待审阅  
 > **日期**: 2026-04-07  
@@ -20,7 +20,7 @@ sparkCatalogPlugin (Vite build)
       └─ packages/spark-ai/src/catalog/component-props-catalog.ts (TS 常量 + 查询函数)
 ```
 
-### 1.2 SAP/Stills 引擎（已就绪）
+### 1.2 Stills 引擎（已就绪）
 
 - 53 个 action（dataset/blueprint/pageconfig/meta 四个 domain）
 - `rule.addComponent(type, props, children)` 当前 **零校验** — 任意 type/props 均可通过
@@ -29,7 +29,7 @@ sparkCatalogPlugin (Vite build)
 
 ### 1.3 断裂带
 
-| 能力 | VCM 已提取 | SAP 实际消费 |
+| 能力 | VCM 已提取 | Stills 实际消费 |
 |------|-----------|-------------|
 | 组件类型注册表 | ✅ 136 组件 | ❌ 无校验 |
 | Props schema | ✅ name/type/required/default | ❌ 无校验 |
@@ -42,7 +42,7 @@ sparkCatalogPlugin (Vite build)
 
 | # | 决策项 | 选项 |
 |---|--------|------|
-| Q1 | 核心目标 | BUILD 生成专用 SAP Catalog TS/JSON |
+| Q1 | 核心目标 | BUILD 生成专用 Stills Catalog TS/JSON |
 | Q2 | 消费阶段 | Stills action 执行时实时校验 |
 | Q3 | 校验严格度 | 硬拒绝（@@error + fix） |
 | Q4 | Props 校验深度 | 检查未知 prop 名 |
@@ -50,7 +50,7 @@ sparkCatalogPlugin (Vite build)
 | Q6 | Catalog 内容 | type + category + props(name/type/required) |
 | Q7 | 新 Stills action | catalog.query（智能分层） |
 | Q8 | 构建集成 | sparkCatalogPlugin 内新增输出 |
-| Q9 | 后端同步 | 新增 SAP 专用上传端点 |
+| Q9 | 后端同步 | 新增 Stills 专用上传端点 |
 | Q10 | HMR | 跟随现有 sparkCatalogPlugin HMR 策略 |
 | Q11 | 矛盾调和 | catalog 包含 props 名称+类型+required |
 | Q12 | catalog.query 返回 | 智能分层（全列表/过滤/单组件 spec） |
@@ -69,7 +69,7 @@ sparkCatalogPlugin (Vite build)
 │ component-catalog.json (完整 VCM，136 组件)                              │
 │           ↓ 裁剪                                                        │
 │ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ 新增输出 ①: sap-catalog.json                                        │ │
+│ │ 新增输出 ①: stills-catalog.json                                        │ │
 │ │ {                                                                   │ │
 │ │   version: "1.0.0",                                                │ │
 │ │   buildTime: "ISO",                                                │ │
@@ -90,7 +90,7 @@ sparkCatalogPlugin (Vite build)
 │ │ }                                                                  │ │
 │ └─────────────────────────────────────────────────────────────────────┘ │
 │ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ 新增输出 ②: sap-catalog-prompt.md                                  │ │
+│ │ 新增输出 ②: stills-catalog-prompt.md                                  │ │
 │ │ ## 可用组件目录                                                      │ │
 │ │ | type | category | description | props |                          │ │
 │ │ |------|----------|-------------|-------|                          │ │
@@ -98,21 +98,21 @@ sparkCatalogPlugin (Vite build)
 │ │ ...                                                                │ │
 │ └─────────────────────────────────────────────────────────────────────┘ │
 │ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ 新增输出 ③: sap-catalog.ts (TS 常量)                                │ │
-│ │ export const SAP_CATALOG: SapCatalog = { ... }                     │ │
-│ │ export type SapCatalog = { ... }                                   │ │
-│ │ export type SapComponentEntry = { ... }                            │ │
+│ │ 新增输出 ③: stills-catalog.ts (TS 常量)                                │ │
+│ │ export const STILLS_CATALOG: StillsCatalog = { ... }                     │ │
+│ │ export type StillsCatalog = { ... }                                   │ │
+│ │ export type StillsComponentEntry = { ... }                            │ │
 │ └─────────────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────────┘
                     ↓
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ UPLOAD PHASE (build-all.mjs Step 4.5)                                   │
 │                                                                         │
-│ POST /api/sap/catalog                                                   │
-│   body: sap-catalog.json                                                │
-│   → SapCatalogService.updateCatalog(json)                              │
-│   → persist: data/sap-catalog.json                                     │
-│   → cache: in-memory SapCatalog                                        │
+│ POST /api/stills/catalog                                                   │
+│   body: stills-catalog.json                                                │
+│   → StillsCatalogService.updateCatalog(json)                              │
+│   → persist: data/stills-catalog.json                                     │
+│   → cache: in-memory StillsCatalog                                        │
 │                                                                         │
 │ (与现有 POST /api/ai/component-metadata 并行)                           │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -121,11 +121,11 @@ sparkCatalogPlugin (Vite build)
 │ RUNTIME: Stills Session 初始化                                          │
 │                                                                         │
 │ Frontend createStillsSession():                                         │
-│   ① GET /api/sap/catalog → SapCatalog JSON                             │
-│   ② session.catalog = parsed SapCatalog                                │
+│   ① GET /api/stills/catalog → StillsCatalog JSON                             │
+│   ② session.catalog = parsed StillsCatalog                                │
 │                                                                         │
 │ Backend StillsSessionService.createSession():                           │
-│   ① sapCatalogService.getCatalog() → SapCatalog                       │
+│   ① StillsCatalogService.getCatalog() → StillsCatalog                       │
 │   ② inject catalog prompt into system prompt                           │
 └─────────────────────────────────────────────────────────────────────────┘
                     ↓
@@ -155,16 +155,16 @@ sparkCatalogPlugin (Vite build)
 
 ### 4.1 前端变更
 
-#### 4.1.1 sparkCatalogPlugin 新增 SAP 输出
+#### 4.1.1 sparkCatalogPlugin 新增 Stills 输出
 
 **文件**: `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts`
 
-**变更**: 在 `generateCatalog()` 末尾，从完整 catalog 裁剪出 SAP 版本并写入 3 个文件。
+**变更**: 在 `generateCatalog()` 末尾，从完整 catalog 裁剪出 Stills 版本并写入 3 个文件。
 
 ```typescript
-// 新增函数: trimToSapCatalog(fullCatalog) → SapCatalog
-function trimToSapCatalog(catalog: ComponentCatalog): SapCatalog {
-  const components: Record<string, SapComponentEntry> = {}
+// 新增函数: trimToStillsCatalog(fullCatalog) → StillsCatalog
+function trimToStillsCatalog(catalog: ComponentCatalog): StillsCatalog {
+  const components: Record<string, StillsComponentEntry> = {}
   for (const [type, entry] of Object.entries(catalog.components)) {
     components[type] = {
       category: entry.category,
@@ -185,8 +185,8 @@ function trimToSapCatalog(catalog: ComponentCatalog): SapCatalog {
   }
 }
 
-// 新增函数: generateSapPrompt(sapCatalog) → Markdown string
-function generateSapPrompt(catalog: SapCatalog): string {
+// 新增函数: generateSapPrompt(StillsCatalog) → Markdown string
+function generateSapPrompt(catalog: StillsCatalog): string {
   // 生成 Markdown 表格 + 分类索引
 }
 ```
@@ -195,16 +195,16 @@ function generateSapPrompt(catalog: SapCatalog): string {
 
 | 输出 | 路径 | 用途 |
 |------|------|------|
-| `sap-catalog.json` | `packages/spark-ai/src/catalog/sap-catalog.json` | 运行时数据（后端上传 + 前端 fallback） |
-| `sap-catalog-prompt.md` | `packages/spark-ai/src/catalog/sap-catalog-prompt.md` | LLM 系统提示补充段 |
-| `sap-catalog.ts` | `packages/spark-ai/src/catalog/sap-catalog.ts` | TypeScript 类型 + 常量导出 |
+| `stills-catalog.json` | `packages/spark-ai/src/catalog/stills-catalog.json` | 运行时数据（后端上传 + 前端 fallback） |
+| `stills-catalog-prompt.md` | `packages/spark-ai/src/catalog/stills-catalog-prompt.md` | LLM 系统提示补充段 |
+| `stills-catalog.ts` | `packages/spark-ai/src/catalog/stills-catalog.ts` | TypeScript 类型 + 常量导出 |
 
-#### 4.1.2 SAP Catalog 类型定义
+#### 4.1.2 Stills Catalog 类型定义
 
-**文件**: `packages/spark-ai/src/catalog/sap-catalog-types.ts`（新增）
+**文件**: `packages/spark-ai/src/catalog/stills-catalog-types.ts`（新增）
 
 ```typescript
-export interface SapCatalog {
+export interface StillsCatalog {
   version: string
   buildTime: string
   componentCount: number
@@ -214,16 +214,16 @@ export interface SapCatalog {
     groups: string[]
     meta: string[]
   }
-  components: Record<string, SapComponentEntry>
+  components: Record<string, StillsComponentEntry>
 }
 
-export interface SapComponentEntry {
+export interface StillsComponentEntry {
   category: 'container' | 'field' | 'group' | 'meta'
   description: string
-  props: SapPropEntry[]
+  props: StillsPropEntry[]
 }
 
-export interface SapPropEntry {
+export interface StillsPropEntry {
   name: string
   type: string
   required: boolean
@@ -238,7 +238,7 @@ export interface SapPropEntry {
 // 新增字段
 interface IStillSession {
   // ... 现有字段 ...
-  catalog: SapCatalog | null  // Stills action 可通过 session.catalog 访问
+  catalog: StillsCatalog | null  // Stills action 可通过 session.catalog 访问
 }
 ```
 
@@ -249,7 +249,7 @@ interface IStillSession {
 ```typescript
 // createSession() 扩展
 export function createSession(options?: {
-  catalog?: SapCatalog  // 外部注入 catalog
+  catalog?: StillsCatalog  // 外部注入 catalog
 }): IStillSession {
   return {
     // ... 现有初始化 ...
@@ -314,7 +314,7 @@ validate(params, session) {
   
   execute(session, params) {
     if (!session.catalog) {
-      return { ok: false, code: 'NO_CATALOG', msg: 'SAP Catalog 未加载', fix: '请确认构建时已生成并上传 sap-catalog.json' }
+      return { ok: false, code: 'NO_CATALOG', msg: 'Stills Catalog 未加载', fix: '请确认构建时已生成并上传 stills-catalog.json' }
     }
     const catalog = session.catalog
 
@@ -353,15 +353,15 @@ validate(params, session) {
 ```typescript
 // 调用层示例 (前端 Stills 编排器)
 async function initStillsSession(): Promise<IStillSession> {
-  let catalog: SapCatalog | null = null
+  let catalog: StillsCatalog | null = null
   try {
-    const res = await fetch('/api/sap/catalog')
+    const res = await fetch('/api/stills/catalog')
     if (res.ok) {
       catalog = await res.json()
     }
   } catch {
     // catalog 不可用时不阻塞 session 创建
-    console.warn('[Stills] SAP Catalog 加载失败，组件校验不可用')
+    console.warn('[Stills] Stills Catalog 加载失败，组件校验不可用')
   }
   return createSession({ catalog })
 }
@@ -371,25 +371,25 @@ async function initStillsSession(): Promise<IStillSession> {
 
 ```typescript
 // 新增导出
-export type { SapCatalog, SapComponentEntry, SapPropEntry } from './catalog/sap-catalog-types'
-export { SAP_CATALOG } from './catalog/sap-catalog'
+export type { StillsCatalog, StillsComponentEntry, StillsPropEntry } from './catalog/stills-catalog-types'
+export { STILLS_CATALOG } from './catalog/stills-catalog'
 ```
 
 ### 4.2 后端变更
 
-#### 4.2.1 SapCatalogService（新增）
+#### 4.2.1 StillsCatalogService（新增）
 
-**文件**: `spark-ai-server/src/main/java/com/spark/ai/sap/SapCatalogService.java`
+**文件**: `spark-ai-server/src/main/java/com/spark/ai/StillsCatalogService.java`
 
 ```java
 @Service
-public class SapCatalogService {
-    private static final String CATALOG_FILE = "data/sap-catalog.json";
+public class StillsCatalogService {
+    private static final String CATALOG_FILE = "data/stills-catalog.json";
     private volatile String rawCatalog = null;
 
     @PostConstruct
     public void loadFromFile() {
-        // 启动时从 data/sap-catalog.json 加载（如果存在）
+        // 启动时从 data/stills-catalog.json 加载（如果存在）
     }
 
     public void updateCatalog(String json) {
@@ -406,37 +406,37 @@ public class SapCatalogService {
 }
 ```
 
-#### 4.2.2 SapController 端点扩展
+#### 4.2.2 StillsController 端点扩展
 
-**文件**: `spark-ai-server/src/main/java/com/spark/ai/controller/SapController.java`
+**文件**: `spark-ai-server/src/main/java/com/spark/ai/controller/StillsController.java`
 
 ```java
 // 新增端点
-@PostMapping("/api/sap/catalog")
+@PostMapping("/api/stills/catalog")
 public ResponseEntity<Map<String, Object>> uploadCatalog(@RequestBody String body) {
-    sapCatalogService.updateCatalog(body);
+    StillsCatalogService.updateCatalog(body);
     return ResponseEntity.ok(Map.of("status", "ok", "componentCount", ...));
 }
 
-@GetMapping("/api/sap/catalog")
+@GetMapping("/api/stills/catalog")
 public ResponseEntity<String> getCatalog() {
-    if (!sapCatalogService.hasCatalog()) {
+    if (!StillsCatalogService.hasCatalog()) {
         return ResponseEntity.notFound().build();
     }
     return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(sapCatalogService.getCatalog());
+            .body(StillsCatalogService.getCatalog());
 }
 ```
 
 #### 4.2.3 StillsSessionService — catalog prompt 注入
 
-**文件**: `spark-ai-server/src/main/java/com/spark/ai/sap/StillsSessionService.java`
+**文件**: `spark-ai-server/src/main/java/com/spark/ai/StillsSessionService.java`
 
 ```java
-// createSession() 扩展: 将 sap-catalog-prompt.md 追加到 system prompt
+// createSession() 扩展: 将 stills-catalog-prompt.md 追加到 system prompt
 public String createSession(String systemPrompt, ...) {
-    String catalogPrompt = sapCatalogService.getCatalogPrompt();
+    String catalogPrompt = StillsCatalogService.getCatalogPrompt();
     if (catalogPrompt != null) {
         systemPrompt = systemPrompt + "\n\n" + catalogPrompt;
     }
@@ -452,16 +452,16 @@ public String createSession(String systemPrompt, ...) {
 
 ```javascript
 // Step 4 (现有): POST metadata
-// Step 4.5 (新增): POST SAP catalog
-const sapCatalogPath = path.resolve('packages/spark-ai/src/catalog/sap-catalog.json')
-if (fs.existsSync(sapCatalogPath)) {
-  const sapCatalog = fs.readFileSync(sapCatalogPath, 'utf-8')
-  await fetch(`http://localhost:${port}/api/sap/catalog`, {
+// Step 4.5 (新增): POST Stills Catalog
+const StillsCatalogPath = path.resolve('packages/spark-ai/src/catalog/stills-catalog.json')
+if (fs.existsSync(StillsCatalogPath)) {
+  const StillsCatalog = fs.readFileSync(StillsCatalogPath, 'utf-8')
+  await fetch(`http://localhost:${port}/api/stills/catalog`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: sapCatalog,
+    body: StillsCatalog,
   })
-  console.log('✅ SAP Catalog uploaded')
+  console.log('✅ Stills Catalog uploaded')
 }
 ```
 
@@ -478,15 +478,15 @@ pnpm run build
   │   └─ sparkCatalogPlugin:
   │       ├─ component-catalog.json (完整 VCM，136 组件)     ← 现有
   │       ├─ component-props-catalog.ts (TS 常量)             ← 现有
-  │       ├─ sap-catalog.json (裁剪版)                        ← 新增
-  │       ├─ sap-catalog.ts (TS 常量 + 类型)                 ← 新增
-  │       └─ sap-catalog-prompt.md (AI 提示文本)              ← 新增
+  │       ├─ stills-catalog.json (裁剪版)                        ← 新增
+  │       ├─ stills-catalog.ts (TS 常量 + 类型)                 ← 新增
+  │       └─ stills-catalog-prompt.md (AI 提示文本)              ← 新增
   │
   ├─ Step 4: POST /api/ai/component-metadata                  ← 现有
   │
-  ├─ Step 4.5: POST /api/sap/catalog                          ← 新增
-  │   └─ SapCatalogService.updateCatalog()
-  │       ├─ persist → data/sap-catalog.json
+  ├─ Step 4.5: POST /api/stills/catalog                          ← 新增
+  │   └─ StillsCatalogService.updateCatalog()
+  │       ├─ persist → data/stills-catalog.json
   │       └─ cache → memory
   │
   └─ Step 5: taskkill
@@ -498,7 +498,7 @@ pnpm run dev (HMR)
   ├─ .vue 文件变更
   │   └─ sparkCatalogPlugin HMR handler:
   │       ├─ 重建 component-catalog.json                       ← 现有
-  │       └─ 重建 sap-catalog.json + sap-catalog.ts + prompt   ← 新增（搭车现有 HMR）
+  │       └─ 重建 stills-catalog.json + stills-catalog.ts + prompt   ← 新增（搭车现有 HMR）
   │
   └─ 无自动上传到后端（dev 模式正常，前端可 fallback 到 import）
 ```
@@ -506,8 +506,8 @@ pnpm run dev (HMR)
 ```
 前端 Stills Session 初始化:
   │
-  ├─ GET /api/sap/catalog
-  │   ├─ 200 → session.catalog = parsed SapCatalog
+  ├─ GET /api/stills/catalog
+  │   ├─ 200 → session.catalog = parsed StillsCatalog
   │   └─ 404 → session.catalog = null (校验降级，不阻塞)
   │
   └─ AI 执行 rule.addComponent("r-table", { dataKey: "Users@rows", border: true })
@@ -546,21 +546,21 @@ pnpm run dev (HMR)
 
 | 文件 | 操作 | 说明 |
 |------|------|------|
-| `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts` | **修改** | 新增 `trimToSapCatalog()` + `generateSapPrompt()` + 写入 3 个文件 |
-| `packages/spark-ai/src/catalog/sap-catalog-types.ts` | **新增** | SapCatalog / SapComponentEntry / SapPropEntry 类型 |
-| `packages/spark-ai/src/catalog/sap-catalog.json` | **自动生成** | build 产物（git-ignored 或 git-tracked 待定） |
-| `packages/spark-ai/src/catalog/sap-catalog.ts` | **自动生成** | TS 常量导出 |
-| `packages/spark-ai/src/catalog/sap-catalog-prompt.md` | **自动生成** | Markdown prompt 文本 |
-| `packages/spark-ai/src/index.ts` | **修改** | 新增 SAP Catalog 导出 |
+| `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts` | **修改** | 新增 `trimToStillsCatalog()` + `generateSapPrompt()` + 写入 3 个文件 |
+| `packages/spark-ai/src/catalog/stills-catalog-types.ts` | **新增** | StillsCatalog / StillsComponentEntry / StillsPropEntry 类型 |
+| `packages/spark-ai/src/catalog/stills-catalog.json` | **自动生成** | build 产物（git-ignored 或 git-tracked 待定） |
+| `packages/spark-ai/src/catalog/stills-catalog.ts` | **自动生成** | TS 常量导出 |
+| `packages/spark-ai/src/catalog/stills-catalog-prompt.md` | **自动生成** | Markdown prompt 文本 |
+| `packages/spark-ai/src/index.ts` | **修改** | 新增 Stills Catalog 导出 |
 | `packages/spark-ai/src/stills/types.ts` | **修改** | IStillSession 新增 `catalog` 字段 |
 | `packages/spark-ai/src/stills/domain.ts` | **修改** | createSession() 接受 catalog 参数 |
 | `packages/spark-ai/src/stills/pageconfig-domain.ts` | **修改** | rule.addComponent / updateComponent 增加 catalog 校验 |
 | `packages/spark-ai/src/stills/meta-methods.ts` | **修改** | 新增 `catalog.query` action |
-| `spark-ai-server/.../sap/SapCatalogService.java` | **新增** | SAP Catalog 持久化 + 缓存 |
-| `spark-ai-server/.../controller/SapController.java` | **修改** | 新增 POST/GET /api/sap/catalog |
-| `spark-ai-server/.../sap/StillsSessionService.java` | **修改** | session 创建时注入 catalog prompt |
-| `scripts/build-all.mjs` | **修改** | Step 4.5: POST sap-catalog.json |
-| `data/sap-catalog.json` | **自动生成** | 后端持久化文件 |
+| `spark-ai-server/.../StillsCatalogService.java` | **新增** | Stills Catalog 持久化 + 缓存 |
+| `spark-ai-server/.../controller/StillsController.java` | **修改** | 新增 POST/GET /api/stills/catalog |
+| `spark-ai-server/.../StillsSessionService.java` | **修改** | session 创建时注入 catalog prompt |
+| `scripts/build-all.mjs` | **修改** | Step 4.5: POST stills-catalog.json |
+| `data/stills-catalog.json` | **自动生成** | 后端持久化文件 |
 
 ---
 
@@ -578,20 +578,20 @@ pnpm run dev (HMR)
 |------|------|------|
 | catalog 未加载时 action 静默跳过校验 | 低 | 日志 warn + session.describe 展示 catalog 状态 |
 | VCM 提取遗漏组件导致误拒绝 | 中 | supplement.ts 兜底 + catalog.query 可发现 |
-| sap-catalog.json 过大影响 session 初始化 | 低 | 裁剪后 ~50-80KB（136 组件 × props 列表） |
+| stills-catalog.json 过大影响 session 初始化 | 低 | 裁剪后 ~50-80KB（136 组件 × props 列表） |
 | HMR 重建 catalog 慢 | 低 | 与现有 sparkCatalogPlugin HMR 一致（已验证可接受） |
 
 ### 7.3 测试策略
 
 | 测试类型 | 覆盖内容 |
 |----------|----------|
-| 单元测试 | `trimToSapCatalog()` 裁剪正确性 |
+| 单元测试 | `trimToStillsCatalog()` 裁剪正确性 |
 | 单元测试 | `catalog.query` action 三种模式 |
 | 单元测试 | `rule.addComponent` 校验：未知 type → @@error、未知 prop → @@error、合法 → 通过 |
 | 单元测试 | `session.catalog = null` 时校验跳过 |
-| 集成测试 | build-all.mjs → sap-catalog.json 生成 + 上传 |
-| Java 单元测试 | SapCatalogService CRUD + 持久化 |
-| Java 单元测试 | SapController POST/GET 端点 |
+| 集成测试 | build-all.mjs → stills-catalog.json 生成 + 上传 |
+| Java 单元测试 | StillsCatalogService CRUD + 持久化 |
+| Java 单元测试 | StillsController POST/GET 端点 |
 
 ---
 
@@ -599,9 +599,9 @@ pnpm run dev (HMR)
 
 ```
 Phase 1: 类型 + 裁剪 (纯前端, 无依赖)
-  ├─ T1: 新增 sap-catalog-types.ts (类型定义)
-  ├─ T2: json-catalog-generator.ts 新增 trimToSapCatalog() + generateSapPrompt()
-  ├─ T3: 生成 sap-catalog.ts (TS 常量导出)
+  ├─ T1: 新增 stills-catalog-types.ts (类型定义)
+  ├─ T2: json-catalog-generator.ts 新增 trimToStillsCatalog() + generateSapPrompt()
+  ├─ T3: 生成 stills-catalog.ts (TS 常量导出)
   └─ T4: spark-ai/src/index.ts 新增导出
 
 Phase 2: Stills 消费 (前端 Stills 引擎)
@@ -612,8 +612,8 @@ Phase 2: Stills 消费 (前端 Stills 引擎)
   └─ T9: 单元测试 (catalog.query + rule 校验)
 
 Phase 3: 后端 (Java)
-  ├─ T10: SapCatalogService 新增
-  ├─ T11: SapController 端点扩展
+  ├─ T10: StillsCatalogService 新增
+  ├─ T11: StillsController 端点扩展
   ├─ T12: StillsSessionService prompt 注入
   └─ T13: Java 单元测试
 
@@ -624,7 +624,7 @@ Phase 4: 管线集成
 
 ---
 
-## 附录 A: sap-catalog.json 样例（裁剪后）
+## 附录 A: stills-catalog.json 样例（裁剪后）
 
 ```json
 {
@@ -662,10 +662,10 @@ Phase 4: 管线集成
 }
 ```
 
-## 附录 B: sap-catalog-prompt.md 样例
+## 附录 B: stills-catalog-prompt.md 样例
 
 ```markdown
-## 可用组件目录（SAP Catalog v1.0.0）
+## 可用组件目录（Stills Catalog v1.0.0）
 
 ### 容器组件（containers）
 | type | description | 常用 props |

@@ -1,18 +1,18 @@
-package com.spark.ai.sap.model;
+package com.spark.ai.stills.model;
 
 /**
- * SAP/1.0 协议块的解析结果。
+ * Stills 协议块的解析结果。
  *
  * <p>协议格式：{@code @@<type>:<action>#<id> \n <JSON body> \n @@end}
  *
  * <p>示例：
  * <pre>
  * @@request:file.write#req001
- * {"path":"/tmp/hello.txt","content":"Hello SAP"}
+ * {"path":"/tmp/hello.txt","content":"Hello Stills"}
  * @@end
  * </pre>
  */
-public class SapProtocolBlock {
+public class StillsProtocolBlock {
 
     /** 协议块类型（request / result / error / describe） */
     private final String type;
@@ -26,7 +26,7 @@ public class SapProtocolBlock {
     /** JSON body 原始文本 */
     private final String body;
 
-    public SapProtocolBlock(String type, String action, String id, String body) {
+    public StillsProtocolBlock(String type, String action, String id, String body) {
         this.type = type;
         this.action = action;
         this.id = id;
@@ -40,6 +40,6 @@ public class SapProtocolBlock {
 
     @Override
     public String toString() {
-        return "SapProtocolBlock{type='" + type + "', action='" + action + "', id='" + id + "'}";
+        return "StillsProtocolBlock{type='" + type + "', action='" + action + "', id='" + id + "'}";
     }
 }

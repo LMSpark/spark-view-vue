@@ -5,7 +5,6 @@
 >
 > 所属： [AI 提示词体系](../README.md) / [平台基础](README.md) / 统一交互协议。
 >
-> SAP 专项完整口径另见：[SAP_PROTOCOL_COMPLETE.md](SAP_PROTOCOL_COMPLETE.md)。
 
 ---
 
@@ -42,11 +41,11 @@
 @@end
 ```
 
-SAP 专项示例：
+Stills 专项示例：
 
 ```text
 @@request:file.write#req-1
-{"path":"output/hello.txt","content":"Hello SAP","append":false}
+{"path":"output/hello.txt","content":"Hello Stills","append":false}
 @@end
 ```
 
@@ -92,13 +91,13 @@ SAP 专项示例：
   - payload 解析改为 `parseToolProtocolPayload()`
   - 协议文本清洗改为 `stripToolProtocolBlocks()`
 
-### 3.2 SAP 工具面板
-- 文件：`src/components/SapChatPanel.vue`
+### 3.2 Stills 工具面板
+- 文件：`src/components/StillsChatPanel.vue`
 - 变更：
   - 移除本地 SSE 手写解析，改为 `streamAiChatText()`
   - 移除本地正则，改为 `extractToolProtocolBlocks()` / `stripToolProtocolBlocks()`
-  - SAP 专项块类型统一为 `request / describe`
-  - SAP 专项执行语义统一为“一轮最多一个协议块；成功后一轮总结；多块直接判协议错误”
+  - Stills 专项块类型统一为 `request / describe`
+  - Stills 专项执行语义统一为“一轮最多一个协议块；成功后一轮总结；多块直接判协议错误”
 
 ### 3.3 顶栏 AI Chat 组件链路
 - 文件：`src/composables/useAiChat.ts`
@@ -121,7 +120,7 @@ SAP 专项示例：
   - 流式协议解析
   - 定界块解析与清洗
   - payload 反序列化
-- 业务层（`AiChatPanel` / `SapChatPanel` / `useNavPlanner`）只负责：
+- 业务层（`AiChatPanel` / `StillsChatPanel` / `useNavPlanner`）只负责：
   - 工具动作执行
   - UI 状态管理
   - 错误提示与回退策略
@@ -131,13 +130,13 @@ SAP 专项示例：
 ## 5. 兼容与回退
 
 - `AiChatPanel` 保留“协议失败自动回退原生成流程”的兜底逻辑。
-- `SapChatPanel` 保留原工具执行端点 `/api/sap/execute`。
+- `StillsChatPanel` 保留原工具执行端点 `/api/stills/execute`。
 - `useAiChat` 保留原消息模型，仅替换底层流式解析实现。
 
 ---
 
 ## 6. 后续可选增强
 
-- 抽取统一 `runToolLoop()`（当前 AI/SAP 各有循环控制，尚未统一）
+- 抽取统一 `runToolLoop()`（当前 AI/Stills 各有循环控制，尚未统一）
 - 为工具动作定义共享 schema（可接入 Zod 或 JSON Schema）
 - 增加协议级单测（`ai-protocol.service.test.ts`）覆盖异常块/脏数据

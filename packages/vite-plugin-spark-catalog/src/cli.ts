@@ -11,7 +11,7 @@
  */
 
 import { resolve } from 'node:path'
-import { generateJsonCatalog, generateSapCatalogFiles, generateDevSystemCatalog } from './json-catalog-generator'
+import { generateJsonCatalog, generateStillsCatalogFiles, generateDevSystemCatalog } from './json-catalog-generator'
 import { generatePropsCatalog } from './catalog-generator'
 import { COMPONENT_SCAN_PATTERNS, COMPONENT_EXCLUDE_PATTERNS } from './scan-config'
 import { createLogger } from './utils'
@@ -27,7 +27,7 @@ const catalog = generateJsonCatalog(root, {
   exclude: [...COMPONENT_EXCLUDE_PATTERNS],
 })
 generatePropsCatalog(root, {}, catalog)
-generateSapCatalogFiles(root, catalog)
+generateStillsCatalogFiles(root, catalog)
 generateDevSystemCatalog(root, catalog)
 
 logger.info('✅ 所有目录文件生成完毕')

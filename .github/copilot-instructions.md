@@ -1543,12 +1543,18 @@ Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页�
 |---|---|
 | `POST` | `/api/logs` |
 
-#### 11) SAP（SapController）
+#### 11) Stills（StillsController）
 
 | Method | Path | 说明 |
 |---|---|---|
-| `POST` | `/api/sap/chat` | SAP AI 对话 |
-| `POST` | `/api/sap/execute` | 执行 SAP 协议（`text/plain`） |
+| `POST` | `/api/stills/chat` | Stills AI 对话 |
+| `POST` | `/api/stills/execute` | 执行 Stills 协议（`text/plain`） |
+| `POST` | `/api/stills/session` | 创建 Stills 会话 |
+| `POST` | `/api/stills/turn` | 执行一轮 LLM 对话 |
+| `POST` | `/api/stills/append` | 向会话追加消息 |
+| `POST` | `/api/stills/conversation` | 获取完整对话记录 |
+| `POST` | `/api/stills/destroy` | 销毁会话 |
+| `POST` | `/api/stills/destroy-batch` | 批量销毁会话 |
 
 ### SSE 调试通道（强制优先）
 

@@ -1,7 +1,7 @@
-package com.spark.ai.sap.model;
+package com.spark.ai.stills.model;
 
 /**
- * SAP 协议错误响应载体。
+ * Stills 协议错误响应载体。
  *
  * <p>序列化为：
  * <pre>
@@ -10,13 +10,13 @@ package com.spark.ai.sap.model;
  * @@end
  * </pre>
  */
-public class SapError {
+public class StillsError {
 
     private final String code;
     private final String msg;
     private final String fix;
 
-    public SapError(String code, String msg, String fix) {
+    public StillsError(String code, String msg, String fix) {
         this.code = code;
         this.msg = msg;
         this.fix = fix;

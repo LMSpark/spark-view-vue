@@ -1,7 +1,7 @@
-package com.spark.ai.sap.handler;
+package com.spark.ai.stills.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spark.ai.sap.model.SapResult;
+import com.spark.ai.stills.model.StillsResult;
 import jakarta.validation.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +44,10 @@ public class FileWriteHandler implements ActionHandler {
     private final Path sandboxRoot;
 
     public FileWriteHandler(ObjectMapper objectMapper,
-                            @Value("${spark.sap.file-sandbox:./data/sap-sandbox}") String sandboxDir) {
+                            @Value("${spark.stills.file-sandbox:./data/stills-sandbox}") String sandboxDir) {
         this.objectMapper = objectMapper;
         this.sandboxRoot = Path.of(sandboxDir).toAbsolutePath().normalize();
-        log.info("[SAP] FileWriteHandler sandbox: {}", sandboxRoot);
+        log.info("[STILLS] FileWriteHandler sandbox: {}", sandboxRoot);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class FileWriteHandler implements ActionHandler {
     }
 
     @Override
-    public SapResult execute(String requestId, String jsonBody)
+    public StillsResult execute(String requestId, String jsonBody)
             throws ActionValidationException, ActionExecutionException {
 
         // 1. 反序列化参数
@@ -117,7 +117,7 @@ public class FileWriteHandler implements ActionHandler {
             } else {
                 Files.writeString(targetPath, params.content, StandardCharsets.UTF_8);
             }
-            log.info("[SAP] 文件已写入: {} ({} bytes, append={})",
+            log.info("[STILLS] 文件已写入: {} ({} bytes, append={})",
                     targetPath, params.content.length(), params.append);
         } catch (IOException e) {
             throw new ActionExecutionException("文件写入失败: " + e.getMessage(), e);
@@ -129,7 +129,7 @@ public class FileWriteHandler implements ActionHandler {
         data.put("path", params.path);
         data.put("size", params.content.length());
         data.put("append", params.append);
-        return new SapResult("file.write", requestId, data);
+        return new StillsResult("file.write", requestId, data);
     }
 
     private void validatePath(String path) throws ActionValidationException {

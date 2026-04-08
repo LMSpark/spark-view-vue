@@ -14,7 +14,7 @@ SPARK 的文档按“如何使用”“为什么这样设计”“AI 相关约�
 2. [guides/DATA_MANAGEMENT.md](guides/DATA_MANAGEMENT.md)：理解 DataSet / DataView。
 3. [guides/CONFIG_SYSTEM.md](guides/CONFIG_SYSTEM.md)：理解页面结构配置与脚本边界。
 4. [architecture/DATAFLOW_ARCHITECTURE.md](architecture/DATAFLOW_ARCHITECTURE.md)：需要深入运行时时再看内部链路。
-5. [ai/README.md](ai/README.md)：涉及 AI 页面生成、提示词治理或 stills/SAP 架构时再进入。
+5. [ai/README.md](ai/README.md)：涉及 AI 页面生成、提示词治理或 Stills 架构时再进入。
 
 ## 使用约定
 

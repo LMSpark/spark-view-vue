@@ -45,7 +45,7 @@ export function createBlueprintOrchestrationMonitor(): SessionMonitor {
     name: 'blueprint-orchestration',
 
     afterStillExecution(ctx: MonitorContext): string[] {
-      const action = ctx.currentTurn.sapBlock?.action ?? ''
+      const action = ctx.currentTurn.toolBlock?.action ?? ''
 
       // ── 追踪蓝图生命周期 ──
       if (action === 'blueprint.create' && ctx.result.ok) {

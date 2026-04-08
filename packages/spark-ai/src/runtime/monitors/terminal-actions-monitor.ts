@@ -25,7 +25,7 @@ export function createTerminalActionsMonitor(): SessionMonitor {
     name: 'terminal-actions',
 
     afterStillExecution(ctx: MonitorContext): string[] {
-      const action = ctx.currentTurn.sapBlock?.action ?? ''
+      const action = ctx.currentTurn.toolBlock?.action ?? ''
 
       // ── 记录是否已执行过终局动作 ──
       if (TERMINAL_ACTIONS.has(action) && ctx.result.ok) {

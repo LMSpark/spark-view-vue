@@ -23,7 +23,7 @@ import {
   COMPONENT_DIRECTORY_DESCRIBE,
   getComponentSpec,
 } from '../catalog/component-props-catalog'
-import type { SapCatalogRegistry } from '../catalog/sap-catalog-types'
+import type { StillsCatalogRegistry } from '../catalog/stills-catalog-types'
 
 // ═══════════════════════════════════════════════════════════
 // helper
@@ -352,8 +352,8 @@ export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
       return {
         ok: false,
         code: 'NO_CATALOG',
-        msg: 'SAP Catalog 未加载',
-        fix: '请确认构建时已生成并上传 sap-catalog.json',
+        msg: 'Stills Catalog 未加载',
+        fix: '请确认构建时已生成并上传 stills-catalog.json',
       }
     }
     const catalog = session.catalog
@@ -377,7 +377,7 @@ export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
 
     // 模式 2: 按 category 过滤
     if (isNonEmptyString(params.category)) {
-      const registryKey = params.category as keyof SapCatalogRegistry
+      const registryKey = params.category as keyof StillsCatalogRegistry
       const types = catalog.registry[registryKey]
       const list = types.map((t) => ({
         type: t,

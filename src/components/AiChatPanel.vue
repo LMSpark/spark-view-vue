@@ -147,12 +147,6 @@ import { http } from '@/services/http'
 import { getPageApi } from '@/services/api-paths'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
-import {
-  streamAiChatText,
-  parseToolProtocolPayload,
-  type ProtocolMessage,
-} from '@/services/ai-protocol'
-import { extractSapProtocolBlocks, stripSapProtocolBlocks } from '@/services/sap-protocol'
 
 /** 最大自动迭代次数（防止无限循环） */
 const MAX_AUTO_ITERATIONS = 3
@@ -170,74 +164,6 @@ const MAX_LOG_SAMPLES_PER_ROUND = 30
 const MAX_STAGNATION_ROUNDS = 2
 /** pageId 合法字符：字母、数字、短横线 */
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
-const AI_PAGE_SAP_SYSTEM_PROMPT = `你是 SPARK 页面助手的协议调度器。你必须优先输出 SAP 协议块，不要直接输出自然语言。
-
-可用工具：
-1) page.auto
-  参数：{"pageId":"string","prompt":"string"}
-  作用：根据页面是否存在自动走生成或迭代修复
-
-2) page.debug
-  参数：{"pageId":"string","reason":"string"}
-  作用：触发日志驱动的自动调试修复
-
-3) page.delete
-  参数：{"pageId":"string","confirm":true}
-  作用：删除页面（必须 confirm=true 才允许执行）
-
-4) chat.reply
-  参数：{"message":"string"}
-  作用：仅回复说明，不执行工具
-
-输出格式（严格）：
-@@request:<action>#<requestId>
-<json>
-@@end
-
-查询能力（仅此一个 describe 动作）：
-@@describe:system.capabilities#<requestId>
-{}
-@@end
-
-规则：
-- 每次只输出 1 个工具块
-- json 必须可解析
-- 缺省 pageId 使用上下文当前 pageId
-- describe 仅允许 system.capabilities
-- type 仅允许 request / describe`
-
-const PAGE_SAP_CAPABILITIES = [
-  {
-    action: 'page.auto',
-    params: { pageId: 'string?', prompt: 'string?' },
-    description: '按页面是否存在自动走 generate 或 iterate',
-  },
-  {
-    action: 'page.generate',
-    params: { pageId: 'string?', prompt: 'string?' },
-    description: '显式触发页面生成',
-  },
-  {
-    action: 'page.iterate',
-    params: { pageId: 'string?', prompt: 'string?' },
-    description: '显式触发页面迭代修复',
-  },
-  {
-    action: 'page.debug',
-    params: { pageId: 'string?', reason: 'string?' },
-    description: '触发日志驱动自动调试',
-  },
-  {
-    action: 'page.delete',
-    params: { pageId: 'string?', confirm: true },
-    description: '删除页面（必须 confirm=true）',
-  },
-  {
-    action: 'chat.reply',
-    params: { message: 'string' },
-    description: '仅回复说明，不执行工具',
-  },
-] as const
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -245,14 +171,6 @@ interface ChatMessage {
   files?: string[]
   pageId?: string
   iteration?: number
-}
-
-interface AiToolPayload {
-  pageId?: string
-  prompt?: string
-  reason?: string
-  message?: string
-  confirm?: boolean
 }
 
 const { router, route, tenantPath, ensureRouteExists: tenantEnsureRouteExists, navigateToPage: tenantNavigateToPage } = useTenantRouter()
@@ -632,179 +550,6 @@ function resetStreamState(): void {
   diagnosticHint.value = ''
 }
 
-function isValidPageId(value: unknown): value is string {
-  return typeof value === 'string' && PAGE_ID_RE.test(value)
-}
-
-function buildToolPlanningMessages(currentPageId: string, userPrompt: string): ProtocolMessage[] {
-  const history = messages.value.slice(-4).map(item => ({
-    role: item.role,
-    content: item.text,
-  })) as Array<{ role: 'user' | 'assistant'; content: string }>
-
-  return [
-    ...history,
-    {
-      role: 'user',
-      content: `当前页面ID: ${currentPageId}\n用户请求: ${userPrompt}`,
-    },
-  ]
-}
-
-function buildCapabilitiesResultBlock(requestId: string, currentPageId: string): string {
-  const payload = {
-    protocol: 'SAP/1.0',
-    mode: 'page-assistant',
-    currentPageId,
-    actions: PAGE_SAP_CAPABILITIES,
-    constraints: [
-      '每次只输出一个协议块',
-      'describe 仅允许 system.capabilities',
-      '删除页面必须带 confirm=true',
-      '仅允许 action: page.auto/page.generate/page.iterate/page.debug/page.delete/chat.reply',
-    ],
-  }
-
-  return `@@result:system.capabilities#${requestId}\n${JSON.stringify(payload)}\n@@end`
-}
-
-async function tryHandleWithProtocol(): Promise<boolean> {
-  const originalPrompt = prompt.value.trim()
-  const originalPageId = pageId.value.trim()
-
-  if (originalPrompt === '' || originalPageId === '') return false
-  if (!PAGE_ID_RE.test(originalPageId)) return false
-
-  const controller = new AbortController()
-  phaseMessage.value = '协议规划中...'
-  streamingText.value = ''
-
-  try {
-    const planningMessages = buildToolPlanningMessages(originalPageId, originalPrompt)
-
-    for (let planRound = 1; planRound <= 2; planRound++) {
-      const responseText = await streamAiChatText({
-        messages: planningMessages,
-        mode: 'single',
-        systemPrompt: AI_PAGE_SAP_SYSTEM_PROMPT,
-        signal: controller.signal,
-        onDelta: (delta) => {
-          streamingText.value += delta
-          scrollToBottom()
-        },
-        onReasoning: (reasoning) => {
-          streamingText.value += reasoning
-          scrollToBottom()
-        },
-        onPhase: (_phase, _status, message) => {
-          phaseMessage.value = message
-        },
-      })
-
-      const extraction = extractSapProtocolBlocks(responseText)
-      if (extraction.kind === 'none') {
-        return false
-      }
-
-      if (extraction.kind === 'multiple') {
-        messages.value.push({ role: 'assistant', text: '⚠️ 协议错误：一次只允许输出 1 个 SAP 协议块，已回退默认生成流程。' })
-        scrollToBottom()
-        return false
-      }
-
-      const block = extraction.blocks[0]
-      if (block === undefined) {
-        return false
-      }
-
-      if (block.type === 'describe') {
-        if (block.action !== 'system.capabilities') {
-          messages.value.push({ role: 'assistant', text: `⚠️ 不支持的 describe 动作：${block.action}，已回退默认生成流程。` })
-          scrollToBottom()
-          return false
-        }
-
-        const capabilityResult = buildCapabilitiesResultBlock(block.id, originalPageId)
-        planningMessages.push({ role: 'assistant', content: responseText })
-        planningMessages.push({
-          role: 'user',
-          content: `[系统描述结果]\n${capabilityResult}\n\n请根据以上能力，仅输出一个 @@request:<action>#<id> 协议块。`,
-        })
-        phaseMessage.value = '能力协商完成，继续生成执行协议...'
-        continue
-      }
-
-      const payload = parseToolProtocolPayload<AiToolPayload>(block)
-      if (payload === null) {
-        messages.value.push({ role: 'assistant', text: '⚠️ 协议解析失败（JSON 无法解析），已回退默认生成流程。' })
-        scrollToBottom()
-        return false
-      }
-
-      const targetPageId = isValidPageId(payload.pageId) ? payload.pageId : originalPageId
-      if (targetPageId !== pageId.value) {
-        pageId.value = targetPageId
-      }
-
-      switch (block.action) {
-        case 'page.auto':
-        case 'page.generate':
-        case 'page.iterate': {
-          const nextPrompt = typeof payload.prompt === 'string' && payload.prompt.trim() !== ''
-            ? payload.prompt.trim()
-            : originalPrompt
-          prompt.value = nextPrompt
-          await runGenerateFlow()
-          return true
-        }
-        case 'page.debug': {
-          messages.value.push({ role: 'user', text: `[${targetPageId}] ${originalPrompt}` })
-          scrollToBottom()
-          await handleDebug()
-          return true
-        }
-        case 'page.delete': {
-          if (payload.confirm !== true) {
-            messages.value.push({ role: 'assistant', text: '⚠️ 协议请求删除页面，但缺少 confirm=true，已拒绝执行。' })
-            scrollToBottom()
-            return true
-          }
-          messages.value.push({ role: 'user', text: `[${targetPageId}] ${originalPrompt}` })
-          scrollToBottom()
-          await handleDelete()
-          return true
-        }
-        case 'chat.reply': {
-          const message = typeof payload.message === 'string' && payload.message.trim() !== ''
-            ? payload.message.trim()
-            : stripSapProtocolBlocks(responseText)
-          if (message !== '') {
-            messages.value.push({ role: 'assistant', text: message })
-            scrollToBottom()
-          }
-          return true
-        }
-        default:
-          messages.value.push({ role: 'assistant', text: `⚠️ 未识别协议动作：${block.action}，已回退默认生成流程。` })
-          scrollToBottom()
-          return false
-      }
-    }
-
-    messages.value.push({ role: 'assistant', text: '⚠️ 协议协商未收敛，已回退默认生成流程。' })
-    scrollToBottom()
-    return false
-  } catch {
-    return false
-  } finally {
-    controller.abort()
-    if (!loading.value) {
-      streamingText.value = ''
-      phaseMessage.value = ''
-    }
-  }
-}
-
 function togglePanel() {
   isOpen.value = !isOpen.value
 }
@@ -1093,10 +838,6 @@ async function runGenerateFlow() {
 }
 
 async function handleSend() {
-  const handledByProtocol = await tryHandleWithProtocol()
-  if (handledByProtocol) {
-    return
-  }
   await runGenerateFlow()
 }
 

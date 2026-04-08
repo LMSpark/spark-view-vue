@@ -29,12 +29,14 @@ import type {
   MonitorContext,
   DialogueTurn,
   SessionBackend,
+  LlmResponse,
 } from '../packages/spark-ai/src/runtime/session-orchestrator'
 import {
   runStillsLoop,
   formatWarningsAsFollowUp,
 } from '../packages/spark-ai/src/runtime/session-orchestrator'
-import { dispatchBlock } from '../packages/spark-ai/src/sap-runtime'
+import { actionToFunctionName, dispatchToolCall } from '../packages/spark-ai/src/tool-calling'
+import type { ToolCall, FcDispatchResult } from '../packages/spark-ai/src/tool-calling'
 
 // ═══════════════════════════════════════════════════════════
 // Helpers
@@ -53,7 +55,7 @@ function makeTurn(overrides: Partial<DialogueTurn> = {}): DialogueTurn {
     round: 1,
     timestamp: new Date().toISOString(),
     phase: 'stills-execute',
-    sapBlock: { type: 'request', action: 'dataset.init', id: 'r1', params: {} },
+    toolBlock: { action: 'dataset.init', id: 'r1', params: {} },
     stillsResult: { ok: true, summary: 'done' },
     ...overrides,
   }
@@ -103,7 +105,7 @@ describe('repeat-detection-monitor', () => {
     const actions = ['dataset.init', 'datatable.create', 'datatable.addColumns']
     for (const action of actions) {
       const ctx = makeCtx({
-        currentTurn: makeTurn({ sapBlock: { type: 'request', action, id: 'r1', params: {} } }),
+        currentTurn: makeTurn({ toolBlock: { action, id: 'r1', params: {} } }),
       })
       monitor.afterStillExecution(ctx)
       const abort = monitor.shouldAbort!(ctx)
@@ -117,7 +119,7 @@ describe('repeat-detection-monitor', () => {
 
     for (let i = 0; i < 3; i++) {
       const ctx = makeCtx({
-        currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'datatable.create', id: `r${i}`, params } }),
+        currentTurn: makeTurn({ toolBlock: { action: 'datatable.create', id: `r${i}`, params } }),
         params,
       })
       monitor.afterStillExecution(ctx)
@@ -139,7 +141,7 @@ describe('repeat-detection-monitor', () => {
     // 2 times same action
     for (let i = 0; i < 2; i++) {
       const ctx = makeCtx({
-        currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'datatable.create', id: `r${i}`, params: { tableName: 'A' } } }),
+        currentTurn: makeTurn({ toolBlock: { action: 'datatable.create', id: `r${i}`, params: { tableName: 'A' } } }),
         params: { tableName: 'A' },
       })
       monitor.afterStillExecution(ctx)
@@ -147,14 +149,14 @@ describe('repeat-detection-monitor', () => {
 
     // Different action breaks the chain
     const diffCtx = makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'relation.add', id: 'r9', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'relation.add', id: 'r9', params: {} } }),
     })
     monitor.afterStillExecution(diffCtx)
     expect(monitor.shouldAbort!(diffCtx).abort).toBe(false)
 
     // Same action again — counter restarted at 1
     const retryCtx = makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'datatable.create', id: 'r10', params: { tableName: 'A' } } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'datatable.create', id: 'r10', params: { tableName: 'A' } } }),
       params: { tableName: 'A' },
     })
     monitor.afterStillExecution(retryCtx)
@@ -166,7 +168,7 @@ describe('repeat-detection-monitor', () => {
 
     for (let i = 0; i < 3; i++) {
       const ctx = makeCtx({
-        currentTurn: makeTurn({ sapBlock: { type: 'request', action: `action${i}`, id: `r${i}`, params: {} } }),
+        currentTurn: makeTurn({ toolBlock: { action: `action${i}`, id: `r${i}`, params: {} } }),
         result: failResult(),
       })
       monitor.afterStillExecution(ctx)
@@ -188,7 +190,7 @@ describe('repeat-detection-monitor', () => {
     // 2 errors (use different actions to avoid same-signature abort)
     for (let i = 0; i < 2; i++) {
       const ctx = makeCtx({
-        currentTurn: makeTurn({ sapBlock: { type: 'request', action: `err-action-${i}`, id: `e${i}`, params: {} } }),
+        currentTurn: makeTurn({ toolBlock: { action: `err-action-${i}`, id: `e${i}`, params: {} } }),
         result: failResult(),
       })
       monitor.afterStillExecution(ctx)
@@ -196,7 +198,7 @@ describe('repeat-detection-monitor', () => {
 
     // 1 success resets error counter
     const okCtx = makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'ok-action', id: 'ok1', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'ok-action', id: 'ok1', params: {} } }),
       result: okResult(),
     })
     monitor.afterStillExecution(okCtx)
@@ -205,7 +207,7 @@ describe('repeat-detection-monitor', () => {
     // 2 more errors — still should not abort (counter was reset)
     for (let i = 0; i < 2; i++) {
       const ctx = makeCtx({
-        currentTurn: makeTurn({ sapBlock: { type: 'request', action: `err2-action-${i}`, id: `e2-${i}`, params: {} } }),
+        currentTurn: makeTurn({ toolBlock: { action: `err2-action-${i}`, id: `e2-${i}`, params: {} } }),
         result: failResult(),
       })
       monitor.afterStillExecution(ctx)
@@ -228,7 +230,7 @@ describe('blueprint-orchestration-monitor', () => {
   it('does not inject followUp before blueprint creation', () => {
     const monitor = createBlueprintOrchestrationMonitor()
     const ctx = makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'datatable.create', id: 'r1', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'datatable.create', id: 'r1', params: {} } }),
     })
     expect(monitor.afterStillExecution(ctx)).toEqual([])
   })
@@ -238,14 +240,14 @@ describe('blueprint-orchestration-monitor', () => {
 
     // Blueprint created
     const createCtx = makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'blueprint.create', id: 'r1', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.create', id: 'r1', params: {} } }),
       result: okResult(),
     })
     monitor.afterStillExecution(createCtx)
 
     // Immediate write — no review first
     const writeCtx = makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'datatable.create', id: 'r2', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'datatable.create', id: 'r2', params: {} } }),
       result: okResult(),
     })
     const followUp = monitor.afterStillExecution(writeCtx)
@@ -259,19 +261,19 @@ describe('blueprint-orchestration-monitor', () => {
 
     // Blueprint created
     monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'blueprint.create', id: 'r1', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.create', id: 'r1', params: {} } }),
       result: okResult(),
     }))
 
     // Blueprint reviewed
     monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'describe', action: 'blueprint.describe', id: 'r2', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.describe', id: 'r2', params: {} } }),
       result: okResult(),
     }))
 
     // Now write — should be clean
     const followUp = monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'datatable.addColumns', id: 'r3', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'datatable.addColumns', id: 'r3', params: {} } }),
       result: okResult(),
     }))
     expect(followUp).toEqual([])
@@ -282,23 +284,23 @@ describe('blueprint-orchestration-monitor', () => {
 
     // Create + review
     monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'blueprint.create', id: 'r1', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.create', id: 'r1', params: {} } }),
       result: okResult(),
     }))
     monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'describe', action: 'blueprint.describe', id: 'r2', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.describe', id: 'r2', params: {} } }),
       result: okResult(),
     }))
 
     // New blueprint.create → review reset
     monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'blueprint.create', id: 'r3', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.create', id: 'r3', params: {} } }),
       result: okResult(),
     }))
 
     // Write without re-review → warning
     const followUp = monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'relation.add', id: 'r4', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'relation.add', id: 'r4', params: {} } }),
       result: okResult(),
     }))
     expect(followUp.length).toBe(1)
@@ -310,13 +312,13 @@ describe('blueprint-orchestration-monitor', () => {
 
     // Blueprint created (no review)
     monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'blueprint.create', id: 'r1', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.create', id: 'r1', params: {} } }),
       result: okResult(),
     }))
 
     // Failed write — no warning (failed actions are already handled by error followUp)
     const followUp = monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'datatable.create', id: 'r2', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'datatable.create', id: 'r2', params: {} } }),
       result: failResult(),
     }))
     expect(followUp).toEqual([])
@@ -326,16 +328,16 @@ describe('blueprint-orchestration-monitor', () => {
     const monitor = createBlueprintOrchestrationMonitor()
 
     monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'blueprint.create', id: 'r1', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.create', id: 'r1', params: {} } }),
       result: okResult(),
     }))
     monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'blueprint.revise', id: 'r2', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'blueprint.revise', id: 'r2', params: {} } }),
       result: okResult(),
     }))
 
     const followUp = monitor.afterStillExecution(makeCtx({
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'datatable.create', id: 'r3', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'datatable.create', id: 'r3', params: {} } }),
       result: okResult(),
     }))
     expect(followUp).toEqual([])
@@ -403,7 +405,7 @@ describe('terminal-actions-monitor', () => {
     // Terminal action
     const termCtx = makeCtx({
       session: doneSession,
-      currentTurn: makeTurn({ sapBlock: { type: 'request', action: 'dataset.validate', id: 'rv', params: {} } }),
+      currentTurn: makeTurn({ toolBlock: { action: 'dataset.validate', id: 'rv', params: {} } }),
       result: okResult(),
     })
     monitor.afterStillExecution(termCtx)
@@ -452,12 +454,18 @@ describe('formatWarningsAsFollowUp', () => {
 // ═══════════════════════════════════════════════════════════
 
 describe('runStillsLoop', () => {
-  /** 构造 AI 回复，包含一个协议块 */
-  function aiBlock(type: string, action: string, id: string, params: Record<string, unknown> = {}): string {
-    return `@@${type}:${action}#${id}\n${JSON.stringify(params)}\n@@end`
+  /** 构造 FC ToolCall */
+  function makeToolCall(action: string, id: string, params: Record<string, unknown> = {}): ToolCall {
+    return {
+      id,
+      function: {
+        name: actionToFunctionName(action),
+        arguments: JSON.stringify(params),
+      },
+    }
   }
 
-  function createMockBackend(replies: Array<{ text: string; reasoning?: string } | null>): SessionBackend {
+  function createMockBackend(replies: Array<{ text?: string; reasoning?: string; toolCalls?: ToolCall[] } | null>): SessionBackend {
     let callIndex = 0
     const messages: Array<{ role: string; content: string }> = []
 
@@ -465,7 +473,12 @@ describe('runStillsLoop', () => {
       async createSession() { return 'mock-session-id' },
       async executeTurn() {
         if (callIndex >= replies.length) return null
-        return replies[callIndex++] ?? null
+        const reply = replies[callIndex++]
+        if (!reply) return null
+        const response: LlmResponse = { text: reply.text ?? '' }
+        if (reply.reasoning !== undefined) response.reasoning = reply.reasoning
+        if (reply.toolCalls !== undefined) response.toolCalls = reply.toolCalls
+        return response
       },
       async appendMessages(_sid, msgs) {
         messages.push(...msgs)
@@ -482,7 +495,6 @@ describe('runStillsLoop', () => {
       maxRounds: 10,
       slidingWindow: 20,
       systemPrompt: 'test',
-      dispatch: dispatchBlock,
     })
 
     expect(result.aborted).toBe(true)
@@ -495,7 +507,7 @@ describe('runStillsLoop', () => {
     exec('dataset.init', { dataSetName: 'DS' })
 
     const backend = createMockBackend([
-      { text: aiBlock('describe', 'session.describe', 'r1') },
+      { toolCalls: [makeToolCall('session.describe', 'r1')] },
       null, // end loop
     ])
 
@@ -503,7 +515,6 @@ describe('runStillsLoop', () => {
       maxRounds: 10,
       slidingWindow: 20,
       systemPrompt: 'test',
-      dispatch: dispatchBlock,
     })
 
     expect(result.rounds).toBe(2)
@@ -517,7 +528,7 @@ describe('runStillsLoop', () => {
   it('stops at maxRounds', async () => {
     // Infinite loop: LLM always returns session.describe
     const infiniteReplies = Array.from({ length: 5 }, (_, i) => ({
-      text: aiBlock('describe', 'session.describe', `r${i}`),
+      toolCalls: [makeToolCall('session.describe', `r${i}`)],
     }))
 
     // Init session
@@ -528,7 +539,6 @@ describe('runStillsLoop', () => {
       maxRounds: 3,
       slidingWindow: 20,
       systemPrompt: 'test',
-      dispatch: dispatchBlock,
     })
 
     expect(result.rounds).toBe(3)
@@ -540,7 +550,7 @@ describe('runStillsLoop', () => {
 
     // Same action repeated → repeat detection fires
     const replies = Array.from({ length: 5 }, (_, i) => ({
-      text: aiBlock('describe', 'session.describe', `r${i}`),
+      toolCalls: [makeToolCall('session.describe', `r${i}`)],
     }))
 
     const backend = createMockBackend(replies)
@@ -550,7 +560,6 @@ describe('runStillsLoop', () => {
       maxRounds: 10,
       slidingWindow: 20,
       systemPrompt: 'test',
-      dispatch: dispatchBlock,
       monitors: [monitor],
     })
 
@@ -559,30 +568,20 @@ describe('runStillsLoop', () => {
     expect(result.rounds).toBe(2) // aborts on 2nd same action
   })
 
-  it('sends no-block reminder when AI has no protocol block', async () => {
+  it('returns pure text turn when AI has no tool calls', async () => {
     const backend = createMockBackend([
-      { text: '我来想想怎么做…' }, // no protocol block
-      null,
+      { text: '我来想想怎么做…' }, // no toolCalls → pure text, FC terminates
     ])
-
-    const appendedMessages: Array<{ role: string; content: string }> = []
-    const originalAppend = backend.appendMessages.bind(backend)
-    backend.appendMessages = async (sid, msgs) => {
-      appendedMessages.push(...msgs)
-      return originalAppend(sid, msgs)
-    }
 
     const result = await runStillsLoop('test', session, backend, {
       maxRounds: 5,
       slidingWindow: 20,
       systemPrompt: 'test',
-      dispatch: dispatchBlock,
     })
 
-    // Should have sent a reminder
-    const reminder = appendedMessages.find(m => m.content.includes('协议提醒'))
-    expect(reminder).toBeDefined()
+    // FC mode: pure text = conversation end (no reminder needed)
     expect(result.turns[0]?.phase).toBe('ai-response')
+    expect(result.rounds).toBe(1)
   })
 
   it('terminates on export + blueprint done', async () => {
@@ -603,25 +602,25 @@ describe('runStillsLoop', () => {
     exec('blueprint.item.advance', { checkpointId: 'cp1', planItemId: 'pi1', status: 'done', note: 'ok' })
     exec('blueprint.advance', { checkpointId: 'cp1', status: 'done', note: 'ok' })
 
-    // Mock dispatch that returns ok for dataset.export (bypass guard)
-    const mockDispatch = (block: { type: string; action: string; id: string; body: string; raw: string }, s: IStillSession) => {
-      if (block.action === 'dataset.export') {
+    // Mock dispatchFc that returns ok for dataset.export (bypass guard)
+    const mockDispatchFc = (tc: ToolCall, s: IStillSession): FcDispatchResult => {
+      if (tc.function.name === actionToFunctionName('dataset.export')) {
         const result: StillResult = { ok: true, data: { exported: true }, summary: 'exported' }
-        return { block, result, responseText: `@@result:dataset.export#${block.id}\n{}\n@@end` }
+        return { action: 'dataset.export', result, toolCall: tc, toolResult: { tool_call_id: tc.id, content: JSON.stringify({ ok: true }) } }
       }
-      return dispatchBlock(block, s)
+      return dispatchToolCall(tc, s)
     }
 
     const backend = createMockBackend([
-      { text: aiBlock('request', 'dataset.export', 'r-export') },
-      { text: aiBlock('describe', 'session.describe', 'r-extra') }, // should NOT execute
+      { toolCalls: [makeToolCall('dataset.export', 'r-export')] },
+      { toolCalls: [makeToolCall('session.describe', 'r-extra')] }, // should NOT execute
     ])
 
     const result = await runStillsLoop('test', session, backend, {
       maxRounds: 10,
       slidingWindow: 20,
       systemPrompt: 'test',
-      dispatch: mockDispatch,
+      dispatchFc: mockDispatchFc,
     })
 
     expect(result.exportCompleted).toBe(true)

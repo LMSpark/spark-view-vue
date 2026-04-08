@@ -96,7 +96,7 @@ flowchart TD
 
 ### B1. 实现前端 SessionBackend adapter
 
-- 目标：把 [../../packages/spark-ai/src/runtime/session-orchestrator.ts](../../packages/spark-ai/src/runtime/session-orchestrator.ts) 中的 `SessionBackend` 真正接到 `spark-ai-server` 的 `/api/sap/stills/*`。
+- 目标：把 [../../packages/spark-ai/src/runtime/session-orchestrator.ts](../../packages/spark-ai/src/runtime/session-orchestrator.ts) 中的 `SessionBackend` 真正接到 `spark-ai-server` 的 `/api/stills/*`。
 - 建议新增文件：`src/services/stills-session-backend.ts`
 - 要实现的方法：
   1. `createSession(systemPrompt, userPrompt, windowSize)`
@@ -107,9 +107,9 @@ flowchart TD
   6. `destroyAllSessions()`
 - 实现约束：
   1. 本地维护一个 `Set<string>` 记录当前客户端创建的 sessionId。
-  2. `destroyAllSessions()` 调用 `/api/sap/stills/destroy-batch` 时发送该集合。
+  2. `destroyAllSessions()` 调用 `/api/stills/destroy-batch` 时发送该集合。
   3. 所有请求统一复用认证头创建函数。
-- 依赖后端接口：[../../spark-ai-server/src/main/java/com/spark/ai/controller/SapController.java](../../spark-ai-server/src/main/java/com/spark/ai/controller/SapController.java)
+- 依赖后端接口：[../../spark-ai-server/src/main/java/com/spark/ai/controller/StillsController.java](../../spark-ai-server/src/main/java/com/spark/ai/controller/StillsController.java)
 - 验收标准：
   1. adapter 完整实现 `SessionBackend`。
   2. 单会话和批量销毁行为都可跑通。
@@ -117,11 +117,10 @@ flowchart TD
 ### B2. 在面板中接入 runStillsLoop
 
 - 目标：把 stills 工作流从“本地 `executeStill()` 演示模式”升级成“后端 LLM 会话 + 前端本地状态编排”的标准路径。
-- 优先接入点：[../../src/components/SapChatPanel.vue](../../src/components/SapChatPanel.vue)
+- 优先接入点：Stills 面板组件（原 `SapChatPanel.vue` 已移除，功能合并至统一 Stills 面板）
 - 改动建议：
-  1. 保留现有 `sap` 模式。
-  2. 为 `stills` 模式接入 `registerAllStills()`、`createSession()`、`runStillsLoop()` 与 `stills-session-backend.ts`。
-  3. 面板展示编排轮次、当前 action、warnings 和 abort reason。
+  1. 为 stills 模式接入 `registerAllStills()`、`createSession()`、`runStillsLoop()` 与 `stills-session-backend.ts`。
+  2. 面板展示编排轮次、当前 action、warnings 和 abort reason。
 - 验收标准：
   1. stills 模式不再直接用“AI 返回一个块 -> 本地立刻 executeStill”的简化路径。
   2. 能跑完整轮次，直到 `exportCompleted` 或 abort。
@@ -144,8 +143,8 @@ flowchart TD
 - 目标：在接入后端会话链路后，必须补足最小回归，避免只靠手工点面板。
 - 建议测试层次：
   1. 单元测试：mock `SessionBackend`，验证 `runStillsLoop()` 的回合、follow-up、abort 行为。
-  2. 适配器测试：mock `/api/sap/stills/*` 响应，验证 adapter 的 session 集合维护。
-  3. UI 测试：验证 `SapChatPanel` stills 模式切换和取消行为。
+  2. 适配器测试：mock `/api/stills/*` 响应，验证 adapter 的 session 集合维护。
+  3. UI 测试：验证 Stills 面板组件的模式切换和取消行为。
 - 建议落点：
   1. `tests/session-orchestrator.test.ts`
   2. `tests/stills-session-backend.test.ts`
@@ -160,7 +159,7 @@ flowchart TD
 1. `spark-ai: 移除页面/导航 API 默认回退并补 fail-fast 测试`
 2. `spark-ai: 收紧 writePageFiles 失败语义`
 3. `app: 新增 stills SessionBackend adapter`
-4. `app: SapChatPanel 接入 runStillsLoop`
+4. `app: Stills 面板组件接入 runStillsLoop`
 5. `app: stills monitors + cancel/destroy 生命周期接入`
 6. `tests: 补 AI loop 和 session orchestrator 回归`
 

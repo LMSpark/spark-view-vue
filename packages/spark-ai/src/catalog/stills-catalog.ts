@@ -1,4 +1,16 @@
-{
+/**
+ * Stills 组件目录（轻量版）
+ *
+ * ⚠️ 自动生成 — 请勿手动编辑
+ *
+ * 由 vite-plugin-spark-catalog 在 build / dev 时生成。
+ * 重新生成：pnpm run dev 或 pnpm run build
+ * 生成时间：2026-04-07T15:32:46.875Z
+ * 条目数量：122
+ */
+import type { StillsCatalog } from './stills-catalog-types'
+
+export const STILLS_CATALOG: StillsCatalog = {
   "version": "1.0.0",
   "buildTime": "2026-04-07T15:32:46.875Z",
   "componentCount": 122,
@@ -6267,30 +6279,6 @@
         "valueType": "string"
       }
     },
-    "sap-chat-panel": {
-      "category": "feature",
-      "description": "SPARK 组件，可在注册表中通过 type=\"sap-chat-panel\" 使用。",
-      "props": [
-        {
-          "name": "embedded",
-          "type": "boolean",
-          "required": false,
-          "default": "false"
-        },
-        {
-          "name": "forceOpen",
-          "type": "boolean",
-          "required": false,
-          "default": "false"
-        },
-        {
-          "name": "mode",
-          "type": "\"sap\" | \"stills\"",
-          "required": false,
-          "default": "\"sap\""
-        }
-      ]
-    },
     "nav-icon": {
       "category": "feature",
       "description": "SPARK 组件，可在注册表中通过 type=\"nav-icon\" 使用。",
@@ -8836,4 +8824,4 @@
       "notes": "【使用场景】复杂表格需要多级表头分组，例如「基本信息」下包含「姓名」「年龄」「邮箱」\n\n【示例】\n{ \"type\": \"r-column-group\", \"props\": { \"label\": \"基本信息\" }, \"children\": [\n  { \"type\": \"r-text\", \"field\": \"name\", \"props\": { \"label\": \"姓名\" } },\n  { \"type\": \"r-number\", \"field\": \"age\", \"props\": { \"label\": \"年龄\" } }\n]}\nchildren 内放 r-* 字段组件作为实际数据列"
     }
   }
-}
+} as const

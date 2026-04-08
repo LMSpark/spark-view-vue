@@ -1,7 +1,7 @@
 /**
  * Stills 引擎 E2E 全流程验证 —— 大型企业请假系统数据建模
  *
- * 模拟 AI 通过 SAP/1.0 协议与 Stills 引擎交互的完整过程：
+ * 模拟 AI 通过 Function Calling 与 Stills 引擎交互的完整过程：
  *   发现 → 蓝图 → 建表 → 关系 → 锁定 → 视图 → 聚合 → 依赖 → 校验 → 导出
  *
  * 用法：npx tsx scripts/verify-stills-e2e.ts

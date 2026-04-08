@@ -1,9 +1,9 @@
-package com.spark.ai.sap.handler;
+package com.spark.ai.stills.handler;
 
-import com.spark.ai.sap.model.SapResult;
+import com.spark.ai.stills.model.StillsResult;
 
 /**
- * SAP 动作处理器接口。
+ * Stills 动作处理器接口。
  *
  * <p>每种动作（file.write、db.query 等）实现此接口并注册到 {@link ActionRegistry}。
  * 编排器解析协议后根据 {@code action} 字段路由到对应的 handler。
@@ -32,6 +32,6 @@ public interface ActionHandler {
      * @throws ActionValidationException 参数校验失败时抛出，编排器捕获后生成 @@error
      * @throws ActionExecutionException  业务执行失败时抛出
      */
-    SapResult execute(String requestId, String jsonBody)
+    StillsResult execute(String requestId, String jsonBody)
             throws ActionValidationException, ActionExecutionException;
 }

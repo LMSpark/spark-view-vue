@@ -1,4 +1,4 @@
-package com.spark.ai.sap;
+package com.spark.ai.stills;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,28 +16,28 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * SAP 协议 AI 助手 — 工具回路闭环。
+ * Stills 协议 AI 助手 — 工具回路闭环。
  *
  * <h3>流程</h3>
  * <ol>
- *   <li>将用户消息 + SAP 系统提示词发给 LLM</li>
+ *   <li>将用户消息 + Stills 系统提示词发给 LLM</li>
  *   <li>LLM 每轮最多输出一个 {@code @@request} 或 {@code @@describe} 协议块，或直接输出纯文本</li>
- *   <li>协议块送入 {@link SapOrchestrator} 执行，执行结果以 {@code @@result} 或 {@code @@error} 回灌给 LLM</li>
+ *   <li>协议块送入 {@link StillsOrchestrator} 执行，执行结果以 {@code @@result} 或 {@code @@error} 回灌给 LLM</li>
  *   <li>收到 {@code @@error} 时继续让 LLM 自动修正；收到 {@code @@result} 时只再请求一轮自然语言总结并立即返回</li>
  * </ol>
  *
  * <p><b>静默纠错</b>：纠错过程对用户完全透明，用户只看到最终结果。
  */
 @Service
-public class SapAssistantService {
+public class StillsAssistantService {
 
-    private static final Logger log = LoggerFactory.getLogger(SapAssistantService.class);
+    private static final Logger log = LoggerFactory.getLogger(StillsAssistantService.class);
 
     /** 工具回路最大轮次（防止无限循环） */
     private static final int MAX_TOOL_ROUNDS = 5;
 
-    private static final String SAP_SYSTEM_PROMPT = """
-            你是一个 SAP/1.0 协议驱动的智能助手。你不能直接操作外部世界，必须通过 SAP 协议。
+    private static final String PROTOCOL_SYSTEM_PROMPT = """
+            你是一个 Stills 协议驱动的智能助手。你不能直接操作外部世界，必须通过 Stills 协议。
             
             ## 交互闭环协议：
             1. **输出规范**：当你需要执行操作时，必须构造如下格式：
@@ -46,7 +46,7 @@ public class SapAssistantService {
                @@end
                
                其中 <action> 是操作类型（如 file.write、db.query），<id> 是唯一请求标识。
-                    每次回复最多只能包含一个 SAP 协议块；如果需要多个动作，必须等上一轮结果返回后再决定下一步。
+                    每次回复最多只能包含一个 Stills 协议块；如果需要多个动作，必须等上一轮结果返回后再决定下一步。
 
                 1.1 **查看能力**：当你需要查看当前支持的动作时，必须输出：
                     @@describe:system.capabilities#<id>
@@ -65,7 +65,7 @@ public class SapAssistantService {
 
     /** Stills 模式系统提示词 — 与 STILLS_RUNTIME_PROMPT.md 保持一致 */
     private static final String STILLS_SYSTEM_PROMPT = """
-            你通过 SAP/1.0 协议与 Stills 引擎交互。
+            你通过 Stills 协议与 Stills 引擎交互。
             
             ══ 协议语法 ══
             
@@ -107,12 +107,12 @@ public class SapAssistantService {
             - 不替用户决定关键业务事实 —— 必须确认后再执行
             """;
 
-    private final SapOrchestrator orchestrator;
+    private final StillsOrchestrator orchestrator;
     private final OpenAiProperties props;
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
 
-    public SapAssistantService(SapOrchestrator orchestrator,
+    public StillsAssistantService(StillsOrchestrator orchestrator,
                                OpenAiProperties props,
                                ObjectMapper objectMapper) {
         this.orchestrator = orchestrator;
@@ -135,11 +135,11 @@ public class SapAssistantService {
      * 处理用户对话 — 工具回路。
      *
      * @param userMessage 用户输入
-     * @param mode        "sap"（默认通用协议）或 "stills"（Stills 引擎协议）
+     * @param mode        "protocol"（默认通用协议）或 "stills"（Stills 引擎协议）
      * @return AI 最终回答（已完成所有工具调用）
      */
-    public SapChatResponse chat(String userMessage, String mode) {
-        String systemPrompt = "stills".equalsIgnoreCase(mode) ? STILLS_SYSTEM_PROMPT : SAP_SYSTEM_PROMPT;
+    public StillsChatResponse chat(String userMessage, String mode) {
+        String systemPrompt = "stills".equalsIgnoreCase(mode) ? STILLS_SYSTEM_PROMPT : PROTOCOL_SYSTEM_PROMPT;
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of("role", "system", "content", systemPrompt));
         messages.add(Map.of("role", "user", "content", userMessage));
@@ -149,18 +149,18 @@ public class SapAssistantService {
 
         while (round < MAX_TOOL_ROUNDS) {
             round++;
-            log.info("[SAP-ASSISTANT] 轮次 {}/{}", round, MAX_TOOL_ROUNDS);
+            log.info("[STILLS-ASSISTANT] 轮次 {}/{}", round, MAX_TOOL_ROUNDS);
 
             // 调用 LLM
             String aiOutput = callLlm(messages);
             if (aiOutput == null || aiOutput.isBlank()) {
-                return new SapChatResponse("AI 未返回有效内容", toolTrace, round);
+                return new StillsChatResponse("AI 未返回有效内容", toolTrace, round);
             }
 
-            // 检查是否包含 SAP 协议块
+            // 检查是否包含 Stills 协议块
             if (!aiOutput.contains("@@") || !aiOutput.contains("@@end")) {
                 // 纯文本回答 — 结束回路
-                return new SapChatResponse(aiOutput, toolTrace, round);
+                return new StillsChatResponse(aiOutput, toolTrace, round);
             }
 
             // 送入编排器执行
@@ -175,7 +175,7 @@ public class SapAssistantService {
             // 如果工具返回的是 @@result（成功），让 AI 再回答一轮总结
             if (toolResult.contains("@@result:")) {
                 String finalAnswer = callLlm(messages);
-                return new SapChatResponse(
+                return new StillsChatResponse(
                         finalAnswer != null ? finalAnswer : "操作已完成",
                         toolTrace, round);
             }
@@ -183,7 +183,7 @@ public class SapAssistantService {
             // @@error — 继续回路让 AI 自动修正
         }
 
-        return new SapChatResponse("达到最大工具调用轮次 (" + MAX_TOOL_ROUNDS + ")，请简化操作后重试",
+        return new StillsChatResponse("达到最大工具调用轮次 (" + MAX_TOOL_ROUNDS + ")，请简化操作后重试",
                 toolTrace, round);
     }
 
@@ -227,7 +227,7 @@ public class SapAssistantService {
             return message != null ? (String) message.get("content") : null;
 
         } catch (Exception e) {
-            log.error("[SAP-ASSISTANT] LLM 调用失败: {}", e.getMessage(), e);
+            log.error("[STILLS-ASSISTANT] LLM 调用失败: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -243,12 +243,12 @@ public class SapAssistantService {
     // 响应载体
     // ─────────────────────────────────────────────────────────────────────────
 
-    public static class SapChatResponse {
+    public static class StillsChatResponse {
         private final String answer;
         private final List<String> toolTrace;
         private final int rounds;
 
-        public SapChatResponse(String answer, List<String> toolTrace, int rounds) {
+        public StillsChatResponse(String answer, List<String> toolTrace, int rounds) {
             this.answer = answer;
             this.toolTrace = toolTrace;
             this.rounds = rounds;

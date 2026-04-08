@@ -17,7 +17,7 @@
 ## 编写原则
 
 - 运行时公共约束优先在这里守住，避免只靠手工回归。
-- 新测试文件命名应能直接体现覆盖范围，例如 renderer、permission、navigation、sap-protocol。
+- 新测试文件命名应能直接体现覆盖范围，例如 renderer、permission、navigation、stills。
 - 包内专属测试继续放在各自包目录；跨包行为和根应用集成测试放这里。
 
 ## 常用命令

@@ -23,9 +23,8 @@
 |------|------|------|
 | **平台规则** | [API_FIRST_PROMPT.md](prompts/platform/API_FIRST_PROMPT.md) | API-first 约束（强制） |
 | | [AI_PROTOCOL_UNIFIED.md](prompts/platform/AI_PROTOCOL_UNIFIED.md) | 统一交互协议 |
-| | [SAP_PROTOCOL_COMPLETE.md](prompts/platform/SAP_PROTOCOL_COMPLETE.md) | SAP 协议完整说明 |
 | | [STILLS_BLUEPRINT_PROMPT.md](prompts/platform/STILLS_BLUEPRINT_PROMPT.md) | Stills 蓝图驱动渐进执行提示词（业务无关） |
-| | [STILLS_RUNTIME_PROMPT.md](prompts/platform/STILLS_RUNTIME_PROMPT.md) | Stills 运行时系统提示词（精简版，注入 SapChatPanel） |
+| | [STILLS_RUNTIME_PROMPT.md](prompts/platform/STILLS_RUNTIME_PROMPT.md) | Stills 运行时系统提示词（精简版） |
 | **数据生成** | [PAGEDATA_JSON_COMPLETE_PROMPT.md](prompts/data/PAGEDATA_JSON_COMPLETE_PROMPT.md) | 生产版主入口 |
 | | [DATASET_JSON_PROMPT_TEMPLATE.md](prompts/data/DATASET_JSON_PROMPT_TEMPLATE.md) | 兼容入口（规则已收口到生产版） |
 | | [DATASET_JSON_PROMPT.md](prompts/data/DATASET_JSON_PROMPT.md) | 案例与验证附录 |
@@ -45,7 +44,7 @@ AI 配置能力的系统设计与实施规划：
 | 文件 | 说明 |
 |------|------|
 | [AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md](architecture/AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md) | ~~旧~~ 全生命周期方案草案（含已删除的 design-session / AiDesignStudio 入口） |
-| [DATASET_STILLS_SCHEME.md](architecture/DATASET_STILLS_SCHEME.md) | **Dataset Stills 方案**（SAP 协议 + 渐进式 Dataset Memory 构建） |
+| [DATASET_STILLS_SCHEME.md](architecture/DATASET_STILLS_SCHEME.md) | **Dataset Stills 方案**（Function Calling + 渐进式 Dataset Memory 构建） |
 | [AI_DESIGN_SESSION_METADATA_FIRST_PLAN.md](architecture/AI_DESIGN_SESSION_METADATA_FIRST_PLAN.md) | ~~旧~~ design-session 计划（已被 DATASET_STILLS_SCHEME 取代） |
 | [AI_INTERACTION_ARCHITECTURE.md](architecture/AI_INTERACTION_ARCHITECTURE.md) | ~~旧~~ 双通道交互体系设计（AiDesignStudio 已删除） |
 | [AI_LIFECYCLE_IMPLEMENTATION_PLAN.md](architecture/AI_LIFECYCLE_IMPLEMENTATION_PLAN.md) | ~~旧~~ 分阶段实施路线图（基于已废弃入口） |

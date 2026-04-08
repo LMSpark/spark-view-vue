@@ -32,7 +32,7 @@
 
 1. **`metadata-ops` 应该直接操作 DataSet 运行时对象**，需要元数据时通过 `toData()` 序列化获取
 2. **参数验证是 stills 公共层职责**（所有参数都是 JSON），不应下沉到每个方法实现
-3. **所有非 SAP 自身的 stills，都是外部业务系统注册进来的**，注册方式：`Map<方法名, { 参数描述, handler }>`；dispatcher 统一 try/catch，成功返回成功，失败返回错误信息+正确参数格式
+3. **所有非 Stills 自身的 stills，都是外部业务系统注册进来的**，注册方式：`Map<方法名, { 参数描述, handler }>`；dispatcher 统一 try/catch，成功返回成功，失败返回错误信息+正确参数格式
 
 ---
 
@@ -70,7 +70,7 @@
   ┌──────────┐    ┌──────────────┐    ┌──────────────┐
   │  meta    │    │  blueprint   │    │  dataset-ops │  ← spark-data 包
   │ (3 stills│    │ (4 stills)   │    │ (24 stills:  │
-  │ SAP 内部)│    │ (SAP 内部)   │    │  21 → ops fn │
+  │ Stills 内部)│    │ (Stills 内部)   │    │  21 → ops fn │
   └──────────┘    └──────────────┘    │  3 → session)│
                                       └──────────────┘
 ```

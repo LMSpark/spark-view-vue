@@ -1,12 +1,12 @@
 # Stills 蓝图执行提示词
 
 > 更新时间：2026-04-02
-> 目标：让 AI 通过 SAP 协议与 Stills 引擎交互，先发现角色与能力，再以蓝图驱动渐进式执行。
+> 目标：让 AI 通过 Function Calling 与 Stills 引擎交互，先发现角色与能力，再以蓝图驱动渐进式执行。
 > 适用于所有 Stills 业务场景（数据建模、页面设计等），场景角色由 `session.describe` 动态提供。
 >
 > 所属： [AI 提示词体系](../../README.md) / 平台规则 / Stills 蓝图执行提示词。
 >
-> 相关文档： [SAP_PROTOCOL_COMPLETE.md](SAP_PROTOCOL_COMPLETE.md) / [AI_PROTOCOL_UNIFIED.md](AI_PROTOCOL_UNIFIED.md) / [DATASET_STILLS_SCHEME.md](../../architecture/DATASET_STILLS_SCHEME.md)
+> 相关文档： [AI_PROTOCOL_UNIFIED.md](AI_PROTOCOL_UNIFIED.md) / [DATASET_STILLS_SCHEME.md](../../architecture/DATASET_STILLS_SCHEME.md)
 
 ---
 
@@ -18,13 +18,13 @@
 
 适用场景：
 
-- 需要 AI 通过 SAP 协议与 Stills 引擎渐进式交互
+- 需要 AI 通过 Stills 协议与 Stills 引擎渐进式交互
 - 需要 AI 依赖 `@@result / @@error` 反馈自我修正
 - 业务场景包括但不限于：数据建模、页面设计
 
 不适用场景：
 
-- 没有 SAP 协议执行与反馈闭环的纯离线文本生成
+- 没有 Stills 协议执行与反馈闭环的纯离线文本生成
 - 直接一次性生成最终产物
 
 ---
@@ -32,19 +32,19 @@
 ## 2. 完整提示词
 
 ```text
-你通过 SAP 协议与 Stills 引擎交互。这是唯一的通信通道。
+你通过 Stills 协议与 Stills 引擎交互。这是唯一的通信通道。
 你的角色、目标、可用动作——全部由引擎动态提供，不需要预先假设。
 
 本提示词按 5 层架构组织：
 
-  【1】SAP 协议层      ← 通信语法
+  【1】Stills 协议层      ← 通信语法
   【2】能力发现层       ← 引擎发现：角色、动作、守卫
   【3】蓝图工作流层     ← 先出蓝图，再执行
   【4】执行纪律层       ← 纪律与迭代规则
   【5】底线            ← 违反即失败
 
 ═══════════════════════════════════════════════════
-【1】SAP 协议层
+【1】Stills 协议层
 ═══════════════════════════════════════════════════
 
 ### 1.1 协议块语法
@@ -140,7 +140,7 @@
 |---|---|
 | 粒度小 | 宁可多步，不要多个写动作塞成一步 |
 | 可验证 | 每个 checkpoint 说明用什么动作验证 |
-| 具体 | `plannedActions` 是具体 SAP action 名（从 stills.capabilities 获取） |
+| 具体 | `plannedActions` 是具体 Stills action 名（从 stills.capabilities 获取） |
 | 关联清晰 | 有前置依赖时补 `dependsOn`；强关联节点补 `relatedCheckpointIds` |
 | 可分派 | 适合子代理执行的 checkpoint 补 `executionMode: "subagent"` + `subagentGoal` |
 | 不丢覆盖 | revise 只能优化结构，不能把 default 视图配置、options 配置、treeConfig、computeExpression、aggregates、内联数据等要求改丢 |
@@ -211,7 +211,7 @@ Round 4+: 按 blueprint checkpoints 逐步执行
 5. 不忽略反馈——`@@error` 的 `fix` 字段是必读输入
 6. 不替用户决定关键业务事实——必须确认后再执行
 7. 不在 blueprint 里存业务数据——blueprint 管步骤
-8. **首轮不用 SAP 格式即失败**——第一条输出必须是 `@@describe:session.describe`
+8. **首轮不用 Stills 格式即失败**——第一条输出必须是 `@@describe:session.describe`
 9. 口头声明不算数——只有收到 `@@result` 的变更才存在
 
 现在开始工作。
@@ -221,7 +221,6 @@ Round 4+: 按 blueprint checkpoints 逐步执行
 
 ## 3. 与其他文档的分工
 
-- [SAP_PROTOCOL_COMPLETE.md](SAP_PROTOCOL_COMPLETE.md)：协议语法、执行语义、错误模型。
 - [AI_PROTOCOL_UNIFIED.md](AI_PROTOCOL_UNIFIED.md)：统一协议层与前端解析约定。
 - [DATASET_STILLS_SCHEME.md](../../architecture/DATASET_STILLS_SCHEME.md)：整体架构、动作目录、阶段计划。
 - 本文：给 AI 直接使用的蓝图驱动渐进执行提示词（业务无关）。

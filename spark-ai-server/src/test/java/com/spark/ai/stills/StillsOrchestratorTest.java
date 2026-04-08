@@ -1,7 +1,7 @@
-package com.spark.ai.sap;
+package com.spark.ai.stills;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spark.ai.sap.handler.ActionRegistry;
+import com.spark.ai.stills.handler.ActionRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,16 +11,16 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 import java.util.List;
 
-import com.spark.ai.sap.handler.FileWriteHandler;
+import com.spark.ai.stills.handler.FileWriteHandler;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * SAP 编排器单元测试。
+ * Stills 编排器单元测试。
  */
-class SapOrchestratorTest {
+class StillsOrchestratorTest {
 
-    private SapOrchestrator orchestrator;
+    private StillsOrchestrator orchestrator;
     private ObjectMapper objectMapper;
 
     @TempDir
@@ -31,7 +31,7 @@ class SapOrchestratorTest {
         objectMapper = new ObjectMapper();
         FileWriteHandler fileHandler = new FileWriteHandler(objectMapper, tempDir.toString());
         ActionRegistry registry = new ActionRegistry(List.of(fileHandler));
-        orchestrator = new SapOrchestrator(registry, objectMapper);
+        orchestrator = new StillsOrchestrator(registry, objectMapper);
     }
 
     @Nested
@@ -101,7 +101,7 @@ class SapOrchestratorTest {
             String result = orchestrator.processProtocol(input);
 
             assertTrue(result.contains("INVALID_PROTOCOL"));
-            assertTrue(result.contains("一次只允许一个 SAP 协议块"));
+            assertTrue(result.contains("一次只允许一个 Stills 协议块"));
         }
 
         @Test

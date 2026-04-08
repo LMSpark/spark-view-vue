@@ -4,7 +4,7 @@
 
 ## 当前内容特征
 
-- AI 交互组件：如 `AiChatPanel.vue`、`SapChatPanel.vue`。
+- AI 交互组件：如 `AiChatPanel.vue`。
 - 应用壳层组件：如错误兜底、图标选择器、导航图标。
 - 组件注册辅助：如 `renderer-components.ts`。
 

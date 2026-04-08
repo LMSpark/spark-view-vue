@@ -1,10 +1,10 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.sap.SapAssistantService;
-import com.spark.ai.sap.SapAssistantService.SapChatResponse;
-import com.spark.ai.sap.SapOrchestrator;
-import com.spark.ai.sap.StillsSessionService;
-import com.spark.ai.sap.StillsSessionService.TurnResult;
+import com.spark.ai.stills.StillsAssistantService;
+import com.spark.ai.stills.StillsAssistantService.StillsChatResponse;
+import com.spark.ai.stills.StillsOrchestrator;
+import com.spark.ai.stills.StillsSessionService;
+import com.spark.ai.stills.StillsSessionService.TurnResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -18,32 +18,32 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * SAP 协议端点控制器。
+ * Stills 协议端点控制器。
  *
  * <ul>
- *   <li>POST /api/sap/chat      — AI 助手对话（自动工具回路）</li>
- *   <li>POST /api/sap/execute   — 直接执行 SAP 协议块（无 AI，用于测试/调试）</li>
- *   <li>POST /api/sap/stills/session      — 创建 Stills 会话</li>
- *   <li>POST /api/sap/stills/turn         — 执行一轮 LLM 对话</li>
- *   <li>POST /api/sap/stills/append       — 向会话追加消息</li>
- *   <li>POST /api/sap/stills/conversation — 获取完整对话记录</li>
- *   <li>POST /api/sap/stills/destroy      — 销毁会话</li>
+ *   <li>POST /api/stills/chat      — AI 助手对话（自动工具回路）</li>
+ *   <li>POST /api/stills/execute   — 直接执行 Stills 协议块（无 AI，用于测试/调试）</li>
+ *   <li>POST /api/stills/session      — 创建 Stills 会话</li>
+ *   <li>POST /api/stills/turn         — 执行一轮 LLM 对话</li>
+ *   <li>POST /api/stills/append       — 向会话追加消息</li>
+ *   <li>POST /api/stills/conversation — 获取完整对话记录</li>
+ *   <li>POST /api/stills/destroy      — 销毁会话</li>
  * </ul>
  *
  * <p>Stills 会话以 sessionId（UUID）为唯一凭据，SSE 天然做到一个连接对应一个浏览器会话。
  */
 @RestController
-@RequestMapping("/api/sap")
-public class SapController {
+@RequestMapping("/api/stills")
+public class StillsController {
 
-    private static final Logger log = LoggerFactory.getLogger(SapController.class);
+    private static final Logger log = LoggerFactory.getLogger(StillsController.class);
 
-    private final SapAssistantService assistantService;
-    private final SapOrchestrator orchestrator;
+    private final StillsAssistantService assistantService;
+    private final StillsOrchestrator orchestrator;
     private final StillsSessionService stillsSessionService;
 
-    public SapController(SapAssistantService assistantService,
-                         SapOrchestrator orchestrator,
+    public StillsController(StillsAssistantService assistantService,
+                         StillsOrchestrator orchestrator,
                          StillsSessionService stillsSessionService) {
         this.assistantService = assistantService;
         this.orchestrator = orchestrator;
@@ -51,10 +51,10 @@ public class SapController {
     }
 
     /**
-     * POST /api/sap/chat
-     * AI 对话入口 — 用户发自然语言，AI 自动走 SAP 协议工具回路。
+     * POST /api/stills/chat
+     * AI 对话入口 — 用户发自然语言，AI 自动走 Stills 协议工具回路。
      *
-     * <p>请求体：{@code {"message": "帮我写一个 Hello SAP 的文件"}}
+     * <p>请求体：{@code {"message": "帮我写一个 Hello Stills 的文件"}}
      * <p>响应体：{@code {"answer": "...", "rounds": 2, "toolTrace": [...]}}
      */
     @PostMapping("/chat")
@@ -64,10 +64,10 @@ public class SapController {
             return ResponseEntity.badRequest().body(Map.of("error", "message 不能为空"));
         }
 
-        String mode = request.getOrDefault("mode", "sap");
-        log.info("[SAP] /api/sap/chat mode={} message={}", mode, truncate(message, 100));
+        String mode = request.getOrDefault("mode", "stills");
+        log.info("[STILLS] /api/stills/chat mode={} message={}", mode, truncate(message, 100));
 
-        SapChatResponse response = assistantService.chat(message, mode);
+        StillsChatResponse response = assistantService.chat(message, mode);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("answer", response.getAnswer());
@@ -77,20 +77,20 @@ public class SapController {
     }
 
     /**
-     * POST /api/sap/execute
-     * 直接执行 SAP 协议块（绕过 AI，纯工具调用），用于测试和调试。
+     * POST /api/stills/execute
+     * 直接执行 Stills 协议块（绕过 AI，纯工具调用），用于测试和调试。
      *
-     * <p>请求体：原始 SAP 协议文本
+     * <p>请求体：原始 Stills 协议文本
      * <p>响应体：{@code {"result": "@@result:... @@end"}}
      */
     @PostMapping(value = "/execute", consumes = "text/plain")
-    public ResponseEntity<Map<String, String>> execute(@RequestBody String sapProtocol) {
-        if (sapProtocol == null || sapProtocol.isBlank()) {
+    public ResponseEntity<Map<String, String>> execute(@RequestBody String stillsProtocol) {
+        if (stillsProtocol == null || stillsProtocol.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "请求体不能为空"));
         }
 
-        log.info("[SAP] /api/sap/execute");
-        String result = orchestrator.processProtocol(sapProtocol);
+        log.info("[STILLS] /api/stills/execute");
+        String result = orchestrator.processProtocol(stillsProtocol);
         return ResponseEntity.ok(Map.of("result", result));
     }
 
@@ -103,7 +103,7 @@ public class SapController {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * POST /api/sap/stills/session
+     * POST /api/stills/session
      * 创建 Stills 会话 — 设置 system prompt 和初始用户需求。
      *
      * <p>请求体：
@@ -112,7 +112,7 @@ public class SapController {
      * <p>响应体：
      * <pre>{"sessionId":"uuid"}</pre>
      */
-    @PostMapping("/stills/session")
+    @PostMapping("/session")
     public ResponseEntity<Map<String, Object>> createStillsSession(
             @RequestBody Map<String, Object> request) {
         String systemPrompt = getRequiredString(request, "systemPrompt");
@@ -130,13 +130,13 @@ public class SapController {
     }
 
     /**
-     * POST /api/sap/stills/turn
+     * POST /api/stills/turn
      * 执行一轮 LLM 对话 — 将当前对话历史（滑动窗口裁剪后）发给 LLM，返回回复。
      *
      * <p>请求体：{@code {"sessionId":"uuid"}}
      * <p>响应体：{@code {"text":"...", "reasoning":"..."}}
      */
-    @PostMapping("/stills/turn")
+    @PostMapping("/turn")
     public ResponseEntity<Map<String, Object>> executeStillsTurn(
             @RequestBody Map<String, String> request) {
         String sessionId = request.get("sessionId");
@@ -160,12 +160,12 @@ public class SapController {
     }
 
     /**
-     * POST /api/sap/stills/append
+     * POST /api/stills/append
      * 向会话追加消息（通常是工具执行结果，以 user 角色注入）。
      *
      * <p>请求体：{@code {"sessionId":"uuid", "role":"user", "content":"..."}}
      */
-    @PostMapping("/stills/append")
+    @PostMapping("/append")
     public ResponseEntity<Map<String, Object>> appendStillsMessage(
             @RequestBody Map<String, String> request) {
         String sessionId = request.get("sessionId");
@@ -190,13 +190,13 @@ public class SapController {
     }
 
     /**
-     * POST /api/sap/stills/conversation
+     * POST /api/stills/conversation
      * 获取完整对话记录（供下游 self-check 等后处理使用）。
      *
      * <p>请求体：{@code {"sessionId":"uuid"}}
      * <p>响应体：{@code {"conversation":[{"role":"...","content":"..."},...]}}
      */
-    @PostMapping("/stills/conversation")
+    @PostMapping("/conversation")
     public ResponseEntity<Map<String, Object>> getStillsConversation(
             @RequestBody Map<String, String> request) {
         String sessionId = request.get("sessionId");
@@ -210,12 +210,12 @@ public class SapController {
     }
 
     /**
-     * POST /api/sap/stills/destroy
+     * POST /api/stills/destroy
      * 销毁会话。
      *
      * <p>请求体：{@code {"sessionId":"uuid"}}
      */
-    @PostMapping("/stills/destroy")
+    @PostMapping("/destroy")
     public ResponseEntity<Map<String, Object>> destroyStillsSession(
             @RequestBody Map<String, String> request) {
         String sessionId = request.get("sessionId");
@@ -228,14 +228,14 @@ public class SapController {
     }
 
     /**
-     * POST /api/sap/stills/destroy-batch
+     * POST /api/stills/destroy-batch
      * 批量销毁会话（前端切换用户时调用，清理本次浏览器会话创建的所有 sessionId）。
      *
      * <p>请求体：{@code {"sessionIds":["uuid1","uuid2"]}}
      * <p>响应体：{@code {"destroyed":2}}
      */
     @SuppressWarnings("unchecked")
-    @PostMapping("/stills/destroy-batch")
+    @PostMapping("/destroy-batch")
     public ResponseEntity<Map<String, Object>> destroyStillsSessions(
             @RequestBody Map<String, Object> request) {
         Object raw = request.get("sessionIds");

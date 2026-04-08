@@ -1,7 +1,7 @@
-package com.spark.ai.sap.handler;
+package com.spark.ai.stills.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spark.ai.sap.model.SapResult;
+import com.spark.ai.stills.model.StillsResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -58,7 +58,7 @@ public class DbQueryHandler implements ActionHandler {
     }
 
     @Override
-    public SapResult execute(String requestId, String jsonBody)
+    public StillsResult execute(String requestId, String jsonBody)
             throws ActionValidationException, ActionExecutionException {
 
         // 1. 反序列化参数
@@ -89,7 +89,7 @@ public class DbQueryHandler implements ActionHandler {
         // 5. 执行查询
         try {
             String safeSql = applySafeLimit(params.sql.trim(), limit);
-            log.info("[SAP] 执行 SQL: {} (limit={})", safeSql, limit);
+            log.info("[STILLS] 执行 SQL: {} (limit={})", safeSql, limit);
 
             List<Map<String, Object>> rows = jdbcTemplate.queryForList(safeSql);
 
@@ -97,7 +97,7 @@ public class DbQueryHandler implements ActionHandler {
             data.put("status", "success");
             data.put("rowCount", rows.size());
             data.put("data", rows);
-            return new SapResult("db.query", requestId, data);
+            return new StillsResult("db.query", requestId, data);
 
         } catch (Exception e) {
             throw new ActionExecutionException("SQL 执行失败: " + e.getMessage(), e);

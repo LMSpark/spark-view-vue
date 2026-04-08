@@ -137,12 +137,12 @@
 |---|---|
 | `POST` | `/api/logs` |
 
-### 11) SAP（SapController）
+### 11) Stills（StillsController）
 
 | Method | Path | 说明 |
 |---|---|---|
-| `POST` | `/api/sap/chat` | SAP AI 对话 |
-| `POST` | `/api/sap/execute` | 执行 SAP 协议（`text/plain`） |
+| `POST` | `/api/stills/chat` | Stills AI 对话 |
+| `POST` | `/api/stills/execute` | 执行 Stills 协议（`text/plain`） |
 
 ## 三、可直接复制的最小提示词
 

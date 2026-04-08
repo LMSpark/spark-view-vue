@@ -36,7 +36,7 @@ import type {
   PageConfigValidationIssue,
 } from './pageconfig-types'
 import { getDataSetState } from './dataset-domain'
-import type { SapCatalog, SapComponentEntry } from '../catalog/sap-catalog-types'
+import type { StillsCatalog, StillsComponentEntry } from '../catalog/stills-catalog-types'
 
 // ═══════════════════════════════════════════════════════════
 // 内部工具函数
@@ -55,13 +55,13 @@ function isNonEmptyString(value: unknown): value is string {
  * catalog 为 null 时跳过（降级模式）。
  */
 function validateComponentAgainstCatalog(
-  catalog: SapCatalog | null,
+  catalog: StillsCatalog | null,
   type: string,
   props?: Record<string, unknown>,
 ): StillResult | null {
   if (catalog === null) return null
 
-  const entry: SapComponentEntry | undefined = catalog.components[type]
+  const entry: StillsComponentEntry | undefined = catalog.components[type]
   if (entry === undefined) {
     // 查找相似类型
     const allTypes = Object.keys(catalog.components)

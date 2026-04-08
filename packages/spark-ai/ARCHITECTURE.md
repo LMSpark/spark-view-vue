@@ -25,8 +25,8 @@
 它在 SPARK 里的真实定位是一个 AI 运行时协调层，承担四类职责：
 
 1. 页面配置生成闭环。
-2. SAP / Stills 协议运行时。
-3. 提示词、组件目录、配置校验的桥接层。
+2. Stills 动作引擎。
+3. 提示词、组件目录、配置校验的知识层。
 4. 页面缓存刷新、导航自动注册、日志诊断采样等运行时支撑。
 
 它依赖但不替代以下层次：
@@ -34,7 +34,7 @@
 - @spark-view/spark-data：真实数据模型和 DataSet 运行时。
 - @spark-view/spark-component：SparkNode、组件树、页面渲染契约。
 - @spark-view/spark-utils：HTTP、日志、SSE 事件桥、导航类型等基础设施。
-- spark-ai-server：LLM 调用、页面文件持久化、导航树存储、版本管理、SSE 广播、SAP 会话存储。
+- spark-ai-server：LLM 调用、页面文件持久化、导航树存储、版本管理、SSE 广播、Stills 会话存储。
 
 ---
 
@@ -45,7 +45,6 @@ graph TB
     subgraph APP[主应用层]
         MAIN[src/main.ts]
         AIPANEL[AiChatPanel.vue]
-        SAPPANEL[SapChatPanel.vue]
         AIPROTO[src/services/ai-protocol.ts]
     end
 
@@ -70,9 +69,8 @@ graph TB
             TYPES[types.ts]
         end
 
-        subgraph CORE[协议与桥接]
+        subgraph CORE[协议层]
             PROTO[protocol.ts]
-            SAPRT[sap-runtime.ts]
         end
 
         subgraph KNOWLEDGE[知识层]
@@ -86,41 +84,37 @@ graph TB
         AICTRL[AiChatController]
         PAGECTRL[PageConfigController]
         NAVCTRL[NavigationController]
-        SAPCTRL[SapController]
+        STILLS_EP[Stills 会话端点]
         AIPS[AiPageService]
         PAGESVC[PageConfigService]
         SSE[SseService]
         STS[StillsSessionService]
     end
 
-    IDX --> LOOP & CACHE & NAV & ORCH & DISP & DOM & DS & BP & PCFG & META & PROTO & SAPRT & PROMPTS & CATALOG & VALID
+    IDX --> LOOP & CACHE & NAV & ORCH & DISP & DOM & DS & BP & PCFG & META & PROTO & PROMPTS & CATALOG & VALID
 
     MAIN --> LOOP
     MAIN --> CACHE
     MAIN --> NAV
     AIPANEL --> LOOP
-    SAPPANEL --> PROTO
-    SAPPANEL --> DISP
     AIPROTO --> PROTO
 
     LOOP --> VALID
     LOOP --> CACHE
     LOOP --> NAV
     ORCH --> PROTO
-    ORCH --> SAPRT
     ORCH --> MON
-    SAPRT --> DISP
     DOM --> DISP
 
     LOOP --> AICTRL
     LOOP --> PAGECTRL
     LOOP --> NAVCTRL
     LOOP --> SSE
-    ORCH -. 目标接入 .-> SAPCTRL
+    ORCH -. 目标接入 .-> STILLS_EP
     AICTRL --> AIPS
     PAGECTRL --> PAGESVC
     PAGECTRL --> SSE
-    SAPCTRL --> STS
+    STILLS_EP --> STS
 ```
 
 ### 分层原则
@@ -128,7 +122,6 @@ graph TB
 | 层 | 代表文件 | 主要职责 |
 |---|---|---|
 | 协议原语层 | protocol.ts | @@ 块提取、JSON 体解析、SSE 回调类型 |
-| 桥接层 | sap-runtime.ts | 协议块到 still 执行结果的桥接 |
 | 动作层 | stills/* | 原子动作、域状态、guard/validate/execute |
 | 运行时层 | runtime/* | 页面闭环、缓存、导航、编排器、监控器 |
 | 知识层 | prompts/*、catalog/*、validation/* | 提示词、组件知识、结构化质量门 |
@@ -409,7 +402,6 @@ src/validation/config-validator.ts 当前主要负责：
 
 - src/main.ts：统一初始化 AI loop、注入 headers / page API / nav API、设置 configLoader、接 page refresh。
 - src/components/AiChatPanel.vue：页面生成、调试、日志采样、自动迭代 UX。
-- src/components/SapChatPanel.vue：通用 SAP 对话流与前端本地 stills 模式。
 - src/services/ai-protocol.ts：复用协议解析并封装 /api/ai/chat/stream 的 SSE 传输。
 
 ### 7.2 后端关联
@@ -423,7 +415,7 @@ src/validation/config-validator.ts 当前主要负责：
 | readPageFile(s) / writePageFiles | /api/tenants/{tenantId}/projects/{projectId}/pages-config/** | PageConfigController |
 | registerPageNavigation | /api/tenants/{tenantId}/projects/{projectId}/navigation/nodes | NavigationController |
 | 热更新与调试桥 | GET /api/events | PageConfigController + SseService |
-| SessionBackend 目标适配 | POST /api/sap/stills/* | SapController |
+| SessionBackend 目标适配 | POST /api/stills/* | Stills 会话端点（后端 StillsController） |
 
 ### 7.3 明确不由本包负责的事情
 

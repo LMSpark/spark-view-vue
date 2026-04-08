@@ -7,7 +7,7 @@
 // Phase 1+ 将替换 ai-loop 中 payload.skillCatalog 为本地拼接结果。
 
 import { PAGE_SYSTEM_PROMPT } from './page-system-prompt'
-import { SAP_SYSTEM_PROMPT, STILLS_RUNTIME_PROMPT, STILLS_BLUEPRINT_PROMPT } from './sap-prompts'
+import { STILLS_RUNTIME_PROMPT, STILLS_BLUEPRINT_PROMPT } from './stills-prompts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 类型
@@ -46,7 +46,7 @@ export interface BuildPagePromptOptions {
 }
 
 /** 提示词模式 */
-export type PromptMode = 'page' | 'sap' | 'stills' | 'stills-blueprint'
+export type PromptMode = 'page' | 'stills' | 'stills-blueprint'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Skill 类型关键词检测（从 AiPageService.detectRelevantSkillTypes 迁入）
@@ -175,14 +175,12 @@ export function buildPageSystemPrompt(options?: BuildPagePromptOptions): string 
 
 /**
  * 根据模式返回对应的系统提示词。
- * 统一入口，供 ai-loop / SapChatPanel 等消费方使用。
+ * 统一入口，供 ai-loop 等消费方使用。
  */
 export function getSystemPrompt(mode: PromptMode, options?: BuildPagePromptOptions): string {
   switch (mode) {
     case 'page':
       return buildPageSystemPrompt(options)
-    case 'sap':
-      return SAP_SYSTEM_PROMPT
     case 'stills':
       return STILLS_RUNTIME_PROMPT
     case 'stills-blueprint':

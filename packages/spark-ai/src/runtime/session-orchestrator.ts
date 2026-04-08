@@ -2,40 +2,28 @@
  * Session Orchestrator — 会话级工具循环编排器
  *
  * 职责（纯编排，不含业务域知识）：
- * 1. 从后端获取 LLM 回复 → 提取协议块 → 本地执行 still → 向后端追加结果
+ * 1. 从后端获取 LLM 回复 → 提取 toolCalls → 本地执行 still → 向后端追加结果
  * 2. 可插拔监控器（followUp 注入 + 终止判断）
  * 3. warnings → followUp 通用机制（still postValidate 的 warnings 自动注入对话）
  * 4. 终止条件检测（export 完成 + 蓝图完成）
- *
- * 前后端只传两种东西：
- * - LLM 自然语言回复（后端 → 前端：/stills/turn）
- * - 协议块执行结果（前端 → 后端：/stills/append）
  *
  * 通信层由后端负责（按用户管理会话）：
  * - 对话历史存储（按 userId + sessionId 隔离）
  * - 滑动窗口裁剪
  * - system prompt 注入
- * - LLM 调用
- *
- * 不做的事：
- * - 不持有对话历史（后端负责）
- * - 不了解具体业务域（表名、列名、视图名）
- * - 不重复 still 层已有的 postValidate 校验
- * - 不硬编码场景特有的 followUp 逻辑
+ * - LLM 调用（Function Calling 模式，传递 tool definitions）
  *
  * 分层：
  *   Backend（会话存储 + 滑动窗口 + LLM 调用）
  *     → Orchestrator（本模块，循环 + 终止 + followUp 注入）
- *       → sap-runtime（单块分发 + 响应格式化）
+ *       → tool-calling（FC 调度 + 响应格式化）
  *         → dispatcher（still 执行）
  *           → 域 stills（业务逻辑 + postValidate）
  */
 
 import type { IStillSession, StillResult, PostValidationWarning } from '../stills/types'
-import type { ToolProtocolBlock } from '../protocol'
-import type { SapDispatchResult } from '../sap-runtime'
-import { extractToolBlocks, stripToolBlocks, parseToolPayload } from '../protocol'
-import { dispatchBlock } from '../sap-runtime'
+import type { ToolCall, FcDispatchResult, ToolDefinition } from '../tool-calling'
+import { dispatchToolCall, generateToolDefinitions } from '../tool-calling'
 
 // ═══════════════════════════════════════════════════════════
 // Types — 对话轮次
@@ -48,8 +36,7 @@ export interface DialogueTurn {
   phase: 'ai-response' | 'stills-execute'
   aiText?: string | undefined
   aiReasoning?: string | undefined
-  sapBlock?: {
-    type: string
+  toolBlock?: {
     action: string
     id: string
     params: unknown
@@ -77,27 +64,28 @@ export interface StillTurnResult {
 export interface LlmResponse {
   text: string
   reasoning?: string
+  /** Function Calling 模式：LLM 返回的工具调用（与 text 互斥或共存） */
+  toolCalls?: ToolCall[]
 }
 
 /**
  * 后端会话客户端接口（依赖反转：编排器不知道后端在哪）。
  *
- * 实现者负责 HTTP 调用 /api/sap/stills/* 端点。
+ * 实现者负责 HTTP 调用后端 Stills 会话端点。
  * 编排器只依赖此抽象。
  *
  * ⚠️ 实现者须在本地维护 sessionId 集合：
  * - createSession 成功后追加 sessionId
  * - destroySession 成功后移除 sessionId
  * - 切换用户时调用 destroyAllSessions()，将本地集合发给后端批量销毁
- *   （POST /api/sap/stills/destroy-batch { sessionIds: [...] }）
  */
 export interface SessionBackend {
-  /** 创建会话，返回 sessionId */
-  createSession(systemPrompt: string, userPrompt: string, windowSize: number): Promise<string>
+  /** 创建会话（附带 tool definitions），返回 sessionId */
+  createSession(systemPrompt: string, userPrompt: string, windowSize: number, tools?: ToolDefinition[]): Promise<string>
   /** 调用 LLM 获取下一轮回复（后端自动管理对话历史 + 滑动窗口） */
   executeTurn(sessionId: string): Promise<LlmResponse | null>
-  /** 向会话追加消息（assistant 原文 + user 工具结果） */
-  appendMessages(sessionId: string, messages: Array<{ role: string; content: string }>): Promise<void>
+  /** 向会话追加消息（assistant + tool results） */
+  appendMessages(sessionId: string, messages: Array<{ role: string; content: string; tool_call_id?: string; tool_calls?: ToolCall[] }>): Promise<void>
   /** 获取完整对话记录（供 self-check 等后处理使用） */
   getConversation(sessionId: string): Promise<Array<{ role: string; content: string }>>
   /** 销毁单个会话 */
@@ -147,8 +135,8 @@ export interface OrchestratorConfig {
   monitors?: SessionMonitor[]
   onRoundStart?: (round: number) => void
   onRoundComplete?: (turn: DialogueTurn) => void
-  /** 覆盖块分发函数（测试用，默认 dispatchBlock） */
-  dispatch?: (block: ToolProtocolBlock, session: IStillSession) => SapDispatchResult
+  /** 覆盖工具分发函数（测试用，默认 dispatchToolCall） */
+  dispatchFc?: (toolCall: ToolCall, session: IStillSession) => FcDispatchResult
 }
 
 export interface OrchestratorResult {
@@ -185,14 +173,6 @@ export function formatWarningsAsFollowUp(action: string, warnings: PostValidatio
   return `[系统后置校验警告]\n动作 ${action} 执行成功，但存在以下一致性问题：\n${lines.join('\n')}\n请在下一轮优先修复这些问题。`
 }
 
-function buildNoBlockReminder(round: number): string {
-  return `[系统协议提醒]\n你必须只输出一个 SAP 协议块（@@describe 或 @@request），不要输出自然语言。可直接按以下模板重试：\n@@describe:session.describe#retry-${round}\n{}\n@@end\n或\n@@describe:stills.capabilities#retry-${round}-capabilities\n{}\n@@end`
-}
-
-function buildMultiBlockError(round: number): string {
-  return `[系统协议错误]\n一次只允许输出 1 个 SAP 协议块。请只输出一个块，并可直接按以下模板重试：\n@@describe:session.describe#retry-${round}\n{}\n@@end`
-}
-
 function buildErrorFollowUp(action: string, code: string, fix: string): string {
   return `[系统即时纠错]\n动作 ${action} 执行失败（${code}）。\n修复建议: ${fix}\n请在下一轮按修复建议直接改正，不要重复原错误指令。`
 }
@@ -205,23 +185,22 @@ function toTurnResult(result: StillResult): StillTurnResult {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Core Loop
+// Core Loop — Function Calling
 // ═══════════════════════════════════════════════════════════
 
 /**
- * Stills 工具循环编排器。
+ * Stills 工具循环编排器（Function Calling 模式）。
  *
  * 每轮流程：
- * 1. 调后端 executeTurn → 获取 LLM 回复（后端自动管理历史 + 窗口 + LLM 调用）
- * 2. 本地提取协议块
- * 3. 本地执行 still
- * 4. 构建 followUp（错误纠正 + warnings + 监控器）
- * 5. 调后端 appendMessages → 追加 assistant 原文 + user 工具结果
- * 6. 检查终止条件
+ * 1. 调后端 executeTurn → 获取 LLM 回复（含结构化 toolCalls）
+ * 2. 逐个调度 toolCalls → 本地执行 still
+ * 3. 构建 followUp（错误纠正 + warnings + 监控器）
+ * 4. 向后端追加 assistant + tool result 消息
+ * 5. 检查终止条件
  *
  * @param userPrompt  - 用户原始需求
  * @param session     - Stills 会话（本地状态）
- * @param backend     - 后端通信层（依赖反转）
+ * @param backend     - 后端通信层（须实现 SessionBackend）
  * @param config      - 编排配置（含监控器）
  */
 export async function runStillsLoop(
@@ -230,13 +209,16 @@ export async function runStillsLoop(
   backend: SessionBackend,
   config: OrchestratorConfig,
 ): Promise<OrchestratorResult> {
-  // ── 创建后端会话（对话历史 + 窗口 + LLM 均在后端） ──
+  // ── 生成 tool definitions ──
+  const tools = generateToolDefinitions()
+
+  // ── 创建后端会话（附带 tools） ──
   const sessionId = await backend.createSession(
-    config.systemPrompt, userPrompt, config.slidingWindow,
+    config.systemPrompt, userPrompt, config.slidingWindow, tools,
   )
 
   const turns: DialogueTurn[] = []
-  const dispatch = config.dispatch ?? dispatchBlock
+  const dispatch = config.dispatchFc ?? dispatchToolCall
   let round = 0
   let exportCompleted = false
   let aborted = false
@@ -256,16 +238,10 @@ export async function runStillsLoop(
         break
       }
 
-      const { text: aiReply, reasoning } = llmResponse
+      const { text: aiReply, reasoning, toolCalls } = llmResponse
 
-      // ── Step 2: 提取协议块（仅 request/describe） ──
-      const blocks = extractToolBlocks(aiReply, { types: ['request', 'describe'] })
-
-      // 2a. 无协议块 → 提醒（追加 assistant + user 提醒到后端）
-      if (blocks.length === 0) {
-        await backend.appendMessages(sessionId, [
-          { role: 'user', content: buildNoBlockReminder(round) },
-        ])
+      // ── Step 2: 无 toolCalls → 纯文本回复（终态或需要用户输入） ──
+      if (!toolCalls || toolCalls.length === 0) {
         turns.push({
           round,
           timestamp: new Date().toISOString(),
@@ -274,107 +250,119 @@ export async function runStillsLoop(
           aiReasoning: reasoning ?? undefined,
           elapsed: Date.now() - roundStart,
         })
-        continue
+        // FC 模式下纯文本回复通常是对话结束或等用户输入，不需要提醒
+        break
       }
 
-      // 2b. 多个协议块 → 协议错误
-      if (blocks.length > 1) {
-        await backend.appendMessages(sessionId, [
-          { role: 'user', content: buildMultiBlockError(round) },
-        ])
-        turns.push({
+      // ── Step 3: 逐个调度 toolCalls ──
+      const messages: Array<{ role: string; content: string; tool_call_id?: string; tool_calls?: ToolCall[] }> = []
+
+      // 先追加 assistant 消息（含 tool_calls）
+      messages.push({
+        role: 'assistant',
+        content: aiReply || '',
+        tool_calls: toolCalls,
+      })
+
+      let lastResult: StillResult | undefined
+      let lastParams: unknown
+
+      for (const tc of toolCalls) {
+        const dispatched = dispatch(tc, session)
+        const { action, result, toolResult } = dispatched
+
+        lastResult = result
+        try { lastParams = JSON.parse(tc.function.arguments) } catch { lastParams = {} }
+
+        // 记录每个 tool call 的执行轮次
+        const turn: DialogueTurn = {
           round,
           timestamp: new Date().toISOString(),
-          phase: 'ai-response',
-          aiText: aiReply,
+          phase: 'stills-execute',
+          aiText: aiReply || undefined,
           aiReasoning: reasoning ?? undefined,
+          toolBlock: { action, id: tc.id, params: lastParams },
+          stillsResult: toTurnResult(result),
           elapsed: Date.now() - roundStart,
+        }
+        turns.push(turn)
+
+        // 添加 tool result 消息
+        let resultContent = toolResult.content
+
+        // 收集 followUp 指令
+        const followUpInstructions: string[] = []
+
+        if (!result.ok) {
+          followUpInstructions.push(buildErrorFollowUp(action, result.code, result.fix))
+        }
+
+        if (result.ok && result.warnings !== undefined && result.warnings.length > 0) {
+          followUpInstructions.push(formatWarningsAsFollowUp(action, result.warnings))
+        }
+
+        // 监控器
+        const monitorCtx: MonitorContext = {
+          session,
+          currentTurn: turn,
+          allTurns: turns,
+          round,
+          params: lastParams,
+          result,
+        }
+        for (const monitor of config.monitors ?? []) {
+          followUpInstructions.push(...monitor.afterStillExecution(monitorCtx))
+        }
+
+        // followUp 附加到 tool result content
+        if (followUpInstructions.length > 0) {
+          const original = JSON.parse(resultContent) as Record<string, unknown>
+          original['_followUp'] = followUpInstructions
+          resultContent = JSON.stringify(original)
+        }
+
+        messages.push({
+          role: 'tool',
+          tool_call_id: tc.id,
+          content: resultContent,
         })
-        continue
-      }
 
-      // ── Step 3: 本地单块分发 ──
-      const block = blocks[0]
-      if (block === undefined) continue
-      const params = parseToolPayload<Record<string, unknown>>(block) ?? {}
-      const dispatched = dispatch(block, session)
-      const { result, responseText } = dispatched
-
-      // ── Step 4: 记录对话轮次 ──
-      const turn: DialogueTurn = {
-        round,
-        timestamp: new Date().toISOString(),
-        phase: 'stills-execute',
-        aiText: stripToolBlocks(aiReply) || undefined,
-        aiReasoning: reasoning ?? undefined,
-        sapBlock: { type: block.type, action: block.action, id: block.id, params },
-        stillsResult: toTurnResult(result),
-        elapsed: Date.now() - roundStart,
-      }
-      turns.push(turn)
-
-      // ── Step 5: 收集 followUp 指令 ──
-      const followUpInstructions: string[] = []
-
-      // 5a. 失败 → 通用纠错 followUp
-      if (!result.ok) {
-        followUpInstructions.push(buildErrorFollowUp(block.action, result.code, result.fix))
-      }
-
-      // 5b. 成功但有 warnings → 通用 warnings→followUp
-      if (result.ok && result.warnings !== undefined && result.warnings.length > 0) {
-        followUpInstructions.push(formatWarningsAsFollowUp(block.action, result.warnings))
-      }
-
-      // 5c. 监控器 afterStillExecution
-      const monitorCtx: MonitorContext = {
-        session,
-        currentTurn: turn,
-        allTurns: turns,
-        round,
-        params,
-        result,
-      }
-      for (const monitor of config.monitors ?? []) {
-        followUpInstructions.push(...monitor.afterStillExecution(monitorCtx))
-      }
-
-      // ── Step 6: 检查监控器是否要求终止 ──
-      for (const monitor of config.monitors ?? []) {
-        if (monitor.shouldAbort !== undefined) {
-          const abortResult = monitor.shouldAbort(monitorCtx)
-          if (abortResult.abort) {
-            aborted = true
-            abortReason = abortResult.reason ?? monitor.name
-            break
+        // 检查监控器终止
+        for (const monitor of config.monitors ?? []) {
+          if (monitor.shouldAbort !== undefined) {
+            const abortResult = monitor.shouldAbort(monitorCtx)
+            if (abortResult.abort) {
+              aborted = true
+              abortReason = abortResult.reason ?? monitor.name
+              break
+            }
           }
+        }
+        if (aborted) break
+
+        // 检查 export 完成
+        if (result.ok && action === 'dataset.export') {
+          exportCompleted = true
         }
       }
 
       if (aborted) break
 
-      // ── Step 7: 检查 export 完成 ──
-      if (result.ok && block.action === 'dataset.export') {
-        exportCompleted = true
+      // ── Step 4: 向后端追加消息（assistant + tool results） ──
+      await backend.appendMessages(sessionId, messages)
+
+      if (lastResult) {
+        const lastTurn = turns[turns.length - 1]
+        if (lastTurn) config.onRoundComplete?.(lastTurn)
       }
 
-      // ── Step 8: 向后端追加消息（工具结果 + followUp） ──
-      const followUpText = followUpInstructions.length > 0
-        ? `\n\n${followUpInstructions.join('\n\n')}`
-        : ''
-      await backend.appendMessages(sessionId, [
-        { role: 'user', content: `[系统工具执行结果]\n${responseText}${followUpText}` },
-      ])
-
-      config.onRoundComplete?.(turn)
-
-      // ── Step 9: 终止条件 ──
+      // ── Step 5: 终止条件 ──
       if (exportCompleted && !hasPendingBlueprintWork(session.blueprint)) {
         break
       }
     }
   } finally {
-    // 会话由调用者决定何时 destroy（可能需要 getConversation 做 self-check）
+    // 会话由调用者决定何时 destroy
   }
 
   return {

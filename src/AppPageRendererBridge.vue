@@ -1,6 +1,6 @@
 <template>
   <SparkPageRenderer :key="rendererRefreshKey" v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
-  <!-- 单入口助手浮窗：内部可切换 AI 页面生成 / SAP 工具模式 -->
+  <!-- 单入口助手浮窗：内部可切换 AI 页面生成 / Stills 工具模式 -->
   <AiAssistantHub v-if="enableAI" />
 </template>
 

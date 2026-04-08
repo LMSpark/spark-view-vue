@@ -12,7 +12,7 @@
 
 ## AI 与目录生成
 
-- [spark-ai/README.md](spark-ai/README.md)：AI 运行时、stills、SSE、SAP 协议适配。
+- [spark-ai/README.md](spark-ai/README.md)：AI 运行时、stills、SSE、Stills 协议。
 - [vite-plugin-spark-catalog/README.md](vite-plugin-spark-catalog/README.md)：构建期组件目录与提示词元数据生成。
 
 ## 插件与集成

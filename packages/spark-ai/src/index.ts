@@ -6,9 +6,6 @@ export {
   stripBlocksWithUnclosed as stripProtocolBlocksWithUnclosed,
   extractProposalBlocks,
   stripProposalBlocks,
-  extractToolBlocks,
-  stripToolBlocks,
-  parseToolPayload,
   extractFirstJsonObject,
   parseTokenUsage,
   formatTokenUsage,
@@ -19,12 +16,10 @@ export type {
   ProtocolRole,
   ProtocolMessage,
   ProtocolBlock as UnifiedProtocolBlock,
-  ToolProtocolBlock,
   ProposalProtocolBlock,
   TokenUsage,
   StreamCallbacks,
   ProtocolBlockFilter,
-  ToolBlockFilter,
   UiConfirmOption,
   UiConfirmQuestion,
   UiConfirmPayload,
@@ -95,8 +90,8 @@ export type {
   RootFieldEntry,
 } from './catalog/types'
 
-// ── SAP Catalog (Lightweight) ────────────────────────────────────────────────
-export type { SapCatalog, SapCatalogRegistry, SapComponentEntry, SapPropEntry } from './catalog/sap-catalog-types'
+// ── Stills Catalog (Lightweight) ─────────────────────────────────────────────
+export type { StillsCatalog, StillsCatalogRegistry, StillsComponentEntry, StillsPropEntry } from './catalog/stills-catalog-types'
 
 // ── Shared Constants ─────────────────────────────────────────────────────────
 export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './validation/shared-constants'
@@ -105,15 +100,15 @@ export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './validation/shared
 export { NAV_PLANNER_SYSTEM_PROMPT } from './prompts/nav-planner-prompt'
 
 // ── System Prompts（提示词前端 SSoT）────────────────────────────────────────
+
 export { PAGE_SYSTEM_PROMPT } from './prompts/page-system-prompt'
 export {
-  SAP_SYSTEM_PROMPT,
   STILLS_PROTOCOL_BASE,
   STILLS_DATASET_DOMAIN,
   STILLS_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
   STILLS_SYSTEM_PROMPT,
-} from './prompts/sap-prompts'
+} from './prompts/stills-prompts'
 export {
   buildPageSystemPrompt,
   getSystemPrompt,
@@ -126,7 +121,7 @@ export type {
   PromptMode,
 } from './prompts/prompt-builder'
 
-// ── Stills（SAP 协议动作引擎）────────────────────────────────────────────────
+// ── Stills（动作引擎）────────────────────────────────────────────────────────
 export {
   registerAllStills,
   registerStill,
@@ -175,17 +170,6 @@ export type {
   DatasetCrudToolStillCapabilityRow,
 } from './stills'
 
-// ── SAP Runtime Bridge（协议解析 → Stills 调度 → 响应格式化）───────────────────
-export {
-  formatResponseBlock,
-  dispatchBlock,
-  processSapBlocks,
-} from './sap-runtime'
-export type {
-  SapDispatchResult,
-  SapProcessingResult,
-} from './sap-runtime'
-
 // ── Session Orchestrator（会话级工具循环编排）──────────────────────────────────
 export {
   runStillsLoop,
@@ -201,6 +185,27 @@ export type {
   OrchestratorConfig,
   OrchestratorResult,
 } from './runtime/session-orchestrator'
+
+// ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
+export {
+  actionToFunctionName,
+  functionNameToAction,
+  stillToToolDefinition,
+  generateToolDefinitions,
+  dispatchToolCall,
+  dispatchToolCalls,
+  formatToolResultContent,
+  buildAssistantToolCallMessage,
+  buildToolResultMessage,
+} from './tool-calling'
+export type {
+  ToolCall,
+  ToolResult,
+  FcDispatchResult,
+  ToolDefinition,
+  JsonSchema,
+  JsonSchemaProperty,
+} from './tool-calling'
 
 // ── Monitors（可插拔编排监控器）──────────────────────────────────────────────
 export {

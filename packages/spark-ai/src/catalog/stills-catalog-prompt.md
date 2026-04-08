@@ -1,4 +1,4 @@
-## 可用组件目录（SAP Catalog）
+## 可用组件目录（Stills Catalog）
 
 共 122 个组件，构建时间 2026-04-07T15:32:46.875Z
 
@@ -138,7 +138,6 @@
 | module-context-badge | SPARK 组件，可在注册表中通过 type="module-context-badge" 使用。 | label, emptyText |
 | nav-icon | SPARK 组件，可在注册表中通过 type="nav-icon" 使用。 | name, size |
 | rform-compare-demo | 表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式。 |  |
-| sap-chat-panel | SPARK 组件，可在注册表中通过 type="sap-chat-panel" 使用。 | embedded, forceOpen, mode |
 | settings | 系统设置面板，提供全局参数配置和偏好设置管理界面。 |  |
 | spark-child | 子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。 | type, id, nodeId, colSpan, rowSpan |
 | spark-code-editor | 代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。 | modelValue, language, readOnly, height, tabSize, lineWrapping |

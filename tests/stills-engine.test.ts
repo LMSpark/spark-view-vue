@@ -1,7 +1,7 @@
 /**
  * Stills Engine — 完整请假系统流程测试
  *
- * 模拟 STILLS_BLUEPRINT_PROMPT 中的 SAP 协议全流程：
+ * 模拟 STILLS_BLUEPRINT_PROMPT 中的 Stills 引擎全流程：
  * session.describe → stills.capabilities → blueprint.create →
  * dataset.init → datatable.create×5 → relation.add×4 →
  * schema.lock → dataview.configure×5 → dependency.add×3 →
@@ -160,7 +160,7 @@ describe('blueprint stills (P1)', () => {
   it('blueprint.create requires title and requirements', () => {
     const r = exec('blueprint.create', { title: '', requirements: '', checkpoints: [] })
     expectFail(r, 'INVALID_PARAMS')
-    expect(r.fix).toContain('@@request:blueprint.create#retry-correct')
+    expect(r.fix).toContain('blueprint_create')
     expect(r.fix).toContain('checkpoints')
   })
 
@@ -1110,7 +1110,7 @@ describe('guard system', () => {
     // schema not locked → dataview.configure should fail
     const r = exec('dataview.configure', { tableName: 'T', config: { autoLoad: true } })
     expectFail(r, 'SCHEMA_NOT_LOCKED')
-    expect(r.fix).toContain('@@request:schema.lock#retry-schema-lock')
+    expect(r.fix).toContain('schema_lock')
   })
 
   it('rejects schema-unlocked ops when schema locked', () => {
@@ -1127,7 +1127,7 @@ describe('guard system', () => {
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
     })
     expectFail(r, 'SCHEMA_LOCKED')
-    expect(r.fix).toContain('@@request:schema.unlock#retry-schema-unlock')
+    expect(r.fix).toContain('schema_unlock')
   })
 
   it('rejects ops requiring dataset when no dataset', () => {
@@ -1137,13 +1137,13 @@ describe('guard system', () => {
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
     })
     expectFail(r, 'NO_DATASET')
-    expect(r.fix).toContain('@@request:dataset.init#retry-dataset-init')
+    expect(r.fix).toContain('dataset_init')
   })
 
   it('unknown action returns UNKNOWN_ACTION', () => {
     const r = exec('nonexistent.action')
     expectFail(r, 'UNKNOWN_ACTION')
-    expect(r.fix).toContain('@@describe:stills.capabilities#retry-capabilities')
+    expect(r.fix).toContain('stills_capabilities')
   })
 })
 

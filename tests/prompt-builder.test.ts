@@ -4,7 +4,6 @@ import {
   getSystemPrompt,
   detectRelevantSkillTypes,
   PAGE_SYSTEM_PROMPT,
-  SAP_SYSTEM_PROMPT,
   STILLS_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
 } from '@spark-view/spark-ai'
@@ -175,11 +174,6 @@ describe('getSystemPrompt', () => {
     expect(result).toBe(PAGE_SYSTEM_PROMPT)
   })
 
-  it('sap 模式返回 SAP 协议提示词', () => {
-    const result = getSystemPrompt('sap')
-    expect(result).toBe(SAP_SYSTEM_PROMPT)
-  })
-
   it('stills 模式返回 Stills 运行时提示词', () => {
     const result = getSystemPrompt('stills')
     expect(result).toBe(STILLS_RUNTIME_PROMPT)
@@ -207,43 +201,27 @@ describe('提示词内容完整性', () => {
     expect(PAGE_SYSTEM_PROMPT).toContain('【7】高频错误速查')
   })
 
-  it('SAP_SYSTEM_PROMPT 包含中文协议说明', () => {
-    expect(SAP_SYSTEM_PROMPT).toContain('SAP/1.0 协议驱动')
-    expect(SAP_SYSTEM_PROMPT).toContain('@@request')
-    expect(SAP_SYSTEM_PROMPT).toContain('自我修正')
-    expect(SAP_SYSTEM_PROMPT).toContain('@@result')
-  })
-
-  it('STILLS_RUNTIME_PROMPT 包含完整五层架构', () => {
-    // L1 协议
-    expect(STILLS_RUNTIME_PROMPT).toContain('L1: SAP/1.0 协议')
-    // L2 能力发现
-    expect(STILLS_RUNTIME_PROMPT).toContain('L2: 能力发现')
-    expect(STILLS_RUNTIME_PROMPT).toContain('stills.capabilities')
-    expect(STILLS_RUNTIME_PROMPT).toContain('stills.actionSpec')
+  it('STILLS_RUNTIME_PROMPT 包含业务逻辑层', () => {
     // L3 业务逻辑
     expect(STILLS_RUNTIME_PROMPT).toContain('L3: 业务逻辑')
-    expect(STILLS_RUNTIME_PROMPT).toContain('@@ui:confirm-questions')
-    expect(STILLS_RUNTIME_PROMPT).toContain('蓝图编排')
-    expect(STILLS_RUNTIME_PROMPT).toContain('效率纪律')
-    expect(STILLS_RUNTIME_PROMPT).toContain('SPARK DataSet 核心概念')
     // L4 API 目录
     expect(STILLS_RUNTIME_PROMPT).toContain('L4: API 目录')
     expect(STILLS_RUNTIME_PROMPT).toContain('dataset.validate')
     // L5 按需查询
     expect(STILLS_RUNTIME_PROMPT).toContain('L5: 按需查询')
     expect(STILLS_RUNTIME_PROMPT).toContain('actionSpec')
+    // 业务逻辑
+    expect(STILLS_RUNTIME_PROMPT).toContain('蓝图编排')
+    expect(STILLS_RUNTIME_PROMPT).toContain('效率纪律')
+    expect(STILLS_RUNTIME_PROMPT).toContain('SPARK DataSet 核心概念')
   })
 
-  it('STILLS_BLUEPRINT_PROMPT 包含五层架构', () => {
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('【1】SAP 协议层')
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('【2】能力发现层')
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('【3】蓝图工作流层')
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('【4】执行纪律层')
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('【5】底线')
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('session.describe')
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('stills.capabilities')
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('七步工作流')
-    expect(STILLS_BLUEPRINT_PROMPT).toContain('DataSet 建模蓝图推荐结构')
+  it('STILLS_BLUEPRINT_PROMPT 包含 FC 交互规则与能力发现', () => {
+    expect(STILLS_BLUEPRINT_PROMPT).toContain('Function Calling')
+    expect(STILLS_BLUEPRINT_PROMPT).toContain('交互规则')
+    expect(STILLS_BLUEPRINT_PROMPT).toContain('能力发现')
+    expect(STILLS_BLUEPRINT_PROMPT).toContain('session_describe')
+    expect(STILLS_BLUEPRINT_PROMPT).toContain('stills_capabilities')
+    expect(STILLS_BLUEPRINT_PROMPT).toContain('stills_actionSpec')
   })
 })

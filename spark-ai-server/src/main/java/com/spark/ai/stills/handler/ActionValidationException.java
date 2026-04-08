@@ -1,4 +1,4 @@
-package com.spark.ai.sap.handler;
+package com.spark.ai.stills.handler;
 
 /**
  * 参数校验失败异常。

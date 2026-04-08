@@ -52,7 +52,7 @@ function unknownActionResult(action: string): StillResult {
     ok: false,
     code: 'UNKNOWN_ACTION',
     msg: `未知动作: ${action}`,
-    fix: `${correction}。先执行以下协议块获取动作目录：${buildProtocolTemplate('describe', 'stills.capabilities', 'retry-capabilities', {})}`,
+    fix: `${correction}。请先调用 stills_capabilities 获取全部动作目录。`,
   }
 }
 
@@ -64,17 +64,17 @@ function invalidParamsResult(action: string, validationError: string): StillResu
     msg: validationError,
     fix: still
       ? buildStillRetryFix(still, `参数错误：${validationError}`)
-      : `请查 stills.actionSpec {"action":"${action}"} 获取正确参数格式`,
+      : `请调用 stills_actionSpec({"action":"${action}"}) 获取正确参数格式`,
   }
 }
 
-function buildProtocolTemplate(
-  type: 'request' | 'describe',
-  action: string,
-  requestId: string,
-  params: unknown,
-): string {
-  return `@@${type}:${action}#${requestId}\n${JSON.stringify(params, null, 2)}\n@@end`
+/**
+ * 构建动作调用示例文本（协议无关）
+ *
+ * FC 模式：直接描述函数名 + 参数 JSON
+ */
+function buildActionCallExample(action: string, params: unknown): string {
+  return `调用 ${action.replace(/\./g, '_')}(${JSON.stringify(params, null, 2)})`
 }
 
 function buildStillRetryFix(still: AnyStill, reason: string): string {
@@ -83,19 +83,19 @@ function buildStillRetryFix(still: AnyStill, reason: string): string {
   const ruleText = still.usageRules && still.usageRules.length > 0
     ? ` 关键规则: ${still.usageRules.join('；')}`
     : ''
-  return `${reason}。请改用正确协议块：${buildProtocolTemplate(still.type, still.action, 'retry-correct', example)} 参数结构: ${paramsSchema}.${ruleText}`
+  return `${reason}。请重新${buildActionCallExample(still.action, example)}。参数结构: ${paramsSchema}.${ruleText}`
 }
 
 function buildGuardPrerequisiteFix(still: AnyStill, guardCode: string): string | null {
   switch (guardCode) {
     case 'NO_BLUEPRINT':
-      return `前置条件缺失。请先查看 blueprint.create 规格：${buildProtocolTemplate('describe', 'stills.actionSpec', 'retry-blueprint-spec', { action: 'blueprint.create' })}`
+      return `前置条件缺失。请先${buildActionCallExample('stills.actionSpec', { action: 'blueprint.create' })}`
     case 'NO_DATASET':
-      return `前置条件缺失。请先初始化 DataSet：${buildProtocolTemplate('request', 'dataset.init', 'retry-dataset-init', { dataSetName: 'MyDataSet' })}`
+      return `前置条件缺失。请先${buildActionCallExample('dataset.init', { dataSetName: 'MyDataSet' })}`
     case 'SCHEMA_LOCKED':
-      return `当前动作属于结构修改阶段，请先解锁 schema：${buildProtocolTemplate('request', 'schema.unlock', 'retry-schema-unlock', { reason: `需要继续执行 ${still.action}` })}`
+      return `当前动作属于结构修改阶段，请先${buildActionCallExample('schema.unlock', { reason: `需要继续执行 ${still.action}` })}`
     case 'SCHEMA_NOT_LOCKED':
-      return `当前动作属于配置阶段，请先锁定 schema：${buildProtocolTemplate('request', 'schema.lock', 'retry-schema-lock', {})}`
+      return `当前动作属于配置阶段，请先${buildActionCallExample('schema.lock', {})}`
     default:
       return null
   }
