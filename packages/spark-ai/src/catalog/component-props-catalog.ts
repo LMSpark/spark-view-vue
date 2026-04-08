@@ -7,8 +7,8 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-04-07T15:32:46.892Z
- * 条目数量：122
+ * 生成时间：2026-04-08T05:35:22.962Z
+ * 条目数量：121
  */
 import type { ComponentCatalog } from './types'
 
@@ -23,8 +23,8 @@ import type { ComponentCatalog } from './types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-04-07T15:32:46.875Z",
-  "componentCount": 122,
+  "buildTime": "2026-04-08T05:35:22.829Z",
+  "componentCount": 121,
   "registry": {
     "containers": [
       "r-block",
@@ -9750,12 +9750,12 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
 export const COMPONENT_DIRECTORY_DESCRIBE = {
   "hint": "session.describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 查询 specByType。",
   "summary": {
-    "total": 122,
+    "total": 121,
     "containers": 12,
     "fields": 50,
     "groups": 1,
     "meta": 2,
-    "features": 57
+    "features": 56
   },
   "registry": {
     "containers": [

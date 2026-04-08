@@ -5,15 +5,15 @@
  *
  * 由 vite-plugin-spark-catalog 在 build / dev 时生成。
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-04-07T15:32:46.875Z
- * 条目数量：122
+ * 生成时间：2026-04-08T05:35:22.829Z
+ * 条目数量：121
  */
 import type { StillsCatalog } from './stills-catalog-types'
 
 export const STILLS_CATALOG: StillsCatalog = {
   "version": "1.0.0",
-  "buildTime": "2026-04-07T15:32:46.875Z",
-  "componentCount": 122,
+  "buildTime": "2026-04-08T05:35:22.829Z",
+  "componentCount": 121,
   "registry": {
     "containers": [
       "r-block",

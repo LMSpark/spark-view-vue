@@ -1,6 +1,6 @@
 ## 可用组件目录（Stills Catalog）
 
-共 122 个组件，构建时间 2026-04-07T15:32:46.875Z
+共 121 个组件，构建时间 2026-04-08T05:35:22.829Z
 
 ### 容器组件 (12)
 
@@ -87,7 +87,7 @@
 | builtin-action | 声明式动作节点（零代码优先） | type, props.builtinAction |
 | context-aware-fields-api | 语境感知字段渲染能力总览 |  |
 
-### 功能组件 (57)
+### 功能组件 (56)
 
 | type | description | props |
 |------|-------------|-------|
