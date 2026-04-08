@@ -1,29 +1,29 @@
 <template>
   <!-- 已注册：SparkNode 运行时输入 + 事件处理器 → 统一作为 Vue Props 传递 -->
   <component
-    v-if="shouldRenderRegistryComponent"
+    v-if="renderBranch === 'registry'"
     v-bind="registryComponentProps"
     :is="registryComponent"
   >
-    <template v-if="shouldRenderRegistryDefaultSlot" #default>
+    <template v-if="shouldRenderRegistryChildrenViaSlot" #default>
       <RecursiveChildrenBlock :children="renderableChildren" />
     </template>
   </component>
 
   <!-- 非 registry 组件（Vue 全局组件 / 原生标签）：统一走 attrs + slot children -->
   <component
-    v-else-if="shouldRenderExternalComponent"
+    v-else-if="renderBranch === 'external'"
     :is="externalComponent"
     v-bind="externalComponentProps"
   >
-    <template v-if="shouldRenderExternalDefaultSlot">
+    <template v-if="hasRenderableChildren">
       <RecursiveChildrenBlock :children="renderableChildren" />
     </template>
   </component>
 
   <!-- 未注册：降级渲染卡片负责提示外观与属性面板，子组件树仍继续递归 -->
   <UnregisteredNodeFallback
-    v-else-if="shouldRenderUnregisteredFallback"
+    v-else-if="renderBranch === 'fallback'"
     :node="effectiveNode"
     :title="fallbackTitle"
     :description="fallbackDescription"
@@ -510,9 +510,6 @@ const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undef
 // 归一化后的输入节点：补默认 type / children。
 const normalizedNode = computed<SparkNode>(() => normalizeSparkNode(rendererProps.config, 'unknown'))
 
-// 归一化节点 props：供 beforeRender 上下文构造使用。
-const normalizedNodeProps = computed<NodeRuntimeProps>(() => normalizedNode.value.props ?? EMPTY_RUNTIME_PROPS)
-
 // 通过运行时实例锚点表解析父能力上下文，不走 Vue provide/inject。
 const parentCapabilityContext = computed(() =>
   resolveParentCapabilityContext(currentOwner, rendererProps.parentContext)
@@ -526,13 +523,13 @@ const parentCapabilityContext = computed(() =>
  */
 const beforeRenderState = computed(() => {
   const node = normalizedNode.value
-  const parentContext = parentCapabilityContext.value
+  const rawProps = node.props ?? EMPTY_RUNTIME_PROPS
 
   return resolveNodeBeforeRender(
     node,
     buildBeforeRenderContext({
-      rawProps: normalizedNodeProps.value,
-      parentContext,
+      rawProps,
+      parentContext: parentCapabilityContext.value,
     }),
     warnRendererIssue,
   )
@@ -542,12 +539,6 @@ const beforeRenderState = computed(() => {
 const effectiveNode = computed<SparkNode>(() =>
   mergeNodeBeforeRenderProps(normalizedNode.value, beforeRenderState.value.propsPatch)
 )
-
-// 生效节点 props：供最终 props 透传与外部/native 分支共用。
-const effectiveNodeProps = computed<NodeRuntimeProps>(() => effectiveNode.value.props ?? EMPTY_RUNTIME_PROPS)
-
-// 当前节点是否应该继续进入组件解析分支；后续 registry/external/fallback 都以它为前置条件。
-const shouldRenderNode = computed(() => beforeRenderState.value.visible)
 
 // ── 组件解析：registry 组件 / 全局组件 / 原生标签 / 未注册降级 ────────────────
 
@@ -601,16 +592,13 @@ const externalComponent = computed(() => {
 
 // ── 渲染分支：统一收敛成单一分支枚举 ────────────────────────────────────────
 
-// 分支集中判定，模板只消费语义明确的 shouldRenderXxx，而不是再拼复杂条件。
+// 分支集中判定，模板直接消费 renderBranch，而不再包裹独立的 shouldRenderXxx computed。
 const renderBranch = computed<RenderBranch>(() => {
-  if (!shouldRenderNode.value) return 'hidden'
+  if (!beforeRenderState.value.visible) return 'hidden'
   if (registryComponent.value !== null) return 'registry'
   if (externalComponent.value !== null) return 'external'
   return 'fallback'
 })
-const shouldRenderRegistryComponent = computed(() => renderBranch.value === 'registry')
-const shouldRenderExternalComponent = computed(() => renderBranch.value === 'external')
-const shouldRenderUnregisteredFallback = computed(() => renderBranch.value === 'fallback')
 
 const fallbackTitle = computed(() => {
   return registryDefinition.value !== null && !registryParentTypeState.value.matched
@@ -656,19 +644,11 @@ const shouldRenderRegistryChildrenViaSlot = computed(() => {
     && !registryConsumesChildrenProp.value
 })
 
-const shouldRenderRegistryDefaultSlot = computed(() => {
-  return shouldRenderRegistryChildrenViaSlot.value
-})
-
-const shouldRenderExternalDefaultSlot = computed(() => {
-  return renderBranch.value === 'external'
-    && hasRenderableChildren.value
-})
 
 // ── props 透传：SparkNode.props → 目标组件运行时 props ───────────────────────
 
 // 所有组件共享的基础 props：从 SparkNode.props 过滤并规范化后得到。
-const nodeForwardedProps = computed(() => buildNodeForwardedProps(effectiveNodeProps.value))
+const nodeForwardedProps = computed(() => buildNodeForwardedProps(effectiveNode.value.props ?? EMPTY_RUNTIME_PROPS))
 
 // 外部组件 / 原生标签实际收到的 props。
 // 其中原生标签还要再过滤一层，避免运行时作用域字段落到 DOM attrs 上。

@@ -59,14 +59,16 @@
  * ```
  */
 import {
-  ref, onMounted, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw,
+  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger, PAGE_SERVICE } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '@spark-view/spark-utils'
 import type { DataSet } from '@spark-view/spark-data'
+import { DataSetCrudTool } from '@spark-view/spark-data'
 import type { ConfigLoader, IPageRoute, PageConfig } from '@spark-view/spark-page-config'
 import { nodeId, type SparkNode } from '../../core/types'
+import { SparkNodeTree } from '../../core/spark-node-tree'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE, type ModuleContextCapability, type PageCssScopeCapability } from '../../core/capabilities'
 import { PAGE_PERMISSION_MODE } from '../../permission/page-permission-mode'
 import { useRendererSetup } from './useRendererSetup'
@@ -183,6 +185,8 @@ interface Props extends Omit<SparkNode, 'type'> {
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'spark-page',
+  enableDataSet: true,
+  enableCssScope: true,
 })
 
 // ==================== 基础设施 ====================
@@ -203,9 +207,14 @@ sparkProvide(PAGE_SERVICE, pageService)
 // ==================== 响应式状态 ====================
 
 const currentPageId = ref('')
-const children = ref<SparkNode[]>([])
-const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
+const children = shallowRef<SparkNode[]>([])
+const pageFunctions = shallowRef<Record<string, (...args: unknown[]) => unknown>>({})
 let _inFlightPageId: string | null = null
+
+// ── SparkNodeTree：rule.json 的 SSoT（AI 编辑入口）──
+let _nodeTree: SparkNodeTree | null = null
+// ── DataSetCrudTool：pagedata.json 的 SSoT（AI 编辑入口）──
+let _crudTool: DataSetCrudTool | null = null
 const pageContainer = ref<HTMLElement | null>(null)
 
 // ── CSS 作用域 ──
@@ -228,6 +237,14 @@ const pageContext: PageContext = buildPageContext({
   pageContainer,
   pageService,
 })
+
+// ── 稳定的 actionCtx（闭包引用不变，无需每次 applyNodeProps 重建）──
+const actionCtx = {
+  getDataSet: () => pds.dataSet,
+  getPageService: () => pageService,
+  getRouter: () => router,
+  callFunc: callPageFunction,
+}
 
 // ==================== 脚本编译 ====================
 
@@ -278,7 +295,7 @@ async function loadNodeProps(pageId: string): Promise<PageConfig> {
  *   1. css    → setScopedCss
  *   2. script → compileFunctions → registerRenderComponents
  *   3. data   → DataSet 初始化 → sparkProvide(PAGE_DATASET)
- *   4. rule   → buildPageChildren → children（驱动模板渲染）
+ *   4. rule   → SparkNodeTree → buildPageChildren → children（驱动模板渲染）
  *   ── loading=false → SparkComponentRenderer 挂载 ──
  *   5. nextTick → __init__ + initAutoSelection
  */
@@ -300,18 +317,16 @@ function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
     ds.setAppServices(appServices)
     ds.setPageRoute(pageRoute)
     sparkProvide(PAGE_DATASET, ds)
+    _crudTool = DataSetCrudTool.fromDataSet(ds)
+  } else {
+    _crudTool = null
   }
 
-  // 4. rule → buildPageChildren → children
-  children.value = buildPageChildren(nodeProps.rule, {
-    callFunc: callPageFunction,
-    actionCtx: {
-      getDataSet: () => pds.dataSet,
-      getPageService: () => pageService,
-      getRouter: () => router,
-      callFunc: callPageFunction,
-    },
+  // 4. rule → SparkNodeTree → buildPageChildren → children
+  _nodeTree = new SparkNodeTree({
+    root: { type: 'spark-page', props: { id: 'spark-page-root' }, children: nodeProps.rule as unknown as SparkNode[] },
   })
+  rebuildChildren()
 }
 
 // ==================== 加载入口 ====================
@@ -357,18 +372,33 @@ async function loadConfig(): Promise<void> {
   }
 }
 
+/**
+ * 从 SparkNodeTree 重建渲染用 children。
+ *
+ * AI 编辑 nodeTree 后调用此方法即可刷新 UI，无需重新加载四文件。
+ */
+function rebuildChildren(): void {
+  if (!_nodeTree) {
+    children.value = []
+    return
+  }
+  const ruleNodes = _nodeTree.root.children ?? []
+  children.value = buildPageChildren(ruleNodes as unknown as import('@spark-view/spark-page-config').RuleConfig[], {
+    callFunc: callPageFunction,
+    actionCtx,
+  })
+}
+
 function requestLoad(): void {
   void loadConfig().catch(e => logger.error('loadConfig 失败', e))
 }
 
 // ==================== 生命周期 ====================
 
-onMounted(() => {
-  requestLoad()
-})
-
 // 页面加载输入 = 页面定位 + 四文件直传输入 + 配置加载器。
-// 这样同 pageId 下的 pageConfig 替换也会触发重载，避免“页面 ID 没变但四文件已更新”时 UI 停留旧状态。
+// immediate: true 替代 onMounted + watch 二合一——loadConfig 是异步流水线，
+// DOM 依赖在 await nextTick() 之后才访问，此时组件已挂载，无需等 onMounted。
+// 同 pageId 下的 pageConfig 替换也会触发重载，避免“页面 ID 没变但四文件已更新”时 UI 停留旧状态。
 watch(
   [
     () => props.pageId,
@@ -385,6 +415,7 @@ watch(
   () => {
     requestLoad()
   },
+  { immediate: true },
 )
 
 // ==================== Expose ====================
@@ -394,6 +425,12 @@ defineExpose({
   loadConfig,
   pageContext,
   get dataSet(): DataSet | null { return pds.dataSet },
+  /** rule.json 的 SSoT 节点树（AI 编辑入口）。页面未加载时为 null。 */
+  get nodeTree(): SparkNodeTree | null { return _nodeTree },
+  /** 从 nodeTree 重建渲染 children。AI 编辑 nodeTree 后调用以刷新 UI。 */
+  rebuildChildren,
+  /** pagedata.json 的 SSoT CRUD 工具（AI 编辑入口）。页面未加载时为 null。 */
+  get crudTool(): DataSetCrudTool | null { return _crudTool },
 })
 </script>
 

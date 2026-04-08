@@ -62,7 +62,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
 
   watch(filterDefaultCollapsedValue, (value) => {
     filtersCollapsed.value = value
-  }, { immediate: true })
+  })
 
   function toggleFiltersCollapsed() {
     if (!filterCollapsibleValue.value) return

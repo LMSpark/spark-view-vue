@@ -115,15 +115,6 @@ export interface ConfigLoaderOptions {
 }
 
 /**
- * 配置验证错误
- */
-export interface ValidationError {
-  field: string
-  message: string
-  value?: unknown
-}
-
-/**
  * 配置加载结果
  */
 export interface ConfigLoadResult<T = unknown> {
@@ -134,7 +125,6 @@ export interface ConfigLoadResult<T = unknown> {
   reason?: string
   source?: 'local' | 'remote'
   timestamp?: number
-  validationErrors?: ValidationError[]
 }
 
 /**
@@ -182,13 +172,4 @@ export interface ConfigLoader {
    * 渲染层可用该客户端注入到 DataSet，以复用认证/租户请求头与拦截器。
    */
   getHttpClient?(): HttpClient
-}
-
-/**
- * 配置版本信息
- */
-export interface ConfigVersion {
-  version: string
-  timestamp: number
-  checksum?: string
 }

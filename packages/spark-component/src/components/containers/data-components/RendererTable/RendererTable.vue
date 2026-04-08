@@ -259,11 +259,11 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => dockedToolbar.value),
+  toolbar: dockedToolbar,
   toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
   toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
   modelPermission,
-  dataSource: computed(() => resolvedView.value),
+  dataSource: resolvedView,
 })
 
 const {
@@ -278,7 +278,7 @@ const {
   activeFilterCount,
   resetFilters,
 } = useTableFilters({
-  filterChildren: computed(() => dockedFilters.value),
+  filterChildren: dockedFilters,
   dataView: resolvedView,
   filterClass: computed(() => getDockProp<string>('r-filter', 'class') ?? readStringAttr('filterClass') ?? ''),
   filterGridColumns: computed(() => getDockProp<number>('r-filter', 'gridColumns') ?? readNumberAttr('filterGridColumns') ?? 24),
@@ -350,13 +350,11 @@ const {
   showActionsRight: showRowActionsRight,
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => {
-    return [...dockedRowActions.value]
-  }),
+  actionConfigs: dockedRowActions,
   actionPosition: computed(() => getDockProp<LateralActionPosition>('r-actions', 'position') ?? legacyRowActionsPositionValue.value ?? 'right'),
   actionClass: computed(() => getDockProp<string>('r-actions', 'class') ?? readStringAttr('rowActionsClass') ?? ''),
   modelPermission,
-  dataSource: computed(() => resolvedView.value),
+  dataSource: resolvedView,
   resolveScope: ({ row, index }) => ({
     row,
     listenerArgs: [row, index],

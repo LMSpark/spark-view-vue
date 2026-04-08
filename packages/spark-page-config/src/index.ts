@@ -16,8 +16,6 @@ export type {
   ConfigLoaderOptions,
   ConfigLoadResult,
   ConfigLoader,
-  ValidationError,
-  ConfigVersion
 } from './types'
 
 // 配置加载器
@@ -30,13 +28,6 @@ export {
   parseScript,
   parseCss,
 } from './loader'
-
-// 验证器
-export {
-  validateRuleConfig,
-  validatePageDataConfig,
-  validateRules
-} from './validator'
 
 // 命名空间 API
 export { SparkPageConfig } from './namespace'

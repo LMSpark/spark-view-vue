@@ -481,4 +481,58 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     await expect(api.editRowById(1, { name: 'Alice-2' })).resolves.toMatchObject({ success: false })
     await expect(api.removeRow(1)).resolves.toMatchObject({ success: false })
   })
+
+  it('r-form field should show correct value via DATA_ROW after initAutoSelection', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'FormFieldValueDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          views: {
+            default: {
+              rows: [{ id: 1, name: '张三' }],
+            },
+          },
+        },
+      },
+    })
+    // 不预设 currentRow，模拟运行时 initAutoSelection 后触发
+
+    const wrapper = mountWithPageDataSet(RendererForm as any, {
+      dataSet: ds,
+      props: {
+        dataKey: 'Users@currentRow',
+      },
+      slots: {
+        default: () => h(FieldText as any, {
+          type: 'r-text',
+          field: 'name',
+          label: '姓名',
+        }),
+      },
+      global: {
+        stubs: {
+          'el-form': ElFormStub,
+          'el-form-item': ElFormItemStub,
+          'el-input': ElInputStub,
+        },
+      },
+    })
+
+    // 此时还没有 currentRow，字段应为空
+    await nextTick()
+    expect(wrapper.find('.el-input-stub').attributes('value')).toBe('')
+
+    // 触发 initAutoSelection（模拟运行时 PageRenderer 行为）
+    ds.initAutoSelection()
+    await nextTick()
+    await nextTick()
+
+    // 字段应显示第一行的值
+    expect(wrapper.find('.el-input-stub').attributes('value')).toBe('张三')
+  })
 })
