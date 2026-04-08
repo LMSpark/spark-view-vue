@@ -180,3 +180,75 @@ function parseEnumFromTypeString(typeStr: string): string[] {
   }
   return values.length >= 2 ? values : []
 }
+
+// ══════════════════════════════════════════════════════════════
+// DevSystem 投影：类型中文标签 + 必填属性
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 从组件描述中提取简短中文标签。
+ *
+ * 规则：取首段连续中文字符，去掉尾部"容器/组件/字段/节点/页面"。
+ * 例："数据表格容器，基于…" → "数据表格"
+ */
+function extractShortLabel(description: string): string {
+  const match = /^([\u4e00-\u9fff]+)/.exec(description)
+  if (!match?.[1]) return ''
+  const label = match[1].replace(/(?:容器|组件|字段|节点|页面)$/, '')
+  return label.length >= 2 ? label : ''
+}
+
+/**
+ * 投影：组件类型 → 中文标签映射。
+ *
+ * 格式为 `[中文] type`，供 DevSystem 下拉框 label 使用。
+ * 无法提取中文标签的组件仅保留 type 本身。
+ */
+export function projectDevTypeLabels(
+  catalog: ComponentCatalog,
+): Record<string, string> {
+  const result: Record<string, string> = {}
+  for (const [type, entry] of Object.entries(catalog.components)) {
+    const label = extractShortLabel(entry.description)
+    result[type] = label.length > 0 ? `[${label}] ${type}` : type
+  }
+  return result
+}
+
+/**
+ * 投影：各组件的必填属性及其默认值。
+ *
+ * 返回 `Record<type, Record<propName, defaultValue>>`，
+ * 选中 type 时一次性填入。
+ */
+export function projectDevRequiredProps(
+  catalog: ComponentCatalog,
+): Record<string, Record<string, unknown>> {
+  const result: Record<string, Record<string, unknown>> = {}
+  for (const [type, entry] of Object.entries(catalog.components)) {
+    const required: Record<string, unknown> = {}
+    for (const prop of entry.props) {
+      if (!prop.required || STRUCT_KEYS.has(prop.name)) continue
+      required[prop.name] = inferDefaultFromPropType(prop.type, prop.default)
+    }
+    if (Object.keys(required).length > 0) {
+      result[type] = required
+    }
+  }
+  return result
+}
+
+/**
+ * 从 prop 类型字符串推断一个合理的默认值。
+ */
+function inferDefaultFromPropType(typeStr: string, declaredDefault?: string): unknown {
+  if (declaredDefault !== undefined) {
+    // 尝试 JSON 解析声明的默认值
+    try { return JSON.parse(declaredDefault) as unknown } catch { /* fall through */ }
+    return declaredDefault
+  }
+  if (typeStr.includes('number')) return 0
+  if (typeStr.includes('boolean')) return false
+  if (typeStr.includes('[]') || typeStr.includes('Array')) return []
+  return ''
+}

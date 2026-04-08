@@ -381,9 +381,7 @@ async function startApp() {
         const ModuleContextBadge = (await import('./components/ModuleContextBadge.vue')).default
         Spark.register('r-module-context-badge', ModuleContextBadge)
 
-        // 🤖 注册 AI Studio 组件（仅保留 Spark registry 单一路径）
-        const AiStudioPanel = (await import('./views/app/ai-studio/AiStudioPanel.vue')).default
-        Spark.register('ai-studio-panel', AiStudioPanel)
+        // ai-studio-panel 由 virtual:spark-components 自动扫描注册
         startupLogger.info('✅ AI Studio 组件注册完成')
       },
       

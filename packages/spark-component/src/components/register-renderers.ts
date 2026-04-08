@@ -1,192 +1,159 @@
 /**
  * 一键注册所有内置 Renderer 容器 + 字段组件到 SPARK 注册表。
  *
- * 架构：
- *   Sync   — 首屏必需：数据容器 / 非数据容器 / 布局 / 核心字段 / Passthrough
- *   Async  — 异步 `() => import()` 按需加载：低频容器 / 扩展字段 / 展示组件
+ * 架构：全部按需 `() => import()` 动态加载，Spark.register 检测到函数自动包装
+ * defineAsyncComponent。首屏不再静态导入任何组件模块，由 Vite 按页面实际用量拆 chunk。
  *
- * Passthrough 组件由 barrel (`non-data-components/index`) 统一创建，
- * 此文件仅导入实例，不再本地调用 `createPassthrough()`。
+ * Passthrough 组件（工厂生成）通过 barrel index 的命名导出按需引用。
+ *
+ * display-image / display-calendar / display-countdown / display-icon / ai-studio-panel
+ * 由 virtual:spark-components 自动扫描注册（文件名 = 注册名），无需在此重复。
  */
 import { Spark } from '../system/spark.js'
 
-// ── 数据容器 ──
-import {
-  RendererTable, RendererForm, RendererDetail, RendererTree, RendererList,
-} from './containers/data-components/index.js'
+type AsyncEntry = readonly [string, () => Promise<{ default: unknown }>]
 
-// ── Dock ──
-import {
-  DockActions, DockFilter, DockEditor, DockHeader, DockFooter, DockTail,
-} from './containers/docks/index.js'
+/** 通过 barrel 命名导出的异步加载辅助 */
+const fromBarrel = <T>(
+  loader: () => Promise<T>,
+  key: keyof T,
+): (() => Promise<{ default: unknown }>) =>
+  () => loader().then(m => ({ default: m[key] as unknown }))
 
-// ── 内置操作按钮 ──
-import BuiltinActionButton from './containers/BuiltinActionButton.vue'
+// ── barrel 异步工厂 ──
+const dataContainers = () => import('./containers/data-components/index.js')
+const docks = () => import('./containers/docks/index.js')
+const nonDataContainers = () => import('./containers/non-data-components/index.js')
+const dataFields = () => import('./fields/data-components/index.js')
+const nonDataFields = () => import('./fields/non-data-components/index.js')
+const dataDisplay = () => import('./display/data-components/index.js')
+const nonDataDisplay = () => import('./display/non-data-components/index.js')
 
-// ── 非数据容器 + 布局 + Passthrough ──
-import {
-  RendererSection, RendererToolbar, RendererTabs, RendererCollapse,
-  RendererDialog, RendererDrawer, RendererSteps, RendererButton, RendererLink,
-  RendererCard, RendererSpace, RendererDivider, RendererDropdown,
-  RendererTooltip, RendererPopover,
-  RendererButtonGroup, RendererContainer, RendererMain, RendererAside,
-  RendererLayoutHeader, RendererLayoutFooter, RendererRow, RendererCol,
-  RendererAffix, RendererBacktop, RendererScrollbar,
-  RendererCarousel, RendererCarouselItem, RendererWatermark,
-} from './containers/non-data-components/index.js'
+const ALL_COMPONENTS: AsyncEntry[] = [
+  // ── 数据容器 ──
+  ['r-table',   fromBarrel(dataContainers, 'RendererTable')],
+  ['r-form',    fromBarrel(dataContainers, 'RendererForm')],
+  ['r-detail',  fromBarrel(dataContainers, 'RendererDetail')],
+  ['r-tree',    fromBarrel(dataContainers, 'RendererTree')],
+  ['r-list',    fromBarrel(dataContainers, 'RendererList')],
 
-// ── 核心字段 ──
-import {
-  FieldText, FieldTextarea, FieldNumber, FieldDate, FieldSelect,
-  FieldMultiSelect, FieldRadio, FieldCheckbox, FieldCheckboxGroup, FieldSwitch,
-} from './fields/data-components/index.js'
+  // ── Dock ──
+  ['r-actions', fromBarrel(docks, 'DockActions')],
+  ['r-filter',  fromBarrel(docks, 'DockFilter')],
+  ['r-editor',  fromBarrel(docks, 'DockEditor')],
+  ['r-header',  fromBarrel(docks, 'DockHeader')],
+  ['r-footer',  fromBarrel(docks, 'DockFooter')],
+  ['r-tail',    fromBarrel(docks, 'DockTail')],
 
-// ── 非数据字段 ──
-import {
-  FieldContextRenderer, FieldTreeNodeSummary,
-} from './fields/non-data-components/index.js'
+  // ── 内置操作 ──
+  ['builtin-action', () => import('./containers/BuiltinActionButton.vue')],
 
-// ── 核心展示 ──
-import {
-  DisplayText, DisplayTag, DisplayPagination, DisplayStatistic,
-} from './display/data-components/index.js'
-import { DisplayAlert } from './display/non-data-components/index.js'
+  // ── 非数据容器 ──
+  ['r-section',  fromBarrel(nonDataContainers, 'RendererSection')],
+  ['r-block',    fromBarrel(nonDataContainers, 'RendererSection')],
+  ['r-toolbar',  fromBarrel(nonDataContainers, 'RendererToolbar')],
+  ['r-menu',     fromBarrel(nonDataContainers, 'RendererToolbar')],
+  ['r-tabs',     fromBarrel(nonDataContainers, 'RendererTabs')],
+  ['r-collapse', fromBarrel(nonDataContainers, 'RendererCollapse')],
+  ['r-dialog',   fromBarrel(nonDataContainers, 'RendererDialog')],
+  ['r-drawer',   fromBarrel(nonDataContainers, 'RendererDrawer')],
+  ['r-steps',    fromBarrel(nonDataContainers, 'RendererSteps')],
+  ['r-button',   fromBarrel(nonDataContainers, 'RendererButton')],
+  ['r-link',     fromBarrel(nonDataContainers, 'RendererLink')],
+  ['r-popconfirm',  fromBarrel(nonDataContainers, 'RendererPopconfirm')],
+  ['r-page-header', fromBarrel(nonDataContainers, 'RendererPageHeader')],
+  ['r-tour',        fromBarrel(nonDataContainers, 'RendererTour')],
+  ['r-anchor',      fromBarrel(nonDataContainers, 'RendererAnchor')],
+  ['r-anchor-link', fromBarrel(nonDataContainers, 'RendererAnchorLink')],
 
-// ── 支持组件（无 barrel）──
-import SparkCodeEditor from './support/SparkCodeEditor.vue'
-import SparkJsonEditor from './support/SparkJsonEditor.vue'
+  // ── 布局 ──
+  ['r-card',     fromBarrel(nonDataContainers, 'RendererCard')],
+  ['r-space',    fromBarrel(nonDataContainers, 'RendererSpace')],
+  ['r-divider',  fromBarrel(nonDataContainers, 'RendererDivider')],
+  ['r-dropdown', fromBarrel(nonDataContainers, 'RendererDropdown')],
+  ['r-tooltip',  fromBarrel(nonDataContainers, 'RendererTooltip')],
+  ['r-popover',  fromBarrel(nonDataContainers, 'RendererPopover')],
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 注册表
-// ═══════════════════════════════════════════════════════════════════════════════
+  // ── Passthrough（barrel 工厂实例）──
+  ['r-button-group',   fromBarrel(nonDataContainers, 'RendererButtonGroup')],
+  ['r-container',      fromBarrel(nonDataContainers, 'RendererContainer')],
+  ['r-main',           fromBarrel(nonDataContainers, 'RendererMain')],
+  ['r-aside',          fromBarrel(nonDataContainers, 'RendererAside')],
+  ['r-layout-header',  fromBarrel(nonDataContainers, 'RendererLayoutHeader')],
+  ['r-layout-footer',  fromBarrel(nonDataContainers, 'RendererLayoutFooter')],
+  ['r-row',            fromBarrel(nonDataContainers, 'RendererRow')],
+  ['r-col',            fromBarrel(nonDataContainers, 'RendererCol')],
+  ['r-affix',          fromBarrel(nonDataContainers, 'RendererAffix')],
+  ['r-backtop',        fromBarrel(nonDataContainers, 'RendererBacktop')],
+  ['r-scrollbar',      fromBarrel(nonDataContainers, 'RendererScrollbar')],
+  ['r-carousel',       fromBarrel(nonDataContainers, 'RendererCarousel')],
+  ['r-carousel-item',  fromBarrel(nonDataContainers, 'RendererCarouselItem')],
+  ['r-watermark',      fromBarrel(nonDataContainers, 'RendererWatermark')],
 
-type RegisteredComponent = Parameters<typeof Spark.register>[1]
-type RegistrationEntry = readonly [string, RegisteredComponent]
+  // ── 核心字段 ──
+  ['r-text',           fromBarrel(dataFields, 'FieldText')],
+  ['r-textarea',       fromBarrel(dataFields, 'FieldTextarea')],
+  ['r-number',         fromBarrel(dataFields, 'FieldNumber')],
+  ['r-date',           fromBarrel(dataFields, 'FieldDate')],
+  ['r-select',         fromBarrel(dataFields, 'FieldSelect')],
+  ['r-multi-select',   fromBarrel(dataFields, 'FieldMultiSelect')],
+  ['r-radio',          fromBarrel(dataFields, 'FieldRadio')],
+  ['r-checkbox',       fromBarrel(dataFields, 'FieldCheckbox')],
+  ['r-checkbox-group', fromBarrel(dataFields, 'FieldCheckboxGroup')],
+  ['r-switch',         fromBarrel(dataFields, 'FieldSwitch')],
 
-/** 同步注册：核心 + Passthrough */
-const CORE_COMPONENTS: RegistrationEntry[] = [
-  // 数据容器
-  ['r-table', RendererTable],
-  ['r-form', RendererForm],
-  ['r-detail', RendererDetail],
-  ['r-tree', RendererTree],
-  ['r-list', RendererList],
-  // Dock
-  ['r-actions', DockActions],
-  ['r-filter', DockFilter],
-  ['r-editor', DockEditor],
-  ['r-header', DockHeader],
-  ['r-footer', DockFooter],
-  ['r-tail', DockTail],
-  // 内置操作
-  ['builtin-action', BuiltinActionButton],
-  // 核心非数据容器
-  ['r-section', RendererSection],
-  ['r-block', RendererSection],
-  ['r-toolbar', RendererToolbar],
-  ['r-menu', RendererToolbar],
-  ['r-tabs', RendererTabs],
-  ['r-collapse', RendererCollapse],
-  ['r-dialog', RendererDialog],
-  ['r-drawer', RendererDrawer],
-  ['r-steps', RendererSteps],
-  ['r-button', RendererButton],
-  ['r-link', RendererLink],
-  // 核心布局
-  ['r-card', RendererCard],
-  ['r-space', RendererSpace],
-  ['r-divider', RendererDivider],
-  ['r-dropdown', RendererDropdown],
-  ['r-tooltip', RendererTooltip],
-  ['r-popover', RendererPopover],
-  // 核心字段
-  ['r-text', FieldText],
-  ['r-textarea', FieldTextarea],
-  ['r-number', FieldNumber],
-  ['r-date', FieldDate],
-  ['r-select', FieldSelect],
-  ['r-multi-select', FieldMultiSelect],
-  ['r-radio', FieldRadio],
-  ['r-checkbox', FieldCheckbox],
-  ['r-checkbox-group', FieldCheckboxGroup],
-  ['r-switch', FieldSwitch],
-  // 核心展示
-  ['r-text-display', DisplayText],
-  ['r-tag', DisplayTag],
-  ['r-pagination', DisplayPagination],
-  ['r-statistic', DisplayStatistic],
-  ['r-alert', DisplayAlert],
-  // 非数据字段
-  ['r-column-group', FieldContextRenderer],
-  ['r-tree-node-summary', FieldTreeNodeSummary],
-  // 支持
-  ['code-editor', SparkCodeEditor],
-  ['json-editor', SparkJsonEditor],
-  // Passthrough（barrel 工厂实例）
-  ['r-button-group', RendererButtonGroup],
-  ['r-container', RendererContainer],
-  ['r-main', RendererMain],
-  ['r-aside', RendererAside],
-  ['r-layout-header', RendererLayoutHeader],
-  ['r-layout-footer', RendererLayoutFooter],
-  ['r-row', RendererRow],
-  ['r-col', RendererCol],
-  ['r-affix', RendererAffix],
-  ['r-backtop', RendererBacktop],
-  ['r-scrollbar', RendererScrollbar],
-  ['r-carousel', RendererCarousel],
-  ['r-carousel-item', RendererCarouselItem],
-  ['r-watermark', RendererWatermark],
-]
-
-/** Tier 2: 异步按需注册 — Spark.register 检测到 function 自动包装 defineAsyncComponent */
-const ASYNC_COMPONENTS: ReadonlyArray<readonly [string, () => Promise<{ default: unknown }>]> = [
-  // 扩展容器
-  ['r-popconfirm', () => import('./containers/non-data-components/RendererPopconfirm.vue')],
-  ['r-page-header', () => import('./containers/non-data-components/RendererPageHeader.vue')],
-  ['r-tour', () => import('./containers/non-data-components/RendererTour.vue')],
-  ['r-anchor', () => import('./containers/non-data-components/RendererAnchor.vue')],
-  ['r-anchor-link', () => import('./containers/non-data-components/RendererAnchorLink.vue')],
-  // 扩展字段
-  ['r-html-editor', () => import('./fields/data-components/FieldHtmlEditor.vue')],
-  ['r-slider', () => import('./fields/data-components/FieldSlider.vue')],
-  ['r-rate', () => import('./fields/data-components/FieldRate.vue')],
-  ['r-color', () => import('./fields/data-components/FieldColor.vue')],
-  ['r-icon', () => import('./fields/data-components/FieldIcon.vue')],
-  ['r-image', () => import('./fields/data-components/FieldImage.vue')],
-  ['r-file-path', () => import('./fields/data-components/FieldFilePath.vue')],
-  ['r-file-browser', () => import('./fields/data-components/FieldFileBrowser.vue')],
-  ['r-upload', () => import('./fields/data-components/FieldUpload.vue')],
-  ['r-entity-picker', () => import('./fields/data-components/FieldEntityPicker.vue')],
-  ['r-user-picker', () => import('./fields/data-components/FieldUserPicker.vue')],
-  ['r-dept-picker', () => import('./fields/data-components/FieldDeptPicker.vue')],
+  // ── 扩展字段 ──
+  ['r-html-editor',    () => import('./fields/data-components/FieldHtmlEditor.vue')],
+  ['r-slider',         () => import('./fields/data-components/FieldSlider.vue')],
+  ['r-rate',           () => import('./fields/data-components/FieldRate.vue')],
+  ['r-color',          () => import('./fields/data-components/FieldColor.vue')],
+  ['r-icon',           () => import('./fields/data-components/FieldIcon.vue')],
+  ['r-image',          () => import('./fields/data-components/FieldImage.vue')],
+  ['r-file-path',      () => import('./fields/data-components/FieldFilePath.vue')],
+  ['r-file-browser',   () => import('./fields/data-components/FieldFileBrowser.vue')],
+  ['r-upload',         () => import('./fields/data-components/FieldUpload.vue')],
+  ['r-entity-picker',  () => import('./fields/data-components/FieldEntityPicker.vue')],
+  ['r-user-picker',    () => import('./fields/data-components/FieldUserPicker.vue')],
+  ['r-dept-picker',    () => import('./fields/data-components/FieldDeptPicker.vue')],
   ['r-product-picker', () => import('./fields/data-components/FieldProductPicker.vue')],
-  ['r-cascader', () => import('./fields/data-components/FieldCascader.vue')],
-  ['r-tree-select', () => import('./fields/data-components/FieldTreeSelect.vue')],
-  ['r-transfer', () => import('./fields/data-components/FieldTransfer.vue')],
-  ['r-segmented', () => import('./fields/data-components/FieldSegmented.vue')],
-  ['r-check-tag', () => import('./fields/data-components/FieldCheckTag.vue')],
-  ['r-mention', () => import('./fields/data-components/FieldMention.vue')],
-  ['r-time-picker', () => import('./fields/data-components/FieldTimePicker.vue')],
-  ['r-time-select', () => import('./fields/data-components/FieldTimeSelect.vue')],
-  ['r-autocomplete', () => import('./fields/data-components/FieldAutocomplete.vue')],
-  // 扩展展示
-  ['r-progress', () => import('./display/data-components/DisplayProgress.vue')],
-  ['r-badge', () => import('./display/data-components/DisplayBadge.vue')],
-  ['r-avatar', () => import('./display/data-components/DisplayAvatar.vue')],
-  ['r-descriptions', () => import('./display/non-data-components/DisplayDescriptions.vue')],
+  ['r-cascader',       () => import('./fields/data-components/FieldCascader.vue')],
+  ['r-tree-select',    () => import('./fields/data-components/FieldTreeSelect.vue')],
+  ['r-transfer',       () => import('./fields/data-components/FieldTransfer.vue')],
+  ['r-segmented',      () => import('./fields/data-components/FieldSegmented.vue')],
+  ['r-check-tag',      () => import('./fields/data-components/FieldCheckTag.vue')],
+  ['r-mention',        () => import('./fields/data-components/FieldMention.vue')],
+  ['r-time-picker',    () => import('./fields/data-components/FieldTimePicker.vue')],
+  ['r-time-select',    () => import('./fields/data-components/FieldTimeSelect.vue')],
+  ['r-autocomplete',   () => import('./fields/data-components/FieldAutocomplete.vue')],
+
+  // ── 非数据字段 ──
+  ['r-column-group',      fromBarrel(nonDataFields, 'FieldContextRenderer')],
+  ['r-tree-node-summary', fromBarrel(nonDataFields, 'FieldTreeNodeSummary')],
+
+  // ── 核心展示 ──
+  ['r-text-display', fromBarrel(dataDisplay, 'DisplayText')],
+  ['r-tag',          fromBarrel(dataDisplay, 'DisplayTag')],
+  ['r-pagination',   fromBarrel(dataDisplay, 'DisplayPagination')],
+  ['r-statistic',    fromBarrel(dataDisplay, 'DisplayStatistic')],
+  ['r-alert',        fromBarrel(nonDataDisplay, 'DisplayAlert')],
+
+  // ── 扩展展示 ──
+  ['r-progress',          fromBarrel(dataDisplay, 'DisplayProgress')],
+  ['r-badge',             fromBarrel(dataDisplay, 'DisplayBadge')],
+  ['r-avatar',            fromBarrel(dataDisplay, 'DisplayAvatar')],
+  ['r-descriptions',      () => import('./display/non-data-components/DisplayDescriptions.vue')],
   ['r-descriptions-item', () => import('./display/non-data-components/DisplayDescriptionsItem.vue')],
-  ['r-timeline', () => import('./display/non-data-components/DisplayTimeline.vue')],
-  ['r-timeline-item', () => import('./display/non-data-components/DisplayTimelineItem.vue')],
-  ['r-empty', () => import('./display/non-data-components/DisplayEmpty.vue')],
-  ['r-result', () => import('./display/non-data-components/DisplayResult.vue')],
-  ['r-breadcrumb', () => import('./display/non-data-components/DisplayBreadcrumb.vue')],
-  ['r-breadcrumb-item', () => import('./display/non-data-components/DisplayBreadcrumbItem.vue')],
-  ['r-skeleton', () => import('./display/non-data-components/DisplaySkeleton.vue')],
-  ['display-image', () => import('./display/data-components/DisplayImage.vue')],
-  ['display-calendar', () => import('./display/non-data-components/DisplayCalendar.vue')],
-  ['display-countdown', () => import('./display/non-data-components/DisplayCountdown.vue')],
-  ['display-icon', () => import('./display/non-data-components/DisplayIcon.vue')],
+  ['r-timeline',          () => import('./display/non-data-components/DisplayTimeline.vue')],
+  ['r-timeline-item',     () => import('./display/non-data-components/DisplayTimelineItem.vue')],
+  ['r-empty',             () => import('./display/non-data-components/DisplayEmpty.vue')],
+  ['r-result',            () => import('./display/non-data-components/DisplayResult.vue')],
+  ['r-breadcrumb',        () => import('./display/non-data-components/DisplayBreadcrumb.vue')],
+  ['r-breadcrumb-item',   () => import('./display/non-data-components/DisplayBreadcrumbItem.vue')],
+  ['r-skeleton',          () => import('./display/non-data-components/DisplaySkeleton.vue')],
+
+  // ── 支持 ──
+  ['code-editor', () => import('./support/SparkCodeEditor.vue')],
+  ['json-editor', () => import('./support/SparkJsonEditor.vue')],
 ]
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -194,12 +161,7 @@ const ASYNC_COMPONENTS: ReadonlyArray<readonly [string, () => Promise<{ default:
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function registerAllRenderers(): void {
-  // Sync — 核心 + Passthrough
-  for (const [type, component] of CORE_COMPONENTS) {
-    Spark.register(type, component)
-  }
-  // Async — Spark.register 检测到 function 自动包装 defineAsyncComponent
-  for (const [type, loader] of ASYNC_COMPONENTS) {
+  for (const [type, loader] of ALL_COMPONENTS) {
     Spark.register(type, loader)
   }
 }

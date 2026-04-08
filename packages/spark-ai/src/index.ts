@@ -104,8 +104,8 @@ export type {
   SharedTypeDefinition,
 } from './catalog/types'
 
-// DevSystem 预计算投影（type 下拉 + 属性名 + 枚举值）
-export { DEV_TYPES, DEV_PROP_NAMES, DEV_PROP_ENUMS } from './catalog/catalog-dev-exports'
+// DevSystem 预计算投影（type 下拉 + 属性名 + 枚举值 + 中文标签 + 必填属性）
+export { DEV_TYPES, DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } from './catalog/catalog-dev-exports'
 
 // ── Stills Catalog (Lightweight) ─────────────────────────────────────────────
 export type { StillsCatalog, StillsCatalogRegistry, StillsComponentEntry, StillsPropEntry } from './catalog/stills-catalog-types'

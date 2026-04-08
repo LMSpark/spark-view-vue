@@ -3,8 +3,9 @@
 // ══════════════════════════════════════════════════════════════
 
 import type { JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '@spark-view/spark-component'
+import type { AutoPopulateEntry } from '@spark-view/spark-component'
 import { ensureUniqueObjectKey } from '@spark-view/spark-component'
-import { DEV_PROP_NAMES, DEV_PROP_ENUMS } from '@spark-view/spark-ai'
+import { DEV_PROP_NAMES, DEV_PROP_ENUMS, DEV_TYPE_LABELS, DEV_REQUIRED_PROPS } from '@spark-view/spark-ai'
 
 // ── SparkNode 结构键 ─────────────────────────────────────────
 //
@@ -18,15 +19,20 @@ const SPARK_NODE_STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])
 
 /**
  * 判断路径是否指向一个 SparkNode 的根级位置。
- * 根 $ 是 SparkNode，children[N] 也是 SparkNode。
+ * rule.json 顶层是 SparkNode 数组，因此：
+ * - [] → SparkNode（当根文档本身是单节点时）
+ * - [N] → SparkNode（根级数组项）
+ * - [..., 'children', N] → SparkNode（嵌套子节点）
  */
 function isSparkNodeRoot(path: JsonPath): boolean {
   if (path.length === 0) return true
-  // $.children[0], $.children[0].children[1], ...
-  // 模式：最后两段是 'children' + number
   const last = path[path.length - 1]
+  if (typeof last !== 'number') return false
+  // 根级数组项：path = [N]
+  if (path.length === 1) return true
+  // 嵌套：最后两段是 'children' + number
   const prev = path[path.length - 2]
-  return typeof last === 'number' && prev === 'children'
+  return prev === 'children'
 }
 
 /**
@@ -62,6 +68,83 @@ function isPropsObject(path: JsonPath): boolean {
 }
 
 // ── 策略实现 ─────────────────────────────────────────────────
+
+// h(type, props, children) — type 可以是组件也可以是 HTML 元素
+// 常用 HTML 元素 + 目录缺失标签的组件（统一 [中文] type 格式）
+const EXTRA_TYPE_LABELS: Record<string, string> = {
+  // ── HTML 元素 ──
+  div: '[块容器] div',
+  span: '[行内容器] span',
+  p: '[段落] p',
+  a: '[链接] a',
+  img: '[图片] img',
+  h1: '[一级标题] h1',
+  h2: '[二级标题] h2',
+  h3: '[三级标题] h3',
+  h4: '[四级标题] h4',
+  ul: '[无序列表] ul',
+  ol: '[有序列表] ol',
+  li: '[列表项] li',
+  table: '[表格] table',
+  thead: '[表头] thead',
+  tbody: '[表体] tbody',
+  tr: '[表行] tr',
+  th: '[表头单元格] th',
+  td: '[表单元格] td',
+  form: '[表单] form',
+  input: '[输入框] input',
+  button: '[按钮] button',
+  label: '[标签] label',
+  textarea: '[文本域] textarea',
+  select: '[选择框] select',
+  option: '[选项] option',
+  section: '[区块] section',
+  header: '[页头] header',
+  footer: '[页脚] footer',
+  nav: '[导航] nav',
+  main: '[主体] main',
+  aside: '[侧栏] aside',
+  article: '[文章] article',
+  pre: '[预格式] pre',
+  code: '[代码] code',
+  br: '[换行] br',
+  hr: '[分隔线] hr',
+  i: '[图标/斜体] i',
+  strong: '[加粗] strong',
+  em: '[强调] em',
+  template: '[模板] template',
+  slot: '[插槽] slot',
+  component: '[动态组件] component',
+  transition: '[过渡] transition',
+  'transition-group': '[过渡组] transition-group',
+  'keep-alive': '[缓存] keep-alive',
+  teleport: '[传送] teleport',
+  // ── 目录中缺少中文标签的组件 ──
+  'nav-icon': '[导航图标] nav-icon',
+  'module-context-badge': '[模块徽章] module-context-badge',
+  'icon-picker': '[图标选择器] icon-picker',
+  'error-fallback': '[错误回退] error-fallback',
+  'ai-chat-widget': '[AI对话挂件] ai-chat-widget',
+  'ai-chat-panel': '[AI对话面板] ai-chat-panel',
+  'ai-assistant-hub': '[AI助手中心] ai-assistant-hub',
+  'template-dsl-demo': '[模板DSL演示] template-dsl-demo',
+  'ai-studio-panel': '[AI工作室] ai-studio-panel',
+  'spark-json-editor': '[JSON编辑器] spark-json-editor',
+  'json-tree-editor': '[JSON树编辑器] json-tree-editor',
+  'r-column-group': '[分组列] r-column-group',
+}
+
+// 预计算 type 下拉选项（带中文标签），惰性缓存
+let _typeLabelsCache: Array<{ label: string; value: string }> | null = null
+function getTypeLabelOptions(): Array<{ label: string; value: string }> {
+  if (_typeLabelsCache !== null) return _typeLabelsCache
+  // 合并：EXTRA 补齐在前（HTML + 缺标签组件），组件目录覆盖在后
+  const merged = { ...EXTRA_TYPE_LABELS, ...DEV_TYPE_LABELS }
+  _typeLabelsCache = Object.entries(merged)
+    .map(([value, label]) => ({ label, value }))
+    .sort((a, b) => a.value.localeCompare(b.value))
+  return _typeLabelsCache
+}
 
 function isProtected(path: JsonPath): boolean {
   // type 字段不可删（SparkNode 必须有 type）
@@ -195,5 +278,32 @@ export const rulePolicy: JsonTreePolicy = {
       }
     }
     return merged.size > 0 ? [...merged] : undefined
+  },
+  getValueLabels(path: JsonPath): Array<{ label: string; value: string }> | undefined {
+    if (isTypeField(path)) return getTypeLabelOptions()
+    return undefined
+  },
+  getAutoPopulate(changedPath: JsonPath, newValue: JsonValue): AutoPopulateEntry[] | undefined {
+    // 仅在 type 字段变更时触发
+    if (!isTypeField(changedPath) || typeof newValue !== 'string') return undefined
+    const componentType = newValue
+    // 目标是 type 字段所在的 SparkNode 对象
+    const sparkNodePath = changedPath.slice(0, -1)
+
+    // 始终确保 props 存在
+    const propsEntries: Record<string, JsonValue> = {}
+
+    // 注入必填属性默认值
+    const requiredProps = DEV_REQUIRED_PROPS[componentType]
+    if (requiredProps !== undefined) {
+      for (const [name, value] of Object.entries(requiredProps)) {
+        propsEntries[name] = value as JsonValue
+      }
+    }
+
+    return [{
+      targetPath: sparkNodePath,
+      entries: { props: propsEntries as JsonValue },
+    }]
   },
 }

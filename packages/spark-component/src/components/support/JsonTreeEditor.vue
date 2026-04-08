@@ -101,10 +101,12 @@
                   :model-value="row.stringValue"
                   size="small"
                   filterable
+                  allow-create
+                  default-first-option
                   clearable
                   @update:model-value="handleStringUpdate(row, $event)"
                 >
-                  <el-option v-for="option in row._schemaEnumValues" :key="option" :label="option" :value="option" />
+                  <el-option v-for="option in row._schemaEnumValues" :key="option" :label="row._schemaEnumLabels[option] ?? option" :value="option" />
                 </el-select>
                 <el-input
                   v-else-if="isRowActive(row)"
@@ -190,6 +192,7 @@ import { useBasicFieldState } from '../fields/data-components/composables/useBas
 import {
   addChildNode,
   addSiblingNode,
+  applyAutoPopulatePatches,
   buildTreeModel,
   deleteNode,
   exportJsonDocument,
@@ -227,6 +230,7 @@ interface DisplayRow extends TreeDisplayNode {
   _schemaDescription: string
   _schemaRequired: boolean
   _schemaEnumValues: string[]
+  _schemaEnumLabels: Record<string, string>
 }
 
 // ── Props ─────────────────────────────────────────────────────
@@ -539,10 +543,26 @@ function enrichRow(
   display._schemaTitle = schemaInfo.title
   display._schemaDescription = schemaInfo.description
   display._schemaRequired = schemaInfo.required
-  // Schema enum 优先；若 Schema 无 enum，回退到 policy.getValueOptions
-  display._schemaEnumValues = schemaInfo.enumValues.length > 0
-    ? schemaInfo.enumValues
-    : (policyOptions ?? [])
+  // 优先级：getValueLabels > Schema enum > getValueOptions
+  const labeledOptions = policy.getValueLabels?.(row.path)
+  if (labeledOptions !== undefined && labeledOptions.length > 0) {
+    display._schemaEnumValues = labeledOptions.map(o => o.value)
+    const labels: Record<string, string> = {}
+    for (const o of labeledOptions) labels[o.value] = o.label
+    display._schemaEnumLabels = labels
+  } else {
+    display._schemaEnumValues = schemaInfo.enumValues.length > 0
+      ? schemaInfo.enumValues
+      : (policyOptions ?? [])
+    display._schemaEnumLabels = {}
+  }
+  // 确保当前值始终在选项中（处理目录外的自定义类型如 div、el-card）
+  if (row.type === 'string' && display._schemaEnumValues.length > 0) {
+    const sv = row.value as string | undefined
+    if (sv !== undefined && sv.length > 0 && !display._schemaEnumValues.includes(sv)) {
+      display._schemaEnumValues = [sv, ...display._schemaEnumValues]
+    }
+  }
   return display
 }
 
@@ -593,7 +613,12 @@ function handleTypeChange(row: DisplayRow, value: JsonNodeType): void {
 }
 
 function handleStringUpdate(row: DisplayRow, value: string | undefined): void {
-  mutateModel((current) => updateNodeValue(current, row.id, value ?? ''))
+  const v = value ?? ''
+  mutateModel(
+    (current) => updateNodeValue(current, row.id, v),
+    row.path,
+    v,
+  )
 }
 
 function handleStringChange(row: DisplayRow, value: string | number): void {
@@ -621,14 +646,33 @@ function handleDelete(row: DisplayRow): void {
   mutateModel((current) => deleteNode(current, row.id, mergedPolicy.value))
 }
 
-function mutateModel(mutator: (current: TreeModel) => MutationResult): void {
+function mutateModel(
+  mutator: (current: TreeModel) => MutationResult,
+  changedPath?: JsonPath,
+  changedValue?: JsonValue,
+): void {
   if (!isEditable.value) return
   const result = mutator(treeModelRef.value)
   // uid 稳定标识，直接用作焦点/展开行，无数组索引偏移问题
   currentRowId.value = result.focusId
   pendingExpandRowId = result.expandId
-  treeModelRef.value = result.model
-  const nextDocument = exportJsonDocument(result.model)
+
+  let model = result.model
+
+  // ── 自动填充副作用 ──────────────────────────────────
+  if (changedPath !== undefined && changedValue !== undefined) {
+    const patches = mergedPolicy.value.getAutoPopulate?.(changedPath, changedValue)
+    if (patches !== undefined && patches.length > 0) {
+      const doc = exportJsonDocument(model)
+      if (applyAutoPopulatePatches(doc, patches)) {
+        captureTreeState()
+        model = buildTreeModel(doc, mergedPolicy.value)
+      }
+    }
+  }
+
+  treeModelRef.value = model
+  const nextDocument = exportJsonDocument(model)
   const nextText = serializeJsonDocument(nextDocument)
   parseError.value = null
   lastEmittedModelValue = nextText

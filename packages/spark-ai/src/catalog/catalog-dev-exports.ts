@@ -6,7 +6,7 @@
  */
 
 import type { ComponentCatalog } from './types'
-import { projectDevTypes, projectDevPropNames, projectDevPropEnums } from './catalog-projections'
+import { projectDevTypes, projectDevPropNames, projectDevPropEnums, projectDevTypeLabels, projectDevRequiredProps } from './catalog-projections'
 import catalogJson from './component-catalog.json'
 
 const catalog = catalogJson as ComponentCatalog
@@ -14,3 +14,5 @@ const catalog = catalogJson as ComponentCatalog
 export const DEV_TYPES: string[] = projectDevTypes(catalog)
 export const DEV_PROP_NAMES: Record<string, string[]> = projectDevPropNames(catalog)
 export const DEV_PROP_ENUMS: Record<string, Record<string, string[]>> = projectDevPropEnums(catalog)
+export const DEV_TYPE_LABELS: Record<string, string> = projectDevTypeLabels(catalog)
+export const DEV_REQUIRED_PROPS: Record<string, Record<string, unknown>> = projectDevRequiredProps(catalog)

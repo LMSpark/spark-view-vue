@@ -132,6 +132,21 @@ export interface JsonTreePolicy {
   createDefaultObjectValue?(parentPath: JsonPath, key: string): JsonValue
   /** 返回该路径的可选值列表（用于下拉选择，优先级低于 Schema enum） */
   getValueOptions?(path: JsonPath): string[] | undefined
+  /** 返回该路径的带标签下拉选项。优先级最高：getValueLabels > Schema enum > getValueOptions */
+  getValueLabels?(path: JsonPath): Array<{ label: string; value: string }> | undefined
+  /** 值变更后需要自动填充到文档的补丁。返回的条目中已有的键不会被覆盖 */
+  getAutoPopulate?(changedPath: JsonPath, newValue: JsonValue): AutoPopulateEntry[] | undefined
+}
+
+/**
+ * 自动填充条目：在 targetPath 指向的对象上合并 entries 键值对。
+ * - 若 targetPath 处不是 object，跳过
+ * - 若某 key 已存在且新旧值都是 object，递归一层合并（仅补缺）
+ * - 若某 key 已存在且不都是 object，跳过（不覆盖）
+ */
+export interface AutoPopulateEntry {
+  targetPath: JsonPath
+  entries: Record<string, JsonValue>
 }
 
 // ════════════════════════════════════════════════════════════
@@ -636,6 +651,8 @@ const DEFAULT_POLICY: ResolvedPolicy = {
   createDefaultArrayItem: () => '',
   createDefaultObjectValue: () => '',
   getValueOptions: () => undefined,
+  getValueLabels: () => undefined,
+  getAutoPopulate: () => undefined,
 }
 
 function resolvePolicy(partial?: Partial<JsonTreePolicy>): ResolvedPolicy {
@@ -649,6 +666,8 @@ function resolvePolicy(partial?: Partial<JsonTreePolicy>): ResolvedPolicy {
     createDefaultArrayItem: partial.createDefaultArrayItem ?? DEFAULT_POLICY.createDefaultArrayItem,
     createDefaultObjectValue: partial.createDefaultObjectValue ?? DEFAULT_POLICY.createDefaultObjectValue,
     getValueOptions: partial.getValueOptions ?? DEFAULT_POLICY.getValueOptions,
+    getValueLabels: partial.getValueLabels ?? DEFAULT_POLICY.getValueLabels,
+    getAutoPopulate: partial.getAutoPopulate ?? DEFAULT_POLICY.getAutoPopulate,
   }
 }
 
@@ -723,6 +742,57 @@ export function getValueAtJsonPath(root: JsonDocument, path: JsonPath): JsonValu
     }
   }
   return current
+}
+
+/**
+ * 将 AutoPopulateEntry[] 应用到 JSON 文档上。
+ *
+ * - 沿 targetPath 导航到目标对象（中间不存在则跳过）
+ * - 对 entries 中的每个 key：
+ *   - 若不存在 → 直接写入
+ *   - 若已存在且新旧值都是 object → 递归一层补缺
+ *   - 否则跳过
+ *
+ * 返回 true 表示有实际变更。
+ */
+export function applyAutoPopulatePatches(
+  doc: JsonDocument,
+  patches: AutoPopulateEntry[],
+): boolean {
+  let modified = false
+  for (const { targetPath, entries } of patches) {
+    let target: unknown = doc
+    for (const seg of targetPath) {
+      if (typeof seg === 'number' && Array.isArray(target)) {
+        target = target[seg]
+      } else if (typeof seg === 'string' && isJsonObject(target)) {
+        target = target[seg]
+      } else {
+        target = undefined
+        break
+      }
+    }
+    if (!isJsonObject(target)) continue
+
+    for (const [key, value] of Object.entries(entries)) {
+      if (key in target) {
+        // 已存在 — 若新旧都是 object 则递归一层补缺
+        if (isJsonObject(target[key]) && isJsonObject(value)) {
+          const existing = target[key]
+          for (const [subKey, subVal] of Object.entries(value)) {
+            if (!(subKey in existing)) {
+              existing[subKey] = subVal
+              modified = true
+            }
+          }
+        }
+        continue
+      }
+      target[key] = value
+      modified = true
+    }
+  }
+  return modified
 }
 
 // ════════════════════════════════════════════════════════════
