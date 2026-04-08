@@ -20,9 +20,11 @@ import { getAllStills, getStill } from './dispatcher'
 import { getDataSetState } from './dataset-domain'
 import { getDomain } from './domain'
 import {
-  COMPONENT_DIRECTORY_DESCRIBE,
-  getComponentSpec,
-} from '../catalog/component-props-catalog'
+  projectFcDirectory,
+  projectFcSpec,
+} from '../catalog/catalog-projections'
+import componentCatalog from '../catalog/component-catalog.json'
+import type { ComponentCatalog } from '../catalog/types'
 import type { StillsCatalogRegistry } from '../catalog/stills-catalog-types'
 
 // ═══════════════════════════════════════════════════════════
@@ -217,9 +219,9 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
       }
     }
 
-    const componentSpec = getComponentSpec(params.action)
+    const componentSpec = projectFcSpec(componentCatalog as ComponentCatalog, params.action)
     if (componentSpec !== null) {
-      const specType = componentSpec['type'] as string
+      const specType = componentSpec.type
       return {
         ok: true,
         data: {
@@ -227,12 +229,12 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
           subjectKind: 'component',
           type: 'component',
           componentType: specType,
-          category: componentSpec['category'],
-          description: componentSpec['description'],
-          props: componentSpec['props'],
-          emits: componentSpec['emits'] ?? [],
-          rootFields: componentSpec['rootFields'] ?? [],
-          binding: componentSpec['binding'] ?? null,
+          category: componentSpec.category,
+          description: componentSpec.description,
+          props: componentSpec.props,
+          emits: componentSpec.emits,
+          rootFields: componentSpec.rootFields ?? [],
+          binding: componentSpec.binding ?? null,
           notes: componentSpec['notes'] ?? null,
           guard: null,
           usageRules: buildComponentSpecUsageRules(specType),
@@ -276,7 +278,7 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
     const dataset = datasetState.data
     const blueprintSummary = buildBlueprintSummary(session.blueprint)
     const componentsDirectory = {
-      ...COMPONENT_DIRECTORY_DESCRIBE,
+      ...projectFcDirectory(componentCatalog as ComponentCatalog),
       querySpecExample: 'stills.actionSpec {"action":"r-table"}',
     }
 
@@ -353,7 +355,7 @@ export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
         ok: false,
         code: 'NO_CATALOG',
         msg: 'Stills Catalog 未加载',
-        fix: '请确认构建时已生成并上传 stills-catalog.json',
+        fix: '请确认构建时已生成组件目录',
       }
     }
     const catalog = session.catalog

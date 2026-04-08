@@ -1,12 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 
 import {
   generateComponentDescribeCatalog,
   generateComponentQueryCatalog,
-  generatePropsCatalog,
   queryComponentCatalog,
   queryComponentActionSpec,
   queryComponentPromptRecord,
@@ -16,6 +12,13 @@ import type {
   ComponentEntry,
   PlatformConstraints,
 } from '../packages/vite-plugin-spark-catalog/src/index'
+import {
+  projectFcDirectory,
+  projectFcSpec,
+  projectDevTypes,
+  projectDevPropNames,
+  projectDevPropEnums,
+} from '../packages/spark-ai/src/catalog/catalog-projections'
 
 function makeConstraints(overrides?: Partial<PlatformConstraints>): PlatformConstraints {
   return {
@@ -134,30 +137,61 @@ describe('component query catalog', () => {
   })
 })
 
-describe('generatePropsCatalog', () => {
-  it('writes AI query artifacts through the toolkit generator', () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'spark-query-catalog-'))
-    try {
-      mkdirSync(join(tempRoot, 'packages', 'spark-ai', 'src', 'catalog'), { recursive: true })
+describe('catalog-projections', () => {
+  it('projectFcDirectory returns directory summary for session.describe', () => {
+    const catalog = makeCatalog()
+    const directory = projectFcDirectory(catalog)
 
-      generatePropsCatalog(tempRoot, {}, makeCatalog())
+    expect(directory.summary.total).toBe(2)
+    expect(directory.summary.containers).toBe(1)
+    expect(directory.summary.fields).toBe(1)
+    expect(directory.components).toContainEqual({
+      type: 'r-table',
+      category: 'container',
+      description: '表格容器',
+    })
+    expect(directory.registry.containers).toEqual(['r-table'])
+  })
 
-      const output = readFileSync(
-        join(tempRoot, 'packages', 'spark-ai', 'src', 'catalog', 'component-props-catalog.ts'),
-        'utf-8',
-      )
+  it('projectFcSpec returns component spec for stills.actionSpec', () => {
+    const catalog = makeCatalog()
+    const spec = projectFcSpec(catalog, 'r-table')
 
-      expect(output).toContain('export const COMPONENT_DIRECTORY_DESCRIBE =')
-      expect(output).toContain('export const COMPONENT_SPEC_BY_TYPE =')
-      expect(output).toContain('export const COMPONENT_DIRECTORY_PROMPT =')
-      expect(output).toContain('export const COMPONENT_PROMPT_BY_TYPE: Record<string, string> =')
-      expect(output).toContain(".split('\\n')")
-      expect(output).toContain("matched.join('\\n')")
-      expect(output).toContain("results.join('\\n\\n---\\n\\n')")
-      expect(output).toContain('表格容器')
-      expect(output).toContain('文本字段')
-    } finally {
-      rmSync(tempRoot, { recursive: true, force: true })
-    }
+    expect(spec).not.toBeNull()
+    expect(spec!.type).toBe('r-table')
+    expect(spec!.category).toBe('container')
+    expect(spec!.props[0]?.name).toBe('dataKey')
+    expect(spec!.props[1]?.name).toBe('border')
+  })
+
+  it('projectFcSpec returns null for unknown type', () => {
+    expect(projectFcSpec(makeCatalog(), 'missing')).toBeNull()
+  })
+
+  it('projectDevTypes returns sorted type list', () => {
+    const types = projectDevTypes(makeCatalog())
+    expect(types).toContain('r-table')
+    expect(types).toContain('r-text')
+    expect(types).toEqual([...types].sort())
+  })
+
+  it('projectDevPropNames returns prop name lists per type', () => {
+    const propNames = projectDevPropNames(makeCatalog())
+    expect(propNames['r-table']).toContain('dataKey')
+    expect(propNames['r-table']).toContain('border')
+  })
+
+  it('projectDevPropEnums parses enum values from type strings', () => {
+    const catalog = makeCatalog({
+      components: {
+        'r-text': makeEntry({
+          props: [
+            { name: 'size', type: '"small" | "default" | "large"', required: false },
+          ],
+        }),
+      },
+    })
+    const enums = projectDevPropEnums(catalog)
+    expect(enums['r-text']?.['size']).toEqual(['small', 'default', 'large'])
   })
 })

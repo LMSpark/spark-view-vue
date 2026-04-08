@@ -32,9 +32,9 @@ export type { ComponentCategory } from './supplement'
 export { generateJsonCatalog } from './json-catalog-generator'
 export type { JsonCatalogOptions } from './json-catalog-generator'
 
-// ── AI 目录 TS 生成器（JSON → component-props-catalog.ts） ──
-export { generatePropsCatalog } from './catalog-generator'
-export type { CatalogGeneratorOptions } from './catalog-generator'
+// ── AI 目录 TS 生成器 已移除 ──
+// 原 component-props-catalog.ts + _generated-catalog.ts 已由
+// component-catalog.json SSoT + catalog-projections.ts 投影替代。
 
 // ── JSON Schema 类型 ──
 export type {

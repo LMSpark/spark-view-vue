@@ -45,7 +45,8 @@ temp-catalog-per-comp/
 .eslintcache
 
 # 自动生成的组件目录（由 vite-plugin-spark-catalog 在 build/dev 时生成）
-packages/spark-ai/src/component-catalog.json
+# SSoT JSON 由 generateJsonCatalog 写入 spark-ai/src/catalog/
+# 消费端通过 catalog-projections.ts 按需投影，不再生成独立 TS 常量文件
 
 # TypeScript incremental build cache
 *.tsbuildinfo

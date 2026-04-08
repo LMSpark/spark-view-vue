@@ -4,7 +4,7 @@
 
 import type { JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '@spark-view/spark-component'
 import { ensureUniqueObjectKey } from '@spark-view/spark-component'
-import { COMPONENT_PROP_NAMES, COMPONENT_PROP_ENUMS } from './_generated-catalog'
+import { DEV_PROP_NAMES, DEV_PROP_ENUMS } from '@spark-view/spark-ai'
 
 // ── SparkNode 结构键 ─────────────────────────────────────────
 //
@@ -122,8 +122,8 @@ function suggestChildKey(target: JsonObject, parentPath: JsonPath): string {
     // 从 catalog 补充该组件类型的专属属性
     const sparkNode = parentPath.length >= 2 ? undefined : target
     const typeValue = sparkNode !== undefined ? (sparkNode as Record<string, unknown>)['type'] : undefined
-    if (typeof typeValue === 'string' && COMPONENT_PROP_NAMES[typeValue] !== undefined) {
-      for (const key of COMPONENT_PROP_NAMES[typeValue]) {
+    if (typeof typeValue === 'string' && DEV_PROP_NAMES[typeValue] !== undefined) {
+      for (const key of DEV_PROP_NAMES[typeValue]) {
         if (!(key in target)) return key
       }
     }
@@ -188,7 +188,7 @@ export const rulePolicy: JsonTreePolicy = {
     if (propInfo === null) return undefined
     // 遍历所有组件类型的该属性枚举，合并去重
     const merged = new Set<string>()
-    for (const typeEnums of Object.values(COMPONENT_PROP_ENUMS)) {
+    for (const typeEnums of Object.values(DEV_PROP_ENUMS)) {
       const vals = typeEnums[propInfo.propName]
       if (vals !== undefined) {
         for (const v of vals) merged.add(v)

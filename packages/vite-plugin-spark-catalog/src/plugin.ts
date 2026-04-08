@@ -11,8 +11,7 @@
  */
 
 import type { Plugin } from 'vite'
-import { generatePropsCatalog } from './catalog-generator'
-import { generateJsonCatalog, generateStillsCatalogFiles, generateDevSystemCatalog } from './json-catalog-generator'
+import { generateJsonCatalog } from './json-catalog-generator'
 import { createLogger, normalizePath } from './utils'
 
 const logger = createLogger('spark-catalog')
@@ -26,10 +25,6 @@ export interface SparkCatalogPluginOptions {
   featurePatterns?: string[]
   /** 排除模式 */
   exclude?: string[]
-  /** 输出 TS 目录文件路径（相对于 root） */
-  outputPath?: string
-  /** 输出 JSON 目录文件路径（相对于 root） */
-  jsonOutputPath?: string
   /** 启用详细日志 */
   verbose?: boolean
 }
@@ -61,17 +56,12 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
         normalizedFile.includes('/src/views/')
 
       if (isRelevant) {
-        logger.debug('🔄 检测到组件变更，重新生成 Props 目录...')
-        const jsonOptions = {
+        logger.debug('🔄 检测到组件变更，重新生成 component-catalog.json ...')
+        generateJsonCatalog(root, {
           featurePatterns: options.featurePatterns,
           exclude: options.exclude,
-          outputPath: options.jsonOutputPath,
           verbose: options.verbose,
-        }
-        const catalog = generateJsonCatalog(root, jsonOptions)
-        generatePropsCatalog(root, options, catalog)
-        generateStillsCatalogFiles(root, catalog)
-        generateDevSystemCatalog(root, catalog)
+        })
       }
     },
   }

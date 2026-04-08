@@ -78,17 +78,34 @@ export {
 } from './runtime/page-cache'
 
 // ── AI Component Catalog ─────────────────────────────────────────────────────
-export { COMPONENT_CATALOG } from './catalog/component-props-catalog'
+// SSoT JSON（完整目录）+ 消费端投影
+export { default as COMPONENT_CATALOG_JSON } from './catalog/component-catalog.json'
+export {
+  projectFcDirectory,
+  projectFcSpec,
+  projectDevTypes,
+  projectDevPropNames,
+  projectDevPropEnums,
+} from './catalog/catalog-projections'
+export type { FcDirectoryPayload, FcComponentSpec } from './catalog/catalog-projections'
 export type {
   ComponentCatalog,
   ComponentEntry,
   ComponentRegistry,
   PropEntry,
+  PropSchema,
   EmitEntry,
+  ExposedEntry,
+  SlotEntry,
   PlatformConstraints,
   NestingRule,
   RootFieldEntry,
+  BindingDescriptor,
+  SharedTypeDefinition,
 } from './catalog/types'
+
+// DevSystem 预计算投影（type 下拉 + 属性名 + 枚举值）
+export { DEV_TYPES, DEV_PROP_NAMES, DEV_PROP_ENUMS } from './catalog/catalog-dev-exports'
 
 // ── Stills Catalog (Lightweight) ─────────────────────────────────────────────
 export type { StillsCatalog, StillsCatalogRegistry, StillsComponentEntry, StillsPropEntry } from './catalog/stills-catalog-types'

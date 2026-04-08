@@ -571,23 +571,10 @@ export default registerComponents
    * - Skill 目录 + prompt：从 .vue JSDoc 提取的 SkillMeta
    * - 注册信息：scan() 的组件列表（path/size/strategy）
    *
-   * 不再重复做 VCM 提取——component-catalog.json 已包含完整的 props/emits/capabilities。
+   * 后端仅消费 skills / skillPrompts 字段用于构建系统提示词。
    */
   generateMetadataJson(): string {
     this.scan()
-
-    const root = this.viteConfig!.root
-
-    // 读取 sparkCatalogPlugin 已生成的 component-catalog.json（SSoT）
-    const catalogPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
-    let catalog: Record<string, unknown> | null = null
-    try {
-      const raw = readFileSync(catalogPath, 'utf-8')
-      catalog = JSON.parse(raw) as Record<string, unknown>
-      logger.info(`📦 已加载 component-catalog.json (${(catalog['componentCount'] as number | undefined) ?? '?'} 条目)`)
-    } catch (e) {
-      logger.warn('⚠️ 无法读取 component-catalog.json，元数据将缺少结构化目录:', e)
-    }
 
     const skills = this.components
       .filter(c => c.skillMeta !== null)
@@ -618,8 +605,6 @@ export default registerComponents
         compact: compactPrompt,
         full: fullPrompt,
       },
-      // 嵌入完整结构化目录（含 props/emits/capabilities/rootFields/constraints）
-      ...(catalog ? { catalog } : {}),
     }
 
     return JSON.stringify(metadata, null, 2)

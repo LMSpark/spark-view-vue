@@ -1,8 +1,9 @@
 /**
- * 组件目录 JSON Schema 类型定义（精简版）
+ * 组件目录 JSON Schema 类型定义（完整版）
  *
- * 从 vite-plugin-spark-catalog/component-catalog-schema.ts 提取的必要类型，
- * 供 spark-ai 运行时消费 component-catalog.json。
+ * 与 vite-plugin-spark-catalog/component-catalog-schema.ts 保持一致。
+ * component-catalog.json 是 SSoT，此类型描述其完整结构。
+ * 消费端通过 catalog-projections.ts 按需投影。
  *
  * ⚠️ 保持与 component-catalog-schema.ts 同步 — 当 schema 变更时需一并更新。
  */
@@ -56,15 +57,13 @@ export interface ComponentEntry {
   category: 'container' | 'field' | 'group' | 'meta' | 'feature'
   description: string
   props: PropEntry[]
-  emits?: EmitEntry[]
+  emits: EmitEntry[]
+  exposed?: ExposedEntry[]
+  slots?: SlotEntry[]
   rootFields?: RootFieldEntry[]
   notes?: string
-  binding?: {
-    selfResolving?: boolean
-    bindingDelegate?: string
-    hasOptions?: boolean
-    valueType?: string
-  }
+  source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
+  binding?: BindingDescriptor
 }
 
 export interface PropEntry {
@@ -73,6 +72,7 @@ export interface PropEntry {
   required: boolean
   default?: string
   description?: string
+  schema?: PropSchema
 }
 
 export type PropSchema =
