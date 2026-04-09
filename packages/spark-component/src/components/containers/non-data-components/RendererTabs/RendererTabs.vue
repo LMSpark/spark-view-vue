@@ -49,7 +49,7 @@ import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import { useDockExtraction, NAVIGATION_DOCK_TYPES } from '../../docks/dock-extraction'
+import { useDockExtraction, NAVIGATION_DOCK_TYPES, type DockProp, type DockToolbarNode } from '../../docks/dock-extraction'
 import RendererTabPane from '../RendererTabPane.vue'
 import type { RendererTabsApi } from './types'
 import { createRendererTabsZeroCode } from './zero-code'
@@ -64,7 +64,7 @@ interface Props extends SparkNode {
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
   /** 结构化工具栏 dock */
-  toolbar?: unknown
+  toolbar?: DockProp<DockToolbarNode>
   /** 当前激活标签页 */
   modelValue?: string | number
   /** 标签页切换回调 */

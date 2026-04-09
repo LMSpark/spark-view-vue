@@ -1,0 +1,191 @@
+[
+  {
+    "type": "div",
+    "props": {
+      "class": "leave-application-page",
+      "style": {
+        "padding": "20px",
+        "backgroundColor": "#f5f7fa"
+      }
+    },
+    "children": [
+      {
+        "type": "r-section",
+        "props": {
+          "title": "请假申请",
+          "description": "填写请假信息并提交审批",
+          "headerActions": [
+            {
+              "type": "RenderHeaderActions"
+            }
+          ]
+        },
+        "children": [
+          {
+            "type": "r-form",
+            "props": {
+              "dataKey": "LeaveApplications@currentRow",
+              "labelWidth": "100px",
+              "labelPosition": "right"
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "props": {
+                  "field": "applicantName",
+                  "label": "申请人",
+                  "placeholder": "请输入姓名",
+                  "required": true,
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-select",
+                "props": {
+                  "field": "department",
+                  "label": "所在部门",
+                  "placeholder": "请选择部门",
+                  "required": true,
+                  "optionKey": "Departments@rows",
+                  "optionLabelField": "name",
+                  "optionValueField": "code",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-select",
+                "props": {
+                  "field": "leaveType",
+                  "label": "请假类型",
+                  "placeholder": "请选择请假类型",
+                  "required": true,
+                  "optionKey": "LeaveTypes@rows",
+                  "optionLabelField": "name",
+                  "optionValueField": "code",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-date",
+                "props": {
+                  "field": "startDate",
+                  "label": "开始日期",
+                  "placeholder": "请选择开始日期",
+                  "required": true,
+                  "valueFormat": "YYYY-MM-DD",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-date",
+                "props": {
+                  "field": "endDate",
+                  "label": "结束日期",
+                  "placeholder": "请选择结束日期",
+                  "required": true,
+                  "valueFormat": "YYYY-MM-DD",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "field": "totalDays",
+                  "label": "请假天数",
+                  "placeholder": "自动计算或手动输入",
+                  "min": 0.5,
+                  "step": 0.5,
+                  "precision": 1,
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-textarea",
+                "props": {
+                  "field": "reason",
+                  "label": "请假事由",
+                  "placeholder": "请详细说明请假原因",
+                  "required": true,
+                  "rows": 4,
+                  "colSpan": 24
+                }
+              },
+              {
+                "type": "r-upload",
+                "props": {
+                  "field": "attachment",
+                  "label": "相关附件",
+                  "limit": 3,
+                  "accept": ".pdf,.doc,.docx,.jpg,.png",
+                  "colSpan": 24
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-section",
+        "props": {
+          "title": "审批记录",
+          "collapsible": true,
+          "defaultCollapsed": false
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "props": {
+              "dataKey": "ApprovalRecords@rows",
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "rowActions": [
+                {
+                  "type": "RenderApprovalActions"
+                }
+              ]
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "props": {
+                  "field": "approver",
+                  "label": "审批人",
+                  "width": 120
+                }
+              },
+              {
+                "type": "r-select",
+                "props": {
+                  "field": "status",
+                  "label": "审批状态",
+                  "width": 120,
+                  "optionKey": "ApprovalStatus@rows",
+                  "optionLabelField": "name",
+                  "optionValueField": "code"
+                }
+              },
+              {
+                "type": "r-textarea",
+                "props": {
+                  "field": "comment",
+                  "label": "审批意见",
+                  "width": 200
+                }
+              },
+              {
+                "type": "r-date",
+                "props": {
+                  "field": "approvalTime",
+                  "label": "审批时间",
+                  "width": 150,
+                  "valueFormat": "YYYY-MM-DD HH:mm"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

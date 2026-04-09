@@ -8,7 +8,7 @@
         <el-tag v-if="state.hasAnyDirty.value" type="warning" size="small" effect="dark">未保存</el-tag>
       </div>
       <div class="dev-header__right">
-        <el-button size="small" @click="previewCurrentPage" :disabled="!canPreviewCurrentPage">
+        <el-button size="small" @click="switchToPreview" :disabled="!canPreviewCurrentPage">
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
         <el-button
@@ -56,9 +56,14 @@
             </template>
             <DevFileEditor v-if="workTab === fname" :state="state" :active-file="fname" :show-tabs="false" />
           </el-tab-pane>
+          <!-- 🖼 实时预览 -->
+          <el-tab-pane name="preview" :disabled="!state.activePageId.value">
+            <template #label>
+              <span><NavIcon name="Monitor" :size="13" /> 实时预览</span>
+            </template>
+            <DevPreviewTab v-if="workTab === 'preview'" :state="state" :refresh-token="previewRefreshToken" />
+          </el-tab-pane>
         </el-tabs>
-
-        <!-- 工作区底栏 -->
         <div class="workspace-footer">
           <div class="workspace-footer__left">
             <template v-if="state.selectedNode.value">
@@ -90,19 +95,8 @@
 
     </div>
 
-    <!-- ═══ AI 助手抽屉 ═══ -->
-    <el-drawer
-      v-model="state.aiPanelVisible.value"
-      title="AI 助手"
-      direction="rtl"
-      size="420px"
-      :with-header="true"
-      :close-on-click-modal="false"
-      :append-to-body="true"
-      class="ai-drawer"
-    >
-      <DevAiPanel :state="state" />
-    </el-drawer>
+    <!-- ═══ AI 助手浮动面板 ═══ -->
+    <DevAiPanel :state="state" />
 
     <!-- ═══ 底部状态栏 ═══ -->
     <div class="dev-status-bar">
@@ -135,6 +129,7 @@ import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevAiPanel from './DevAiPanel.vue'
 import DevFileEditor from './DevFileEditor.vue'
+import DevPreviewTab from './DevPreviewTab.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
 const { router, tenantPath } = useTenantRouter()
@@ -142,6 +137,7 @@ const state = useDevState()
 
 // 工作区 Tab
 const workTab = ref<DevWorkspaceTab>('props')
+const previewRefreshToken = ref(0)
 const currentWorkspaceFile = computed<PageFileName | null>(() => {
   return isPageFileName(workTab.value) ? workTab.value : null
 })
@@ -180,9 +176,9 @@ function previewPage(pageId: string) {
   void router.push(tenantPath(`/${pageId}`))
 }
 
-function previewCurrentPage() {
-  if (state.editForm.path) void router.push(tenantPath(state.editForm.path))
-  else if (state.activePageId.value) void router.push(tenantPath(`/${state.activePageId.value}`))
+function switchToPreview() {
+  workTab.value = 'preview'
+  previewRefreshToken.value++
 }
 
 function saveAll() {
@@ -319,13 +315,6 @@ onMounted(() => { void state.initialize() })
   color: var(--el-text-color-secondary);
 }
 
-/* AI 抽屉内部布局 */
-.ai-drawer :deep(.el-drawer__body) {
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
 
 /* ═══ 底部状态栏 ═══ */
 .dev-status-bar {

@@ -183,16 +183,17 @@ import {
   bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
+import type { DockProp, DockToolbarNode, DockFilterNode, DockActionsNode } from '../../docks/dock-extraction'
 
 interface Props extends SparkNode {
   /** DataKey 格式：tableName@field */
   dataKey?: string
   /** 结构化工具栏 dock */
-  toolbar?: unknown
+  toolbar?: DockProp<DockToolbarNode>
   /** 结构化筛选 dock */
-  filter?: unknown
+  filter?: DockProp<DockFilterNode>
   /** 结构化行动作 dock */
-  actions?: unknown
+  actions?: DockProp<DockActionsNode>
   /** 子节点列表（列节点 + dock 节点） */
   children?: SparkNode[]
   onRowClick?: RowClickHandler

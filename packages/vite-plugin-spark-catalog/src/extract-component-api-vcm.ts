@@ -142,6 +142,26 @@ export function extractComponentApiVcm(
         })
       : []
 
+    // -- Recover defineProps misclassified as exposed --
+    // VCM with `Props extends SparkNode` + defineExpose sometimes puts defineProps
+    // members into exposed instead of props. Recover them using naming heuristics:
+    // API methods follow verb-prefix naming (getXxx, setXxx, ...),
+    // props are nouns or event handlers (onXxx).
+    if (hasDefineExpose && exposed.length > 0) {
+      const propNameSet = new Set(props.map(p => p.name))
+      for (const exp of exposed) {
+        if (propNameSet.has(exp.name)) continue
+        if (isLikelyApiMethod(exp.name)) continue
+        props.push({
+          name: exp.name,
+          type: exp.type,
+          required: false,
+          ...(exp.description !== undefined ? { description: exp.description } : {}),
+          ...(exp.schema !== undefined ? { schema: exp.schema } : {}),
+        })
+      }
+    }
+
     // -- Slots --
     const slots: SlotEntry[] = meta.slots.map(s => {
       const entry: SlotEntry = {
@@ -186,6 +206,35 @@ export function extractAllComponentApisVcm(
     if (api !== null) results.push(api)
   }
   return results
+}
+
+/* ==========================================================================
+ * Exposed → Props 恢复辅助
+ *
+ * VCM 对 `Props extends SparkNode` + defineExpose 的组件，会把部分 defineProps
+ * 成员放入 exposed 而非 props。通过命名启发式区分 API 方法与 props：
+ * - API 方法：动词前缀 + PascalCase（getRows, setXxx, clearXxx, ...）
+ * - Props：名词（dataKey, toolbar）或事件处理器（onXxx）
+ * ========================================================================== */
+
+/** exposed 成员名是否符合 API 方法命名模式（verb + PascalCase） */
+function isLikelyApiMethod(name: string): boolean {
+  // 事件处理器是 prop，不是 API 方法
+  if (/^on[A-Z]/.test(name)) return false
+
+  const prefixes = [
+    'get', 'set', 'clear', 'toggle', 'reset', 'has', 'do',
+    'load', 'search', 'move', 'query', 'refresh', 'expand',
+    'add', 'edit', 'remove', 'append', 'update', 'delete', 'is',
+  ]
+  for (const prefix of prefixes) {
+    if (name === prefix) return true
+    if (name.startsWith(prefix) && name.length > prefix.length) {
+      const ch = name[prefix.length]
+      if (ch === ch?.toUpperCase() && ch !== ch?.toLowerCase()) return true
+    }
+  }
+  return false
 }
 
 /* ==========================================================================

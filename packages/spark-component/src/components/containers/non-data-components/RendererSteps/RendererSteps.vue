@@ -50,7 +50,7 @@ import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import { useDockExtraction, NAVIGATION_DOCK_TYPES } from '../../docks/dock-extraction'
+import { useDockExtraction, NAVIGATION_DOCK_TYPES, type DockProp, type DockToolbarNode } from '../../docks/dock-extraction'
 import RendererStepItem from '../RendererStepItem.vue'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
@@ -60,7 +60,7 @@ interface Props extends SparkNode {
   /** 子节点（步骤配置） */
   children?: SparkNode[]
   /** 结构化工具栏 dock */
-  toolbar?: unknown
+  toolbar?: DockProp<DockToolbarNode>
   /** 当前步骤 */
   modelValue?: string | number
   /** 步骤切换回调 */

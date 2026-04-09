@@ -277,55 +277,7 @@ function buildPlatformConstraints(): PlatformConstraints {
 }
 
 /* --------------------------------------------------------------------------
- * 容器内部兼容 Props 过滤（容器组件专用）
- *
- * 容器组件对外规范已经统一为 children + dock + props.docks + on.*。
- * 运行时内部仍可能存在兼容用 prop/attr 名（例如旧的 rowActionsXxx / filterXxx），
- * 但这些名字不应出现在最终 AI catalog 中，因此对有 override 的容器组件统一过滤。
- * ----------------------------------------------------------------------- */
-
-/**
- * 兼容层内部 prop 名前缀。
- * 仅对有 override（= rootFields 已描述）的容器组件执行过滤。
- * 字段组件的同名 props（如 r-select.filterable）不受影响。
- */
-const CONTAINER_INTERNAL_PROP_PREFIXES = [
-  'toolbar',
-  'rowActions',
-  'itemActions',
-  'headerActions',
-  'footerActions',
-  'filter',
-] as const
-
-/** 字段组件上允许保留的同前缀 Props（不误杀） */
-const FIELD_PROP_WHITELIST = new Set([
-  'filterable',
-  'filterPlaceholder',
-  'filterMethod',
-  'filterMode',
-])
-
-function isContainerInternalProp(propName: string): boolean {
-  if (FIELD_PROP_WHITELIST.has(propName)) return false
-  return CONTAINER_INTERNAL_PROP_PREFIXES.some(prefix => {
-    if (propName === prefix) return true
-    // camelCase 复合名：prefix + UpperCase（如 toolbarPosition, filterColumns）
-    if (propName.startsWith(prefix) && propName.length > prefix.length) {
-      const nextChar = propName[prefix.length]
-      return nextChar === nextChar?.toUpperCase() && nextChar !== nextChar?.toLowerCase()
-    }
-    return false
-  })
-}
-
-/** 类型包含 SparkNode → 已有 sharedTypes 单例定义，props 中无需重复 */
-function isSparkNodeTypeProp(propType: string): boolean {
-  return propType.includes('SparkNode')
-}
-
-/* --------------------------------------------------------------------------
- * 核心：构建 ComponentEntry
+ * 核心：构建 ComponentEntry（h(type, props, children) 完全投影）
  * ----------------------------------------------------------------------- */
 
 function buildComponentEntry(
@@ -339,19 +291,11 @@ function buildComponentEntry(
   const overrideText = CATALOG_OVERRIDES[skillType]
   const addendumText = CATALOG_ADDENDUMS[skillType]
 
-  // Props: 始终优先 VCM 提取（过滤内部 props）
-  // 对有 override 的容器组件，额外过滤 bindRules 内部 props（rootFields 已描述）
-  const filterContainerProps = hasOverride
+  // Props: VCM 提取 — h(type, props, children) 完全投影
+  // 仅过滤框架内部 prop（config），其余全部保留
   const props: PropEntry[] = api !== null
     ? api.props
-      .filter(p => {
-        if (p.name === 'config') return false
-        // SparkNode 类型 props → sharedTypes 已定义，逐组件展示无意义
-        if (isSparkNodeTypeProp(p.type)) return false
-        // 容器内部 props → rootFields 已用 rule.json 格式描述
-        if (filterContainerProps && isContainerInternalProp(p.name)) return false
-        return true
-      })
+      .filter(p => p.name !== 'config')
       .map(p => ({
         name: p.name,
         type: p.type,

@@ -43,27 +43,6 @@
             :items="nav.regionItems.value.header"
           />
         </template>
-        <template v-if="enableAI && hasToolbarAction('ai-chat')" #actions>
-          <el-popover
-            v-if="hasToolbarAction('ai-chat')"
-            :visible="showAiChat"
-            placement="bottom-end"
-            :width="420"
-            :show-arrow="false"
-            popper-class="ai-chat-popover"
-          >
-            <template #reference>
-              <button class="app-ai-action" title="AI 对话" @click="showAiChat = !showAiChat">
-                <NavIcon name="ChatDotRound" :size="16" />
-              </button>
-            </template>
-            <AiChatWidget
-              title="AI 助手"
-              placeholder="输入消息，支持上传文件..."
-              compact
-            />
-          </el-popover>
-        </template>
       </AppHeader>
     </template>
 
@@ -163,7 +142,6 @@ import AppSidebar from '@/layout/AppSidebar.vue'
 import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
-import NavIcon from '@/components/NavIcon.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { clearAllCache, getCacheStats, onPageRefresh } from '@spark-view/spark-ai'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
@@ -289,15 +267,6 @@ function jumpToExpectedContext(): void {
   const expectedPath = contextGuard.value?.expectedPath
   if (!expectedPath) return
   void router.replace(expectedPath)
-}
-
-/** 检查工具栏配置中是否包含指定 action（无配置时默认全部显示） */
-function hasToolbarAction(...actions: string[]): boolean {
-  const items = nav.regionItems.value.toolbar
-  if (!items.length) return true
-  return actions.some(action =>
-    items.some(item => item.path === action)
-  )
 }
 
 /* ── 项目切换服务（供子组件注入） ── */
@@ -551,9 +520,7 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
 }
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
-const AiChatWidget = defineAsyncComponent(() => import('@/components/AiChatWidget.vue'))
 const AiAssistantHub = defineAsyncComponent(() => import('@/components/AiAssistantHub.vue'))
-const showAiChat = ref(false)
 
 /** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */
 const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))
@@ -688,16 +655,5 @@ onMounted(() => {
   border-color: #bc7a1e;
 }
 
-</style>
-
-<!-- AI 聊天弹窗全局样式（popper 脱离 scoped DOM） -->
-<style>
-.ai-chat-popover {
-  padding: 0 !important;
-  max-height: 560px;
-}
-.ai-chat-popover .ai-chat-widget {
-  height: 520px;
-}
 </style>
 

@@ -1,14 +1,14 @@
 import { computed } from 'vue'
 import { getSparkNodeChildren, nodeInputProp, type SparkNode } from '../../../internal'
-import { useDockExtraction, TABLE_DOCK_TYPES } from '../../docks/dock-extraction'
+import { useDockExtraction, TABLE_DOCK_TYPES, type DockProp, type DockToolbarNode, type DockFilterNode, type DockActionsNode } from '../../docks/dock-extraction'
 import type { LateralActionPosition } from '../../actions/useContainerActions'
 
 interface RendererTableInputProps {
   dataKey?: string | undefined
   children?: SparkNode[] | undefined
-  toolbar?: unknown
-  filter?: unknown
-  actions?: unknown
+  toolbar?: DockProp<DockToolbarNode> | undefined
+  filter?: DockProp<DockFilterNode> | undefined
+  actions?: DockProp<DockActionsNode> | undefined
 }
 
 interface RendererTableInputOptions {

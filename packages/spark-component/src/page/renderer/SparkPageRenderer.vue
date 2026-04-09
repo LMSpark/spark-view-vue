@@ -334,8 +334,9 @@ function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
 /** 完整加载流程：解析当前 pageId → beforeLoad → loadNodeProps → applyNodeProps → afterLoad。 */
 async function loadConfig(): Promise<void> {
   // system-page 路由不走 PageRenderer，防止 transition out-in 期间误触发
-  if (route.meta['type'] === 'system-page') return
-  if (route.matched.length === 0) return
+  // 但 pageConfig 直传模式不受此限制（如 DevPreviewTab 嵌入预览）
+  if (!props.pageConfig && route.meta['type'] === 'system-page') return
+  if (!props.pageConfig && route.matched.length === 0) return
 
   const targetPageId = resolveCurrentPageId(route, props.pageId, props.pageConfig?.pageId)
   if (loading.value && _inFlightPageId === targetPageId) return

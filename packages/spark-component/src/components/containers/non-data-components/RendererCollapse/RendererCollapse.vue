@@ -48,7 +48,7 @@ import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import { useDockExtraction, NAVIGATION_DOCK_TYPES } from '../../docks/dock-extraction'
+import { useDockExtraction, NAVIGATION_DOCK_TYPES, type DockProp, type DockToolbarNode } from '../../docks/dock-extraction'
 import RendererCollapseItem from '../RendererCollapseItem.vue'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
@@ -60,7 +60,7 @@ interface Props extends SparkNode {
   /** 子节点（折叠项配置） */
   children?: SparkNode[]
   /** 结构化工具栏 dock */
-  toolbar?: unknown
+  toolbar?: DockProp<DockToolbarNode>
   /** 当前展开的面板 */
   modelValue?: CollapseValue
   /** 展开/折叠切换回调 */

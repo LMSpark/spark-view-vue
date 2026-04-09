@@ -102,7 +102,7 @@ import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
 import { createRendererListZeroCode } from './zero-code'
-import { useDockExtraction, LIST_DOCK_TYPES } from '../../docks/dock-extraction'
+import { useDockExtraction, LIST_DOCK_TYPES, type DockProp, type DockToolbarNode, type DockActionsNode } from '../../docks/dock-extraction'
 import {
   type AddRowHandler,
   type EditRowHandler,
@@ -114,9 +114,9 @@ interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
   /** 结构化工具栏 dock */
-  toolbar?: unknown
+  toolbar?: DockProp<DockToolbarNode>
   /** 结构化列表项动作 dock */
-  actions?: unknown
+  actions?: DockProp<DockActionsNode>
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
   /** 列数 */

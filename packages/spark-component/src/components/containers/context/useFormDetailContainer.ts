@@ -5,7 +5,7 @@ import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { DATA_ROW } from '../../internal'
-import { useDockExtraction, FORM_DOCK_TYPES } from '../docks/dock-extraction'
+import { useDockExtraction, FORM_DOCK_TYPES, type DockProp, type DockToolbarNode } from '../docks/dock-extraction'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../data/useContainerDataSource'
 import { useContainerContextData } from './useContainerContextData'
@@ -15,7 +15,7 @@ import { createCurrentRowSlotScope } from '../slotScopeFactories'
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
   children?: SparkNode[]
-  toolbar?: unknown
+  toolbar?: DockProp<DockToolbarNode>
   gridColumns: number | undefined
   gridGap: number | string | undefined
   gridAutoRows: string | undefined

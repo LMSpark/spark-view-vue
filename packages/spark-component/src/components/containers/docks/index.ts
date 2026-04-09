@@ -27,4 +27,12 @@ export {
   TOOLBAR_DOCK_TYPES,
   type DockExtractionResult,
   type UseDockExtractionReturn,
+  type DockProp,
+  type DockToolbarNode,
+  type DockFilterNode,
+  type DockActionsNode,
+  type DockEditorNode,
+  type DockHeaderNode,
+  type DockFooterNode,
+  type DockTailNode,
 } from './dock-extraction.js'

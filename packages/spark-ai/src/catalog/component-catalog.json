@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-09T10:48:33.834Z",
+  "buildTime": "2026-04-09T20:34:07.925Z",
   "componentCount": 121,
   "registry": {
     "containers": [
@@ -293,10 +293,28 @@
           "description": "DataKey 格式：tableName@field"
         },
         {
+          "name": "toolbar",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化工具栏 dock"
+        },
+        {
+          "name": "filter",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化筛选 dock"
+        },
+        {
           "name": "actions",
           "type": "unknown",
           "required": false,
           "description": "结构化行动作 dock"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点列表（列节点 + dock 节点）"
         },
         {
           "name": "type",
@@ -310,6 +328,283 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onAddRow",
+          "type": "AddRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: Partial<IDataRow>, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onEditRow",
+          "type": "EditRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: Partial<IDataRow>, args_2: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onRemoveRow",
+          "type": "RemoveRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onRowClick",
+          "type": "RowClickHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: IDataRow, args_1: unknown, args_2: Event | undefined, args_3: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "object",
+                "type": "IDataRow",
+                "properties": {
+                  "_perm": {
+                    "name": "_perm",
+                    "type": "IInstancePermission",
+                    "required": false,
+                    "schema": {
+                      "kind": "object",
+                      "type": "IInstancePermission",
+                      "properties": {
+                        "allowCreateChild": {
+                          "name": "allowCreateChild",
+                          "type": "boolean",
+                          "required": false
+                        },
+                        "allowDelete": {
+                          "name": "allowDelete",
+                          "type": "boolean",
+                          "required": false
+                        },
+                        "editableFields": {
+                          "name": "editableFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "hiddenFields": {
+                          "name": "hiddenFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "maskedFields": {
+                          "name": "maskedFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "permissionToken": {
+                          "name": "permissionToken",
+                          "type": "string",
+                          "required": false
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "kind": "enum",
+                "type": "Event | undefined",
+                "variants": [
+                  "undefined",
+                  "Event"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "RowSelectionHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: IDataRow[], args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "array",
+                "type": "IDataRow[]",
+                "items": [
+                  {
+                    "kind": "object",
+                    "type": "IDataRow",
+                    "properties": {
+                      "_perm": {
+                        "name": "_perm",
+                        "type": "IInstancePermission",
+                        "required": false
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onCurrentChange",
+          "type": "CurrentRowChangeHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: IDataRow | null, args_1: IDataRow | null | undefined, args_2: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "IDataRow | null",
+                "variants": [
+                  "null",
+                  "IDataRow"
+                ]
+              },
+              {
+                "kind": "enum",
+                "type": "IDataRow | null | undefined",
+                "variants": [
+                  "undefined",
+                  "null",
+                  "IDataRow"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       ],
       "emits": [],
@@ -932,7 +1227,8 @@
       "notes": "**r-table** — 数据表格容器\n\n【props — 透传到 el-table】\nborder: boolean — 边框\nstripe: boolean — 斑马纹\nhighlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）\nheight / maxHeight: string | number — 表格高度\nstyle: object — 行内样式\nclass: string — CSS 类名\n\n【根级字段 — 数据绑定】\ndataKey: string — 数据绑定键，如 \"Users@rows\"（根级）\n\n【根级字段 — 事件绑定】\non.rowDblclick: string — 行双击（→ script.js 函数名）\n（其他组件事件同理，key 为 camelCase 事件名）\n\n【筛选区】\nchildren 中声明 dock: 'filter' 的字段节点会渲染到筛选区。\nprops.docks.filter.collapsible: boolean — 可折叠，默认 false\nprops.docks.filter.defaultCollapsed: boolean — 默认折叠，默认 false\nprops.docks.filter.autoFitMinWidth: string — 最小宽度，默认 '220px'\nprops.docks.filter.class: string — 筛选区 CSS 类名\nprops.docks.filter.itemSpan: number — 每项跨列数，默认 1\nprops.docks.filter.gridColumns: number — 栅格总列数，默认 24\nprops.docks.filter.gridGap: number | string — 间距，默认 12\nprops.docks.filter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'\n\n【工具栏】\nchildren 中声明 dock: 'toolbar' 的节点会渲染到工具栏区域。\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\n\n【行操作区】\nchildren 中声明 dock: 'actions' 的节点会渲染为行操作区（优先 builtin-action）。\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.label: string — 操作列标题，默认 '操作'\nprops.docks.actions.width: number — 操作列宽度，默认 160\nprops.docks.actions.align: 'left' | 'center' | 'right' — 默认 'left'\nprops.docks.actions.fixed: boolean | 'left' | 'right' — 固定方向\nprops.docks.actions.class: string — 操作列 CSS 类名\n\n【能力链】\nconsumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT\nprovides: DATA_SOURCE\n\nchildren 内仅用 r-* 字段组件做列，禁止 el-table-column",
       "source": "vcm+override",
       "binding": {
-        "selfResolving": true
+        "selfResolving": true,
+        "dataContainer": true
       }
     },
     "r-form": {
@@ -950,6 +1246,18 @@
           "type": "string",
           "required": false,
           "description": "数据绑定键，如 \"Users@currentRow\""
+        },
+        {
+          "name": "toolbar",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化工具栏 dock"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点列表"
         },
         {
           "name": "labelWidth",
@@ -999,6 +1307,117 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onAddRow",
+          "type": "AddRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: Partial<IDataRow>, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onEditRow",
+          "type": "EditRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: Partial<IDataRow>, args_2: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onRemoveRow",
+          "type": "RemoveRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "validate",
+          "type": "() => Promise<boolean>",
+          "required": false
         }
       ],
       "emits": [],
@@ -1307,7 +1726,8 @@
       "notes": "**r-form** — 数据表单容器（读写 currentRow）\ndataKey: string — 数据绑定键，如 \"Users@currentRow\"\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nlabelWidth: string — 标签宽度，默认 '100px'\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件",
       "source": "vcm+override",
       "binding": {
-        "selfResolving": true
+        "selfResolving": true,
+        "dataContainer": true
       }
     },
     "r-detail": {
@@ -1325,6 +1745,18 @@
           "type": "string",
           "required": false,
           "description": "数据绑定键"
+        },
+        {
+          "name": "toolbar",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化工具栏 dock"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点列表"
         },
         {
           "name": "gridColumns",
@@ -1399,6 +1831,112 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onAddRow",
+          "type": "AddRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: Partial<IDataRow>, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onEditRow",
+          "type": "EditRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: Partial<IDataRow>, args_2: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onRemoveRow",
+          "type": "RemoveRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       ],
       "emits": [],
@@ -1699,7 +2237,8 @@
       "notes": "**r-detail** — 只读详情容器（展示 currentRow）\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\ngridColumns: number — CSS Grid 列数，默认 24\ngridGap: number | string — 栅格间距，默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA\n\nchildren 内放 r-* 字段组件（只读模式）",
       "source": "vcm+override",
       "binding": {
-        "selfResolving": true
+        "selfResolving": true,
+        "dataContainer": true
       }
     },
     "r-tree": {
@@ -1712,6 +2251,12 @@
           "type": "string",
           "required": false,
           "description": "数据绑定键，如 \"TreeData@rows\""
+        },
+        {
+          "name": "toolbar",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化工具栏 dock"
         },
         {
           "name": "actions",
@@ -1768,6 +2313,12 @@
           "description": "初始化自动展开到指定层级（根节点为第 1 层）"
         },
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点（树节点内容配置）"
+        },
+        {
           "name": "allowAppend",
           "type": "boolean",
           "required": false,
@@ -1807,6 +2358,157 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onNodeClick",
+          "type": "TreeEventHandler",
+          "required": false,
+          "description": "节点点击回调"
+        },
+        {
+          "name": "onNodeExpand",
+          "type": "TreeEventHandler",
+          "required": false,
+          "description": "节点展开回调"
+        },
+        {
+          "name": "onNodeCollapse",
+          "type": "TreeEventHandler",
+          "required": false,
+          "description": "节点折叠回调"
+        },
+        {
+          "name": "onNodeAppend",
+          "type": "TreeNodeActionHandler",
+          "required": false,
+          "description": "节点追加前回调"
+        },
+        {
+          "name": "onNodeDelete",
+          "type": "TreeNodeActionHandler",
+          "required": false,
+          "description": "节点删除前回调"
+        },
+        {
+          "name": "onAddRow",
+          "type": "AddRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: Partial<IDataRow>, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onEditRow",
+          "type": "EditRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: Partial<IDataRow>, args_2: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onRemoveRow",
+          "type": "RemoveRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "filter",
+          "type": "(keyword: string) => void",
+          "required": false
+        },
+        {
+          "name": "insertBefore",
+          "type": "(refKey: string | number, nodeData: IDataRow) => void",
+          "required": false
+        },
+        {
+          "name": "insertAfter",
+          "type": "(refKey: string | number, nodeData: IDataRow) => void",
+          "required": false
         }
       ],
       "emits": [],
@@ -2205,7 +2907,8 @@
       "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ndock='toolbar' children — 工具栏节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 工具栏位置\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, CONTEXT_DATA",
       "source": "vcm+override",
       "binding": {
-        "selfResolving": true
+        "selfResolving": true,
+        "dataContainer": true
       }
     },
     "r-list": {
@@ -2220,10 +2923,22 @@
           "description": "数据绑定键"
         },
         {
+          "name": "toolbar",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化工具栏 dock"
+        },
+        {
           "name": "actions",
           "type": "unknown",
           "required": false,
           "description": "结构化列表项动作 dock"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点（列表项内容配置）"
         },
         {
           "name": "columns",
@@ -2367,6 +3082,189 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onAddRow",
+          "type": "AddRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: Partial<IDataRow>, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onEditRow",
+          "type": "EditRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: Partial<IDataRow>, args_2: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onRemoveRow",
+          "type": "RemoveRowHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: string | number, args_1: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true,
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "variants": [
+                        "false",
+                        "true"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "onItemClick",
+          "type": "RowClickHandler",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(args_0: IDataRow, args_1: unknown, args_2: Event | undefined, args_3: CancellableControl): void | Promise<void>",
+            "params": [
+              {
+                "kind": "object",
+                "type": "IDataRow",
+                "properties": {
+                  "_perm": {
+                    "name": "_perm",
+                    "type": "IInstancePermission",
+                    "required": false,
+                    "schema": {
+                      "kind": "object",
+                      "type": "IInstancePermission",
+                      "properties": {
+                        "allowCreateChild": {
+                          "name": "allowCreateChild",
+                          "type": "boolean",
+                          "required": false
+                        },
+                        "allowDelete": {
+                          "name": "allowDelete",
+                          "type": "boolean",
+                          "required": false
+                        },
+                        "editableFields": {
+                          "name": "editableFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "hiddenFields": {
+                          "name": "hiddenFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "maskedFields": {
+                          "name": "maskedFields",
+                          "type": "string[]",
+                          "required": false
+                        },
+                        "permissionToken": {
+                          "name": "permissionToken",
+                          "type": "string",
+                          "required": false
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "kind": "enum",
+                "type": "Event | undefined",
+                "variants": [
+                  "undefined",
+                  "Event"
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "properties": {
+                  "cancel": {
+                    "name": "cancel",
+                    "type": "boolean",
+                    "required": true
+                  }
+                }
+              }
+            ]
+          }
         }
       ],
       "emits": [],
@@ -3104,7 +4002,8 @@
       "notes": "**r-list** — 列表容器\ndataKey: string — 数据绑定键\ndock='toolbar' children — 工具栏节点\ndock='actions' children — 列表项动作节点\nprops.docks.toolbar.position: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'\nprops.docks.toolbar.class: string — 工具栏 CSS 类名\nprops.docks.actions.position: 'left' | 'right' — 默认 'right'\nprops.docks.actions.class: string — 操作区 CSS 类名\ncolumns: number — 列数，默认 1\ngap: number | string — 间距，默认 0\nminItemWidth: string — 最小项宽度\nrowKey: string — 行唯一键，默认 'id'\nemptyText: string — 空数据文案，默认 '暂无数据'\nitemClass: string — 列表项 CSS 类名\nitemStyle: CSSProperties — 列表项行内样式\nuseCard: boolean — 使用卡片包裹，默认 false\ncardShadow: 'always' | 'hover' | 'never' — 默认 'hover'\ngridColumns: number — 默认 24\ngridGap: number | string — 默认 0\ngridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'\nitemColSpan: number — 项跨列数\nitemRowSpan: number — 项跨行数，默认 1\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE",
       "source": "vcm+override",
       "binding": {
-        "selfResolving": true
+        "selfResolving": true,
+        "dataContainer": true
       }
     },
     "r-tabs": {
@@ -3112,6 +4011,18 @@
       "category": "container",
       "description": "标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点（标签面板配置）"
+        },
+        {
+          "name": "toolbar",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化工具栏 dock"
+        },
         {
           "name": "modelValue",
           "type": "string | number",
@@ -3138,6 +4049,37 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onTabChange",
+          "type": "(name: string | number) => void",
+          "required": false,
+          "description": "标签页切换回调"
+        },
+        {
+          "name": "onTabClick",
+          "type": "(pane: TabsClickEvent, event: Event) => void",
+          "required": false,
+          "description": "标签页点击回调"
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: string | number) => any",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(value: string | number): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              }
+            ]
+          }
         }
       ],
       "emits": [
@@ -3281,6 +4223,18 @@
       "description": "折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点（折叠项配置）"
+        },
+        {
+          "name": "toolbar",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化工具栏 dock"
+        },
+        {
           "name": "modelValue",
           "type": "CollapseValue",
           "required": false,
@@ -3307,6 +4261,37 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: CollapseValue) => void",
+          "required": false,
+          "description": "展开/折叠切换回调"
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: CollapseValue) => any",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(value: CollapseValue): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "CollapseValue",
+                "variants": [
+                  "string",
+                  "number",
+                  "(string | number)[]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "collapseAll",
+          "type": "() => void",
+          "required": false
         }
       ],
       "emits": [
@@ -3451,6 +4436,18 @@
       "description": "步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点（步骤配置）"
+        },
+        {
+          "name": "toolbar",
+          "type": "unknown",
+          "required": false,
+          "description": "结构化工具栏 dock"
+        },
+        {
           "name": "modelValue",
           "type": "string | number",
           "required": false,
@@ -3476,6 +4473,41 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: string | number) => any",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(value: string | number): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "string | number",
+                "variants": [
+                  "string",
+                  "number"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "onStepChange",
+          "type": "(value: string | number, step: SparkNode, index: number) => void",
+          "required": false,
+          "description": "步骤切换回调"
+        },
+        {
+          "name": "nextStep",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "prevStep",
+          "type": "() => void",
+          "required": false
         }
       ],
       "emits": [
@@ -3629,6 +4661,12 @@
       "description": "对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点"
+        },
+        {
           "name": "header",
           "type": "unknown",
           "required": false,
@@ -3710,6 +4748,59 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "required": false,
+          "description": "关闭回调"
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: boolean) => any",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(value: boolean): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "boolean",
+                "variants": [
+                  "false",
+                  "true"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "onOpen",
+          "type": "() => void",
+          "required": false,
+          "description": "打开回调"
+        },
+        {
+          "name": "onOpened",
+          "type": "() => void",
+          "required": false,
+          "description": "打开动画结束回调"
+        },
+        {
+          "name": "onClosed",
+          "type": "() => void",
+          "required": false,
+          "description": "关闭动画结束回调"
+        },
+        {
+          "name": "open",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "required": false
         }
       ],
       "emits": [
@@ -4036,6 +5127,12 @@
       "description": "抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点"
+        },
+        {
           "name": "header",
           "type": "unknown",
           "required": false,
@@ -4117,6 +5214,59 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "required": false,
+          "description": "关闭回调"
+        },
+        {
+          "name": "onUpdate:modelValue",
+          "type": "(value: boolean) => any",
+          "required": false,
+          "schema": {
+            "kind": "event",
+            "type": "(value: boolean): any",
+            "params": [
+              {
+                "kind": "enum",
+                "type": "boolean",
+                "variants": [
+                  "false",
+                  "true"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "onOpen",
+          "type": "() => void",
+          "required": false,
+          "description": "打开回调"
+        },
+        {
+          "name": "onOpened",
+          "type": "() => void",
+          "required": false,
+          "description": "打开动画结束回调"
+        },
+        {
+          "name": "onClosed",
+          "type": "() => void",
+          "required": false,
+          "description": "关闭动画结束回调"
+        },
+        {
+          "name": "open",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "required": false
         }
       ],
       "emits": [
@@ -4422,6 +5572,12 @@
       "category": "container",
       "description": "分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点"
+        },
         {
           "name": "header",
           "type": "unknown",
@@ -5038,6 +6194,11 @@
       "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
           "name": "name",
           "type": "string",
           "required": false
@@ -5210,6 +6371,11 @@
       "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
           "name": "name",
           "type": "string",
           "required": false
@@ -5381,6 +6547,11 @@
       "category": "field",
       "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
         {
           "name": "name",
           "type": "string",
@@ -5731,6 +6902,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -5770,6 +6947,12 @@
       "category": "field",
       "description": "文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "content",
           "type": "string",
@@ -5880,6 +7063,12 @@
       "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
+        {
           "name": "tail",
           "type": "unknown",
           "required": false,
@@ -5976,6 +7165,11 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren | undefined",
           "required": false
         },
         {
@@ -6126,6 +7320,11 @@
           "required": false
         },
         {
+          "name": "children",
+          "type": "SparkNodeChildren | undefined",
+          "required": false
+        },
+        {
           "name": "id",
           "type": "string",
           "required": false
@@ -6239,6 +7438,12 @@
       "description": "间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
+        {
           "name": "direction",
           "type": "\"horizontal\" | \"vertical\"",
           "required": false,
@@ -6333,6 +7538,17 @@
       "category": "field",
       "description": "弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
+        {
+          "name": "contentChildren",
+          "type": "SparkNode[]",
+          "required": false
+        },
         {
           "name": "title",
           "type": "string",
@@ -6449,6 +7665,12 @@
       "category": "field",
       "description": "确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "title",
           "type": "string",
@@ -6578,6 +7800,12 @@
       "description": "页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
+        {
           "name": "title",
           "type": "string",
           "required": false,
@@ -6620,6 +7848,12 @@
       "category": "field",
       "description": "链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "label",
           "type": "string",
@@ -6701,6 +7935,12 @@
       "category": "field",
       "description": "下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "items",
           "type": "DropdownItem[]",
@@ -6927,6 +8167,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -6946,6 +8192,11 @@
         {
           "name": "props",
           "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren | undefined",
           "required": false
         },
         {
@@ -7046,6 +8297,12 @@
       "description": "卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
+        {
           "name": "header",
           "type": "string",
           "required": false
@@ -7111,6 +8368,12 @@
       "category": "field",
       "description": "按钮组件，基于 el-button 可渲染子内容，支持 type/size/icon 等样式属性和点击事件。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "label",
           "type": "string",
@@ -7328,6 +8591,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -7432,6 +8701,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -7913,6 +9188,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -8108,6 +9389,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -8260,6 +9547,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -8387,6 +9680,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -8531,6 +9830,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -8647,6 +9952,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -8703,6 +10014,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -8782,6 +10099,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -8884,6 +10207,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -9009,6 +10338,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -9117,6 +10452,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -9219,6 +10560,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -9322,6 +10669,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -9440,6 +10793,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -9620,6 +10979,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -9852,6 +11217,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -10021,6 +11392,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -10145,6 +11522,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -10209,6 +11592,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -10337,6 +11726,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -10451,6 +11846,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -10626,6 +12027,12 @@
           "required": false,
           "default": "\"\\u9879\\u76EE\"",
           "description": "实体名称"
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子节点列表"
         },
         {
           "name": "type",
@@ -10820,6 +12227,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -10887,6 +12300,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -10941,6 +12360,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -11077,6 +12502,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -11180,6 +12611,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -11366,6 +12803,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -11497,6 +12940,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -11924,6 +13373,11 @@
           "type": "string",
           "required": false,
           "default": "\"\""
+        },
+        {
+          "name": "node",
+          "type": "SparkNode",
+          "required": true
         }
       ],
       "emits": [],
@@ -12486,6 +13940,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -12638,6 +14098,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -12813,6 +14279,12 @@
               "\"right\""
             ]
           }
+        },
+        {
+          "name": "mergedChildren",
+          "type": "SparkNode[] | undefined",
+          "required": false,
+          "description": "合并后的子组件配置"
         },
         {
           "name": "isCurrentFieldHidden",
@@ -13027,6 +14499,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -13118,6 +14596,12 @@
       "category": "feature",
       "description": "时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "timestamp",
           "type": "string",
@@ -13243,6 +14727,12 @@
       "description": "时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。",
       "props": [
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
+        {
           "name": "type",
           "type": "string",
           "required": false,
@@ -13264,6 +14754,12 @@
       "category": "feature",
       "description": "骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "rows",
           "type": "number",
@@ -13332,6 +14828,12 @@
       "category": "feature",
       "description": "结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "icon",
           "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
@@ -13418,6 +14920,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -13428,6 +14936,12 @@
       "category": "feature",
       "description": "空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "image",
           "type": "string",
@@ -13465,6 +14979,12 @@
       "category": "feature",
       "description": "描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "label",
           "type": "string",
@@ -13551,6 +15071,12 @@
       "category": "feature",
       "description": "描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "title",
           "type": "string",
@@ -13689,6 +15215,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -13976,8 +15508,8 @@
                 "required": true,
                 "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
               },
-              "__@toPrimitive@955": {
-                "name": "__@toPrimitive@955",
+              "__@toPrimitive@51868": {
+                "name": "__@toPrimitive@51868",
                 "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                 "required": true,
                 "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -14256,8 +15788,8 @@
                     "required": true,
                     "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                   },
-                  "__@toPrimitive@955": {
-                    "name": "__@toPrimitive@955",
+                  "__@toPrimitive@51868": {
+                    "name": "__@toPrimitive@51868",
                     "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                     "required": true,
                     "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -14279,6 +15811,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -14347,6 +15885,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -14357,6 +15901,12 @@
       "category": "feature",
       "description": "面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "separator",
           "type": "string",
@@ -14489,6 +16039,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -14587,6 +16143,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -14732,6 +16294,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -14828,6 +16396,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -14989,6 +16563,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -15088,6 +16668,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -15276,6 +16862,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -15296,6 +16888,12 @@
       "category": "feature",
       "description": "徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。",
       "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        },
         {
           "name": "badgeValue",
           "type": "string | number",
@@ -15529,6 +17127,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -15721,6 +17325,12 @@
           "type": "Record<string, unknown>",
           "required": false,
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "children",
+          "type": "SparkNodeChildren",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -16070,6 +17680,11 @@
           "required": false
         },
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
           "name": "width",
           "type": "string | number",
           "required": false,
@@ -16101,6 +17716,11 @@
         {
           "name": "id",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
           "required": false
         },
         {
@@ -16138,6 +17758,11 @@
           "required": false
         },
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
           "name": "width",
           "type": "string | number",
           "required": false,
@@ -16169,6 +17794,11 @@
         {
           "name": "id",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
           "required": false
         },
         {
@@ -16278,6 +17908,11 @@
           "required": false
         },
         {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
           "name": "position",
           "type": "\"bottom\" | \"left\" | \"right\" | \"top\"",
           "required": false,
@@ -16325,6 +17960,11 @@
         {
           "name": "id",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
           "required": false
         },
         {
@@ -16642,19 +18282,24 @@
       "valueType": "string"
     },
     "r-table": {
-      "selfResolving": true
+      "selfResolving": true,
+      "dataContainer": true
     },
     "r-form": {
-      "selfResolving": true
+      "selfResolving": true,
+      "dataContainer": true
     },
     "r-detail": {
-      "selfResolving": true
+      "selfResolving": true,
+      "dataContainer": true
     },
     "r-tree": {
-      "selfResolving": true
+      "selfResolving": true,
+      "dataContainer": true
     },
     "r-list": {
-      "selfResolving": true
+      "selfResolving": true,
+      "dataContainer": true
     },
     "r-tabs": {
       "bindingDelegate": "form-element",

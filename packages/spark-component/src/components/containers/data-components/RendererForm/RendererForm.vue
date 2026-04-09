@@ -63,13 +63,14 @@ import {
   bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
+import type { DockProp, DockToolbarNode } from '../../docks/dock-extraction'
 
 interface Props extends SparkNode {
   id?: string
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
   /** 结构化工具栏 dock */
-  toolbar?: unknown
+  toolbar?: DockProp<DockToolbarNode>
   /** 子节点列表 */
   children?: SparkNode[]
   /** 表单标签宽度 */

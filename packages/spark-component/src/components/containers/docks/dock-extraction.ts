@@ -11,6 +11,31 @@
 import { computed, type ComputedRef } from 'vue'
 import { isSparkNode, getSparkNodeChildren, type SparkNode, type SparkNodeChildren } from '../../../core/types.js'
 
+// ── Dock 节点类型（按 dock 标识符收窄 SparkNode.type） ──────────────────────
+
+/** r-toolbar dock 节点 */
+export interface DockToolbarNode extends SparkNode { type: 'r-toolbar' }
+/** r-filter dock 节点 */
+export interface DockFilterNode extends SparkNode { type: 'r-filter' }
+/** r-actions dock 节点 */
+export interface DockActionsNode extends SparkNode { type: 'r-actions' }
+/** r-editor dock 节点 */
+export interface DockEditorNode extends SparkNode { type: 'r-editor' }
+/** r-header dock 节点 */
+export interface DockHeaderNode extends SparkNode { type: 'r-header' }
+/** r-footer dock 节点 */
+export interface DockFooterNode extends SparkNode { type: 'r-footer' }
+/** r-tail dock 节点 */
+export interface DockTailNode extends SparkNode { type: 'r-tail' }
+
+/**
+ * Dock prop 输入类型。
+ *
+ * 容器 defineProps 中用 `DockProp<DockToolbarNode>` 等声明具体语义，
+ * 运行时接受完整节点、简写对象（无 type）、或 false/null 禁用。
+ */
+export type DockProp<T extends SparkNode = SparkNode> = T | Record<string, unknown> | false | null
+
 /**
  * Dock prop 源类型。
  *

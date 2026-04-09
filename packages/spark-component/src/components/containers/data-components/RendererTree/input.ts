@@ -1,14 +1,14 @@
 import { computed } from 'vue'
 import type { SparkNode } from '../../../internal'
-import { useDockExtraction, TREE_DOCK_TYPES } from '../../docks/dock-extraction'
+import { useDockExtraction, TREE_DOCK_TYPES, type DockProp, type DockToolbarNode, type DockActionsNode, type DockEditorNode } from '../../docks/dock-extraction'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 
 interface RendererTreeInputProps {
   dataKey?: string | undefined
   children?: SparkNode[] | undefined
-  toolbar?: unknown
-  actions?: unknown
-  editor?: unknown
+  toolbar?: DockProp<DockToolbarNode> | undefined
+  actions?: DockProp<DockActionsNode> | undefined
+  editor?: DockProp<DockEditorNode> | undefined
   allowAppend?: boolean | undefined
   allowDelete?: boolean | undefined
 }

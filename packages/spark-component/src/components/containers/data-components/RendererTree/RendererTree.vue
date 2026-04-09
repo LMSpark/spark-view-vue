@@ -96,6 +96,7 @@ import {
   bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
+import type { DockProp, DockToolbarNode, DockActionsNode, DockEditorNode } from '../../docks/dock-extraction'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../data/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
@@ -110,11 +111,11 @@ interface Props extends SparkNode {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
   /** 结构化工具栏 dock */
-  toolbar?: unknown
+  toolbar?: DockProp<DockToolbarNode>
   /** 结构化节点动作 dock */
-  actions?: unknown
+  actions?: DockProp<DockActionsNode>
   /** 结构化编辑区 dock */
-  editor?: unknown
+  editor?: DockProp<DockEditorNode>
   /** 节点主键字段名，默认取 treeConfig.idField */
   nodeKey?: string
   /** 当前选中节点 ID */

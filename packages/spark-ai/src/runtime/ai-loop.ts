@@ -745,15 +745,16 @@ export class AIPageLoop {
 
   /**
    * 迭代修改：基于日志反馈 + 用户追加指令修改文件
+   * @param contextFiles 可选，外部提供的文件内容（如编辑器未保存内容），传入时跳过服务端读取
    */
-  async iterate(pageId: string, feedback?: string): Promise<AIResponse> {
+  async iterate(pageId: string, feedback?: string, contextFiles?: PageFiles): Promise<AIResponse> {
     const diagnostics = this.collector.captureDiagnostics(pageId, {
       includeGlobal: this.options.includeGlobalDiagnostics,
       maxIssues: 10,
       maxSamples: 32,
     })
-    // 读取当前文件内容
-    const currentFiles = await readPageFiles(pageId)
+    // 优先使用外部提供的文件内容，否则从服务端读取
+    const currentFiles = contextFiles ?? await readPageFiles(pageId)
 
     return this._callAI(pageId, {
       action: 'iterate',
@@ -780,14 +781,15 @@ export class AIPageLoop {
 
   /**
    * 流式迭代修改：SSE 逐 token 推送，通过回调接收中间事件
+   * @param contextFiles 可选，外部提供的文件内容（如编辑器未保存内容），传入时跳过服务端读取
    */
-  async iterateStream(pageId: string, feedback?: string, callbacks?: StreamCallbacks): Promise<AIResponse> {
+  async iterateStream(pageId: string, feedback?: string, callbacks?: StreamCallbacks, contextFiles?: PageFiles): Promise<AIResponse> {
     const diagnostics = this.collector.captureDiagnostics(pageId, {
       includeGlobal: this.options.includeGlobalDiagnostics,
       maxIssues: 10,
       maxSamples: 32,
     })
-    const currentFiles = await readPageFiles(pageId)
+    const currentFiles = contextFiles ?? await readPageFiles(pageId)
 
     return this._callAIStream(pageId, {
       action: 'iterate',
