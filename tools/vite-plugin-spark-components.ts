@@ -593,6 +593,19 @@ export default registerComponents
     const compactPrompt = this.buildPromptMarkdown(skills, 'compact')
     const fullPrompt = this.buildPromptMarkdown(skills, 'full')
 
+    // 构建能力级别的组件关系图（providers / consumers）
+    const capabilityMap: Record<string, { providers: string[]; consumers: string[] }> = {}
+    for (const skill of skills) {
+      for (const cap of skill.provides) {
+        const entry = capabilityMap[cap] ??= { providers: [], consumers: [] }
+        entry.providers.push(skill.type)
+      }
+      for (const cap of skill.consumes) {
+        const entry = capabilityMap[cap] ??= { providers: [], consumers: [] }
+        entry.consumers.push(skill.type)
+      }
+    }
+
     const metadata = {
       version: '2.0.0',
       buildTime: new Date().toISOString(),
@@ -604,6 +617,9 @@ export default registerComponents
         index: indexPrompt,
         compact: compactPrompt,
         full: fullPrompt,
+      },
+      componentRelationships: {
+        capabilities: capabilityMap,
       },
     }
 

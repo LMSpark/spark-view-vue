@@ -15,6 +15,7 @@
 import type {
   ComponentCatalog,
   ComponentEntry,
+  ComponentRegistry,
   PropEntry,
 } from './types'
 
@@ -33,7 +34,7 @@ export interface FcDirectoryPayload {
     meta: number
     features: number
   }
-  registry: ComponentCatalog['registry']
+  registry: ComponentRegistry
   components: Array<{ type: string; category: string; description: string }>
 }
 
@@ -47,17 +48,25 @@ export function projectFcDirectory(catalog: ComponentCatalog): FcDirectoryPayloa
   const entries = Object.entries(catalog.components)
   const featureCount = entries.filter(([, e]) => e.category === 'feature').length
 
+  // 兼容旧格式 metadata.json（无 registry 字段）：从 components 按 category 动态生成
+  const registry: NonNullable<ComponentCatalog['registry']> = catalog.registry ?? {
+    containers: entries.filter(([, e]) => e.category === 'container').map(([t]) => t),
+    fields: entries.filter(([, e]) => e.category === 'field').map(([t]) => t),
+    groups: entries.filter(([, e]) => e.category === 'group').map(([t]) => t),
+    meta: entries.filter(([, e]) => e.category === 'meta').map(([t]) => t),
+  }
+
   return {
     hint: 'session.describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 查询 stills.actionSpec。',
     summary: {
       total: catalog.componentCount,
-      containers: catalog.registry.containers.length,
-      fields: catalog.registry.fields.length,
-      groups: catalog.registry.groups.length,
-      meta: catalog.registry.meta.length,
+      containers: registry.containers.length,
+      fields: registry.fields.length,
+      groups: registry.groups.length,
+      meta: registry.meta.length,
       features: featureCount,
     },
-    registry: catalog.registry,
+    registry,
     components: entries.map(([type, e]) => ({
       type,
       category: e.category,
@@ -118,11 +127,12 @@ export function projectFcSpec(catalog: ComponentCatalog, type: string): FcCompon
  * 投影：全部组件类型列表（排序后，用于 type 字段下拉）。
  */
 export function projectDevTypes(catalog: ComponentCatalog): string[] {
+  const reg = catalog.registry
   const allTypes = new Set<string>([
-    ...catalog.registry.containers,
-    ...catalog.registry.fields,
-    ...catalog.registry.groups,
-    ...catalog.registry.meta,
+    ...(reg?.containers ?? []),
+    ...(reg?.fields ?? []),
+    ...(reg?.groups ?? []),
+    ...(reg?.meta ?? []),
   ])
   for (const type of Object.keys(catalog.components)) {
     allTypes.add(type)

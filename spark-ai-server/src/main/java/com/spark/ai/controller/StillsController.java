@@ -156,6 +156,9 @@ public class StillsController {
         if (result.getReasoning() != null) {
             body.put("reasoning", result.getReasoning());
         }
+        if (result.getToolCalls() != null && !result.getToolCalls().isEmpty()) {
+            body.put("toolCalls", result.getToolCalls());
+        }
         return ResponseEntity.ok(body);
     }
 

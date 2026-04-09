@@ -13,7 +13,7 @@ export interface ComponentCatalog {
   version: string
   buildTime: string
   componentCount: number
-  registry: ComponentRegistry
+  registry?: ComponentRegistry
   components: Record<string, ComponentEntry>
   constraints: PlatformConstraints
   sharedTypes?: Record<string, SharedTypeDefinition>
