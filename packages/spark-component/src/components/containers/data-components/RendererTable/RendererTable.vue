@@ -95,7 +95,7 @@
 
           <!-- 主数据列 -->
           <SparkComponentRenderer
-            v-for="(child, index) in sparkChildren"
+            v-for="(child, index) in props.children ?? []"
             :key="nodeId(child) ?? `r-table-child-${index}`"
             :config="child"
           />
@@ -132,7 +132,7 @@
 import { computed, ref, useAttrs, useSlots } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer, SparkTableColumns,
-  getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode,
+  getSparkNodeChildren, nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT,
 } from '../../../internal'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
@@ -264,14 +264,7 @@ const baseTableAttrs = computed<Record<string, unknown>>(() => {
 })
 const effectiveDataKey = computed(() => props.dataKey)
 
-const sparkChildren = computed<SparkNode[]>(() => {
-  const nodes: SparkNode[] = []
-  for (const child of props.children ?? []) {
-    if (typeof child === 'string' || typeof child === 'number') continue
-    if (isCollectedTableColumn(child)) nodes.push(child)
-  }
-  return nodes
-})
+
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
@@ -484,19 +477,6 @@ async function handleRowClick(row: IDataRow, column?: unknown, event?: Event) {
 
 async function handleSelectionChange(selection: IDataRow[]) {
   await dispatch('selection-change', Array.isArray(selection) ? selection : [])
-}
-
-function isCollectedTableColumn(config: SparkNode): boolean {
-  const type = config.type
-  if (typeof type !== 'string' || type.length === 0) return false
-  if (/^Render[A-Z]/.test(type)) return false
-  if (type === 'el-table-column') return true
-  if (!type.startsWith('r-')) return false
-  const field = nodeInputProp(config, 'field')
-  if (typeof field === 'string' && field.length > 0) return true
-  const children = getSparkNodeChildren(config.children)
-  if (children.length > 0) return true
-  return false
 }
 
 </script>
