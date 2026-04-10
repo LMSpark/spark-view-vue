@@ -94,9 +94,9 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
 import RendererListItemScope from '../RendererListItemScope.vue'
-import { useContainerActions } from '../../actions/useContainerActions'
-import type { LateralActionPosition } from '../../actions/useContainerActions'
-import { useContainerDataSource, useContainerDataSourceEffects } from '../../data/useContainerDataSource'
+import { useContainerActions } from '../../useContainerActions'
+import type { LateralActionPosition } from '../../useContainerActions'
+import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
@@ -196,8 +196,6 @@ const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
   return getSparkNodeChildren(contentChildren.value)
 })
-const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
-const dockedItemActions = computed(() => getSparkNodeChildren(props.actions?.children))
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
@@ -225,7 +223,7 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => dockedToolbar.value),
+  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
   toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
   toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
   modelPermission,
@@ -239,7 +237,7 @@ const {
   showActionsRight: showItemActionsRight,
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => dockedItemActions.value),
+  actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
   actionPosition: computed(() => (props.actions?.props?.['position'] as LateralActionPosition | undefined) ?? legacyItemActionsPositionValue.value ?? 'right'),
   actionClass: computed(() => (props.actions?.props?.['class'] as string | undefined) ?? readStringAttr('itemActionsClass') ?? ''),
   modelPermission,

@@ -20,7 +20,7 @@
  * @skill-description 操作列/区域 dock，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
 
 interface Props {
   type?: string
@@ -41,8 +41,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-actions',
 })
-
-useSparkComponent(props)
 
 const children = computed(() => getSparkNodeChildren(props.children))
 </script>

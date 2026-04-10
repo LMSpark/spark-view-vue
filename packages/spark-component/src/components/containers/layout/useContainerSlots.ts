@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import type { ComputedRef, Slots } from 'vue'
-import type { LateralActionPosition } from '../actions/useContainerActions'
+import type { LateralActionPosition } from '../useContainerActions'
 
 interface UseContainerSlotsOptions {
   slots: Slots

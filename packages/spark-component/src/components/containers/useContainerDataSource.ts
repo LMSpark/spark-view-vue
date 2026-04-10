@@ -1,8 +1,8 @@
 import { computed, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { DataView, IDataSet, IModelPermission } from '@spark-view/spark-data'
-import { resolveViewFromDataKey } from '../../../shared/data-key-resolver.js'
-import { extractModelPermission } from '../../../permission/index.js'
+import { resolveViewFromDataKey } from '../../core/data-key-resolver.js'
+import { extractModelPermission } from '../../permission/index.js'
 
 interface LoggerLike {
   warn(message: string): void

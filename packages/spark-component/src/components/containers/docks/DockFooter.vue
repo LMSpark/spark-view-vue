@@ -20,7 +20,7 @@
  * @skill-description 底部 dock，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
 
 interface Props {
   type?: string
@@ -33,8 +33,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-footer',
 })
-
-useSparkComponent(props)
 
 const children = computed(() => getSparkNodeChildren(props.children))
 </script>

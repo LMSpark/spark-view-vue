@@ -25,7 +25,6 @@ export type {
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 export { default as SparkChild } from './support/SparkChild.js'
 export { default as SparkChildrenBridge } from './support/SparkChildrenBridge.js'
-export { default as SparkSlotContextBridge } from './support/SparkSlotContextBridge.js'
 export { default as SparkTableColumns } from './support/SparkTableColumns.js'
 
 // ── 核心类型 ──

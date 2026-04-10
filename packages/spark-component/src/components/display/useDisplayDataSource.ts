@@ -8,7 +8,7 @@
  * bindRules 阶段已将 dataKey 解析为具体数据注入 props。
  */
 import { computed, type ComputedRef } from 'vue'
-import { useSparkConsume, DATA_ROW } from '../../internal'
+import { useSparkConsume, DATA_ROW } from '../internal'
 
 interface DisplayDataProps {
   field?: string | undefined

@@ -88,8 +88,6 @@ const contentChildren = computed(() => props.children ?? [])
 const paneConfigs = computed(() =>
   getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-tab-pane')
 )
-const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
-
 const currentActiveName = useDefaultedSelection({
   modelValue: computed(() => props.modelValue),
   items: paneConfigs,
@@ -102,7 +100,7 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => dockedToolbar.value),
+  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
     toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
   toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
   modelPermission: computed(() => undefined),

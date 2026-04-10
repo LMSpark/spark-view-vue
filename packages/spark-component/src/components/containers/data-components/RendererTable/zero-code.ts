@@ -6,9 +6,9 @@ import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from
 import type { RendererTableApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
 
-interface NativeTableLike {
+export interface NativeTableLike {
   clearSelection?: () => void
   toggleRowSelection?: (row: IDataRow, selected?: boolean) => void
   setCurrentRow?: (row: IDataRow | null) => void

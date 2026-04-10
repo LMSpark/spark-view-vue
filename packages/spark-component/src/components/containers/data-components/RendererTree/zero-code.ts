@@ -11,8 +11,6 @@ import { createBuiltinActionHandler, isBuiltinActionDisabled as _isBuiltinAction
 import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
 import type { RendererTreeApi } from './types'
 
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
-
 export interface TreeNode {
   id?: string | number
   label?: string

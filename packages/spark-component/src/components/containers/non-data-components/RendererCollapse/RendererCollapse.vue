@@ -82,8 +82,6 @@ const contentChildren = computed(() => props.children ?? [])
 const itemConfigs = computed(() =>
   getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-collapse-item')
 )
-const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
-
 const currentModelValue = useControlledValue(computed(() => props.modelValue))
 
 const {
@@ -92,7 +90,7 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => dockedToolbar.value),
+  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
     toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
   toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
   modelPermission: computed(() => undefined),

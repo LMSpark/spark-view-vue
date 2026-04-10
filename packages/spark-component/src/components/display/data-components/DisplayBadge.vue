@@ -27,7 +27,7 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
-import { useDisplayDataSource } from '../composables/useDisplayDataSource'
+import { useDisplayDataSource } from '../useDisplayDataSource'
 
 interface Props extends SparkNode {
   children?: SparkNode[]

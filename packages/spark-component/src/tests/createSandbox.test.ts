@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { compileFunctions } from '../page/sandbox/createSandbox'
+import { compileFunctions } from '../page/createSandbox'
 import type { PageContext } from '../page/context/types'
 import * as permissionApi from '../permission/index'
 

@@ -34,16 +34,14 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
     }
     return nodes
   })
-  const dockedToolbar = computed(() => getSparkNodeChildren(options.props.toolbar?.children))
   const dockedNodeActions = computed(() => getSparkNodeChildren(options.props.actions?.children))
-  const dockedEditor = computed(() => getSparkNodeChildren(options.props.editor?.children))
 
   const hasLegacyNodeActions = computed(() =>
     dockedNodeActions.value.length === 0 && (effectiveAllowAppend.value || effectiveAllowDelete.value)
   )
 
   const hasNodeActions = computed(() => dockedNodeActions.value.length > 0 || hasLegacyNodeActions.value)
-  const editorConfigs = computed(() => dockedEditor.value)
+  const editorConfigs = computed(() => getSparkNodeChildren(options.props.editor?.children))
   const editorPositionValue = computed<ToolbarPosition>(() => (options.props.editor?.props?.['position'] as ToolbarPosition | undefined) ?? 'right')
   const editorClassValue = computed(() => (options.props.editor?.props?.['class'] as string | undefined) ?? '')
   const editorStyleValue = computed<Record<string, string>>(() => {
@@ -70,8 +68,6 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
     effectiveAllowAppend,
     effectiveAllowDelete,
     nodeContentChildren,
-    dockedToolbar,
-    dockedNodeActions,
     hasLegacyNodeActions,
     hasNodeActions,
     editorConfigs,

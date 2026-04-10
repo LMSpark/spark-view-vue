@@ -6,7 +6,7 @@ import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { DATA_ROW } from '../../internal'
 import { useContainerGrid } from '../layout/useContainerGrid'
-import { useContainerDataSource, useContainerDataSourceEffects } from '../data/useContainerDataSource'
+import { useContainerDataSource, useContainerDataSourceEffects } from '../useContainerDataSource'
 import { useContainerContextData } from './useContainerContextData'
 import { useContainerToolbar, type ToolbarPosition } from '../layout/useContainerToolbar'
 import { createCurrentRowSlotScope } from '../slotScopeFactories'
@@ -29,8 +29,6 @@ export function useFormDetailContainer(
   // Dock 节点已由绑定层从 children 提升为 props（toolbar），
   // 此处 children 仅包含内容子节点。
   const contentChildren = computed(() => props.children ?? [])
-
-  const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
 
   const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
     children: computed(() => getSparkNodeChildren(contentChildren.value)),
@@ -67,7 +65,7 @@ export function useFormDetailContainer(
     visibleToolbarConfigs,
     showToolbar,
   } = useContainerToolbar({
-    toolbar: computed(() => dockedToolbar.value),
+    toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
     toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
     toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
     modelPermission,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
-import { resolveViewFromDataKey } from '../packages/spark-component/src/shared/data-key-resolver'
+import { resolveViewFromDataKey } from '../packages/spark-component/src/core/data-key-resolver'
 
 describe('spark-component dataKey resolver', () => {
   function createDataSet() {

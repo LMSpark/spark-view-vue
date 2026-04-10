@@ -36,7 +36,7 @@
 import { computed } from 'vue'
 import { Picture } from '@element-plus/icons-vue'
 import { useSparkPageComponent, type SparkNode } from '../../internal'
-import { useDisplayDataSource } from '../composables/useDisplayDataSource'
+import { useDisplayDataSource } from '../useDisplayDataSource'
 
 interface Props extends SparkNode {
   /** 图片 URL（静态传入） */

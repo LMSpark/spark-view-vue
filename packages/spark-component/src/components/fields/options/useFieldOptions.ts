@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { PAGE_DATASET, useSparkConsume } from '../../internal'
-import { resolveViewFromDataKey } from '../../../shared/data-key-resolver.js'
+import { resolveViewFromDataKey } from '../../../core/data-key-resolver.js'
 import { useFieldPermission } from '../context/useFieldPermission'
 import type { FieldPermissionProps } from '../context/useFieldPermission'
 import { buildOptionSourceFromView } from './option-source.js'

@@ -23,7 +23,7 @@
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, type SparkNode } from '../../internal'
-import { useDisplayDataSource } from '../composables/useDisplayDataSource'
+import { useDisplayDataSource } from '../useDisplayDataSource'
 
 type ProgressColor = string | Array<{ color: string; percentage: number }>
 

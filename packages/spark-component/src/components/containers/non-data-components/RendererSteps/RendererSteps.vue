@@ -82,8 +82,6 @@ const contentChildren = computed(() => props.children ?? [])
 const stepConfigs = computed(() =>
   getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-step')
 )
-const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
-
 const activeStepName = useDefaultedSelection({
   modelValue: computed(() => props.modelValue),
   items: stepConfigs,
@@ -96,7 +94,7 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => dockedToolbar.value),
+  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
     toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
   toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
   modelPermission: computed(() => undefined),

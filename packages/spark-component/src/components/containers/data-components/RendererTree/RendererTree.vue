@@ -74,7 +74,7 @@
  */
 import { computed, ref } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { nodeId, type SparkNode } from '../../../internal'
+import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { usePermission } from '../../../../permission/index.js'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
@@ -91,13 +91,13 @@ import {
 import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { useContainerActions } from '../../actions/useContainerActions'
+import { useContainerActions } from '../../useContainerActions'
 import {
   bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
 
-import { useContainerDataSource, useContainerDataSourceEffects } from '../../data/useContainerDataSource'
+import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import RendererDataScope from '../RendererDataScope.vue'
@@ -153,8 +153,6 @@ const {
   effectiveAllowAppend,
   effectiveAllowDelete,
   nodeContentChildren,
-  dockedToolbar,
-  dockedNodeActions,
   hasLegacyNodeActions,
   hasNodeActions,
   editorConfigs,
@@ -194,7 +192,7 @@ const treeIdField = computed(() =>
 const {
   toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => dockedToolbar.value),
+  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
   toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
   toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
   modelPermission,
@@ -204,7 +202,7 @@ const {
 const {
   getScopedActionConfigs: getScopedNodeActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => [...dockedNodeActions.value]),
+  actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
   actionPosition: computed(() => 'right'),
   actionClass: computed(() => (props.actions?.props?.['class'] as string | undefined)),
   modelPermission,

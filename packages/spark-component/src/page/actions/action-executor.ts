@@ -27,7 +27,7 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { PageMessageType } from '@spark-view/spark-utils'
 import { extractActionExecutionControl } from './action-control'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../components/containers/support/crud-result-helpers.js'
-import { resolveViewFromDataKey } from '../../shared/data-key-resolver.js'
+import { resolveViewFromDataKey } from '../../core/data-key-resolver.js'
 
 // ── 视图查找辅助 ──────────────────────────────────────────────────────────
 

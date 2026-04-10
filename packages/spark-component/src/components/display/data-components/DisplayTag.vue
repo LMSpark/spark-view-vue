@@ -22,7 +22,7 @@
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, type SparkNode } from '../../internal'
-import { useDisplayDataSource } from '../composables/useDisplayDataSource'
+import { useDisplayDataSource } from '../useDisplayDataSource'
 
 interface Props extends SparkNode {
   content?: string

@@ -110,17 +110,8 @@ export type {
 export {
   SparkPageRenderer,
 } from './page/index.js'
-// 组件层公共导出（容器 / 字段 / 展示 / 模板 DSL / 支持组件）
+// 组件层公共导出（容器 / 字段 / 展示 / 支持组件）
 export * from './components/index.js'
-
-
-export * as componentComposables from './components/composables.js'
-export * as containers from './components/containers/index.js'
-export * as displays from './components/display/index.js'
-export * as fields from './components/fields/index.js'
-export * as containerComposables from './components/containers/composables.js'
-export * as fieldComposables from './components/fields/composables.js'
-export * as displayComposables from './components/display/composables/index.js'
 
 export {
   usePageDataSet,

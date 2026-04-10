@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ref } from 'vue'
 import { buildPageContext } from '../packages/spark-component/src/page/context/buildPageContext'
-import { compileFunctions } from '../packages/spark-component/src/page/sandbox/createSandbox'
+import { compileFunctions } from '../packages/spark-component/src/page/createSandbox'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
 
