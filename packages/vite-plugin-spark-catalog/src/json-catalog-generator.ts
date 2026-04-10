@@ -31,6 +31,7 @@ import type {
   ComponentEntry,
   ComponentRegistry,
   RawComponentCatalog,
+  RawComponentEntry,
   PlatformConstraints,
   PropEntry,
   EmitEntry,
@@ -437,7 +438,7 @@ function buildCatalogDocument(
 
 function buildRawCatalogDocument(apiMap: Map<string, VcmApiDescriptor>): RawComponentCatalog {
   const sortedEntries = [...apiMap.entries()].sort(([left], [right]) => left.localeCompare(right, 'en'))
-  return Object.fromEntries(
+  const components: Record<string, RawComponentEntry> = Object.fromEntries(
     sortedEntries.map(([type, api]) => [type, {
       type: api.type,
       filePath: api.filePath,
@@ -448,6 +449,12 @@ function buildRawCatalogDocument(apiMap: Map<string, VcmApiDescriptor>): RawComp
       hasIndexSignature: api.hasIndexSignature,
     }]),
   )
+  return {
+    version: '2.0.0',
+    buildTime: new Date().toISOString(),
+    componentCount: sortedEntries.length,
+    components,
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -498,7 +505,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   const rawCatalog = buildRawCatalogDocument(apiMap)
   const aiCatalog = buildCatalogDocument('ai', aiComponents)
 
-  logger.info(`📦 Raw 目录已构建: ${Object.keys(rawCatalog).length} 条目`)
+  logger.info(`📦 Raw 目录已构建: ${rawCatalog.componentCount} 条目`)
   logger.info(`📦 AI 目录已构建: ${aiCatalog.componentCount} 条目`)
 
   const rawOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
@@ -512,11 +519,11 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   if (options.perComponentDir !== undefined) {
     const dirAbsolute = resolve(root, options.perComponentDir)
     if (!existsSync(dirAbsolute)) mkdirSync(dirAbsolute, { recursive: true })
-    for (const [key, entry] of Object.entries(rawCatalog)) {
+    for (const [key, entry] of Object.entries(rawCatalog.components)) {
       const filePath = resolve(dirAbsolute, `${key}.json`)
       writeFileSync(filePath, JSON.stringify(entry, null, 2), 'utf-8')
     }
-    logger.info(`📂 按组件独立 JSON 已输出: ${options.perComponentDir}/ (${Object.keys(rawCatalog).length} 文件)`)
+    logger.info(`📂 按组件独立 JSON 已输出: ${options.perComponentDir}/ (${rawCatalog.componentCount} 文件)`)
   }
 
   return rawCatalog

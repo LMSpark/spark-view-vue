@@ -26,7 +26,7 @@ const TREE_COMPONENT = `${CONTAINER_DIR}/RendererTree/RendererTree.vue`
 
 const checker = getOrCreateChecker(resolve(ROOT, 'tsconfig.catalog.json'))
 const diffCatalog = Object.fromEntries(
-  Object.entries(COMPONENT_CATALOG).map(([type, entry]) => {
+  Object.entries(COMPONENT_CATALOG.components).map(([type, entry]) => {
     const propLines = entry.props.map(prop => `${prop.name}: ${prop.description ?? ''}`)
     const emitLines = entry.emits.map(emit => `emit ${emit.name}`)
     const text = [entry.filePath, ...propLines, ...emitLines]

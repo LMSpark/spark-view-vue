@@ -51,13 +51,21 @@ export interface ComponentCatalog {
 }
 
 /**
- * Raw VCM 提取目录。
+ * Raw VCM 提取目录（完整 wrapper 结构）。
  *
- * 顶层直接是 `type -> VCM descriptor` 映射，
- * 不再附带 version / buildTime / componentCount 等包装元信息，
- * 仅用于评估 vue-component-meta 的直接提取结果。
+ * 保留 version / buildTime / componentCount 元信息，
+ * components 内为 vue-component-meta 的直接提取结果。
  */
-export type RawComponentCatalog = Record<string, RawComponentEntry>
+export interface RawComponentCatalog {
+  /** Schema 版本 */
+  version: string
+  /** 构建时间 ISO 8601 */
+  buildTime: string
+  /** 组件总数 */
+  componentCount: number
+  /** 组件条目：key = 组件 type（kebab-case） */
+  components: Record<string, RawComponentEntry>
+}
 
 export interface RawComponentEntry {
   type: string

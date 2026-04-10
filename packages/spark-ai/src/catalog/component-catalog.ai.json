@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-10T18:48:59.804Z",
+  "buildTime": "2026-04-10T19:02:09.331Z",
   "componentCount": 121,
   "registry": {
     "containers": [
@@ -86,7 +86,7 @@
   "sharedTypes": {
     "SparkNode": {
       "name": "SparkNode",
-      "description": "组件配置节点 —— rule.json 的基本单元。每个节点通过 type 字段映射到 ComponentRegistry 中已注册的组件，由 SparkComponentRenderer 在运行时动态解析并渲染。",
+      "description": "组件配置节点 —— 严格对齐 Vue h(type, props, children) 三段式。rule.json 中 dataKey/field/id/on/visible/disabled/dock 等可写在根级（便于阅读），绑定阶段（buildPageChildren）会全部收入 props。",
       "properties": [
         {
           "name": "type",
@@ -95,67 +95,17 @@
           "description": "组件类型（kebab-case），映射到 ComponentRegistry 中的注册名，如 \"r-table\"、\"r-text\"、\"el-button\""
         },
         {
-          "name": "id",
-          "type": "string",
-          "description": "实例 ID（可选，运行时自动生成 spark-{n}）"
-        },
-        {
-          "name": "dataKey",
-          "type": "string",
-          "description": "数据绑定键（如 \"Users@rows\"），容器组件（r-table 等 self-resolve 类型）在运行时自行解析为 DataView"
-        },
-        {
-          "name": "field",
-          "type": "string",
-          "description": "字段绑定名，定位到 DataView 行中的数据字段（如 \"userName\"）"
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "description": "显示标签（UI 展示文字，如 \"用户名\"），与 field 分离"
-        },
-        {
-          "name": "optionKey",
-          "type": "string",
-          "description": "选项数据源 DataKey（如 \"Categories@rows\"），供 r-select/r-radio/r-checkbox-group 解析选项列表"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
-          "description": "组件属性，透传到 Vue 组件 props（v-bind 展开）"
+          "description": "组件属性，透传到 Vue 组件 props（v-bind 展开）。绑定阶段会将根级的 id/dataKey/field/label/optionKey/on/visible/disabled/dock/docks 等全部收入此处"
         },
         {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子组件配置（递归结构），容器组件渲染其 children 形成组件树"
-        },
-        {
-          "name": "visible",
-          "type": "boolean",
-          "description": "可见性控制，false 时组件不渲染"
-        },
-        {
-          "name": "disabled",
-          "type": "boolean",
-          "description": "禁用状态控制"
-        },
-        {
-          "name": "dock",
-          "type": "string",
-          "description": "停靠区域名。声明子节点归属哪个 dock，例如 toolbar / actions / filter / header / footer。"
-        },
-        {
-          "name": "on",
-          "type": "Record<string, string>",
-          "description": "事件绑定（key=camelCase 事件名，value=script.js 函数名），如 { \"rowDblclick\": \"handleRowDblclick\" }"
-        },
-        {
-          "name": "docks",
-          "type": "{ toolbar?: { position?: 'top' | 'bottom' | 'left' | 'right', class?: string }, actions?: { position?: 'left' | 'right', label?: string, width?: string | number, align?: 'left' | 'center' | 'right', fixed?: boolean | 'left' | 'right', class?: string }, filter?: { class?: string, collapsible?: boolean, defaultCollapsed?: boolean, autoFitMinWidth?: string, itemSpan?: number, gridColumns?: number, gridGap?: number | string, gridAutoRows?: string }, header?: { class?: string, width?: string | number }, footer?: { class?: string, width?: string | number }, editor?: { position?: 'top' | 'bottom' | 'left' | 'right', width?: string | number, class?: string } }",
-          "description": "容器停靠区域显示配置。工具栏/筛选区/行操作区/头部/底部/编辑区的布局参数统一写在这里。"
         }
       ],
-      "notes": "【组件与 SparkNode 的关系】\nrule.json 是一棵 SparkNode 树。渲染引擎（SparkComponentRenderer）递归遍历这棵树，对每个节点：\n1. 通过 type 从 ComponentRegistry 动态查找已注册的 Vue 组件\n2. 将 props + config 传入组件，children 由组件自行渲染（容器组件用 SparkComponentRenderer 递归）\n3. 容器组件通过能力系统 provide(DATA_SOURCE, CONTEXT_DATA) 向子树暴露数据上下文，字段语义由祖先 context.type 推断\n4. 字段组件通过 consume() 自动感知父容器语境，同一个 r-text 在不同父容器中呈现不同形态\n\n【子组件智能感知父容器（Context-Aware Rendering）】\n- 在 r-table 中 → 字段组件渲染为表格列（el-table-column 包装）\n- 在 r-form 中 → 字段组件渲染为表单输入控件（el-form-item 包装）\n- 在 r-detail 中 → 字段组件渲染为只读展示\n\n语境不再通过独立能力键传递，而是由字段组件通过 useSparkComponent 沿祖先 context.type 链推断，值为 'table' | 'form' | 'detail' | 'list' | 'tree'。\n字段组件无需知道自己处于哪种容器，框架自动适配渲染模式。\n\n【动态渲染流程】\nrule.json → SparkNode 树\n  → SparkComponentRenderer 递归遍历\n  → 每个节点：registry.get(node.type) → 渲染对应 Vue 组件\n  → 容器组件 provide(DATA_SOURCE, CONTEXT_DATA)\n  → 子组件 consume() 获取数据与语境 → 自适应渲染\n\n【children + dock + docks 统一结构】\n- toolbar / filter / actions / header / footer 的内容节点一律直接放在 children 内，并通过 dock 标识归属区域。\n- 各区域的显示配置统一写在 props.docks.*，例如 props.docks.toolbar.position、props.docks.actions.width。\n- 容器主内容区节点省略 dock（或视为默认区）。"
+      "notes": "【h(type, props, children) 三段式】\nSparkNode 仅保留 3 个根级字段，与 Vue h() 函数一一对应：\n- type → 渲染什么组件\n- props → 组件接收的全部属性（id/dataKey/field/label/on/visible/disabled/dock/docks 均在此）\n- children → 嵌套子节点\n\nrule.json 允许将 dataKey/field/id/on/visible/disabled 等写在根级（便于阅读），\n绑定阶段（buildPageChildren）会全部收入 props，组件代码只需关心 props。\n\n【常用 props 字段说明】\n- id: string — 实例 ID（可选，运行时自动生成 spark-{n}）\n- dataKey: string — 数据绑定键（如 \"Users@rows\"），容器组件自行解析为 DataView\n- field: string — 字段绑定名，定位到 DataView 行中的数据字段\n- label: string — 显示标签（UI 展示文字）\n- optionKey: string — 选项数据源 DataKey（供 r-select/r-radio 等解析选项列表）\n- on: Record<string, string> — 事件绑定（key=camelCase 事件名，value=script.js 函数名）\n- visible: boolean — 可见性控制\n- disabled: boolean — 禁用状态控制\n- dock: string — 停靠区域名（toolbar/actions/filter/header/footer）\n- docks: object — 容器停靠区域显示配置\n\n【动态渲染流程】\nrule.json → SparkNode 树\n  → SparkComponentRenderer 递归遍历\n  → 每个节点：registry.get(node.type) → 渲染对应 Vue 组件\n  → 容器组件 provide(DATA_SOURCE, CONTEXT_DATA)\n  → 子组件 consume() 获取数据与语境 → 自适应渲染"
     }
   },
   "components": {

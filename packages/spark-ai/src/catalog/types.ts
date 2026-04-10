@@ -20,7 +20,12 @@ export interface ComponentCatalog {
   bindingDescriptors?: Record<string, BindingDescriptor>
 }
 
-export type RawComponentCatalog = Record<string, RawComponentEntry>
+export interface RawComponentCatalog {
+  version: string
+  buildTime: string
+  componentCount: number
+  components: Record<string, RawComponentEntry>
+}
 
 export interface RawComponentEntry {
   type: string
