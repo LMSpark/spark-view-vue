@@ -26,7 +26,7 @@
         "build:no-upload": "node scripts/build-all.mjs --no-upload",
         "build:analyze": "cross-env ANALYZE=true BUILD_MODE=smart vite build",
         "build:analyze:classic": "cross-env ANALYZE=true BUILD_MODE=classic vite build",
-        "generate:catalog": "npx tsx packages/vite-plugin-spark-catalog/src/cli.ts",
+        "generate:catalog": "npx tsx --no-cache packages/vite-plugin-spark-catalog/src/cli.ts",
         "build:check": "pnpm run generate:catalog && vue-tsc --noEmit --skipLibCheck && cross-env BUILD_MODE=smart vite build",
         "typecheck": "vue-tsc --noEmit --skipLibCheck -p tsconfig.typecheck.json",
         "typecheck:ci": "vue-tsc --noEmit --skipLibCheck -p tsconfig.typecheck.json",

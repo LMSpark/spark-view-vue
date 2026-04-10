@@ -20,23 +20,8 @@
  * @skill-description 操作列/区域组件，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../internal'
-
-interface Props {
-  type?: string
-  id?: string
-  children?: SparkNode[]
-  /** 操作列位置 @default 'right' */
-  position?: 'left' | 'right'
-  /** 列标题 @default '操作' */
-  label?: string
-  /** 列宽 @default 160 */
-  width?: string | number
-  /** 对齐方式 @default 'left' */
-  align?: 'left' | 'center' | 'right'
-  /** 固定列 */
-  fixed?: boolean | 'left' | 'right'
-}
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../internal'
+import type { RendererActionsProps as Props } from './RendererActions.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-actions',

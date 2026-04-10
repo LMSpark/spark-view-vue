@@ -20,15 +20,15 @@
  * @skill-description 级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。
  */
 import { computed } from 'vue'
-import type { SparkNode } from '../../internal'
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
 type FieldPrimitive = string | number | boolean
 type CascaderPath = FieldPrimitive[]
 type CascaderValue = CascaderPath | CascaderPath[]
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-cascader'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

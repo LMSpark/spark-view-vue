@@ -222,7 +222,7 @@ consumeEvents(MY_EVENTS, {
 
 #### `initialize() / destroy()`
 
-生命周期钩子，`onMounted` / `onUnmounted` 自动调用，无需手动调用。  
+生命周期钩子，`onMounted` / `onUnmounted` 自动调用，无需手动调用。
 `destroy()` 会清理事件订阅和 `capabilities` Map。
 
 #### `logger: LoggerApi`
@@ -515,12 +515,12 @@ export type {
 
 | type | 组件 | 说明 |
 |------|------|------|
-| `r-actions` | DockActions | 操作按钮区 |
-| `r-filter` | DockFilter | 筛选条件区 |
-| `r-editor` | DockEditor | 编辑区 |
-| `r-header` | DockHeader | 容器顶部操作栏（div 弹性布局，非 el-header） |
-| `r-footer` | DockFooter | 容器底部操作栏（div 弹性布局，非 el-footer） |
-| `r-tail` | DockTail | 尾部扩展区 |
+| `r-actions` | RendererActions | 操作按钮区 |
+| `r-filter` | RendererFilter | 筛选条件区 |
+| `r-editor` | RendererEditor | 编辑区 |
+| `r-header` | RendererHeader | 容器顶部操作栏（div 弹性布局，非 el-header） |
+| `r-footer` | RendererFooter | 容器底部操作栏（div 弹性布局，非 el-footer） |
+| `r-tail` | RendererTail | 尾部扩展区 |
 
 ### 字段组件（32 类型）
 

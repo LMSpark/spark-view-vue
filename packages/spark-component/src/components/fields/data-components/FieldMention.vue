@@ -27,7 +27,8 @@
  * @skill-description 提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。
  */
 import { ref, computed, watch } from 'vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
 interface MentionOption {
   value: string
@@ -35,7 +36,7 @@ interface MentionOption {
   disabled?: boolean
 }
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-mention'> {
   /** 文本内容 */
   modelValue?: string
   /** 选项列表 */

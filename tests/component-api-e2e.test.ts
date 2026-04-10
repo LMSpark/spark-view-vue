@@ -14,9 +14,9 @@ import {
   formatDiffReport,
 } from '../packages/vite-plugin-spark-catalog/src/index'
 import catalogJson from '../packages/spark-ai/src/catalog/component-catalog.json'
-import type { ComponentCatalog } from '../packages/spark-ai/src/catalog/types'
+import type { RawComponentCatalog } from '../packages/spark-ai/src/catalog/types'
 
-const COMPONENT_CATALOG = catalogJson as ComponentCatalog
+const COMPONENT_CATALOG = catalogJson as RawComponentCatalog
 
 const ROOT = resolve('.')
 const FIELD_DIR = 'packages/spark-component/src/components/fields/data-components'
@@ -26,10 +26,10 @@ const TREE_COMPONENT = `${CONTAINER_DIR}/RendererTree/RendererTree.vue`
 
 const checker = getOrCreateChecker(resolve(ROOT, 'tsconfig.catalog.json'))
 const diffCatalog = Object.fromEntries(
-  Object.entries(COMPONENT_CATALOG.components).map(([type, entry]) => {
+  Object.entries(COMPONENT_CATALOG).map(([type, entry]) => {
     const propLines = entry.props.map(prop => `${prop.name}: ${prop.description ?? ''}`)
-    const emitLines = (entry.emits ?? []).map(emit => `emit ${emit.name}`)
-    const text = [entry.description ?? '', entry.notes ?? '', ...propLines, ...emitLines]
+    const emitLines = entry.emits.map(emit => `emit ${emit.name}`)
+    const text = [entry.filePath, ...propLines, ...emitLines]
       .filter(Boolean)
       .join('\n')
     return [type, text]

@@ -20,13 +20,13 @@
 /**
  * @skill-description 复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。
  */
-import type { SparkNode } from '../../internal'
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
 type MultiValue = Array<string | number | boolean>
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-checkbox-group'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

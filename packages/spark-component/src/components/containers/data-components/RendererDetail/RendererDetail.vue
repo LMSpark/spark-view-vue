@@ -49,6 +49,7 @@ import { SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
 import { nodeId, type SparkNode } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
+import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'
 import {
@@ -62,7 +63,7 @@ interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
   /** 结构化工具栏 */
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   /** 子节点列表 */
   children?: SparkNode[]
   /** CSS Grid 列数 */
@@ -172,4 +173,3 @@ defineExpose(detailApi)
   min-width: 0;
 }
 </style>
-

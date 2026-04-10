@@ -50,6 +50,7 @@ import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ToolbarNode } from '../RendererToolbar.types'
 import RendererStepItem from '../RendererStepItem.vue'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
@@ -59,7 +60,7 @@ interface Props extends SparkNode {
   /** 子节点（步骤配置） */
   children?: SparkNode[]
   /** 结构化工具栏 */
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   /** 当前步骤 */
   modelValue?: string | number
   /** 步骤切换回调 */
@@ -95,8 +96,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-    toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
+    toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.toolbar?.props?.class),
   modelPermission: computed(() => undefined),
 })
 

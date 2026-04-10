@@ -39,24 +39,8 @@
  * @skill-description 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
-
-type InlineAlign = 'start' | 'center' | 'end' | 'stretch'
-type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
-
-interface Props extends SparkNode {
-  children?: SparkNode[]
-  /** 结构化尾区 */
-  tail?: SparkNode
-  /** 单个子项之间的间距（同一区域内部） */
-  gap?: number | string
-  /** 主区与尾区之间的间距（区域级） */
-  zoneGap?: number | string
-  /** 区域内部子项的交叉轴对齐 */
-  align?: InlineAlign
-  /** 主区内部子项的主轴分布方式 */
-  justify?: InlineJustify
-}
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { InlineAlign, InlineJustify, RendererToolbarProps as Props } from './RendererToolbar.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-toolbar',
@@ -97,7 +81,7 @@ function justifyToCss(value: InlineJustify): string {
 
 // 读取子节点的 class。
 function dockClass(name: string): string {
-  if (name === 'tail') return (props.tail?.props?.['class'] as string | undefined) ?? ''
+  if (name === 'tail') return props.tail?.props?.class ?? ''
   return ''
 }
 

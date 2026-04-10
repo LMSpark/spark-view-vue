@@ -14,8 +14,9 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeChildrenProps<'r-timeline'> {
   children?: SparkNode[]
 }
 

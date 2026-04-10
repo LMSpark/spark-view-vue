@@ -16,11 +16,12 @@
  * @skill-description 分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。
  */
 import { ref, computed, watch } from 'vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
 type SegmentedOption = string | number | { label: string; value: string | number; disabled?: boolean }
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-segmented'> {
   /** 当前选中值 */
   modelValue?: string | number
   /** 选项列表 */

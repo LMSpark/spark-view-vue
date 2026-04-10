@@ -48,6 +48,7 @@ import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ToolbarNode } from '../RendererToolbar.types'
 import RendererCollapseItem from '../RendererCollapseItem.vue'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
@@ -59,7 +60,7 @@ interface Props extends SparkNode {
   /** 子节点（折叠项配置） */
   children?: SparkNode[]
   /** 结构化工具栏 */
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   /** 当前展开的面板 */
   modelValue?: CollapseValue
   /** 展开/折叠切换回调 */
@@ -91,8 +92,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-    toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
+    toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.toolbar?.props?.class),
   modelPermission: computed(() => undefined),
 })
 

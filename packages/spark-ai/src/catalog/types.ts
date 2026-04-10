@@ -2,8 +2,8 @@
  * 组件目录 JSON Schema 类型定义（完整版）
  *
  * 与 vite-plugin-spark-catalog/component-catalog-schema.ts 保持一致。
- * component-catalog.json 是 SSoT，此类型描述其完整结构。
- * 消费端通过 catalog-projections.ts 按需投影。
+ * component-catalog.json 是 raw VCM 直出映射；component-catalog.ai.json 是补充说明后的 AI 目录。
+ * 两者结构不同，raw 仅用于直接评估提取结果，AI 目录用于消费端投影。
  *
  * ⚠️ 保持与 component-catalog-schema.ts 同步 — 当 schema 变更时需一并更新。
  */
@@ -18,6 +18,18 @@ export interface ComponentCatalog {
   constraints: PlatformConstraints
   sharedTypes?: Record<string, SharedTypeDefinition>
   bindingDescriptors?: Record<string, BindingDescriptor>
+}
+
+export type RawComponentCatalog = Record<string, RawComponentEntry>
+
+export interface RawComponentEntry {
+  type: string
+  filePath: string
+  props: PropEntry[]
+  emits: EmitEntry[]
+  exposed: ExposedEntry[]
+  slots: SlotEntry[]
+  hasIndexSignature: boolean
 }
 
 export interface BindingDescriptor {

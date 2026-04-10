@@ -41,7 +41,11 @@ export const SHARED_TYPE_DEFINITIONS: Record<string, SharedTypeDefinition> = {
       { name: 'disabled', type: 'boolean', description: '禁用状态控制' },
       { name: 'dock', type: 'string', description: '停靠区域名。声明子节点归属哪个 dock，例如 toolbar / actions / filter / header / footer。' },
       { name: 'on', type: 'Record<string, string>', description: '事件绑定（key=camelCase 事件名，value=script.js 函数名），如 { "rowDblclick": "handleRowDblclick" }' },
-      { name: 'docks', type: 'ContainerDocks', description: '容器停靠区域显示配置。工具栏/筛选区/行操作区/头部/底部的布局参数统一写在这里。' },
+      {
+        name: 'docks',
+        type: `{ toolbar?: { position?: 'top' | 'bottom' | 'left' | 'right', class?: string }, actions?: { position?: 'left' | 'right', label?: string, width?: string | number, align?: 'left' | 'center' | 'right', fixed?: boolean | 'left' | 'right', class?: string }, filter?: { class?: string, collapsible?: boolean, defaultCollapsed?: boolean, autoFitMinWidth?: string, itemSpan?: number, gridColumns?: number, gridGap?: number | string, gridAutoRows?: string }, header?: { class?: string, width?: string | number }, footer?: { class?: string, width?: string | number }, editor?: { position?: 'top' | 'bottom' | 'left' | 'right', width?: string | number, class?: string } }`,
+        description: '容器停靠区域显示配置。工具栏/筛选区/行操作区/头部/底部/编辑区的布局参数统一写在这里。',
+      },
     ],
     notes: `【组件与 SparkNode 的关系】
 rule.json 是一棵 SparkNode 树。渲染引擎（SparkComponentRenderer）递归遍历这棵树，对每个节点：
@@ -69,43 +73,6 @@ rule.json → SparkNode 树
 - toolbar / filter / actions / header / footer 的内容节点一律直接放在 children 内，并通过 dock 标识归属区域。
 - 各区域的显示配置统一写在 props.docks.*，例如 props.docks.toolbar.position、props.docks.actions.width。
 - 容器主内容区节点省略 dock（或视为默认区）。`,
-  },
-
-  DockToolbar: {
-    name: 'DockToolbar',
-    description: 'toolbar dock 的显示配置，通常放在容器 props.docks.toolbar 中。工具栏项本身由 children 中 dock="toolbar" 的节点声明。',
-    properties: [
-      { name: 'position', type: "'top' | 'bottom' | 'left' | 'right'", description: "工具栏位置，默认 'top'" },
-      { name: 'class', type: 'string', description: '自定义 CSS 类名' },
-    ],
-  },
-
-  DockActions: {
-    name: 'DockActions',
-    description: '行/项操作区显示配置（r-table / r-list），内容节点本身通过 children + dock="actions" 声明。',
-    properties: [
-      { name: 'position', type: "'left' | 'right'", description: "操作列位置，默认 'right'" },
-      { name: 'label', type: 'string', description: "列标题，默认 '操作'" },
-      { name: 'width', type: 'string | number', description: '列宽度，默认 160' },
-      { name: 'align', type: "'left' | 'center' | 'right'", description: "对齐方式，默认 'left'" },
-      { name: 'class', type: 'string', description: '自定义 CSS 类名' },
-      { name: 'fixed', type: "boolean | 'left' | 'right'", description: '固定列方向' },
-    ],
-  },
-
-  DockFilter: {
-    name: 'DockFilter',
-    description: '筛选区显示配置（r-table），筛选节点本身通过 children + dock="filter" 声明。',
-    properties: [
-      { name: 'class', type: 'string', description: '筛选区 CSS 类名' },
-      { name: 'collapsible', type: 'boolean', description: '是否可折叠，默认 false' },
-      { name: 'defaultCollapsed', type: 'boolean', description: '默认是否折叠，默认 false' },
-      { name: 'autoFitMinWidth', type: 'string', description: "自适应最小宽度，默认 '220px'" },
-      { name: 'itemSpan', type: 'number', description: '每项跨列数，默认 1' },
-      { name: 'gridColumns', type: 'number', description: '栅格总列数，默认 24' },
-      { name: 'gridGap', type: 'number | string', description: '间距，默认 12' },
-      { name: 'gridAutoRows', type: 'string', description: "行高，默认 'minmax(32px, auto)'" },
-    ],
   },
 }
 

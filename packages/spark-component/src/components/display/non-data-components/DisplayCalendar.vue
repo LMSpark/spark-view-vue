@@ -19,9 +19,10 @@
  * @skill-description 日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。
  */
 import { ref } from 'vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'display-calendar'> {
   /** 当前日期 */
   modelValue?: Date
   /** 日期范围 [start, end] */

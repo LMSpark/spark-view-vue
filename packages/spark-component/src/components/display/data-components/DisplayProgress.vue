@@ -22,12 +22,13 @@
  * @skill-description 进度条展示组件，基于 el-progress 以条形或圆形显示百分比进度值，支持动态颜色。
  */
 import { computed } from 'vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
 type ProgressColor = string | Array<{ color: string; percentage: number }>
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-progress'> {
   percentage?: number
   value?: number
   field?: string

@@ -9,7 +9,6 @@ import {
   dispatchQueryTool,
   getGenerateTools,
   getGenerateToolsForApi,
-  type GenerateToolName,
 } from '../packages/spark-ai/src/generate/generate-tools-catalog'
 import {
   validateToolLayerEmit,
@@ -1513,7 +1512,7 @@ describe('runGenerateLoop — advanced scenarios', () => {
 
     const events: GenerateProgressEvent[] = []
     const backend = createMockBackend(turns)
-    const result = await runGenerateLoop(backend, {
+    await runGenerateLoop(backend, {
       userPrompt: '测试页面',
       catalog: createMiniCatalog(),
       maxRoundsPerPhase: 5,
@@ -2253,7 +2252,7 @@ describe('runGenerateLoop — advanced scenarios', () => {
 
     const events: GenerateProgressEvent[] = []
     const backend = createMockBackend(turns)
-    const result = await runGenerateLoop(backend, {
+    await runGenerateLoop(backend, {
       userPrompt: '测试页面',
       catalog: createMiniCatalog(),
       maxRoundsPerPhase: 5,

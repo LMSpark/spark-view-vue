@@ -1,7 +1,8 @@
 /**
  * 组件目录 JSON 生成器
  *
- * 从 vue-component-meta 类型解析 + 补充数据合并，输出 component-catalog.json。
+ * 从 vue-component-meta 类型解析构建 raw 目录，并同时输出一份带 supplement
+ * 补充信息的 AI 目录，避免把人工说明混进原始构建产物。
  * 纯 Node.js 模块，不依赖 Vite / Vue 运行时。
  *
  * @module json-catalog-generator
@@ -29,6 +30,7 @@ import type {
   ComponentCatalog,
   ComponentEntry,
   ComponentRegistry,
+  RawComponentCatalog,
   PlatformConstraints,
   PropEntry,
   EmitEntry,
@@ -38,6 +40,8 @@ import type {
 import { inferBindingFromVcm, buildAllBindingDescriptors } from './infer-binding'
 
 const logger = createLogger('spark-catalog-json')
+
+type CatalogFlavor = 'raw' | 'ai'
 
 /* --------------------------------------------------------------------------
  * 选项
@@ -327,7 +331,7 @@ function buildComponentEntry(
   if (hasOverride && overrideText !== undefined) {
     notes = overrideText
   }
-  if (addendumText !== undefined) {
+  if (hasAddendum && addendumText !== undefined) {
     notes = notes !== undefined ? `${notes}\n\n${addendumText}` : addendumText
   }
 
@@ -356,14 +360,104 @@ function buildComponentEntry(
   }
 }
 
+function buildComponentsForFlavor(
+  flavor: CatalogFlavor,
+  apiMap: Map<string, VcmApiDescriptor>,
+  descriptionMap: Map<string, string>,
+): Record<string, ComponentEntry> {
+  const components: Record<string, ComponentEntry> = {}
+
+  if (flavor === 'raw') {
+    for (const [key, api] of apiMap) {
+      const desc = descriptionMap.get(key) ?? ''
+      components[key] = buildComponentEntry(key, desc, api, false, false)
+    }
+    return components
+  }
+
+  for (const key of Object.keys(CATALOG_OVERRIDES)) {
+    const api = apiMap.get(key) ?? null
+    const desc = descriptionMap.get(key) ?? extractDescriptionFromOverride(key)
+    components[key] = buildComponentEntry(key, desc, api, true, key in CATALOG_ADDENDUMS)
+  }
+
+  for (const [key, api] of apiMap) {
+    if (key in components) continue
+    const desc = descriptionMap.get(key) ?? ''
+    components[key] = buildComponentEntry(key, desc, api, false, key in CATALOG_ADDENDUMS)
+  }
+
+  for (const key of Object.keys(CATALOG_ADDENDUMS)) {
+    if (key in components) continue
+    const desc = descriptionMap.get(key) ?? ''
+    components[key] = buildComponentEntry(key, desc, null, false, true)
+  }
+
+  return components
+}
+
+function buildRegistry(components: Record<string, ComponentEntry>): ComponentRegistry {
+  const registry: ComponentRegistry = {
+    containers: [],
+    fields: [],
+    groups: [],
+    meta: [],
+  }
+
+  for (const [key, entry] of Object.entries(components)) {
+    if (entry.category === 'container') registry.containers.push(key)
+    else if (entry.category === 'field') registry.fields.push(key)
+    else if (entry.category === 'group') registry.groups.push(key)
+    else if (entry.category === 'meta') registry.meta.push(key)
+  }
+
+  registry.containers.sort()
+  registry.fields.sort()
+  registry.groups.sort()
+  registry.meta.sort()
+
+  return registry
+}
+
+function buildCatalogDocument(
+  flavor: CatalogFlavor,
+  components: Record<string, ComponentEntry>,
+): ComponentCatalog {
+  return {
+    version: '2.0.0',
+    buildTime: new Date().toISOString(),
+    componentCount: Object.keys(components).length,
+    registry: buildRegistry(components),
+    sharedTypes: flavor === 'ai' ? SHARED_TYPE_DEFINITIONS : {},
+    components,
+    constraints: buildPlatformConstraints(),
+    bindingDescriptors: buildAllBindingDescriptors(components),
+  }
+}
+
+function buildRawCatalogDocument(apiMap: Map<string, VcmApiDescriptor>): RawComponentCatalog {
+  const sortedEntries = [...apiMap.entries()].sort(([left], [right]) => left.localeCompare(right, 'en'))
+  return Object.fromEntries(
+    sortedEntries.map(([type, api]) => [type, {
+      type: api.type,
+      filePath: api.filePath,
+      props: api.props,
+      emits: api.emits,
+      exposed: api.exposed,
+      slots: api.slots,
+      hasIndexSignature: api.hasIndexSignature,
+    }]),
+  )
+}
+
 /* --------------------------------------------------------------------------
  * 公共 API
  * ----------------------------------------------------------------------- */
 
 /**
- * 生成 component-catalog.json 并写入文件
+ * 生成 raw component-catalog.json 与 AI component-catalog.ai.json 并写入文件
  */
-export function generateJsonCatalog(root: string, options: JsonCatalogOptions = {}): ComponentCatalog {
+export function generateJsonCatalog(root: string, options: JsonCatalogOptions = {}): RawComponentCatalog {
   const {
     featurePatterns = [],
     exclude = [],
@@ -392,8 +486,6 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     if (api !== null) apiMap.set(comp.skillType, api)
   }
 
-  // 3. 构建组件条目
-  const components: Record<string, ComponentEntry> = {}
   const descriptionMap = new Map<string, string>()
 
   // 从扫描结果收集描述
@@ -401,79 +493,33 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     descriptionMap.set(comp.skillType, comp.skillDescription)
   }
 
-  // Override 条目（包含未被扫描到的元概念组件）
-  for (const key of Object.keys(CATALOG_OVERRIDES)) {
-    const api = apiMap.get(key) ?? null
-    const desc = descriptionMap.get(key) ?? extractDescriptionFromOverride(key)
-    components[key] = buildComponentEntry(key, desc, api, true, key in CATALOG_ADDENDUMS)
-  }
+  const aiComponents = buildComponentsForFlavor('ai', apiMap, descriptionMap)
 
-  // AST 条目
-  for (const [key, api] of apiMap) {
-    if (key in components) continue // 已有 override
-    const desc = descriptionMap.get(key) ?? ''
-    components[key] = buildComponentEntry(key, desc, api, false, key in CATALOG_ADDENDUMS)
-  }
+  const rawCatalog = buildRawCatalogDocument(apiMap)
+  const aiCatalog = buildCatalogDocument('ai', aiComponents)
 
-  // 纯 Addendum 条目
-  for (const key of Object.keys(CATALOG_ADDENDUMS)) {
-    if (key in components) continue
-    const desc = descriptionMap.get(key) ?? ''
-    components[key] = buildComponentEntry(key, desc, null, false, true)
-  }
+  logger.info(`📦 Raw 目录已构建: ${Object.keys(rawCatalog).length} 条目`)
+  logger.info(`📦 AI 目录已构建: ${aiCatalog.componentCount} 条目`)
 
-  // 4. 构建注册表
-  const registry: ComponentRegistry = {
-    containers: [],
-    fields: [],
-    groups: [],
-    meta: [],
-  }
-
-  for (const [key, entry] of Object.entries(components)) {
-    if (entry.category === 'container') registry.containers.push(key)
-    else if (entry.category === 'field') registry.fields.push(key)
-    else if (entry.category === 'group') registry.groups.push(key)
-    else if (entry.category === 'meta') registry.meta.push(key)
-  }
-
-  // 排序
-  registry.containers.sort()
-  registry.fields.sort()
-  registry.groups.sort()
-  registry.meta.sort()
-
-  // 5. 组装目录
-  const catalog: ComponentCatalog = {
-    version: '2.0.0',
-    buildTime: new Date().toISOString(),
-    componentCount: Object.keys(components).length,
-    registry,
-    sharedTypes: SHARED_TYPE_DEFINITIONS,
-    components,
-    constraints: buildPlatformConstraints(),
-    bindingDescriptors: buildAllBindingDescriptors(components),
-  }
-
-  logger.info(`📦 组件目录已构建: ${catalog.componentCount} 条目`)
-
-  // 写入 component-catalog.json（SSoT，完整 JSON，供所有消费端投影）
-  const jsonOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
-  writeFileSync(jsonOutputPath, JSON.stringify(catalog, null, 2), 'utf-8')
-  logger.info(`📄 SSoT JSON 已写入: ${jsonOutputPath}`)
+  const rawOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
+  const aiOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.ai.json')
+  writeFileSync(rawOutputPath, JSON.stringify(rawCatalog, null, 2), 'utf-8')
+  writeFileSync(aiOutputPath, JSON.stringify(aiCatalog, null, 2), 'utf-8')
+  logger.info(`📄 Raw JSON 已写入: ${rawOutputPath}`)
+  logger.info(`📄 AI JSON 已写入: ${aiOutputPath}`)
 
   // 按组件输出独立 JSON（便于逐一检查，仅在显式指定 perComponentDir 时）
   if (options.perComponentDir !== undefined) {
     const dirAbsolute = resolve(root, options.perComponentDir)
     if (!existsSync(dirAbsolute)) mkdirSync(dirAbsolute, { recursive: true })
-    for (const [key, entry] of Object.entries(components)) {
+    for (const [key, entry] of Object.entries(rawCatalog)) {
       const filePath = resolve(dirAbsolute, `${key}.json`)
       writeFileSync(filePath, JSON.stringify(entry, null, 2), 'utf-8')
     }
-    logger.info(`📂 按组件独立 JSON 已输出: ${options.perComponentDir}/ (${Object.keys(components).length} 文件)`)
+    logger.info(`📂 按组件独立 JSON 已输出: ${options.perComponentDir}/ (${Object.keys(rawCatalog).length} 文件)`)
   }
 
-  return catalog
+  return rawCatalog
 }
 
 /* --------------------------------------------------------------------------
@@ -491,4 +537,3 @@ function extractDescriptionFromOverride(key: string): string {
 /* --------------------------------------------------------------------------
  * DevSystem Rule Editor 目录生成
  * ----------------------------------------------------------------------- */
-

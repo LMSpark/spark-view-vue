@@ -23,15 +23,15 @@
  * @skill-description 日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。
  */
 import { computed } from 'vue'
-import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
 type DatePickerType = 'year' | 'month' | 'date' | 'dates' | 'datetime' | 'week'
   | 'datetimerange' | 'daterange' | 'monthrange' | 'yearrange'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-date'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

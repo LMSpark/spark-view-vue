@@ -22,9 +22,10 @@
  * @skill-description 分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。
  */
 import { computed } from 'vue'
-import { useSparkPageComponent, useSparkConsume, DATA_SOURCE, type SparkNode } from '../../internal'
+import { useSparkPageComponent, useSparkConsume, DATA_SOURCE } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-pagination'> {
   total?: number
   pageSize?: number
   currentPage?: number

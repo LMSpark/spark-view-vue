@@ -25,10 +25,11 @@ import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vu
 import { useSelectorFieldActions } from '../actions/useSelectorFieldActions'
 import { useEntityPickerState } from './composables/useEntityPickerState'
 import { useOptionFieldState } from './composables/useOptionFieldState'
+import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeChildrenProps<'r-entity-picker'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

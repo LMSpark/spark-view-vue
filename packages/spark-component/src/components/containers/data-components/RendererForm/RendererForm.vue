@@ -49,6 +49,7 @@ import { nodeId, type SparkNode } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
+import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import {
   type AddRowHandler,
   type EditRowHandler,
@@ -64,7 +65,7 @@ interface Props extends SparkNode {
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
   /** 结构化工具栏 */
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   /** 子节点列表 */
   children?: SparkNode[]
   /** 表单标签宽度 */
@@ -182,4 +183,3 @@ function resolveToolbarActionConfig(action: SparkNode): SparkNode {
   min-width: 0;
 }
 </style>
-

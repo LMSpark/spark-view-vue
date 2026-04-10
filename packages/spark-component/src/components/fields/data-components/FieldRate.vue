@@ -16,11 +16,11 @@
 /**
  * @skill-description 评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。
  */
-import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-rate'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

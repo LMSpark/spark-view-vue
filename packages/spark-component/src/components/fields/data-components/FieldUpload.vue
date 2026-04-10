@@ -31,13 +31,13 @@
  * @skill-description 文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。
  */
 import { computed } from 'vue'
-import type { SparkNode } from '../../internal'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-upload'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

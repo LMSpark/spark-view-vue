@@ -35,10 +35,11 @@
  */
 import { computed } from 'vue'
 import { Picture } from '@element-plus/icons-vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'display-image'> {
   /** 图片 URL（静态传入） */
   src?: string
   /** 字段名（从当前行读取 URL） */

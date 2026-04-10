@@ -16,11 +16,11 @@
 /**
  * @skill-description 单个复选框字段，绑定 boolean 值，基于 el-checkbox，支持自定义选中/未选中显示文本。
  */
-import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-checkbox'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

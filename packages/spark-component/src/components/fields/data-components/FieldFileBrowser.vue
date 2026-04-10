@@ -31,13 +31,13 @@
  * @skill-description 文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。
  */
 import { computed } from 'vue'
-import type { SparkNode } from '../../internal'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useFileBrowserFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-file-browser'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

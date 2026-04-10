@@ -28,8 +28,9 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
+import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeChildrenProps<'r-badge'> {
   children?: SparkNode[]
   badgeValue?: string | number
   value?: string | number

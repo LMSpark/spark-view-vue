@@ -52,12 +52,12 @@
  * @skill-description 富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。
  */
 import { ref } from 'vue'
-import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { stripHtml, useHtmlEditorState } from './composables/useHtmlEditorState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-html-editor'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

@@ -59,11 +59,13 @@ interface TabsClickEvent {
   [key: string]: unknown
 }
 
+import type { ToolbarNode } from '../RendererToolbar.types'
+
 interface Props extends SparkNode {
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
   /** 结构化工具栏 */
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   /** 当前激活标签页 */
   modelValue?: string | number
   /** 标签页切换回调 */
@@ -101,8 +103,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-    toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
+    toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.toolbar?.props?.class),
   modelPermission: computed(() => undefined),
 })
 

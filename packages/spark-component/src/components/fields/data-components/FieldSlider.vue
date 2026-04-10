@@ -18,11 +18,11 @@
 /**
  * @skill-description 滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。
  */
-import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-slider'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

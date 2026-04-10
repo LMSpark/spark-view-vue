@@ -8,13 +8,14 @@ import { DATA_ROW } from '../../internal'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../useContainerDataSource'
 import { useContainerContextData } from './useContainerContextData'
-import { useContainerToolbar, type ToolbarPosition } from '../layout/useContainerToolbar'
+import { useContainerToolbar } from '../layout/useContainerToolbar'
+import type { ToolbarNode } from '../non-data-components/RendererToolbar.types'
 import { createCurrentRowSlotScope } from '../slotScopeFactories'
 
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
   children?: SparkNode[]
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   gridColumns: number | undefined
   gridGap: number | string | undefined
   gridAutoRows: string | undefined
@@ -66,8 +67,8 @@ export function useFormDetailContainer(
     showToolbar,
   } = useContainerToolbar({
     toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-    toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
-    toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
+    toolbarPosition: computed(() => props.toolbar?.props?.position),
+    toolbarClass: computed(() => props.toolbar?.props?.class),
     modelPermission,
     dataSource: computed(() => resolvedView.value),
   })

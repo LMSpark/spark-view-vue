@@ -20,17 +20,8 @@
  * @skill-description 尾部组件，在 r-toolbar 中作为工具栏末尾区域提取渲染。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../internal'
-
-interface Props {
-  type?: string
-  id?: string
-  children?: SparkNode[]
-  /** CSS 类名 */
-  class?: string
-  /** 尾区宽度 */
-  width?: string | number
-}
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../internal'
+import type { RendererTailProps as Props } from './RendererTail.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-tail',

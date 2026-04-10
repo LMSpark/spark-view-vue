@@ -29,13 +29,13 @@
 /**
  * @skill-description 多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。
  */
-import type { SparkNode } from '../../internal'
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
 type MultiValue = Array<string | number | boolean>
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-multi-select'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

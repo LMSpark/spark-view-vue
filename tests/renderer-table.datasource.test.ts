@@ -509,14 +509,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
     consoleErrorSpy = null
   })
 
-  function withSilencedConsoleWarn(assertion: () => void): void {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-    try {
-      assertion()
-    } finally {
-      warnSpy.mockRestore()
-    }
-  }
 
   it('should allow direct Vue children to render R columns inside RendererTable slot', () => {
     const ds = SparkData.createDataSet({

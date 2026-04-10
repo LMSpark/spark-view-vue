@@ -1,13 +1,16 @@
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
+import type { ActionsNode } from '../../RendererActions.types'
+import type { EditorNode } from '../../RendererEditor.types'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 
 interface RendererTreeInputProps {
   dataKey?: string | undefined
   children?: SparkNode[] | undefined
-  toolbar?: SparkNode | undefined
-  actions?: SparkNode | undefined
-  editor?: SparkNode | undefined
+  toolbar?: ToolbarNode | undefined
+  actions?: ActionsNode | undefined
+  editor?: EditorNode | undefined
   allowAppend?: boolean | undefined
   allowDelete?: boolean | undefined
 }
@@ -42,10 +45,10 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
 
   const hasNodeActions = computed(() => dockedNodeActions.value.length > 0 || hasLegacyNodeActions.value)
   const editorConfigs = computed(() => getSparkNodeChildren(options.props.editor?.children))
-  const editorPositionValue = computed<ToolbarPosition>(() => (options.props.editor?.props?.['position'] as ToolbarPosition | undefined) ?? 'right')
-  const editorClassValue = computed(() => (options.props.editor?.props?.['class'] as string | undefined) ?? '')
+  const editorPositionValue = computed<ToolbarPosition>(() => options.props.editor?.props?.position ?? 'right')
+  const editorClassValue = computed(() => options.props.editor?.props?.class ?? '')
   const editorStyleValue = computed<Record<string, string>>(() => {
-    const width = options.props.editor?.props?.['width'] as string | number | undefined
+    const width = options.props.editor?.props?.width
     if (typeof width === 'number' && Number.isFinite(width)) {
       return {
         width: `${width}px`,

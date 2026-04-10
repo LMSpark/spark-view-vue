@@ -20,15 +20,8 @@
  * @skill-description 头部组件，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../internal'
-
-interface Props {
-  type?: string
-  id?: string
-  children?: SparkNode[]
-  /** 区域宽度 */
-  width?: string | number
-}
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../internal'
+import type { RendererHeaderProps as Props } from './RendererHeader.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-header',

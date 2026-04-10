@@ -18,10 +18,11 @@
  * @skill-description 统计数值展示组件，基于 el-statistic 格式化显示数字/字符串值，支持精度、前后缀和千分位分隔。
  */
 import { computed } from 'vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-statistic'> {
   title?: string
   value?: number | string
   dataKey?: string

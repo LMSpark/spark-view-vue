@@ -20,15 +20,8 @@
  * @skill-description 底部组件，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../internal'
-
-interface Props {
-  type?: string
-  id?: string
-  children?: SparkNode[]
-  /** 区域宽度 */
-  width?: string | number
-}
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../internal'
+import type { RendererFooterProps as Props } from './RendererFooter.types'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-footer',

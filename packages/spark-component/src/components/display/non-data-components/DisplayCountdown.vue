@@ -18,9 +18,10 @@
  * @skill-description 倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。
  */
 import { computed, type CSSProperties } from 'vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'display-countdown'> {
   /** 目标时间（时间戳或 Date） */
   value?: number | Date
   /** 格式化字符串，如 HH:mm:ss */

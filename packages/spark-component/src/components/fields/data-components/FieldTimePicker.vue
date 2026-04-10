@@ -22,11 +22,11 @@
 /**
  * @skill-description 时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。
  */
-import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-time-picker'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

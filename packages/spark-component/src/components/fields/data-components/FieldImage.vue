@@ -41,13 +41,13 @@
  * @skill-description 图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。
  */
 import { computed } from 'vue'
-import type { SparkNode } from '../../internal'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-image'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

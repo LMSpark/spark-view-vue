@@ -31,13 +31,13 @@
  * @skill-description 文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。
  */
 import { computed } from 'vue'
-import type { SparkNode } from '../../internal'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-file-path'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

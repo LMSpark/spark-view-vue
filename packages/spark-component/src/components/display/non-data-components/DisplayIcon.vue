@@ -10,9 +10,10 @@
  */
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'display-icon'> {
   /** 图标名称（Element Plus 图标名，如 'Edit', 'Delete', 'Search'） */
   icon?: string
   /** 图标大小 */

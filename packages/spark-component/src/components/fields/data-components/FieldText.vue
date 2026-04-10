@@ -14,11 +14,11 @@
 /**
  * @skill-description 文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。
  */
-import type { SparkNode } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-text'> {
   /** 字段绑定名，映射到 DataView 行字段 */
   field?: string
   /** 显示标签 */
@@ -50,4 +50,3 @@ async function handleChange(value: string): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
-

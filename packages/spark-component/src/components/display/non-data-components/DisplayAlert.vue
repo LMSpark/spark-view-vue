@@ -18,9 +18,10 @@
 /**
  * @skill-description 警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。
  */
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-alert'> {
   title?: string
   description?: string
   alertType?: 'success' | 'warning' | 'info' | 'error'

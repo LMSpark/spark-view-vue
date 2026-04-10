@@ -78,8 +78,9 @@ export {
 } from './runtime/page-cache'
 
 // ── AI Component Catalog ─────────────────────────────────────────────────────
-// SSoT JSON（完整目录）+ 消费端投影
+// Raw SSoT JSON + AI enriched JSON + 消费端投影
 export { default as COMPONENT_CATALOG_JSON } from './catalog/component-catalog.json'
+export { default as COMPONENT_CATALOG_AI_JSON } from './catalog/component-catalog.ai.json'
 export {
   projectFcDirectory,
   projectFcSpec,
@@ -89,6 +90,8 @@ export {
 } from './catalog/catalog-projections'
 export type { FcDirectoryPayload, FcComponentSpec } from './catalog/catalog-projections'
 export type {
+  RawComponentCatalog,
+  RawComponentEntry,
   ComponentCatalog,
   ComponentEntry,
   ComponentRegistry,

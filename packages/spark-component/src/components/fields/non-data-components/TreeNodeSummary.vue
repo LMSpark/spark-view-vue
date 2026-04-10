@@ -17,9 +17,9 @@
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import { DATA_ROW, useSparkComponent } from '../../internal'
-import type { SparkNode } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-tree-node-summary'> {
   nameField?: string
   typeField?: string
   statusField?: string

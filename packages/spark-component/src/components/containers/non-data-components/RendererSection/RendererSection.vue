@@ -95,6 +95,7 @@
 import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
+import type { HeaderNode } from '../../RendererHeader.types'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
@@ -104,7 +105,7 @@ interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
   /** 结构化头部 */
-  header?: SparkNode
+  header?: HeaderNode
   /** 分区标题 */
   title?: string
   /** 分区描述 */
@@ -170,7 +171,7 @@ function readStringAttr(name: string): string {
   return typeof value === 'string' ? value : ''
 }
 
-const headerClassValue = computed(() => (props.header?.props?.['class'] as string | undefined) ?? readStringAttr('headerClass'))
+const headerClassValue = computed(() => props.header?.props?.class ?? readStringAttr('headerClass'))
 const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
 
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))

@@ -1,7 +1,7 @@
 /**
  * 组件目录投影函数
  *
- * 从 component-catalog.json（SSoT）按消费角色提取所需子集。
+ * 从 component-catalog.ai.json 按消费角色提取所需子集。
  * 所有投影均为纯函数，零副作用。
  *
  * 消费角色：

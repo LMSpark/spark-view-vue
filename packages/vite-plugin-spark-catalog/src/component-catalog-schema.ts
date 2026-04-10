@@ -50,6 +50,25 @@ export interface ComponentCatalog {
   bindingDescriptors: Record<string, CatalogBindingDescriptor>
 }
 
+/**
+ * Raw VCM 提取目录。
+ *
+ * 顶层直接是 `type -> VCM descriptor` 映射，
+ * 不再附带 version / buildTime / componentCount 等包装元信息，
+ * 仅用于评估 vue-component-meta 的直接提取结果。
+ */
+export type RawComponentCatalog = Record<string, RawComponentEntry>
+
+export interface RawComponentEntry {
+  type: string
+  filePath: string
+  props: PropEntry[]
+  emits: EmitEntry[]
+  exposed: ExposedEntry[]
+  slots: SlotEntry[]
+  hasIndexSignature: boolean
+}
+
 /* --------------------------------------------------------------------------
  * 注册表
  * ----------------------------------------------------------------------- */

@@ -100,6 +100,9 @@ import {
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ActionsNode } from '../../RendererActions.types'
+import type { EditorNode } from '../../RendererEditor.types'
+import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import RendererDataScope from '../RendererDataScope.vue'
 import {
   type AddRowHandler,
@@ -111,11 +114,11 @@ interface Props extends SparkNode {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
   /** 结构化工具栏 */
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   /** 结构化节点动作 */
-  actions?: SparkNode
+  actions?: ActionsNode
   /** 结构化编辑区 */
-  editor?: SparkNode
+  editor?: EditorNode
   /** 节点主键字段名，默认取 treeConfig.idField */
   nodeKey?: string
   /** 当前选中节点 ID */
@@ -193,8 +196,8 @@ const {
   toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-  toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
+  toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.toolbar?.props?.class),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -204,7 +207,7 @@ const {
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
   actionPosition: computed(() => 'right'),
-  actionClass: computed(() => (props.actions?.props?.['class'] as string | undefined)),
+  actionClass: computed(() => props.actions?.props?.class),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

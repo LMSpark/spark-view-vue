@@ -143,10 +143,13 @@ import { useContainerActions, type LateralActionPosition } from '../../useContai
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ActionsNode } from '../../RendererActions.types'
+import type { FilterNode } from '../../RendererFilter.types'
 import { createRowActionSlotScope } from '../../slotScopeFactories'
 import { useModuleContext } from '../../context/useModuleContext'
 import RendererFieldScope from '../RendererFieldScope.vue'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
+import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import { useTableFilters } from '../../layout/useTableFilters'
 import {
   type AddRowHandler, type EditRowHandler, type RemoveRowHandler,
@@ -186,11 +189,11 @@ interface Props extends SparkNode {
   /** DataKey 格式：tableName@field */
   dataKey?: string
   /** 结构化工具栏 */
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   /** 结构化筛选区 */
-  filter?: SparkNode
+  filter?: FilterNode
   /** 结构化行动作 */
-  actions?: SparkNode
+  actions?: ActionsNode
   /** 子节点列表（列节点 + 区域节点） */
   children?: SparkNode[]
   onRowClick?: RowClickHandler
@@ -609,4 +612,3 @@ function isCollectedTableColumn(config: SparkNode): boolean {
   flex-wrap: wrap;
 }
 </style>
-

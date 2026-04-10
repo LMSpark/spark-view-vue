@@ -22,14 +22,14 @@
 /**
  * @skill-description 树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。
  */
-import type { SparkNode } from '../../internal'
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
 type FieldPrimitive = string | number | boolean
 type TreeSelectValue = FieldPrimitive | FieldPrimitive[]
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-tree-select'> {
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */

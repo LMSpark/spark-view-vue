@@ -1,10 +1,10 @@
 import { computed, ref, watch } from 'vue'
 import { SparkData, type DataView, type IDataRow } from '@spark-view/spark-data'
-import type { SparkNode } from '../../../../core/types.js'
+import type { FilterNode } from '../../RendererFilter.types'
 import type { ValueRef } from '../../../shared-types.js'
 
 interface RendererTableViewStateOptions {
-  filterNode: ValueRef<SparkNode | undefined>
+  filterNode: ValueRef<FilterNode | undefined>
   baseTableAttrs: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
   filteredRows: ValueRef<IDataRow[] | undefined>
@@ -56,10 +56,10 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     return result
   })
 
-  const filterCollapsibleValue = computed(() => (options.filterNode.value?.props?.['collapsible'] as boolean | undefined) ?? options.readBooleanAttr('filterCollapsible') ?? false)
-  const filterDefaultCollapsedValue = computed(() => (options.filterNode.value?.props?.['defaultCollapsed'] as boolean | undefined) ?? options.readBooleanAttr('filterDefaultCollapsed') ?? false)
-  const filterAutoFitMinWidthValue = computed(() => (options.filterNode.value?.props?.['autoFitMinWidth'] as string | undefined) ?? options.readStringAttr('filterAutoFitMinWidth') ?? '220px')
-  const filterItemSpanValue = computed(() => (options.filterNode.value?.props?.['itemSpan'] as number | undefined) ?? options.readNumberAttr('filterItemSpan') ?? 1)
+  const filterCollapsibleValue = computed(() => options.filterNode.value?.props?.collapsible ?? options.readBooleanAttr('filterCollapsible') ?? false)
+  const filterDefaultCollapsedValue = computed(() => options.filterNode.value?.props?.defaultCollapsed ?? options.readBooleanAttr('filterDefaultCollapsed') ?? false)
+  const filterAutoFitMinWidthValue = computed(() => options.filterNode.value?.props?.autoFitMinWidth ?? options.readStringAttr('filterAutoFitMinWidth') ?? '220px')
+  const filterItemSpanValue = computed(() => options.filterNode.value?.props?.itemSpan ?? options.readNumberAttr('filterItemSpan') ?? 1)
 
   const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
 

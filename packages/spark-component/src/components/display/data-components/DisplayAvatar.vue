@@ -19,10 +19,11 @@
  * @skill-description 头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。
  */
 import { computed } from 'vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-avatar'> {
   avatarSize?: number | 'large' | 'default' | 'small'
   shape?: 'circle' | 'square'
   src?: string

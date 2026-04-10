@@ -15,9 +15,10 @@
  * @skill-description 标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。
  */
 import { ref, watch } from 'vue'
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
+import type { SparkRuntimeProps } from '../../shared-types.js'
 
-interface Props extends SparkNode {
+interface Props extends SparkRuntimeProps<'r-check-tag'> {
   /** 是否选中 */
   checked?: boolean
   /** 标签文本 */

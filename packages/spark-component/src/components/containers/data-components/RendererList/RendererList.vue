@@ -95,11 +95,12 @@ import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
 import RendererListItemScope from '../RendererListItemScope.vue'
 import { useContainerActions } from '../../useContainerActions'
-import type { LateralActionPosition } from '../../useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
+import type { ActionsNode } from '../../RendererActions.types'
+import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
 import { createRendererListZeroCode } from './zero-code'
 import {
@@ -113,9 +114,9 @@ interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
   /** 结构化工具栏 */
-  toolbar?: SparkNode
+  toolbar?: ToolbarNode
   /** 结构化列表项动作 */
-  actions?: SparkNode
+  actions?: ActionsNode
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
   /** 列数 */
@@ -212,8 +213,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-  toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
-  toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
+  toolbarPosition: computed(() => props.toolbar?.props?.position as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.toolbar?.props?.class),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -226,8 +227,8 @@ const {
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
-  actionPosition: computed(() => (props.actions?.props?.['position'] as LateralActionPosition | undefined) ?? 'right'),
-  actionClass: computed(() => (props.actions?.props?.['class'] as string | undefined) ?? readStringAttr('itemActionsClass') ?? ''),
+  actionPosition: computed(() => props.actions?.props?.position ?? 'right'),
+  actionClass: computed(() => props.actions?.props?.class ?? readStringAttr('itemActionsClass') ?? ''),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

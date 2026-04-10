@@ -62,6 +62,8 @@
 import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
+import type { FooterNode } from '../../RendererFooter.types'
+import type { HeaderNode } from '../../RendererHeader.types'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererDialogApi } from './types'
 import { createRendererDialogZeroCode } from './zero-code'
@@ -70,9 +72,9 @@ interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
   /** 结构化头部 */
-  header?: SparkNode
+  header?: HeaderNode
   /** 结构化底部 */
-  footer?: SparkNode
+  footer?: FooterNode
   /** 对话框标题 */
   title?: string
   /** 控制显隐（v-model） */
@@ -121,9 +123,9 @@ function readStringAttr(name: string): string {
   return typeof value === 'string' ? value : ''
 }
 
-const headerClassValue = computed(() => (props.header?.props?.['class'] as string | undefined) ?? readStringAttr('headerClass'))
+const headerClassValue = computed(() => props.header?.props?.class ?? readStringAttr('headerClass'))
 const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
-const footerClassValue = computed(() => (props.footer?.props?.['class'] as string | undefined) ?? readStringAttr('footerClass'))
+const footerClassValue = computed(() => props.footer?.props?.class ?? readStringAttr('footerClass'))
 
 const resolvedTitle = computed(() => props.title || '')
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))
