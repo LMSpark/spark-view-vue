@@ -491,7 +491,7 @@ test('SparkComponentRenderer does not forward $-prefixed scoped props to native 
         type: 'button',
         props: {
           class: 'native-scoped-button',
-          '$index': 3,
+          '$custom': 'test-value',
           rowIndex: 3,
         },
         children: ['action'],
@@ -507,7 +507,7 @@ test('SparkComponentRenderer does not forward $-prefixed scoped props to native 
 
   const button = wrapper.find('.native-scoped-button')
   expect(button.exists()).toBe(true)
-  expect(button.attributes('$index')).toBeUndefined()
+  expect(button.attributes('$custom')).toBeUndefined()
   expect(button.text()).toContain('action')
 })
 

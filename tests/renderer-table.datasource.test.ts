@@ -5,7 +5,7 @@ import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
 import { mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
-import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
@@ -426,15 +426,15 @@ function createInlineDataSet(tableName: string, rows: IDataRow[]): IDataSet {
   })
 }
 
-const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
   'r-table': new Set(['r-toolbar', 'r-actions', 'r-filter']),
   'r-tree': new Set(['r-toolbar', 'r-actions', 'r-editor']),
 }
-const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
 
-function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
   if (!props['children']) return props
-  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetChildProps)
   const { children: _, ...rest } = props
   return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
 }
@@ -447,7 +447,7 @@ function mountRendererTableWithView(
   const mountOptions = {
     view,
     field: 'rows',
-    props: liftTestDocks('r-table', props),
+    props: liftTestChildProps('r-table', props),
   } as {
     view: DataView
     field: 'rows'
@@ -475,7 +475,7 @@ async function mountRendererTreeWithView(
   const mountOptions = {
     view,
     field: 'rows',
-    props: liftTestDocks('r-tree', props),
+    props: liftTestChildProps('r-tree', props),
   } as {
     view: DataView
     field: 'rows'
@@ -568,21 +568,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     expect(wrapper.find('.el-table-column-stub[data-label="姓名"]').exists()).toBe(true)
     expect(wrapper.find('.field-display').exists()).toBe(false)
-  })
-
-  it('should fail fast when migrated containers still use legacy root toolbar config', () => {
-    withSilencedConsoleWarn(() => {
-      expect(() => mount(RendererTable as any, {
-        props: {
-          children: [],
-        },
-        attrs: {
-          toolbar: [
-            { type: 'builtin-action', props: { builtinAction: 'refresh' } },
-          ],
-        },
-      })).toThrow(/props\.toolbar 已废除/)
-    })
   })
 
   it('should bind dataKey and react to DataView changes', async () => {
@@ -1531,13 +1516,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(api.getRows().map(row => row['id'])).toEqual([1])
   })
 
-  it('should render table toolbar from docked children and scoped row actions', async () => {
+  it('should render table toolbar from children and scoped row actions', async () => {
     const rowActionSpy = vi.fn()
 
     const toolbarDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: toolbarDataSet,
-      props: liftTestDocks('r-table', {
+      props: liftTestChildProps('r-table', {
         dataKey: 'Users@rows',
         children: [
           { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'toolbar-button' }] },
@@ -2081,12 +2066,12 @@ describe('RendererTable - DataView as single data intermediary', () => {
     warnSpy.mockRestore()
   })
 
-  it('should render tree toolbar from docked children and scoped node actions', async () => {
+  it('should render tree toolbar from children and scoped node actions', async () => {
     const nodeActionSpy = vi.fn()
 
     const { RendererTree } = await import('@spark-view/spark-component')
     const wrapper = mount(RendererTree as any, {
-      props: liftTestDocks('r-tree', {
+      props: liftTestChildProps('r-tree', {
         data: [{ id: 'node-1', label: '节点 1' }],
         children: [
           { type: 'r-toolbar', props: { position: 'right' }, children: [{ type: 'tree-toolbar' }] },
@@ -2169,11 +2154,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(refreshSpy).toHaveBeenCalledOnce()
   })
 
-  it('should allow row-action slots and render docked toolbar children', () => {
+  it('should allow row-action slots and render toolbar children', () => {
     const slotDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: slotDataSet,
-      props: liftTestDocks('r-table', {
+      props: liftTestChildProps('r-table', {
         dataKey: 'Users@rows',
         children: [{ type: 'r-toolbar', children: [{ type: 'biz-toolbar' }] }],
       }),
@@ -2201,71 +2186,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="biz-toolbar"]').exists()).toBe(true)
     expect(wrapper.find('.biz-row-action').attributes('data-row-id')).toBe('7')
     expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
-  })
-
-  it('should fail fast for legacy toolbar props', () => {
-    withSilencedConsoleWarn(() => {
-      const failFastDataSet = createInlineDataSet('Users', [{ id: 1 }])
-      expect(() => mountWithPageDataSet(RendererTable as any, {
-        dataSet: failFastDataSet,
-        props: {
-          dataKey: 'Users@rows',
-          toolbar: [{ type: 'legacy-toolbar-button' }],
-          children: [{ type: 'r-toolbar', children: [{ type: 'toolbar-button' }] }],
-        },
-        global: {
-          components: {
-            'r-text': TableTextFieldStub,
-            'r-number': TableNumberFieldStub,
-            'r-date': TableDateFieldStub,
-          },
-          stubs: {
-            'el-table': ElTableStub,
-            'el-table-column': ElTableColumnStub,
-            SparkComponentRenderer: SparkColumnRendererStub,
-          }
-        }
-      })).toThrow('props.toolbar 已废除')
-    })
-  })
-
-  it('should fail fast for legacy rowActions props and non-docked non-column children', () => {
-    withSilencedConsoleWarn(() => {
-      const failFastDataSet = createInlineDataSet('Users', [{ id: 1 }])
-      expect(() => mountWithPageDataSet(RendererTable as any, {
-        dataSet: failFastDataSet,
-        props: {
-          dataKey: 'Users@rows',
-          rowActions: [{ type: 'row-button' }],
-        },
-        global: {
-          stubs: {
-            'el-table': ElTableStub,
-            'el-table-column': ElTableColumnStub,
-            SparkComponentRenderer: SparkColumnRendererStub,
-          }
-        }
-      })).toThrow('props.rowActions 已废除')
-    })
-
-    // 在新 dock-as-children 模型中，非列节点在默认区被静默过滤（不渲染也不报错）
-    const silentFilterDataSet = createInlineDataSet('Users', [{ id: 1 }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
-      dataSet: silentFilterDataSet,
-      props: {
-        dataKey: 'Users@rows',
-        children: [{ type: 'RenderRowActions' }],
-      },
-      global: {
-        stubs: {
-          'el-table': ElTableStub,
-          'el-table-column': ElTableColumnStub,
-          SparkComponentRenderer: SparkColumnRendererStub,
-        }
-      }
-    })
-    // RenderRowActions 不是列节点，应被静默过滤
-    expect(wrapper.findAll('.el-table-column-stub')).toHaveLength(0)
   })
 
   it('should render primitive field configs as direct table columns', () => {
@@ -2378,7 +2298,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(labels).toContain('分数')
   })
 
-  it('should render docked tree toolbar children and content template', async () => {
+  it('should render tree toolbar children and content template', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS-Tree-Slots',
       tables: {
@@ -2415,9 +2335,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.biz-node-template').attributes('data-node-label')).toBe('节点 1')
   })
 
-  it('should render tree editor dock content on the configured side', async () => {
+  it('should render tree editor content on the configured side', async () => {
     const ds = SparkData.createDataSet({
-      dataSetName: 'RTDS-Tree-Editor-Dock',
+      dataSetName: 'RTDS-Tree-Editor',
       tables: {
         Nodes: {
           tableName: 'Nodes',
@@ -2458,7 +2378,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: permissionDataSet,
-      props: liftTestDocks('r-table', {
+      props: liftTestChildProps('r-table', {
         dataKey: 'Users@rows',
         children: [
           { type: 'r-toolbar', children: [
@@ -2942,28 +2862,5 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect((filterContent.element as HTMLElement).style.display).not.toBe('none')
     expect(wrapper.find('.renderer-field-scope-stub').exists()).toBe(true)
     expect(wrapper.find('.renderer-filter-input[data-name="name"]').exists()).toBe(true)
-  })
-
-  it('should fail fast for legacy filterColumns props', () => {
-    withSilencedConsoleWarn(() => {
-      const filterFailFastDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
-      expect(() => mountWithPageDataSet(RendererTable as any, {
-        dataSet: filterFailFastDataSet,
-        props: {
-          dataKey: 'Users@rows',
-          filterColumns: ['name'],
-          children: [
-            { type: 'r-text', props: { field: 'name', label: '姓名' } },
-          ],
-        },
-        global: {
-          stubs: {
-            'el-table': ElTableStub,
-            SparkComponentRenderer: SparkActionStub,
-            RendererFieldScope: RendererFieldScopeStub,
-          },
-        },
-      })).toThrow('props.filterColumns 已废除')
-    })
   })
 })

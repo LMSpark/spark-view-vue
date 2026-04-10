@@ -28,7 +28,7 @@ export type {
   SparkCapabilityContext,
   SparkNode,
   SparkNodeChildren,
-  DockFilterItem,
+  FilterItemConfig,
   ComponentDefinition,
   ComponentRegistry,
   LoggerApi,

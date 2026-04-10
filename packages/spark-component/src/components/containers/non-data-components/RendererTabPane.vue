@@ -14,18 +14,15 @@
     :closable="paneClosable"
   >
     <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
-      <SparkChildrenBridge :spark-children="paneChildren" :parent-context="context">
-        <template #spark="{ child, index }">
-          <div
-            :key="nodeId(child) ?? `r-tab-pane-child-${index}`"
-            class="renderer-tabs-pane-grid-item"
-            :style="getPaneChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
-          </div>
-        </template>
-        <slot />
-      </SparkChildrenBridge>
+      <div
+        v-for="(child, index) in paneChildren"
+        :key="nodeId(child) ?? `r-tab-pane-child-${index}`"
+        class="renderer-tabs-pane-grid-item"
+        :style="getPaneChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
+      </div>
+      <slot />
     </div>
   </el-tab-pane>
 </template>
@@ -35,7 +32,7 @@
  * @skill-description 标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。
  */
 import { computed } from 'vue'
-import { SparkChildrenBridge, SparkComponentRenderer, useSparkComponent } from '../../internal'
+import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
@@ -62,7 +59,7 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'r-tab-pane',
 })
 
-const { context } = useSparkComponent(props)
+useSparkComponent(props)
 
 const {
   contentChildren: paneChildren,

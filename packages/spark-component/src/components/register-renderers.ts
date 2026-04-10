@@ -18,10 +18,10 @@ import {
   RendererTable, RendererForm, RendererDetail, RendererTree, RendererList,
 } from './containers/data-components/index.js'
 
-// ── Dock ──
+// ── 命名区域 ──
 import {
-  DockActions, DockFilter, DockEditor, DockHeader, DockFooter, DockTail,
-} from './containers/docks/index.js'
+  RendererActions, RendererFilter, RendererEditor, RendererHeader, RendererFooter, RendererTail,
+} from './containers/index.js'
 
 // ── 内置操作按钮 ──
 import BuiltinActionButton from './containers/BuiltinActionButton.vue'
@@ -69,31 +69,31 @@ type RegistrationEntry = readonly [string, RegisteredComponent] | readonly [stri
 
 /** 同步注册：核心 + Passthrough */
 const CORE_COMPONENTS: RegistrationEntry[] = [
-  // 数据容器（meta.docks 声明该容器识别的 dock 类型，绑定层据此将 children 中的 dock 提升为 props）
-  ['r-table', RendererTable, { docks: ['r-toolbar', 'r-actions', 'r-filter'] }],
-  ['r-form', RendererForm, { docks: ['r-toolbar'] }],
-  ['r-detail', RendererDetail, { docks: ['r-toolbar'] }],
-  ['r-tree', RendererTree, { docks: ['r-toolbar', 'r-actions', 'r-editor'] }],
-  ['r-list', RendererList, { docks: ['r-toolbar', 'r-actions'] }],
-  // Dock
-  ['r-actions', DockActions],
-  ['r-filter', DockFilter],
-  ['r-editor', DockEditor],
-  ['r-header', DockHeader],
-  ['r-footer', DockFooter],
-  ['r-tail', DockTail],
+  // 数据容器（meta.childProps 声明可提升的子类型，绑定层据此将 children 中的匹配子节点提升为 props）
+  ['r-table', RendererTable, { childProps: ['r-toolbar', 'r-actions', 'r-filter'] }],
+  ['r-form', RendererForm, { childProps: ['r-toolbar'] }],
+  ['r-detail', RendererDetail, { childProps: ['r-toolbar'] }],
+  ['r-tree', RendererTree, { childProps: ['r-toolbar', 'r-actions', 'r-editor'] }],
+  ['r-list', RendererList, { childProps: ['r-toolbar', 'r-actions'] }],
+  // 可提升子组件
+  ['r-actions', RendererActions],
+  ['r-filter', RendererFilter],
+  ['r-editor', RendererEditor],
+  ['r-header', RendererHeader],
+  ['r-footer', RendererFooter],
+  ['r-tail', RendererTail],
   // 内置操作
   ['builtin-action', BuiltinActionButton],
   // 核心非数据容器
-  ['r-section', RendererSection, { docks: ['r-header'] }],
-  ['r-block', RendererSection, { docks: ['r-header'] }],
-  ['r-toolbar', RendererToolbar, { docks: ['r-tail'] }],
-  ['r-menu', RendererToolbar, { docks: ['r-tail'] }],
-  ['r-tabs', RendererTabs, { docks: ['r-toolbar'] }],
-  ['r-collapse', RendererCollapse, { docks: ['r-toolbar'] }],
-  ['r-dialog', RendererDialog, { docks: ['r-header', 'r-footer'] }],
-  ['r-drawer', RendererDrawer, { docks: ['r-header', 'r-footer'] }],
-  ['r-steps', RendererSteps, { docks: ['r-toolbar'] }],
+  ['r-section', RendererSection, { childProps: ['r-header'] }],
+  ['r-block', RendererSection, { childProps: ['r-header'] }],
+  ['r-toolbar', RendererToolbar, { childProps: ['r-tail'] }],
+  ['r-menu', RendererToolbar, { childProps: ['r-tail'] }],
+  ['r-tabs', RendererTabs, { childProps: ['r-toolbar'] }],
+  ['r-collapse', RendererCollapse, { childProps: ['r-toolbar'] }],
+  ['r-dialog', RendererDialog, { childProps: ['r-header', 'r-footer'] }],
+  ['r-drawer', RendererDrawer, { childProps: ['r-header', 'r-footer'] }],
+  ['r-steps', RendererSteps, { childProps: ['r-toolbar'] }],
   ['r-button', RendererButton],
   ['r-link', RendererLink],
   // 核心布局

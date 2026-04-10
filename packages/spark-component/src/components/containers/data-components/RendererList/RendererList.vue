@@ -1,7 +1,7 @@
 <!--
 /**
  * @skill r-list
- * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件，支持 dock 分区工具栏与项操作区
+ * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件，支持工具栏与项操作区
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @input { dataKey: string, props: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string }, actions?: { position?: 'left'|'right', class?: string }, columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string } }
@@ -112,9 +112,9 @@ import {
 interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
-  /** 结构化工具栏 dock */
+  /** 结构化工具栏 */
   toolbar?: SparkNode
-  /** 结构化列表项动作 dock */
+  /** 结构化列表项动作 */
   actions?: SparkNode
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
@@ -176,19 +176,7 @@ function readStringAttr(name: string): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined
 }
 
-const legacyItemActionsPositionValue = computed<LateralActionPosition | undefined>(() => {
-  const value = readStringAttr('itemActionsPosition')
-  return value === 'left' || value === 'right' ? value : undefined
-})
-
-const legacyItemActionsValue = computed<SparkNode[]>(() => {
-  const value = attrs['itemActions']
-  return Array.isArray(value) ? value as SparkNode[] : []
-})
-
-assertNoLegacyListStructures()
-
-// Dock 节点已由绑定层从 children 提升为 props（toolbar / actions），
+// r-toolbar / r-actions 子节点已由绑定层提升为 props，
 // 此处 children 仅包含内容子节点。
 const contentChildren = computed(() => props.children ?? [])
 
@@ -238,14 +226,14 @@ const {
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
-  actionPosition: computed(() => (props.actions?.props?.['position'] as LateralActionPosition | undefined) ?? legacyItemActionsPositionValue.value ?? 'right'),
+  actionPosition: computed(() => (props.actions?.props?.['position'] as LateralActionPosition | undefined) ?? 'right'),
   actionClass: computed(() => (props.actions?.props?.['class'] as string | undefined) ?? readStringAttr('itemActionsClass') ?? ''),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({
     row,
     listenerArgs: [row, index],
-    scopedProps: { row, rowIndex: index, $index: index },
+    scopedProps: { row, rowIndex: index },
   }),
 })
 
@@ -353,12 +341,6 @@ function getDefaultSlotScope() {
   }, {
     rows: listRows.value,
   })
-}
-
-function assertNoLegacyListStructures(): void {
-  if (legacyItemActionsValue.value.length > 0) {
-    throw new Error('[RendererList] props.itemActions 已废除。请将列表项动作节点移动到 children，并声明 dock: "actions"。')
-  }
 }
 </script>
 

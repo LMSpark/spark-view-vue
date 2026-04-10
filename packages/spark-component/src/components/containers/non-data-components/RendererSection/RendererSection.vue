@@ -1,7 +1,7 @@
 <!--
 /**
  * @skill r-section
- * @description 分组块容器，支持标题、描述、折叠、header dock 动作区和 24 列网格布局；r-block 为其别名
+ * @description 分组块容器，支持标题、描述、折叠、header 动作区和 24 列网格布局；r-block 为其别名
  * @input { props: { title?: string, description?: string, collapsible?: boolean, defaultCollapsed?: boolean } }
  * @example { "type": "r-section", "props": { "title": "基本信息" }, "children": [] }
  */
@@ -36,20 +36,15 @@
     </template>
 
     <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
-      <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
-        <template #spark="{ child, index }">
-          <div
-            :key="nodeId(child) ?? `r-section-child-${index}`"
-            class="renderer-section-grid-item"
-            :style="getChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
-          </div>
-        </template>
-        <template #default="slotScope">
-          <slot v-bind="slotScope" />
-        </template>
-      </SparkChildrenBridge>
+      <div
+        v-for="(child, index) in gridChildren"
+        :key="nodeId(child) ?? `r-section-child-${index}`"
+        class="renderer-section-grid-item"
+        :style="getChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
+      </div>
+      <slot v-bind="getDefaultSlotScope()" />
     </div>
   </el-card>
 
@@ -80,30 +75,25 @@
     </div>
 
     <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
-      <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
-        <template #spark="{ child, index }">
-          <div
-            :key="nodeId(child) ?? `r-section-child-${index}`"
-            class="renderer-section-grid-item"
-            :style="getChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
-          </div>
-        </template>
-        <template #default="slotScope">
-          <slot v-bind="slotScope" />
-        </template>
-      </SparkChildrenBridge>
+      <div
+        v-for="(child, index) in gridChildren"
+        :key="nodeId(child) ?? `r-section-child-${index}`"
+        class="renderer-section-grid-item"
+        :style="getChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
+      </div>
+      <slot v-bind="getDefaultSlotScope()" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 /**
- * @skill-description 分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。
+ * @skill-description 分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作区。
  */
 import { computed, useAttrs, useSlots } from 'vue'
-import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererSectionApi } from './types'
@@ -113,7 +103,7 @@ import { useControlledValue } from '../state'
 interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
-  /** 结构化头部 dock */
+  /** 结构化头部 */
   header?: SparkNode
   /** 分区标题 */
   title?: string
@@ -170,9 +160,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const attrs = useAttrs()
 const slots = useSlots()
-const { context, registerApi } = useSparkPageComponent(props)
+const { registerApi } = useSparkPageComponent(props)
 
-// Dock 节点已由绑定层从 children 提升为 props（header）
+// 子节点类型已由绑定层从 children 提升为 props（header）
 const contentChildren = computed(() => props.children ?? [])
 
 function readStringAttr(name: string): string {
@@ -182,8 +172,6 @@ function readStringAttr(name: string): string {
 
 const headerClassValue = computed(() => (props.header?.props?.['class'] as string | undefined) ?? readStringAttr('headerClass'))
 const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
-
-assertNoLegacySectionStructures()
 
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
@@ -227,12 +215,6 @@ function getDefaultSlotScope() {
     description: props.description,
     collapsed: collapsed.value,
     toggleCollapsed,
-  }
-}
-
-function assertNoLegacySectionStructures(): void {
-  if (Array.isArray(attrs['headerActions']) && attrs['headerActions'].length > 0) {
-    throw new Error('[RendererSection] props.headerActions 已废除。请将头部动作节点移动到 children，并声明 dock: "header"。')
   }
 }
 </script>

@@ -35,7 +35,6 @@
               "stripe": true,
               "highlightCurrentRow": true,
               "filterCollapsible": true,
-              "rowActionsPosition": "right",
               "rowActionsLabel": "操作",
               "rowActionsWidth": 200
             },

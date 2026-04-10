@@ -26,7 +26,7 @@ export function useFormDetailContainer(
 ) {
   const effectiveDataKey = computed(() => props.dataKey)
 
-  // Dock 节点已由绑定层从 children 提升为 props（toolbar），
+  // r-toolbar 子节点已由绑定层提升为 props.toolbar，
   // 此处 children 仅包含内容子节点。
   const contentChildren = computed(() => props.children ?? [])
 

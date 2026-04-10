@@ -16,18 +16,15 @@
   />
 
   <div v-else :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
-    <SparkChildrenBridge :spark-children="stepChildren" :parent-context="context">
-      <template #spark="{ child, index }">
-        <div
-          :key="nodeId(child) ?? `r-step-child-${index}`"
-          class="renderer-steps-content-grid-item"
-          :style="getStepChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-      </template>
-      <slot />
-    </SparkChildrenBridge>
+    <div
+      v-for="(child, index) in stepChildren"
+      :key="nodeId(child) ?? `r-step-child-${index}`"
+      class="renderer-steps-content-grid-item"
+      :style="getStepChildGridStyle(child)"
+    >
+      <SparkComponentRenderer :config="child" />
+    </div>
+    <slot />
   </div>
 </template>
 
@@ -36,7 +33,7 @@
  * @skill-description 步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。
  */
 import { computed } from 'vue'
-import { SparkChildrenBridge, SparkComponentRenderer, useSparkComponent } from '../../internal'
+import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
@@ -66,7 +63,7 @@ const emit = defineEmits<{
   activate: [index: number]
 }>()
 
-const { context } = useSparkComponent(props)
+useSparkComponent(props)
 
 const {
   contentChildren: stepChildren,

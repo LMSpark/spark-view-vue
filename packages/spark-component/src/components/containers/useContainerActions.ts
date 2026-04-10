@@ -62,7 +62,7 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
                 data: resolved.scopedProps['data'] ?? resolved.row ?? null,
                 index: typeof resolved.scopedProps['rowIndex'] === 'number'
                   ? resolved.scopedProps['rowIndex']
-                  : (typeof resolved.scopedProps['$index'] === 'number' ? resolved.scopedProps['$index'] : undefined),
+                  : undefined,
                 dataSource,
                 modelPermission: options.modelPermission.value,
                 parentType: null,

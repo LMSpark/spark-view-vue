@@ -3,17 +3,17 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererToolbar } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 
-const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
   'r-toolbar': new Set(['r-tail']),
   'r-menu': new Set(['r-tail']),
 }
-const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
 
-function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
   if (!props['children']) return props
-  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetChildProps)
   const { children: _, ...rest } = props
   return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
 }
@@ -29,15 +29,14 @@ const SparkActionStub = defineComponent({
     return () => h('button', {
       class: 'spark-action-stub',
       'data-type': (props.config as Record<string, unknown>)['type'] as string,
-      'data-dock': String((props.config as Record<string, unknown>)['dock'] ?? 'default'),
     }, (props.config as Record<string, unknown>)['type'] as string)
   },
 })
 
 describe('RendererToolbar integration', () => {
-  it('should render default and tail docks in separate horizontal lanes', () => {
+  it('should render default and tail children in separate horizontal lanes', () => {
     const wrapper = mount(RendererToolbar as any, {
-      props: liftTestDocks('r-toolbar', {
+      props: liftTestChildProps('r-toolbar', {
         gap: 10,
         zoneGap: 24,
         children: [
@@ -73,12 +72,12 @@ describe('RendererToolbar integration', () => {
     expect(endItems[0]?.attributes('data-type')).toBe('action-tail')
   })
 
-  it('should apply dock-specific classes from dock node props', () => {
+  it('should apply classes from r-tail child props', () => {
     const wrapper = mount(RendererToolbar as any, {
-      props: liftTestDocks('r-toolbar', {
+      props: liftTestChildProps('r-toolbar', {
         children: [
           { type: 'main-action' },
-          { type: 'r-tail', props: { class: 'toolbar-tail-zone' }, children: [{ type: 'tail-action' }] },
+          { type: 'r-tail', props: { class: 'toolbar-tail-custom' }, children: [{ type: 'tail-action' }] },
         ],
       }),
       global: {
@@ -88,10 +87,10 @@ describe('RendererToolbar integration', () => {
       },
     })
 
-    expect(wrapper.find('.renderer-toolbar-lane--end').classes()).toContain('toolbar-tail-zone')
+    expect(wrapper.find('.renderer-toolbar-lane--end').classes()).toContain('toolbar-tail-custom')
   })
 
-  it('should render structured tail dock prop without requiring wrapper child input', () => {
+  it('should render structured tail prop without requiring wrapper child input', () => {
     const wrapper = mount(RendererToolbar as any, {
       props: {
         children: [
@@ -99,7 +98,7 @@ describe('RendererToolbar integration', () => {
         ],
         tail: {
           type: 'r-tail',
-          props: { class: 'toolbar-tail-prop-zone' },
+          props: { class: 'toolbar-tail-prop-custom' },
           children: [{ type: 'tail-action-from-prop' }],
         },
       },
@@ -110,7 +109,7 @@ describe('RendererToolbar integration', () => {
       },
     })
 
-    expect(wrapper.find('.renderer-toolbar-lane--end').classes()).toContain('toolbar-tail-prop-zone')
+    expect(wrapper.find('.renderer-toolbar-lane--end').classes()).toContain('toolbar-tail-prop-custom')
     expect(wrapper.find('.spark-action-stub[data-type="tail-action-from-prop"]').exists()).toBe(true)
   })
 })

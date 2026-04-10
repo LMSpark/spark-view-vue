@@ -58,7 +58,7 @@ type CollapseValue = string | number | Array<string | number>
 interface Props extends SparkNode {
   /** 子节点（折叠项配置） */
   children?: SparkNode[]
-  /** 结构化工具栏 dock */
+  /** 结构化工具栏 */
   toolbar?: SparkNode
   /** 当前展开的面板 */
   modelValue?: CollapseValue
@@ -76,7 +76,7 @@ const emit = defineEmits<{
 
 const { registerApi } = useSparkPageComponent(props)
 
-// Dock 节点已由绑定层从 children 提升为 props（toolbar）
+// r-toolbar 子节点已由绑定层提升为 props.toolbar
 const contentChildren = computed(() => props.children ?? [])
 
 const itemConfigs = computed(() =>

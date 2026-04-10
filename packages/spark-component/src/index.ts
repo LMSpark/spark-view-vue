@@ -55,7 +55,7 @@ export type {
   SparkNodeReplaceResult,
   SparkNodeRemoveResult,
   SparkNodeReorderChildrenResult,
-  DockFilterItem,
+  FilterItemConfig,
   ComponentDefinition,
   ComponentRegistry,
   LoggerApi

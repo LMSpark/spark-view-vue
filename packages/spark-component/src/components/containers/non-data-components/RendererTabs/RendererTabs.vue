@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。
+ * @skill-description 标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏。
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
@@ -62,7 +62,7 @@ interface TabsClickEvent {
 interface Props extends SparkNode {
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
-  /** 结构化工具栏 dock */
+  /** 结构化工具栏 */
   toolbar?: SparkNode
   /** 当前激活标签页 */
   modelValue?: string | number
@@ -82,7 +82,7 @@ const emit = defineEmits<{
 
 const { registerApi } = useSparkPageComponent(props)
 
-// Dock 节点已由绑定层从 children 提升为 props（toolbar）
+// 子节点类型已由绑定层从 children 提升为 props（toolbar）
 const contentChildren = computed(() => props.children ?? [])
 
 const paneConfigs = computed(() =>

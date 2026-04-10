@@ -39,7 +39,6 @@ export function createRowActionSlotScope<TSource>(params: {
   return withBaseScope(params, {
     row: params.row,
     rowIndex: params.index,
-    $index: params.index,
     ...(params.extra ?? {}),
   })
 }

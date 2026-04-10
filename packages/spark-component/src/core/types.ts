@@ -175,7 +175,7 @@ export function nodeInputProps(node: SparkNode): Record<string, unknown> {
 }
 
 // ============================================================================
-// 筛选项配置（DockFilter.vue 使用）
+// 筛选项配置（RendererFilter.vue 使用）
 // ============================================================================
 
 /**
@@ -183,7 +183,7 @@ export function nodeInputProps(node: SparkNode): Record<string, unknown> {
  *
  * 简写：直接写字段名字符串，等价于 `{ field: 'xxx', component: 'text' }`。
  */
-export interface DockFilterItem {
+export interface FilterItemConfig {
   /** 字段名（映射到数据源字段） */
   field: string
   /** 显示标签（省略则用字段名） */

@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-10T12:12:48.498Z",
-  "componentCount": 123,
+  "buildTime": "2026-04-10T16:52:12.589Z",
+  "componentCount": 121,
   "registry": {
     "containers": [
       "r-block",
@@ -18,6 +18,7 @@
       "r-tree"
     ],
     "fields": [
+      "r-actions",
       "r-anchor",
       "r-anchor-link",
       "r-autocomplete",
@@ -34,9 +35,13 @@
       "r-dept-picker",
       "r-divider",
       "r-dropdown",
+      "r-editor",
       "r-entity-picker",
       "r-file-browser",
       "r-file-path",
+      "r-filter",
+      "r-footer",
+      "r-header",
       "r-html-editor",
       "r-icon",
       "r-image",
@@ -57,6 +62,7 @@
       "r-step-item",
       "r-switch",
       "r-tab-pane",
+      "r-tail",
       "r-text",
       "r-textarea",
       "r-time-picker",
@@ -284,7 +290,7 @@
     "r-table": {
       "type": "r-table",
       "category": "container",
-      "description": "数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。",
+      "description": "数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。",
       "props": [
         {
           "name": "dataKey",
@@ -294,51 +300,21 @@
         },
         {
           "name": "toolbar",
-          "type": "ToolbarDockProp",
+          "type": "SparkNode",
           "required": false,
-          "description": "结构化工具栏 dock",
-          "schema": {
-            "kind": "enum",
-            "type": "ToolbarDockProp",
-            "variants": [
-              "null",
-              "false",
-              "object",
-              "DockToolbarNode"
-            ]
-          }
+          "description": "结构化工具栏 dock"
         },
         {
           "name": "filter",
-          "type": "FilterDockProp",
+          "type": "SparkNode",
           "required": false,
-          "description": "结构化筛选 dock",
-          "schema": {
-            "kind": "enum",
-            "type": "FilterDockProp",
-            "variants": [
-              "null",
-              "false",
-              "object",
-              "DockFilterNode"
-            ]
-          }
+          "description": "结构化筛选 dock"
         },
         {
           "name": "actions",
-          "type": "ActionsDockProp",
+          "type": "SparkNode",
           "required": false,
-          "description": "结构化行动作 dock",
-          "schema": {
-            "kind": "enum",
-            "type": "ActionsDockProp",
-            "variants": [
-              "null",
-              "false",
-              "object",
-              "DockActionsNode"
-            ]
-          }
+          "description": "结构化行动作 dock"
         },
         {
           "name": "children",
@@ -645,44 +621,24 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点列表（列节点 + dock 节点）"
         },
         {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
           "name": "filter",
-          "type": "FilterDockProp",
-          "description": "结构化筛选 dock",
-          "schema": {
-            "kind": "enum",
-            "type": "FilterDockProp",
-            "variants": [
-              "null",
-              "false",
-              "object",
-              "DockFilterNode"
-            ]
-          }
+          "type": "SparkNode",
+          "description": "结构化筛选 dock"
         },
         {
           "name": "toolbar",
-          "type": "ToolbarDockProp",
-          "description": "结构化工具栏 dock",
-          "schema": {
-            "kind": "enum",
-            "type": "ToolbarDockProp",
-            "variants": [
-              "null",
-              "false",
-              "object",
-              "DockToolbarNode"
-            ]
-          }
+          "type": "SparkNode",
+          "description": "结构化工具栏 dock"
         },
         {
           "name": "dataKey",
@@ -691,18 +647,8 @@
         },
         {
           "name": "actions",
-          "type": "ActionsDockProp",
-          "description": "结构化行动作 dock",
-          "schema": {
-            "kind": "enum",
-            "type": "ActionsDockProp",
-            "variants": [
-              "null",
-              "false",
-              "object",
-              "DockActionsNode"
-            ]
-          }
+          "type": "SparkNode",
+          "description": "结构化行动作 dock"
         },
         {
           "name": "onAddRow",
@@ -1309,7 +1255,7 @@
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -1501,19 +1447,6 @@
           }
         },
         {
-          "name": "gridAutoRows",
-          "type": "string | undefined",
-          "description": "栅格行高",
-          "schema": {
-            "kind": "enum",
-            "type": "string | undefined",
-            "variants": [
-              "undefined",
-              "string"
-            ]
-          }
-        },
-        {
           "name": "gridGap",
           "type": "string | number | undefined",
           "description": "栅格间距",
@@ -1524,6 +1457,19 @@
               "undefined",
               "string",
               "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
             ]
           }
         },
@@ -1541,9 +1487,8 @@
           }
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+          "name": "id",
+          "type": "string"
         },
         {
           "name": "children",
@@ -1551,12 +1496,13 @@
           "description": "子节点列表"
         },
         {
-          "name": "id",
-          "type": "string"
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化工具栏 dock"
         },
         {
@@ -1808,7 +1754,7 @@
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -1849,33 +1795,33 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\"",
+          "type": "\"left\" | \"right\" | \"center\"",
           "required": false,
           "default": "\"left\"",
           "description": "标题对齐",
           "schema": {
             "kind": "enum",
-            "type": "\"center\" | \"left\" | \"right\"",
+            "type": "\"left\" | \"right\" | \"center\"",
             "variants": [
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\"",
+          "type": "\"left\" | \"right\" | \"center\"",
           "required": false,
           "default": "\"left\"",
           "description": "值对齐",
           "schema": {
             "kind": "enum",
-            "type": "\"center\" | \"left\" | \"right\"",
+            "type": "\"left\" | \"right\" | \"center\"",
             "variants": [
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
@@ -2020,19 +1966,6 @@
           }
         },
         {
-          "name": "gridAutoRows",
-          "type": "string | undefined",
-          "description": "栅格行高",
-          "schema": {
-            "kind": "enum",
-            "type": "string | undefined",
-            "variants": [
-              "undefined",
-              "string"
-            ]
-          }
-        },
-        {
           "name": "gridGap",
           "type": "string | number | undefined",
           "description": "栅格间距",
@@ -2047,39 +1980,51 @@
           }
         },
         {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"right\" | \"center\" | undefined",
           "description": "标题对齐",
           "schema": {
             "kind": "enum",
-            "type": "\"center\" | \"left\" | \"right\" | undefined",
+            "type": "\"left\" | \"right\" | \"center\" | undefined",
             "variants": [
               "undefined",
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"right\" | \"center\" | undefined",
           "description": "值对齐",
           "schema": {
             "kind": "enum",
-            "type": "\"center\" | \"left\" | \"right\" | undefined",
+            "type": "\"left\" | \"right\" | \"center\" | undefined",
             "variants": [
               "undefined",
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+          "name": "id",
+          "type": "string"
         },
         {
           "name": "children",
@@ -2087,12 +2032,13 @@
           "description": "子节点列表"
         },
         {
-          "name": "id",
-          "type": "string"
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化工具栏 dock"
         },
         {
@@ -2304,7 +2250,7 @@
     "r-tree": {
       "type": "r-tree",
       "category": "container",
-      "description": "树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。",
+      "description": "树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器侧面板。",
       "props": [
         {
           "name": "dataKey",
@@ -2314,19 +2260,19 @@
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化工具栏 dock"
         },
         {
           "name": "actions",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化节点动作 dock"
         },
         {
           "name": "editor",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化编辑区 dock"
         },
@@ -2579,18 +2525,18 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（树节点内容配置）"
         },
         {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化工具栏 dock"
         },
         {
@@ -2600,12 +2546,12 @@
         },
         {
           "name": "actions",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化节点动作 dock"
         },
         {
           "name": "editor",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化编辑区 dock"
         },
         {
@@ -2984,13 +2930,13 @@
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化工具栏 dock"
         },
         {
           "name": "actions",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化列表项动作 dock"
         },
@@ -3335,15 +3281,14 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "gap",
-          "type": "string | number | undefined",
-          "description": "列表项间距",
+          "name": "columns",
+          "type": "number | undefined",
+          "description": "列数",
           "schema": {
             "kind": "enum",
-            "type": "string | number | undefined",
+            "type": "number | undefined",
             "variants": [
               "undefined",
-              "string",
               "number"
             ]
           }
@@ -3362,6 +3307,20 @@
           }
         },
         {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
           "name": "gridAutoRows",
           "type": "string | undefined",
           "description": "栅格行高",
@@ -3375,9 +3334,9 @@
           }
         },
         {
-          "name": "gridGap",
+          "name": "gap",
           "type": "string | number | undefined",
-          "description": "栅格间距",
+          "description": "列表项间距",
           "schema": {
             "kind": "enum",
             "type": "string | number | undefined",
@@ -3414,19 +3373,6 @@
               "\"hover\"",
               "\"always\"",
               "\"never\""
-            ]
-          }
-        },
-        {
-          "name": "columns",
-          "type": "number | undefined",
-          "description": "列数",
-          "schema": {
-            "kind": "enum",
-            "type": "number | undefined",
-            "variants": [
-              "undefined",
-              "number"
             ]
           }
         },
@@ -3501,18 +3447,18 @@
           }
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（列表项内容配置）"
         },
         {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化工具栏 dock"
         },
         {
@@ -3522,7 +3468,7 @@
         },
         {
           "name": "actions",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化列表项动作 dock"
         },
         {
@@ -4069,7 +4015,7 @@
     "r-tabs": {
       "type": "r-tabs",
       "category": "container",
-      "description": "标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏 dock。",
+      "description": "标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏。",
       "props": [
         {
           "name": "children",
@@ -4079,7 +4025,7 @@
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -4165,18 +4111,18 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（标签面板配置）"
         },
         {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化工具栏 dock"
         },
         {
@@ -4290,7 +4236,7 @@
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -4378,14 +4324,14 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（折叠项配置）"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "onChange",
@@ -4394,7 +4340,7 @@
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化工具栏 dock"
         },
         {
@@ -4493,7 +4439,7 @@
     "r-steps": {
       "type": "r-steps",
       "category": "container",
-      "description": "步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。",
+      "description": "步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏和步骤内容切换。",
       "props": [
         {
           "name": "children",
@@ -4503,7 +4449,7 @@
         },
         {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -4593,18 +4539,18 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点（步骤配置）"
         },
         {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
           "name": "toolbar",
-          "type": "any",
+          "type": "SparkNode",
           "description": "结构化工具栏 dock"
         },
         {
@@ -4718,7 +4664,7 @@
     "r-dialog": {
       "type": "r-dialog",
       "category": "container",
-      "description": "对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。",
+      "description": "对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer 和网格主体布局。",
       "props": [
         {
           "name": "children",
@@ -4728,13 +4674,13 @@
         },
         {
           "name": "header",
-          "type": "unknown",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化头部 dock"
         },
         {
           "name": "footer",
-          "type": "unknown",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化底部 dock"
         },
@@ -4886,6 +4832,46 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
           "name": "title",
           "type": "string | undefined",
           "description": "对话框标题",
@@ -4912,46 +4898,6 @@
           }
         },
         {
-          "name": "gridColumns",
-          "type": "number | undefined",
-          "description": "CSS Grid 列数",
-          "schema": {
-            "kind": "enum",
-            "type": "number | undefined",
-            "variants": [
-              "undefined",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "gridAutoRows",
-          "type": "string | undefined",
-          "description": "栅格行高",
-          "schema": {
-            "kind": "enum",
-            "type": "string | undefined",
-            "variants": [
-              "undefined",
-              "string"
-            ]
-          }
-        },
-        {
-          "name": "gridGap",
-          "type": "string | number | undefined",
-          "description": "栅格间距",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number | undefined",
-            "variants": [
-              "undefined",
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
           "name": "modelValue",
           "type": "boolean | undefined",
           "description": "控制显隐（v-model）",
@@ -4966,14 +4912,14 @@
           }
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "onClose",
@@ -4982,7 +4928,7 @@
         },
         {
           "name": "header",
-          "type": "unknown",
+          "type": "SparkNode",
           "description": "结构化头部 dock"
         },
         {
@@ -5005,7 +4951,7 @@
         },
         {
           "name": "footer",
-          "type": "unknown",
+          "type": "SparkNode",
           "description": "结构化底部 dock"
         },
         {
@@ -5184,7 +5130,7 @@
     "r-drawer": {
       "type": "r-drawer",
       "category": "container",
-      "description": "抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer dock 和网格主体布局。",
+      "description": "抽屉容器，基于 el-drawer 侧滑面板，支持 r-header/r-footer 和网格主体布局。",
       "props": [
         {
           "name": "children",
@@ -5194,13 +5140,13 @@
         },
         {
           "name": "header",
-          "type": "unknown",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化头部 dock"
         },
         {
           "name": "footer",
-          "type": "unknown",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化底部 dock"
         },
@@ -5352,6 +5298,46 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
           "name": "title",
           "type": "string | undefined",
           "description": "抽屉标题",
@@ -5378,46 +5364,6 @@
           }
         },
         {
-          "name": "gridColumns",
-          "type": "number | undefined",
-          "description": "CSS Grid 列数",
-          "schema": {
-            "kind": "enum",
-            "type": "number | undefined",
-            "variants": [
-              "undefined",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "gridAutoRows",
-          "type": "string | undefined",
-          "description": "栅格行高",
-          "schema": {
-            "kind": "enum",
-            "type": "string | undefined",
-            "variants": [
-              "undefined",
-              "string"
-            ]
-          }
-        },
-        {
-          "name": "gridGap",
-          "type": "string | number | undefined",
-          "description": "栅格间距",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number | undefined",
-            "variants": [
-              "undefined",
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
           "name": "modelValue",
           "type": "boolean | undefined",
           "description": "控制显隐（v-model）",
@@ -5432,14 +5378,14 @@
           }
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点"
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
           "name": "onClose",
@@ -5448,7 +5394,7 @@
         },
         {
           "name": "header",
-          "type": "unknown",
+          "type": "SparkNode",
           "description": "结构化头部 dock"
         },
         {
@@ -5471,7 +5417,7 @@
         },
         {
           "name": "footer",
-          "type": "unknown",
+          "type": "SparkNode",
           "description": "结构化底部 dock"
         },
         {
@@ -5630,7 +5576,7 @@
     "r-section": {
       "type": "r-section",
       "category": "container",
-      "description": "分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作 dock。",
+      "description": "分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作区。",
       "props": [
         {
           "name": "children",
@@ -5640,7 +5586,7 @@
         },
         {
           "name": "header",
-          "type": "unknown",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化头部 dock"
         },
@@ -5835,6 +5781,74 @@
           "description": "组件类型（对应 ComponentDefinition.type）"
         },
         {
+          "name": "collapsible",
+          "type": "boolean | undefined",
+          "description": "是否可折叠",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "defaultCollapsed",
+          "type": "boolean | undefined",
+          "description": "默认折叠",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
           "name": "title",
           "type": "string | undefined",
           "description": "分区标题",
@@ -5861,46 +5875,6 @@
           }
         },
         {
-          "name": "gridColumns",
-          "type": "number | undefined",
-          "description": "CSS Grid 列数",
-          "schema": {
-            "kind": "enum",
-            "type": "number | undefined",
-            "variants": [
-              "undefined",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "gridAutoRows",
-          "type": "string | undefined",
-          "description": "栅格行高",
-          "schema": {
-            "kind": "enum",
-            "type": "string | undefined",
-            "variants": [
-              "undefined",
-              "string"
-            ]
-          }
-        },
-        {
-          "name": "gridGap",
-          "type": "string | number | undefined",
-          "description": "栅格间距",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number | undefined",
-            "variants": [
-              "undefined",
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
           "name": "description",
           "type": "string | undefined",
           "description": "分区描述",
@@ -5910,34 +5884,6 @@
             "variants": [
               "undefined",
               "string"
-            ]
-          }
-        },
-        {
-          "name": "collapsible",
-          "type": "boolean | undefined",
-          "description": "是否可折叠",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean | undefined",
-            "variants": [
-              "undefined",
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "defaultCollapsed",
-          "type": "boolean | undefined",
-          "description": "默认折叠",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean | undefined",
-            "variants": [
-              "undefined",
-              "false",
-              "true"
             ]
           }
         },
@@ -6051,18 +5997,18 @@
           }
         },
         {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
           "name": "children",
           "type": "SparkNode[]",
           "description": "子节点"
         },
         {
+          "name": "props",
+          "type": "Record<string, unknown>",
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
           "name": "header",
-          "type": "unknown",
+          "type": "SparkNode",
           "description": "结构化头部 dock"
         },
         {
@@ -6259,8 +6205,8 @@
           "required": false
         },
         {
-          "name": "name",
-          "type": "string",
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -6269,8 +6215,8 @@
           "required": false
         },
         {
-          "name": "width",
-          "type": "number",
+          "name": "name",
+          "type": "string",
           "required": false
         },
         {
@@ -6436,8 +6382,8 @@
           "required": false
         },
         {
-          "name": "name",
-          "type": "string",
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -6446,8 +6392,8 @@
           "required": false
         },
         {
-          "name": "width",
-          "type": "number",
+          "name": "name",
+          "type": "string",
           "required": false
         },
         {
@@ -6613,8 +6559,8 @@
           "required": false
         },
         {
-          "name": "name",
-          "type": "string",
+          "name": "width",
+          "type": "number",
           "required": false
         },
         {
@@ -6623,8 +6569,8 @@
           "required": false
         },
         {
-          "name": "width",
-          "type": "number",
+          "name": "name",
+          "type": "string",
           "required": false
         },
         {
@@ -6778,6 +6724,365 @@
         "valueType": "string",
         "hasOptions": true
       }
+    },
+    "r-tail": {
+      "type": "r-tail",
+      "category": "field",
+      "description": "尾部组件，在 r-toolbar 中作为工具栏末尾区域提取渲染。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-tail\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "尾区宽度",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        }
+      ],
+      "emits": [],
+      "source": "vcm"
+    },
+    "r-header": {
+      "type": "r-header",
+      "category": "field",
+      "description": "头部组件，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-header\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "区域宽度",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        }
+      ],
+      "emits": [],
+      "source": "vcm"
+    },
+    "r-footer": {
+      "type": "r-footer",
+      "category": "field",
+      "description": "底部组件，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-footer\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "区域宽度",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        }
+      ],
+      "emits": [],
+      "source": "vcm"
+    },
+    "r-filter": {
+      "type": "r-filter",
+      "category": "field",
+      "description": "筛选区组件，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-filter\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "columns",
+          "type": "any[]",
+          "required": false,
+          "description": "筛选列"
+        },
+        {
+          "name": "collapsible",
+          "type": "boolean",
+          "required": false,
+          "description": "是否可折叠",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "defaultCollapsed",
+          "type": "boolean",
+          "required": false,
+          "description": "默认折叠",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "autoFitMinWidth",
+          "type": "string",
+          "required": false,
+          "description": "自适应最小宽度"
+        },
+        {
+          "name": "itemSpan",
+          "type": "number",
+          "required": false,
+          "description": "单项跨列数"
+        },
+        {
+          "name": "gridColumns",
+          "type": "number",
+          "required": false,
+          "description": "网格列数"
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number",
+          "required": false,
+          "description": "网格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string",
+          "required": false,
+          "description": "网格行高"
+        }
+      ],
+      "emits": [],
+      "source": "vcm"
+    },
+    "r-editor": {
+      "type": "r-editor",
+      "category": "field",
+      "description": "编辑面板组件，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-editor\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+          "required": false,
+          "description": "编辑区位置",
+          "schema": {
+            "kind": "enum",
+            "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+            "variants": [
+              "\"top\"",
+              "\"bottom\"",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "编辑区宽度",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        }
+      ],
+      "emits": [],
+      "source": "vcm"
+    },
+    "r-actions": {
+      "type": "r-actions",
+      "category": "field",
+      "description": "操作列/区域组件，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"r-actions\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "\"left\" | \"right\"",
+          "required": false,
+          "description": "操作列位置",
+          "schema": {
+            "kind": "enum",
+            "type": "\"left\" | \"right\"",
+            "variants": [
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "列标题"
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "description": "列宽",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "align",
+          "type": "\"left\" | \"right\" | \"center\"",
+          "required": false,
+          "description": "对齐方式",
+          "schema": {
+            "kind": "enum",
+            "type": "\"left\" | \"right\" | \"center\"",
+            "variants": [
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
+            ]
+          }
+        },
+        {
+          "name": "fixed",
+          "type": "boolean | \"left\" | \"right\"",
+          "required": false,
+          "description": "固定列",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | \"left\" | \"right\"",
+            "variants": [
+              "false",
+              "true",
+              "\"left\"",
+              "\"right\""
+            ]
+          }
+        }
+      ],
+      "emits": [],
+      "source": "vcm"
     },
     "r-tour": {
       "type": "r-tour",
@@ -7120,7 +7425,7 @@
     "r-toolbar": {
       "type": "r-toolbar",
       "category": "field",
-      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。",
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。",
       "props": [
         {
           "name": "children",
@@ -7130,7 +7435,7 @@
         },
         {
           "name": "tail",
-          "type": "unknown",
+          "type": "SparkNode",
           "required": false,
           "description": "结构化尾区 dock"
         },
@@ -7171,8 +7476,8 @@
             "kind": "enum",
             "type": "InlineAlign",
             "variants": [
-              "\"start\"",
               "\"center\"",
+              "\"start\"",
               "\"end\"",
               "\"stretch\""
             ]
@@ -7187,8 +7492,8 @@
             "kind": "enum",
             "type": "InlineJustify",
             "variants": [
-              "\"start\"",
               "\"center\"",
+              "\"start\"",
               "\"end\"",
               "\"space-between\""
             ]
@@ -7224,7 +7529,7 @@
         },
         {
           "name": "props",
-          "type": "Record<string, unknown>",
+          "type": "{ [key: string]: unknown; }",
           "required": false
         },
         {
@@ -7376,7 +7681,7 @@
         },
         {
           "name": "props",
-          "type": "Record<string, unknown>",
+          "type": "{ [key: string]: unknown; }",
           "required": false
         },
         {
@@ -8197,16 +8502,16 @@
         },
         {
           "name": "contentPosition",
-          "type": "\"center\" | \"left\" | \"right\"",
+          "type": "\"left\" | \"right\" | \"center\"",
           "required": false,
           "default": "\"center\"",
           "schema": {
             "kind": "enum",
-            "type": "\"center\" | \"left\" | \"right\"",
+            "type": "\"left\" | \"right\" | \"center\"",
             "variants": [
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
@@ -8251,7 +8556,7 @@
         },
         {
           "name": "props",
-          "type": "Record<string, unknown>",
+          "type": "{ [key: string]: unknown; }",
           "required": false
         },
         {
@@ -8384,14 +8689,14 @@
         },
         {
           "name": "bodyStyle",
-          "type": "string | Record<string, string>",
+          "type": "string | object",
           "required": false,
           "schema": {
             "kind": "enum",
-            "type": "string | Record<string, string>",
+            "type": "string | object",
             "variants": [
               "string",
-              "Record<string, string>"
+              "object"
             ]
           }
         },
@@ -11169,16 +11474,16 @@
         },
         {
           "name": "placement",
-          "type": "\"bottom\" | \"top\"",
+          "type": "\"top\" | \"bottom\"",
           "required": false,
           "default": "\"bottom\"",
           "description": "弹出位置",
           "schema": {
             "kind": "enum",
-            "type": "\"bottom\" | \"top\"",
+            "type": "\"top\" | \"bottom\"",
             "variants": [
-              "\"bottom\"",
-              "\"top\""
+              "\"top\"",
+              "\"bottom\""
             ]
           }
         },
@@ -13319,14 +13624,6 @@
       "emits": [],
       "source": "vcm"
     },
-    "template-dsl-demo": {
-      "type": "template-dsl-demo",
-      "category": "feature",
-      "description": "Vue 模板 DSL 演示页，展示通过 Vue SFC 模板直接使用 SPARK 组件的用法。",
-      "props": [],
-      "emits": [],
-      "source": "vcm"
-    },
     "skill-catalog": {
       "type": "skill-catalog",
       "category": "feature",
@@ -13764,56 +14061,6 @@
         "valueType": "string"
       }
     },
-    "spark-child": {
-      "type": "spark-child",
-      "category": "feature",
-      "description": "子节点渲染包装器，渲染单个 SparkNode 子节点，支持 CSS Grid 项包装以兼容 el-table-column 嵌套。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "nodeId",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "colSpan",
-          "type": "string | number",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "rowSpan",
-          "type": "string | number",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
     "json-tree-editor": {
       "type": "json-tree-editor",
       "category": "feature",
@@ -13888,15 +14135,15 @@
         },
         {
           "name": "schema",
-          "type": "Record<string, unknown> | null",
+          "type": "{ [key: string]: unknown; } | null",
           "required": false,
           "default": "null",
           "schema": {
             "kind": "enum",
-            "type": "Record<string, unknown> | null",
+            "type": "{ [key: string]: unknown; } | null",
             "variants": [
               "null",
-              "Record<string, unknown>"
+              "{ [key: string]: unknown; }"
             ]
           }
         },
@@ -13908,8 +14155,88 @@
         },
         {
           "name": "policy",
-          "type": "Partial<JsonTreePolicy>",
-          "required": false
+          "type": "JsonTreePolicy",
+          "required": false,
+          "schema": {
+            "kind": "object",
+            "type": "JsonTreePolicy",
+            "properties": {
+              "rootLabel": {
+                "name": "rootLabel",
+                "type": "string",
+                "required": false,
+                "description": "根节点显示标签。默认 '$'"
+              },
+              "isProtected": {
+                "name": "isProtected",
+                "type": "(path: JsonPath) => boolean",
+                "required": false,
+                "description": "该路径是否受保护（不可删除）。默认全部可删除",
+                "schema": {
+                  "kind": "event",
+                  "type": "(path: JsonPath): boolean",
+                  "params": [
+                    {
+                      "kind": "enum",
+                      "type": "JsonPathSegment",
+                      "variants": [
+                        "string",
+                        "number"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "canEditKey": {
+                "name": "canEditKey",
+                "type": "(path: JsonPath) => boolean",
+                "required": false,
+                "description": "该路径的键是否可重命名。默认：对象属性可改，数组索引不可改"
+              },
+              "canEditType": {
+                "name": "canEditType",
+                "type": "(path: JsonPath) => boolean",
+                "required": false,
+                "description": "该路径的类型是否可切换。默认：除根节点外均可"
+              },
+              "suggestChildKey": {
+                "name": "suggestChildKey",
+                "type": "(target: JsonObject, parentPath: JsonPath) => string",
+                "required": false,
+                "description": "为目标对象建议新子键名"
+              },
+              "createDefaultArrayItem": {
+                "name": "createDefaultArrayItem",
+                "type": "(parentPath: JsonPath) => JsonValue",
+                "required": false,
+                "description": "为数组添加子项时的默认值"
+              },
+              "createDefaultObjectValue": {
+                "name": "createDefaultObjectValue",
+                "type": "(parentPath: JsonPath, key: string) => JsonValue",
+                "required": false,
+                "description": "为对象添加子项时的默认值"
+              },
+              "getValueOptions": {
+                "name": "getValueOptions",
+                "type": "(path: JsonPath) => string[] | undefined",
+                "required": false,
+                "description": "返回该路径的可选值列表（用于下拉选择，优先级低于 Schema enum）"
+              },
+              "getValueLabels": {
+                "name": "getValueLabels",
+                "type": "(path: JsonPath) => { label: string; value: string; }[] | undefined",
+                "required": false,
+                "description": "返回该路径的带标签下拉选项。优先级最高：getValueLabels > Schema enum > getValueOptions"
+              },
+              "getAutoPopulate": {
+                "name": "getAutoPopulate",
+                "type": "(changedPath: JsonPath, newValue: JsonValue) => AutoPopulateEntry[] | undefined",
+                "required": false,
+                "description": "值变更后需要自动填充到文档的补丁。返回的条目中已有的键不会被覆盖"
+              }
+            }
+          }
         },
         {
           "name": "rootLabel",
@@ -14346,9 +14673,9 @@
             "type": "TextAlign | undefined",
             "variants": [
               "undefined",
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
@@ -14362,9 +14689,9 @@
             "type": "TextAlign | undefined",
             "variants": [
               "undefined",
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
@@ -14470,9 +14797,9 @@
             "type": "TextAlign | undefined",
             "variants": [
               "undefined",
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
@@ -14486,9 +14813,9 @@
             "type": "TextAlign | undefined",
             "variants": [
               "undefined",
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
@@ -14725,15 +15052,15 @@
         },
         {
           "name": "placement",
-          "type": "\"bottom\" | \"top\"",
+          "type": "\"top\" | \"bottom\"",
           "required": false,
           "default": "\"bottom\"",
           "schema": {
             "kind": "enum",
-            "type": "\"bottom\" | \"top\"",
+            "type": "\"top\" | \"bottom\"",
             "variants": [
-              "\"bottom\"",
-              "\"top\""
+              "\"top\"",
+              "\"bottom\""
             ]
           }
         },
@@ -15086,29 +15413,29 @@
         },
         {
           "name": "labelAlign",
-          "type": "\"center\" | \"left\" | \"right\"",
+          "type": "\"left\" | \"right\" | \"center\"",
           "required": false,
           "schema": {
             "kind": "enum",
-            "type": "\"center\" | \"left\" | \"right\"",
+            "type": "\"left\" | \"right\" | \"center\"",
             "variants": [
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
         {
           "name": "contentAlign",
-          "type": "\"center\" | \"left\" | \"right\"",
+          "type": "\"left\" | \"right\" | \"center\"",
           "required": false,
           "schema": {
             "kind": "enum",
-            "type": "\"center\" | \"left\" | \"right\"",
+            "type": "\"left\" | \"right\" | \"center\"",
             "variants": [
-              "\"center\"",
               "\"left\"",
-              "\"right\""
+              "\"right\"",
+              "\"center\""
             ]
           }
         },
@@ -15596,8 +15923,8 @@
                 "required": true,
                 "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
               },
-              "__@toPrimitive@70229": {
-                "name": "__@toPrimitive@70229",
+              "__@toPrimitive@919": {
+                "name": "__@toPrimitive@919",
                 "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                 "required": true,
                 "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -15876,8 +16203,8 @@
                     "required": true,
                     "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                   },
-                  "__@toPrimitive@70229": {
-                    "name": "__@toPrimitive@70229",
+                  "__@toPrimitive@919": {
+                    "name": "__@toPrimitive@919",
                     "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                     "required": true,
                     "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -15936,14 +16263,14 @@
         },
         {
           "name": "to",
-          "type": "string | Record<string, unknown>",
+          "type": "string | object",
           "required": false,
           "schema": {
             "kind": "enum",
-            "type": "string | Record<string, unknown>",
+            "type": "string | object",
             "variants": [
               "string",
-              "Record<string, unknown>"
+              "object"
             ]
           }
         },
@@ -16208,14 +16535,14 @@
         },
         {
           "name": "textStyle",
-          "type": "string | Record<string, string>",
+          "type": "string | object",
           "required": false,
           "schema": {
             "kind": "enum",
-            "type": "string | Record<string, string>",
+            "type": "string | object",
             "variants": [
               "string",
-              "Record<string, string>"
+              "object"
             ]
           }
         },
@@ -16461,14 +16788,14 @@
         },
         {
           "name": "valueStyle",
-          "type": "string | Record<string, string>",
+          "type": "string | object",
           "required": false,
           "schema": {
             "kind": "enum",
-            "type": "string | Record<string, string>",
+            "type": "string | object",
             "variants": [
               "string",
-              "Record<string, string>"
+              "object"
             ]
           }
         },
@@ -17091,7 +17418,7 @@
         },
         {
           "name": "badgeStyle",
-          "type": "Record<string, string>",
+          "type": "object",
           "required": false
         },
         {
@@ -17323,7 +17650,7 @@
         },
         {
           "name": "disabledWhenRow",
-          "type": "Record<string, unknown>",
+          "type": "object",
           "required": false
         },
         {
@@ -17749,379 +18076,6 @@
           ]
         }
       ],
-      "source": "vcm"
-    },
-    "dock-tail": {
-      "type": "dock-tail",
-      "category": "feature",
-      "description": "尾部 dock，在 r-toolbar 中作为工具栏末尾区域提取渲染。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-tail\""
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[]",
-          "required": false
-        },
-        {
-          "name": "width",
-          "type": "string | number",
-          "required": false,
-          "description": "尾区宽度",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "dock-header": {
-      "type": "dock-header",
-      "category": "feature",
-      "description": "头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-header\""
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[]",
-          "required": false
-        },
-        {
-          "name": "width",
-          "type": "string | number",
-          "required": false,
-          "description": "区域宽度",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "dock-footer": {
-      "type": "dock-footer",
-      "category": "feature",
-      "description": "底部 dock，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-footer\""
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[]",
-          "required": false
-        },
-        {
-          "name": "width",
-          "type": "string | number",
-          "required": false,
-          "description": "区域宽度",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "dock-filter": {
-      "type": "dock-filter",
-      "category": "feature",
-      "description": "筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-filter\""
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[]",
-          "required": false
-        },
-        {
-          "name": "columns",
-          "type": "(string | DockFilterItem)[]",
-          "required": false,
-          "description": "筛选列",
-          "schema": {
-            "kind": "array",
-            "type": "(string | DockFilterItem)[]",
-            "items": [
-              {
-                "kind": "enum",
-                "type": "string | DockFilterItem",
-                "variants": [
-                  "string",
-                  "DockFilterItem"
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "collapsible",
-          "type": "boolean",
-          "required": false,
-          "description": "是否可折叠",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "defaultCollapsed",
-          "type": "boolean",
-          "required": false,
-          "description": "默认折叠",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "autoFitMinWidth",
-          "type": "string",
-          "required": false,
-          "description": "自适应最小宽度"
-        },
-        {
-          "name": "itemSpan",
-          "type": "number",
-          "required": false,
-          "description": "单项跨列数"
-        },
-        {
-          "name": "gridColumns",
-          "type": "number",
-          "required": false,
-          "description": "网格列数"
-        },
-        {
-          "name": "gridGap",
-          "type": "string | number",
-          "required": false,
-          "description": "网格间距",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "gridAutoRows",
-          "type": "string",
-          "required": false,
-          "description": "网格行高"
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "dock-editor": {
-      "type": "dock-editor",
-      "category": "feature",
-      "description": "编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-editor\""
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[]",
-          "required": false
-        },
-        {
-          "name": "position",
-          "type": "\"bottom\" | \"left\" | \"right\" | \"top\"",
-          "required": false,
-          "description": "编辑区位置",
-          "schema": {
-            "kind": "enum",
-            "type": "\"bottom\" | \"left\" | \"right\" | \"top\"",
-            "variants": [
-              "\"bottom\"",
-              "\"left\"",
-              "\"right\"",
-              "\"top\""
-            ]
-          }
-        },
-        {
-          "name": "width",
-          "type": "string | number",
-          "required": false,
-          "description": "编辑区宽度",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        }
-      ],
-      "emits": [],
-      "source": "vcm"
-    },
-    "dock-actions": {
-      "type": "dock-actions",
-      "category": "feature",
-      "description": "操作列/区域 dock，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。",
-      "props": [
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-actions\""
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[]",
-          "required": false
-        },
-        {
-          "name": "position",
-          "type": "\"left\" | \"right\"",
-          "required": false,
-          "description": "操作列位置",
-          "schema": {
-            "kind": "enum",
-            "type": "\"left\" | \"right\"",
-            "variants": [
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "required": false,
-          "description": "列标题"
-        },
-        {
-          "name": "width",
-          "type": "string | number",
-          "required": false,
-          "description": "列宽",
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "align",
-          "type": "\"center\" | \"left\" | \"right\"",
-          "required": false,
-          "description": "对齐方式",
-          "schema": {
-            "kind": "enum",
-            "type": "\"center\" | \"left\" | \"right\"",
-            "variants": [
-              "\"center\"",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "fixed",
-          "type": "boolean | \"left\" | \"right\"",
-          "required": false,
-          "description": "固定列",
-          "schema": {
-            "kind": "enum",
-            "type": "boolean | \"left\" | \"right\"",
-            "variants": [
-              "false",
-              "true",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        }
-      ],
-      "emits": [],
       "source": "vcm"
     },
     "r-column-group": {

@@ -96,7 +96,7 @@ import { extractModelPermission } from '../permission/index.js'
 // ── 常量与局部类型：渲染器内部约束、运行时局部类型 ───────────────────────────
 
 // h() 模型下，以下字段属于渲染器/布局层语义，不直接透传到业务组件。
-const FILTERED_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span', 'on', 'onBeforeRender', 'dock', 'order'])
+const FILTERED_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span', 'on', 'onBeforeRender', 'order'])
 
 // 原生标签不应该收到这些运行时作用域字段，否则会污染 DOM attrs。
 const NATIVE_ONLY_FILTERED_PROP_KEYS = new Set(['row', 'rowIndex', 'data', 'dataSource', 'modelPermission', 'model'])
@@ -176,7 +176,7 @@ const currentRendererComponent = currentInstance?.type ?? null
 
 /**
  * children 归一：
- * 1. 保留 SparkNode 子节点（dock area 子节点已通过 dock props 由父容器消费，不再进入默认流）。
+ * 1. 保留 SparkNode 子节点（已提升为容器 props 的子节点不在此列）。
  * 2. 保留字符串/数字字面量，供统一 slot / fallback 路径直接渲染成文本节点。
  */
 function normalizeRenderableChildren(children: SparkNodeChildren | undefined): RenderableChild[] {
@@ -342,10 +342,8 @@ function asDataSource(value: unknown): IDataSource | null {
     : null
 }
 
-// 行索引既可能来自 rowIndex，也可能来自部分旧作用域兼容保留的 $index。
 function resolveScopedRowIndex(rawProps: NodeRuntimeProps): number | undefined {
-  if (typeof rawProps['rowIndex'] === 'number') return rawProps['rowIndex']
-  return typeof rawProps['$index'] === 'number' ? rawProps['$index'] : undefined
+  return typeof rawProps['rowIndex'] === 'number' ? rawProps['rowIndex'] : undefined
 }
 
 // dataSource 优先取节点显式注入，其次沿父能力链回溯 DATA_SOURCE。
@@ -666,8 +664,8 @@ const externalComponentProps = computed(() => {
  *   - 业务输入 → config.props
  *   - 结构输入 → type / id / children
  *
- * dock 分区通过 wrapper 子节点（如 `r-toolbar` / `r-actions`）声明；
- * 这里仅做统一 props 透传，并保留对历史 `dock` / `order` 残余输入的过滤兜底。
+ * 命名区域通过 wrapper 子节点（如 `r-toolbar` / `r-actions`）声明；
+ * 这里仅做统一 props 透传，并保留对历史 `order` 残余输入的过滤兖底。
  *
  * 仅用于 registry 组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
  */

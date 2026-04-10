@@ -3,18 +3,18 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 
-const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
   'r-dialog': new Set(['r-header', 'r-footer']),
   'r-drawer': new Set(['r-header', 'r-footer']),
   'r-steps': new Set(['r-toolbar']),
 }
-const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
 
-function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
   if (!props['children']) return props
-  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetChildProps)
   const { children: _, ...rest } = props
   return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
 }
@@ -88,7 +88,7 @@ const ElStepStub = defineComponent({
 describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   it('should render dialog header/footer actions and body grid', () => {
     const wrapper = mount(RendererDialog as any, {
-      props: liftTestDocks('r-dialog', {
+      props: liftTestChildProps('r-dialog', {
         title: '编辑用户',
         modelValue: true,
         gridGap: 12,
@@ -121,34 +121,6 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     expect(wrapper.findAll('.renderer-dialog-grid-item')[0]?.attributes('style')).toContain('grid-column: span 8 / span 8;')
   })
 
-  it('should fail fast for legacy dialog header/footer action props', () => {
-    expect(() => mount(RendererDialog as any, {
-      props: {
-        title: '编辑用户',
-        headerActions: [{ type: 'legacy-header-action' }],
-      },
-      global: {
-        stubs: {
-          SparkComponentRenderer: SparkActionStub,
-          'el-dialog': ElDialogStub,
-        },
-      },
-    })).toThrow('props.headerActions 已废除')
-
-    expect(() => mount(RendererDialog as any, {
-      props: {
-        title: '编辑用户',
-        footerActions: [{ type: 'legacy-footer-action' }],
-      },
-      global: {
-        stubs: {
-          SparkComponentRenderer: SparkActionStub,
-          'el-dialog': ElDialogStub,
-        },
-      },
-    })).toThrow('props.footerActions 已废除')
-  })
-
   it('should emit drawer model updates and render footer slot', () => {
     const wrapper = mount(RendererDrawer as any, {
       props: {
@@ -174,10 +146,10 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     expect(wrapper.find('.biz-drawer-footer').attributes('data-visible')).toBe('true')
   })
 
-  it('should render docked steps toolbar children and switch active step content', async () => {
+  it('should render steps toolbar children and switch active step content', async () => {
     const onStepChange = vi.fn()
     const wrapper = mount(RendererSteps as any, {
-      props: liftTestDocks('r-steps', {
+      props: liftTestChildProps('r-steps', {
         onStepChange,
         children: [
           { type: 'r-toolbar', children: [{ type: 'steps-toolbar-action' }] },

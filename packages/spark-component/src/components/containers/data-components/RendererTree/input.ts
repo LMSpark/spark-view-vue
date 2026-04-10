@@ -22,7 +22,7 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const effectiveAllowAppend = computed(() => options.props.allowAppend ?? false)
   const effectiveAllowDelete = computed(() => options.props.allowDelete ?? false)
 
-  // Dock 节点已由绑定层从 children 提升为 props（toolbar / actions / editor），
+  // 子节点类型已由绑定层从 children 提升为 props（toolbar / actions / editor），
   // 此处 children 仅包含内容子节点。
   const contentChildren = computed(() => options.props.children ?? [])
 

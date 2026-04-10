@@ -19,20 +19,23 @@
         "type": "r-section",
         "props": {
           "title": "权限列表",
-          "description": "管理用户或角色的数据访问权限",
-          "headerActions": [
-            {
-              "type": "RenderAddButton"
-            },
-            {
-              "type": "RenderDeleteButton"
-            },
-            {
-              "type": "RenderRefreshButton"
-            }
-          ]
+          "description": "管理用户或角色的数据访问权限"
         },
         "children": [
+          {
+            "type": "r-header",
+            "children": [
+              {
+                "type": "RenderAddButton"
+              },
+              {
+                "type": "RenderDeleteButton"
+              },
+              {
+                "type": "RenderRefreshButton"
+              }
+            ]
+          },
           {
             "type": "r-table",
             "dataKey": "Permissions@rows",
@@ -135,17 +138,20 @@
         "type": "r-drawer",
         "props": {
           "title": "权限详情",
-          "size": "40%",
-          "headerActions": [
-            {
-              "type": "RenderSaveButton"
-            },
-            {
-              "type": "RenderCancelButton"
-            }
-          ]
+          "size": "40%"
         },
         "children": [
+          {
+            "type": "r-header",
+            "children": [
+              {
+                "type": "RenderSaveButton"
+              },
+              {
+                "type": "RenderCancelButton"
+              }
+            ]
+          },
           {
             "type": "r-form",
             "dataKey": "Permissions@currentRow",

@@ -1,7 +1,7 @@
 <!--
 /**
  * @skill r-detail
- * @description 只读详情容器，绑定 DataView.currentRow 展示当前行字段，支持 dock 分区工具栏，不支持编辑回写
+ * @description 只读详情容器，绑定 DataView.currentRow 展示当前行字段，支持工具栏，不支持编辑回写
  * @provides DATA_SOURCE
  * @provides DATA_ROW
  * @context 通过当前组件 type='r-detail' 提供字段语义
@@ -23,20 +23,15 @@
     <div class="renderer-detail-main">
       <div class="renderer-detail" v-bind="$attrs" :style="detailAlignStyle">
         <div class="renderer-detail-grid" :style="gridStyle">
-          <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
-            <template #spark="{ child, index }">
-              <div
-                :key="nodeId(child) ?? `r-detail-child-${index}`"
-                class="renderer-detail-grid-item"
-                :style="getChildGridStyle(child)"
-              >
-                <SparkComponentRenderer :config="child" />
-              </div>
-            </template>
-            <template #default="slotScope">
-              <slot v-bind="slotScope" />
-            </template>
-          </SparkChildrenBridge>
+          <div
+            v-for="(child, index) in gridChildren"
+            :key="nodeId(child) ?? `r-detail-child-${index}`"
+            class="renderer-detail-grid-item"
+            :style="getChildGridStyle(child)"
+          >
+            <SparkComponentRenderer :config="child" />
+          </div>
+          <slot v-bind="getDefaultSlotScope()" />
         </div>
       </div>
     </div>
@@ -50,7 +45,7 @@
 /**
  * RendererDetail - 详情展示容器组件
  */
-import { SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
+import { SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
 import { nodeId, type SparkNode } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
@@ -66,7 +61,7 @@ interface Props extends SparkNode {
   id?: string
   /** 数据绑定键 */
   dataKey?: string
-  /** 结构化工具栏 dock */
+  /** 结构化工具栏 */
   toolbar?: SparkNode
   /** 子节点列表 */
   children?: SparkNode[]
@@ -101,7 +96,6 @@ const detailAlignStyle = computed<StyleValue>(() => ({
 
 const {
   registerApi,
-  context,
   resolvedView,
   gridChildren,
   gridStyle,

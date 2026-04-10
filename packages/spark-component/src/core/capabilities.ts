@@ -22,7 +22,7 @@
  *       ↓
  *   字段组件（r-text / r-number …）
  *     沿祖先 context.type 链向上查找最近的字段宿主容器语义
- *     （dock / scope 等中间层保持真实 type，不改写自身；字段侧统一通过宿主解析规则跳过或映射这些中间层）
+ *     （scope 等中间层保持真实 type，不改写自身；字段侧统一通过宿主解析规则跳过或映射这些中间层）
  *     sparkConsume(DATA_ROW) ?? {}
  */
 

@@ -15,27 +15,26 @@
 
 import type { RuleConfig } from '@spark-view/spark-page-config'
 import { SPARK_NODE_STRUCT_KEYS, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
-import { dockTypeToPropName } from '../../components/containers/docks/dock-extraction.js'
 import type { ActionExecutionContext } from '../actions'
 import { normalizeRuleEvents, normalizeOnProps } from './bind-normalize.js'
 
 export type PageScriptCaller = (functionName: string, ...args: unknown[]) => unknown
 
-/** 查询容器识别的 dock 类型集合（来自 registry meta.docks） */
-export type DockTypeLookup = (containerType: string) => ReadonlySet<string> | undefined
+/** 查询容器可提升的子类型集合（来自 registry meta.childProps） */
+export type ChildPropLookup = (containerType: string) => ReadonlySet<string> | undefined
 
 export interface BuildPageChildrenOptions {
   callFunc: PageScriptCaller
   actionCtx: ActionExecutionContext
-  /** 容器 dock 查询（不提供时跳过 dock 提升） */
-  getDocks?: DockTypeLookup
+  /** 子类型→prop 映射查询（不提供时跳过提升） */
+  getChildProps?: ChildPropLookup
 }
 
 export function buildPageChildren(
   rules: RuleConfig[],
   options: BuildPageChildrenOptions,
 ): SparkNode[] {
-  const { callFunc, actionCtx, getDocks } = options
+  const { callFunc, actionCtx, getChildProps } = options
   const usedIds = new Set<string>()
 
   function isSparkChild(value: unknown): value is SparkNodeChildren[number] {
@@ -119,30 +118,35 @@ export function buildPageChildren(
       cloned.props = propsObj
     }
 
-    return liftDockChildren(cloned, getDocks)
+    return liftChildProps(cloned, getChildProps)
   }
 
   return rules.map(rule => bindNode(rule as unknown as Record<string, unknown>))
 }
 
+/** 去掉 `r-` 前缀得到 prop 名（r-toolbar → toolbar） */
+function childTypeToPropName(childType: string): string {
+  return childType.startsWith('r-') ? childType.slice(2) : childType
+}
+
 /**
- * 将容器节点的 children 中的 dock 子节点提升为 props。
+ * 将容器节点 children 中的特定类型子节点提升为 props。
  *
  * 例如 `{ type: 'r-table', children: [{ type: 'r-toolbar', ... }, ...content] }`
  * → `{ type: 'r-table', props: { toolbar: { type: 'r-toolbar', ... } }, children: [...content] }`
  *
- * 容器组件只需通过 `props.toolbar` 直接访问 dock 节点，无需运行时提取。
+ * 容器组件只需通过 `props.toolbar` 直接访问，无需运行时提取。
  */
-export function liftDockChildren(node: SparkNode, getDocks?: DockTypeLookup): SparkNode {
-  const dockTypes = getDocks?.(node.type)
-  if (!dockTypes || !node.children || node.children.length === 0) return node
+export function liftChildProps(node: SparkNode, getChildProps?: ChildPropLookup): SparkNode {
+  const liftableTypes = getChildProps?.(node.type)
+  if (!liftableTypes || !node.children || node.children.length === 0) return node
 
   const contentChildren: SparkNodeChildren = []
   const liftedProps: Record<string, SparkNode> = {}
 
   for (const child of node.children) {
-    if (isSparkNode(child) && dockTypes.has(child.type)) {
-      const propName = dockTypeToPropName(child.type)
+    if (isSparkNode(child) && liftableTypes.has(child.type)) {
+      const propName = childTypeToPropName(child.type)
       if (!(propName in liftedProps)) {
         liftedProps[propName] = child
       }

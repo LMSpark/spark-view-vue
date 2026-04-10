@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏 dock 和步骤内容切换。
+ * @skill-description 步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏和步骤内容切换。
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
@@ -58,7 +58,7 @@ import { useDefaultedSelection } from '../state'
 interface Props extends SparkNode {
   /** 子节点（步骤配置） */
   children?: SparkNode[]
-  /** 结构化工具栏 dock */
+  /** 结构化工具栏 */
   toolbar?: SparkNode
   /** 当前步骤 */
   modelValue?: string | number
@@ -76,7 +76,7 @@ const emit = defineEmits<{
 
 const { registerApi } = useSparkPageComponent(props)
 
-// Dock 节点已由绑定层从 children 提升为 props（toolbar）
+// 子节点类型已由绑定层从 children 提升为 props（toolbar）
 const contentChildren = computed(() => props.children ?? [])
 
 const stepConfigs = computed(() =>

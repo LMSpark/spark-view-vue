@@ -32,7 +32,6 @@ describe('SparkNode input helpers', () => {
     const node = {
       type: 'r-step',
       id: 'step-1',
-      dock: 'toolbar',
       order: 2,
       title: '步骤一',
       name: 'step-one',
@@ -51,7 +50,6 @@ describe('SparkNode input helpers', () => {
     expect(merged['name']).toBeUndefined()
     expect(merged['gridGap']).toBeUndefined()
     expect(merged['id']).toBeUndefined()
-    expect(merged['dock']).toBeUndefined()
     expect(merged['order']).toBeUndefined()
     expect(merged['children']).toBeUndefined()
     expect(merged['type']).toBeUndefined()

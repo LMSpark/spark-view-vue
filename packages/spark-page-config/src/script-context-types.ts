@@ -285,11 +285,6 @@ export interface IPageComponentAccessInScript {
   list(type?: string): IPageComponentInstanceInScript[]
   /** 列出组件 API（可按 type 过滤） */
   getApis<T = unknown>(type?: string): T[]
-
-  /** @deprecated 使用 get(id) */
-  getInstance(id: string): IPageComponentInstanceInScript | null
-  /** @deprecated 使用 list(type?) */
-  listInstances(type?: string): IPageComponentInstanceInScript[]
 }
 
 export type PageDialogResultInScript = 'confirm' | 'cancel' | 'close'

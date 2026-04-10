@@ -241,12 +241,12 @@ describe('字段宿主解析会考虑中间层', () => {
     })
   }
 
-  it('会跳过 dock 化插入的结构层，继续向上找到真实宿主', () => {
-    const DockBridge = createIntermediateBridge('r-dock-slot')
+  it('会跳过结构层插入的中间节点，继续向上找到真实宿主', () => {
+    const SlotBridge = createIntermediateBridge('r-slot')
 
     const wrapper = mountFieldInContext({
-      component: DockBridge,
-      type: 'r-dock-slot',
+      component: SlotBridge,
+      type: 'r-slot',
       model: {},
       fieldName: 'id',
       parentType: 'r-table',

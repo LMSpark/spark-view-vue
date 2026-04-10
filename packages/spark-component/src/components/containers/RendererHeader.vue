@@ -1,15 +1,15 @@
 <!--
 /**
  * @skill r-header
- * @description 头部区域 dock 组件。在容器（r-dialog/r-drawer/r-section）内使用时由容器提取并渲染为头部操作区。
+ * @description 头部区域组件。在容器（r-dialog/r-drawer/r-section）内使用时由容器提取并渲染为头部操作区。
  * @input { type: 'r-header', props?: { class? }, children?: SparkNode[] }
  */
 -->
 <template>
-  <div v-if="children.length > 0" class="dock-header">
+  <div v-if="children.length > 0" class="renderer-header">
     <SparkComponentRenderer
       v-for="(child, i) in children"
-      :key="nodeId(child) ?? `dock-header-${i}`"
+      :key="nodeId(child) ?? `r-header-${i}`"
       :config="child"
     />
   </div>
@@ -17,10 +17,10 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 头部 dock，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。
+ * @skill-description 头部组件，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../internal'
 
 interface Props {
   type?: string
@@ -38,7 +38,7 @@ const children = computed(() => getSparkNodeChildren(props.children))
 </script>
 
 <style scoped>
-.dock-header {
+.renderer-header {
   display: flex;
   align-items: center;
   gap: 8px;

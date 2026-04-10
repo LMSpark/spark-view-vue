@@ -94,15 +94,12 @@
           </el-table-column>
 
           <!-- 主数据列 -->
-          <SparkChildrenBridge :spark-children="sparkChildren" :parent-context="context">
-            <template #spark="{ child, index }">
-              <SparkComponentRenderer
-                :key="nodeId(child) ?? `r-table-child-${index}`"
-                :config="child"
-              />
-            </template>
-            <slot />
-          </SparkChildrenBridge>
+          <SparkComponentRenderer
+            v-for="(child, index) in sparkChildren"
+            :key="nodeId(child) ?? `r-table-child-${index}`"
+            :config="child"
+          />
+          <slot />
 
           <!-- 行操作列（右） -->
           <el-table-column v-if="showRowActionsRightValue" v-bind="rowActionColumnAttrs">
@@ -123,7 +120,7 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等 dock 区域，自动同步当前行和选中行状态。
+ * @skill-description 数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
  */
 /**
  * RendererTable - 表格容器组件
@@ -134,7 +131,7 @@
  */
 import { computed, ref, useAttrs, useSlots } from 'vue'
 import {
-  useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer, SparkTableColumns,
+  useSparkPageComponent, SparkComponentRenderer, SparkTableColumns,
   getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT,
 } from '../../../internal'
@@ -188,13 +185,13 @@ const TABLE_LOCAL_ATTR_KEYS = new Set<string>(
 interface Props extends SparkNode {
   /** DataKey 格式：tableName@field */
   dataKey?: string
-  /** 结构化工具栏 dock */
+  /** 结构化工具栏 */
   toolbar?: SparkNode
-  /** 结构化筛选 dock */
+  /** 结构化筛选区 */
   filter?: SparkNode
-  /** 结构化行动作 dock */
+  /** 结构化行动作 */
   actions?: SparkNode
-  /** 子节点列表（列节点 + dock 节点） */
+  /** 子节点列表（列节点 + 区域节点） */
   children?: SparkNode[]
   onRowClick?: RowClickHandler
   onSelectionChange?: RowSelectionHandler
@@ -248,8 +245,8 @@ function readNumberOrStringAttr(name: string): number | string | undefined {
   return undefined
 }
 
-function dockProp<T>(dock: SparkNode | undefined, name: string): T | undefined {
-  return dock?.props?.[name] as T | undefined
+function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
+  return child?.props?.[name] as T | undefined
 }
 
 // ── 输入解析 ──────────────────────────────────────────────────────────────
@@ -264,11 +261,6 @@ const baseTableAttrs = computed<Record<string, unknown>>(() => {
 })
 const effectiveDataKey = computed(() => props.dataKey)
 
-const legacyRowActionsPositionValue = computed<LateralActionPosition | undefined>(() => {
-  const value = readStringAttr('rowActionsPosition')
-  return value === 'left' || value === 'right' ? value : undefined
-})
-
 const sparkChildren = computed<SparkNode[]>(() => {
   const nodes: SparkNode[] = []
   for (const child of props.children ?? []) {
@@ -278,30 +270,13 @@ const sparkChildren = computed<SparkNode[]>(() => {
   return nodes
 })
 
-function assertNoLegacyTableStructures(): void {
-  const toolbarValue = props.toolbar ?? readAttr('toolbar')
-  if (Array.isArray(toolbarValue) && toolbarValue.length > 0) {
-    throw new Error('[RendererTable] props.toolbar 已废除旧数组格式。请使用 dock 子节点 { type: "r-toolbar", children: [...] } 格式。')
-  }
-  const legacyFilterColumns = readAttr('filterColumns')
-  if (Array.isArray(legacyFilterColumns) && legacyFilterColumns.length > 0) {
-    throw new Error('[RendererTable] props.filterColumns 已废除。请使用 dock 子节点 { type: "r-filter", children: [...] } 格式。')
-  }
-  const legacyRowActions = readAttr('rowActions')
-  if (Array.isArray(legacyRowActions) && legacyRowActions.length > 0) {
-    throw new Error('[RendererTable] props.rowActions 已废除。请使用 dock 子节点 { type: "r-actions", children: [...] } 格式。')
-  }
-}
-
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { context, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 const moduleContext = useModuleContext(sparkConsume(MODULE_CONTEXT))
-
-if (import.meta.env.DEV) assertNoLegacyTableStructures()
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
@@ -323,8 +298,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-  toolbarPosition: computed(() => dockProp<ToolbarPosition>(props.toolbar, 'position')),
-  toolbarClass: computed(() => dockProp<string>(props.toolbar, 'class')),
+  toolbarPosition: computed(() => childProp<ToolbarPosition>(props.toolbar, 'position')),
+  toolbarClass: computed(() => childProp<string>(props.toolbar, 'class')),
   modelPermission,
   dataSource: resolvedView,
 })
@@ -336,10 +311,10 @@ const resolvedToolbarChildren = computed<SparkNode[]>(() =>
 )
 
 const toolbarComponentProps = computed<Record<string, unknown>>(() => {
-  const dockProps = props.toolbar?.props
-  if (!dockProps) return {}
+  const childMeta = props.toolbar?.props
+  if (!childMeta) return {}
   const result: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(dockProps)) {
+  for (const [key, value] of Object.entries(childMeta)) {
     if (key !== 'position' && key !== 'class') result[key] = value
   }
   return result
@@ -359,10 +334,10 @@ const {
 } = useTableFilters({
   filterChildren: computed(() => getSparkNodeChildren(props.filter?.children)),
   dataView: resolvedView,
-  filterClass: computed(() => dockProp<string>(props.filter, 'class') ?? readStringAttr('filterClass') ?? ''),
-  filterGridColumns: computed(() => dockProp<number>(props.filter, 'gridColumns') ?? readNumberAttr('filterGridColumns') ?? 24),
-  filterGridGap: computed(() => dockProp<number | string>(props.filter, 'gridGap') ?? readNumberOrStringAttr('filterGridGap') ?? 12),
-  filterGridAutoRows: computed(() => dockProp<string>(props.filter, 'gridAutoRows') ?? readStringAttr('filterGridAutoRows') ?? 'minmax(32px, auto)'),
+  filterClass: computed(() => childProp<string>(props.filter, 'class') ?? readStringAttr('filterClass') ?? ''),
+  filterGridColumns: computed(() => childProp<number>(props.filter, 'gridColumns') ?? readNumberAttr('filterGridColumns') ?? 24),
+  filterGridGap: computed(() => childProp<number | string>(props.filter, 'gridGap') ?? readNumberOrStringAttr('filterGridGap') ?? 12),
+  filterGridAutoRows: computed(() => childProp<string>(props.filter, 'gridAutoRows') ?? readStringAttr('filterGridAutoRows') ?? 'minmax(32px, auto)'),
   logger,
 })
 
@@ -420,14 +395,14 @@ const {
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
-  actionPosition: computed(() => dockProp<LateralActionPosition>(props.actions, 'position') ?? legacyRowActionsPositionValue.value ?? 'right'),
-  actionClass: computed(() => dockProp<string>(props.actions, 'class') ?? readStringAttr('rowActionsClass') ?? ''),
+  actionPosition: computed(() => childProp<LateralActionPosition>(props.actions, 'position') ?? 'right'),
+  actionClass: computed(() => childProp<string>(props.actions, 'class') ?? readStringAttr('rowActionsClass') ?? ''),
   modelPermission,
   dataSource: resolvedView,
   resolveScope: ({ row, index }) => ({
     row,
     listenerArgs: [row, index],
-    scopedProps: { row, rowIndex: index, $index: index },
+    scopedProps: { row, rowIndex: index },
   }),
 })
 
@@ -442,16 +417,16 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
-/** 行操作列统一属性（dock props → legacy attrs → defaults） */
+/** 行操作列统一属性（child props → legacy attrs → defaults） */
 const rowActionColumnAttrs = computed(() => {
-  const label = dockProp<string>(props.actions, 'label') ?? readStringAttr('rowActionsLabel') ?? '操作'
-  const width = dockProp<number | string>(props.actions, 'width') ?? readNumberOrStringAttr('rowActionsWidth') ?? 160
-  const rawAlign = dockProp<string>(props.actions, 'align') ?? readStringAttr('rowActionsAlign')
+  const label = childProp<string>(props.actions, 'label') ?? readStringAttr('rowActionsLabel') ?? '操作'
+  const width = childProp<number | string>(props.actions, 'width') ?? readNumberOrStringAttr('rowActionsWidth') ?? 160
+  const rawAlign = childProp<string>(props.actions, 'align') ?? readStringAttr('rowActionsAlign')
   const align = rawAlign === 'left' || rawAlign === 'center' || rawAlign === 'right' ? rawAlign : 'left'
-  const dockFixed = dockProp<boolean | 'left' | 'right'>(props.actions, 'fixed')
+  const childFixed = childProp<boolean | 'left' | 'right'>(props.actions, 'fixed')
   let fixed: boolean | 'left' | 'right'
-  if (dockFixed !== undefined) {
-    fixed = dockFixed
+  if (childFixed !== undefined) {
+    fixed = childFixed
   } else {
     const attrFixed = readAttr('rowActionsFixed')
     fixed = typeof attrFixed === 'boolean' ? attrFixed

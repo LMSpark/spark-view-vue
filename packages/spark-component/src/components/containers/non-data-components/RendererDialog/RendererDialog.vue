@@ -31,20 +31,15 @@
     </template>
 
     <div :class="['renderer-dialog-body', bodyClass]" :style="gridStyle">
-      <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
-        <template #spark="{ child, index }">
-          <div
-            :key="nodeId(child) ?? `r-dialog-child-${index}`"
-            class="renderer-dialog-grid-item"
-            :style="getChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
-          </div>
-        </template>
-        <template #default="slotScope">
-          <slot v-bind="slotScope" />
-        </template>
-      </SparkChildrenBridge>
+      <div
+        v-for="(child, index) in gridChildren"
+        :key="nodeId(child) ?? `r-dialog-child-${index}`"
+        class="renderer-dialog-grid-item"
+        :style="getChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
+      </div>
+      <slot v-bind="getDefaultSlotScope()" />
     </div>
 
     <template v-if="showFooter" #footer>
@@ -62,10 +57,10 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer dock 和网格主体布局。
+ * @skill-description 对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer 和网格主体布局。
  */
 import { computed, useAttrs, useSlots } from 'vue'
-import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
+import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererDialogApi } from './types'
@@ -74,9 +69,9 @@ import { createRendererDialogZeroCode } from './zero-code'
 interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
-  /** 结构化头部 dock */
+  /** 结构化头部 */
   header?: SparkNode
-  /** 结构化底部 dock */
+  /** 结构化底部 */
   footer?: SparkNode
   /** 对话框标题 */
   title?: string
@@ -116,9 +111,9 @@ const emit = defineEmits<{
 
 const attrs = useAttrs()
 const slots = useSlots()
-const { context, registerApi } = useSparkPageComponent(props)
+const { registerApi } = useSparkPageComponent(props)
 
-// Dock 节点已由绑定层从 children 提升为 props（header / footer）
+// 子节点类型已由绑定层从 children 提升为 props（header / footer）
 const contentChildren = computed(() => props.children ?? [])
 
 function readStringAttr(name: string): string {
@@ -129,8 +124,6 @@ function readStringAttr(name: string): string {
 const headerClassValue = computed(() => (props.header?.props?.['class'] as string | undefined) ?? readStringAttr('headerClass'))
 const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
 const footerClassValue = computed(() => (props.footer?.props?.['class'] as string | undefined) ?? readStringAttr('footerClass'))
-
-assertNoLegacyDialogStructures()
 
 const resolvedTitle = computed(() => props.title || '')
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))
@@ -201,15 +194,6 @@ function getFooterSlotScope() {
     title: resolvedTitle.value,
     visible: visibleValue.value,
     close: closeDialog,
-  }
-}
-
-function assertNoLegacyDialogStructures(): void {
-  if (Array.isArray(attrs['headerActions']) && attrs['headerActions'].length > 0) {
-    throw new Error('[RendererDialog] props.headerActions 已废除。请将头部动作节点移动到 children，并声明 dock: "header"。')
-  }
-  if (Array.isArray(attrs['footerActions']) && attrs['footerActions'].length > 0) {
-    throw new Error('[RendererDialog] props.footerActions 已废除。请将底部动作节点移动到 children，并声明 dock: "footer"。')
   }
 }
 </script>

@@ -14,7 +14,7 @@
 2. 再看包根导出的 `containers` / `displays` / `fields`
 3. 需要组合函数时，使用 `containerComposables` / `fieldComposables` / `displayComposables`
 4. 查 Vue 组件时，优先使用：
-	- `containers.dataComponents` / `containers.structuralComponents` / `containers.dockComponents`
+	- `containers.dataComponents` / `containers.non-data-components`
 	- `displays.dataComponents` / `displays.staticComponents`
 	- `fields.dataComponents` / `fields.nonDataComponents`
 

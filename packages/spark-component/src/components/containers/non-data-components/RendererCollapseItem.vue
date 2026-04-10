@@ -12,18 +12,15 @@
     :disabled="itemDisabled"
   >
     <div :class="['renderer-collapse-item-body', itemBodyClass]" :style="itemGridStyle">
-      <SparkChildrenBridge :spark-children="itemChildren" :parent-context="context">
-        <template #spark="{ child, index }">
-          <div
-            :key="nodeId(child) ?? `r-collapse-item-child-${index}`"
-            class="renderer-collapse-item-grid-item"
-            :style="getItemChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
-          </div>
-        </template>
-        <slot />
-      </SparkChildrenBridge>
+      <div
+        v-for="(child, index) in itemChildren"
+        :key="nodeId(child) ?? `r-collapse-item-child-${index}`"
+        class="renderer-collapse-item-grid-item"
+        :style="getItemChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
+      </div>
+      <slot />
     </div>
   </el-collapse-item>
 </template>
@@ -33,7 +30,7 @@
  * @skill-description 折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。
  */
 import { computed } from 'vue'
-import { SparkChildrenBridge, SparkComponentRenderer, useSparkComponent } from '../../internal'
+import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
@@ -57,7 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'r-collapse-item',
 })
 
-const { context } = useSparkComponent(props)
+useSparkComponent(props)
 
 const {
   contentChildren: itemChildren,

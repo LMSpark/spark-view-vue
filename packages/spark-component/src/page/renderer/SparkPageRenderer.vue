@@ -198,17 +198,17 @@ const route = useRoute()
 const vueApp = getCurrentInstance()?.appContext.app
 const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
 
-// Dock 类型查询：从注册表 meta.docks 读取容器识别的 dock 类型集合
+// 子类型提升查询：从注册表 meta.childProps 读取容器可提升的子类型集合
 const sparkRegistry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
-const _dockCache = new Map<string, ReadonlySet<string>>()
-function getDockTypes(containerType: string): ReadonlySet<string> | undefined {
-  const cached = _dockCache.get(containerType)
+const _childPropCache = new Map<string, ReadonlySet<string>>()
+function getChildPropTypes(containerType: string): ReadonlySet<string> | undefined {
+  const cached = _childPropCache.get(containerType)
   if (cached !== undefined) return cached
   const def = sparkRegistry?.get(containerType)
-  const docks = def?.meta?.['docks'] as string[] | undefined
-  if (!docks?.length) return undefined
-  const set: ReadonlySet<string> = new Set(docks)
-  _dockCache.set(containerType, set)
+  const childProps = def?.meta?.['childProps'] as string[] | undefined
+  if (!childProps?.length) return undefined
+  const set: ReadonlySet<string> = new Set(childProps)
+  _childPropCache.set(containerType, set)
   return set
 }
 
@@ -403,7 +403,7 @@ function rebuildChildren(): void {
   children.value = buildPageChildren(ruleNodes as unknown as import('@spark-view/spark-page-config').RuleConfig[], {
     callFunc: callPageFunction,
     actionCtx,
-    getDocks: getDockTypes,
+    getChildProps: getChildPropTypes,
   })
 }
 

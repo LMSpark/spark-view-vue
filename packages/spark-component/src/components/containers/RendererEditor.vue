@@ -1,15 +1,15 @@
 <!--
 /**
  * @skill r-editor
- * @description 编辑面板 dock 组件。在容器（r-tree）内使用时由容器提取并渲染为侧边编辑区；独立使用时渲染子节点。
+ * @description 编辑面板组件。在容器（r-tree）内使用时由容器提取并渲染为侧边编辑区；独立使用时渲染子节点。
  * @input { type: 'r-editor', props?: { position?, width?, class? }, children?: SparkNode[] }
  */
 -->
 <template>
-  <div v-if="children.length > 0" class="dock-editor">
+  <div v-if="children.length > 0" class="renderer-editor">
     <SparkComponentRenderer
       v-for="(child, i) in children"
-      :key="nodeId(child) ?? `dock-editor-${i}`"
+      :key="nodeId(child) ?? `r-editor-${i}`"
       :config="child"
     />
   </div>
@@ -17,10 +17,10 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 编辑面板 dock，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。
+ * @skill-description 编辑面板组件，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../internal'
 
 interface Props {
   type?: string
@@ -40,7 +40,7 @@ const children = computed(() => getSparkNodeChildren(props.children))
 </script>
 
 <style scoped>
-.dock-editor {
+.renderer-editor {
   display: flex;
   flex-direction: column;
   gap: 8px;

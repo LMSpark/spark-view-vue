@@ -8,8 +8,6 @@ import { BuiltinActionButton } from './containers/index.js'
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
-export { default as SparkChild } from './support/SparkChild.js'
-export { default as SparkChildrenBridge } from './support/SparkChildrenBridge.js'
 export { default as SparkCodeEditor } from './support/SparkCodeEditor.vue'
 export { default as SparkJsonEditor } from './support/SparkJsonEditor.vue'
 export { default as JsonTreeEditor } from './support/JsonTreeEditor.vue'
@@ -20,7 +18,6 @@ export { default as SparkTableColumns } from './support/SparkTableColumns.js'
 export { BuiltinActionButton }
 export * from './containers/data-components/index.js'
 export * from './containers/non-data-components/index.js'
-export * from './containers/docks/index.js'
 export * from './fields/data-components/index.js'
 export * from './fields/non-data-components/index.js'
 export * from './display/data-components/index.js'

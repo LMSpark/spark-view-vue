@@ -4,19 +4,19 @@ import { defineComponent, h, nextTick } from 'vue'
 import { RendererList, RendererSection, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
-import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
-const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
   'r-list': new Set(['r-toolbar', 'r-actions']),
   'r-section': new Set(['r-header']),
   'r-block': new Set(['r-header']),
 }
-const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
 
-function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
   if (!props['children']) return props
-  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetChildProps)
   const { children: _, ...rest } = props
   return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
 }
@@ -46,7 +46,7 @@ const ElCardStub = defineComponent({
 })
 
 describe('RendererList and RendererSection container integration', () => {
-  it('should render docked list toolbar children, item actions and template-driven item rendering with grid layout', async () => {
+  it('should render list toolbar children, item actions and template-driven item rendering with grid layout', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'ListDS',
       tables: {
@@ -72,7 +72,7 @@ describe('RendererList and RendererSection container integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererList as any, {
       dataSet: ds,
-      props: liftTestDocks('r-list', {
+      props: liftTestChildProps('r-list', {
         dataKey: 'Users@rows',
         gridGap: 12,
         itemColSpan: 12,
@@ -116,37 +116,6 @@ describe('RendererList and RendererSection container integration', () => {
     expect(wrapper.find('.renderer-list-cell').attributes('style')).toContain('grid-column: span 12 / span 12;')
 
     await nextTick()
-  })
-
-  it('should fail fast for legacy list itemActions prop', () => {
-    const ds = SparkData.createDataSet({
-      dataSetName: 'ListLegacyDS',
-      tables: {
-        Users: {
-          tableName: 'Users',
-          columns: [{ name: 'id', type: 'number' as const }],
-          views: {
-            default: {
-              rows: [{ id: 1 }],
-            },
-          },
-        },
-      },
-    })
-
-    expect(() => mountWithPageDataSet(RendererList as any, {
-      dataSet: ds,
-      props: {
-        dataKey: 'Users@rows',
-        itemActions: [{ type: 'legacy-list-action' }],
-      },
-      global: {
-        stubs: {
-          SparkComponentRenderer: SparkActionStub,
-          'el-card': ElCardStub,
-        },
-      },
-    })).toThrow('props.itemActions 已废除')
   })
 
   it('should expose r-table-aligned list api for current row and row mutations', async () => {
@@ -278,7 +247,7 @@ describe('RendererList and RendererSection container integration', () => {
 
   it('should allow section header slot and default slot scopes to control collapse state', async () => {
     const wrapper = mount(RendererSection as any, {
-      props: liftTestDocks('r-section', {
+      props: liftTestChildProps('r-section', {
         title: '基础信息',
         description: 'desc',
         collapsible: true,
@@ -314,21 +283,6 @@ describe('RendererList and RendererSection container integration', () => {
     await nextTick()
 
     expect(wrapper.find('.biz-section-body').attributes('data-collapsed')).toBe('false')
-  })
-
-  it('should fail fast for legacy section headerActions prop', () => {
-    expect(() => mount(RendererSection as any, {
-      props: {
-        title: '基础信息',
-        headerActions: [{ type: 'legacy-section-action' }],
-      },
-      global: {
-        stubs: {
-          SparkComponentRenderer: SparkActionStub,
-          'el-card': ElCardStub,
-        },
-      },
-    })).toThrow('props.headerActions 已废除')
   })
 
   it('should keep section body on CSS Grid and honor child spans', () => {

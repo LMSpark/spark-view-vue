@@ -1,7 +1,7 @@
 <!--
 /**
  * @skill r-tree
- * @description 树形数据容器，绑定 DataView 渲染嵌套树结构，支持 dock 分区工具栏、懒加载、节点点击、展开/折叠事件
+ * @description 树形数据容器，绑定 DataView 渲染嵌套树结构，支持工具栏、懒加载、节点点击、展开/折叠事件
  * @provides DATA_SOURCE
  * @provides DATA_ROW
  * @consumes PAGE_DATASET
@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器（r-editor dock）侧面板。
+ * @skill-description 树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器侧面板。
  */
 /**
  * RendererTree - 树形容器组件
@@ -110,11 +110,11 @@ import {
 interface Props extends SparkNode {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
-  /** 结构化工具栏 dock */
+  /** 结构化工具栏 */
   toolbar?: SparkNode
-  /** 结构化节点动作 dock */
+  /** 结构化节点动作 */
   actions?: SparkNode
-  /** 结构化编辑区 dock */
+  /** 结构化编辑区 */
   editor?: SparkNode
   /** 节点主键字段名，默认取 treeConfig.idField */
   nodeKey?: string
@@ -213,7 +213,6 @@ const {
     scopedProps: {
       row,
       rowIndex: index,
-      $index: index,
       data: row,
     },
   }),

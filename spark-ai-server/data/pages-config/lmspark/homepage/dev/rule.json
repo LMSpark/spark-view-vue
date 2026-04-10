@@ -13,14 +13,17 @@
         "type": "r-section",
         "props": {
           "title": "请假申请",
-          "description": "填写请假信息并提交审批",
-          "headerActions": [
-            {
-              "type": "RenderHeaderActions"
-            }
-          ]
+          "description": "填写请假信息并提交审批"
         },
         "children": [
+          {
+            "type": "r-header",
+            "children": [
+              {
+                "type": "RenderHeaderActions"
+              }
+            ]
+          },
           {
             "type": "r-form",
             "props": {

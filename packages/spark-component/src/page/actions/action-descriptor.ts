@@ -1,7 +1,7 @@
 /**
  * Action Descriptor — 声明式行为描述符
  *
- * rule.json 中的 `on` 事件 / dock wrapper 子节点（如 `r-toolbar` / `r-actions`）均可使用 action descriptor，
+ * rule.json 中的 `on` 事件 / 区域子节点（如 `r-toolbar` / `r-actions`）均可使用 action descriptor，
  * 替代 script.js 中的函数调用，实现 **配置驱动、零脚本** 的交互逻辑。
  *
  * @example

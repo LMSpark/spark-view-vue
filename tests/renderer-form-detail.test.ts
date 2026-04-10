@@ -3,18 +3,18 @@ import { defineComponent, h, nextTick } from 'vue'
 import { RendererForm, RendererDetail, FieldText } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
-import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
-const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
   'r-form': new Set(['r-toolbar']),
   'r-detail': new Set(['r-toolbar']),
 }
-const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
 
-function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
   if (!props['children']) return props
-  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetChildProps)
   const { children: _, ...rest } = props
   return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
 }
@@ -76,7 +76,7 @@ const ElInputStub = defineComponent({
 })
 
 describe('RendererForm and RendererDetail toolbar integration', () => {
-  it('should render docked form toolbar children and default slot scopes', () => {
+  it('should render form toolbar children and default slot scopes', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'FormDS',
       tables: {
@@ -100,7 +100,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
-      props: liftTestDocks('r-form', {
+      props: liftTestChildProps('r-form', {
         dataKey: 'Users@currentRow',
         children: [{ type: 'r-toolbar', children: [{ type: 'form-toolbar-action' }] }],
       }),
@@ -122,9 +122,9 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     expect(wrapper.find('.biz-form-template').attributes('data-name')).toBe('Alice')
   })
 
-  it('should render structured form toolbar dock prop', () => {
+  it('should render structured form toolbar prop', () => {
     const ds = SparkData.createDataSet({
-      dataSetName: 'FormDockPropDS',
+      dataSetName: 'FormZonePropDS',
       tables: {
         Users: {
           tableName: 'Users',
@@ -214,7 +214,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     expect(wrapper.find('.field-display').exists()).toBe(false)
   })
 
-  it('should render docked detail toolbar children and default slot scopes', () => {
+  it('should render detail toolbar children and default slot scopes', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'DetailDS',
       tables: {
@@ -238,7 +238,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererDetail as any, {
       dataSet: ds,
-      props: liftTestDocks('r-detail', {
+      props: liftTestChildProps('r-detail', {
         dataKey: 'Users@currentRow',
         children: [{ type: 'r-toolbar', children: [{ type: 'detail-toolbar-action' }] }],
       }),
@@ -259,9 +259,9 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     expect(wrapper.find('.biz-detail-template').attributes('data-title')).toBe('Detail Row')
   })
 
-  it('should render structured detail toolbar dock prop', () => {
+  it('should render structured detail toolbar prop', () => {
     const ds = SparkData.createDataSet({
-      dataSetName: 'DetailDockPropDS',
+      dataSetName: 'DetailZonePropDS',
       tables: {
         Users: {
           tableName: 'Users',

@@ -47,10 +47,6 @@ describe('PageContext $components (ID-first)', () => {
 
     expect(context.$components.list('r-table')).toHaveLength(1)
     expect(context.$components.getApis<{ refresh: () => string }>('r-table')).toHaveLength(1)
-
-    // 兼容别名
-    expect(context.$components.getInstance('orders-table')?.id).toBe('orders-table')
-    expect(context.$components.listInstances('r-table')).toHaveLength(1)
   })
 
   it('should expose permission helpers to page scripts', () => {

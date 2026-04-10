@@ -81,8 +81,6 @@ function createEmptyComponentAccess(): PageContext['$components'] {
     getApi: () => null,
     list: () => [],
     getApis: () => [],
-    getInstance: () => null,
-    listInstances: () => [],
   }
 }
 
@@ -114,14 +112,6 @@ function createComponentAccess(getRegistry?: () => PageComponentRegistry | null)
         return registry.listApis().map((item: PageComponentApiEntry) => item.api as T)
       }
       return registry.getApisByType<T>(type)
-    },
-    getInstance(id: string) {
-      const registry = getSafeRegistry()
-      return registry?.getInstance(id) ?? fallback.getInstance(id)
-    },
-    listInstances(type?: string) {
-      const registry = getSafeRegistry()
-      return registry?.listInstances(type) ?? fallback.listInstances(type)
     },
   }
 }

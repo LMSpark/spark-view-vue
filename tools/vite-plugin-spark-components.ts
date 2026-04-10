@@ -1066,25 +1066,6 @@ export default registerComponents
       .map(c => c.skillMeta!)
 
     const skillsJson = JSON.stringify(skills, null, 2)
-
-    return `/**
- * SPARK Skill 目录
- *
- * ⚠️ 此文件由 vite-plugin-spark-components 自动生成，请勿手动修改
- * 生成时间: ${new Date().toISOString()}
- * Skill 总数: ${skills.length}
- *
- * 用法：
- *   import { skillCatalog, buildSkillPrompt } from 'virtual:spark-skill-catalog'
- *   // skillCatalog  — 完整 Skill 描述数组，可序列化为 JSON 发给 AI
-    // 确保数据最新
-    this.scan()
-
-    const skills = this.components
-      .filter(c => c.skillMeta !== null)
-      .map(c => c.skillMeta!)
-
-    const skillsJson = JSON.stringify(skills, null, 2)
     const typeGlossaryJson = JSON.stringify(PROP_TYPE_GLOSSARY, null, 2)
 
     return `/**
@@ -1108,7 +1089,17 @@ export const typeGlossary = ${typeGlossaryJson}
 
 export default skillCatalog
 `
-import type { App } from 'vue'
+  }
+
+  /**
+   * 生成类型声明虚拟模块代码
+   */
+  generateTypes(): string {
+    const componentNames = this.components
+      .map(c => `'${c.name}'`)
+      .join(' | ')
+
+    return `import type { App } from 'vue'
 
 export type ComponentName = ${componentNames || 'string'}
 

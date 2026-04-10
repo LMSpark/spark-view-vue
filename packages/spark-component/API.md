@@ -509,7 +509,7 @@ export type {
 | `display-countdown` | DisplayCountdown | el-countdown 倒计时 |
 | `display-icon` | DisplayIcon | el-icon 图标（动态解析 @element-plus/icons-vue） |
 
-### Dock 组件（6 类型）
+### 区域组件（6 类型）
 
 容器内结构化槽位（header/footer/actions/filter/editor/tail）。
 
@@ -568,4 +568,4 @@ export type {
 | `r-column-group` | FieldContextRenderer | 表格列分组/字段上下文渲染 |
 | `r-tree-node-summary` | TreeNodeSummary | 树节点摘要展示 |
 
-> **注意**：`r-header`/`r-footer`（Dock）与 `r-layout-header`/`r-layout-footer`（Layout）是不同组件——Dock 是容器内操作栏（div 弹性布局），Layout 是 el-header/el-footer 页面结构容器。
+> **注意**：`r-header`/`r-footer`（区域组件）与 `r-layout-header`/`r-layout-footer`（Layout）是不同组件——区域组件是容器内操作栏（div 弹性布局），Layout 是 el-header/el-footer 页面结构容器。

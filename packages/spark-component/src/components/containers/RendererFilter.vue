@@ -1,15 +1,15 @@
 <!--
 /**
  * @skill r-filter
- * @description 筛选区 dock 组件。在容器（r-table）内使用时由容器提取并渲染筛选表单；独立使用时渲染子节点。
+ * @description 筛选区组件。在容器（r-table）内使用时由容器提取并渲染筛选表单；独立使用时渲染子节点。
  * @input { type: 'r-filter', props?: { columns?, collapsible?, gridColumns?, ... }, children?: SparkNode[] }
  */
 -->
 <template>
-  <div v-if="children.length > 0" class="dock-filter">
+  <div v-if="children.length > 0" class="renderer-filter">
     <SparkComponentRenderer
       v-for="(child, i) in children"
-      :key="nodeId(child) ?? `dock-filter-${i}`"
+      :key="nodeId(child) ?? `r-filter-${i}`"
       :config="child"
     />
   </div>
@@ -17,18 +17,18 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 筛选区 dock，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。
+ * @skill-description 筛选区组件，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
-import type { DockFilterItem } from '../../../core/types.js'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, type SparkNode } from '../internal'
+import type { FilterItemConfig } from '../../core/types.js'
 
 interface Props {
   type?: string
   id?: string
   children?: SparkNode[]
   /** 筛选列 */
-  columns?: (string | DockFilterItem)[]
+  columns?: (string | FilterItemConfig)[]
   /** 是否可折叠 @default false */
   collapsible?: boolean
   /** 默认折叠 @default false */
@@ -53,7 +53,7 @@ const children = computed(() => getSparkNodeChildren(props.children))
 </script>
 
 <style scoped>
-.dock-filter {
+.renderer-filter {
   width: 100%;
 }
 </style>

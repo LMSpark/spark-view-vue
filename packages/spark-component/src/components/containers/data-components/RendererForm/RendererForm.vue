@@ -1,7 +1,7 @@
 <!--
 /**
  * @skill r-form
- * @description 表单容器，绑定 DataView.currentRow 实现双向编辑，支持 dock 分区工具栏，子字段组件通过 DATA_ROW 读写表单值
+ * @description 表单容器，绑定 DataView.currentRow 实现双向编辑，支持工具栏，子字段组件通过 DATA_ROW 读写表单值
  * @provides DATA_SOURCE
  * @provides DATA_ROW
  * @context 通过当前组件 type='r-form' 提供字段语义
@@ -21,20 +21,15 @@
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="$attrs">
         <div class="renderer-form-grid" :style="gridStyle">
-          <SparkChildrenBridge :spark-children="gridChildren" :parent-context="context" :slot-scope="getDefaultSlotScope()">
-            <template #spark="{ child, index }">
-              <div
-                :key="nodeId(child) ?? `r-form-child-${index}`"
-                class="renderer-form-grid-item"
-                :style="getChildGridStyle(child)"
-              >
-                <SparkComponentRenderer :config="child" />
-              </div>
-            </template>
-            <template #default="slotScope">
-              <slot v-bind="slotScope" />
-            </template>
-          </SparkChildrenBridge>
+          <div
+            v-for="(child, index) in gridChildren"
+            :key="nodeId(child) ?? `r-form-child-${index}`"
+            class="renderer-form-grid-item"
+            :style="getChildGridStyle(child)"
+          >
+            <SparkComponentRenderer :config="child" />
+          </div>
+          <slot v-bind="getDefaultSlotScope()" />
         </div>
       </el-form>
     </div>
@@ -49,7 +44,7 @@
  * RendererForm - 表单容器组件
  */
 import { ref } from 'vue'
-import { SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
+import { SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode } from '../../../internal'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { RendererFormApi } from './types'
@@ -68,7 +63,7 @@ interface Props extends SparkNode {
   id?: string
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
-  /** 结构化工具栏 dock */
+  /** 结构化工具栏 */
   toolbar?: SparkNode
   /** 子节点列表 */
   children?: SparkNode[]
@@ -95,7 +90,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const {
   registerApi,
-  context,
   logger,
   pageService,
   resolvedView,

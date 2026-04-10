@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail dock），组织操作按钮。
+ * @skill-description 工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
@@ -46,7 +46,7 @@ type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 
 interface Props extends SparkNode {
   children?: SparkNode[]
-  /** 结构化尾区 dock */
+  /** 结构化尾区 */
   tail?: SparkNode
   /** 单个子项之间的间距（同一区域内部） */
   gap?: number | string
@@ -69,13 +69,13 @@ const zoneGap = computed<number | string>(() => props.zoneGap ?? 12)
 const align = computed<InlineAlign>(() => props.align ?? 'center')
 const justify = computed<InlineJustify>(() => props.justify ?? 'start')
 
-// Dock 节点已由绑定层从 children 提升为 props（tail）
+// r-tail 子节点已由绑定层提升为 props.tail
 const contentChildren = computed(() => props.children ?? [])
 
-// 主区：所有未声明 dock 的子节点。
+// 主区：常规子节点。
 const startChildren = computed(() => getSparkNodeChildren(contentChildren.value))
 
-// 尾区：来自 tail dock 的 children。
+// 尾区：来自 r-tail 的 children。
 const endChildren = computed(() => getSparkNodeChildren(props.tail?.children))
 
 function normalizeSize(value: number | string): string {
@@ -95,7 +95,7 @@ function justifyToCss(value: InlineJustify): string {
   return value
 }
 
-// 读取 dock 区域的 class。
+// 读取子节点的 class。
 function dockClass(name: string): string {
   if (name === 'tail') return (props.tail?.props?.['class'] as string | undefined) ?? ''
   return ''
@@ -142,7 +142,7 @@ const laneStyle = computed<Record<string, string>>(() => ({
   justifyContent: justifyToCss(justify.value),
 }))
 
-// 尾区固定向右收束：即使主区 justify 改变，也不影响尾区作为 secondary zone 的行为。
+// 尾区固定向右收束：即使主区 justify 改变，也不影响尾区行为。
 const tailLaneStyle = computed<Record<string, string>>(() => ({
   ...laneStyle.value,
   justifyContent: 'end',

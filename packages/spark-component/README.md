@@ -132,7 +132,7 @@ import {
 } from '@spark-view/spark-component'
 ```
 
-- `containers`：容器 renderer（数据容器 / 结构容器 / Dock）
+- `containers`：容器 renderer（数据容器 / 结构容器 / 区域组件）
 - `displays`：展示 renderer（数据展示 / 静态展示）
 - `fields`：字段 renderer（数据字段 / 非数据字段）
 

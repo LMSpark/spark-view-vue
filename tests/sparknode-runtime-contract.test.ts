@@ -4,12 +4,12 @@ import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
-import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 
-const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
   'r-tree': new Set(['r-toolbar', 'r-actions', 'r-editor']),
 }
-const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
 
 describe('SparkNode runtime contract', () => {
   function createTestPlugin() {
@@ -69,7 +69,7 @@ describe('SparkNode runtime contract', () => {
     expect(wrapper.find('.sparknode-runtime-child').exists()).toBe(true)
   })
 
-  it('classifies dock by type-based extraction and keeps non-dock content separate', () => {
+  it('lifts matching child types to props and keeps other content in children', () => {
     const node: SparkNode = {
       type: 'r-tree',
       children: [
@@ -84,9 +84,9 @@ describe('SparkNode runtime contract', () => {
       ],
     }
 
-    const lifted = liftDockChildren(node, testGetDocks)
+    const lifted = liftChildProps(node, testGetChildProps)
 
-    // Dock nodes lifted to props
+    // Lifted child nodes become props
     expect(lifted.props?.['editor']).toBeDefined()
     expect(lifted.props?.['toolbar']).toBeDefined()
     expect((lifted.props?.['editor'] as SparkNode).children).toHaveLength(1)
@@ -98,7 +98,7 @@ describe('SparkNode runtime contract', () => {
       expect.objectContaining({ type: 'builtin-action' }),
     )
 
-    // Non-dock content preserved in children
+    // Non-liftable content preserved in children
     expect(lifted.children).toHaveLength(1)
     expect(lifted.children?.[0]).toEqual(
       expect.objectContaining({ type: 'r-tree-node-summary' }),

@@ -29,8 +29,6 @@ function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
       getApi: vi.fn(() => null),
       list: vi.fn(() => []),
       getApis: vi.fn(() => []),
-      getInstance: vi.fn(() => null),
-      listInstances: vi.fn(() => []),
     },
     $refreshData: async () => {},
     $page: {
@@ -168,8 +166,6 @@ describe('createSandbox — compileFunctions', () => {
         getApi: vi.fn((id: string) => id === 'orders-table' ? { refresh: () => 'ok' } : null),
         list: vi.fn(() => []),
         getApis: vi.fn(() => []),
-        getInstance: vi.fn(() => null),
-        listInstances: vi.fn(() => []),
       },
     })
 
