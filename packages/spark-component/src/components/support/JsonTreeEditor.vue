@@ -246,10 +246,10 @@ interface Props extends SparkNode {
   documentValue?: JsonDocument | null
   height?: number | string
   readOnly?: boolean
-  schema?: Record<string, unknown> | null
+  schema?: { [key: string]: unknown } | null
   filterPlaceholder?: string
   // ── policy 聚合对象（复杂场景一次传入）──
-  policy?: Partial<JsonTreePolicy>
+  policy?: JsonTreePolicy
   // ── policy 平铺 props（优先级高于 policy 对象）──
   rootLabel?: string
   isProtected?: (path: JsonPath) => boolean

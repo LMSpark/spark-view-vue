@@ -96,7 +96,7 @@ import {
   bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
-import type { DockProp, DockToolbarNode, DockActionsNode, DockEditorNode } from '../../docks/dock-extraction'
+
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../data/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
@@ -111,11 +111,11 @@ interface Props extends SparkNode {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
   /** 结构化工具栏 dock */
-  toolbar?: DockProp<DockToolbarNode>
+  toolbar?: SparkNode
   /** 结构化节点动作 dock */
-  actions?: DockProp<DockActionsNode>
+  actions?: SparkNode
   /** 结构化编辑区 dock */
-  editor?: DockProp<DockEditorNode>
+  editor?: SparkNode
   /** 节点主键字段名，默认取 treeConfig.idField */
   nodeKey?: string
   /** 当前选中节点 ID */
@@ -162,7 +162,6 @@ const {
   editorClassValue,
   editorStyleValue,
   showEditor,
-  getDockProp,
 } = useRendererTreeInput({ props })
 
 // 接入 SPARK 能力链
@@ -196,8 +195,8 @@ const {
   toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => dockedToolbar.value),
-  toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
-  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
+  toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -207,7 +206,7 @@ const {
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => [...dockedNodeActions.value]),
   actionPosition: computed(() => 'right'),
-  actionClass: computed(() => getDockProp<string>('r-actions', 'class')),
+  actionClass: computed(() => (props.actions?.props?.['class'] as string | undefined)),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

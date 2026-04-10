@@ -31,7 +31,7 @@ interface Props extends SparkNode {
   groupSeparator?: string
   prefix?: string
   suffix?: string
-  valueStyle?: Record<string, string> | string
+  valueStyle?: object | string
 }
 
 const props = withDefaults(defineProps<Props>(), {

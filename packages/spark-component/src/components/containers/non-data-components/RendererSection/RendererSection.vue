@@ -106,7 +106,6 @@ import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import { useDockExtraction, SECTION_DOCK_TYPES } from '../../docks/dock-extraction'
 import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useControlledValue } from '../state'
@@ -115,7 +114,7 @@ interface Props extends SparkNode {
   /** 子节点 */
   children?: SparkNode[]
   /** 结构化头部 dock */
-  header?: unknown
+  header?: SparkNode
   /** 分区标题 */
   title?: string
   /** 分区描述 */
@@ -173,23 +172,20 @@ const attrs = useAttrs()
 const slots = useSlots()
 const { context, registerApi } = useSparkPageComponent(props)
 
-const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
-  computed(() => props.children),
-  SECTION_DOCK_TYPES,
-  { propSource: computed(() => props) },
-)
+// Dock 节点已由绑定层从 children 提升为 props（header）
+const contentChildren = computed(() => props.children ?? [])
 
 function readStringAttr(name: string): string {
   const value = attrs[name]
   return typeof value === 'string' ? value : ''
 }
 
-const headerClassValue = computed(() => getDockProp<string>('r-header', 'class') ?? readStringAttr('headerClass'))
+const headerClassValue = computed(() => (props.header?.props?.['class'] as string | undefined) ?? readStringAttr('headerClass'))
 const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
 
 assertNoLegacySectionStructures()
 
-const headerActionConfigs = computed(() => getDockChildren('r-header'))
+const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: computed(() => getSparkNodeChildren(contentChildren.value)),
   columns: computed(() => props.gridColumns),

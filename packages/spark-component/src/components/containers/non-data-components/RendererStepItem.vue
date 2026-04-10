@@ -42,7 +42,7 @@ import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
   type?: string
-  props?: Record<string, unknown>
+  props?: { [key: string]: unknown }
   children?: SparkNode['children']
   id?: string
   title?: string

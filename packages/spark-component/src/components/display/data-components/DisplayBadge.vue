@@ -41,7 +41,7 @@ interface Props extends SparkNode {
   showZero?: boolean
   color?: string
   offset?: [number, number]
-  badgeStyle?: Record<string, string>
+  badgeStyle?: object
   badgeClass?: string
 }
 

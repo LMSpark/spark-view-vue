@@ -3,6 +3,21 @@ import { defineComponent, h, nextTick } from 'vue'
 import { RendererForm, RendererDetail, FieldText } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
+import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import type { SparkNode } from '@spark-view/spark-component'
+
+const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+  'r-form': new Set(['r-toolbar']),
+  'r-detail': new Set(['r-toolbar']),
+}
+const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+
+function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+  if (!props['children']) return props
+  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const { children: _, ...rest } = props
+  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -85,10 +100,10 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererForm as any, {
       dataSet: ds,
-      props: {
+      props: liftTestDocks('r-form', {
         dataKey: 'Users@currentRow',
         children: [{ type: 'r-toolbar', children: [{ type: 'form-toolbar-action' }] }],
-      },
+      }),
       slots: {
         default: ({ model }: Record<string, unknown>) => h('div', {
           class: 'biz-form-template',
@@ -223,10 +238,10 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererDetail as any, {
       dataSet: ds,
-      props: {
+      props: liftTestDocks('r-detail', {
         dataKey: 'Users@currentRow',
         children: [{ type: 'r-toolbar', children: [{ type: 'detail-toolbar-action' }] }],
-      },
+      }),
       slots: {
         default: ({ row }: Record<string, unknown>) => h('div', {
           class: 'biz-detail-template',

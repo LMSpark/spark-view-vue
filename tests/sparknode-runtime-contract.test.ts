@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { computed, defineComponent, h } from 'vue'
+import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
-import { useDockExtraction, TREE_DOCK_TYPES } from '../packages/spark-component/src/components/containers/docks/dock-extraction'
+import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+
+const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+  'r-tree': new Set(['r-toolbar', 'r-actions', 'r-editor']),
+}
+const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
 
 describe('SparkNode runtime contract', () => {
   function createTestPlugin() {
@@ -65,31 +70,38 @@ describe('SparkNode runtime contract', () => {
   })
 
   it('classifies dock by type-based extraction and keeps non-dock content separate', () => {
-    const children: SparkNode[] = [
-      {
-        type: 'r-editor',
-        children: [
-          { type: 'r-form' },
-        ],
-      },
-      { type: 'r-toolbar', children: [{ type: 'builtin-action' }] },
-      { type: 'r-tree-node-summary' },
-    ]
+    const node: SparkNode = {
+      type: 'r-tree',
+      children: [
+        {
+          type: 'r-editor',
+          children: [
+            { type: 'r-form' },
+          ],
+        },
+        { type: 'r-toolbar', children: [{ type: 'builtin-action' }] },
+        { type: 'r-tree-node-summary' },
+      ],
+    }
 
-    const { contentChildren, getDockChildren } = useDockExtraction(
-      computed(() => children),
-      TREE_DOCK_TYPES,
+    const lifted = liftDockChildren(node, testGetDocks)
+
+    // Dock nodes lifted to props
+    expect(lifted.props?.['editor']).toBeDefined()
+    expect(lifted.props?.['toolbar']).toBeDefined()
+    expect((lifted.props?.['editor'] as SparkNode).children).toHaveLength(1)
+    expect((lifted.props?.['editor'] as SparkNode).children?.[0]).toEqual(
+      expect.objectContaining({ type: 'r-form' }),
+    )
+    expect((lifted.props?.['toolbar'] as SparkNode).children).toHaveLength(1)
+    expect((lifted.props?.['toolbar'] as SparkNode).children?.[0]).toEqual(
+      expect.objectContaining({ type: 'builtin-action' }),
     )
 
-    const toolbar = getDockChildren('r-toolbar')
-    const editor = getDockChildren('r-editor')
-    const content = contentChildren.value
-
-    expect(toolbar).toHaveLength(1)
-    expect(toolbar[0]?.type).toBe('builtin-action')
-    expect(editor).toHaveLength(1)
-    expect(editor[0]?.type).toBe('r-form')
-    expect(content).toHaveLength(1)
-    expect(typeof content[0] === 'object' && content[0] !== null && 'type' in content[0] ? content[0].type : '').toBe('r-tree-node-summary')
+    // Non-dock content preserved in children
+    expect(lifted.children).toHaveLength(1)
+    expect(lifted.children?.[0]).toEqual(
+      expect.objectContaining({ type: 'r-tree-node-summary' }),
+    )
   })
 })

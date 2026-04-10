@@ -28,7 +28,7 @@ interface Props extends SparkNode {
   precision?: number
   placeholder?: string
   textClass?: string
-  textStyle?: Record<string, string> | string
+  textStyle?: object | string
 }
 
 const props = withDefaults(defineProps<Props>(), {

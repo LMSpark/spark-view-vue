@@ -4,6 +4,22 @@ import { defineComponent, h, nextTick } from 'vue'
 import { RendererList, RendererSection, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
+import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import type { SparkNode } from '@spark-view/spark-component'
+
+const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+  'r-list': new Set(['r-toolbar', 'r-actions']),
+  'r-section': new Set(['r-header']),
+  'r-block': new Set(['r-header']),
+}
+const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+
+function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+  if (!props['children']) return props
+  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const { children: _, ...rest } = props
+  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -56,7 +72,7 @@ describe('RendererList and RendererSection container integration', () => {
 
     const wrapper = mountWithPageDataSet(RendererList as any, {
       dataSet: ds,
-      props: {
+      props: liftTestDocks('r-list', {
         dataKey: 'Users@rows',
         gridGap: 12,
         itemColSpan: 12,
@@ -64,7 +80,7 @@ describe('RendererList and RendererSection container integration', () => {
           { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'list-toolbar-action' }] },
           { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'list-item-delete', props: { permAction: 'delete' } }] },
         ],
-      },
+      }),
       slots: {
         default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {
           class: 'biz-list-item',
@@ -262,13 +278,13 @@ describe('RendererList and RendererSection container integration', () => {
 
   it('should allow section header slot and default slot scopes to control collapse state', async () => {
     const wrapper = mount(RendererSection as any, {
-      props: {
+      props: liftTestDocks('r-section', {
         title: '基础信息',
         description: 'desc',
         collapsible: true,
         defaultCollapsed: true,
         children: [{ type: 'r-header', children: [{ type: 'section-header-action' }] }],
-      },
+      }),
       slots: {
         'header-actions': ({ collapsed, toggleCollapsed }: Record<string, unknown>) => h('button', {
           class: 'biz-section-header-action',

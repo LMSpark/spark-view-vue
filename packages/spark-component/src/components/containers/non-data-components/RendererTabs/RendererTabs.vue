@@ -49,7 +49,6 @@ import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import { useDockExtraction, NAVIGATION_DOCK_TYPES, type DockProp, type DockToolbarNode } from '../../docks/dock-extraction'
 import RendererTabPane from '../RendererTabPane.vue'
 import type { RendererTabsApi } from './types'
 import { createRendererTabsZeroCode } from './zero-code'
@@ -64,7 +63,7 @@ interface Props extends SparkNode {
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
   /** 结构化工具栏 dock */
-  toolbar?: DockProp<DockToolbarNode>
+  toolbar?: SparkNode
   /** 当前激活标签页 */
   modelValue?: string | number
   /** 标签页切换回调 */
@@ -83,16 +82,13 @@ const emit = defineEmits<{
 
 const { registerApi } = useSparkPageComponent(props)
 
-const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
-  computed(() => props.children),
-  NAVIGATION_DOCK_TYPES,
-  { propSource: computed(() => props) },
-)
+// Dock 节点已由绑定层从 children 提升为 props（toolbar）
+const contentChildren = computed(() => props.children ?? [])
 
 const paneConfigs = computed(() =>
   getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-tab-pane')
 )
-const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
+const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
 
 const currentActiveName = useDefaultedSelection({
   modelValue: computed(() => props.modelValue),
@@ -107,8 +103,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => dockedToolbar.value),
-    toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
-  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
+    toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
   modelPermission: computed(() => undefined),
 })
 

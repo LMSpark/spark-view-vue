@@ -59,7 +59,7 @@
  * ```
  */
 import {
-  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw,
+  ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, inject,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
 import { Logger, PAGE_SERVICE } from '@spark-view/spark-utils'
@@ -80,6 +80,8 @@ import { buildPageContext } from '../context/buildPageContext'
 import { buildPageChildren } from '../binding'
 import type { PageContext } from '../context/types'
 import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
+import { SPARK_REGISTRY_KEY } from '../../system/keys.js'
+import type { ComponentRegistry } from '../../core/types'
 
 const logger = Logger('SparkPageRenderer')
 
@@ -195,6 +197,20 @@ const { router, sparkProvide, sparkConsume, loading, error, componentRegistry, a
 const route = useRoute()
 const vueApp = getCurrentInstance()?.appContext.app
 const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
+
+// Dock 类型查询：从注册表 meta.docks 读取容器识别的 dock 类型集合
+const sparkRegistry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
+const _dockCache = new Map<string, ReadonlySet<string>>()
+function getDockTypes(containerType: string): ReadonlySet<string> | undefined {
+  const cached = _dockCache.get(containerType)
+  if (cached !== undefined) return cached
+  const def = sparkRegistry?.get(containerType)
+  const docks = def?.meta?.['docks'] as string[] | undefined
+  if (!docks?.length) return undefined
+  const set: ReadonlySet<string> = new Set(docks)
+  _dockCache.set(containerType, set)
+  return set
+}
 
 // PAGE_SERVICE
 const pageService = buildPageService(router, {
@@ -387,6 +403,7 @@ function rebuildChildren(): void {
   children.value = buildPageChildren(ruleNodes as unknown as import('@spark-view/spark-page-config').RuleConfig[], {
     callFunc: callPageFunction,
     actionCtx,
+    getDocks: getDockTypes,
   })
 }
 

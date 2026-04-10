@@ -5,7 +5,6 @@ import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { DATA_ROW } from '../../internal'
-import { useDockExtraction, FORM_DOCK_TYPES, type DockProp, type DockToolbarNode } from '../docks/dock-extraction'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../data/useContainerDataSource'
 import { useContainerContextData } from './useContainerContextData'
@@ -15,7 +14,7 @@ import { createCurrentRowSlotScope } from '../slotScopeFactories'
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
   children?: SparkNode[]
-  toolbar?: DockProp<DockToolbarNode>
+  toolbar?: SparkNode
   gridColumns: number | undefined
   gridGap: number | string | undefined
   gridAutoRows: string | undefined
@@ -27,13 +26,11 @@ export function useFormDetailContainer(
 ) {
   const effectiveDataKey = computed(() => props.dataKey)
 
-  const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
-    computed(() => props.children),
-    FORM_DOCK_TYPES,
-    { propSource: computed(() => props) },
-  )
+  // Dock 节点已由绑定层从 children 提升为 props（toolbar），
+  // 此处 children 仅包含内容子节点。
+  const contentChildren = computed(() => props.children ?? [])
 
-  const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
+  const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
 
   const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
     children: computed(() => getSparkNodeChildren(contentChildren.value)),
@@ -71,8 +68,8 @@ export function useFormDetailContainer(
     showToolbar,
   } = useContainerToolbar({
     toolbar: computed(() => dockedToolbar.value),
-    toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
-    toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
+    toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
+    toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
     modelPermission,
     dataSource: computed(() => resolvedView.value),
   })

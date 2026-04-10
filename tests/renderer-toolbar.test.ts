@@ -2,6 +2,21 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererToolbar } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
+import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+
+const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+  'r-toolbar': new Set(['r-tail']),
+  'r-menu': new Set(['r-tail']),
+}
+const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+
+function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+  if (!props['children']) return props
+  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const { children: _, ...rest } = props
+  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -22,7 +37,7 @@ const SparkActionStub = defineComponent({
 describe('RendererToolbar integration', () => {
   it('should render default and tail docks in separate horizontal lanes', () => {
     const wrapper = mount(RendererToolbar as any, {
-      props: {
+      props: liftTestDocks('r-toolbar', {
         gap: 10,
         zoneGap: 24,
         children: [
@@ -30,7 +45,7 @@ describe('RendererToolbar integration', () => {
           { type: 'action-b' },
           { type: 'r-tail', children: [{ type: 'action-tail' }] },
         ],
-      },
+      }),
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,
@@ -60,12 +75,12 @@ describe('RendererToolbar integration', () => {
 
   it('should apply dock-specific classes from dock node props', () => {
     const wrapper = mount(RendererToolbar as any, {
-      props: {
+      props: liftTestDocks('r-toolbar', {
         children: [
           { type: 'main-action' },
           { type: 'r-tail', props: { class: 'toolbar-tail-zone' }, children: [{ type: 'tail-action' }] },
         ],
-      },
+      }),
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,

@@ -102,7 +102,6 @@ import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
 import { createRendererListZeroCode } from './zero-code'
-import { useDockExtraction, LIST_DOCK_TYPES, type DockProp, type DockToolbarNode, type DockActionsNode } from '../../docks/dock-extraction'
 import {
   type AddRowHandler,
   type EditRowHandler,
@@ -114,9 +113,9 @@ interface Props extends SparkNode {
   /** 数据绑定键 */
   dataKey?: string
   /** 结构化工具栏 dock */
-  toolbar?: DockProp<DockToolbarNode>
+  toolbar?: SparkNode
   /** 结构化列表项动作 dock */
-  actions?: DockProp<DockActionsNode>
+  actions?: SparkNode
   /** 子节点（列表项内容配置） */
   children?: SparkNode[]
   /** 列数 */
@@ -189,18 +188,16 @@ const legacyItemActionsValue = computed<SparkNode[]>(() => {
 
 assertNoLegacyListStructures()
 
-const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
-  computed(() => props.children),
-  LIST_DOCK_TYPES,
-  { propSource: computed(() => props) },
-)
+// Dock 节点已由绑定层从 children 提升为 props（toolbar / actions），
+// 此处 children 仅包含内容子节点。
+const contentChildren = computed(() => props.children ?? [])
 
 const effectiveDataKey = computed(() => props.dataKey)
 const mergedChildren = computed<SparkNode[]>(() => {
   return getSparkNodeChildren(contentChildren.value)
 })
-const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
-const dockedItemActions = computed(() => getDockChildren('r-actions'))
+const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
+const dockedItemActions = computed(() => getSparkNodeChildren(props.actions?.children))
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
@@ -229,8 +226,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: computed(() => dockedToolbar.value),
-  toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
-  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
+  toolbarPosition: computed(() => props.toolbar?.props?.['position'] as ToolbarPosition | undefined),
+  toolbarClass: computed(() => props.toolbar?.props?.['class'] as string | undefined),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
 })
@@ -243,8 +240,8 @@ const {
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => dockedItemActions.value),
-  actionPosition: computed(() => getDockProp<LateralActionPosition>('r-actions', 'position') ?? legacyItemActionsPositionValue.value ?? 'right'),
-  actionClass: computed(() => getDockProp<string>('r-actions', 'class') ?? readStringAttr('itemActionsClass') ?? ''),
+  actionPosition: computed(() => (props.actions?.props?.['position'] as LateralActionPosition | undefined) ?? legacyItemActionsPositionValue.value ?? 'right'),
+  actionClass: computed(() => (props.actions?.props?.['class'] as string | undefined) ?? readStringAttr('itemActionsClass') ?? ''),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

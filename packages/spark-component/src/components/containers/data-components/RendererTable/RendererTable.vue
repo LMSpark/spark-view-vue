@@ -152,14 +152,13 @@
  */
 import { computed, ref, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkChildrenBridge, SparkComponentRenderer, SparkTableColumns } from '../../../internal'
-import { nodeId, type SparkNode } from '../../../internal'
+import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import type { RendererTableApi } from './types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import { MODULE_CONTEXT } from '../../../internal'
 import { createRendererTableZeroCode } from './zero-code'
-import { useRendererTableInput } from './input'
 import { useRendererTableViewState } from './view-state'
 import { useContainerActions } from '../../actions/useContainerActions'
 import type { LateralActionPosition } from '../../actions/useContainerActions'
@@ -183,17 +182,58 @@ import {
   bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
-import type { DockProp, DockToolbarNode, DockFilterNode, DockActionsNode } from '../../docks/dock-extraction'
+
+type NodeProps = Readonly<Record<string, unknown>>
+
+const EMPTY_NODE_PROPS = Object.freeze({}) as NodeProps
+
+function toKebabCase(name: string): string {
+  return name.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)
+}
+
+const _kebabCaseCache = new Map<string, string>()
+
+function toKebabCaseCached(name: string): string {
+  const cached = _kebabCaseCache.get(name)
+  if (cached !== undefined) return cached
+  const normalized = toKebabCase(name)
+  _kebabCaseCache.set(name, normalized)
+  return normalized
+}
+
+const TABLE_LOCAL_ATTR_BASE_KEYS = [
+  'toolbar',
+  'filterColumns',
+  'rowActions',
+  'rowActionsPosition',
+  'rowActionsAlign',
+  'rowActionsFixed',
+  'rowActionsClass',
+  'rowActionsLabel',
+  'rowActionsWidth',
+  'filterClass',
+  'filterGridColumns',
+  'filterGridGap',
+  'filterGridAutoRows',
+  'filterCollapsible',
+  'filterDefaultCollapsed',
+  'filterAutoFitMinWidth',
+  'filterItemSpan',
+] as const
+
+const TABLE_LOCAL_ATTR_KEYS = new Set<string>(
+  TABLE_LOCAL_ATTR_BASE_KEYS.flatMap(key => [key, toKebabCase(key)]),
+)
 
 interface Props extends SparkNode {
   /** DataKey 格式：tableName@field */
   dataKey?: string
   /** 结构化工具栏 dock */
-  toolbar?: DockProp<DockToolbarNode>
+  toolbar?: SparkNode
   /** 结构化筛选 dock */
-  filter?: DockProp<DockFilterNode>
+  filter?: SparkNode
   /** 结构化行动作 dock */
-  actions?: DockProp<DockActionsNode>
+  actions?: SparkNode
   /** 子节点列表（列节点 + dock 节点） */
   children?: SparkNode[]
   onRowClick?: RowClickHandler
@@ -210,26 +250,108 @@ const props = withDefaults(defineProps<Props>(), {
 
 const attrs = useAttrs()
 const slots = useSlots()
-const {
-  baseTableAttrs,
-  effectiveDataKey,
-  dockedToolbar,
-  dockedFilters,
-  dockedRowActions,
-  sparkChildren,
-  getDockProp,
-  legacyRowActionsPositionValue,
-  legacyRowActionsAlignValue,
-  legacyRowActionsFixedValue,
-  readStringAttr,
-  readBooleanAttr,
-  readNumberAttr,
-  readNumberOrStringAttr,
-  assertNoLegacyTableStructures,
-} = useRendererTableInput({
-  props,
-  attrs: attrs as Readonly<Record<string, unknown>>,
+
+// ── 属性读取工具 ──────────────────────────────────────────────────────────
+
+const _attrs = attrs as Readonly<Record<string, unknown>>
+
+const toolbarDockProps = computed<NodeProps>(() => (props.toolbar?.props as NodeProps | undefined) ?? EMPTY_NODE_PROPS)
+const filterDockProps = computed<NodeProps>(() => (props.filter?.props as NodeProps | undefined) ?? EMPTY_NODE_PROPS)
+const actionDockProps = computed<NodeProps>(() => (props.actions?.props as NodeProps | undefined) ?? EMPTY_NODE_PROPS)
+
+function readAttr(name: string): unknown {
+  const directValue = _attrs[name]
+  if (directValue !== undefined) return directValue
+  return _attrs[toKebabCaseCached(name)]
+}
+
+function readStringAttr(name: string): string | undefined {
+  const value = readAttr(name)
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+function readBooleanAttr(name: string): boolean | undefined {
+  const value = readAttr(name)
+  if (typeof value === 'boolean') return value
+  if (value === '') return true
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return undefined
+}
+
+function readNumberAttr(name: string): number | undefined {
+  const value = readAttr(name)
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  return undefined
+}
+
+function readNumberOrStringAttr(name: string): number | string | undefined {
+  const value = readAttr(name)
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value.length > 0) return value
+  return undefined
+}
+
+function readDockProp<T>(dockProps: NodeProps, name: string): T | undefined {
+  return dockProps[name] as T | undefined
+}
+
+// ── 输入解析 ──────────────────────────────────────────────────────────────
+
+const baseTableAttrs = computed<Record<string, unknown>>(() => {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(_attrs)) {
+    if (TABLE_LOCAL_ATTR_KEYS.has(key)) continue
+    result[key] = value
+  }
+  return result
 })
+const effectiveDataKey = computed(() => props.dataKey)
+
+const legacyRowActionsPositionValue = computed<LateralActionPosition | undefined>(() => {
+  const value = readStringAttr('rowActionsPosition')
+  return value === 'left' || value === 'right' ? value : undefined
+})
+
+const legacyRowActionsAlignValue = computed<'left' | 'center' | 'right' | undefined>(() => {
+  const value = readStringAttr('rowActionsAlign')
+  return value === 'left' || value === 'center' || value === 'right' ? value : undefined
+})
+
+const legacyRowActionsFixedValue = computed<boolean | 'left' | 'right' | undefined>(() => {
+  const value = readAttr('rowActionsFixed')
+  if (typeof value === 'boolean') return value
+  if (value === 'left' || value === 'right') return value
+  return undefined
+})
+
+const dockedToolbar = computed(() => getSparkNodeChildren(props.toolbar?.children))
+const dockedFilters = computed(() => getSparkNodeChildren(props.filter?.children))
+const dockedRowActions = computed(() => getSparkNodeChildren(props.actions?.children))
+
+const sparkChildren = computed<SparkNode[]>(() => {
+  const nodes: SparkNode[] = []
+  for (const child of props.children ?? []) {
+    if (typeof child === 'string' || typeof child === 'number') continue
+    if (isCollectedTableColumn(child)) nodes.push(child)
+  }
+  return nodes
+})
+
+function assertNoLegacyTableStructures(): void {
+  const toolbarValue = props.toolbar ?? readAttr('toolbar')
+  if (Array.isArray(toolbarValue) && toolbarValue.length > 0) {
+    throw new Error('[RendererTable] props.toolbar 已废除旧数组格式。请使用 dock 子节点 { type: "r-toolbar", children: [...] } 格式。')
+  }
+  const legacyFilterColumns = readAttr('filterColumns')
+  if (Array.isArray(legacyFilterColumns) && legacyFilterColumns.length > 0) {
+    throw new Error('[RendererTable] props.filterColumns 已废除。请使用 dock 子节点 { type: "r-filter", children: [...] } 格式。')
+  }
+  const legacyRowActions = readAttr('rowActions')
+  if (Array.isArray(legacyRowActions) && legacyRowActions.length > 0) {
+    throw new Error('[RendererTable] props.rowActions 已废除。请使用 dock 子节点 { type: "r-actions", children: [...] } 格式。')
+  }
+}
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
@@ -261,8 +383,8 @@ const {
   showToolbar,
 } = useContainerToolbar({
   toolbar: dockedToolbar,
-  toolbarPosition: computed(() => getDockProp<ToolbarPosition>('r-toolbar', 'position')),
-  toolbarClass: computed(() => getDockProp<string>('r-toolbar', 'class')),
+  toolbarPosition: computed(() => readDockProp<ToolbarPosition>(toolbarDockProps.value, 'position')),
+  toolbarClass: computed(() => readDockProp<string>(toolbarDockProps.value, 'class')),
   modelPermission,
   dataSource: resolvedView,
 })
@@ -281,10 +403,10 @@ const {
 } = useTableFilters({
   filterChildren: dockedFilters,
   dataView: resolvedView,
-  filterClass: computed(() => getDockProp<string>('r-filter', 'class') ?? readStringAttr('filterClass') ?? ''),
-  filterGridColumns: computed(() => getDockProp<number>('r-filter', 'gridColumns') ?? readNumberAttr('filterGridColumns') ?? 24),
-  filterGridGap: computed(() => getDockProp<number | string>('r-filter', 'gridGap') ?? readNumberOrStringAttr('filterGridGap') ?? 12),
-  filterGridAutoRows: computed(() => getDockProp<string>('r-filter', 'gridAutoRows') ?? readStringAttr('filterGridAutoRows') ?? 'minmax(32px, auto)'),
+  filterClass: computed(() => readDockProp<string>(filterDockProps.value, 'class') ?? readStringAttr('filterClass') ?? ''),
+  filterGridColumns: computed(() => readDockProp<number>(filterDockProps.value, 'gridColumns') ?? readNumberAttr('filterGridColumns') ?? 24),
+  filterGridGap: computed(() => readDockProp<number | string>(filterDockProps.value, 'gridGap') ?? readNumberOrStringAttr('filterGridGap') ?? 12),
+  filterGridAutoRows: computed(() => readDockProp<string>(filterDockProps.value, 'gridAutoRows') ?? readStringAttr('filterGridAutoRows') ?? 'minmax(32px, auto)'),
   logger,
 })
 
@@ -297,7 +419,7 @@ const {
   filtersCollapsed,
   toggleFiltersCollapsed,
 } = useRendererTableViewState({
-  getDockProp,
+  filterNode: computed(() => props.filter),
   baseTableAttrs,
   resolvedView,
   filteredRows,
@@ -352,8 +474,8 @@ const {
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: dockedRowActions,
-  actionPosition: computed(() => getDockProp<LateralActionPosition>('r-actions', 'position') ?? legacyRowActionsPositionValue.value ?? 'right'),
-  actionClass: computed(() => getDockProp<string>('r-actions', 'class') ?? readStringAttr('rowActionsClass') ?? ''),
+  actionPosition: computed(() => readDockProp<LateralActionPosition>(actionDockProps.value, 'position') ?? legacyRowActionsPositionValue.value ?? 'right'),
+  actionClass: computed(() => readDockProp<string>(actionDockProps.value, 'class') ?? readStringAttr('rowActionsClass') ?? ''),
   modelPermission,
   dataSource: resolvedView,
   resolveScope: ({ row, index }) => ({
@@ -374,17 +496,19 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
-const rowActionsLabelValue = computed(() => getDockProp<string>('r-actions', 'label') ?? readStringAttr('rowActionsLabel') ?? '操作')
+const rowActionsLabelValue = computed(() => readDockProp<string>(actionDockProps.value, 'label') ?? readStringAttr('rowActionsLabel') ?? '操作')
 
-const rowActionsWidthValue = computed(() => getDockProp<number | string>('r-actions', 'width') ?? readNumberOrStringAttr('rowActionsWidth') ?? 160)
+const rowActionsWidthValue = computed(() => readDockProp<number | string>(actionDockProps.value, 'width') ?? readNumberOrStringAttr('rowActionsWidth') ?? 160)
 
-const rowActionsAlignValue = computed(() => getDockProp<'left' | 'center' | 'right'>('r-actions', 'align') ?? legacyRowActionsAlignValue.value ?? 'left')
+const rowActionsAlignValue = computed(() => readDockProp<'left' | 'center' | 'right'>(actionDockProps.value, 'align') ?? legacyRowActionsAlignValue.value ?? 'left')
 
 const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
-  const fixed = getDockProp<boolean | 'left' | 'right'>('r-actions', 'fixed') ?? legacyRowActionsFixedValue.value
+  const fixed = readDockProp<boolean | 'left' | 'right'>(actionDockProps.value, 'fixed') ?? legacyRowActionsFixedValue.value
   if (fixed !== undefined) return fixed
   return rowActionsPositionValue.value
 })
+
+const toolbarActionConfigCache = new WeakMap<SparkNode, SparkNode>()
 
 function getRowActionSlotScope(row: IDataRow, index: number) {
   return createRowActionSlotScope({
@@ -399,9 +523,12 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
 }
 
 function resolveToolbarActionConfig(action: SparkNode): SparkNode {
-  return isBuiltinAction(action)
-    ? bindActionClick(action, () => handleBuiltinToolbarAction(action))
-    : action
+  if (!isBuiltinAction(action)) return action
+  const cached = toolbarActionConfigCache.get(action)
+  if (cached !== undefined) return cached
+  const resolved = bindActionClick(action, () => handleBuiltinToolbarAction(action))
+  toolbarActionConfigCache.set(action, resolved)
+  return resolved
 }
 
 function resolveRowActionConfig(action: SparkNode, row: IDataRow, index: number): SparkNode {
@@ -439,6 +566,19 @@ async function handleRowClick(row: IDataRow, column?: unknown, event?: Event) {
 
 async function handleSelectionChange(selection: IDataRow[]) {
   await dispatch('selection-change', Array.isArray(selection) ? selection : [])
+}
+
+function isCollectedTableColumn(config: SparkNode): boolean {
+  const type = config.type
+  if (typeof type !== 'string' || type.length === 0) return false
+  if (/^Render[A-Z]/.test(type)) return false
+  if (type === 'el-table-column') return true
+  if (!type.startsWith('r-')) return false
+  const field = nodeInputProp(config, 'field')
+  if (typeof field === 'string' && field.length > 0) return true
+  const children = getSparkNodeChildren(config.children)
+  if (children.length > 0) return true
+  return false
 }
 
 </script>

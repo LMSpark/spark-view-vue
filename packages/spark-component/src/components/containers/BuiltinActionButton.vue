@@ -40,7 +40,7 @@ interface Props extends SparkNode {
   buttonClass?: string
   buttonDisabled?: boolean
   disabled?: boolean
-  disabledWhenRow?: Record<string, unknown>
+  disabledWhenRow?: object
   row?: IDataRow
   rowIndex?: number
   data?: unknown

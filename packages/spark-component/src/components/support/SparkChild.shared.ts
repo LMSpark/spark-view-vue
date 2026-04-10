@@ -252,6 +252,7 @@ export function collectTemplateSlotBindings(slotMap: Record<string, unknown>): T
  * - Named slots (e.g. `#toolbar`, `#actions`) → wrapper SparkNode children
  *   `{ type: 'r-{slotName}', children: [...slotContent] }` appended to the array.
  *   Container components extract docks from children via `useDockExtraction`.
+ *   The binding layer (`liftDockChildren`) lifts dock nodes from children into container props.
  */
 export function collectTemplateSlotChildren(slotMap: Record<string, unknown>): SparkNodeChildren {
   const { defaultChildren, namedSlotNodes } = collectTemplateSlotBindings(slotMap)

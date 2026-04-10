@@ -17,7 +17,7 @@ import { useSparkPageComponent, type SparkNode } from '../../internal'
 
 interface Props extends SparkNode {
   label?: string
-  to?: string | Record<string, unknown>
+  to?: string | object
   replace?: boolean
 }
 

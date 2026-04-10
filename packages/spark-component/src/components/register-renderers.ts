@@ -64,16 +64,17 @@ import SparkJsonEditor from './support/SparkJsonEditor.vue'
 // ═══════════════════════════════════════════════════════════════════════════════
 
 type RegisteredComponent = Parameters<typeof Spark.register>[1]
-type RegistrationEntry = readonly [string, RegisteredComponent]
+type RegistrationMeta = Record<string, unknown>
+type RegistrationEntry = readonly [string, RegisteredComponent] | readonly [string, RegisteredComponent, RegistrationMeta]
 
 /** 同步注册：核心 + Passthrough */
 const CORE_COMPONENTS: RegistrationEntry[] = [
-  // 数据容器
-  ['r-table', RendererTable],
-  ['r-form', RendererForm],
-  ['r-detail', RendererDetail],
-  ['r-tree', RendererTree],
-  ['r-list', RendererList],
+  // 数据容器（meta.docks 声明该容器识别的 dock 类型，绑定层据此将 children 中的 dock 提升为 props）
+  ['r-table', RendererTable, { docks: ['r-toolbar', 'r-actions', 'r-filter'] }],
+  ['r-form', RendererForm, { docks: ['r-toolbar'] }],
+  ['r-detail', RendererDetail, { docks: ['r-toolbar'] }],
+  ['r-tree', RendererTree, { docks: ['r-toolbar', 'r-actions', 'r-editor'] }],
+  ['r-list', RendererList, { docks: ['r-toolbar', 'r-actions'] }],
   // Dock
   ['r-actions', DockActions],
   ['r-filter', DockFilter],
@@ -84,15 +85,15 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   // 内置操作
   ['builtin-action', BuiltinActionButton],
   // 核心非数据容器
-  ['r-section', RendererSection],
-  ['r-block', RendererSection],
-  ['r-toolbar', RendererToolbar],
-  ['r-menu', RendererToolbar],
-  ['r-tabs', RendererTabs],
-  ['r-collapse', RendererCollapse],
-  ['r-dialog', RendererDialog],
-  ['r-drawer', RendererDrawer],
-  ['r-steps', RendererSteps],
+  ['r-section', RendererSection, { docks: ['r-header'] }],
+  ['r-block', RendererSection, { docks: ['r-header'] }],
+  ['r-toolbar', RendererToolbar, { docks: ['r-tail'] }],
+  ['r-menu', RendererToolbar, { docks: ['r-tail'] }],
+  ['r-tabs', RendererTabs, { docks: ['r-toolbar'] }],
+  ['r-collapse', RendererCollapse, { docks: ['r-toolbar'] }],
+  ['r-dialog', RendererDialog, { docks: ['r-header', 'r-footer'] }],
+  ['r-drawer', RendererDrawer, { docks: ['r-header', 'r-footer'] }],
+  ['r-steps', RendererSteps, { docks: ['r-toolbar'] }],
   ['r-button', RendererButton],
   ['r-link', RendererLink],
   // 核心布局
@@ -193,9 +194,10 @@ const ASYNC_COMPONENTS: ReadonlyArray<readonly [string, () => Promise<{ default:
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function registerAllRenderers(): void {
-  // Sync — 核心 + Passthrough
-  for (const [type, component] of CORE_COMPONENTS) {
-    Spark.register(type, component)
+  // Sync — 核心 + Passthrough（含可选 meta）
+  for (const entry of CORE_COMPONENTS) {
+    const [type, component, meta] = entry
+    Spark.register(type, component, meta)
   }
   // Async — Spark.register 检测到 function 自动包装 defineAsyncComponent
   for (const [type, loader] of ASYNC_COMPONENTS) {

@@ -15,21 +15,27 @@
 
 import type { RuleConfig } from '@spark-view/spark-page-config'
 import { SPARK_NODE_STRUCT_KEYS, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
+import { dockTypeToPropName } from '../../components/containers/docks/dock-extraction.js'
 import type { ActionExecutionContext } from '../actions'
 import { normalizeRuleEvents, normalizeOnProps } from './bind-normalize.js'
 
 export type PageScriptCaller = (functionName: string, ...args: unknown[]) => unknown
 
+/** 查询容器识别的 dock 类型集合（来自 registry meta.docks） */
+export type DockTypeLookup = (containerType: string) => ReadonlySet<string> | undefined
+
 export interface BuildPageChildrenOptions {
   callFunc: PageScriptCaller
   actionCtx: ActionExecutionContext
+  /** 容器 dock 查询（不提供时跳过 dock 提升） */
+  getDocks?: DockTypeLookup
 }
 
 export function buildPageChildren(
   rules: RuleConfig[],
   options: BuildPageChildrenOptions,
 ): SparkNode[] {
-  const { callFunc, actionCtx } = options
+  const { callFunc, actionCtx, getDocks } = options
   const usedIds = new Set<string>()
 
   function isSparkChild(value: unknown): value is SparkNodeChildren[number] {
@@ -113,8 +119,43 @@ export function buildPageChildren(
       cloned.props = propsObj
     }
 
-    return cloned
+    return liftDockChildren(cloned, getDocks)
   }
 
   return rules.map(rule => bindNode(rule as unknown as Record<string, unknown>))
+}
+
+/**
+ * 将容器节点的 children 中的 dock 子节点提升为 props。
+ *
+ * 例如 `{ type: 'r-table', children: [{ type: 'r-toolbar', ... }, ...content] }`
+ * → `{ type: 'r-table', props: { toolbar: { type: 'r-toolbar', ... } }, children: [...content] }`
+ *
+ * 容器组件只需通过 `props.toolbar` 直接访问 dock 节点，无需运行时提取。
+ */
+export function liftDockChildren(node: SparkNode, getDocks?: DockTypeLookup): SparkNode {
+  const dockTypes = getDocks?.(node.type)
+  if (!dockTypes || !node.children || node.children.length === 0) return node
+
+  const contentChildren: SparkNodeChildren = []
+  const liftedProps: Record<string, SparkNode> = {}
+
+  for (const child of node.children) {
+    if (isSparkNode(child) && dockTypes.has(child.type)) {
+      const propName = dockTypeToPropName(child.type)
+      if (!(propName in liftedProps)) {
+        liftedProps[propName] = child
+      }
+    } else {
+      contentChildren.push(child)
+    }
+  }
+
+  if (Object.keys(liftedProps).length === 0) return node
+
+  return {
+    type: node.type,
+    props: { ...node.props, ...liftedProps },
+    ...(contentChildren.length > 0 ? { children: contentChildren } : {}),
+  }
 }

@@ -31,7 +31,7 @@ interface Props extends SparkNode {
   children?: SparkNode[]
   header?: string
   shadow?: 'always' | 'hover' | 'never'
-  bodyStyle?: Record<string, string> | string
+  bodyStyle?: object | string
   bodyClass?: string
 }
 

@@ -2,6 +2,22 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererTabs, RendererCollapse } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
+import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+
+const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+  'r-tabs': new Set(['r-toolbar']),
+  'r-collapse': new Set(['r-toolbar']),
+  'r-steps': new Set(['r-toolbar']),
+}
+const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+
+function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+  if (!props['children']) return props
+  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const { children: _, ...rest } = props
+  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -64,7 +80,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
   it('should render tabs panes with docked toolbar children and pane grid body', () => {
     const onTabChange = vi.fn()
     const wrapper = mount(RendererTabs as any, {
-      props: {
+      props: liftTestDocks('r-tabs', {
         onTabChange,
         children: [
           { type: 'r-toolbar', children: [{ type: 'tabs-toolbar-action' }] },
@@ -82,7 +98,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
             children: [],
           },
         ],
-      },
+      }),
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,
@@ -159,7 +175,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
   it('should render collapse items with docked toolbar children and item grid body', () => {
     const onChange = vi.fn()
     const wrapper = mount(RendererCollapse as any, {
-      props: {
+      props: liftTestDocks('r-collapse', {
         onChange,
         children: [
           { type: 'r-toolbar', children: [{ type: 'collapse-toolbar-action' }] },
@@ -177,7 +193,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
             children: [],
           },
         ],
-      },
+      }),
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,

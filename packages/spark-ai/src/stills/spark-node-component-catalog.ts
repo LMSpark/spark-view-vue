@@ -75,7 +75,7 @@ export const SPARK_NODE_COMPONENT_ENTRIES: readonly SparkNodeComponentEntry[] = 
       },
       _dock架构: {
         说明: '容器 children 分为 dock 子节点（按 type 匹配）和内容子节点（剩余部分）',
-        分离算法: '容器调用 useDockExtraction(children, DOCK_TYPES) 一次分离 dock vs 内容',
+        分离算法: '绑定层 liftDockChildren 在构建阶段按 type 从 children 提升 dock 到 props',
         dock不占据内容区: 'dock 由容器提取后独立渲染在指定区域（工具栏区、筛选区、行操作列等）',
       },
 

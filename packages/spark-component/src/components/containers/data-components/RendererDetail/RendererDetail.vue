@@ -61,14 +61,13 @@ import {
   type EditRowHandler,
   type RemoveRowHandler,
 } from '../../support/index.js'
-import type { DockProp, DockToolbarNode } from '../../docks/dock-extraction'
 
 interface Props extends SparkNode {
   id?: string
   /** 数据绑定键 */
   dataKey?: string
   /** 结构化工具栏 dock */
-  toolbar?: DockProp<DockToolbarNode>
+  toolbar?: SparkNode
   /** 子节点列表 */
   children?: SparkNode[]
   /** CSS Grid 列数 */

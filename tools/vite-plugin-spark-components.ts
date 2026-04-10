@@ -93,6 +93,22 @@ export type LoadStrategy = 'sync' | 'async'
  *  * /
  * ```
  */
+/**
+ * 组件 Props 属性元数据（从 defineProps<Props> interface 自动提取）
+ */
+export interface PropMeta {
+  /** 属性名 */
+  name: string
+  /** TypeScript 类型字符串 */
+  type: string
+  /** 是否必填 */
+  required: boolean
+  /** JSDoc 描述 */
+  description?: string
+  /** withDefaults 默认值（字符串形式） */
+  default?: string
+}
+
 export interface SkillMeta {
   /** Skill 注册名（默认取 kebab-case 文件名，@skill 标签可覆盖） */
   type: string
@@ -106,6 +122,164 @@ export interface SkillMeta {
   inputSchema?: string
   /** 调用示例（@example 标签，JSON 格式字符串） */
   example?: string
+  /** 组件 Props 定义（从 defineProps<Props> interface 自动提取） */
+  props?: PropMeta[]
+}
+
+/**
+ * Props 类型字典条目（构建时内嵌，供 AI 查阅复杂类型定义）
+ */
+export interface TypeGlossaryEntry {
+  /** 类型名（如 DockProp） */
+  name: string
+  /** 类型定义（如 T | Record<string, unknown> | false | null） */
+  definition: string
+  /** 简要说明 */
+  description?: string
+}
+
+/**
+ * 内置 Props 类型字典
+ *
+ * 覆盖 defineProps 中出现的非平凡自定义类型，让 AI 生成 rule.json 时
+ * 能理解各复合类型的实际结构。
+ *
+ * ⚠️ **零泛型约束**：所有条目的 name / definition 中禁止出现 `<>`
+ *    泛型语法。AI 消费者不解析泛型，所有类型必须是具体的、展开的。
+ */
+const PROP_TYPE_GLOSSARY: TypeGlossaryEntry[] = [
+  // ── 核心模型 ──
+  { name: 'SparkNode', definition: '{ type: string, props?: object, children?: SparkNode[] }', description: 'SPARK 节点树结构，等价于 h(type, props, children)' },
+  { name: 'IDataRow', definition: '{ [key: string]: unknown, _id?: string | number }', description: 'DataView 行数据对象' },
+  { name: 'CollapseValue', definition: 'string | number | (string | number)[]', description: '折叠面板激活值' },
+
+  // ── 事件回调（script.js 中使用） ──
+  { name: 'RowClickHandler', definition: '(row: IDataRow, column: unknown, event: Event | undefined, control: { cancel(): void }) => void | Promise<void>', description: '行点击拦截器，调用 control.cancel() 阻止默认行为' },
+  { name: 'RowSelectionHandler', definition: '(selection: IDataRow[], control: { cancel(): void }) => void | Promise<void>', description: '行选中变更拦截器' },
+  { name: 'CurrentRowChangeHandler', definition: '(currentRow: IDataRow | null, oldRow: IDataRow | null | undefined, control: { cancel(): void }) => void | Promise<void>', description: '当前行变更拦截器' },
+  { name: 'AddRowHandler', definition: '(partialRow: IDataRow, control: { cancel(): void }) => void | Promise<void>', description: '新增行拦截器' },
+  { name: 'EditRowHandler', definition: '(rowId: string | number, partialRow: IDataRow, control: { cancel(): void }) => void | Promise<void>', description: '编辑行拦截器' },
+  { name: 'RemoveRowHandler', definition: '(rowId: string | number, control: { cancel(): void }) => void | Promise<void>', description: '删除行拦截器' },
+  { name: 'TreeEventHandler', definition: '(data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: { cancel(): void }) => void | Promise<void>', description: '树节点事件拦截器' },
+  { name: 'TreeNodeActionHandler', definition: '(data: TreeNode, control: { cancel(): void }) => void | Promise<void>', description: '树节点操作拦截器（简化版，无 el-tree 内部参数）' },
+
+  // ── 位置与布局 ──
+  { name: 'ToolbarPosition', definition: '"top" | "bottom" | "left" | "right"', description: '工具栏位置' },
+  { name: 'LateralActionPosition', definition: '"left" | "right"', description: '行操作列位置' },
+  { name: 'InlineAlign', definition: '"start" | "center" | "end" | "stretch"', description: '行内对齐' },
+  { name: 'InlineJustify', definition: '"start" | "center" | "end" | "space-between"', description: '行内分布' },
+
+  // ── 字段值类型 ──
+  { name: 'MultiValue', definition: '(string | number | boolean)[]', description: '多选字段值' },
+  { name: 'CascaderValue', definition: '(string | number | boolean)[] | (string | number | boolean)[][]', description: '级联选择值（单选为路径数组，多选为路径数组的数组）' },
+  { name: 'TransferValue', definition: '(string | number)[]', description: '穿梭框选中值' },
+  { name: 'TreeSelectValue', definition: 'string | number | boolean | (string | number | boolean)[]', description: '树选择值' },
+  { name: 'EntityPickerValue', definition: 'string | object | object[]', description: '实体选择器值' },
+  { name: 'SparkCodeLanguage', definition: '"javascript" | "css"', description: '代码编辑器语言' },
+  { name: 'SparkJsonEditorMode', definition: '"text" | "tree" | "table"', description: 'JSON 编辑器模式' },
+]
+
+/**
+ * 构建类型名 → 字典条目索引（key 为去掉泛型参数的基础名）
+ */
+const _glossaryIndex: Map<string, TypeGlossaryEntry> = new Map(
+  PROP_TYPE_GLOSSARY.map(e => [e.name.replace(/<.*>$/, ''), e]),
+)
+
+/**
+ * 从一组 PropMeta 中提取引用的字典类型（递归展开嵌套引用）
+ *
+ * 例：`DockProp<DockToolbarNode>` → 匹配 DockProp、DockToolbarNode
+ * DockToolbarNode 定义中含 ToolbarPosition → 也收录
+ */
+function resolveReferencedTypes(props: PropMeta[]): TypeGlossaryEntry[] {
+  const seen = new Set<string>()
+  const result: TypeGlossaryEntry[] = []
+
+  function collect(typeStr: string): void {
+    const identifiers = typeStr.match(/[A-Z]\w*/g)
+    if (!identifiers) return
+    for (const id of identifiers) {
+      if (seen.has(id)) continue
+      seen.add(id)
+      const entry = _glossaryIndex.get(id)
+      if (entry) {
+        result.push(entry)
+        collect(entry.definition)
+      }
+    }
+  }
+
+  for (const prop of props) {
+    collect(prop.type)
+  }
+
+  return result
+}
+
+/**
+ * 将复合类型字符串展开为自包含的完整定义（LLM 无需再查类型表）
+ *
+ * 例：expandTypeForPrompt('DockProp<DockToolbarNode>')
+ *  → '{ type: "r-toolbar", props?: { position?: "top" | "bottom" | "left" | "right", class?: string }, children?: SparkNode[] } | Record<string, unknown> | false | null'
+ *
+ * 返回 null 表示该类型无需展开（原始类型或不在字典中）
+ */
+function expandTypeForPrompt(typeStr: string): string | null {
+  // 简单类型无需展开
+  if (!/[A-Z]/.test(typeStr)) return null
+
+  const seen = new Set<string>()
+  let result = typeStr
+
+  // 步骤1：处理泛型 — DockProp<DockToolbarNode> → 用 T 替换
+  const genericMatch = result.match(/^([A-Z]\w*)<(.+)>$/)
+  if (genericMatch) {
+    const baseName = genericMatch[1] ?? ''
+    const typeParam = genericMatch[2] ?? ''
+    const baseEntry = _glossaryIndex.get(baseName)
+    if (baseEntry) {
+      seen.add(baseName)
+      // 先展开类型参数
+      const paramEntry = _glossaryIndex.get(typeParam.replace(/<.*>$/, ''))
+      const paramExpanded = paramEntry ? (seen.add(typeParam.replace(/<.*>$/, '')), paramEntry.definition) : typeParam
+      // 替换 T
+      result = baseEntry.definition.replace(/\bT\b/g, `(${paramExpanded})`)
+    }
+  } else {
+    // 非泛型：直接查字典展开顶层
+    const topEntry = _glossaryIndex.get(typeStr.replace(/<.*>$/, ''))
+    if (topEntry) {
+      seen.add(typeStr.replace(/<.*>$/, ''))
+      result = topEntry.definition
+    }
+  }
+
+  if (result === typeStr) return null
+
+  // 步骤2：展开剩余的 PascalCase 类型引用（2 轮，避免无限递归）
+  for (let round = 0; round < 2; round++) {
+    // 先收集本轮需要替换的类型名→定义映射
+    const replacements = new Map<string, string>()
+    const matches = result.match(/\b([A-Z]\w*)(?![<\w])/g)
+    if (matches) {
+      for (const name of matches) {
+        if (seen.has(name) || replacements.has(name)) continue
+        const entry = _glossaryIndex.get(name)
+        if (entry) {
+          replacements.set(name, entry.definition)
+          seen.add(name)
+        }
+      }
+    }
+    if (replacements.size === 0) break
+    // 全量替换（同一类型名的所有出现都替换）
+    for (const [name, def] of replacements) {
+      result = result.replace(new RegExp(`\\b${name}\\b(?![<\\w])`, 'g'), def)
+    }
+  }
+
+  return result
 }
 
 /**
@@ -323,6 +497,149 @@ function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta |
   return meta
 }
 
+/* -----------------------------------------------------------------------------
+ * Props 提取（@vue/compiler-sfc 解析 defineProps interface）
+ * -------------------------------------------------------------------------- */
+
+/**
+ * 从 interface body 中提取属性定义（含 JSDoc 注释），使用大括号深度计数定位闭合
+ */
+function extractInterfaceBody(script: string, interfaceName: string): string | null {
+  const pattern = new RegExp(`interface\\s+${interfaceName}\\s+(?:extends\\s+[\\w\\s,&|<>]+)?\\{`)
+  const match = pattern.exec(script)
+  if (!match) return null
+
+  const startIdx = match.index + match[0].length
+  let depth = 1
+  let i = startIdx
+  while (i < script.length && depth > 0) {
+    if (script[i] === '{') depth++
+    else if (script[i] === '}') depth--
+    i++
+  }
+  if (depth !== 0) return null
+  return script.slice(startIdx, i - 1)
+}
+
+/**
+ * 逐行解析 interface body，提取每个属性的名称、类型、可选性和 JSDoc 描述
+ */
+function parseInterfaceProperties(body: string): PropMeta[] {
+  const lines = body.split('\n')
+  const props: PropMeta[] = []
+  let currentComment: string | undefined
+  let inMultilineComment = false
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+
+    // 单行 JSDoc: /** text */
+    if (trimmed.startsWith('/**') && trimmed.endsWith('*/')) {
+      currentComment = trimmed.replace(/^\/\*\*\s*/, '').replace(/\s*\*\/$/, '').trim() || undefined
+      inMultilineComment = false
+      continue
+    }
+
+    // 多行 JSDoc 开始: /**
+    if (trimmed.startsWith('/**')) {
+      inMultilineComment = true
+      const text = trimmed.replace(/^\/\*\*\s*/, '').trim()
+      currentComment = text || undefined
+      continue
+    }
+
+    // 多行 JSDoc 中间/结束
+    if (inMultilineComment) {
+      if (trimmed === '*/' || trimmed.endsWith('*/')) {
+        inMultilineComment = false
+        continue
+      }
+      const text = trimmed.replace(/^\*\s?/, '').trim()
+      if (text) {
+        currentComment = currentComment ? `${currentComment} ${text}` : text
+      }
+      continue
+    }
+
+    // 属性行: name?: TypeExpression
+    const propMatch = trimmed.match(/^([\w$]+)(\?)?:\s*(.+?)[\s;]*$/)
+    if (propMatch) {
+      const [, name, optional, rawType] = propMatch
+      if (name && rawType) {
+        props.push({
+          name,
+          type: rawType.replace(/;$/, '').trim(),
+          required: !optional,
+          ...(currentComment ? { description: currentComment } : {}),
+        })
+      }
+      currentComment = undefined
+    }
+  }
+
+  return props
+}
+
+/**
+ * 从 withDefaults(defineProps<Props>(), { ... }) 语句提取默认值，回写到对应 PropMeta
+ */
+function applyDefaultsFromWithDefaults(script: string, props: PropMeta[]): void {
+  const match = script.match(/withDefaults\s*\(\s*defineProps<\w+>\(\)\s*,\s*\{([\s\S]*?)\}\s*\)/)
+  if (!match) return
+
+  const body = match[1]
+  if (!body) return
+  const lines = body.split('\n')
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+    // Match: key: value, 或 key: value
+    const defaultMatch = trimmed.match(/^([\w$]+)\s*:\s*(.+?)[\s,]*$/)
+    if (defaultMatch) {
+      const [, name, value] = defaultMatch
+      if (!name || !value) continue
+      const prop = props.find(p => p.name === name)
+      if (prop) {
+        prop.default = value.replace(/,\s*$/, '').trim()
+      }
+    }
+  }
+}
+
+/**
+ * 从 SFC <script setup> 中提取 defineProps<Props> 类型接口的结构化属性定义
+ *
+ * 解析链：regex 提取 script setup block → 定位 interface Props → 逐行提取属性 → 回填 withDefaults
+ */
+function parseComponentProps(absolutePath: string): PropMeta[] | undefined {
+  let content: string
+  try {
+    content = readFileSync(absolutePath, 'utf-8')
+  } catch {
+    return undefined
+  }
+
+  // 提取 <script setup ...> 或 <script ...> 块的内容
+  const scriptMatch = content.match(/<script\s+setup[^>]*>([\s\S]*?)<\/script>/)
+    ?? content.match(/<script[^>]*>([\s\S]*?)<\/script>/)
+  const scriptContent = scriptMatch?.[1]
+  if (!scriptContent) return undefined
+
+  // 1. 尝试从 interface Props 提取
+  const propsBody = extractInterfaceBody(scriptContent, 'Props')
+  if (!propsBody) return undefined
+
+  // 2. 逐行解析属性
+  const props = parseInterfaceProperties(propsBody)
+  if (props.length === 0) return undefined
+
+  // 3. 回填 withDefaults 默认值
+  applyDefaultsFromWithDefaults(scriptContent, props)
+
+  return props
+}
+
 /**
  * 生成注册语句
  */
@@ -414,6 +731,12 @@ class ComponentAnalyzer {
 
         // 提取 Skill 元数据（同一次 I/O 顺带完成，无额外磁盘开销）
         const skillMeta = parseSkillMeta(absolutePath, componentName)
+
+        // 对 Skill 组件提取结构化 Props（需完整 SFC 解析，仅对有 Skill 的组件执行）
+        if (skillMeta) {
+          const propsMeta = parseComponentProps(absolutePath)
+          if (propsMeta) skillMeta.props = propsMeta
+        }
 
         components.push({
           name: componentName,
@@ -580,6 +903,14 @@ export default registerComponents
       .filter(c => c.skillMeta !== null)
       .map(c => c.skillMeta!)
 
+    // 为每个 skill 附加引用的类型定义（per-component 而非全局）
+    const skillsWithTypeRefs = skills.map(skill => {
+      const refs = skill.props && skill.props.length > 0
+        ? resolveReferencedTypes(skill.props)
+        : []
+      return refs.length > 0 ? { ...skill, referencedTypes: refs } : skill
+    })
+
     const components = this.components.map(c => ({
       type: c.name,
       path: c.path,
@@ -612,7 +943,8 @@ export default registerComponents
       componentCount: this.components.length,
       skillCount: skills.length,
       components,
-      skills,
+      skills: skillsWithTypeRefs,
+      typeGlossary: PROP_TYPE_GLOSSARY,
       skillPrompts: {
         index: indexPrompt,
         compact: compactPrompt,
@@ -657,9 +989,53 @@ export default registerComponents
         if (skill.provides.length > 0) {
           lines.push('- **提供能力（provides）**: ' + skill.provides.map(p => `\`${p}\``).join(', '))
         }
+        if (mode === 'compact' && skill.props && skill.props.length > 0) {
+          // compact 模式：仅列出属性名（不含 on* 事件回调）
+          const configProps = skill.props.filter(p => !p.name.startsWith('on') || !/^on[A-Z]/.test(p.name))
+          if (configProps.length > 0) {
+            lines.push('- **Props**: ' + configProps.map(p => `\`${p.name}\``).join(', '))
+          }
+          // compact 模式：列出引用的自定义类型名（便于 AI 感知复杂度）
+          const refs = resolveReferencedTypes(skill.props)
+          if (refs.length > 0) {
+            lines.push('- **类型参考**: ' + refs.map(r => `\`${r.name}\` = ${r.definition}`).join('; '))
+          }
+        }
         if (mode === 'full') {
           if (skill.inputSchema) {
             lines.push(`- **输入参数**: \`${skill.inputSchema}\``)
+          }
+          if (skill.props && skill.props.length > 0) {
+            // full 模式：分为配置属性和事件回调两组
+            const configProps = skill.props.filter(p => !p.name.startsWith('on') || !/^on[A-Z]/.test(p.name))
+            const eventProps = skill.props.filter(p => p.name.startsWith('on') && /^on[A-Z]/.test(p.name))
+            if (configProps.length > 0) {
+              lines.push('- **配置属性（Props）**:')
+              lines.push('')
+              lines.push('| 属性 | 类型 | 必填 | 默认值 | 说明 |')
+              lines.push('|------|------|------|--------|------|')
+              for (const prop of configProps) {
+                // 展开复合类型为自包含定义，LLM 无需再查类型表
+                const expanded = expandTypeForPrompt(prop.type)
+                const typeCell = expanded
+                  ? `\`${prop.type}\` = \`${expanded}\``
+                  : `\`${prop.type}\``
+                lines.push(`| \`${prop.name}\` | ${typeCell} | ${prop.required ? '✅' : ''} | ${prop.default ? `\`${prop.default}\`` : ''} | ${prop.description ?? ''} |`)
+              }
+              lines.push('')
+            }
+            if (eventProps.length > 0) {
+              lines.push('- **事件回调**:')
+              lines.push('')
+              lines.push('| 事件 | 完整签名 | 说明 |')
+              lines.push('|------|----------|------|')
+              for (const prop of eventProps) {
+                const expanded = expandTypeForPrompt(prop.type)
+                const sigCell = expanded ? `\`${expanded}\`` : `\`${prop.type}\``
+                lines.push(`| \`${prop.name}\` | ${sigCell} | ${prop.description ?? ''} |`)
+              }
+              lines.push('')
+            }
           }
           if (skill.example) {
             lines.push('- **调用示例**:')
@@ -701,104 +1077,37 @@ export default registerComponents
  * 用法：
  *   import { skillCatalog, buildSkillPrompt } from 'virtual:spark-skill-catalog'
  *   // skillCatalog  — 完整 Skill 描述数组，可序列化为 JSON 发给 AI
- *   // buildSkillPrompt() — 生成适合嵌入 LLM 系统提示词的 Markdown 文本
+    // 确保数据最新
+    this.scan()
+
+    const skills = this.components
+      .filter(c => c.skillMeta !== null)
+      .map(c => c.skillMeta!)
+
+    const skillsJson = JSON.stringify(skills, null, 2)
+    const typeGlossaryJson = JSON.stringify(PROP_TYPE_GLOSSARY, null, 2)
+
+    return `/**
+ * SPARK Skill 目录
+ *
+ * ⚠️ 此文件由 vite-plugin-spark-components 自动生成，请勿手动修改
+ * 生成时间: ${new Date().toISOString()}
+ * Skill 总数: ${skills.length}
+ *
+ * 用法：
+ *   import { skillCatalog, typeGlossary } from 'virtual:spark-skill-catalog'
+ *   // skillCatalog  — 完整 Skill 描述数组，可序列化为 JSON 发给 AI
+ *   // typeGlossary — 类型定义数组，可用于 UI 展示或类型展开
  */
 
 /** @type {import('./tools/vite-plugin-spark-components').SkillMeta[]} */
 export const skillCatalog = ${skillsJson}
 
-/**
- * 生成适合嵌入 AI 系统提示词的 Skill 目录 Markdown
- *
- * @param {string} [header] - 段落标题（默认："## 可用前端 Skill 目录"）
- * @returns {string} Markdown 格式的 Skill 说明文本
- */
-/**
- * Skill 目录输出精度模式
- *
- * - 'index'   : 仅 type + 一行描述（最短，适合「先问 AI 用哪个 Skill」）
- * - 'compact' : type + 描述 + provides/consumes（中等，适合多数场景）
- * - 'full'    : 全部字段含 example（最详细，单次调用前用）
- */
-
-/**
- * 按 type 关键词过滤 Skill
- * @param {string} [header] - 段落标题
- * @param {'index'|'compact'|'full'} [mode] - 输出精度
- * @param {string[]} [types] - 只输出这些 type 的 Skill（空数组 = 全量）
- */
-export function buildSkillPrompt(
-  header = '## 可用前端 Skill 目录',
-  mode = 'compact',
-  types = [],
-) {
-  const list = types.length > 0
-    ? skillCatalog.filter(s => types.includes(s.type))
-    : skillCatalog
-
-  if (list.length === 0) {
-    return header + '\\n\\n（暂无可用 Skill）\\n'
-  }
-
-  const lines = [header, '']
-
-  if (mode === 'index') {
-    // 最精简：type 列表 + 单行描述，约 20 tokens/组件
-    lines.push('| type | 描述 |')
-    lines.push('|------|------|')
-    for (const skill of list) {
-      lines.push(\`| \\\`\${skill.type}\\\` | \${skill.description ?? ''} |\`)
-    }
-    lines.push('')
-    lines.push('> 需要某个 Skill 的详细用法时，指定 type 后再次调用 buildSkillPrompt(…, "full", [type])')
-  } else {
-    lines.push('> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。', '')
-    for (const skill of list) {
-      lines.push(\`### \\\`\${skill.type}\\\`\`)
-      if (skill.description) lines.push('> ' + skill.description)
-      if (skill.consumes.length > 0) {
-        lines.push('- **依赖能力（consumes）**: ' + skill.consumes.map(c => \`\\\`\${c}\\\`\`).join(', '))
-      }
-      if (skill.provides.length > 0) {
-        lines.push('- **提供能力（provides）**: ' + skill.provides.map(p => \`\\\`\${p}\\\`\`).join(', '))
-      }
-      if (mode === 'full') {
-        if (skill.inputSchema) {
-          lines.push(\`- **输入参数**: \\\`\${skill.inputSchema}\\\`\`)
-        }
-        if (skill.example) {
-          lines.push('- **调用示例**:')
-          lines.push('\`\`\`json')
-          lines.push(skill.example)
-          lines.push('\`\`\`')
-        }
-      }
-      lines.push('')
-    }
-  }
-
-  return lines.join('\\n')
-}
+/** @type {import('./tools/vite-plugin-spark-components').TypeGlossaryEntry[]} */
+export const typeGlossary = ${typeGlossaryJson}
 
 export default skillCatalog
 `
-  }
-
-  /**
-   * 生成类型定义
-   */
-  generateTypes(): string {
-    // 保持组件列表为最新状态
-    this.scan()
-
-    const componentNames = this.components.map(c => `'${c.name}'`).join(' | ')
-
-    return `/**
- * SPARK 组件类型定义
- * 
- * ⚠️ 此文件由 vite-plugin-spark-components 自动生成
- */
-
 import type { App } from 'vue'
 
 export type ComponentName = ${componentNames || 'string'}

@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-09T20:34:07.925Z",
-  "componentCount": 121,
+  "buildTime": "2026-04-10T12:12:48.498Z",
+  "componentCount": 123,
   "registry": {
     "containers": [
       "r-block",
@@ -294,21 +294,51 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "ToolbarDockProp",
           "required": false,
-          "description": "结构化工具栏 dock"
+          "description": "结构化工具栏 dock",
+          "schema": {
+            "kind": "enum",
+            "type": "ToolbarDockProp",
+            "variants": [
+              "null",
+              "false",
+              "object",
+              "DockToolbarNode"
+            ]
+          }
         },
         {
           "name": "filter",
-          "type": "unknown",
+          "type": "FilterDockProp",
           "required": false,
-          "description": "结构化筛选 dock"
+          "description": "结构化筛选 dock",
+          "schema": {
+            "kind": "enum",
+            "type": "FilterDockProp",
+            "variants": [
+              "null",
+              "false",
+              "object",
+              "DockFilterNode"
+            ]
+          }
         },
         {
           "name": "actions",
-          "type": "unknown",
+          "type": "ActionsDockProp",
           "required": false,
-          "description": "结构化行动作 dock"
+          "description": "结构化行动作 dock",
+          "schema": {
+            "kind": "enum",
+            "type": "ActionsDockProp",
+            "variants": [
+              "null",
+              "false",
+              "object",
+              "DockActionsNode"
+            ]
+          }
         },
         {
           "name": "children",
@@ -626,13 +656,33 @@
         },
         {
           "name": "filter",
-          "type": "unknown",
-          "description": "结构化筛选 dock"
+          "type": "FilterDockProp",
+          "description": "结构化筛选 dock",
+          "schema": {
+            "kind": "enum",
+            "type": "FilterDockProp",
+            "variants": [
+              "null",
+              "false",
+              "object",
+              "DockFilterNode"
+            ]
+          }
         },
         {
           "name": "toolbar",
-          "type": "unknown",
-          "description": "结构化工具栏 dock"
+          "type": "ToolbarDockProp",
+          "description": "结构化工具栏 dock",
+          "schema": {
+            "kind": "enum",
+            "type": "ToolbarDockProp",
+            "variants": [
+              "null",
+              "false",
+              "object",
+              "DockToolbarNode"
+            ]
+          }
         },
         {
           "name": "dataKey",
@@ -641,8 +691,18 @@
         },
         {
           "name": "actions",
-          "type": "unknown",
-          "description": "结构化行动作 dock"
+          "type": "ActionsDockProp",
+          "description": "结构化行动作 dock",
+          "schema": {
+            "kind": "enum",
+            "type": "ActionsDockProp",
+            "variants": [
+              "null",
+              "false",
+              "object",
+              "DockActionsNode"
+            ]
+          }
         },
         {
           "name": "onAddRow",
@@ -1249,7 +1309,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -1496,7 +1556,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化工具栏 dock"
         },
         {
@@ -1748,7 +1808,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -2032,7 +2092,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化工具栏 dock"
         },
         {
@@ -2254,19 +2314,19 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化工具栏 dock"
         },
         {
           "name": "actions",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化节点动作 dock"
         },
         {
           "name": "editor",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化编辑区 dock"
         },
@@ -2530,7 +2590,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化工具栏 dock"
         },
         {
@@ -2540,12 +2600,12 @@
         },
         {
           "name": "actions",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化节点动作 dock"
         },
         {
           "name": "editor",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化编辑区 dock"
         },
         {
@@ -2924,13 +2984,13 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化工具栏 dock"
         },
         {
           "name": "actions",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化列表项动作 dock"
         },
@@ -3452,7 +3512,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化工具栏 dock"
         },
         {
@@ -3462,7 +3522,7 @@
         },
         {
           "name": "actions",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化列表项动作 dock"
         },
         {
@@ -4019,7 +4079,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -4116,7 +4176,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化工具栏 dock"
         },
         {
@@ -4230,7 +4290,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -4334,7 +4394,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化工具栏 dock"
         },
         {
@@ -4443,7 +4503,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "required": false,
           "description": "结构化工具栏 dock"
         },
@@ -4544,7 +4604,7 @@
         },
         {
           "name": "toolbar",
-          "type": "unknown",
+          "type": "any",
           "description": "结构化工具栏 dock"
         },
         {
@@ -13267,6 +13327,14 @@
       "emits": [],
       "source": "vcm"
     },
+    "skill-catalog": {
+      "type": "skill-catalog",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"skill-catalog\" 引用。",
+      "props": [],
+      "emits": [],
+      "source": "vcm"
+    },
     "rform-compare-demo": {
       "type": "rform-compare-demo",
       "category": "feature",
@@ -13304,6 +13372,26 @@
       "category": "feature",
       "description": "集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。",
       "props": [],
+      "emits": [],
+      "source": "vcm"
+    },
+    "dev-preview-tab": {
+      "type": "dev-preview-tab",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-preview-tab\" 引用。",
+      "props": [
+        {
+          "name": "state",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"none\" | \"masked\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoadState: { \"rule.json\": PageFileLoadState; \"pagedata.json\": PageFileLoadState; \"script.js\": PageFileLoadState; \"style.css\": PageFileLoadState; }; fileReloadToken: { \"rule.json\": number; \"pagedata.json\": number; \"script.js\": number; \"style.css\": number; }; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[], StatusMessage[] | { text: string; type: \"success\" | \"warning\" | \"info\" | \"error\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\", \"error\" | \"idle\" | \"pending\" | \"saving\" | \"saved\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"success\" | \"warning\" | \"info\" | \"error\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; requestPageFileReload: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => void; requestAllPageFileReload: () => void; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+          "required": true
+        },
+        {
+          "name": "refreshToken",
+          "type": "number",
+          "required": false,
+          "description": "外部通知刷新（如切 Tab 时 ++）"
+        }
+      ],
       "emits": [],
       "source": "vcm"
     },
@@ -15508,8 +15596,8 @@
                 "required": true,
                 "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
               },
-              "__@toPrimitive@51868": {
-                "name": "__@toPrimitive@51868",
+              "__@toPrimitive@70229": {
+                "name": "__@toPrimitive@70229",
                 "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                 "required": true,
                 "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -15788,8 +15876,8 @@
                     "required": true,
                     "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                   },
-                  "__@toPrimitive@51868": {
-                    "name": "__@toPrimitive@51868",
+                  "__@toPrimitive@70229": {
+                    "name": "__@toPrimitive@70229",
                     "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                     "required": true,
                     "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."

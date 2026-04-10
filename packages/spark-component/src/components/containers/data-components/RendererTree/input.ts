@@ -1,14 +1,13 @@
 import { computed } from 'vue'
-import type { SparkNode } from '../../../internal'
-import { useDockExtraction, TREE_DOCK_TYPES, type DockProp, type DockToolbarNode, type DockActionsNode, type DockEditorNode } from '../../docks/dock-extraction'
+import { getSparkNodeChildren, type SparkNode } from '../../../internal'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 
 interface RendererTreeInputProps {
   dataKey?: string | undefined
   children?: SparkNode[] | undefined
-  toolbar?: DockProp<DockToolbarNode> | undefined
-  actions?: DockProp<DockActionsNode> | undefined
-  editor?: DockProp<DockEditorNode> | undefined
+  toolbar?: SparkNode | undefined
+  actions?: SparkNode | undefined
+  editor?: SparkNode | undefined
   allowAppend?: boolean | undefined
   allowDelete?: boolean | undefined
 }
@@ -23,11 +22,9 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const effectiveAllowAppend = computed(() => options.props.allowAppend ?? false)
   const effectiveAllowDelete = computed(() => options.props.allowDelete ?? false)
 
-  const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
-    computed(() => options.props.children),
-    TREE_DOCK_TYPES,
-    { propSource: computed(() => options.props) },
-  )
+  // Dock 节点已由绑定层从 children 提升为 props（toolbar / actions / editor），
+  // 此处 children 仅包含内容子节点。
+  const contentChildren = computed(() => options.props.children ?? [])
 
   const nodeContentChildren = computed<SparkNode[]>(() => {
     const nodes: SparkNode[] = []
@@ -37,9 +34,9 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
     }
     return nodes
   })
-  const dockedToolbar = computed(() => getDockChildren('r-toolbar'))
-  const dockedNodeActions = computed(() => getDockChildren('r-actions'))
-  const dockedEditor = computed(() => getDockChildren('r-editor'))
+  const dockedToolbar = computed(() => getSparkNodeChildren(options.props.toolbar?.children))
+  const dockedNodeActions = computed(() => getSparkNodeChildren(options.props.actions?.children))
+  const dockedEditor = computed(() => getSparkNodeChildren(options.props.editor?.children))
 
   const hasLegacyNodeActions = computed(() =>
     dockedNodeActions.value.length === 0 && (effectiveAllowAppend.value || effectiveAllowDelete.value)
@@ -47,10 +44,10 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
 
   const hasNodeActions = computed(() => dockedNodeActions.value.length > 0 || hasLegacyNodeActions.value)
   const editorConfigs = computed(() => dockedEditor.value)
-  const editorPositionValue = computed<ToolbarPosition>(() => getDockProp<ToolbarPosition>('r-editor', 'position') ?? 'right')
-  const editorClassValue = computed(() => getDockProp<string>('r-editor', 'class') ?? '')
+  const editorPositionValue = computed<ToolbarPosition>(() => (options.props.editor?.props?.['position'] as ToolbarPosition | undefined) ?? 'right')
+  const editorClassValue = computed(() => (options.props.editor?.props?.['class'] as string | undefined) ?? '')
   const editorStyleValue = computed<Record<string, string>>(() => {
-    const width = getDockProp<string | number>('r-editor', 'width')
+    const width = options.props.editor?.props?.['width'] as string | number | undefined
     if (typeof width === 'number' && Number.isFinite(width)) {
       return {
         width: `${width}px`,
@@ -82,6 +79,5 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
     editorClassValue,
     editorStyleValue,
     showEditor,
-    getDockProp,
   }
 }

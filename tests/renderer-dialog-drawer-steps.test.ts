@@ -2,6 +2,22 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
+import { liftDockChildren, type DockTypeLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+
+const TEST_DOCK_MAP: Record<string, ReadonlySet<string>> = {
+  'r-dialog': new Set(['r-header', 'r-footer']),
+  'r-drawer': new Set(['r-header', 'r-footer']),
+  'r-steps': new Set(['r-toolbar']),
+}
+const testGetDocks: DockTypeLookup = (type) => TEST_DOCK_MAP[type]
+
+function liftTestDocks(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
+  if (!props['children']) return props
+  const node = liftDockChildren({ type: containerType, children: props['children'] as SparkNode[] }, testGetDocks)
+  const { children: _, ...rest } = props
+  return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -72,7 +88,7 @@ const ElStepStub = defineComponent({
 describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   it('should render dialog header/footer actions and body grid', () => {
     const wrapper = mount(RendererDialog as any, {
-      props: {
+      props: liftTestDocks('r-dialog', {
         title: '编辑用户',
         modelValue: true,
         gridGap: 12,
@@ -82,7 +98,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
           { type: 'child-a', props: { colSpan: 8 } },
           { type: 'child-b', props: { colSpan: 16 } },
         ],
-      },
+      }),
       slots: {
         footer: ({ title }: Record<string, unknown>) => h('button', {
           class: 'biz-dialog-footer',
@@ -161,7 +177,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   it('should render docked steps toolbar children and switch active step content', async () => {
     const onStepChange = vi.fn()
     const wrapper = mount(RendererSteps as any, {
-      props: {
+      props: liftTestDocks('r-steps', {
         onStepChange,
         children: [
           { type: 'r-toolbar', children: [{ type: 'steps-toolbar-action' }] },
@@ -180,7 +196,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
             ],
           },
         ],
-      },
+      }),
       global: {
         stubs: {
           SparkComponentRenderer: SparkActionStub,

@@ -39,7 +39,7 @@ interface Props extends SparkNode {
   /** r-table 内列宽 */
   width?: number
   /** 双向绑定值，日期范围时为数组 */
-  modelValue?: string | Date | Array<string | Date>
+  modelValue?: string | Date | (string | Date)[]
   /** 日期选择器类型 */
   dateType?: DatePickerType
   /** 占位文本 */

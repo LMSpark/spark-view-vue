@@ -1,9 +1,10 @@
 import { computed, ref, watch } from 'vue'
 import { SparkData, type DataView, type IDataRow } from '@spark-view/spark-data'
+import type { SparkNode } from '../../../../core/types.js'
 import type { ValueRef } from '../../../shared-types.js'
 
 interface RendererTableViewStateOptions {
-  getDockProp: <T = unknown>(type: string, propName: string) => T | undefined
+  filterNode: ValueRef<SparkNode | undefined>
   baseTableAttrs: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
   filteredRows: ValueRef<IDataRow[] | undefined>
@@ -17,6 +18,11 @@ interface TableTreeSeedNode extends Record<string, unknown> {
   name: string
   parentId?: string | number | null
 }
+
+const DEFAULT_TABLE_TREE_PROPS: Readonly<Record<string, unknown>> = Object.freeze({
+  children: 'children',
+  hasChildren: 'hasChildren',
+})
 
 export function useRendererTableViewState(options: RendererTableViewStateOptions) {
   const tableData = computed(() => buildTreeTableRows(
@@ -32,10 +38,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
 
   const tableTreePropsValue = computed<Record<string, unknown> | undefined>(() => {
     if (!options.resolvedView.value?.treeConfig) return undefined
-    return {
-      children: 'children',
-      hasChildren: 'hasChildren',
-    }
+    return DEFAULT_TABLE_TREE_PROPS
   })
 
   const tableAttrs = computed<Record<string, unknown>>(() => {
@@ -53,10 +56,10 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     return result
   })
 
-  const filterCollapsibleValue = computed(() => options.getDockProp<boolean>('r-filter', 'collapsible') ?? options.readBooleanAttr('filterCollapsible') ?? false)
-  const filterDefaultCollapsedValue = computed(() => options.getDockProp<boolean>('r-filter', 'defaultCollapsed') ?? options.readBooleanAttr('filterDefaultCollapsed') ?? false)
-  const filterAutoFitMinWidthValue = computed(() => options.getDockProp<string>('r-filter', 'autoFitMinWidth') ?? options.readStringAttr('filterAutoFitMinWidth') ?? '220px')
-  const filterItemSpanValue = computed(() => options.getDockProp<number>('r-filter', 'itemSpan') ?? options.readNumberAttr('filterItemSpan') ?? 1)
+  const filterCollapsibleValue = computed(() => (options.filterNode.value?.props?.['collapsible'] as boolean | undefined) ?? options.readBooleanAttr('filterCollapsible') ?? false)
+  const filterDefaultCollapsedValue = computed(() => (options.filterNode.value?.props?.['defaultCollapsed'] as boolean | undefined) ?? options.readBooleanAttr('filterDefaultCollapsed') ?? false)
+  const filterAutoFitMinWidthValue = computed(() => (options.filterNode.value?.props?.['autoFitMinWidth'] as string | undefined) ?? options.readStringAttr('filterAutoFitMinWidth') ?? '220px')
+  const filterItemSpanValue = computed(() => (options.filterNode.value?.props?.['itemSpan'] as number | undefined) ?? options.readNumberAttr('filterItemSpan') ?? 1)
 
   const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
 
@@ -93,11 +96,14 @@ function buildTreeTableRows(view: DataView | null | undefined, rows: IDataRow[])
   const parentIdField = treeConfig.parentIdField ?? 'parentId'
   const textField = treeConfig.textField ?? 'label'
 
-  const seedNodes: TableTreeSeedNode[] = rows.flatMap(row => {
+  const seedNodes: TableTreeSeedNode[] = []
+  let hasParentLink = false
+
+  for (const row of rows) {
     const record = row as Record<string, unknown>
     const rawId = record[idField]
     if (typeof rawId !== 'string' && typeof rawId !== 'number') {
-      return []
+      continue
     }
 
     const rawParentId = record[parentIdField]
@@ -107,17 +113,21 @@ function buildTreeTableRows(view: DataView | null | undefined, rows: IDataRow[])
         ? null
         : String(rawParentId)
 
-    return [{
+    if (parentId !== null) {
+      hasParentLink = true
+    }
+
+    seedNodes.push({
       ...record,
       id: rawId,
       parentId,
       name: typeof record[textField] === 'string'
         ? record[textField]
         : String(record[textField] ?? rawId),
-    }]
-  })
+    })
+  }
 
-  if (seedNodes.length === 0) return rows
+  if (seedNodes.length === 0 || !hasParentLink) return rows
 
   return SparkData.createTreeManager({
     idField,

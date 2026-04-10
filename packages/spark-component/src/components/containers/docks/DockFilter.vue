@@ -28,7 +28,7 @@ interface Props {
   id?: string
   children?: SparkNode[]
   /** 筛选列 */
-  columns?: Array<string | DockFilterItem>
+  columns?: (string | DockFilterItem)[]
   /** 是否可折叠 @default false */
   collapsible?: boolean
   /** 默认折叠 @default false */

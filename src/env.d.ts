@@ -91,6 +91,14 @@ declare module 'virtual:spark-components' {
  * 包含所有生成 Skill 元数据的组件；JSDoc 注解可覆盖默认 type/description/能力声明
  */
 declare module 'virtual:spark-skill-catalog' {
+  export interface PropMeta {
+    name: string
+    type: string
+    required: boolean
+    description?: string
+    default?: string
+  }
+
   export interface SkillMeta {
     /** Skill 类型名（对应组件注册名，如 'r-table'） */
     type: string
@@ -104,6 +112,8 @@ declare module 'virtual:spark-skill-catalog' {
     inputSchema?: string
     /** rule.json 配置示例（来自 @example 注解）*/
     example?: string
+    /** 组件 defineProps 提取的属性元数据 */
+    props?: PropMeta[]
   }
 
   /** Skill 目录输出精度模式 */

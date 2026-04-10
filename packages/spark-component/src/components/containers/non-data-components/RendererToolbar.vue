@@ -40,7 +40,6 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
-import { useDockExtraction, TOOLBAR_DOCK_TYPES } from '../docks/dock-extraction'
 
 type InlineAlign = 'start' | 'center' | 'end' | 'stretch'
 type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
@@ -48,7 +47,7 @@ type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 interface Props extends SparkNode {
   children?: SparkNode[]
   /** 结构化尾区 dock */
-  tail?: unknown
+  tail?: SparkNode
   /** 单个子项之间的间距（同一区域内部） */
   gap?: number | string
   /** 主区与尾区之间的间距（区域级） */
@@ -70,17 +69,14 @@ const zoneGap = computed<number | string>(() => props.zoneGap ?? 12)
 const align = computed<InlineAlign>(() => props.align ?? 'center')
 const justify = computed<InlineJustify>(() => props.justify ?? 'start')
 
-const { contentChildren, getDockChildren, getDockProp } = useDockExtraction(
-  computed(() => props.children),
-  TOOLBAR_DOCK_TYPES,
-  { propSource: computed(() => props) },
-)
+// Dock 节点已由绑定层从 children 提升为 props（tail）
+const contentChildren = computed(() => props.children ?? [])
 
 // 主区：所有未声明 dock 的子节点。
 const startChildren = computed(() => getSparkNodeChildren(contentChildren.value))
 
 // 尾区：来自 tail dock 的 children。
-const endChildren = computed(() => getDockChildren('r-tail'))
+const endChildren = computed(() => getSparkNodeChildren(props.tail?.children))
 
 function normalizeSize(value: number | string): string {
   return typeof value === 'number' ? `${value}px` : value
@@ -99,9 +95,9 @@ function justifyToCss(value: InlineJustify): string {
   return value
 }
 
-// 读取某个 dock 区域的 class。
+// 读取 dock 区域的 class。
 function dockClass(name: string): string {
-  if (name === 'tail') return getDockProp<string>('r-tail', 'class') ?? ''
+  if (name === 'tail') return (props.tail?.props?.['class'] as string | undefined) ?? ''
   return ''
 }
 
