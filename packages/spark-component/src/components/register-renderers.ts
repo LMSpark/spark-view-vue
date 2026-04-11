@@ -20,11 +20,9 @@ import {
 
 // ── 命名区域 ──
 import {
-  RendererActions, RendererFilter, RendererEditor, RendererHeader, RendererFooter, RendererTail,
+  RendererFilter, RendererEditor, RendererHeader, RendererFooter, RendererTail,
 } from './containers/index.js'
-
-// ── 内置操作按钮 ──
-import BuiltinActionButton from './containers/BuiltinActionButton.vue'
+import RendererActionHost from './containers/support/RendererActionHost.vue'
 
 // ── 非数据容器 + 布局 + Passthrough ──
 import {
@@ -77,14 +75,12 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-list', RendererList, { childProps: ['r-toolbar', 'r-actions'] }],
   ['r-row-fragment', RendererRowFragment],
   // 可提升子组件
-  ['r-actions', RendererActions],
+  ['r-actions', RendererActionHost],
   ['r-filter', RendererFilter],
   ['r-editor', RendererEditor],
   ['r-header', RendererHeader],
   ['r-footer', RendererFooter],
   ['r-tail', RendererTail],
-  // 内置操作
-  ['builtin-action', BuiltinActionButton],
   // 核心非数据容器
   ['r-section', RendererSection, { childProps: ['r-header'] }],
   ['r-block', RendererSection, { childProps: ['r-header'] }],

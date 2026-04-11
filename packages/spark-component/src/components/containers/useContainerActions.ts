@@ -73,9 +73,7 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
 
               if (!state.visible) return null
 
-              return mergeNodeBeforeRenderProps(action, state.propsPatch, {
-                mirrorDisabledToButtonDisabled: true,
-              })
+              return mergeNodeBeforeRenderProps(action, state.propsPatch)
             })()
           : action
 
@@ -112,7 +110,8 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
         return scopedAction
       })
 
-    return scopedActions.filter((action): action is ScopedSparkNode => action !== null)
+    return scopedActions
+      .filter((action): action is ScopedSparkNode => action !== null)
   }
 
   return {

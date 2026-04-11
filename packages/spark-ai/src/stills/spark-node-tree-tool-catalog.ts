@@ -260,7 +260,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     example: {
       parentId: 'toolbar',
-      node: { type: 'builtin-action', id: 'refresh-action', props: { builtinAction: 'refresh' } },
+      node: { type: 'r-button', id: 'refresh-action', props: { action: 'refresh' } },
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
     failureModes: [
@@ -293,8 +293,8 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: {
       parentId: 'toolbar',
       nodes: [
-        { type: 'builtin-action', id: 'refresh-action', props: { builtinAction: 'refresh' } },
-        { type: 'builtin-action', id: 'export-action', props: { builtinAction: 'export' } },
+        { type: 'r-button', id: 'refresh-action', props: { action: 'refresh' } },
+        { type: 'r-button', id: 'export-action', props: { action: 'export' } },
       ],
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],

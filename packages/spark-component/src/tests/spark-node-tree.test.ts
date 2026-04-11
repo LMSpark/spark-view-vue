@@ -63,15 +63,15 @@ describe('SparkNodeTree', () => {
     const result = tree.addNode({
       parentId: 'toolbar',
       node: {
-        type: 'builtin-action',
+        type: 'r-button',
         id: 'refresh-action',
-        props: { builtinAction: 'refresh' },
+        props: { action: 'refresh' },
       },
     })
 
     expect(root).not.toBe(tree.root)
     expect(root.children?.length).toBe(3)
-    expect(tree.getNode({ nodeId: 'refresh-action' })?.type).toBe('builtin-action')
+    expect(tree.getNode({ nodeId: 'refresh-action' })?.type).toBe('r-button')
     expect(result.index).toBe(0)
   })
 
@@ -81,8 +81,8 @@ describe('SparkNodeTree', () => {
     const result = tree.addNodes({
       parentId: 'toolbar',
       nodes: [
-        { type: 'builtin-action', id: 'refresh-action', props: { builtinAction: 'refresh' } },
-        { type: 'builtin-action', id: 'export-action', props: { builtinAction: 'export' } },
+        { type: 'r-button', id: 'refresh-action', props: { action: 'refresh' } },
+        { type: 'r-button', id: 'export-action', props: { action: 'export' } },
       ],
     })
 

@@ -180,9 +180,9 @@ describe('DataView CRUD bridge', () => {
     })
 
     const action = {
-      type: 'builtin-action',
+      type: 'r-button',
       props: {
-        builtinAction: 'append-row',
+        action: 'append-row',
         appendPayload: { id: 2, name: 'Bob' },
       },
     }
@@ -206,9 +206,9 @@ describe('DataView CRUD bridge', () => {
     })
 
     handler.handleToolbar({
-      type: 'builtin-action',
+      type: 'r-button',
       props: {
-        builtinAction: 'append-row',
+        action: 'append-row',
         setCurrentRowOnSuccess: true,
         appendPayload: { id: 2, name: 'Bob' },
       },
@@ -235,9 +235,9 @@ describe('DataView CRUD bridge', () => {
     })
 
     const action = {
-      type: 'builtin-action',
+      type: 'r-button',
       props: {
-        builtinAction: 'prompt-edit',
+        action: 'prompt-edit',
         field: 'name',
       },
     }
@@ -268,9 +268,9 @@ describe('DataView CRUD bridge', () => {
     })
 
     handler.handleToolbar({
-      type: 'builtin-action',
+      type: 'r-button',
       props: {
-        builtinAction: 'submit-current-form',
+        action: 'submit-current-form',
       },
     })
     await flushAsync()
@@ -317,9 +317,9 @@ describe('DataView CRUD bridge', () => {
     })
 
     handler.handleRow({
-      type: 'builtin-action',
+      type: 'r-button',
       props: {
-        builtinAction: 'prompt-append',
+        action: 'prompt-append',
         field: 'title',
         inheritFieldMap: { parentId: 'id' },
         appendPayload: { nodeKind: 'page' },
@@ -350,9 +350,9 @@ describe('DataView CRUD bridge', () => {
     })
 
     handler.handleToolbar({
-      type: 'builtin-action',
+      type: 'r-button',
       props: {
-        builtinAction: 'clear-rows',
+        action: 'clear-rows',
       },
     })
     await flushAsync()
@@ -385,9 +385,9 @@ describe('DataView CRUD bridge', () => {
     view.setCurrentRowById('__toolbar__')
 
     expect(isBuiltinActionDisabled({
-      type: 'builtin-action',
+      type: 'r-button',
       props: {
-        builtinAction: 'submit-current-form',
+        action: 'submit-current-form',
         disabledWhenRow: {
           nodeKind: 'system-directory',
           parentId: null,

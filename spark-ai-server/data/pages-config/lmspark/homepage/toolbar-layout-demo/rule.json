@@ -324,19 +324,19 @@
                     },
                     "children": [
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "order": 1,
                         "props": {
-                          "builtinAction": "append-row",
+                          "action": "append-row",
                           "type": "primary",
                           "size": "small"
                         }
                       },
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "order": 2,
                         "props": {
-                          "builtinAction": "refresh",
+                          "action": "refresh",
                           "size": "small"
                         }
                       }
@@ -430,20 +430,20 @@
                     "type": "r-actions",
                     "children": [
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "order": 1,
                         "props": {
-                          "builtinAction": "message-row",
+                          "action": "message-row",
                           "type": "primary",
                           "size": "small",
                           "link": true
                         }
                       },
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "order": 2,
                         "props": {
-                          "builtinAction": "delete-row",
+                          "action": "delete-row",
                           "type": "danger",
                           "size": "small",
                           "link": true

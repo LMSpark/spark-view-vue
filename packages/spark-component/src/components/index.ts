@@ -4,8 +4,6 @@
  * 聚合所有可渲染组件、组件内部注册函数以及少量对外暴露的组件级 composable。
  */
 
-import { BuiltinActionButton } from './containers/index.js'
-
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 export { default as SparkCodeEditor } from './support/SparkCodeEditor.vue'
@@ -15,7 +13,6 @@ export * from './support/jsonTreeEditor.js'
 export { default as SparkTableColumns } from './support/SparkTableColumns.js'
 
 // ── 组件 re-exports（leaf barrel 统一导出）──────────────────────────────────
-export { BuiltinActionButton }
 export * from './containers/data-components/index.js'
 export * from './containers/non-data-components/index.js'
 export * from './fields/data-components/index.js'

@@ -131,7 +131,7 @@ import { useContainerActions, type LateralActionPosition } from '../../useContai
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import type { ActionsNode } from '../../RendererActions.types'
+import type { ActionsNode } from '../../support/RendererActionHost.types'
 import type { FilterNode } from '../../RendererFilter.types'
 import RendererFilter from '../../RendererFilter.vue'
 import { createRowActionSlotScope } from '../../slotScopeFactories'
@@ -143,7 +143,7 @@ import {
   type AddRowHandler, type EditRowHandler, type RemoveRowHandler,
   type RowClickHandler, type RowSelectionHandler, type CurrentRowChangeHandler,
 } from '../../support/index.js'
-import { bindActionClick, isBuiltinAction } from '../../builtin-actions'
+import { bindActionClick, isBuiltinAction, injectActionDisabled, injectRowActionDefaults } from '../../builtin-actions'
 
 // ── 基础工具与本地属性约定 ───────────────────────────────────────────────
 
@@ -306,7 +306,7 @@ const {
 
 const resolvedToolbarChildren = computed<SparkNode[]>(() =>
   visibleToolbarConfigs.value.map(action =>
-    isBuiltinAction(action) ? bindActionClick(action, () => handleBuiltinToolbarAction(action)) : action,
+    isBuiltinAction(action) ? injectActionDisabled(bindActionClick(action, () => handleBuiltinToolbarAction(action)), resolvedView.value) : action,
   ),
 )
 
@@ -452,11 +452,11 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
   })
 }
 
-/** 内置动作补齐点击处理，自定义动作维持原配置透传。 */
+/** 内置动作补齐点击处理，自定义动作维持原配置透传。行操作自动注入 small + text 样式。 */
 function resolveRowActionConfig(action: SparkNode, row: IDataRow, index: number): SparkNode {
-  return isBuiltinAction(action)
-    ? bindActionClick(action, () => handleBuiltinRowAction(action, row, index))
-    : action
+  if (!isBuiltinAction(action)) return action
+  const bound = bindActionClick(action, () => handleBuiltinRowAction(action, row, index))
+  return injectRowActionDefaults(injectActionDisabled(bound, resolvedView.value, { row, index }))
 }
 
 function getRenderedRowActions(scope: Record<string, unknown>): SparkNode[] {

@@ -19,7 +19,7 @@
  *       "type": "r-toolbar",
  *       "props": { "position": "top" },
  *       "children": [
- *         { "type": "action", "props": { "builtinAction": "prompt-append", "promptMessage": "请输入名称", "field": "name" } }
+ *         { "type": "r-button", "props": { "action": "prompt-append", "promptMessage": "请输入名称", "field": "name" } }
  *       ]
  *     }
  *   ]

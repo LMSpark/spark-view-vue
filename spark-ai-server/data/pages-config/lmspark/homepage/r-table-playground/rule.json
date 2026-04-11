@@ -46,9 +46,9 @@
                 },
                 "children": [
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "append-row",
+                      "action": "append-row",
                       "label": "新增订单",
                       "buttonType": "primary",
                       "appendPayload": {
@@ -89,9 +89,9 @@
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "message-current",
+                      "action": "message-current",
                       "label": "查看当前",
                       "message": "当前订单 {orderNo} | 客户 {customer} | 状态 {status}"
                     }
@@ -329,18 +329,18 @@
                 "type": "r-actions",
                 "children": [
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "message-row",
+                      "action": "message-row",
                       "label": "查看",
                       "buttonSize": "small",
                       "message": "订单 {orderNo} | 金额 {amount}"
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "patch-row",
+                      "action": "patch-row",
                       "label": "设为高优",
                       "buttonSize": "small",
                       "patch": {
@@ -543,9 +543,9 @@
                     },
                     "children": [
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "props": {
-                          "builtinAction": "message-current",
+                          "action": "message-current",
                           "label": "查看当前订单",
                           "message": "当前订单 {orderNo}"
                         }

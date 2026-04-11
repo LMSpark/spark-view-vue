@@ -83,15 +83,16 @@ export const CATALOG_OVERRIDES: Record<string, string> = {
 - 字段绑定用根级 field
 
 【建议组合查询】
-- r-table, r-form, r-detail, r-text, r-number, r-select, builtin-action`,
+- r-table, r-form, r-detail, r-text, r-number, r-select, r-button`,
 
-  'builtin-action': `**builtin-action** — 声明式动作节点（零代码优先）
+  'r-button': `**r-button** — 声明式动作按钮（零代码优先）
 
 【节点形态】
-type: "builtin-action"
-props.builtinAction: string — 动作类型
+type: "r-button"
+props.action: string — 动作类型
+props.template?: string — 样式模板名
 props.label?: string — 按钮文案
-props.type?: 'primary'|'success'|'warning'|'danger'|'info'
+props.buttonType?: 'primary'|'success'|'warning'|'danger'|'info'
 props.confirmTitle?: string — 删除类动作确认标题
 props.confirmMessage?: string — 删除类动作确认文案
 props.silent?: boolean — true 时关闭默认消息提示

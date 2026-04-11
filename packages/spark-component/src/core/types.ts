@@ -80,14 +80,14 @@ export type SparkCapabilityContext = ICapabilityContext
  *       "type": "r-toolbar",
  *       "props": { "position": "top" },
  *       "children": [
- *         { "type": "builtin-action", "props": { "builtinAction": "append-row" } }
+ *         { "type": "r-button", "props": { "action": "append-row" } }
  *       ]
  *     },
  *     {
  *       "type": "r-actions",
  *       "props": { "position": "right" },
  *       "children": [
- *         { "type": "builtin-action", "props": { "builtinAction": "delete-row" } }
+ *         { "type": "r-button", "props": { "action": "delete-row" } }
  *       ]
  *     },
  *     { "type": "el-table-column", "props": { "field": "name", "label": "姓名" } }

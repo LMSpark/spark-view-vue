@@ -45,20 +45,20 @@
                 },
                 "children": [
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "order": 1,
                     "props": {
-                      "builtinAction": "append-row",
+                      "action": "append-row",
                       "label": "✚ 新增",
                       "type": "primary",
                       "size": "small"
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "order": 2,
                     "props": {
-                      "builtinAction": "delete-selected",
+                      "action": "delete-selected",
                       "label": "✖ 删除勾选",
                       "type": "danger",
                       "size": "small",
@@ -66,10 +66,10 @@
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "order": 3,
                     "props": {
-                      "builtinAction": "refresh",
+                      "action": "refresh",
                       "label": "↻ 刷新",
                       "size": "small"
                     }
@@ -176,20 +176,20 @@
                 "type": "r-actions",
                 "children": [
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "order": 1,
                     "props": {
-                      "builtinAction": "message-row",
+                      "action": "message-row",
                       "type": "primary",
                       "size": "small",
                       "link": true
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "order": 2,
                     "props": {
-                      "builtinAction": "prompt-edit",
+                      "action": "prompt-edit",
                       "type": "warning",
                       "size": "small",
                       "link": true
@@ -200,10 +200,10 @@
                     "order": 3
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "order": 4,
                     "props": {
-                      "builtinAction": "delete-row",
+                      "action": "delete-row",
                       "type": "danger",
                       "size": "small",
                       "link": true

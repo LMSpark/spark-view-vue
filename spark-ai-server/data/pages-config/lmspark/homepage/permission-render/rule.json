@@ -148,9 +148,9 @@
                         },
                         "children": [
                           {
-                            "type": "builtin-action",
+                            "type": "r-button",
                             "props": {
-                              "builtinAction": "append-row",
+                              "action": "append-row",
                               "label": "新增",
                               "buttonType": "primary",
                               "buttonSize": "small",
@@ -158,9 +158,9 @@
                             }
                           },
                           {
-                            "type": "builtin-action",
+                            "type": "r-button",
                             "props": {
-                              "builtinAction": "refresh",
+                              "action": "refresh",
                               "label": "刷新",
                               "buttonSize": "small"
                             }
@@ -203,9 +203,9 @@
                         "type": "r-actions",
                         "children": [
                           {
-                            "type": "builtin-action",
+                            "type": "r-button",
                             "props": {
-                              "builtinAction": "prompt-edit",
+                              "action": "prompt-edit",
                               "label": "编辑",
                               "buttonType": "warning",
                               "buttonSize": "small",
@@ -214,9 +214,9 @@
                             }
                           },
                           {
-                            "type": "builtin-action",
+                            "type": "r-button",
                             "props": {
-                              "builtinAction": "delete-row",
+                              "action": "delete-row",
                               "label": "删除",
                               "buttonType": "danger",
                               "buttonSize": "small",

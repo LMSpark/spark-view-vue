@@ -2,35 +2,24 @@
   <component v-if="resolvedHostTag" :is="resolvedHostTag" v-bind="resolvedHostAttrs">
     <template #default="scope">
       <component :is="resolvedWrapperTag" :class="props.wrapperClass">
-        <RendererActionStrip
-          :actions="getResolvedActions(scope)"
-          :action-key-prefix="resolvedActionKeyPrefix"
-          :slot-scope="getResolvedSlotScope(scope)"
-        >
-          <template #actions="actionScope">
-            <slot name="actions" v-bind="actionScope" />
-          </template>
-        </RendererActionStrip>
+        <template v-for="(action, index) in getResolvedActions(scope)" :key="nodeId(action) ?? `${resolvedActionKeyPrefix}-${index}`">
+          <SparkComponentRenderer :config="action" />
+        </template>
+        <slot name="actions" v-bind="getResolvedSlotScope(scope)" />
       </component>
     </template>
   </component>
   <component v-else :is="resolvedWrapperTag" :class="props.wrapperClass">
-    <RendererActionStrip
-      :actions="resolvedActions"
-      :action-key-prefix="resolvedActionKeyPrefix"
-      :slot-scope="resolvedSlotScope"
-    >
-      <template #actions="scope">
-        <slot name="actions" v-bind="scope" />
-      </template>
-    </RendererActionStrip>
+    <template v-for="(action, index) in resolvedActions" :key="nodeId(action) ?? `${resolvedActionKeyPrefix}-${index}`">
+      <SparkComponentRenderer :config="action" />
+    </template>
+    <slot name="actions" v-bind="resolvedSlotScope" />
   </component>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SparkNode } from '../../internal'
-import RendererActionStrip from './RendererActionStrip.vue'
+import { SparkComponentRenderer, nodeId, type SparkNode } from '../../internal'
 
 const props = defineProps<{
   actions?: SparkNode[]

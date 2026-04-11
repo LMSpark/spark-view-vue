@@ -47,9 +47,9 @@
                 },
                 "children": [
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "append-row",
+                      "action": "append-row",
                       "label": "新增订单",
                       "buttonType": "primary",
                       "appendPayload": {
@@ -74,9 +74,9 @@
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "refresh",
+                      "action": "refresh",
                       "label": "刷新列表",
                       "successMessage": "列表已刷新"
                     }
@@ -118,9 +118,9 @@
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "delete-current",
+                      "action": "delete-current",
                       "label": "删除当前",
                       "buttonType": "danger",
                       "confirmTitle": "删除确认",
@@ -129,9 +129,9 @@
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "patch-current",
+                      "action": "patch-current",
                       "label": "更新当前订单",
                       "patch": {
                         "status": "done",
@@ -141,9 +141,9 @@
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "message-current",
+                      "action": "message-current",
                       "label": "查看当前",
                       "message": "当前订单 {orderNo} | 客户 {customer} | 状态 {status} | 优先级 {priority}"
                     }
@@ -405,18 +405,18 @@
                 "type": "r-actions",
                 "children": [
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "message-row",
+                      "action": "message-row",
                       "label": "查看",
                       "buttonSize": "small",
                       "message": "订单 {orderNo} | 客户 {customer} | 优先级 {priority}"
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "patch-row",
+                      "action": "patch-row",
                       "label": "提级",
                       "buttonSize": "small",
                       "patch": {
@@ -427,9 +427,9 @@
                     }
                   },
                   {
-                    "type": "builtin-action",
+                    "type": "r-button",
                     "props": {
-                      "builtinAction": "delete-row",
+                      "action": "delete-row",
                       "label": "删除",
                       "buttonSize": "small",
                       "buttonType": "danger",

@@ -19,36 +19,27 @@ import { extractModelPermission } from '../../permission/index.js'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────
 
-export type BuiltinButtonType = 'primary' | 'success' | 'warning' | 'danger' | 'info'
-export type BuiltinButtonSize = 'large' | 'default' | 'small'
-
 interface BuiltinActionMeta {
   label: string
-  buttonType?: BuiltinButtonType
-  buttonSize?: BuiltinButtonSize
-  buttonPlain?: boolean
-  buttonText?: boolean
-  buttonLink?: boolean
-  buttonClass?: string
 }
 
 const BUILTIN_ACTION_META = {
-  'append-row': { label: '新增', buttonType: 'primary' },
-  'prompt-append': { label: '新增', buttonType: 'primary' },
-  'prompt-edit': { label: '编辑', buttonType: 'success' },
-  'submit-current-form': { label: '保存当前', buttonType: 'success' },
-  'clear-rows': { label: '清空', buttonType: 'danger', buttonPlain: true },
-  'move-row': { label: '移动', buttonType: 'warning', buttonPlain: true },
-  'move-current': { label: '移动当前', buttonType: 'warning', buttonPlain: true },
+  'append-row': { label: '新增' },
+  'prompt-append': { label: '新增' },
+  'prompt-edit': { label: '编辑' },
+  'submit-current-form': { label: '保存当前' },
+  'clear-rows': { label: '清空' },
+  'move-row': { label: '移动' },
+  'move-current': { label: '移动当前' },
   'refresh': { label: '刷新' },
-  'delete-row': { label: '删除', buttonType: 'danger', buttonPlain: true },
-  'delete-current': { label: '删除当前', buttonType: 'danger', buttonPlain: true },
-  'delete-selected': { label: '删除勾选', buttonType: 'danger', buttonPlain: true },
-  'patch-row': { label: '更新', buttonType: 'success' },
-  'patch-current': { label: '更新当前', buttonType: 'success' },
-  'patch-selected': { label: '批量更新', buttonType: 'success' },
-  'message-row': { label: '查看', buttonType: 'info', buttonPlain: true },
-  'message-current': { label: '查看当前', buttonType: 'info', buttonPlain: true },
+  'delete-row': { label: '删除' },
+  'delete-current': { label: '删除当前' },
+  'delete-selected': { label: '删除勾选' },
+  'patch-row': { label: '更新' },
+  'patch-current': { label: '更新当前' },
+  'patch-selected': { label: '批量更新' },
+  'message-row': { label: '查看' },
+  'message-current': { label: '查看当前' },
 } as const satisfies Record<string, BuiltinActionMeta>
 
 type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
@@ -94,20 +85,6 @@ function readBoolean(value: unknown): boolean | undefined {
 function readStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return []
   return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
-}
-
-function readButtonType(value: unknown): BuiltinButtonType | undefined {
-  const text = readString(value)
-  if (!text) return undefined
-  const allowed: BuiltinButtonType[] = ['primary', 'success', 'warning', 'danger', 'info']
-  return allowed.includes(text as BuiltinButtonType) ? text as BuiltinButtonType : undefined
-}
-
-function readButtonSize(value: unknown): BuiltinButtonSize | undefined {
-  const text = readString(value)
-  if (!text) return undefined
-  const allowed: BuiltinButtonSize[] = ['large', 'default', 'small']
-  return allowed.includes(text as BuiltinButtonSize) ? text as BuiltinButtonSize : undefined
 }
 
 function readMessageType(value: unknown): PageMessageType {
@@ -206,7 +183,8 @@ function isBuiltinActionName(value: string): value is BuiltinActionName {
 }
 
 function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
-  const actionName = readString(getActionProps(action)['builtinAction'])
+  const propsMap = getActionProps(action)
+  const actionName = readString(propsMap['action']) ?? readString(propsMap['builtinAction'])
   if (!actionName) return null
   return isBuiltinActionName(actionName) ? actionName : null
 }
@@ -227,60 +205,39 @@ export function getBuiltinActionLabel(action: SparkNode): string {
   return BUILTIN_ACTION_META_RECORD[actionName].label
 }
 
-// ── 按钮样式查询 ──────────────────────────────────────────────────────────
+// ── 容器注入辅助 ──────────────────────────────────────────────────────────
 
-export function getBuiltinButtonType(action: SparkNode): BuiltinButtonType | undefined {
-  const propsMap = getActionProps(action)
-  const explicit = readButtonType(propsMap['buttonType'])
-  if (explicit !== undefined) return explicit
-
-  const actionName = getBuiltinActionName(action)
-  return actionName ? BUILTIN_ACTION_META_RECORD[actionName].buttonType : undefined
+/**
+ * 为有 action 属性的 r-button 注入 disabled 状态。
+ * 容器在每次渲染时调用，保持响应式。
+ */
+export function injectActionDisabled(
+  action: SparkNode,
+  view: DataView | null | undefined,
+  scope?: BuiltinActionScope,
+): SparkNode {
+  const disabled = isBuiltinActionDisabled(action, view, scope)
+  if (!disabled) return action
+  return {
+    ...action,
+    props: { ...(action.props ?? {}), disabled: true },
+  }
 }
 
-export function getBuiltinButtonSize(action: SparkNode): BuiltinButtonSize | undefined {
+/**
+ * 为行操作按钮注入默认样式 — buttonSize: 'small' + text: true。
+ * 仅在用户未显式设置时注入。
+ */
+export function injectRowActionDefaults(action: SparkNode): SparkNode {
   const propsMap = getActionProps(action)
-  const explicit = readButtonSize(propsMap['buttonSize'])
-  if (explicit !== undefined) return explicit
-
-  const actionName = getBuiltinActionName(action)
-  return actionName ? BUILTIN_ACTION_META_RECORD[actionName].buttonSize : undefined
-}
-
-export function getBuiltinButtonPlain(action: SparkNode): boolean {
-  const propsMap = getActionProps(action)
-  const explicit = readBoolean(propsMap['buttonPlain'])
-  if (explicit !== undefined) return explicit
-
-  const actionName = getBuiltinActionName(action)
-  return actionName ? (BUILTIN_ACTION_META_RECORD[actionName].buttonPlain ?? false) : false
-}
-
-export function getBuiltinButtonText(action: SparkNode): boolean {
-  const propsMap = getActionProps(action)
-  const explicit = readBoolean(propsMap['buttonText'])
-  if (explicit !== undefined) return explicit
-
-  const actionName = getBuiltinActionName(action)
-  return actionName ? (BUILTIN_ACTION_META_RECORD[actionName].buttonText ?? false) : false
-}
-
-export function getBuiltinButtonLink(action: SparkNode): boolean {
-  const propsMap = getActionProps(action)
-  const explicit = readBoolean(propsMap['buttonLink'])
-  if (explicit !== undefined) return explicit
-
-  const actionName = getBuiltinActionName(action)
-  return actionName ? (BUILTIN_ACTION_META_RECORD[actionName].buttonLink ?? false) : false
-}
-
-export function getBuiltinButtonClass(action: SparkNode): string {
-  const propsMap = getActionProps(action)
-  const explicit = readString(propsMap['buttonClass'])
-  if (explicit !== undefined) return explicit
-
-  const actionName = getBuiltinActionName(action)
-  return actionName ? (BUILTIN_ACTION_META_RECORD[actionName].buttonClass ?? '') : ''
+  const patch: Record<string, unknown> = {}
+  if (propsMap['buttonSize'] === undefined) patch['buttonSize'] = 'small'
+  if (propsMap['text'] === undefined) patch['text'] = true
+  if (Object.keys(patch).length === 0) return action
+  return {
+    ...action,
+    props: { ...propsMap, ...patch },
+  }
 }
 
 // ── 行辅助 ────────────────────────────────────────────────────────────────

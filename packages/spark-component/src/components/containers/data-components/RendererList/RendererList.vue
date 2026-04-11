@@ -102,7 +102,7 @@ import { useContainerDataSource, useContainerDataSourceEffects } from '../../use
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
-import type { ActionsNode } from '../../RendererActions.types'
+import type { ActionsNode } from '../../support/RendererActionHost.types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
 import { createRendererListZeroCode } from './zero-code'

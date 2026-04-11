@@ -56,7 +56,7 @@ const SparkActionStub = defineComponent({
       const onMap = readConfigOnMap(config)
       const click = onMap?.['click']
       const type = String(config['type'] ?? '')
-      const isButtonLike = type === 'builtin-action' || type === 'el-button'
+      const isButtonLike = type === 'r-button' || type === 'el-button'
 
       return h('button', {
         class: isButtonLike ? 'el-button-stub' : 'spark-action-stub',
@@ -330,7 +330,7 @@ const SparkColumnRendererStub = defineComponent({
       const click = onMap?.['click']
       const typeLabel = readConfigActionText(config)
       const actionType = String(config['type'] ?? '')
-      const isButtonLike = actionType === 'builtin-action' || actionType === 'el-button'
+      const isButtonLike = actionType === 'r-button' || actionType === 'el-button'
       return h('button', {
         class: isButtonLike ? 'el-button-stub' : 'spark-action-stub',
         'data-type': actionType,
@@ -1625,18 +1625,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'append-row',
+                action: 'append-row',
                 label: '新增',
                 appendPayload: { id: 2, name: 'Bob' },
                 successMessage: '',
               },
             },
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'refresh',
+                action: 'refresh',
                 label: '刷新',
                 successMessage: '',
               },
@@ -1703,9 +1703,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'refresh',
+                action: 'refresh',
                 label: '刷新',
                 silent: true,
               },
@@ -1763,9 +1763,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'append-row',
+                action: 'append-row',
                 label: '新增',
                 appendPayload: { id: 2, name: 'Bob' },
                 successMessage: '',
@@ -1826,9 +1826,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-actions',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'delete-row',
+                action: 'delete-row',
                 label: '删除',
                 successMessage: '',
                 confirmMessage: '',
@@ -1886,9 +1886,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'delete-selected',
+                action: 'delete-selected',
                 label: '删除勾选',
                 successMessage: '',
                 confirmMessage: '',
@@ -1943,9 +1943,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'append-row',
+                action: 'append-row',
                 label: '新增静默',
                 appendPayload: { id: 2, name: 'Bob' },
                 silent: true,
@@ -2007,9 +2007,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'refresh',
+                action: 'refresh',
                 label: '刷新',
                 errorMessage: '刷新失败',
               },
@@ -2070,9 +2070,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'delete-selected',
+                action: 'delete-selected',
                 label: '删除勾选',
                 idField: 'uid',
                 confirmMessage: '',
@@ -2164,9 +2164,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'refresh',
+                action: 'refresh',
                 label: '刷新导航树',
                 successMessage: '',
               },
@@ -2681,9 +2681,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-actions',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'append-row',
+                action: 'append-row',
                 permAction: 'create-child',
                 label: '新增子节点',
                 setCurrentRowOnSuccess: true,
@@ -2744,9 +2744,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-toolbar',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'append-row',
+                action: 'append-row',
                 label: '隐藏工具栏动作',
                 onBeforeRender: () => false,
               },
@@ -2757,9 +2757,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
           type: 'r-actions',
           children: [
             {
-              type: 'builtin-action',
+              type: 'r-button',
               props: {
-                builtinAction: 'delete-row',
+                action: 'delete-row',
                 label: '禁用行动作',
                 onBeforeRender: ({ row }: { row?: IDataRow | null }) => ({ disabled: row !== null && row !== undefined }),
               },

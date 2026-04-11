@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-11T06:16:03.296Z",
+  "buildTime": "2026-04-11T18:30:48.294Z",
   "componentCount": 119,
   "components": {
     "about": {
@@ -124,532 +124,6 @@
       "filePath": "src\\views\\tenant\\AppList.vue",
       "props": [],
       "emits": [],
-      "exposed": [],
-      "slots": [],
-      "hasIndexSignature": false
-    },
-    "builtin-action-button": {
-      "type": "builtin-action-button",
-      "filePath": "packages\\spark-component\\src\\components\\containers\\BuiltinActionButton.vue",
-      "props": [
-        {
-          "name": "builtinAction",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "buttonType",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "buttonSize",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "buttonPlain",
-          "type": "boolean",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "buttonText",
-          "type": "boolean",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "buttonLink",
-          "type": "boolean",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "buttonClass",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "buttonDisabled",
-          "type": "boolean",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "disabled",
-          "type": "boolean",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean",
-            "variants": [
-              "false",
-              "true"
-            ]
-          }
-        },
-        {
-          "name": "disabledWhenRow",
-          "type": "object",
-          "required": false
-        },
-        {
-          "name": "row",
-          "type": "IDataRow",
-          "required": false,
-          "schema": {
-            "kind": "object",
-            "type": "IDataRow",
-            "properties": {
-              "_perm": {
-                "name": "_perm",
-                "type": "IInstancePermission",
-                "required": false,
-                "schema": {
-                  "kind": "object",
-                  "type": "IInstancePermission",
-                  "properties": {
-                    "allowCreateChild": {
-                      "name": "allowCreateChild",
-                      "type": "boolean",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "boolean",
-                        "variants": [
-                          "false",
-                          "true"
-                        ]
-                      }
-                    },
-                    "allowDelete": {
-                      "name": "allowDelete",
-                      "type": "boolean",
-                      "required": false
-                    },
-                    "editableFields": {
-                      "name": "editableFields",
-                      "type": "string[]",
-                      "required": false
-                    },
-                    "hiddenFields": {
-                      "name": "hiddenFields",
-                      "type": "string[]",
-                      "required": false
-                    },
-                    "maskedFields": {
-                      "name": "maskedFields",
-                      "type": "string[]",
-                      "required": false
-                    },
-                    "permissionToken": {
-                      "name": "permissionToken",
-                      "type": "string",
-                      "required": false
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "rowIndex",
-          "type": "number",
-          "required": false
-        },
-        {
-          "name": "data",
-          "type": "unknown",
-          "required": false
-        },
-        {
-          "name": "dataSource",
-          "type": "unknown",
-          "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"builtin-action\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
-        }
-      ],
-      "emits": [
-        {
-          "name": "click",
-          "type": "[event: MouseEvent]",
-          "schema": [
-            {
-              "kind": "object",
-              "type": "MouseEvent",
-              "properties": {
-                "altKey": {
-                  "name": "altKey",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`MouseEvent.altKey`** read-only property is a boolean value that indicates whether the <kbd>alt</kbd> key was pressed or not when a given mouse event occurs.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/altKey)",
-                  "schema": {
-                    "kind": "enum",
-                    "type": "boolean",
-                    "variants": [
-                      "false",
-                      "true"
-                    ]
-                  }
-                },
-                "button": {
-                  "name": "button",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`MouseEvent.button`** read-only property indicates which button was pressed or released on the mouse to trigger the event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/button)"
-                },
-                "buttons": {
-                  "name": "buttons",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`MouseEvent.buttons`** read-only property indicates which buttons are pressed on the mouse (or other input device) when a mouse event is triggered.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/buttons)"
-                },
-                "clientX": {
-                  "name": "clientX",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`clientX`** read-only property of the MouseEvent interface provides the horizontal coordinate within the application's viewport at which the event occurred (as opposed to the coordinate within the page).\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/clientX)"
-                },
-                "clientY": {
-                  "name": "clientY",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`clientY`** read-only property of the MouseEvent interface provides the vertical coordinate within the application's viewport at which the event occurred (as opposed to the coordinate within the page).\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/clientY)"
-                },
-                "ctrlKey": {
-                  "name": "ctrlKey",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`MouseEvent.ctrlKey`** read-only property is a boolean value that indicates whether the <kbd>ctrl</kbd> key was pressed or not when a given mouse event occurs.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/ctrlKey)"
-                },
-                "layerX": {
-                  "name": "layerX",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`MouseEvent.layerX`** read-only property returns the horizontal coordinate of the event relative to the current layer.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/layerX)"
-                },
-                "layerY": {
-                  "name": "layerY",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`MouseEvent.layerY`** read-only property returns the vertical coordinate of the event relative to the current layer.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/layerY)"
-                },
-                "metaKey": {
-                  "name": "metaKey",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`MouseEvent.metaKey`** read-only property is a boolean value that indicates whether the <kbd>meta</kbd> key was pressed or not when a given mouse event occurs.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/metaKey)"
-                },
-                "movementX": {
-                  "name": "movementX",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`movementX`** read-only property of the MouseEvent interface provides the difference in the X coordinate of the mouse pointer between the given event and the previous Element/mousemove_event event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/movementX)"
-                },
-                "movementY": {
-                  "name": "movementY",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`movementY`** read-only property of the MouseEvent interface provides the difference in the Y coordinate of the mouse pointer between the given event and the previous Element/mousemove_event event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/movementY)"
-                },
-                "offsetX": {
-                  "name": "offsetX",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`offsetX`** read-only property of the MouseEvent interface provides the offset in the X coordinate of the mouse pointer between that event and the padding edge of the target node.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/offsetX)"
-                },
-                "offsetY": {
-                  "name": "offsetY",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`offsetY`** read-only property of the MouseEvent interface provides the offset in the Y coordinate of the mouse pointer between that event and the padding edge of the target node.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/offsetY)"
-                },
-                "pageX": {
-                  "name": "pageX",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`pageX`** read-only property of the MouseEvent interface returns the X (horizontal) coordinate (in pixels) at which the mouse was clicked, relative to the left edge of the entire document.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/pageX)"
-                },
-                "pageY": {
-                  "name": "pageY",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`pageY`** read-only property of the MouseEvent interface returns the Y (vertical) coordinate (in pixels) at which the mouse was clicked, relative to the top edge of the entire document.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/pageY)"
-                },
-                "relatedTarget": {
-                  "name": "relatedTarget",
-                  "type": "EventTarget | null",
-                  "required": true,
-                  "description": "The **`MouseEvent.relatedTarget`** read-only property is the secondary target for the mouse event, if there is one.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/relatedTarget)",
-                  "schema": {
-                    "kind": "enum",
-                    "type": "EventTarget | null",
-                    "variants": [
-                      "null",
-                      "EventTarget"
-                    ]
-                  }
-                },
-                "screenX": {
-                  "name": "screenX",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`screenX`** read-only property of the MouseEvent interface provides the horizontal coordinate (offset) of the mouse pointer in screen coordinates.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/screenX)"
-                },
-                "screenY": {
-                  "name": "screenY",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`screenY`** read-only property of the MouseEvent interface provides the vertical coordinate (offset) of the mouse pointer in screen coordinates.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/screenY)"
-                },
-                "shiftKey": {
-                  "name": "shiftKey",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`MouseEvent.shiftKey`** read-only property is a boolean value that indicates whether the <kbd>shift</kbd> key was pressed or not when a given mouse event occurs.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/shiftKey)"
-                },
-                "x": {
-                  "name": "x",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`MouseEvent.x`** property is an alias for the MouseEvent.clientX property.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/x)"
-                },
-                "y": {
-                  "name": "y",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`MouseEvent.y`** property is an alias for the MouseEvent.clientY property.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/y)"
-                },
-                "getModifierState": {
-                  "name": "getModifierState",
-                  "type": "(keyArg: string) => boolean",
-                  "required": true,
-                  "description": "The **`MouseEvent.getModifierState()`** method returns the current state of the specified modifier key: `true` if the modifier is active (i.e., the modifier key is pressed or locked), otherwise, `false`.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/MouseEvent/getModifierState)"
-                },
-                "initMouseEvent": {
-                  "name": "initMouseEvent",
-                  "type": "(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, viewArg: Window, detailArg: number, screenXArg: number, screenYArg: number, clientXArg: number, clientYArg: number, ctrlKeyArg: boolean, altKeyArg: boolean, shiftKeyArg: boolean, metaKeyArg: boolean, buttonArg: number, relatedTargetArg: EventTarget | null) => void",
-                  "required": true,
-                  "description": "The **`MouseEvent.initMouseEvent()`** method initializes the value of a mouse event once it's been created (normally using the Document.createEvent() method)."
-                },
-                "detail": {
-                  "name": "detail",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`UIEvent.detail`** read-only property, when non-zero, provides the current (or next, depending on the event) click count.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/UIEvent/detail)"
-                },
-                "view": {
-                  "name": "view",
-                  "type": "Window | null",
-                  "required": true,
-                  "description": "The **`UIEvent.view`** read-only property returns the is the Window object the event happened in.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/UIEvent/view)",
-                  "schema": {
-                    "kind": "enum",
-                    "type": "Window | null",
-                    "variants": [
-                      "null",
-                      "Window"
-                    ]
-                  }
-                },
-                "which": {
-                  "name": "which",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`UIEvent.which`** read-only property of the UIEvent interface returns a number that indicates which button was pressed on the mouse, or the numeric `keyCode` or the character code (`charCode`) of the key pressed on the keyboard."
-                },
-                "initUIEvent": {
-                  "name": "initUIEvent",
-                  "type": "(typeArg: string, bubblesArg?: boolean | undefined, cancelableArg?: boolean | undefined, viewArg?: Window | null | undefined, detailArg?: number | undefined) => void",
-                  "required": true,
-                  "description": "The **`UIEvent.initUIEvent()`** method initializes a UI event once it's been created."
-                },
-                "bubbles": {
-                  "name": "bubbles",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`bubbles`** read-only property of the Event interface indicates whether the event bubbles up through the DOM tree or not.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/bubbles)"
-                },
-                "cancelBubble": {
-                  "name": "cancelBubble",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`cancelBubble`** property of the Event interface is deprecated."
-                },
-                "cancelable": {
-                  "name": "cancelable",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`cancelable`** read-only property of the Event interface indicates whether the event can be canceled, and therefore prevented as if the event never happened.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/cancelable)"
-                },
-                "composed": {
-                  "name": "composed",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The read-only **`composed`** property of the or not the event will propagate across the shadow DOM boundary into the standard DOM.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/composed)"
-                },
-                "currentTarget": {
-                  "name": "currentTarget",
-                  "type": "EventTarget | null",
-                  "required": true,
-                  "description": "The **`currentTarget`** read-only property of the Event interface identifies the element to which the event handler has been attached.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/currentTarget)"
-                },
-                "defaultPrevented": {
-                  "name": "defaultPrevented",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`defaultPrevented`** read-only property of the Event interface returns a boolean value indicating whether or not the call to Event.preventDefault() canceled the event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/defaultPrevented)"
-                },
-                "eventPhase": {
-                  "name": "eventPhase",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`eventPhase`** read-only property of the being evaluated.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/eventPhase)"
-                },
-                "isTrusted": {
-                  "name": "isTrusted",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The **`isTrusted`** read-only property of the when the event was generated by the user agent (including via user actions and programmatic methods such as HTMLElement.focus()), and `false` when the event was dispatched via The only exception is the `click` event, which initializes the `isTrusted` property to `false` in user agents.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/isTrusted)"
-                },
-                "returnValue": {
-                  "name": "returnValue",
-                  "type": "boolean",
-                  "required": true,
-                  "description": "The Event property **`returnValue`** indicates whether the default action for this event has been prevented or not."
-                },
-                "srcElement": {
-                  "name": "srcElement",
-                  "type": "EventTarget | null",
-                  "required": true,
-                  "description": "The deprecated **`Event.srcElement`** is an alias for the Event.target property."
-                },
-                "target": {
-                  "name": "target",
-                  "type": "EventTarget | null",
-                  "required": true,
-                  "description": "The read-only **`target`** property of the dispatched.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/target)"
-                },
-                "timeStamp": {
-                  "name": "timeStamp",
-                  "type": "number",
-                  "required": true,
-                  "description": "The **`timeStamp`** read-only property of the Event interface returns the time (in milliseconds) at which the event was created.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/timeStamp)"
-                },
-                "type": {
-                  "name": "type",
-                  "type": "string",
-                  "required": true,
-                  "description": "The **`type`** read-only property of the Event interface returns a string containing the event's type.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/type)"
-                },
-                "composedPath": {
-                  "name": "composedPath",
-                  "type": "() => EventTarget[]",
-                  "required": true,
-                  "description": "The **`composedPath()`** method of the Event interface returns the event's path which is an array of the objects on which listeners will be invoked.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/composedPath)"
-                },
-                "initEvent": {
-                  "name": "initEvent",
-                  "type": "(type: string, bubbles?: boolean | undefined, cancelable?: boolean | undefined) => void",
-                  "required": true,
-                  "description": "The **`Event.initEvent()`** method is used to initialize the value of an event created using Document.createEvent()."
-                },
-                "preventDefault": {
-                  "name": "preventDefault",
-                  "type": "() => void",
-                  "required": true,
-                  "description": "The **`preventDefault()`** method of the Event interface tells the user agent that if the event does not get explicitly handled, its default action should not be taken as it normally would be.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/preventDefault)"
-                },
-                "stopImmediatePropagation": {
-                  "name": "stopImmediatePropagation",
-                  "type": "() => void",
-                  "required": true,
-                  "description": "The **`stopImmediatePropagation()`** method of the If several listeners are attached to the same element for the same event type, they are called in the order in which they were added.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/stopImmediatePropagation)"
-                },
-                "stopPropagation": {
-                  "name": "stopPropagation",
-                  "type": "() => void",
-                  "required": true,
-                  "description": "The **`stopPropagation()`** method of the Event interface prevents further propagation of the current event in the capturing and bubbling phases.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/stopPropagation)"
-                },
-                "NONE": {
-                  "name": "NONE",
-                  "type": "0",
-                  "required": true
-                },
-                "CAPTURING_PHASE": {
-                  "name": "CAPTURING_PHASE",
-                  "type": "1",
-                  "required": true
-                },
-                "AT_TARGET": {
-                  "name": "AT_TARGET",
-                  "type": "2",
-                  "required": true
-                },
-                "BUBBLING_PHASE": {
-                  "name": "BUBBLING_PHASE",
-                  "type": "3",
-                  "required": true
-                }
-              }
-            }
-          ]
-        }
-      ],
       "exposed": [],
       "slots": [],
       "hasIndexSignature": false
@@ -839,17 +313,17 @@
       "props": [
         {
           "name": "avatarSize",
-          "type": "number | \"default\" | \"large\" | \"small\"",
+          "type": "number | \"default\" | \"small\" | \"large\"",
           "required": false,
           "default": "\"default\"",
           "schema": {
             "kind": "enum",
-            "type": "number | \"default\" | \"large\" | \"small\"",
+            "type": "number | \"default\" | \"small\" | \"large\"",
             "variants": [
               "number",
               "\"default\"",
-              "\"large\"",
-              "\"small\""
+              "\"small\"",
+              "\"large\""
             ]
           }
         },
@@ -1440,8 +914,8 @@
                 "required": true,
                 "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
               },
-              "__@toPrimitive@926": {
-                "name": "__@toPrimitive@926",
+              "__@toPrimitive@34520": {
+                "name": "__@toPrimitive@34520",
                 "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                 "required": true,
                 "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -1720,8 +1194,8 @@
                     "required": true,
                     "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                   },
-                  "__@toPrimitive@926": {
-                    "name": "__@toPrimitive@926",
+                  "__@toPrimitive@34520": {
+                    "name": "__@toPrimitive@34520",
                     "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                     "required": true,
                     "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -1888,16 +1362,16 @@
         },
         {
           "name": "descriptionsSize",
-          "type": "\"default\" | \"large\" | \"small\"",
+          "type": "\"default\" | \"small\" | \"large\"",
           "required": false,
           "default": "\"default\"",
           "schema": {
             "kind": "enum",
-            "type": "\"default\" | \"large\" | \"small\"",
+            "type": "\"default\" | \"small\" | \"large\"",
             "variants": [
               "\"default\"",
-              "\"large\"",
-              "\"small\""
+              "\"small\"",
+              "\"large\""
             ]
           }
         },
@@ -2860,16 +2334,16 @@
         },
         {
           "name": "size",
-          "type": "\"default\" | \"large\" | \"small\"",
+          "type": "\"default\" | \"small\" | \"large\"",
           "required": false,
           "default": "\"default\"",
           "schema": {
             "kind": "enum",
-            "type": "\"default\" | \"large\" | \"small\"",
+            "type": "\"default\" | \"small\" | \"large\"",
             "variants": [
               "\"default\"",
-              "\"large\"",
-              "\"small\""
+              "\"small\"",
+              "\"large\""
             ]
           }
         },
@@ -3108,15 +2582,15 @@
         },
         {
           "name": "itemSize",
-          "type": "\"large\" | \"normal\"",
+          "type": "\"normal\" | \"large\"",
           "required": false,
           "default": "\"normal\"",
           "schema": {
             "kind": "enum",
-            "type": "\"large\" | \"normal\"",
+            "type": "\"normal\" | \"large\"",
             "variants": [
-              "\"large\"",
-              "\"normal\""
+              "\"normal\"",
+              "\"large\""
             ]
           }
         },
@@ -3705,122 +3179,6 @@
           "type": "{}"
         }
       ],
-      "hasIndexSignature": false
-    },
-    "r-action-strip": {
-      "type": "r-action-strip",
-      "filePath": "packages\\spark-component\\src\\components\\containers\\support\\RendererActionStrip.vue",
-      "props": [
-        {
-          "name": "actions",
-          "type": "SparkNode[]",
-          "required": true
-        },
-        {
-          "name": "actionKeyPrefix",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "slotScope",
-          "type": "object",
-          "required": false
-        }
-      ],
-      "emits": [],
-      "exposed": [],
-      "slots": [
-        {
-          "name": "actions",
-          "type": "{}"
-        }
-      ],
-      "hasIndexSignature": false
-    },
-    "r-actions": {
-      "type": "r-actions",
-      "filePath": "packages\\spark-component\\src\\components\\containers\\RendererActions.vue",
-      "props": [
-        {
-          "name": "type",
-          "type": "\"r-actions\"",
-          "required": false,
-          "default": "\"r-actions\""
-        },
-        {
-          "name": "id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[]",
-          "required": false
-        },
-        {
-          "name": "position",
-          "type": "ActionsPosition",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "ActionsPosition",
-            "variants": [
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "width",
-          "type": "string | number",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "string | number",
-            "variants": [
-              "string",
-              "number"
-            ]
-          }
-        },
-        {
-          "name": "align",
-          "type": "ActionsAlign",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "ActionsAlign",
-            "variants": [
-              "\"left\"",
-              "\"right\"",
-              "\"center\""
-            ]
-          }
-        },
-        {
-          "name": "fixed",
-          "type": "boolean | ActionsPosition",
-          "required": false,
-          "schema": {
-            "kind": "enum",
-            "type": "boolean | ActionsPosition",
-            "variants": [
-              "false",
-              "true",
-              "\"left\"",
-              "\"right\""
-            ]
-          }
-        }
-      ],
-      "emits": [],
-      "exposed": [],
-      "slots": [],
       "hasIndexSignature": false
     },
     "r-anchor": {
@@ -4446,50 +3804,36 @@
           "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         },
         {
+          "name": "action",
+          "type": "string",
+          "required": false,
+          "description": "CRUD 动作名（如 'refresh', 'delete-row'），由容器自动绑定处理器"
+        },
+        {
+          "name": "template",
+          "type": "string",
+          "required": false,
+          "description": "样式模板名（如 'primary', 'toolbar-danger', 'icon-add'）"
+        },
+        {
           "name": "label",
           "type": "string",
           "required": false
         },
         {
           "name": "buttonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | \"text\"",
-          "required": false,
-          "default": "\"default\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | \"text\"",
-            "variants": [
-              "\"\"",
-              "\"default\"",
-              "\"primary\"",
-              "\"success\"",
-              "\"warning\"",
-              "\"info\"",
-              "\"danger\"",
-              "\"text\""
-            ]
-          }
+          "type": "string",
+          "required": false
         },
         {
           "name": "buttonSize",
-          "type": "\"default\" | \"large\" | \"small\"",
-          "required": false,
-          "default": "\"default\"",
-          "schema": {
-            "kind": "enum",
-            "type": "\"default\" | \"large\" | \"small\"",
-            "variants": [
-              "\"default\"",
-              "\"large\"",
-              "\"small\""
-            ]
-          }
+          "type": "string",
+          "required": false
         },
         {
           "name": "plain",
           "type": "boolean",
           "required": false,
-          "default": "false",
           "schema": {
             "kind": "enum",
             "type": "boolean",
@@ -4500,10 +3844,9 @@
           }
         },
         {
-          "name": "textMode",
+          "name": "text",
           "type": "boolean",
           "required": false,
-          "default": "false",
           "schema": {
             "kind": "enum",
             "type": "boolean",
@@ -4528,10 +3871,9 @@
           }
         },
         {
-          "name": "linkMode",
+          "name": "link",
           "type": "boolean",
           "required": false,
-          "default": "false",
           "schema": {
             "kind": "enum",
             "type": "boolean",
@@ -4545,7 +3887,6 @@
           "name": "round",
           "type": "boolean",
           "required": false,
-          "default": "false",
           "schema": {
             "kind": "enum",
             "type": "boolean",
@@ -4559,7 +3900,6 @@
           "name": "circle",
           "type": "boolean",
           "required": false,
-          "default": "false",
           "schema": {
             "kind": "enum",
             "type": "boolean",
@@ -4582,6 +3922,11 @@
               "true"
             ]
           }
+        },
+        {
+          "name": "icon",
+          "type": "string",
+          "required": false
         },
         {
           "name": "autoInsertSpace",
@@ -5255,8 +4600,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -5270,8 +4615,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -5485,8 +4830,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -5500,8 +4845,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -6257,6 +5602,26 @@
       ],
       "hasIndexSignature": false
     },
+    "r-data-host": {
+      "type": "r-data-host",
+      "filePath": "packages\\spark-component\\src\\components\\containers\\data-components\\RendererRowFragment\\RendererDataHost.vue",
+      "props": [
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "childKeyPrefix",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "emits": [],
+      "exposed": [],
+      "slots": [],
+      "hasIndexSignature": false
+    },
     "r-date": {
       "type": "r-date",
       "filePath": "packages\\spark-component\\src\\components\\fields\\data-components\\FieldDate.vue",
@@ -6445,17 +5810,12 @@
           "required": false
         },
         {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
-          "type": "string",
-          "required": false
-        },
-        {
           "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
           "type": "string",
           "required": false
         },
@@ -6474,6 +5834,11 @@
               "PageSelectableValue[]"
             ]
           }
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false
         },
         {
           "name": "field",
@@ -6676,8 +6041,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -6691,8 +6056,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -7086,8 +6451,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -7101,8 +6466,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -9667,8 +9032,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -9682,8 +9047,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -10040,8 +9405,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -10055,8 +9420,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -10848,8 +10213,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -10863,8 +10228,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -11697,8 +11062,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -11712,8 +11077,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -12975,17 +12340,12 @@
           "required": false
         },
         {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
-          "type": "string",
-          "required": false
-        },
-        {
           "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
           "type": "string",
           "required": false
         },
@@ -13004,6 +12364,11 @@
               "PageSelectableValue[]"
             ]
           }
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false
         },
         {
           "name": "field",
@@ -13291,6 +12656,325 @@
           "schema": []
         }
       ],
+      "exposed": [],
+      "slots": [],
+      "hasIndexSignature": false
+    },
+    "r-row-fragment": {
+      "type": "r-row-fragment",
+      "filePath": "packages\\spark-component\\src\\components\\containers\\data-components\\RendererRowFragment\\RendererRowFragment.vue",
+      "props": [
+        {
+          "name": "type",
+          "type": "\"r-row-fragment\"",
+          "required": false,
+          "default": "\"r-row-fragment\""
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "minWidth",
+          "type": "string | number",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "align",
+          "type": "RowFragmentAlign",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "RowFragmentAlign",
+            "variants": [
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
+            ]
+          }
+        },
+        {
+          "name": "headerAlign",
+          "type": "RowFragmentAlign",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "RowFragmentAlign",
+            "variants": [
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
+            ]
+          }
+        },
+        {
+          "name": "data",
+          "type": "IDataRow",
+          "required": false,
+          "schema": {
+            "kind": "object",
+            "type": "IDataRow",
+            "properties": {
+              "_perm": {
+                "name": "_perm",
+                "type": "IInstancePermission",
+                "required": false,
+                "schema": {
+                  "kind": "object",
+                  "type": "IInstancePermission",
+                  "properties": {
+                    "allowCreateChild": {
+                      "name": "allowCreateChild",
+                      "type": "boolean",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "boolean",
+                        "variants": [
+                          "false",
+                          "true"
+                        ]
+                      }
+                    },
+                    "allowDelete": {
+                      "name": "allowDelete",
+                      "type": "boolean",
+                      "required": false
+                    },
+                    "editableFields": {
+                      "name": "editableFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "hiddenFields": {
+                      "name": "hiddenFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "maskedFields": {
+                      "name": "maskedFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "permissionToken": {
+                      "name": "permissionToken",
+                      "type": "string",
+                      "required": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "fields",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        }
+      ],
+      "emits": [],
+      "exposed": [],
+      "slots": [],
+      "hasIndexSignature": false
+    },
+    "r-row-fragment-host": {
+      "type": "r-row-fragment-host",
+      "filePath": "packages\\spark-component\\src\\components\\containers\\data-components\\RendererRowFragment\\RendererRowFragmentHost.vue",
+      "props": [
+        {
+          "name": "type",
+          "type": "\"r-row-fragment\"",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "width",
+          "type": "string | number",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "minWidth",
+          "type": "string | number",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "string | number",
+            "variants": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "align",
+          "type": "RowFragmentAlign",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "RowFragmentAlign",
+            "variants": [
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
+            ]
+          }
+        },
+        {
+          "name": "headerAlign",
+          "type": "RowFragmentAlign",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "RowFragmentAlign",
+            "variants": [
+              "\"left\"",
+              "\"right\"",
+              "\"center\""
+            ]
+          }
+        },
+        {
+          "name": "data",
+          "type": "IDataRow",
+          "required": false,
+          "schema": {
+            "kind": "object",
+            "type": "IDataRow",
+            "properties": {
+              "_perm": {
+                "name": "_perm",
+                "type": "IInstancePermission",
+                "required": false,
+                "schema": {
+                  "kind": "object",
+                  "type": "IInstancePermission",
+                  "properties": {
+                    "allowCreateChild": {
+                      "name": "allowCreateChild",
+                      "type": "boolean",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "boolean",
+                        "variants": [
+                          "false",
+                          "true"
+                        ]
+                      }
+                    },
+                    "allowDelete": {
+                      "name": "allowDelete",
+                      "type": "boolean",
+                      "required": false
+                    },
+                    "editableFields": {
+                      "name": "editableFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "hiddenFields": {
+                      "name": "hiddenFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "maskedFields": {
+                      "name": "maskedFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "permissionToken": {
+                      "name": "permissionToken",
+                      "type": "string",
+                      "required": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "fields",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[]",
+          "required": false
+        }
+      ],
+      "emits": [],
       "exposed": [],
       "slots": [],
       "hasIndexSignature": false
@@ -13962,17 +13646,17 @@
         },
         {
           "name": "size",
-          "type": "\"default\" | \"large\" | \"small\"",
+          "type": "\"default\" | \"small\" | \"large\"",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
           "schema": {
             "kind": "enum",
-            "type": "\"default\" | \"large\" | \"small\"",
+            "type": "\"default\" | \"small\" | \"large\"",
             "variants": [
               "\"default\"",
-              "\"large\"",
-              "\"small\""
+              "\"small\"",
+              "\"large\""
             ]
           }
         },
@@ -14564,8 +14248,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -14579,8 +14263,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -14791,8 +14475,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -14806,8 +14490,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -15257,8 +14941,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -15272,8 +14956,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -16097,8 +15781,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -16112,8 +15796,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -16720,8 +16404,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -16735,8 +16419,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -16943,8 +16627,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -16958,8 +16642,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -17620,8 +17304,8 @@
             "kind": "enum",
             "type": "InlineAlign",
             "variants": [
-              "\"center\"",
               "\"start\"",
+              "\"center\"",
               "\"end\"",
               "\"stretch\""
             ]
@@ -17635,8 +17319,8 @@
             "kind": "enum",
             "type": "InlineJustify",
             "variants": [
-              "\"center\"",
               "\"start\"",
+              "\"center\"",
               "\"end\"",
               "\"space-between\""
             ]
@@ -18223,8 +17907,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -18238,8 +17922,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -18883,8 +18567,8 @@
                         "kind": "enum",
                         "type": "InlineAlign",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"stretch\""
                         ]
@@ -18898,8 +18582,8 @@
                         "kind": "enum",
                         "type": "InlineJustify",
                         "variants": [
-                          "\"center\"",
                           "\"start\"",
+                          "\"center\"",
                           "\"end\"",
                           "\"space-between\""
                         ]
@@ -19692,17 +19376,12 @@
           "required": false
         },
         {
-          "name": "label",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
-          "type": "string",
-          "required": false
-        },
-        {
           "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "label",
           "type": "string",
           "required": false
         },
@@ -19721,6 +19400,11 @@
               "PageSelectableValue[]"
             ]
           }
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false
         },
         {
           "name": "field",

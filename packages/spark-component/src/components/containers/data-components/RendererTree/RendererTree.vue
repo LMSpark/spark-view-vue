@@ -95,12 +95,14 @@ import { useContainerActions } from '../../useContainerActions'
 import {
   bindActionClick,
   isBuiltinAction,
+  injectActionDisabled,
+  injectRowActionDefaults,
 } from '../../builtin-actions'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
-import type { ActionsNode } from '../../RendererActions.types'
+import type { ActionsNode } from '../../support/RendererActionHost.types'
 import type { EditorNode } from '../../RendererEditor.types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import RendererDataScope from '../RendererRowFragment/RendererDataScope.vue'
@@ -298,15 +300,14 @@ registerApi(treeApi)
 defineExpose(treeApi)
 
 function resolveToolbarActionConfig(action: SparkNode): SparkNode {
-  return isBuiltinAction(action)
-    ? bindActionClick(action, () => handleBuiltinToolbarAction(action))
-    : action
+  if (!isBuiltinAction(action)) return action
+  return injectActionDisabled(bindActionClick(action, () => handleBuiltinToolbarAction(action)), resolvedView.value)
 }
 
 function resolveNodeActionConfig(action: SparkNode, row: IDataRow, index: number): SparkNode {
-  return isBuiltinAction(action)
-    ? bindActionClick(action, () => handleBuiltinNodeAction(action, row, index))
-    : action
+  if (!isBuiltinAction(action)) return action
+  const bound = bindActionClick(action, () => handleBuiltinNodeAction(action, row, index))
+  return injectRowActionDefaults(injectActionDisabled(bound, resolvedView.value, { row, index }))
 }
 
 function getLegacyNodeActionConfigs(row: IDataRow): SparkNode[] {

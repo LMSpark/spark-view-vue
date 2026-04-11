@@ -153,9 +153,9 @@
                     "type": "r-toolbar",
                     "children": [
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "props": {
-                          "builtinAction": "append-row",
+                          "action": "append-row",
                           "label": "新增根节点",
                           "setCurrentRowOnSuccess": true,
                           "appendPayload": {
@@ -215,9 +215,9 @@
                     "type": "r-actions",
                     "children": [
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "props": {
-                          "builtinAction": "append-row",
+                          "action": "append-row",
                           "label": "新增",
                           "setCurrentRowOnSuccess": true,
                           "inheritFieldMap": {
@@ -242,9 +242,9 @@
                         }
                       },
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "props": {
-                          "builtinAction": "prompt-edit",
+                          "action": "prompt-edit",
                           "label": "改标题",
                           "field": "title",
                           "promptTitle": "修改节点标题",
@@ -255,9 +255,9 @@
                         }
                       },
                       {
-                        "type": "builtin-action",
+                        "type": "r-button",
                         "props": {
-                          "builtinAction": "delete-row",
+                          "action": "delete-row",
                           "label": "删除",
                           "confirmTitle": "删除节点",
                           "confirmMessage": "确认删除 {title} 吗？",
@@ -305,9 +305,9 @@
                                 },
                                 "children": [
                                   {
-                                    "type": "builtin-action",
+                                    "type": "r-button",
                                     "props": {
-                                      "builtinAction": "submit-current-form",
+                                      "action": "submit-current-form",
                                       "label": "保存当前节点",
                                       "successMessage": "当前节点已保存",
                                       "failureMessage": "当前节点保存失败",
@@ -328,9 +328,9 @@
                                     }
                                   },
                                   {
-                                    "type": "builtin-action",
+                                    "type": "r-button",
                                     "props": {
-                                      "builtinAction": "message-current",
+                                      "action": "message-current",
                                       "label": "查看当前节点",
                                       "messageType": "info",
                                       "message": "当前节点 {title} | 类型 {nodeKind} | 路径 {path}",
