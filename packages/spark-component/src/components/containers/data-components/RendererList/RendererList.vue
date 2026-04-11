@@ -31,17 +31,18 @@
               :class="['renderer-list-item-shell', `renderer-list-item-shell--${itemActionsPositionValue}`]"
               @click="handleItemClick(row, index, $event)"
             >
-              <div v-if="showItemActionsLeftValue" :class="['renderer-list-item-actions', itemActionsClassValue]">
-                <SparkComponentRenderer
-                  v-for="(action, actionIndex) in getScopedItemActions({ row, index })"
-                  :key="nodeId(action) ?? `r-list-item-action-left-${actionIndex}`"
-                  :config="action"
-                />
-                <slot
-                  name="item-actions"
-                  v-bind="getItemActionSlotScope(row, index)"
-                />
-              </div>
+              <RendererActionHost
+                v-if="showItemActionsLeftValue"
+                :actions="getScopedItemActions({ row, index })"
+                action-key-prefix="r-list-item-action-left"
+                :slot-scope="getItemActionSlotScope(row, index)"
+                wrapper-tag="div"
+                :wrapper-class="['renderer-list-item-actions', itemActionsClassValue]"
+              >
+                <template #actions="scope">
+                  <slot name="item-actions" v-bind="scope" />
+                </template>
+              </RendererActionHost>
 
               <RendererListItemScope
                 type="r-list-item"
@@ -61,17 +62,18 @@
                 />
               </RendererListItemScope>
 
-              <div v-if="showItemActionsRightValue" :class="['renderer-list-item-actions', itemActionsClassValue]">
-                <SparkComponentRenderer
-                  v-for="(action, actionIndex) in getScopedItemActions({ row, index })"
-                  :key="nodeId(action) ?? `r-list-item-action-right-${actionIndex}`"
-                  :config="action"
-                />
-                <slot
-                  name="item-actions"
-                  v-bind="getItemActionSlotScope(row, index)"
-                />
-              </div>
+              <RendererActionHost
+                v-if="showItemActionsRightValue"
+                :actions="getScopedItemActions({ row, index })"
+                action-key-prefix="r-list-item-action-right"
+                :slot-scope="getItemActionSlotScope(row, index)"
+                wrapper-tag="div"
+                :wrapper-class="['renderer-list-item-actions', itemActionsClassValue]"
+              >
+                <template #actions="scope">
+                  <slot name="item-actions" v-bind="scope" />
+                </template>
+              </RendererActionHost>
             </div>
           </div>
         </template>
@@ -94,6 +96,7 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
 import RendererListItemScope from '../RendererListItemScope.vue'
+import RendererActionHost from '../../support/RendererActionHost.vue'
 import { useContainerActions } from '../../useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
@@ -110,7 +113,8 @@ import {
   type RowClickHandler,
 } from '../../support/index.js'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: 'r-list'
   /** 数据绑定键 */
   dataKey?: string
   /** 结构化工具栏 */

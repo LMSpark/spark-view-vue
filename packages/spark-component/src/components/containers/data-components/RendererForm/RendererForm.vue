@@ -60,7 +60,8 @@ import {
   isBuiltinAction,
 } from '../../builtin-actions'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: 'r-form'
   id?: string
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string

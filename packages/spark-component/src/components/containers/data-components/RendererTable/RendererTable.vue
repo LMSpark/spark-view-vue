@@ -20,57 +20,25 @@
     />
 
     <!-- 过滤区 -->
-    <div v-if="hasFilters" :class="['renderer-table-filters', filterClassValue]">
-      <div v-if="filterCollapsibleValue" class="renderer-table-filters__header">
-        <div class="renderer-table-filters__heading">
-          <span class="renderer-table-filters__title">筛选条件</span>
-          <el-tag
-            v-if="activeFilterCount > 0"
-            size="small"
-            type="info"
-            class="renderer-table-filters__count"
-          >{{ activeFilterCount }} 项筛选</el-tag>
-        </div>
-        <button
-          type="button"
-          class="renderer-table-filters__toggle"
-          :aria-expanded="!filtersCollapsed"
-          @click="toggleFiltersCollapsed"
-        >
-          <span class="renderer-table-filters__toggle-icon">{{ filtersCollapsed ? '>' : 'v' }}</span>
-          <span>{{ filtersCollapsed ? '展开筛选' : '收起筛选' }}</span>
-        </button>
-      </div>
+    <RendererFilter
+      v-if="hasFilters"
+      :class="filterClassValue"
+      :model="filterModel"
+      :configs="filterConfigs"
+      :active-count="activeFilterCount"
+      :collapsible="filterCollapsibleValue"
+      :collapsed="filtersCollapsed"
+      :grid-columns="filterGridColumnsValue"
+      :grid-gap="filterGridGapValue"
+      :grid-auto-rows="filterGridAutoRowsValue"
+      :auto-fit-min-width="filterAutoFitMinWidthValue"
+      :item-span="filterItemSpanValue"
+      :search-action="handleFilterSearch"
+      :reset-action="handleFilterReset"
+      :toggle-collapsed-action="toggleFiltersCollapsed"
+    />
 
-      <div v-show="!filtersCollapsed" class="renderer-table-filters__content">
-      <div class="renderer-table-filters__body">
-        <RendererFieldScope
-          type="r-field-scope"
-          :model="filterModel"
-          :configs="filterConfigs"
-          :grid-columns="filterGridColumnsValue"
-          :grid-gap="filterGridGapValue"
-          :grid-auto-rows="filterGridAutoRowsValue"
-          :auto-fit-min-width="filterAutoFitMinWidthValue"
-          :default-col-span="filterItemSpanValue"
-          label-position="left"
-          label-width="80px"
-          compact
-        />
-      </div>
-      <div class="renderer-table-filters__actions">
-        <el-button type="primary" size="small" @click="handleFilterSearch">查询</el-button>
-        <el-button size="small" @click="handleFilterReset">重置</el-button>
-        <el-tag
-          v-if="activeFilterCount > 0 && !filterCollapsibleValue"
-          size="small"
-          type="info"
-          class="renderer-table-filters__count"
-        >{{ activeFilterCount }} 项筛选</el-tag>
-      </div>
-      </div>
-    </div>
-
+    <!-- 表格主体 -->
     <div class="renderer-table-main">
       <el-table
         ref="nativeTableRef"
@@ -80,38 +48,53 @@
         @row-click="handleRowClick"
         @selection-change="handleSelectionChange"
       >
+        <!--
+          列区必须直接成为 el-table 的子级。
+          SparkTableColumns 只是一个透明转发层，用来同时容纳：
+          1. 配置驱动列（props.children）
+          2. 模板驱动列（默认 slot）
+          3. 行操作列（左右）
+        -->
         <SparkTableColumns>
           <!-- 行操作列（左） -->
-          <el-table-column v-if="showRowActionsLeftValue" v-bind="rowActionColumnAttrs">
-            <template #default="{ row, $index }">
-              <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="nodeId(action) ?? `r-table-row-action-${index}`">
-                  <SparkComponentRenderer :config="resolveRowActionConfig(action, row, $index)" />
-                </template>
-                <slot name="row-actions" v-bind="getRowActionSlotScope(row, $index)" />
-              </div>
+          <RendererActionHost
+            v-if="showRowActionsLeftValue"
+            host-tag="el-table-column"
+            :host-attrs="rowActionColumnAttrs"
+            :resolve-actions="getRenderedRowActions"
+            :resolve-slot-scope="getScopedRowActionSlotScope"
+            action-key-prefix="r-table-row-action"
+            :wrapper-class="['renderer-table-row-actions', rowActionsClassValue]"
+          >
+            <template #actions="scope">
+              <slot name="row-actions" v-bind="scope" />
             </template>
-          </el-table-column>
+          </RendererActionHost>
 
-          <!-- 主数据列 -->
+          <!-- 主数据列：直接按绑定层整理后的 children 配置渲染 -->
           <SparkComponentRenderer
             v-for="(child, index) in props.children ?? []"
             :key="nodeId(child) ?? `r-table-child-${index}`"
             :config="child"
           />
+
+          <!-- 模板驱动补充列：兼容直接手写 el-table-column -->
           <slot />
 
           <!-- 行操作列（右） -->
-          <el-table-column v-if="showRowActionsRightValue" v-bind="rowActionColumnAttrs">
-            <template #default="{ row, $index }">
-              <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-                <template v-for="(action, index) in getScopedRowActions({ row, index: $index })" :key="nodeId(action) ?? `r-table-row-action-${index}`">
-                  <SparkComponentRenderer :config="resolveRowActionConfig(action, row, $index)" />
-                </template>
-                <slot name="row-actions" v-bind="getRowActionSlotScope(row, $index)" />
-              </div>
+          <RendererActionHost
+            v-if="showRowActionsRightValue"
+            host-tag="el-table-column"
+            :host-attrs="rowActionColumnAttrs"
+            :resolve-actions="getRenderedRowActions"
+            :resolve-slot-scope="getScopedRowActionSlotScope"
+            action-key-prefix="r-table-row-action"
+            :wrapper-class="['renderer-table-row-actions', rowActionsClassValue]"
+          >
+            <template #actions="scope">
+              <slot name="row-actions" v-bind="scope" />
             </template>
-          </el-table-column>
+          </RendererActionHost>
         </SparkTableColumns>
       </el-table>
     </div>
@@ -126,8 +109,12 @@
  * RendererTable - 表格容器组件
  *
  * 双模式：
- *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
- *   模板驱动：不传 config，通过 <slot> 接收模板子内容
+ * 1. 配置驱动：列结构直接来自 props.children，统一走 SparkComponentRenderer。
+ * 2. 模板驱动：保留默认 slot，允许直接手写 el-table-column。
+ *
+ * 结构约定：
+ * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
+ * - 到达此组件时，props.children 只保留表格内容列配置，不再做运行时二次分拣。
  */
 import { computed, ref, useAttrs, useSlots } from 'vue'
 import {
@@ -139,15 +126,16 @@ import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
+import RendererActionHost from '../../support/RendererActionHost.vue'
 import { useContainerActions, type LateralActionPosition } from '../../useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
 import type { ActionsNode } from '../../RendererActions.types'
 import type { FilterNode } from '../../RendererFilter.types'
+import RendererFilter from '../../RendererFilter.vue'
 import { createRowActionSlotScope } from '../../slotScopeFactories'
 import { useModuleContext } from '../../context/useModuleContext'
-import RendererFieldScope from '../RendererFieldScope.vue'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import { useTableFilters } from '../../layout/useTableFilters'
@@ -157,10 +145,17 @@ import {
 } from '../../support/index.js'
 import { bindActionClick, isBuiltinAction } from '../../builtin-actions'
 
+// ── 基础工具与本地属性约定 ───────────────────────────────────────────────
+
+/** 将 camelCase 属性名转换为 kebab-case，兼容模板透传属性的两种写法。 */
 function toKebabCase(name: string): string {
   return name.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)
 }
 
+/**
+ * 这些属性由 RendererTable 内部消费，不应继续透传给底层 el-table。
+ * 其中包含：工具栏/筛选区/行操作区的结构化配置，以及少量旧 attrs 兼容入口。
+ */
 const TABLE_LOCAL_ATTR_BASE_KEYS = [
   'toolbar',
   'filterColumns',
@@ -185,7 +180,10 @@ const TABLE_LOCAL_ATTR_KEYS = new Set<string>(
   TABLE_LOCAL_ATTR_BASE_KEYS.flatMap(key => [key, toKebabCase(key)]),
 )
 
-interface Props extends SparkNode {
+// ── Props / attrs / slots 输入 ───────────────────────────────────────────
+
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: 'r-table'
   /** DataKey 格式：tableName@field */
   dataKey?: string
   /** 结构化工具栏 */
@@ -194,7 +192,7 @@ interface Props extends SparkNode {
   filter?: FilterNode
   /** 结构化行动作 */
   actions?: ActionsNode
-  /** 子节点列表（列节点 + 区域节点） */
+  /** 表格内容列配置；toolbar / filter / actions 已由绑定层提升到 props */
   children?: SparkNode[]
   onRowClick?: RowClickHandler
   onSelectionChange?: RowSelectionHandler
@@ -211,21 +209,24 @@ const props = withDefaults(defineProps<Props>(), {
 const attrs = useAttrs()
 const slots = useSlots()
 
-// ── 属性读取工具 ──────────────────────────────────────────────────────────
+// ── 属性读取工具：兼容 attrs 与结构化子节点 props ────────────────────────
 
 const _attrs = attrs as Readonly<Record<string, unknown>>
 
+/** 优先读取原名，其次回退 kebab-case，兼容模板透传属性。 */
 function readAttr(name: string): unknown {
   const directValue = _attrs[name]
   if (directValue !== undefined) return directValue
   return _attrs[toKebabCase(name)]
 }
 
+/** 读取字符串属性；空字符串视为未配置。 */
 function readStringAttr(name: string): string | undefined {
   const value = readAttr(name)
   return typeof value === 'string' && value.length > 0 ? value : undefined
 }
 
+/** 读取布尔属性；兼容模板中空属性、字符串 true/false。 */
 function readBooleanAttr(name: string): boolean | undefined {
   const value = readAttr(name)
   if (typeof value === 'boolean') return value
@@ -235,12 +236,14 @@ function readBooleanAttr(name: string): boolean | undefined {
   return undefined
 }
 
+/** 读取数字属性；仅接受有限数值。 */
 function readNumberAttr(name: string): number | undefined {
   const value = readAttr(name)
   if (typeof value === 'number' && Number.isFinite(value)) return value
   return undefined
 }
 
+/** 读取 number|string 联合属性，常用于宽度、间距等布局参数。 */
 function readNumberOrStringAttr(name: string): number | string | undefined {
   const value = readAttr(name)
   if (typeof value === 'number' && Number.isFinite(value)) return value
@@ -248,11 +251,12 @@ function readNumberOrStringAttr(name: string): number | string | undefined {
   return undefined
 }
 
+/** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
   return child?.props?.[name] as T | undefined
 }
 
-// ── 输入解析 ──────────────────────────────────────────────────────────────
+// ── 基础输入解析：DataKey 与传给 el-table 的基础 attrs ───────────────────
 
 const baseTableAttrs = computed<Record<string, unknown>>(() => {
   const result: Record<string, unknown> = {}
@@ -264,9 +268,7 @@ const baseTableAttrs = computed<Record<string, unknown>>(() => {
 })
 const effectiveDataKey = computed(() => props.dataKey)
 
-
-
-// ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
+// ── SPARK 上下文与数据源：解析 DataKey → DataView，并向下游提供 DATA_SOURCE ──
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
@@ -287,6 +289,8 @@ useContainerDataSourceEffects({
   logPrefix: 'RendererTable',
 })
 
+// ── 工具栏区：读取提升后的 props.toolbar，并处理内置动作绑定 ─────────────
+
 const {
   toolbarPositionValue,
   toolbarClassValue,
@@ -306,6 +310,7 @@ const resolvedToolbarChildren = computed<SparkNode[]>(() =>
   ),
 )
 
+/** 过滤掉结构元信息后，剩余 props 继续透传给 RendererToolbar。 */
 const toolbarComponentProps = computed<Record<string, unknown>>(() => {
   const childMeta = props.toolbar?.props
   if (!childMeta) return {}
@@ -315,6 +320,8 @@ const toolbarComponentProps = computed<Record<string, unknown>>(() => {
   }
   return result
 })
+
+// ── 筛选区：表单模型、字段配置、折叠状态与筛选后的数据视图 ───────────────
 
 const {
   filterModel,
@@ -355,7 +362,7 @@ const {
   readNumberAttr,
 })
 
-// ── 视图状态 ──────────────────────────────────────────────────────────────
+// ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
 
 const nativeTableRef = ref<NativeTableLike | null>(null)
 
@@ -381,7 +388,7 @@ registerApi(tableApi)
 
 defineExpose(tableApi)
 
-// ── 行操作区 ──────────────────────────────────────────────────────────────
+// ── 行操作区：结构化 actions + row-actions 命名插槽共同组成行操作列 ─────
 
 const {
   actionPositionValue: rowActionsPositionValue,
@@ -432,6 +439,7 @@ const rowActionColumnAttrs = computed(() => {
   return { label, width, align, fixed, className: rowActionsClassValue.value || undefined }
 })
 
+/** 为 row-actions 命名插槽构造统一上下文，确保模板插槽与内置动作拿到同一套作用域。 */
 function getRowActionSlotScope(row: IDataRow, index: number) {
   return createRowActionSlotScope({
     dataSource: resolvedView.value,
@@ -444,13 +452,27 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
   })
 }
 
+/** 内置动作补齐点击处理，自定义动作维持原配置透传。 */
 function resolveRowActionConfig(action: SparkNode, row: IDataRow, index: number): SparkNode {
   return isBuiltinAction(action)
     ? bindActionClick(action, () => handleBuiltinRowAction(action, row, index))
     : action
 }
 
-// ── 过滤操作 ──────────────────────────────────────────────────────────────
+function getRenderedRowActions(scope: Record<string, unknown>): SparkNode[] {
+  const row = (scope['row'] as IDataRow | undefined) ?? {}
+  const index = typeof scope['$index'] === 'number' ? scope['$index'] : 0
+  return getScopedRowActions({ row, index })
+    .map(action => resolveRowActionConfig(action, row, index))
+}
+
+function getScopedRowActionSlotScope(scope: Record<string, unknown>): object {
+  const row = (scope['row'] as IDataRow | undefined) ?? {}
+  const index = typeof scope['$index'] === 'number' ? scope['$index'] : 0
+  return getRowActionSlotScope(row, index)
+}
+
+// ── 过滤操作：筛选区按钮回调 ─────────────────────────────────────────────
 
 async function handleFilterSearch(): Promise<void> {
   // 对远程表触发 refresh()；本地表 filteredRows 已是 computed 实时过滤
@@ -464,7 +486,7 @@ function handleFilterReset() {
   resetFilters()
 }
 
-// ── 字段上下文与事件桥接 ──────────────────────────────────────────────────
+// ── 事件桥接：el-table 原生事件统一转发到零代码调度器 ───────────────────
 
 async function handleCurrentChange(currentRow: IDataRow | null, oldCurrentRow?: IDataRow | null) {
   await dispatch('current-change', currentRow ?? null, oldCurrentRow)
@@ -482,6 +504,8 @@ async function handleSelectionChange(selection: IDataRow[]) {
 </script>
 
 <style scoped>
+/* ── 布局骨架 ───────────────────────────────────────────────────────────── */
+
 .renderer-table-layout {
   display: flex;
   gap: 12px;
@@ -506,89 +530,17 @@ async function handleSelectionChange(selection: IDataRow[]) {
   flex-direction: row-reverse;
 }
 
+/* 表格主体：允许在 flex 容器中收缩，避免横向内容把外层撑爆。 */
 .renderer-table-main {
   min-width: 0;
   flex: 1;
 }
 
-.renderer-table-filters {
-  width: 100%;
-  background: var(--el-fill-color-lighter, #f5f7fa);
-  border: 1px solid var(--el-border-color-lighter, #e4e7ed);
-  border-radius: 4px;
-  padding: 12px 16px;
-}
-
-.renderer-table-filters__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.renderer-table-filters__heading {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.renderer-table-filters__title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--el-text-color-primary, #303133);
-}
-
-.renderer-table-filters__toggle {
-  border: 0;
-  background: transparent;
-  color: var(--el-color-primary, #409eff);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-  line-height: 1.5;
-}
-
-.renderer-table-filters__toggle-icon {
-  display: inline-block;
-  width: 10px;
-}
-
-.renderer-table-filters__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.renderer-table-filters__content {
-  min-width: 0;
-}
-
-.renderer-table-filters__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--el-border-color-extra-light, #f0f2f5);
-}
-
-.renderer-table-filters__count {
-  margin-left: 4px;
-}
-
+/* 左右侧工具栏布局时，工具栏内部也改为纵向堆叠。 */
 .renderer-table-layout--left .renderer-table-toolbar :deep(.renderer-toolbar-lane),
 .renderer-table-layout--right .renderer-table-toolbar :deep(.renderer-toolbar-lane) {
   grid-auto-flow: row;
   grid-auto-rows: max-content;
 }
 
-.renderer-table-row-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
 </style>

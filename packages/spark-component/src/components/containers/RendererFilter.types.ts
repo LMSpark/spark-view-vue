@@ -1,3 +1,4 @@
+import type { IDataRow } from '@spark-view/spark-data'
 import type { FilterItemConfig } from '../../core/types.js'
 import type { SparkNode } from '../internal'
 
@@ -23,6 +24,10 @@ export interface RendererFilterProps {
   type?: 'r-filter'
   id?: string
   children?: SparkNode[]
+  model?: IDataRow
+  configs?: SparkNode[]
+  activeCount?: number
+  collapsed?: boolean
   columns?: Array<string | FilterItemConfig>
   collapsible?: boolean
   defaultCollapsed?: boolean
@@ -31,4 +36,7 @@ export interface RendererFilterProps {
   gridColumns?: number
   gridGap?: number | string
   gridAutoRows?: string
+  searchAction?: () => Promise<void> | void
+  resetAction?: () => Promise<void> | void
+  toggleCollapsedAction?: () => void
 }

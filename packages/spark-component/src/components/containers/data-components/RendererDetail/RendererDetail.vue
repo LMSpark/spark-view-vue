@@ -58,7 +58,8 @@ import {
   type RemoveRowHandler,
 } from '../../support/index.js'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: 'r-detail'
   id?: string
   /** 数据绑定键 */
   dataKey?: string

@@ -6,13 +6,12 @@
  */
 -->
 <template>
-  <div v-if="children.length > 0" class="renderer-actions">
-    <SparkComponentRenderer
-      v-for="(child, i) in children"
-      :key="nodeId(child) ?? `r-action-${i}`"
-      :config="child"
-    />
-  </div>
+  <RendererActionHost
+    v-if="children.length > 0"
+    :actions="children"
+    action-key-prefix="r-action"
+    wrapper-class="renderer-actions"
+  />
 </template>
 
 <script setup lang="ts">
@@ -20,7 +19,8 @@
  * @skill-description 操作列/区域组件，在 r-table 中作为操作列提取渲染，独立使用时以 flex 布局渲染操作按钮。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../internal'
+import { getSparkNodeChildren } from '../internal'
+import RendererActionHost from './support/RendererActionHost.vue'
 import type { RendererActionsProps as Props } from './RendererActions.types'
 
 const props = withDefaults(defineProps<Props>(), {

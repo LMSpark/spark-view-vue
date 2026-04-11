@@ -41,14 +41,13 @@
               <slot v-else :node="slotProps?.node" :data="slotProps?.data">
                 <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
               </slot>
-              <span v-if="hasNodeActions" class="tree-node-actions">
-                <template v-for="(action, index) in getScopedNodeActions({ row: ((slotProps?.data as IDataRow) ?? {}), index: 0 })" :key="nodeId(action) ?? `r-tree-node-action-${index}`">
-                  <SparkComponentRenderer :config="resolveNodeActionConfig(action, ((slotProps?.data as IDataRow) ?? {}), 0)" />
-                </template>
-                <template v-for="(action, index) in getLegacyNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))" :key="nodeId(action) ?? `r-tree-legacy-node-action-${index}`">
-                  <SparkComponentRenderer :config="action" />
-                </template>
-              </span>
+              <RendererActionHost
+                v-if="hasNodeActions"
+                :actions="getRenderedNodeActions(((slotProps?.data as IDataRow) ?? {}))"
+                action-key-prefix="r-tree-node-action"
+                wrapper-tag="span"
+                wrapper-class="tree-node-actions"
+              />
             </span>
           </template>
         </el-tree>
@@ -80,6 +79,7 @@ import { usePermission } from '../../../../permission/index.js'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
+import RendererActionHost from '../../support/RendererActionHost.vue'
 import {
   createRendererTreeZeroCode,
   type TreeNode,
@@ -110,7 +110,8 @@ import {
   type RemoveRowHandler,
 } from '../../support/index.js'
 
-interface Props extends SparkNode {
+interface Props extends Omit<SparkNode, 'type'> {
+  type?: 'r-tree'
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
   /** 结构化工具栏 */
@@ -348,6 +349,12 @@ function getLegacyNodeActionConfigs(row: IDataRow): SparkNode[] {
   }
 
   return actions
+}
+
+function getRenderedNodeActions(row: IDataRow): SparkNode[] {
+  const scopedActions = getScopedNodeActions({ row, index: 0 })
+    .map(action => resolveNodeActionConfig(action, row, 0))
+  return [...scopedActions, ...getLegacyNodeActionConfigs(row)]
 }
 
 // 事件处理器与零代码动作由 createRendererTreeZeroCode 收口
