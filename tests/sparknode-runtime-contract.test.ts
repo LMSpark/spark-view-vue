@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { Spark, PAGE_COMPONENT_REGISTRY, useSparkComponent } from '@spark-view/spark-component'
+import { Spark, PAGE_COMPONENT_REGISTRY, registerAllRenderers, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
@@ -103,5 +103,11 @@ describe('SparkNode runtime contract', () => {
     expect(lifted.children?.[0]).toEqual(
       expect.objectContaining({ type: 'r-tree-node-summary' }),
     )
+  })
+
+  it('registers r-row-fragment as a public row-scoped primitive', () => {
+    registerAllRenderers()
+
+    expect(Spark.getRegistry().get('r-row-fragment')).toBeDefined()
   })
 })

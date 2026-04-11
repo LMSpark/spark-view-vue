@@ -103,7 +103,7 @@ import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import type { ActionsNode } from '../../RendererActions.types'
 import type { EditorNode } from '../../RendererEditor.types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
-import RendererDataScope from '../RendererDataScope.vue'
+import RendererDataScope from '../RendererRowFragment/RendererDataScope.vue'
 import {
   type AddRowHandler,
   type EditRowHandler,

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { RendererTable, FieldText } from '@spark-view/spark-component'
+import { RendererTable, RendererRowFragment, FieldText, DATA_ROW, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
@@ -125,15 +125,62 @@ const ElTableStub = defineComponent({
 const ElTableColumnStub = defineComponent({
   props: {
     label: String,
+    width: [String, Number],
+    minWidth: [String, Number],
+    align: String,
+    headerAlign: String,
+    className: String,
     fixed: [Boolean, String],
   },
   setup(props, { slots }) {
     return () => h('div', {
       class: 'el-table-column-stub',
       'data-label': props.label,
+      'data-width': String(props.width ?? ''),
+      'data-min-width': String(props.minWidth ?? ''),
+      'data-align': String(props.align ?? ''),
+      'data-header-align': String(props.headerAlign ?? ''),
+      'data-class-name': String(props.className ?? ''),
       'data-fixed': String(props.fixed ?? ''),
     }, slots['default']?.({ row: { id: 7, name: 'Alice' }, $index: 2 }))
   }
+})
+
+const TableRowFragmentProbe = defineComponent({
+  setup() {
+    const { sparkConsume } = useSparkComponent({ type: 'row-fragment-probe' } as SparkNode)
+    const row = sparkConsume(DATA_ROW)
+
+    return () => h('div', {
+      class: 'row-fragment-probe',
+      'data-row-name': String(row?.['name'] ?? ''),
+    }, String(row?.['name'] ?? ''))
+  },
+})
+
+const TableRowFragmentIconProbe = defineComponent({
+  setup() {
+    const { sparkConsume } = useSparkComponent({ type: 'row-fragment-icon-probe' } as SparkNode)
+    const row = sparkConsume(DATA_ROW)
+
+    return () => h('i', {
+      class: 'row-fragment-icon-probe',
+      'data-icon': String(row?.['icon'] ?? ''),
+    })
+  },
+})
+
+const TableRowFragmentLinkProbe = defineComponent({
+  setup() {
+    const { sparkConsume } = useSparkComponent({ type: 'row-fragment-link-probe' } as SparkNode)
+    const row = sparkConsume(DATA_ROW)
+
+    return () => h('a', {
+      class: 'row-fragment-link-probe',
+      href: String(row?.['href'] ?? ''),
+      target: '_blank',
+    }, String(row?.['label'] ?? ''))
+  },
 })
 
 const ElButtonStub = defineComponent({
@@ -2288,6 +2335,149 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(labels).toContain('省份')
     expect(labels).toContain('城市')
     expect(labels).toContain('分数')
+  })
+
+  it('should render r-row-fragment as a table column with row-scoped fragment content', () => {
+    const fragmentDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
+    const registry = Spark.createRegistry()
+    registry.register('r-row-fragment', RendererRowFragment)
+    registry.register('row-fragment-probe', TableRowFragmentProbe)
+    const plugin = Spark.createPlugin({ registry })
+
+    const Harness = defineComponent({
+      setup() {
+        const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
+        sparkProvide(PAGE_DATASET, fragmentDataSet)
+        return () => h(RendererTable as never, {
+          dataKey: 'Users@rows',
+          children: [
+            {
+              type: 'r-row-fragment',
+              props: {
+                title: '用户摘要',
+                width: 320,
+                minWidth: 280,
+                align: 'center',
+                headerAlign: 'right',
+                class: 'user-summary-col',
+              },
+              children: [
+                { type: 'row-fragment-probe' },
+              ],
+            },
+          ],
+        })
+      },
+    })
+
+    const wrapper = mount(Harness, {
+      global: {
+        plugins: [plugin],
+        stubs: {
+          SparkComponentRenderer: false,
+          'spark-component-renderer': false,
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+        },
+      },
+    })
+
+    const column = wrapper.find('.el-table-column-stub[data-label="用户摘要"]')
+    expect(column.exists()).toBe(true)
+    expect(column.attributes('data-width')).toBe('320')
+    expect(column.attributes('data-min-width')).toBe('280')
+    expect(column.attributes('data-align')).toBe('center')
+    expect(column.attributes('data-header-align')).toBe('right')
+    expect(column.attributes('data-class-name')).toBe('user-summary-col')
+    expect(wrapper.find('.row-fragment-probe').attributes('data-row-name')).toBe('Alice')
+    expect(wrapper.find('.row-fragment-probe').text()).toBe('Alice')
+  })
+
+  it('should render a minimal icon-and-link row fragment example from DATA_ROW', () => {
+    const rowFixture = {
+      id: 1,
+      icon: 'ri-user-line',
+      href: 'https://example.com/users/1',
+      label: 'Alice profile',
+    }
+    const IconLinkTableColumnStub = defineComponent({
+      props: {
+        label: String,
+        width: [String, Number],
+        minWidth: [String, Number],
+        align: String,
+        headerAlign: String,
+        className: String,
+        fixed: [Boolean, String],
+      },
+      setup(props, { slots }) {
+        return () => h('div', {
+          class: 'el-table-column-stub',
+          'data-label': props.label,
+          'data-width': String(props.width ?? ''),
+          'data-min-width': String(props.minWidth ?? ''),
+          'data-align': String(props.align ?? ''),
+          'data-header-align': String(props.headerAlign ?? ''),
+          'data-class-name': String(props.className ?? ''),
+          'data-fixed': String(props.fixed ?? ''),
+        }, slots['default']?.({ row: rowFixture, $index: 2 }))
+      },
+    })
+    const fragmentDataSet = createInlineDataSet('Users', [{
+      id: 1,
+      icon: rowFixture.icon,
+      href: rowFixture.href,
+      label: rowFixture.label,
+    }])
+    const registry = Spark.createRegistry()
+    registry.register('r-row-fragment', RendererRowFragment)
+    registry.register('row-fragment-icon-probe', TableRowFragmentIconProbe)
+    registry.register('row-fragment-link-probe', TableRowFragmentLinkProbe)
+    const plugin = Spark.createPlugin({ registry })
+
+    const Harness = defineComponent({
+      setup() {
+        const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
+        sparkProvide(PAGE_DATASET, fragmentDataSet)
+        return () => h(RendererTable as never, {
+          dataKey: 'Users@rows',
+          children: [
+            {
+              type: 'r-row-fragment',
+              props: {
+                title: '入口',
+                width: 220,
+                fields: [
+                  { type: 'row-fragment-icon-probe' },
+                  { type: 'row-fragment-link-probe' },
+                ],
+              },
+            },
+          ],
+        })
+      },
+    })
+
+    const wrapper = mount(Harness, {
+      global: {
+        plugins: [plugin],
+        stubs: {
+          SparkComponentRenderer: false,
+          'spark-component-renderer': false,
+          'el-table': ElTableStub,
+          'el-table-column': IconLinkTableColumnStub,
+        },
+      },
+    })
+
+    const column = wrapper.find('.el-table-column-stub[data-label="入口"]')
+    expect(column.exists()).toBe(true)
+    expect(column.attributes('data-width')).toBe('220')
+    expect(column.find('.row-fragment-icon-probe').attributes('data-icon')).toBe('ri-user-line')
+
+    const link = column.find('.row-fragment-link-probe')
+    expect(link.attributes('href')).toBe('https://example.com/users/1')
+    expect(link.text()).toBe('Alice profile')
   })
 
   it('should render tree toolbar children and content template', async () => {

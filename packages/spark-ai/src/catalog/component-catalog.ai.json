@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-10T20:22:23.426Z",
-  "componentCount": 121,
+  "buildTime": "2026-04-11T06:16:03.296Z",
+  "componentCount": 123,
   "registry": {
     "containers": [
       "r-block",
@@ -18,6 +18,8 @@
       "r-tree"
     ],
     "fields": [
+      "r-action-host",
+      "r-action-strip",
       "r-actions",
       "r-anchor",
       "r-anchor-link",
@@ -144,6 +146,12 @@
       "category": "container",
       "description": "数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。",
       "props": [
+        {
+          "name": "type",
+          "type": "\"r-table\"",
+          "required": false,
+          "default": "\"r-table\""
+        },
         {
           "name": "dataKey",
           "type": "string",
@@ -485,14 +493,7 @@
           "name": "children",
           "type": "SparkNode[]",
           "required": false,
-          "description": "子节点列表（列节点 + 区域节点）"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-table\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
+          "description": "表格内容列配置；toolbar / filter / actions 已由绑定层提升到 props"
         },
         {
           "name": "props",
@@ -782,13 +783,20 @@
       "exposed": [
         {
           "name": "type",
-          "type": "string",
-          "description": "组件类型（对应 ComponentDefinition.type）"
+          "type": "\"r-table\" | undefined",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-table\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-table\""
+            ]
+          }
         },
         {
           "name": "children",
           "type": "SparkNode[]",
-          "description": "子节点列表（列节点 + 区域节点）"
+          "description": "表格内容列配置；toolbar / filter / actions 已由绑定层提升到 props"
         },
         {
           "name": "props",
@@ -876,6 +884,106 @@
                     },
                     "gridAutoRows": {
                       "name": "gridAutoRows",
+                      "type": "string",
+                      "required": false
+                    }
+                  }
+                }
+              },
+              "children": {
+                "name": "children",
+                "type": "SparkNodeChildren & SparkNode[]",
+                "required": false,
+                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+              }
+            }
+          }
+        },
+        {
+          "name": "actions",
+          "type": "ActionsNode",
+          "description": "结构化行动作",
+          "schema": {
+            "kind": "object",
+            "type": "ActionsNode",
+            "properties": {
+              "type": {
+                "name": "type",
+                "type": "\"r-actions\"",
+                "required": true,
+                "description": "组件类型（对应 ComponentDefinition.type）"
+              },
+              "props": {
+                "name": "props",
+                "type": "Record<string, unknown> & RendererActionsConfigProps",
+                "required": false,
+                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+                "schema": {
+                  "kind": "object",
+                  "type": "Record<string, unknown> & RendererActionsConfigProps",
+                  "properties": {
+                    "position": {
+                      "name": "position",
+                      "type": "ActionsPosition",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "ActionsPosition",
+                        "variants": [
+                          "\"left\"",
+                          "\"right\""
+                        ]
+                      }
+                    },
+                    "label": {
+                      "name": "label",
+                      "type": "string",
+                      "required": false
+                    },
+                    "width": {
+                      "name": "width",
+                      "type": "string | number",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "string | number",
+                        "variants": [
+                          "string",
+                          "number"
+                        ]
+                      }
+                    },
+                    "align": {
+                      "name": "align",
+                      "type": "ActionsAlign",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "ActionsAlign",
+                        "variants": [
+                          "\"left\"",
+                          "\"right\"",
+                          "\"center\""
+                        ]
+                      }
+                    },
+                    "fixed": {
+                      "name": "fixed",
+                      "type": "boolean | ActionsPosition",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "boolean | ActionsPosition",
+                        "variants": [
+                          "false",
+                          "true",
+                          "\"left\"",
+                          "\"right\""
+                        ]
+                      }
+                    },
+                    "class": {
+                      "name": "class",
                       "type": "string",
                       "required": false
                     }
@@ -1027,106 +1135,6 @@
           "name": "dataKey",
           "type": "string",
           "description": "DataKey 格式：tableName@field"
-        },
-        {
-          "name": "actions",
-          "type": "ActionsNode",
-          "description": "结构化行动作",
-          "schema": {
-            "kind": "object",
-            "type": "ActionsNode",
-            "properties": {
-              "type": {
-                "name": "type",
-                "type": "\"r-actions\"",
-                "required": true,
-                "description": "组件类型（对应 ComponentDefinition.type）"
-              },
-              "props": {
-                "name": "props",
-                "type": "Record<string, unknown> & RendererActionsConfigProps",
-                "required": false,
-                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
-                "schema": {
-                  "kind": "object",
-                  "type": "Record<string, unknown> & RendererActionsConfigProps",
-                  "properties": {
-                    "position": {
-                      "name": "position",
-                      "type": "ActionsPosition",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "ActionsPosition",
-                        "variants": [
-                          "\"left\"",
-                          "\"right\""
-                        ]
-                      }
-                    },
-                    "label": {
-                      "name": "label",
-                      "type": "string",
-                      "required": false
-                    },
-                    "width": {
-                      "name": "width",
-                      "type": "string | number",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "string | number",
-                        "variants": [
-                          "string",
-                          "number"
-                        ]
-                      }
-                    },
-                    "align": {
-                      "name": "align",
-                      "type": "ActionsAlign",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "ActionsAlign",
-                        "variants": [
-                          "\"left\"",
-                          "\"right\"",
-                          "\"center\""
-                        ]
-                      }
-                    },
-                    "fixed": {
-                      "name": "fixed",
-                      "type": "boolean | ActionsPosition",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "boolean | ActionsPosition",
-                        "variants": [
-                          "false",
-                          "true",
-                          "\"left\"",
-                          "\"right\""
-                        ]
-                      }
-                    },
-                    "class": {
-                      "name": "class",
-                      "type": "string",
-                      "required": false
-                    }
-                  }
-                }
-              },
-              "children": {
-                "name": "children",
-                "type": "SparkNodeChildren & SparkNode[]",
-                "required": false,
-                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
-              }
-            }
-          }
         },
         {
           "name": "onAddRow",
@@ -1594,97 +1602,7 @@
       "slots": [
         {
           "name": "row-actions",
-          "type": "{ dataSource: DataView | null | undefined; modelPermission: IModelPermission | undefined; row: IDataRow; rowIndex: number; }",
-          "schema": {
-            "kind": "object",
-            "type": "{ dataSource: DataView | null | undefined; modelPermission: IModelPermission | undefined; row: IDataRow; rowIndex: number; }",
-            "properties": {
-              "dataSource": {
-                "name": "dataSource",
-                "type": "DataView | null | undefined",
-                "required": true,
-                "schema": {
-                  "kind": "enum",
-                  "type": "DataView | null | undefined",
-                  "variants": [
-                    "undefined",
-                    "null",
-                    "DataView"
-                  ]
-                }
-              },
-              "modelPermission": {
-                "name": "modelPermission",
-                "type": "IModelPermission | undefined",
-                "required": true,
-                "schema": {
-                  "kind": "enum",
-                  "type": "IModelPermission | undefined",
-                  "variants": [
-                    "undefined",
-                    "IModelPermission"
-                  ]
-                }
-              },
-              "row": {
-                "name": "row",
-                "type": "IDataRow",
-                "required": true,
-                "schema": {
-                  "kind": "object",
-                  "type": "IDataRow",
-                  "properties": {
-                    "_perm": {
-                      "name": "_perm",
-                      "type": "IInstancePermission",
-                      "required": false,
-                      "schema": {
-                        "kind": "object",
-                        "type": "IInstancePermission",
-                        "properties": {
-                          "allowCreateChild": {
-                            "name": "allowCreateChild",
-                            "type": "boolean",
-                            "required": false
-                          },
-                          "allowDelete": {
-                            "name": "allowDelete",
-                            "type": "boolean",
-                            "required": false
-                          },
-                          "editableFields": {
-                            "name": "editableFields",
-                            "type": "string[]",
-                            "required": false
-                          },
-                          "hiddenFields": {
-                            "name": "hiddenFields",
-                            "type": "string[]",
-                            "required": false
-                          },
-                          "maskedFields": {
-                            "name": "maskedFields",
-                            "type": "string[]",
-                            "required": false
-                          },
-                          "permissionToken": {
-                            "name": "permissionToken",
-                            "type": "string",
-                            "required": false
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "rowIndex": {
-                "name": "rowIndex",
-                "type": "number",
-                "required": true
-              }
-            }
-          }
+          "type": "{}"
         },
         {
           "name": "default",
@@ -1715,6 +1633,12 @@
       "category": "container",
       "description": "数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。",
       "props": [
+        {
+          "name": "type",
+          "type": "\"r-form\"",
+          "required": false,
+          "default": "\"r-form\""
+        },
         {
           "name": "id",
           "type": "string",
@@ -1902,13 +1826,6 @@
           "description": "栅格行高"
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-form\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -2030,8 +1947,15 @@
       "exposed": [
         {
           "name": "type",
-          "type": "string",
-          "description": "组件类型（对应 ComponentDefinition.type）"
+          "type": "\"r-form\" | undefined",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-form\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-form\""
+            ]
+          }
         },
         {
           "name": "gridColumns",
@@ -2512,6 +2436,12 @@
       "description": "数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。",
       "props": [
         {
+          "name": "type",
+          "type": "\"r-detail\"",
+          "required": false,
+          "default": "\"r-detail\""
+        },
+        {
           "name": "id",
           "type": "string",
           "required": false
@@ -2723,13 +2653,6 @@
           }
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-detail\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -2846,8 +2769,15 @@
       "exposed": [
         {
           "name": "type",
-          "type": "string",
-          "description": "组件类型（对应 ComponentDefinition.type）"
+          "type": "\"r-detail\" | undefined",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-detail\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-detail\""
+            ]
+          }
         },
         {
           "name": "gridColumns",
@@ -3320,6 +3250,12 @@
       "description": "树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器侧面板。",
       "props": [
         {
+          "name": "type",
+          "type": "\"r-tree\"",
+          "required": false,
+          "default": "\"r-tree\""
+        },
+        {
           "name": "dataKey",
           "type": "string",
           "required": false,
@@ -3705,13 +3641,6 @@
           }
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-tree\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -3873,8 +3802,15 @@
       "exposed": [
         {
           "name": "type",
-          "type": "string",
-          "description": "组件类型（对应 ComponentDefinition.type）"
+          "type": "\"r-tree\" | undefined",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-tree\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-tree\""
+            ]
+          }
         },
         {
           "name": "children",
@@ -3885,6 +3821,106 @@
           "name": "props",
           "type": "Record<string, unknown>",
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        {
+          "name": "actions",
+          "type": "ActionsNode",
+          "description": "结构化节点动作",
+          "schema": {
+            "kind": "object",
+            "type": "ActionsNode",
+            "properties": {
+              "type": {
+                "name": "type",
+                "type": "\"r-actions\"",
+                "required": true,
+                "description": "组件类型（对应 ComponentDefinition.type）"
+              },
+              "props": {
+                "name": "props",
+                "type": "Record<string, unknown> & RendererActionsConfigProps",
+                "required": false,
+                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+                "schema": {
+                  "kind": "object",
+                  "type": "Record<string, unknown> & RendererActionsConfigProps",
+                  "properties": {
+                    "position": {
+                      "name": "position",
+                      "type": "ActionsPosition",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "ActionsPosition",
+                        "variants": [
+                          "\"left\"",
+                          "\"right\""
+                        ]
+                      }
+                    },
+                    "label": {
+                      "name": "label",
+                      "type": "string",
+                      "required": false
+                    },
+                    "width": {
+                      "name": "width",
+                      "type": "string | number",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "string | number",
+                        "variants": [
+                          "string",
+                          "number"
+                        ]
+                      }
+                    },
+                    "align": {
+                      "name": "align",
+                      "type": "ActionsAlign",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "ActionsAlign",
+                        "variants": [
+                          "\"left\"",
+                          "\"right\"",
+                          "\"center\""
+                        ]
+                      }
+                    },
+                    "fixed": {
+                      "name": "fixed",
+                      "type": "boolean | ActionsPosition",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "boolean | ActionsPosition",
+                        "variants": [
+                          "false",
+                          "true",
+                          "\"left\"",
+                          "\"right\""
+                        ]
+                      }
+                    },
+                    "class": {
+                      "name": "class",
+                      "type": "string",
+                      "required": false
+                    }
+                  }
+                }
+              },
+              "children": {
+                "name": "children",
+                "type": "SparkNodeChildren & SparkNode[]",
+                "required": false,
+                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+              }
+            }
+          }
         },
         {
           "name": "toolbar",
@@ -4022,106 +4058,6 @@
           "name": "dataKey",
           "type": "string",
           "description": "数据绑定键，如 \"TreeData@rows\""
-        },
-        {
-          "name": "actions",
-          "type": "ActionsNode",
-          "description": "结构化节点动作",
-          "schema": {
-            "kind": "object",
-            "type": "ActionsNode",
-            "properties": {
-              "type": {
-                "name": "type",
-                "type": "\"r-actions\"",
-                "required": true,
-                "description": "组件类型（对应 ComponentDefinition.type）"
-              },
-              "props": {
-                "name": "props",
-                "type": "Record<string, unknown> & RendererActionsConfigProps",
-                "required": false,
-                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
-                "schema": {
-                  "kind": "object",
-                  "type": "Record<string, unknown> & RendererActionsConfigProps",
-                  "properties": {
-                    "position": {
-                      "name": "position",
-                      "type": "ActionsPosition",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "ActionsPosition",
-                        "variants": [
-                          "\"left\"",
-                          "\"right\""
-                        ]
-                      }
-                    },
-                    "label": {
-                      "name": "label",
-                      "type": "string",
-                      "required": false
-                    },
-                    "width": {
-                      "name": "width",
-                      "type": "string | number",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "string | number",
-                        "variants": [
-                          "string",
-                          "number"
-                        ]
-                      }
-                    },
-                    "align": {
-                      "name": "align",
-                      "type": "ActionsAlign",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "ActionsAlign",
-                        "variants": [
-                          "\"left\"",
-                          "\"right\"",
-                          "\"center\""
-                        ]
-                      }
-                    },
-                    "fixed": {
-                      "name": "fixed",
-                      "type": "boolean | ActionsPosition",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "boolean | ActionsPosition",
-                        "variants": [
-                          "false",
-                          "true",
-                          "\"left\"",
-                          "\"right\""
-                        ]
-                      }
-                    },
-                    "class": {
-                      "name": "class",
-                      "type": "string",
-                      "required": false
-                    }
-                  }
-                }
-              },
-              "children": {
-                "name": "children",
-                "type": "SparkNodeChildren & SparkNode[]",
-                "required": false,
-                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
-              }
-            }
-          }
         },
         {
           "name": "editor",
@@ -4560,6 +4496,12 @@
       "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。",
       "props": [
         {
+          "name": "type",
+          "type": "\"r-list\"",
+          "required": false,
+          "default": "\"r-list\""
+        },
+        {
           "name": "dataKey",
           "type": "string",
           "required": false,
@@ -4936,13 +4878,6 @@
           "description": "项跨行数"
         },
         {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "default": "\"r-list\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
           "name": "props",
           "type": "Record<string, unknown>",
           "required": false,
@@ -5136,8 +5071,15 @@
       "exposed": [
         {
           "name": "type",
-          "type": "string",
-          "description": "组件类型（对应 ComponentDefinition.type）"
+          "type": "\"r-list\" | undefined",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-list\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-list\""
+            ]
+          }
         },
         {
           "name": "columns",
@@ -5316,6 +5258,106 @@
           "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         },
         {
+          "name": "actions",
+          "type": "ActionsNode",
+          "description": "结构化列表项动作",
+          "schema": {
+            "kind": "object",
+            "type": "ActionsNode",
+            "properties": {
+              "type": {
+                "name": "type",
+                "type": "\"r-actions\"",
+                "required": true,
+                "description": "组件类型（对应 ComponentDefinition.type）"
+              },
+              "props": {
+                "name": "props",
+                "type": "Record<string, unknown> & RendererActionsConfigProps",
+                "required": false,
+                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+                "schema": {
+                  "kind": "object",
+                  "type": "Record<string, unknown> & RendererActionsConfigProps",
+                  "properties": {
+                    "position": {
+                      "name": "position",
+                      "type": "ActionsPosition",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "ActionsPosition",
+                        "variants": [
+                          "\"left\"",
+                          "\"right\""
+                        ]
+                      }
+                    },
+                    "label": {
+                      "name": "label",
+                      "type": "string",
+                      "required": false
+                    },
+                    "width": {
+                      "name": "width",
+                      "type": "string | number",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "string | number",
+                        "variants": [
+                          "string",
+                          "number"
+                        ]
+                      }
+                    },
+                    "align": {
+                      "name": "align",
+                      "type": "ActionsAlign",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "ActionsAlign",
+                        "variants": [
+                          "\"left\"",
+                          "\"right\"",
+                          "\"center\""
+                        ]
+                      }
+                    },
+                    "fixed": {
+                      "name": "fixed",
+                      "type": "boolean | ActionsPosition",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "boolean | ActionsPosition",
+                        "variants": [
+                          "false",
+                          "true",
+                          "\"left\"",
+                          "\"right\""
+                        ]
+                      }
+                    },
+                    "class": {
+                      "name": "class",
+                      "type": "string",
+                      "required": false
+                    }
+                  }
+                }
+              },
+              "children": {
+                "name": "children",
+                "type": "SparkNodeChildren & SparkNode[]",
+                "required": false,
+                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+              }
+            }
+          }
+        },
+        {
           "name": "toolbar",
           "type": "ToolbarNode",
           "description": "结构化工具栏",
@@ -5451,106 +5493,6 @@
           "name": "dataKey",
           "type": "string",
           "description": "数据绑定键"
-        },
-        {
-          "name": "actions",
-          "type": "ActionsNode",
-          "description": "结构化列表项动作",
-          "schema": {
-            "kind": "object",
-            "type": "ActionsNode",
-            "properties": {
-              "type": {
-                "name": "type",
-                "type": "\"r-actions\"",
-                "required": true,
-                "description": "组件类型（对应 ComponentDefinition.type）"
-              },
-              "props": {
-                "name": "props",
-                "type": "Record<string, unknown> & RendererActionsConfigProps",
-                "required": false,
-                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
-                "schema": {
-                  "kind": "object",
-                  "type": "Record<string, unknown> & RendererActionsConfigProps",
-                  "properties": {
-                    "position": {
-                      "name": "position",
-                      "type": "ActionsPosition",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "ActionsPosition",
-                        "variants": [
-                          "\"left\"",
-                          "\"right\""
-                        ]
-                      }
-                    },
-                    "label": {
-                      "name": "label",
-                      "type": "string",
-                      "required": false
-                    },
-                    "width": {
-                      "name": "width",
-                      "type": "string | number",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "string | number",
-                        "variants": [
-                          "string",
-                          "number"
-                        ]
-                      }
-                    },
-                    "align": {
-                      "name": "align",
-                      "type": "ActionsAlign",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "ActionsAlign",
-                        "variants": [
-                          "\"left\"",
-                          "\"right\"",
-                          "\"center\""
-                        ]
-                      }
-                    },
-                    "fixed": {
-                      "name": "fixed",
-                      "type": "boolean | ActionsPosition",
-                      "required": false,
-                      "schema": {
-                        "kind": "enum",
-                        "type": "boolean | ActionsPosition",
-                        "variants": [
-                          "false",
-                          "true",
-                          "\"left\"",
-                          "\"right\""
-                        ]
-                      }
-                    },
-                    "class": {
-                      "name": "class",
-                      "type": "string",
-                      "required": false
-                    }
-                  }
-                }
-              },
-              "children": {
-                "name": "children",
-                "type": "SparkNodeChildren & SparkNode[]",
-                "required": false,
-                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
-              }
-            }
-          }
         },
         {
           "name": "onAddRow",
@@ -5792,97 +5734,7 @@
       "slots": [
         {
           "name": "item-actions",
-          "type": "{ dataSource: DataView | null | undefined; modelPermission: IModelPermission | undefined; row: IDataRow; rowIndex: number; }",
-          "schema": {
-            "kind": "object",
-            "type": "{ dataSource: DataView | null | undefined; modelPermission: IModelPermission | undefined; row: IDataRow; rowIndex: number; }",
-            "properties": {
-              "dataSource": {
-                "name": "dataSource",
-                "type": "DataView | null | undefined",
-                "required": true,
-                "schema": {
-                  "kind": "enum",
-                  "type": "DataView | null | undefined",
-                  "variants": [
-                    "undefined",
-                    "null",
-                    "DataView"
-                  ]
-                }
-              },
-              "modelPermission": {
-                "name": "modelPermission",
-                "type": "IModelPermission | undefined",
-                "required": true,
-                "schema": {
-                  "kind": "enum",
-                  "type": "IModelPermission | undefined",
-                  "variants": [
-                    "undefined",
-                    "IModelPermission"
-                  ]
-                }
-              },
-              "row": {
-                "name": "row",
-                "type": "IDataRow",
-                "required": true,
-                "schema": {
-                  "kind": "object",
-                  "type": "IDataRow",
-                  "properties": {
-                    "_perm": {
-                      "name": "_perm",
-                      "type": "IInstancePermission",
-                      "required": false,
-                      "schema": {
-                        "kind": "object",
-                        "type": "IInstancePermission",
-                        "properties": {
-                          "allowCreateChild": {
-                            "name": "allowCreateChild",
-                            "type": "boolean",
-                            "required": false
-                          },
-                          "allowDelete": {
-                            "name": "allowDelete",
-                            "type": "boolean",
-                            "required": false
-                          },
-                          "editableFields": {
-                            "name": "editableFields",
-                            "type": "string[]",
-                            "required": false
-                          },
-                          "hiddenFields": {
-                            "name": "hiddenFields",
-                            "type": "string[]",
-                            "required": false
-                          },
-                          "maskedFields": {
-                            "name": "maskedFields",
-                            "type": "string[]",
-                            "required": false
-                          },
-                          "permissionToken": {
-                            "name": "permissionToken",
-                            "type": "string",
-                            "required": false
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "rowIndex": {
-                "name": "rowIndex",
-                "type": "number",
-                "required": true
-              }
-            }
-          }
+          "type": "{}"
         },
         {
           "name": "default",
@@ -9620,6 +9472,11 @@
           "required": false
         },
         {
+          "name": "placeholder",
+          "type": "string",
+          "required": false
+        },
+        {
           "name": "name",
           "type": "string",
           "required": false
@@ -9662,11 +9519,6 @@
         },
         {
           "name": "optionValueField",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
           "type": "string",
           "required": false
         },
@@ -9797,6 +9649,11 @@
           "required": false
         },
         {
+          "name": "placeholder",
+          "type": "string",
+          "required": false
+        },
+        {
           "name": "name",
           "type": "string",
           "required": false
@@ -9839,11 +9696,6 @@
         },
         {
           "name": "optionValueField",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
           "type": "string",
           "required": false
         },
@@ -9974,6 +9826,11 @@
           "required": false
         },
         {
+          "name": "placeholder",
+          "type": "string",
+          "required": false
+        },
+        {
           "name": "name",
           "type": "string",
           "required": false
@@ -10016,11 +9873,6 @@
         },
         {
           "name": "optionValueField",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "placeholder",
           "type": "string",
           "required": false
         },
@@ -10247,7 +10099,7 @@
     "r-filter": {
       "type": "r-filter",
       "category": "field",
-      "description": "筛选区组件，在 r-table 中作为筛选表单区域提取渲染，支持折叠和网格布局。",
+      "description": "筛选区组件，独立使用时仅渲染 wrapper 子节点；被 r-table 复用时负责筛选面板壳、折叠和操作按钮。",
       "props": [
         {
           "name": "type",
@@ -10264,6 +10116,89 @@
           "name": "children",
           "type": "SparkNode[]",
           "required": false
+        },
+        {
+          "name": "model",
+          "type": "IDataRow",
+          "required": false,
+          "schema": {
+            "kind": "object",
+            "type": "IDataRow",
+            "properties": {
+              "_perm": {
+                "name": "_perm",
+                "type": "IInstancePermission",
+                "required": false,
+                "schema": {
+                  "kind": "object",
+                  "type": "IInstancePermission",
+                  "properties": {
+                    "allowCreateChild": {
+                      "name": "allowCreateChild",
+                      "type": "boolean",
+                      "required": false,
+                      "schema": {
+                        "kind": "enum",
+                        "type": "boolean",
+                        "variants": [
+                          "false",
+                          "true"
+                        ]
+                      }
+                    },
+                    "allowDelete": {
+                      "name": "allowDelete",
+                      "type": "boolean",
+                      "required": false
+                    },
+                    "editableFields": {
+                      "name": "editableFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "hiddenFields": {
+                      "name": "hiddenFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "maskedFields": {
+                      "name": "maskedFields",
+                      "type": "string[]",
+                      "required": false
+                    },
+                    "permissionToken": {
+                      "name": "permissionToken",
+                      "type": "string",
+                      "required": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "configs",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "activeCount",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "collapsed",
+          "type": "boolean",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "boolean",
+            "variants": [
+              "false",
+              "true"
+            ]
+          }
         },
         {
           "name": "columns",
@@ -10341,6 +10276,21 @@
         {
           "name": "gridAutoRows",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "searchAction",
+          "type": "() => void | Promise<void>",
+          "required": false
+        },
+        {
+          "name": "resetAction",
+          "type": "() => void | Promise<void>",
+          "required": false
+        },
+        {
+          "name": "toggleCollapsedAction",
+          "type": "() => void",
           "required": false
         }
       ],
@@ -10483,6 +10433,96 @@
         }
       ],
       "emits": [],
+      "source": "vcm"
+    },
+    "r-action-strip": {
+      "type": "r-action-strip",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-action-strip\" 组织子组件。",
+      "props": [
+        {
+          "name": "actions",
+          "type": "SparkNode[]",
+          "required": true
+        },
+        {
+          "name": "actionKeyPrefix",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "slotScope",
+          "type": "object",
+          "required": false
+        }
+      ],
+      "emits": [],
+      "slots": [
+        {
+          "name": "actions",
+          "type": "{}"
+        }
+      ],
+      "source": "vcm"
+    },
+    "r-action-host": {
+      "type": "r-action-host",
+      "category": "field",
+      "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-action-host\" 组织子组件。",
+      "props": [
+        {
+          "name": "actions",
+          "type": "SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "actionKeyPrefix",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "slotScope",
+          "type": "object",
+          "required": false
+        },
+        {
+          "name": "wrapperTag",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "wrapperClass",
+          "type": "unknown",
+          "required": false
+        },
+        {
+          "name": "hostTag",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "hostAttrs",
+          "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "resolveActions",
+          "type": "(scope: Record<string, unknown>) => SparkNode[]",
+          "required": false
+        },
+        {
+          "name": "resolveSlotScope",
+          "type": "(scope: Record<string, unknown>) => object",
+          "required": false
+        }
+      ],
+      "emits": [],
+      "slots": [
+        {
+          "name": "actions",
+          "type": "{}"
+        }
+      ],
       "source": "vcm"
     },
     "r-tour": {

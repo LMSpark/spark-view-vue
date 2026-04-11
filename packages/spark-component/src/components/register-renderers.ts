@@ -15,7 +15,7 @@ import { Spark } from '../system/spark.js'
 
 // ── 数据容器 ──
 import {
-  RendererTable, RendererForm, RendererDetail, RendererTree, RendererList,
+  RendererTable, RendererForm, RendererDetail, RendererTree, RendererList, RendererRowFragment,
 } from './containers/data-components/index.js'
 
 // ── 命名区域 ──
@@ -75,6 +75,7 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-detail', RendererDetail, { childProps: ['r-toolbar'] }],
   ['r-tree', RendererTree, { childProps: ['r-toolbar', 'r-actions', 'r-editor'] }],
   ['r-list', RendererList, { childProps: ['r-toolbar', 'r-actions'] }],
+  ['r-row-fragment', RendererRowFragment],
   // 可提升子组件
   ['r-actions', RendererActions],
   ['r-filter', RendererFilter],

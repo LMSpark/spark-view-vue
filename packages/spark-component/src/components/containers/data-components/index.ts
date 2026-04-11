@@ -8,6 +8,13 @@ export { default as RendererTree } from './RendererTree/index.js'
 export type { RendererTreeApi } from './RendererTree/index.js'
 export { default as RendererList } from './RendererList/index.js'
 export type { RendererListApi } from './RendererList/index.js'
-export { default as RendererDataScope } from './RendererDataScope.vue'
+export { default as RendererRowFragment } from './RendererRowFragment/index.js'
+export { RendererDataScope } from './RendererRowFragment/index.js'
+export type {
+	RowFragmentAlign,
+	RendererRowFragmentConfigProps,
+	RendererRowFragmentProps,
+	RowFragmentNode,
+} from './RendererRowFragment/index.js'
 export { default as RendererFieldScope } from './RendererFieldScope.vue'
 export { default as RendererListItemScope } from './RendererListItemScope.vue'
