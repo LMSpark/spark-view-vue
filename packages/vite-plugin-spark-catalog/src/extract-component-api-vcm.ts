@@ -38,7 +38,7 @@ let _tsconfigPath: string | null = null
  */
 export function getOrCreateChecker(tsconfigPath: string): ComponentMetaChecker {
   if (_checker !== null && _tsconfigPath === tsconfigPath) return _checker
-  _checker = createChecker(tsconfigPath)
+  _checker = createChecker(tsconfigPath, { rawType: true })
   _tsconfigPath = tsconfigPath
   return _checker
 }
@@ -64,6 +64,54 @@ export interface VcmApiDescriptor {
   hasIndexSignature: boolean
 }
 
+type SchemaOwner = 'workspace' | 'external'
+
+type PropEntryWithIdentity = PropEntry & {
+  __schemaIdentityKey?: string
+  __schemaOwner?: SchemaOwner
+}
+
+const normalizedWorkspaceRoot = `${process.cwd().replace(/\\/g, '/').toLowerCase()}/`
+
+function getRawTypeDeclarationFiles(rawType: unknown): string[] {
+  if (rawType === null || typeof rawType !== 'object') return []
+
+  const symbols = [
+    (rawType as { symbol?: { declarations?: Array<{ getSourceFile?: () => { fileName?: string } }> } }).symbol,
+    (rawType as { aliasSymbol?: { declarations?: Array<{ getSourceFile?: () => { fileName?: string } }> } }).aliasSymbol,
+  ].filter((value): value is { declarations?: Array<{ getSourceFile?: () => { fileName?: string } }> } => value !== undefined)
+
+  const files: string[] = []
+  for (const symbol of symbols) {
+    for (const declaration of symbol.declarations ?? []) {
+      const sourceFile = declaration.getSourceFile?.()
+      const fileName = sourceFile?.fileName
+      if (typeof fileName === 'string' && fileName.length > 0) {
+        files.push(fileName.replace(/\\/g, '/'))
+      }
+    }
+  }
+  return [...new Set(files)]
+}
+
+function getRawTypeOwner(rawType: unknown): SchemaOwner | undefined {
+  const declarationFiles = getRawTypeDeclarationFiles(rawType)
+  if (declarationFiles.length === 0) return undefined
+
+  const hasWorkspaceDeclaration = declarationFiles.some((filePath) => {
+    const normalizedPath = filePath.toLowerCase()
+    return normalizedPath.startsWith(normalizedWorkspaceRoot) && !normalizedPath.includes('/node_modules/')
+  })
+  return hasWorkspaceDeclaration ? 'workspace' : 'external'
+}
+
+function getRawTypeIdentityKey(rawType: unknown): string | undefined {
+  if (rawType === null || typeof rawType !== 'object') return undefined
+
+  const rawTypeId = (rawType as { id?: unknown }).id
+  return typeof rawTypeId === 'number' ? `ts:${rawTypeId}` : undefined
+}
+
 /**
  * 使用 vue-component-meta 提取单个组件的完整 API
  *
@@ -84,10 +132,10 @@ export function extractComponentApiVcm(
     const meta = checker.getComponentMeta(normalizedPath)
 
     // -- Props（过滤 global props 如 class/style/key/ref） --
-    const props: PropEntry[] = meta.props
+    const props: PropEntryWithIdentity[] = meta.props
       .filter(p => !p.global)
       .map(p => {
-        const entry: PropEntry = {
+        const entry: PropEntryWithIdentity = {
           name: p.name,
           type: p.type,
           required: p.required,
@@ -96,7 +144,17 @@ export function extractComponentApiVcm(
         if (p.description !== '') entry.description = p.description
         // 嵌套 schema（仅当不是纯字符串时）
         const schema = convertSchema(p.schema)
-        if (schema !== undefined) entry.schema = schema
+        if (schema !== undefined) {
+          entry.schema = schema
+          if (schema.kind === 'object') {
+            const schemaIdentityKey = getRawTypeIdentityKey(p.rawType)
+            if (schemaIdentityKey !== undefined) entry.__schemaIdentityKey = schemaIdentityKey
+          }
+          if (schema.kind === 'object' || schema.kind === 'array') {
+            const schemaOwner = getRawTypeOwner(p.rawType)
+            if (schemaOwner !== undefined) entry.__schemaOwner = schemaOwner
+          }
+        }
         return entry
       })
 
@@ -112,33 +170,13 @@ export function extractComponentApiVcm(
       if (e.description !== '') entry.description = e.description
       // 事件参数 schema
       if (e.schema.length > 0) {
-        entry.schema = e.schema.map(convertSchema).filter(isNotUndefined)
+        const converted = e.schema.map(convertSchema).filter(isNotUndefined)
+        if (converted.length > 0) {
+          entry.schema = converted
+        }
       }
       return entry
     })
-
-    // -- Exposed → Props 恢复 --
-    // VCM 对 `Props extends SparkNode` + defineExpose 的组件，会把部分 defineProps
-    // 成员放入 exposed 而非 props。从 exposed 中恢复这些属性到 props。
-    const hasDefineExpose = detectDefineExpose(absPath)
-    if (hasDefineExpose) {
-      const propNameSet = new Set(props.map(p => p.name))
-      for (const exp of meta.exposed) {
-        if (isVueInternalExposed(exp.name)) continue
-        if (propNameSet.has(exp.name)) continue
-        if (isLikelyApiMethod(exp.name)) continue
-        props.push({
-          name: exp.name,
-          type: exp.type,
-          required: false,
-          ...(exp.description !== '' ? { description: exp.description } : {}),
-          ...(() => {
-            const schema = convertSchema(exp.schema)
-            return schema !== undefined ? { schema } : {}
-          })(),
-        })
-      }
-    }
 
     return {
       type: componentType,
@@ -173,97 +211,23 @@ export function extractAllComponentApisVcm(
 }
 
 /* ==========================================================================
- * Exposed → Props 恢复辅助
- *
- * VCM 对 `Props extends SparkNode` + defineExpose 的组件，会把部分 defineProps
- * 成员放入 exposed 而非 props。通过命名启发式区分 API 方法与 props：
- * - API 方法：动词前缀 + PascalCase（getRows, setXxx, clearXxx, ...）
- * - Props：名词（dataKey, toolbar）或事件处理器（onXxx）
- * ========================================================================== */
-
-/** exposed 成员名是否符合 API 方法命名模式（verb + PascalCase） */
-function isLikelyApiMethod(name: string): boolean {
-  // 事件处理器是 prop，不是 API 方法
-  if (/^on[A-Z]/.test(name)) return false
-
-  const prefixes = [
-    'get', 'set', 'clear', 'toggle', 'reset', 'has', 'do',
-    'load', 'search', 'move', 'query', 'refresh', 'expand',
-    'add', 'edit', 'remove', 'append', 'update', 'delete', 'is',
-  ]
-  for (const prefix of prefixes) {
-    if (name === prefix) return true
-    if (name.startsWith(prefix) && name.length > prefix.length) {
-      const ch = name[prefix.length]
-      if (ch === ch?.toUpperCase() && ch !== ch?.toLowerCase()) return true
-    }
-  }
-  return false
-}
-
-/* ==========================================================================
  * Schema 转换
  * ========================================================================== */
 
 /**
- * 对 AI catalog 无价值的巨型类型 / 重复框架类型——跳过 schema 展开，只保留 type 字符串。
- *
- * - CSS 类型（CSSProperties 等）：1500+ 属性，展开后单 prop 可达 ~940 KB
- * - SparkNode 及子类型：框架配置节点，每个 SparkNode[] prop 都会重复展开 14 属性 + 嵌套 toolbar/actions/filter，
- *   但这些结构在 rootFields + notes 中已有人工编写的精准描述，VCM 展开纯属噪音
- */
-const SCHEMA_TYPE_BLOCKLIST = new Set([
-  // CSS 巨型类型
-  'CSSProperties',
-  'StyleValue',
-  'HTMLAttributes',
-  'SVGAttributes',
-  'Events',
-  // SPARK 框架节点类型（结构已在 rootFields/notes 中描述，无需 VCM 展开）
-  'SparkNode',
-  'SparkNode[]',
-])
-
-/** 检测是否为需要跳过 schema 展开的巨型 / 框架类型 */
-function isBlocklistedType(typeStr: string): boolean {
-  if (SCHEMA_TYPE_BLOCKLIST.has(typeStr)) return true
-  // 子串匹配：CSSProperties / StyleValue 可能出现在联合类型中
-  if (typeStr.includes('CSSProperties') || typeStr.includes('StyleValue')) return true
-  // SparkNode[] 可能出现为 SparkNode[] 或其他联合形式
-  if (typeStr.includes('SparkNode')) return true
-  return false
-}
-
-/** schema 递归最大深度 */
-const MAX_SCHEMA_DEPTH = 3
-/** object schema 最大属性数 */
-const MAX_OBJECT_PROPERTIES = 50
-
-/**
  * 将 VCM 的 PropertyMetaSchema 转换为我们的 PropSchema
  *
- * 只保留有信息量的嵌套层级（纯字符串类型不产生 schema 对象）。
- * 对 CSSProperties 等巨型类型做黑名单跳过，防止输出膨胀。
+ * 仅纯字符串类型不产生 schema 对象；其余结构以扁平形式保留。
  */
-function convertSchema(vcmSchema: PropertyMetaSchema, depth = 0): PropSchema | undefined {
+function convertSchema(vcmSchema: PropertyMetaSchema): PropSchema | undefined {
   if (typeof vcmSchema === 'string') {
     return undefined
   }
 
-  // 深度限制
-  if (depth >= MAX_SCHEMA_DEPTH) return undefined
-
-  // 类型黑名单
-  if (isBlocklistedType(vcmSchema.type)) return undefined
-
   if (vcmSchema.kind === 'object' && vcmSchema.schema !== undefined) {
-    const entries = Object.entries(vcmSchema.schema)
-    // 属性数量过多 → 跳过（CSSProperties 等有 1500+ 属性）
-    if (entries.length > MAX_OBJECT_PROPERTIES) return undefined
-
     const properties: Record<string, PropSchemaProperty> = {}
     let hasProperties = false
-    for (const [key, propMeta] of entries) {
+    for (const [key, propMeta] of Object.entries(vcmSchema.schema)) {
       hasProperties = true
       const childSchema: PropSchemaProperty = {
         name: propMeta.name,
@@ -271,8 +235,6 @@ function convertSchema(vcmSchema: PropertyMetaSchema, depth = 0): PropSchema | u
         required: propMeta.required,
       }
       if (propMeta.description !== '') childSchema.description = propMeta.description
-      const nested = convertSchema(propMeta.schema, depth + 1)
-      if (nested !== undefined) childSchema.schema = nested
       properties[key] = childSchema
     }
     if (hasProperties) {
@@ -281,32 +243,34 @@ function convertSchema(vcmSchema: PropertyMetaSchema, depth = 0): PropSchema | u
   }
 
   if (vcmSchema.kind === 'enum' && vcmSchema.schema !== undefined) {
-    const variants = vcmSchema.schema
-      .map(s => (typeof s === 'string' ? s : s.type))
+    const variants = uniqueSchemaTypes(vcmSchema.schema)
     if (variants.length > 0) {
       return { kind: 'enum', type: vcmSchema.type, variants }
     }
   }
 
   if (vcmSchema.kind === 'array' && vcmSchema.schema !== undefined) {
-    const items = vcmSchema.schema
-      .map(s => convertSchema(s, depth + 1))
-      .filter(isNotUndefined)
-    if (items.length > 0) {
-      return { kind: 'array', type: vcmSchema.type, items }
+    const itemTypes = uniqueSchemaTypes(vcmSchema.schema)
+    if (itemTypes.length > 0) {
+      return { kind: 'array', type: vcmSchema.type, itemTypes }
     }
   }
 
   if (vcmSchema.kind === 'event' && vcmSchema.schema !== undefined) {
-    const params = vcmSchema.schema
-      .map(s => convertSchema(s, depth + 1))
-      .filter(isNotUndefined)
-    if (params.length > 0) {
-      return { kind: 'event', type: vcmSchema.type, params }
+    const paramTypes = uniqueSchemaTypes(vcmSchema.schema)
+    if (paramTypes.length > 0) {
+      return { kind: 'event', type: vcmSchema.type, paramTypes }
     }
   }
 
   return undefined
+}
+
+function uniqueSchemaTypes(schemas: PropertyMetaSchema[]): string[] {
+  const values = schemas
+    .map((schema) => (typeof schema === 'string' ? schema : schema.type))
+    .filter((value) => value.length > 0)
+  return [...new Set(values)]
 }
 
 /* ==========================================================================
@@ -343,27 +307,6 @@ function detectIndexSignature(absPath: string): boolean {
   } catch {
     return false
   }
-}
-
-/** 检测 <script setup> 中是否调用了 defineExpose */
-function detectDefineExpose(absPath: string): boolean {
-  try {
-    const sfcSource = readFileSync(absPath, 'utf-8')
-    const scriptContent = extractScriptSetupContent(sfcSource)
-    if (scriptContent === null) return false
-    return scriptContent.includes('defineExpose')
-  } catch {
-    return false
-  }
-}
-
-/** 过滤 Vue 内部 expose（非用户定义） */
-function isVueInternalExposed(name: string): boolean {
-  return name === '$el' || name === '$options' || name === '$forceUpdate'
-    || name === '$nextTick' || name === '$watch' || name === '$parent'
-    || name === '$root' || name === '$data' || name === '$props'
-    || name === '$attrs' || name === '$slots' || name === '$refs'
-    || name === '$emit'
 }
 
 /** 类型守卫 */

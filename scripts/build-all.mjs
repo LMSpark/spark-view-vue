@@ -36,6 +36,17 @@ const REQUESTED_BACKEND_PORT = process.env['BACKEND_PORT']?.trim() || ''
 let backendPort = REQUESTED_BACKEND_PORT || '18080'
 let backendExited = false
 
+const SUPPORTED_BUILD_MODES = new Set(['smart', 'classic'])
+
+function resolveBuildMode() {
+  const requested = (process.env['BUILD_MODE'] ?? 'smart').trim().toLowerCase()
+  if (SUPPORTED_BUILD_MODES.has(requested)) {
+    return requested
+  }
+  console.error(`❌ BUILD_MODE 不合法: "${requested}"，仅支持 smart 或 classic`)
+  process.exit(1)
+}
+
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
 const { loadedFiles, env: mergedEnv } = loadLocalJavaEnv(ROOT_DIR)
@@ -142,9 +153,9 @@ function waitForBackend(timeoutMs = 120_000) {
 
 // ── 上传组件元数据 ──────────────────────────────────────────────────────────
 async function uploadMetadata() {
-  const metadataPath = resolve(ROOT_DIR, 'dist', 'spark-component-metadata.json')
+  const metadataPath = resolve(ROOT_DIR, 'packages', 'spark-ai', 'src', 'catalog', 'component-catalog.json')
   if (!existsSync(metadataPath)) {
-    console.warn('⚠️  未找到 dist/spark-component-metadata.json，跳过上传')
+    console.warn('⚠️  未找到 packages/spark-ai/src/catalog/component-catalog.json，跳过上传')
     return
   }
 
@@ -153,12 +164,14 @@ async function uploadMetadata() {
   try {
     metadata = JSON.parse(json)
   } catch {
-    console.warn('⚠️  spark-component-metadata.json 不是有效 JSON，跳过上传')
+    console.warn('⚠️  component-catalog.json 不是有效 JSON，跳过上传')
     return
   }
 
   const endpoint = `${getBackendUrl()}/api/ai/component-metadata`
-  console.log(`\n📦 组件元数据: ${metadata.componentCount} 个组件, ${metadata.skillCount} 个 Skill`)
+  const componentCount = Number(metadata?.componentCount)
+    || Object.keys(metadata?.components ?? {}).length
+  console.log(`\n📦 组件元数据: ${componentCount} 个组件`)
   console.log(`📤 上传到: ${endpoint}`)
 
   const resp = await fetch(endpoint, {
@@ -264,8 +277,13 @@ try {
   if (skipFe) {
     console.log('\n⏭️  跳过前端构建')
   } else {
+    console.log('\n🧬 生成单一组件目录...')
+    run('pnpm run generate:catalog', { cwd: ROOT_DIR })
+    console.log('✅ 组件目录生成完成')
+
     console.log('\n🔨 构建 Vite 前端...')
-    const buildMode = process.env['BUILD_MODE'] || 'smart'
+    const buildMode = resolveBuildMode()
+    console.log(`🧩 组件注册模式: ${buildMode}（构建模式与运行时注册路径强关联）`)
     run(`npx cross-env BUILD_MODE=${buildMode} vite build`, { cwd: ROOT_DIR })
     console.log('✅ Vite 前端构建完成')
   }

@@ -2,8 +2,8 @@
  * 一键注册所有内置 Renderer 容器 + 字段组件到 SPARK 注册表。
  *
  * 架构：
- *   Sync   — 首屏必需：数据容器 / 非数据容器 / 布局 / 核心字段 / Passthrough
- *   Async  — 异步 `() => import()` 按需加载：低频容器 / 扩展字段 / 展示组件
+ *   Core      — 首屏必需：数据容器 / 非数据容器 / 布局 / 核心字段 / Passthrough
+ *   Extended  — 扩展组件：在 classic 注册路径中同步挂载（避免与 smart 自动注册产生无效动态导入告警）
  *
  * Passthrough 组件由 barrel (`non-data-components/index`) 统一创建，
  * 此文件仅导入实例，不再本地调用 `createPassthrough()`。
@@ -29,7 +29,8 @@ import {
   RendererSection, RendererToolbar, RendererTabs, RendererCollapse,
   RendererDialog, RendererDrawer, RendererSteps, RendererButton, RendererLink,
   RendererCard, RendererSpace, RendererDivider, RendererDropdown,
-  RendererTooltip, RendererPopover,
+  RendererTooltip, RendererPopover, RendererPopconfirm, RendererPageHeader,
+  RendererTour, RendererAnchor, RendererAnchorLink,
   RendererButtonGroup, RendererContainer, RendererMain, RendererAside,
   RendererLayoutHeader, RendererLayoutFooter, RendererRow, RendererCol,
   RendererAffix, RendererBacktop, RendererScrollbar,
@@ -40,6 +41,11 @@ import {
 import {
   FieldText, FieldTextarea, FieldNumber, FieldDate, FieldSelect,
   FieldMultiSelect, FieldRadio, FieldCheckbox, FieldCheckboxGroup, FieldSwitch,
+  FieldHtmlEditor, FieldSlider, FieldRate, FieldColor, FieldIcon, FieldImage,
+  FieldFilePath, FieldFileBrowser, FieldUpload, FieldEntityPicker, FieldUserPicker,
+  FieldDeptPicker, FieldProductPicker, FieldCascader, FieldTreeSelect, FieldTransfer,
+  FieldSegmented, FieldCheckTag, FieldMention, FieldTimePicker, FieldTimeSelect,
+  FieldAutocomplete,
 } from './fields/data-components/index.js'
 
 // ── 非数据字段 ──
@@ -50,8 +56,20 @@ import {
 // ── 核心展示 ──
 import {
   DisplayText, DisplayTag, DisplayPagination, DisplayStatistic,
+  DisplayProgress, DisplayBadge, DisplayAvatar,
 } from './display/data-components/index.js'
-import { DisplayAlert } from './display/non-data-components/index.js'
+import {
+  DisplayAlert,
+  DisplayDescriptions,
+  DisplayDescriptionsItem,
+  DisplayTimeline,
+  DisplayTimelineItem,
+  DisplayEmpty,
+  DisplayResult,
+  DisplayBreadcrumb,
+  DisplayBreadcrumbItem,
+  DisplaySkeleton,
+} from './display/non-data-components/index.js'
 
 // ── 支持组件（无 barrel）──
 import SparkCodeEditor from './support/SparkCodeEditor.vue'
@@ -140,50 +158,50 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-watermark', RendererWatermark],
 ]
 
-/** Tier 2: 异步按需注册 — Spark.register 检测到 function 自动包装 defineAsyncComponent */
-const ASYNC_COMPONENTS: ReadonlyArray<readonly [string, () => Promise<{ default: unknown }>]> = [
+/** 扩展组件：classic 路径下同步注册（避免与 smart 自动注册产生重复动态导入路径） */
+const EXTENDED_COMPONENTS: ReadonlyArray<readonly [string, RegisteredComponent]> = [
   // 扩展容器
-  ['r-popconfirm', () => import('./containers/non-data-components/RendererPopconfirm.vue')],
-  ['r-page-header', () => import('./containers/non-data-components/RendererPageHeader.vue')],
-  ['r-tour', () => import('./containers/non-data-components/RendererTour.vue')],
-  ['r-anchor', () => import('./containers/non-data-components/RendererAnchor.vue')],
-  ['r-anchor-link', () => import('./containers/non-data-components/RendererAnchorLink.vue')],
+  ['r-popconfirm', RendererPopconfirm],
+  ['r-page-header', RendererPageHeader],
+  ['r-tour', RendererTour],
+  ['r-anchor', RendererAnchor],
+  ['r-anchor-link', RendererAnchorLink],
   // 扩展字段
-  ['r-html-editor', () => import('./fields/data-components/FieldHtmlEditor.vue')],
-  ['r-slider', () => import('./fields/data-components/FieldSlider.vue')],
-  ['r-rate', () => import('./fields/data-components/FieldRate.vue')],
-  ['r-color', () => import('./fields/data-components/FieldColor.vue')],
-  ['r-icon', () => import('./fields/data-components/FieldIcon.vue')],
-  ['r-image', () => import('./fields/data-components/FieldImage.vue')],
-  ['r-file-path', () => import('./fields/data-components/FieldFilePath.vue')],
-  ['r-file-browser', () => import('./fields/data-components/FieldFileBrowser.vue')],
-  ['r-upload', () => import('./fields/data-components/FieldUpload.vue')],
-  ['r-entity-picker', () => import('./fields/data-components/FieldEntityPicker.vue')],
-  ['r-user-picker', () => import('./fields/data-components/FieldUserPicker.vue')],
-  ['r-dept-picker', () => import('./fields/data-components/FieldDeptPicker.vue')],
-  ['r-product-picker', () => import('./fields/data-components/FieldProductPicker.vue')],
-  ['r-cascader', () => import('./fields/data-components/FieldCascader.vue')],
-  ['r-tree-select', () => import('./fields/data-components/FieldTreeSelect.vue')],
-  ['r-transfer', () => import('./fields/data-components/FieldTransfer.vue')],
-  ['r-segmented', () => import('./fields/data-components/FieldSegmented.vue')],
-  ['r-check-tag', () => import('./fields/data-components/FieldCheckTag.vue')],
-  ['r-mention', () => import('./fields/data-components/FieldMention.vue')],
-  ['r-time-picker', () => import('./fields/data-components/FieldTimePicker.vue')],
-  ['r-time-select', () => import('./fields/data-components/FieldTimeSelect.vue')],
-  ['r-autocomplete', () => import('./fields/data-components/FieldAutocomplete.vue')],
+  ['r-html-editor', FieldHtmlEditor],
+  ['r-slider', FieldSlider],
+  ['r-rate', FieldRate],
+  ['r-color', FieldColor],
+  ['r-icon', FieldIcon],
+  ['r-image', FieldImage],
+  ['r-file-path', FieldFilePath],
+  ['r-file-browser', FieldFileBrowser],
+  ['r-upload', FieldUpload],
+  ['r-entity-picker', FieldEntityPicker],
+  ['r-user-picker', FieldUserPicker],
+  ['r-dept-picker', FieldDeptPicker],
+  ['r-product-picker', FieldProductPicker],
+  ['r-cascader', FieldCascader],
+  ['r-tree-select', FieldTreeSelect],
+  ['r-transfer', FieldTransfer],
+  ['r-segmented', FieldSegmented],
+  ['r-check-tag', FieldCheckTag],
+  ['r-mention', FieldMention],
+  ['r-time-picker', FieldTimePicker],
+  ['r-time-select', FieldTimeSelect],
+  ['r-autocomplete', FieldAutocomplete],
   // 扩展展示
-  ['r-progress', () => import('./display/data-components/DisplayProgress.vue')],
-  ['r-badge', () => import('./display/data-components/DisplayBadge.vue')],
-  ['r-avatar', () => import('./display/data-components/DisplayAvatar.vue')],
-  ['r-descriptions', () => import('./display/non-data-components/DisplayDescriptions.vue')],
-  ['r-descriptions-item', () => import('./display/non-data-components/DisplayDescriptionsItem.vue')],
-  ['r-timeline', () => import('./display/non-data-components/DisplayTimeline.vue')],
-  ['r-timeline-item', () => import('./display/non-data-components/DisplayTimelineItem.vue')],
-  ['r-empty', () => import('./display/non-data-components/DisplayEmpty.vue')],
-  ['r-result', () => import('./display/non-data-components/DisplayResult.vue')],
-  ['r-breadcrumb', () => import('./display/non-data-components/DisplayBreadcrumb.vue')],
-  ['r-breadcrumb-item', () => import('./display/non-data-components/DisplayBreadcrumbItem.vue')],
-  ['r-skeleton', () => import('./display/non-data-components/DisplaySkeleton.vue')],
+  ['r-progress', DisplayProgress],
+  ['r-badge', DisplayBadge],
+  ['r-avatar', DisplayAvatar],
+  ['r-descriptions', DisplayDescriptions],
+  ['r-descriptions-item', DisplayDescriptionsItem],
+  ['r-timeline', DisplayTimeline],
+  ['r-timeline-item', DisplayTimelineItem],
+  ['r-empty', DisplayEmpty],
+  ['r-result', DisplayResult],
+  ['r-breadcrumb', DisplayBreadcrumb],
+  ['r-breadcrumb-item', DisplayBreadcrumbItem],
+  ['r-skeleton', DisplaySkeleton],
 ]
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -191,13 +209,14 @@ const ASYNC_COMPONENTS: ReadonlyArray<readonly [string, () => Promise<{ default:
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function registerAllRenderers(): void {
-  // Sync — 核心 + Passthrough（含可选 meta）
+  // Core — 核心 + Passthrough（含可选 meta）
   for (const entry of CORE_COMPONENTS) {
     const [type, component, meta] = entry
     Spark.register(type, component, meta)
   }
-  // Async — Spark.register 检测到 function 自动包装 defineAsyncComponent
-  for (const [type, loader] of ASYNC_COMPONENTS) {
-    Spark.register(type, loader)
+
+  // Extended — classic 路径下同步注册
+  for (const [type, component] of EXTENDED_COMPONENTS) {
+    Spark.register(type, component)
   }
 }

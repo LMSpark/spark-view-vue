@@ -2,8 +2,7 @@
  * 组件目录 JSON Schema 类型定义（完整版）
  *
  * 与 vite-plugin-spark-catalog/component-catalog-schema.ts 保持一致。
- * component-catalog.json 是 raw VCM 直出映射；component-catalog.ai.json 是补充说明后的 AI 目录。
- * 两者结构不同，raw 仅用于直接评估提取结果，AI 目录用于消费端投影。
+ * component-catalog.json 是单一 rich 目录（VCM + SFC 元注解 + 平台约束）。
  *
  * ⚠️ 保持与 component-catalog-schema.ts 同步 — 当 schema 变更时需一并更新。
  */
@@ -15,9 +14,11 @@ export interface ComponentCatalog {
   componentCount: number
   registry?: ComponentRegistry
   components: Record<string, ComponentEntry>
+  schemaPool?: Record<string, PropSchema>
   constraints: PlatformConstraints
   sharedTypes?: Record<string, SharedTypeDefinition>
   bindingDescriptors?: Record<string, BindingDescriptor>
+  apiSurface?: object
 }
 
 export interface RawComponentCatalog {
@@ -69,13 +70,17 @@ export interface ComponentRegistry {
 
 export interface ComponentEntry {
   type: string
+  filePath?: string
   category: 'container' | 'field' | 'group' | 'meta' | 'feature'
   description: string
   props: PropEntry[]
   emits: EmitEntry[]
+  hasIndexSignature?: boolean
   rootFields?: RootFieldEntry[]
   notes?: string
-  source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
+  provides?: string[]
+  consumes?: string[]
+  source: 'vcm' | 'meta' | 'vcm+meta'
   binding?: BindingDescriptor
 }
 
@@ -85,27 +90,28 @@ export interface PropEntry {
   required: boolean
   default?: string
   description?: string
+  schemaRef?: string
   schema?: PropSchema
 }
 
 export type PropSchema =
   | { kind: 'object'; type: string; properties: Record<string, PropSchemaProperty> }
   | { kind: 'enum'; type: string; variants: string[] }
-  | { kind: 'array'; type: string; items: PropSchema[] }
-  | { kind: 'event'; type: string; params: PropSchema[] }
+  | { kind: 'array'; type: string; itemTypes: string[] }
+  | { kind: 'event'; type: string; paramTypes: string[] }
 
 export interface PropSchemaProperty {
   name: string
   type: string
   required?: boolean
   description?: string
-  schema?: PropSchema
 }
 
 export interface EmitEntry {
   name: string
   type?: string
   description?: string
+  schemaRefs?: string[]
   schema?: PropSchema[]
   payload?: Array<{ name: string; type: string }>
 }

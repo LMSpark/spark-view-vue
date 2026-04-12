@@ -1,7 +1,7 @@
 /**
  * 组件目录投影函数
  *
- * 从 component-catalog.ai.json 按消费角色提取所需子集。
+ * 从 component-catalog.json 按消费角色提取所需子集。
  * 所有投影均为纯函数，零副作用。
  *
  * 消费角色：
@@ -17,6 +17,7 @@ import type {
   ComponentEntry,
   ComponentRegistry,
   PropEntry,
+  PropSchema,
 } from './types'
 
 // ══════════════════════════════════════════════════════════════
@@ -87,6 +88,55 @@ export interface FcComponentSpec {
   notes?: string
 }
 
+export interface HydratedPropEntry extends PropEntry {
+  schema?: PropSchema
+}
+
+export interface HydratedEmitEntry {
+  name: string
+  type?: string
+  description?: string
+  schema?: PropSchema[]
+  payload?: Array<{ name: string; type: string }>
+}
+
+export interface HydratedComponentEntry extends Omit<ComponentEntry, 'props' | 'emits'> {
+  props: HydratedPropEntry[]
+  emits: HydratedEmitEntry[]
+}
+
+/**
+ * 投影：按组件回填 schema（schemaRef/schemaRefs -> schemaPool）。
+ *
+ * 用于消费层在需要时拼接完整 schema；不会改变原始 catalog 对象。
+ */
+export function projectHydratedComponent(catalog: ComponentCatalog, type: string): HydratedComponentEntry | null {
+  const entry = catalog.components[type]
+  if (entry === undefined) return null
+
+  const props: HydratedPropEntry[] = entry.props.map((prop) => {
+    const schema = resolvePropSchema(catalog, prop)
+    return {
+      ...prop,
+      ...(schema !== undefined ? { schema } : {}),
+    }
+  })
+
+  const emits: HydratedEmitEntry[] = entry.emits.map((emit) => {
+    const schema = resolveEmitSchemas(catalog, emit)
+    return {
+      ...emit,
+      ...(schema !== undefined ? { schema } : {}),
+    }
+  })
+
+  return {
+    ...entry,
+    props,
+    emits,
+  }
+}
+
 /**
  * 投影：单组件规格（供 stills.actionSpec）。
  *
@@ -94,8 +144,8 @@ export interface FcComponentSpec {
  * 返回 null 表示组件不在目录中。
  */
 export function projectFcSpec(catalog: ComponentCatalog, type: string): FcComponentSpec | null {
-  const entry = catalog.components[type]
-  if (entry === undefined) return null
+  const entry = projectHydratedComponent(catalog, type)
+  if (entry === null) return null
 
   return {
     type: entry.type,
@@ -164,7 +214,10 @@ export function projectDevPropEnums(catalog: ComponentCatalog): Record<string, R
     const enumsForType: Record<string, string[]> = {}
     for (const prop of entry.props) {
       if (STRUCT_KEYS.has(prop.name)) continue
-      const parsed = parseEnumFromTypeString(prop.type)
+      const schema = resolvePropSchema(catalog, prop)
+      const parsedFromType = parseEnumFromTypeString(prop.type)
+      const parsedFromSchema = parseEnumFromSchema(schema)
+      const parsed = parsedFromType.length > 0 ? parsedFromType : parsedFromSchema
       if (parsed.length > 0) {
         enumsForType[prop.name] = parsed
       }
@@ -189,6 +242,35 @@ function parseEnumFromTypeString(typeStr: string): string[] {
     if (v !== undefined && v.length > 0) values.push(v)
   }
   return values.length >= 2 ? values : []
+}
+
+function parseEnumFromSchema(schema: PropSchema | undefined): string[] {
+  if (schema?.kind !== 'enum') return []
+  return schema.variants.filter((variant) => variant.length > 0)
+}
+
+function resolvePropSchema(catalog: ComponentCatalog, prop: PropEntry): PropSchema | undefined {
+  if (prop.schema !== undefined) return prop.schema
+  if (prop.schemaRef === undefined) return undefined
+  return catalog.schemaPool?.[prop.schemaRef]
+}
+
+function resolveEmitSchemas(
+  catalog: ComponentCatalog,
+  emit: ComponentEntry['emits'][number],
+): PropSchema[] | undefined {
+  if (emit.schema !== undefined && emit.schema.length > 0) return emit.schema
+  if (emit.schemaRefs === undefined || emit.schemaRefs.length === 0) return undefined
+
+  const schemas = emit.schemaRefs
+    .map((ref) => catalog.schemaPool?.[ref])
+    .filter(isNotUndefined)
+
+  return schemas.length > 0 ? schemas : undefined
+}
+
+function isNotUndefined<T>(value: T | undefined): value is T {
+  return value !== undefined
 }
 
 // ══════════════════════════════════════════════════════════════

@@ -7,6 +7,7 @@ import { sparkCatalogPlugin } from './packages/vite-plugin-spark-catalog/src/ind
 import {
   COMPONENT_SCAN_PATTERNS,
   COMPONENT_EXCLUDE_PATTERNS,
+  CATALOG_FEATURE_EXCLUDE_PATTERNS,
   SYNC_COMPONENTS,
   ASYNC_COMPONENTS,
   SIZE_THRESHOLD
@@ -23,6 +24,9 @@ const isSmartMode = BUILD_MODE === 'smart'
 console.log(`🔧 构建模式: ${BUILD_MODE === 'smart' ? '智能编译时注册 ⚡' : '经典运行时注册 🔄'}`)
 
 export default defineConfig({
+  define: {
+    __SPARK_CLASSIC_MODE__: JSON.stringify(!isSmartMode),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
@@ -196,7 +200,9 @@ export default defineConfig({
         load(id: string) {
           if (id === '\0virtual:spark-components') {
             return `
-export function registerComponents() { return null }
+export function registerComponents() {
+  return { total: 0, sync: 0, async: 0 }
+}
 export function getComponentMetadata() { return [] }
 export default registerComponents
 `
@@ -209,7 +215,7 @@ export default registerComponents
     // 📋 组件 Props 目录生成（独立插件，两种模式均启用）
     sparkCatalogPlugin({
       featurePatterns: [...COMPONENT_SCAN_PATTERNS],
-      exclude: [...COMPONENT_EXCLUDE_PATTERNS],
+      exclude: [...COMPONENT_EXCLUDE_PATTERNS, ...CATALOG_FEATURE_EXCLUDE_PATTERNS],
     }),
     
     ...(process.env['ANALYZE'] ? [visualizer({
@@ -240,16 +246,45 @@ export default registerComponents
           return 'assets/[name]-[hash].[ext]'
         },
         manualChunks(id) {
+          const normalizedId = id.replace(/\\/g, '/')
+
           // Vue核心库
-          if (id.includes('vue/dist') || id.includes('vue/index') || id === 'vue') {
+          if (normalizedId.includes('vue/dist') || normalizedId.includes('vue/index') || normalizedId === 'vue') {
             return 'vue-core'
           }
           // Vue Router
-          if (id.includes('vue-router')) {
+          if (normalizedId.includes('vue-router')) {
             return 'vue-router'
           }
-          // Element Plus UI库
-          if (id.includes('element-plus')) {
+          // Element Plus UI库（拆分 runtime / components，避免单块过大）
+          if (normalizedId.includes('/node_modules/@element-plus/icons-vue/')) {
+            return 'element-plus-icons'
+          }
+          if (normalizedId.includes('/node_modules/element-plus/')) {
+            if (normalizedId.includes('/es/components/')) {
+              const componentMatch = normalizedId.match(/\/es\/components\/([^/]+)\//)
+              const componentName = componentMatch?.[1]
+              if (!componentName) return 'element-plus-components-misc'
+              const firstCharCode = componentName.charCodeAt(0)
+              if (firstCharCode < 106) return 'element-plus-components-a-i'
+              if (firstCharCode < 115) return 'element-plus-components-j-r'
+              return 'element-plus-components-s-z'
+            }
+            if (normalizedId.includes('/es/directives/')) return 'element-plus-directives'
+            if (normalizedId.includes('/es/locale/')) return 'element-plus-locale'
+            if (
+              normalizedId.includes('/es/hooks/')
+              || normalizedId.includes('/es/utils/')
+            ) {
+              return 'element-plus-runtime'
+            }
+            if (
+              normalizedId.includes('/es/constants/')
+              || normalizedId.includes('/es/tokens/')
+            ) {
+              return 'element-plus-tokens'
+            }
+            if (normalizedId.includes('/es/')) return 'element-plus-core'
             return 'element-plus'
           }
 
@@ -261,22 +296,22 @@ export default registerComponents
           // ⚠️ spark-utils 必须独立 chunk：它是 spark-data 和 spark-component 的共同依赖，
           //    若不单独分配，Rollup 可能将 spark-utils 模块分入 spark-component chunk，
           //    导致 spark-data chunk 反向引用 spark-component chunk（虚假循环依赖）。
-          if (id.includes('packages/spark-utils')) {
+          if (normalizedId.includes('packages/spark-utils')) {
             return 'spark-utils'
           }
-          if (id.includes('packages/spark-component')) {
+          if (normalizedId.includes('packages/spark-component')) {
             return 'spark-component'
           }
-          if (id.includes('packages/spark-data')) {
+          if (normalizedId.includes('packages/spark-data')) {
             return 'spark-data'
           }
-          if (id.includes('packages/spark-ai')) {
+          if (normalizedId.includes('packages/spark-ai')) {
             return 'spark-ai'
           }
-          if (id.includes('packages/spark-app')) {
+          if (normalizedId.includes('packages/spark-app')) {
             return 'spark-app'
           }
-          if (id.includes('packages/spark-page-config')) {
+          if (normalizedId.includes('packages/spark-page-config')) {
             return 'spark-config'
           }
 
@@ -284,22 +319,57 @@ export default registerComponents
           // 将大型页面组件分组，便于按需加载
 
           // 数据密集型页面（包含大量图表/表格）
-          if (id.includes('views/app/Dashboard') || id.includes('views/app/CapabilityDemo')) {
+          if (normalizedId.includes('views/app/Dashboard') || normalizedId.includes('views/app/CapabilityDemo')) {
             return 'pages-data-heavy'
           }
           // 配置管理页面
-          if (id.includes('views/tenant/Settings') || id.includes('views/tenant/TenantConfig')) {
+          if (normalizedId.includes('views/tenant/Settings') || normalizedId.includes('views/tenant/TenantConfig')) {
             return 'pages-config'
           }
           // ── 第三方库智能分组 ──
 
           // 表单和验证库
-          if (id.includes('async-validator') || id.includes('vxe-table')) {
+          if (normalizedId.includes('async-validator') || normalizedId.includes('vxe-table')) {
             return 'vendor-forms'
           }
 
+          // 编辑器生态（CodeMirror / Lezer）
+          if (
+            normalizedId.includes('/node_modules/@codemirror/')
+            || normalizedId.includes('/node_modules/@lezer/')
+            || normalizedId.includes('/node_modules/codemirror/')
+            || normalizedId.includes('/node_modules/crelt/')
+            || normalizedId.includes('/node_modules/w3c-keyname/')
+          ) {
+            return 'vendor-editor'
+          }
+
+          // Markdown 渲染链
+          if (
+            normalizedId.includes('/node_modules/vue-markdown-render/')
+            || normalizedId.includes('/node_modules/markdown-it/')
+            || normalizedId.includes('/node_modules/linkify-it/')
+            || normalizedId.includes('/node_modules/mdurl/')
+            || normalizedId.includes('/node_modules/uc.micro/')
+          ) {
+            return 'vendor-markdown'
+          }
+
+          // JSON 编辑器
+          if (
+            normalizedId.includes('/node_modules/vanilla-jsoneditor/')
+            || normalizedId.includes('/node_modules/svelte-jsoneditor/')
+            || normalizedId.includes('/node_modules/jsonrepair/')
+          ) {
+            return 'vendor-jsoneditor'
+          }
+
+          if (normalizedId.includes('/node_modules/html2canvas/')) {
+            return 'vendor-canvas'
+          }
+
           // Node modules通用处理
-          if (id.includes('node_modules')) {
+          if (normalizedId.includes('node_modules')) {
             return 'vendor'
           }
 

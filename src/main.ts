@@ -42,6 +42,7 @@
 import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger, addGlobalTransport } from '@spark-view/spark-app'
 import { getNavHomePath } from '@spark-view/spark-app'
 import type { LogTransport } from '@spark-view/spark-app'
+import { SparkPageRenderer, Spark, registerAllRenderers } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
 import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
 
@@ -269,8 +270,7 @@ async function startApp() {
 
     // 6. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
-    const { SparkPageRenderer } = await import('@spark-view/spark-component')
-    
+
     await SparkApp.start({
       // === 应用根组件 ===
       rootComponent: App,
@@ -373,13 +373,24 @@ async function startApp() {
 
         startupLogger.info('✅ 应用准备挂载')
         
-        // 🎨 注册 SPARK 组件（registerAllRenderers 注册全部 103 个组件类型）
-        const { registerAllRenderers, Spark } = await import('@spark-view/spark-component')
-        registerAllRenderers()
+        // 🎨 注册 SPARK 组件
+        // smart 模式：由 SparkApp.start() 自动导入 virtual:spark-components 完成注册
+        // classic 模式：显式调用 registerAllRenderers（保留兼容）
+        if (__SPARK_CLASSIC_MODE__) {
+          registerAllRenderers()
 
-        // 主项目本地组件：单独注册到 SPARK registry
-        const ModuleContextBadge = (await import('./components/ModuleContextBadge.vue')).default
-        Spark.register('r-module-context-badge', ModuleContextBadge)
+          // 主项目本地组件：单独注册到 SPARK registry
+          const ModuleContextBadge = (await import('./components/ModuleContextBadge.vue')).default
+          Spark.register('r-module-context-badge', ModuleContextBadge)
+
+          startupLogger.info('✅ classic 模式组件注册完成')
+        } else {
+          // 主项目本地组件：单独注册到 SPARK registry
+          const ModuleContextBadge = (await import('./components/ModuleContextBadge.vue')).default
+          Spark.register('r-module-context-badge', ModuleContextBadge)
+
+          startupLogger.info('✅ smart 模式组件注册完成（virtual:spark-components + 本地扩展）')
+        }
 
         // ai-studio-panel 由 virtual:spark-components 自动扫描注册
         startupLogger.info('✅ AI Studio 组件注册完成')

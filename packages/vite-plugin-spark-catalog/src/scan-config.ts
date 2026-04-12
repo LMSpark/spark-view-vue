@@ -48,6 +48,31 @@ export const COMPONENT_EXCLUDE_PATTERNS = [
   '**/src/views/app/dev-system/components/**/*.vue',
 ] as const
 
+/**
+ * Catalog 专用 feature 扫描排除规则（不影响组件注册扫描）。
+ *
+ * 这批组件属于应用壳层/编辑器内部实现/容器内部桥接，不对外作为可配置业务组件。
+ * 若将其纳入 feature 扫描会产生大量“缺少 @skill 注解”噪声，干扰目录覆盖率判断。
+ */
+export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
+  '**/src/components/AiAssistantHub.vue',
+  '**/src/components/AiChatPanel.vue',
+  '**/src/components/AiChatWidget.vue',
+  '**/src/components/ErrorFallback.vue',
+  '**/src/components/IconPicker.vue',
+  '**/src/components/ModuleContextBadge.vue',
+  '**/src/components/NavIcon.vue',
+  '**/src/views/app/SkillCatalog.vue',
+  '**/src/views/app/dev-system/DevPreviewTab.vue',
+  '**/packages/spark-component/src/components/containers/support/**/*.vue',
+  '**/packages/spark-component/src/components/containers/data-components/RendererFieldScope.vue',
+  '**/packages/spark-component/src/components/containers/data-components/RendererListItemScope.vue',
+  '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererRowFragment.vue',
+  '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererDataHost.vue',
+  '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererDataScope.vue',
+  '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererRowFragmentHost.vue',
+] as const
+
 /* ==========================================================================
  * 组件加载策略
  * ========================================================================== */

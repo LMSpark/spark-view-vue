@@ -921,7 +921,7 @@ public class AiPageService {
      * 拼接完整系统提示词 = 基础模板 + Skill Catalog。
      *
      * 优先级：
-     * 1. 服务端存储的组件元数据（由构建时上传的 spark-component-metadata.json 提供）
+    * 1. 服务端存储的组件元数据（由构建时上传的 component-catalog.json 提供）
      * 2. 请求体中的 skillCatalog（前端运行时传入，作为 fallback）
      * 3. 无 Skill 信息时仅使用基础模板
      */

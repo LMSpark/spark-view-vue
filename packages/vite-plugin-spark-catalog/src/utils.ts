@@ -95,13 +95,22 @@ export interface SkillMeta {
   notes?: string[]
 }
 
+export interface ParseSkillMetaOptions {
+  /** true 时要求存在 @skill 注解；缺失则返回 null（用于 feature opt-in）。 */
+  requireSkillTag?: boolean
+}
+
 /**
  * 从 .vue 文件 `<script>` 块首部 JSDoc 中提取 Skill 元数据。
  *
  * 策略：定位 `<script` 标签后的前 20 行，在其中查找 `@skill-description`。
  * 若 `<script` 标签不存在则回退扫描文件前 60 行（兼容纯 .ts 场景）。
  */
-export function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta | null {
+export function parseSkillMeta(
+  absolutePath: string,
+  fallbackType: string,
+  options: ParseSkillMetaOptions = {},
+): SkillMeta | null {
   let raw: string
   try {
     raw = readFileSync(absolutePath, 'utf-8')
@@ -124,6 +133,9 @@ export function parseSkillMeta(absolutePath: string, fallbackType: string): Skil
   const jsdocRegex = /\/\*\*\s*([\s\S]*?)\s*\*\//
   const match = jsdocRegex.exec(content)
   if (!match) {
+    if (options.requireSkillTag === true) {
+      return null
+    }
     return {
       type: skillType,
       description: buildImplicitSkillDescription(absolutePath, skillType),
@@ -133,11 +145,25 @@ export function parseSkillMeta(absolutePath: string, fallbackType: string): Skil
   const jsdocBody = match[1] ?? ''
   const lines = jsdocBody.split('\n').map((l) => l.replace(/^\s*\*\s?/, '').trim())
 
+  const hasSkillMetadataTag = lines.some((l) => /^@(skill|skill-description|description)(?:\s|$)/.test(l))
+
+  // 提取 @skill（可覆盖推断 type）
+  const skillLine = lines.find((l) => /^@skill(?:\s|$)/.test(l))
+  const skillTagType = skillLine
+    ? skillLine.replace('@skill', '').trim() || undefined
+    : undefined
+
+  if (options.requireSkillTag === true && !hasSkillMetadataTag) {
+    return null
+  }
+
+  const skillTypeResolved = skillTagType ?? skillType
+
   // 提取 @skill-description / @description
   const descLine = lines.find((l) => l.startsWith('@skill-description') || l.startsWith('@description'))
   const description = descLine
     ? descLine.replace(/^@(?:skill-description|description)\s*/, '').trim()
-    : buildImplicitSkillDescription(absolutePath, skillType)
+    : buildImplicitSkillDescription(absolutePath, skillTypeResolved)
 
   // 提取 @category
   const categoryLine = lines.find((l) => l.startsWith('@category'))
@@ -170,7 +196,7 @@ export function parseSkillMeta(absolutePath: string, fallbackType: string): Skil
     .filter(Boolean)
 
   return {
-    type: skillType,
+    type: skillTypeResolved,
     description,
     ...(category !== undefined ? { category } : {}),
     ...(binding !== undefined ? { binding } : {}),

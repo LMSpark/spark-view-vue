@@ -13,8 +13,6 @@ import { globSync } from 'glob'
 import { getOrCreateChecker, extractComponentApiVcm } from './extract-component-api-vcm'
 import type { VcmApiDescriptor } from './extract-component-api-vcm'
 import {
-  CATALOG_OVERRIDES,
-  CATALOG_ADDENDUMS,
   COMPONENT_CATEGORIES,
   SHARED_TYPE_DEFINITIONS,
 } from './supplement'
@@ -29,11 +27,10 @@ import type {
   ComponentCatalog,
   ComponentEntry,
   ComponentRegistry,
-  RawComponentCatalog,
-  RawComponentEntry,
   PlatformConstraints,
   PropEntry,
   EmitEntry,
+  PropSchema,
   ApiSurface,
 } from './component-catalog-schema'
 import { inferBindingFromVcm, buildAllBindingDescriptors } from './infer-binding'
@@ -88,7 +85,6 @@ function scanRendererComponents(root: string): ScannedComponent[] {
       const fallbackType = toKebabCase(fileName)
       const skillType = inferSkillType(absolutePath, fallbackType)
       if (skillType === null) continue
-      if (fileName === 'FieldContextRenderer') continue
 
       const meta = parseSkillMeta(absolutePath, skillType)
       results.push({
@@ -112,8 +108,12 @@ function scanFeatureComponents(root: string, patterns: string[], exclude: string
       if (!existsSync(absolutePath)) continue
 
       const fileName = basename(file, '.vue')
-      const meta = parseSkillMeta(absolutePath, toKebabCase(fileName))
-      if (meta === null) continue
+      const fallbackType = toKebabCase(fileName)
+      const meta = parseSkillMeta(absolutePath, fallbackType, { requireSkillTag: true })
+      if (meta === null) {
+        console.warn(`[catalog] 跳过 feature 组件（缺失 @skill 注解）: ${file}`)
+        continue
+      }
 
       results.push({
         absolutePath,
@@ -161,92 +161,6 @@ function resolveCategory(
   // 优先级 4：前缀约定
   if (skillType.startsWith('r-')) return 'field'
   return 'feature'
-}
-
-/* --------------------------------------------------------------------------
- * 从 override 文本解析根级字段
- * ----------------------------------------------------------------------- */
-
-/**
- * 匹配 override 文本中的字段行：`name: type — description`
- *
- * 支持两种格式：
- * 1. 【根级字段 — XXX】段落内的行（r-table 等）
- * 2. 扁平行格式（r-form, r-dialog 等没有段落标记的容器）
- *
- * 排除 `【xxx】` 标题行、空行、纯说明行（不含 `: ` 分隔符的行）
- */
-function parseRootFieldsFromOverride(overrideText: string): ComponentEntry['rootFields'] {
-  const fields: NonNullable<ComponentEntry['rootFields']> = []
-
-  // 策略 1：有 【根级字段】 段落标记 → 只从这些段落提取
-  const rootFieldSections = [...overrideText.matchAll(/【根级字段[^】]*】\n([\s\S]*?)(?=\n【|$)/g)]
-  if (rootFieldSections.length > 0) {
-    for (const section of rootFieldSections) {
-      parseFieldLines(section[1] ?? '', fields)
-    }
-    return fields.length > 0 ? fields : undefined
-  }
-
-  // 策略 2：无段落标记 → 从全文的 **title** 标题行之后逐行解析
-  // 跳过首行（**type** — 描述）、【xxx】标题行、纯说明行
-  const lines = overrideText.split('\n')
-  let pastTitle = false
-  for (const line of lines) {
-    const trimmed = line.trim()
-    if (!pastTitle) {
-      // 跳过 **xxx** 标题行
-      if (trimmed.startsWith('**')) { pastTitle = true; continue }
-      continue
-    }
-    // 跳过段落标题、空行
-    if (trimmed === '' || trimmed.startsWith('【')) continue
-    // 跳过纯文字说明行（不含 `: ` 的行）
-    if (!trimmed.includes(': ')) continue
-    // 跳过 children/consumes/provides 说明行
-    if (/^(?:children|consumes|provides)\b/i.test(trimmed)) continue
-
-    parseFieldLine(trimmed, fields)
-  }
-
-  return fields.length > 0 ? fields : undefined
-}
-
-/** 解析多行字段文本 */
-function parseFieldLines(text: string, fields: NonNullable<ComponentEntry['rootFields']>): void {
-  const lines = text.split('\n').filter(l => l.trim() !== '')
-  for (const line of lines) {
-    parseFieldLine(line.trim(), fields)
-  }
-}
-
-/**
- * 解析单行字段定义：`name: type — description` 或 `name: type`
- * 类型允许含 `|` 和空格（如 `number | string`、`'left' | 'right'`）
- */
-function parseFieldLine(trimmed: string, fields: NonNullable<ComponentEntry['rootFields']>): void {
-  // 增强正则：name 后跟 `: ` 再跟类型（可含空格和管道符），可选 ` — ` 描述
-  const match = /^([\w$.[\]]+):\s+(.+?)(?:\s+—\s+(.+))?$/.exec(trimmed)
-  if (match === null) return
-
-  const name = match[1] ?? ''
-  let type = match[2] ?? 'unknown'
-  const description = match[3] ?? ''
-
-  // 类型中可能残留描述（无 — 分隔时），取第一个有意义的类型 token
-  // 例如 "string 筛选区 CSS 类名" → 实际有 — 分隔的不会走到这里
-  if (description === '' && /\s/.test(type)) {
-    // 无描述时，type 不应含空格（除非是联合类型 `number | string`）
-    if (!/[|'"]/.test(type)) {
-      // 不是联合类型，截取第一个 token
-      const spaceIdx = type.indexOf(' ')
-      if (spaceIdx > 0) type = type.substring(0, spaceIdx)
-    }
-  }
-
-  if (name !== '') {
-    fields.push({ name, type, description })
-  }
 }
 
 /* --------------------------------------------------------------------------
@@ -315,47 +229,36 @@ function buildComponentEntry(
   api: VcmApiDescriptor | null,
   relativePath: string,
   meta: SkillMeta | null,
-  hasOverride: boolean,
-  hasAddendum: boolean,
 ): ComponentEntry {
   const category = resolveCategory(skillType, relativePath, meta?.category)
-  const overrideText = CATALOG_OVERRIDES[skillType]
-  const addendumText = CATALOG_ADDENDUMS[skillType]
 
   // Props: VCM 提取 — h(type, props, children) 完全投影
   // 仅过滤框架内部 prop（config），其余全部保留
   const props: PropEntry[] = api !== null
     ? api.props
       .filter(p => p.name !== 'config')
-      .map(p => ({
-        name: p.name,
-        type: p.type,
-        required: p.required,
-        ...(p.default !== undefined ? { default: p.default } : {}),
-        ...(p.description !== undefined ? { description: p.description } : {}),
-        ...(p.schema !== undefined ? { schema: p.schema } : {}),
-      }))
+      .map((p) => {
+        const schemaIdentityKey = (p as PropEntryWithIdentity).__schemaIdentityKey
+        const schemaOwner = (p as PropEntryWithOwnership).__schemaOwner
+        return {
+          name: p.name,
+          type: p.type,
+          required: p.required,
+          ...(p.default !== undefined ? { default: p.default } : {}),
+          ...(p.description !== undefined ? { description: p.description } : {}),
+          ...(p.schema !== undefined ? { schema: p.schema } : {}),
+          ...(schemaIdentityKey !== undefined ? { __schemaIdentityKey: schemaIdentityKey } : {}),
+          ...(schemaOwner !== undefined ? { __schemaOwner: schemaOwner } : {}),
+        }
+      })
     : []
 
   // Emits: VCM 格式（type + schema，无 payload）
   const emits: EmitEntry[] = api?.emits ?? []
 
-  // Root fields from override text
-  const rootFields = hasOverride && overrideText !== undefined
-    ? parseRootFieldsFromOverride(overrideText)
+  const notes = meta?.notes !== undefined && meta.notes.length > 0
+    ? meta.notes.join('\n')
     : undefined
-
-  // Notes: 合并 SFC @notes + override + addendum
-  let notes: string | undefined
-  if (meta?.notes !== undefined && meta.notes.length > 0) {
-    notes = meta.notes.join('\n')
-  }
-  if (hasOverride && overrideText !== undefined) {
-    notes = notes !== undefined ? `${notes}\n\n${overrideText}` : overrideText
-  }
-  if (hasAddendum && addendumText !== undefined) {
-    notes = notes !== undefined ? `${notes}\n\n${addendumText}` : addendumText
-  }
 
   // Provides / Consumes from SFC @provides / @consumes
   const provides = meta?.provides !== undefined && meta.provides.length > 0 ? meta.provides : undefined
@@ -365,18 +268,18 @@ function buildComponentEntry(
   const hasVcm = api !== null
   const hasSfcMeta = meta !== null
   let source: ComponentEntry['source']
-  if (hasVcm && (hasOverride || hasSfcMeta)) source = 'vcm+override'
+  if (hasVcm && hasSfcMeta) source = 'vcm+meta'
   else if (hasVcm) source = 'vcm'
-  else if (hasOverride || hasSfcMeta) source = 'override'
-  else source = 'override' // fallback for pure-text entries
+  else source = 'meta'
 
   return {
     type: skillType,
+    ...(api?.filePath !== undefined ? { filePath: api.filePath } : {}),
     category,
     description,
     props,
     emits,
-    ...(rootFields !== undefined ? { rootFields } : {}),
+    ...(api?.hasIndexSignature !== undefined ? { hasIndexSignature: api.hasIndexSignature } : {}),
     ...(notes !== undefined ? { notes } : {}),
     ...(provides !== undefined ? { provides } : {}),
     ...(consumes !== undefined ? { consumes } : {}),
@@ -403,23 +306,7 @@ function buildComponents(
     const desc = descriptionMap.get(key) ?? ''
     const meta = metaMap.get(key) ?? null
     const relPath = pathMap.get(key) ?? ''
-    const hasOverride = key in CATALOG_OVERRIDES
-    const hasAddendum = key in CATALOG_ADDENDUMS
-    components[key] = buildComponentEntry(key, desc, api, relPath, meta, hasOverride, hasAddendum)
-  }
-
-  // 2. CATALOG_OVERRIDES 中的纯文本条目（el-* 等无 SFC 的组件）
-  for (const key of Object.keys(CATALOG_OVERRIDES)) {
-    if (key in components) continue
-    const desc = descriptionMap.get(key) ?? extractDescriptionFromOverride(key)
-    components[key] = buildComponentEntry(key, desc, null, '', null, true, key in CATALOG_ADDENDUMS)
-  }
-
-  // 3. CATALOG_ADDENDUMS 中的纯补充条目
-  for (const key of Object.keys(CATALOG_ADDENDUMS)) {
-    if (key in components) continue
-    const desc = descriptionMap.get(key) ?? ''
-    components[key] = buildComponentEntry(key, desc, null, '', null, false, true)
+    components[key] = buildComponentEntry(key, desc, api, relPath, meta)
   }
 
   return components
@@ -448,39 +335,241 @@ function buildRegistry(components: Record<string, ComponentEntry>): ComponentReg
   return registry
 }
 
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== 'object') {
+    return JSON.stringify(value)
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(',')}]`
+  }
+
+  const entries = Object.entries(value as Record<string, unknown>)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, val]) => `${JSON.stringify(key)}:${stableStringify(val)}`)
+  return `{${entries.join(',')}}`
+}
+
+interface CompactSchemasResult {
+  components: Record<string, ComponentEntry>
+  schemaPool: Record<string, PropSchema>
+}
+
+type PropEntryWithIdentity = PropEntry & { __schemaIdentityKey?: string }
+
+const SYSTEM_OBJECT_TYPES = new Set([
+  'Date',
+  'Event',
+  'MouseEvent',
+  'KeyboardEvent',
+  'FocusEvent',
+  'InputEvent',
+  'SubmitEvent',
+  'PointerEvent',
+  'WheelEvent',
+  'DragEvent',
+  'TouchEvent',
+  'CompositionEvent',
+  'CSSProperties',
+  'CSSStyleDeclaration',
+  'File',
+  'Blob',
+  'FormData',
+  'URL',
+])
+
+type SchemaOwner = 'workspace' | 'external'
+
+type PropEntryWithOwnership = PropEntryWithIdentity & { __schemaOwner?: SchemaOwner }
+
+const INTERNAL_TYPE_ALIAS_SCHEMAS: Record<string, PropSchema> = {
+  SparkTextChild: {
+    kind: 'enum',
+    type: 'SparkTextChild',
+    variants: ['string', 'number'],
+  },
+  RendererFooterConfigProps: {
+    kind: 'object',
+    type: 'RendererFooterConfigProps',
+    properties: {
+      class: {
+        name: 'class',
+        type: 'string',
+        required: false,
+      },
+      width: {
+        name: 'width',
+        type: 'string | number',
+        required: false,
+      },
+    },
+  },
+}
+
+function includesTypeToken(text: string, token: string): boolean {
+  const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`\\b${escaped}\\b`).test(text)
+}
+
+function schemaMentionsType(schema: PropSchema, typeName: string): boolean {
+  if (includesTypeToken(schema.type, typeName)) return true
+
+  if (schema.kind === 'object') {
+    return Object.values(schema.properties).some((property) => includesTypeToken(property.type, typeName))
+  }
+  if (schema.kind === 'array') {
+    return schema.itemTypes.some((itemType) => includesTypeToken(itemType, typeName))
+  }
+  if (schema.kind === 'event') {
+    return schema.paramTypes.some((paramType) => includesTypeToken(paramType, typeName))
+  }
+  return schema.variants.some((variant) => includesTypeToken(variant, typeName))
+}
+
+function isSystemObjectType(typeName: string): boolean {
+  const normalized = typeName.trim()
+  if (SYSTEM_OBJECT_TYPES.has(normalized)) return true
+  return /^((Mouse|Keyboard|Focus|Pointer|Touch|Wheel|Input|Drag|Composition)Event)$/.test(normalized)
+}
+
+function isLikelyInternalStructuredType(typeName: string): boolean {
+  const normalized = typeName.trim()
+  if (normalized.length === 0) return false
+
+  return (
+    /^I[A-Z]/.test(normalized)
+    || /^Spark[A-Z]/.test(normalized)
+    || normalized.endsWith("Children")
+    || normalized.endsWith("Node")
+    || /(Policy|Context)$/.test(normalized)
+  )
+}
+
+function shouldKeepStructuredSchema(schema: PropSchema, owner: SchemaOwner | undefined): boolean {
+  if (schema.kind !== 'object' && schema.kind !== 'array') return false
+  if (owner === 'workspace') return true
+  if (owner === 'external') return false
+  return !isSystemObjectType(schema.type) && isLikelyInternalStructuredType(schema.type)
+}
+
+function compactComponentSchemas(components: Record<string, ComponentEntry>): CompactSchemasResult {
+  const schemaPool: Record<string, PropSchema> = {}
+  const schemaIdByLookup = new Map<string, string>()
+  const schemaHashById = new Map<string, string>()
+  const pickTypeBasedSchemaId = (schema: PropSchema): string => {
+    const typeName = schema.type.trim()
+    return typeName.length > 0 ? typeName : 'schema'
+  }
+
+  const resolveSchemaIdCollision = (candidate: string, hash: string): string => {
+    const existingHash = schemaHashById.get(candidate)
+    if (existingHash === undefined || existingHash === hash) return candidate
+
+    for (let suffix = 2; ; suffix += 1) {
+      const nextCandidate = `${candidate}#${suffix}`
+      const nextHash = schemaHashById.get(nextCandidate)
+      if (nextHash === undefined || nextHash === hash) return nextCandidate
+    }
+  }
+
+  const registerSchema = (schema: PropSchema, identityKey?: string): string => {
+    const hash = stableStringify(schema)
+    const lookupKeys = [
+      `hash:${hash}`,
+      ...(identityKey !== undefined ? [`identity:${identityKey}`] : []),
+    ]
+
+    for (const lookupKey of lookupKeys) {
+      const existing = schemaIdByLookup.get(lookupKey)
+      if (existing !== undefined) return existing
+    }
+
+    const schemaId = resolveSchemaIdCollision(pickTypeBasedSchemaId(schema), hash)
+
+    for (const lookupKey of lookupKeys) {
+      schemaIdByLookup.set(lookupKey, schemaId)
+    }
+    schemaHashById.set(schemaId, hash)
+    schemaPool[schemaId] = schema
+    return schemaId
+  }
+
+  const compactedComponents: Record<string, ComponentEntry> = {}
+  for (const [type, entry] of Object.entries(components)) {
+    const props: PropEntry[] = entry.props.map((prop) => {
+      const propWithIdentity = prop as PropEntryWithOwnership
+      const inlineSchema = prop.schema
+      if (inlineSchema === undefined) return prop
+
+      const {
+        schema: _dropped,
+        __schemaIdentityKey: _identity,
+        __schemaOwner: _owner,
+        ...rest
+      } = propWithIdentity
+      if (shouldKeepStructuredSchema(inlineSchema, propWithIdentity.__schemaOwner)) {
+        return {
+          ...rest,
+          schemaRef: registerSchema(
+            inlineSchema,
+            inlineSchema.kind === 'object' ? propWithIdentity.__schemaIdentityKey : undefined,
+          ),
+        }
+      }
+      return rest
+    })
+
+    const emits: EmitEntry[] = entry.emits.map((emit) => {
+      const inlineSchemas = emit.schema
+      if (inlineSchemas === undefined) return emit
+
+      const { schema: _dropped, ...rest } = emit
+      const structuredSchemas = inlineSchemas.filter((s) => shouldKeepStructuredSchema(s, undefined))
+      if (structuredSchemas.length === 0) return rest
+
+      return {
+        ...rest,
+        schemaRefs: structuredSchemas.map((schema) => registerSchema(schema)),
+      }
+    })
+
+    compactedComponents[type] = {
+      ...entry,
+      props,
+      emits,
+    }
+  }
+
+  // 补充内部类型别名：当现有 schema 文本引用了别名类型时，注入对应 schema 条目。
+  for (const [typeName, schema] of Object.entries(INTERNAL_TYPE_ALIAS_SCHEMAS)) {
+    const isReferenced = Object.values(schemaPool).some((poolSchema) => schemaMentionsType(poolSchema, typeName))
+    if (isReferenced) {
+      registerSchema(schema)
+    }
+  }
+
+  return {
+    components: compactedComponents,
+    schemaPool,
+  }
+}
+
 function buildCatalogDocument(
   components: Record<string, ComponentEntry>,
   apiSurface?: ApiSurface,
 ): ComponentCatalog {
+  const compacted = compactComponentSchemas(components)
+
   return {
     version: '2.0.0',
     buildTime: new Date().toISOString(),
-    componentCount: Object.keys(components).length,
-    registry: buildRegistry(components),
+    componentCount: Object.keys(compacted.components).length,
+    registry: buildRegistry(compacted.components),
     sharedTypes: SHARED_TYPE_DEFINITIONS,
-    components,
+    components: compacted.components,
+    schemaPool: compacted.schemaPool,
     ...(apiSurface !== undefined ? { apiSurface } : {}),
     constraints: buildPlatformConstraints(),
-    bindingDescriptors: buildAllBindingDescriptors(components),
-  }
-}
-
-function buildRawCatalogDocument(apiMap: Map<string, VcmApiDescriptor>): RawComponentCatalog {
-  const sortedEntries = [...apiMap.entries()].sort(([left], [right]) => left.localeCompare(right, 'en'))
-  const components: Record<string, RawComponentEntry> = Object.fromEntries(
-    sortedEntries.map(([type, api]) => [type, {
-      type: api.type,
-      filePath: api.filePath,
-      props: api.props,
-      emits: api.emits,
-      hasIndexSignature: api.hasIndexSignature,
-    }]),
-  )
-  return {
-    version: '2.0.0',
-    buildTime: new Date().toISOString(),
-    componentCount: sortedEntries.length,
-    components,
+    bindingDescriptors: buildAllBindingDescriptors(compacted.components),
   }
 }
 
@@ -489,9 +578,9 @@ function buildRawCatalogDocument(apiMap: Map<string, VcmApiDescriptor>): RawComp
  * ----------------------------------------------------------------------- */
 
 /**
- * 生成 raw component-catalog.json 与 AI component-catalog.ai.json 并写入文件
+ * 生成单文件 component-catalog.json（rich catalog）并写入文件
  */
-export function generateJsonCatalog(root: string, options: JsonCatalogOptions = {}): RawComponentCatalog {
+export function generateJsonCatalog(root: string, options: JsonCatalogOptions = {}): ComponentCatalog {
   const {
     featurePatterns = [],
     exclude = [],
@@ -536,43 +625,26 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   // 3. API 全息表面提取（DataView / DataSet / SparkData / IScriptContext / IPageServiceCapability）
   const apiSurface = extractApiSurface(root)
 
-  const rawCatalog = buildRawCatalogDocument(apiMap)
   const catalog = buildCatalogDocument(components, apiSurface)
 
-  logger.info(`📦 Raw 目录已构建: ${rawCatalog.componentCount} 条目`)
   logger.info(`📦 组件目录已构建: ${catalog.componentCount} 条目`)
 
-  const rawOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
-  const catalogOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.ai.json')
-  writeFileSync(rawOutputPath, JSON.stringify(rawCatalog, null, 2), 'utf-8')
+  const catalogOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
   writeFileSync(catalogOutputPath, JSON.stringify(catalog, null, 2), 'utf-8')
-  logger.info(`📄 Raw JSON 已写入: ${rawOutputPath}`)
   logger.info(`📄 Catalog JSON 已写入: ${catalogOutputPath}`)
 
   // 按组件输出独立 JSON（便于逐一检查，仅在显式指定 perComponentDir 时）
   if (options.perComponentDir !== undefined) {
     const dirAbsolute = resolve(root, options.perComponentDir)
     if (!existsSync(dirAbsolute)) mkdirSync(dirAbsolute, { recursive: true })
-    for (const [key, entry] of Object.entries(rawCatalog.components)) {
+    for (const [key, entry] of Object.entries(catalog.components)) {
       const filePath = resolve(dirAbsolute, `${key}.json`)
       writeFileSync(filePath, JSON.stringify(entry, null, 2), 'utf-8')
     }
-    logger.info(`📂 按组件独立 JSON 已输出: ${options.perComponentDir}/ (${rawCatalog.componentCount} 文件)`)
+    logger.info(`📂 按组件独立 JSON 已输出: ${options.perComponentDir}/ (${catalog.componentCount} 文件)`)
   }
 
-  return rawCatalog
-}
-
-/* --------------------------------------------------------------------------
- * 辅助
- * ----------------------------------------------------------------------- */
-
-/** 从 override 文本中提取 **type** — 描述 的描述部分 */
-function extractDescriptionFromOverride(key: string): string {
-  const text = CATALOG_OVERRIDES[key]
-  if (text === undefined) return ''
-  const match = /^\*\*\S+\*\*\s*—\s*(.+)$/m.exec(text)
-  return match?.[1] ?? key
+  return catalog
 }
 
 /* --------------------------------------------------------------------------

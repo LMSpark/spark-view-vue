@@ -129,4 +129,26 @@ describe('catalog-projections', () => {
     const enums = projectDevPropEnums(catalog)
     expect(enums['r-text']?.['size']).toEqual(['small', 'default', 'large'])
   })
+
+  it('projectDevPropEnums resolves enum values from schemaPool references', () => {
+    const catalog = makeCatalog({
+      schemaPool: {
+        schema_00001: {
+          kind: 'enum',
+          type: 'EnumInputSchema',
+          variants: ['input', 'textarea'],
+        },
+      },
+      components: {
+        'r-text': makeEntry({
+          props: [
+            { name: 'mode', type: 'string', required: false, schemaRef: 'schema_00001' },
+          ],
+        }),
+      },
+    })
+
+    const enums = projectDevPropEnums(catalog)
+    expect(enums['r-text']?.['mode']).toEqual(['input', 'textarea'])
+  })
 })

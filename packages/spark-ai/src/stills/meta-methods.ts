@@ -23,7 +23,7 @@ import {
   projectFcDirectory,
   projectFcSpec,
 } from '../catalog/catalog-projections'
-import componentCatalog from '../catalog/component-catalog.ai.json'
+import componentCatalog from '../catalog/component-catalog.json'
 import type { ComponentCatalog } from '../catalog/types'
 import type { StillsCatalogRegistry } from '../catalog/stills-catalog-types'
 

@@ -65,7 +65,7 @@ public class ComponentMetadataService {
      * 接收并存储前端构建输出的组件元数据 JSON。
      * 同时持久化到 data/component-metadata.json。
      *
-     * @param json 完整的 spark-component-metadata.json 内容
+        * @param json 完整的 component-catalog.json 内容
      * @return 解析摘要信息
      */
     public Map<String, Object> updateMetadata(String json) {
@@ -82,35 +82,17 @@ public class ComponentMetadataService {
 
             String version = String.valueOf(metadata.getOrDefault("version", "unknown"));
             String buildTimeStr = String.valueOf(metadata.getOrDefault("buildTime", "unknown"));
-            int componentCount = metadata.get("componentCount") instanceof Number n ? n.intValue() : 0;
-            int skillCount = metadata.get("skillCount") instanceof Number n ? n.intValue() : 0;
+            Map<String, Map<String, Object>> components = normalizeComponents(metadata.get("components"));
+            int componentCount = metadata.get("componentCount") instanceof Number n
+                    ? n.intValue()
+                    : components.size();
+            int skillCount = componentCount;
 
-            if (metadata.get("skillPrompts") instanceof Map<?, ?> prompts) {
-                Object index = prompts.get("index");
-                Object compact = prompts.get("compact");
-                Object full = prompts.get("full");
-                skillPromptIndex.set(index instanceof String s ? s : null);
-                if (compact instanceof String s) {
-                    skillPromptCompact.set(s);
-                } else {
-                    skillPromptCompact.set(null);
-                }
-                if (full instanceof String s) {
-                    skillPromptFull.set(s);
-                } else {
-                    skillPromptFull.set(null);
-                }
-            } else {
-                skillPromptIndex.set(null);
-                skillPromptCompact.set(null);
-                skillPromptFull.set(null);
-            }
-
-            if (metadata.get("skills") instanceof List<?> skills) {
-                skillPromptByType.set(buildSkillPromptByType(skills));
-            } else {
-                skillPromptByType.set(Map.of());
-            }
+            Map<String, String> promptsByType = buildSkillPromptByType(components);
+            skillPromptByType.set(Map.copyOf(promptsByType));
+            skillPromptIndex.set(buildSkillPromptIndex(components));
+            skillPromptCompact.set(buildSkillPromptCompact(components));
+            skillPromptFull.set(buildSkillPromptFull(components, promptsByType));
 
             rawMetadata.set(json);
             buildTime.set(buildTimeStr);
@@ -235,53 +217,194 @@ public class ComponentMetadataService {
         log.info("[ComponentMetadata] 内存缓存已清除");
     }
 
-    private Map<String, String> buildSkillPromptByType(List<?> skills) {
-        Map<String, String> prompts = new LinkedHashMap<>();
-        for (Object entry : skills) {
-            if (!(entry instanceof Map<?, ?> skill)) {
+    private Map<String, Map<String, Object>> normalizeComponents(Object rawComponents) {
+        if (!(rawComponents instanceof Map<?, ?> rawMap) || rawMap.isEmpty()) {
+            throw new IllegalArgumentException("元数据缺少 components 映射，无法构建组件目录提示词");
+        }
+
+        Map<String, Map<String, Object>> components = new LinkedHashMap<>();
+        for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+            if (!(entry.getKey() instanceof String type) || type.isBlank()) {
                 continue;
             }
-            Object rawType = skill.get("type");
-            if (!(rawType instanceof String type) || type.isBlank()) {
+            if (!(entry.getValue() instanceof Map<?, ?> valueMap)) {
                 continue;
             }
-            String prompt = buildSkillPrompt(type, skill);
-            if (!prompt.isBlank()) {
-                prompts.put(type, prompt);
+
+            Map<String, Object> normalized = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> field : valueMap.entrySet()) {
+                if (field.getKey() instanceof String key) {
+                    normalized.put(key, field.getValue());
+                }
+            }
+
+            if (!normalized.isEmpty()) {
+                components.put(type, normalized);
             }
         }
-        return Map.copyOf(prompts);
+
+        if (components.isEmpty()) {
+            throw new IllegalArgumentException("元数据 components 为空，无法构建组件目录提示词");
+        }
+        return components;
     }
 
-    private String buildSkillPrompt(String type, Map<?, ?> skill) {
+    private Map<String, String> buildSkillPromptByType(Map<String, Map<String, Object>> components) {
+        Map<String, String> prompts = new LinkedHashMap<>();
+        components.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    String prompt = buildSkillPrompt(entry.getKey(), entry.getValue());
+                    if (!prompt.isBlank()) {
+                        prompts.put(entry.getKey(), prompt);
+                    }
+                });
+        return prompts;
+    }
+
+    private String buildSkillPromptIndex(Map<String, Map<String, Object>> components) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("## 组件目录索引（").append(components.size()).append("）\n\n");
+
+        components.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    String type = entry.getKey();
+                    Map<String, Object> component = entry.getValue();
+                    String category = asTrimmedString(component.get("category"));
+                    String description = asTrimmedString(component.get("description"));
+                    sb.append("- `").append(type).append("`");
+                    if (!category.isBlank()) {
+                        sb.append(" [").append(category).append("]");
+                    }
+                    if (!description.isBlank()) {
+                        sb.append(" - ").append(description);
+                    }
+                    sb.append("\n");
+                });
+
+        return sb.toString().trim();
+    }
+
+    private String buildSkillPromptCompact(Map<String, Map<String, Object>> components) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(buildSkillPromptIndex(components));
+        sb.append("\n\n");
+        sb.append("使用规则：先从索引确定组件 type，再结合相关组件详情补全 props/emits，避免猜测属性。\n");
+        sb.append("数据绑定统一走 dataKey（table@view@field / #scope@table@field）。");
+        return sb.toString().trim();
+    }
+
+    private String buildSkillPromptFull(
+            Map<String, Map<String, Object>> components,
+            Map<String, String> promptsByType
+    ) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("## 组件目录（Full）\n\n");
+        sb.append("共 ").append(components.size()).append(" 个组件。\n\n");
+
+        boolean first = true;
+        for (Map.Entry<String, String> entry : promptsByType.entrySet()) {
+            if (!first) {
+                sb.append("\n\n");
+            }
+            sb.append(entry.getValue());
+            first = false;
+        }
+
+        return sb.toString().trim();
+    }
+
+    private String buildSkillPrompt(String type, Map<String, Object> component) {
         StringBuilder sb = new StringBuilder();
         sb.append("### `").append(type).append("`\n");
 
-        String description = asTrimmedString(skill.get("description"));
+        String description = asTrimmedString(component.get("description"));
         if (!description.isBlank()) {
             sb.append("> ").append(description).append("\n");
         }
 
-        appendCapabilityLine(sb, "依赖能力（consumes）", toStringList(skill.get("consumes")));
-        appendCapabilityLine(sb, "提供能力（provides）", toStringList(skill.get("provides")));
-
-        String inputSchema = asTrimmedString(skill.get("inputSchema"));
-        if (!inputSchema.isBlank()) {
-            sb.append("- **输入参数**: `").append(inputSchema).append("`\n");
+        String category = asTrimmedString(component.get("category"));
+        if (!category.isBlank()) {
+            sb.append("- **分类**: `").append(category).append("`\n");
         }
 
-        String example = asTrimmedString(skill.get("example"));
-        if (!example.isBlank()) {
-            if (looksLikeJson(example)) {
-                sb.append("- **调用示例**:\n```json\n")
-                  .append(example)
-                  .append("\n```\n");
-            } else {
-                sb.append("- **调用示例**: ").append(example).append("\n");
-            }
+        String source = asTrimmedString(component.get("source"));
+        if (!source.isBlank()) {
+            sb.append("- **来源**: `").append(source).append("`\n");
+        }
+
+        appendCapabilityLine(sb, "依赖能力（consumes）", toStringList(component.get("consumes")));
+        appendCapabilityLine(sb, "提供能力（provides）", toStringList(component.get("provides")));
+
+        appendPropsSection(sb, toMapList(component.get("props")));
+        appendEmitsSection(sb, toMapList(component.get("emits")));
+
+        String notes = asTrimmedString(component.get("notes"));
+        if (!notes.isBlank()) {
+            sb.append("- **说明**: ").append(notes.replace("\n", "；")).append("\n");
+        }
+
+        String filePath = asTrimmedString(component.get("filePath"));
+        if (!filePath.isBlank()) {
+            sb.append("- **源码**: `").append(filePath).append("`\n");
         }
 
         return sb.toString().trim();
+    }
+
+    private void appendPropsSection(StringBuilder sb, List<Map<String, Object>> props) {
+        if (props.isEmpty()) {
+            return;
+        }
+
+        sb.append("- **Props**:\n");
+        for (Map<String, Object> prop : props) {
+            String name = asTrimmedString(prop.get("name"));
+            if (name.isBlank()) {
+                continue;
+            }
+            String type = asTrimmedString(prop.get("type"));
+            boolean required = asBoolean(prop.get("required"));
+            String description = asTrimmedString(prop.get("description"));
+            String defaultValue = asTrimmedString(prop.get("default"));
+
+            sb.append("  - `").append(name).append("` : `")
+                    .append(type.isBlank() ? "unknown" : type).append("`");
+            sb.append(required ? " (required)" : " (optional)");
+            if (!defaultValue.isBlank()) {
+                sb.append("，default=`").append(defaultValue).append("`");
+            }
+            if (!description.isBlank()) {
+                sb.append("，").append(description);
+            }
+            sb.append("\n");
+        }
+    }
+
+    private void appendEmitsSection(StringBuilder sb, List<Map<String, Object>> emits) {
+        if (emits.isEmpty()) {
+            return;
+        }
+
+        sb.append("- **Events**:\n");
+        for (Map<String, Object> emit : emits) {
+            String name = asTrimmedString(emit.get("name"));
+            if (name.isBlank()) {
+                continue;
+            }
+            String type = asTrimmedString(emit.get("type"));
+            String description = asTrimmedString(emit.get("description"));
+
+            sb.append("  - `").append(name).append("`");
+            if (!type.isBlank()) {
+                sb.append(" : `").append(type).append("`");
+            }
+            if (!description.isBlank()) {
+                sb.append("，").append(description);
+            }
+            sb.append("\n");
+        }
     }
 
     private void appendCapabilityLine(StringBuilder sb, String label, List<String> values) {
@@ -310,12 +433,44 @@ public class ComponentMetadataService {
                 .toList();
     }
 
+    private List<Map<String, Object>> toMapList(Object value) {
+        if (!(value instanceof List<?> list) || list.isEmpty()) {
+            return List.of();
+        }
+
+        List<Map<String, Object>> result = new java.util.ArrayList<>();
+        for (Object item : list) {
+            if (!(item instanceof Map<?, ?> map)) {
+                continue;
+            }
+            Map<String, Object> normalized = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (entry.getKey() instanceof String key) {
+                    normalized.put(key, entry.getValue());
+                }
+            }
+            if (!normalized.isEmpty()) {
+                result.add(normalized);
+            }
+        }
+        return result;
+    }
+
+    private boolean asBoolean(Object value) {
+        if (value instanceof Boolean b) {
+            return b;
+        }
+        if (value instanceof Number n) {
+            return n.intValue() != 0;
+        }
+        if (value instanceof String s) {
+            return "true".equalsIgnoreCase(s.trim());
+        }
+        return false;
+    }
+
     private String asTrimmedString(Object value) {
         return value instanceof String text ? text.trim() : "";
     }
 
-    private boolean looksLikeJson(String value) {
-        String trimmed = value.trim();
-        return trimmed.startsWith("{") || trimmed.startsWith("[");
-    }
 }

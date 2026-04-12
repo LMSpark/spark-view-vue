@@ -22,8 +22,6 @@ export type { VcmApiDescriptor } from './extract-component-api-vcm'
 
 // ── 补充数据 ──
 export {
-  CATALOG_OVERRIDES,
-  CATALOG_ADDENDUMS,
   COMPONENT_CATEGORIES,
 } from './supplement'
 export type { ComponentCategory } from './supplement'
@@ -85,6 +83,7 @@ export type { SkillMeta } from './utils'
 export {
   COMPONENT_SCAN_PATTERNS,
   COMPONENT_EXCLUDE_PATTERNS,
+  CATALOG_FEATURE_EXCLUDE_PATTERNS,
   SYNC_COMPONENTS,
   ASYNC_COMPONENTS,
   SIZE_THRESHOLD,

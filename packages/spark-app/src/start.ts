@@ -6,7 +6,9 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import type { ConfigLoaderOptions } from '@spark-view/spark-page-config'
+import { SparkPageConfig, type ConfigLoaderOptions } from '@spark-view/spark-page-config'
+import { createSparkPlugin, SparkPageRenderer } from '@spark-view/spark-component'
+import { setConfigLoader } from '@spark-view/spark-ai'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
@@ -27,6 +29,24 @@ function logStartDebug(message: string, meta?: Record<string, unknown>): void {
   if (shouldLogStartDetails()) {
     startLogger.debug(message, meta)
   }
+}
+
+interface RegisterStats {
+  total: number
+  sync: number
+  async: number
+}
+
+function normalizeRegisterStats(raw: unknown): RegisterStats | null {
+  if (raw === null || typeof raw !== 'object') return null
+  const candidate = raw as Record<string, unknown>
+  const total = candidate['total']
+  const sync = candidate['sync']
+  const async = candidate['async']
+  if (typeof total !== 'number' || typeof sync !== 'number' || typeof async !== 'number') {
+    return null
+  }
+  return { total, sync, async }
 }
 
 /**
@@ -227,7 +247,6 @@ export async function start(options: StartOptions): Promise<void> {
     // 使用全局单例管理器，确保整个应用共享同一个组件实例集合
     if (spark?.enabled !== false) {
       logStartDebug('安装 SPARK 组件系统...')
-      const { createSparkPlugin } = await import('@spark-view/spark-component')
       // 使用默认全局单例（不传参数）
       app.use(createSparkPlugin())
 
@@ -238,7 +257,7 @@ export async function start(options: StartOptions): Promise<void> {
         try {
           logStartDebug('自动导入 virtual:spark-components...')
           // 动态导入虚拟模块（由 vite-plugin-spark-components 生成）
-          type RegisterFn = (app: ReturnType<typeof createApp>) => { total: number; sync: number; async: number }
+          type RegisterFn = (app: ReturnType<typeof createApp>) => unknown
           const virtualModule = await import('virtual:spark-components')
           const { registerComponents } = virtualModule as unknown as { 
             registerComponents?: RegisterFn
@@ -246,8 +265,15 @@ export async function start(options: StartOptions): Promise<void> {
           
           if (typeof registerComponents === 'function') {
             logStartDebug('执行自动组件注册...')
-            const stats = registerComponents(app)
-            startLogger.info(`自动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
+            const stats = normalizeRegisterStats(registerComponents(app))
+            if (stats !== null) {
+              startLogger.info(`自动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
+              if (stats.total === 0) {
+                startLogger.info('编译时注册返回 0 个组件（可能为 classic fallback）；请确认应用侧执行了 classic 注册流程')
+              }
+            } else {
+              startLogger.warn('virtual:spark-components.registerComponents 返回值无效，无法确认编译时注册统计')
+            }
           } else {
             startLogger.warn('virtual:spark-components 未导出 registerComponents 函数（可能使用 classic 模式）')
           }
@@ -262,7 +288,6 @@ export async function start(options: StartOptions): Promise<void> {
     // 5. 配置动态路由系统
     if (pageConfig) {
       logStartDebug('配置动态路由系统...')
-      const { SparkPageConfig } = await import('@spark-view/spark-page-config')
       
       const configLoaderOptions: Partial<ConfigLoaderOptions> = {
         source: pageConfig.source,
@@ -279,10 +304,9 @@ export async function start(options: StartOptions): Promise<void> {
       
       // 如果未提供 pageComponent，自动导入 SparkPageRenderer
       if (!pageComponent) {
-        logStartDebug('未提供 pageComponent，自动导入 SparkPageRenderer...')
-        const { SparkPageRenderer } = await import('@spark-view/spark-component')
+        logStartDebug('未提供 pageComponent，使用 SparkPageRenderer...')
         pageComponent = SparkPageRenderer
-        logStartDebug('✅ SparkPageRenderer 已导入')
+        logStartDebug('✅ SparkPageRenderer 已就绪')
       }
       
       const dynamicRouterOptions: DynamicRouterOptions = {
@@ -305,7 +329,6 @@ export async function start(options: StartOptions): Promise<void> {
       router.removeRoute('spark-bootstrap-login')
 
       // 注入到全局模块：导航访问 + 缓存管理（AI 热重载需要）
-      const { setConfigLoader } = await import('@spark-view/spark-ai')
       setDynamicRouter(dynamicRouter)
       setConfigLoader(configLoader)
     }

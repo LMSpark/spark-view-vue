@@ -31,6 +31,7 @@
     "noEmit": true,
     "jsx": "preserve",
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["src/*"],
       "@spark-view/spark-utils": ["./packages/spark-utils/src/index.ts"],

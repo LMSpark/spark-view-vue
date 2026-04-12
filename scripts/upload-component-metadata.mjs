@@ -2,7 +2,8 @@
 /**
  * 上传组件元数据到 AI 服务端
  *
- * 在 `pnpm run build` 完成后执行，将 dist/spark-component-metadata.json
+ * 在 `pnpm run generate:catalog`（或 `pnpm run build`）完成后执行，将
+ * packages/spark-ai/src/catalog/component-catalog.json
  * 上传到 Java 后端的 POST /api/ai/component-metadata 端点。
  *
  * 用法：
@@ -43,12 +44,12 @@ function parseArgs() {
 
 async function main() {
   const { url } = parseArgs()
-  const metadataPath = resolve(projectRoot, 'dist', 'spark-component-metadata.json')
+  const metadataPath = resolve(projectRoot, 'packages', 'spark-ai', 'src', 'catalog', 'component-catalog.json')
 
   // 检查文件存在
   if (!existsSync(metadataPath)) {
-    console.error('❌ 未找到 dist/spark-component-metadata.json')
-    console.error('   请先执行 pnpm run build 生成构建产物')
+    console.error('❌ 未找到 packages/spark-ai/src/catalog/component-catalog.json')
+    console.error('   请先执行 pnpm run generate:catalog 生成目录')
     process.exit(1)
   }
 
@@ -59,13 +60,15 @@ async function main() {
   try {
     metadata = JSON.parse(json)
   } catch {
-    console.error('❌ spark-component-metadata.json 不是有效 JSON')
+    console.error('❌ component-catalog.json 不是有效 JSON')
     process.exit(1)
   }
 
   const endpoint = `${url}/api/ai/component-metadata`
+  const componentCount = Number(metadata?.componentCount)
+    || Object.keys(metadata?.components ?? {}).length
 
-  console.log(`📦 组件元数据: ${metadata.componentCount} 个组件, ${metadata.skillCount} 个 Skill`)
+  console.log(`📦 组件元数据: ${componentCount} 个组件`)
   console.log(`📤 上传到: ${endpoint}`)
 
   try {

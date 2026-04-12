@@ -37,6 +37,13 @@ export interface ComponentCatalog {
   /** 组件条目：key = 组件 type（kebab-case） */
   components: Record<string, ComponentEntry>
 
+  /**
+   * schema 池：所有复杂 schema 仅在此处存一份，组件属性通过 schemaRef 引用。
+   *
+   * 生成侧负责去重，消费侧按组件按需回填拼接。
+   */
+  schemaPool?: Record<string, PropSchema>
+
   /** API 全息表面：DataView / DataSet / 沙箱注入变量的公共方法签名 */
   apiSurface?: ApiSurface
 
@@ -100,6 +107,8 @@ export interface ComponentRegistry {
 export interface ComponentEntry {
   /** kebab-case 注册名 */
   type: string
+  /** 源文件相对路径（用于诊断与差异分析） */
+  filePath?: string
   /** 组件分类 */
   category: 'container' | 'field' | 'group' | 'meta' | 'feature'
   /** 一句话描述 */
@@ -122,10 +131,13 @@ export interface ComponentEntry {
   consumes?: string[]
 
   /** 来源标记 */
-  source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
+  source: 'vcm' | 'meta' | 'vcm+meta'
 
   /** 绑定行为描述符（从 VCM props 推断或静态声明） */
   binding?: CatalogBindingDescriptor
+
+  /** Props 是否包含索引签名（诊断字段） */
+  hasIndexSignature?: boolean
 }
 
 export interface PropEntry {
@@ -134,7 +146,9 @@ export interface PropEntry {
   required: boolean
   default?: string
   description?: string
-  /** 嵌套类型 schema（对象类型展开、枚举变体等） */
+  /** schema 池引用 key（首选） */
+  schemaRef?: string
+  /** @deprecated 旧格式兼容 — 优先使用 schemaRef */
   schema?: PropSchema
 }
 
@@ -144,7 +158,9 @@ export interface EmitEntry {
   type?: string
   /** 事件描述 */
   description?: string
-  /** 事件参数 schema */
+  /** schema 池引用 key 列表（首选） */
+  schemaRefs?: string[]
+  /** @deprecated 旧格式兼容 — 优先使用 schemaRefs */
   schema?: PropSchema[]
   /** @deprecated 旧格式兼容 — 优先使用 type + schema */
   payload?: Array<{ name: string; type: string }>
@@ -156,18 +172,21 @@ export interface PropSchemaProperty {
   type: string
   required?: boolean
   description?: string
-  /** 递归嵌套 schema */
-  schema?: PropSchema
 }
 
-/** 嵌套类型 Schema（递归结构，对应 vue-component-meta 的 PropertyMetaSchema） */
+/**
+ * 扁平类型 Schema（非递归）
+ *
+ * 约束：schemaPool 内不再出现 schema 嵌套对象；
+ * 消费层按 type / variants / itemTypes / paramTypes 再现嵌套。
+ */
 export type PropSchema =
   | { kind: 'object'; type: string; properties: Record<string, PropSchemaProperty> }
   | { kind: 'enum'; type: string; variants: string[] }
-  | { kind: 'array'; type: string; items: PropSchema[] }
-  | { kind: 'event'; type: string; params: PropSchema[] }
+  | { kind: 'array'; type: string; itemTypes: string[] }
+  | { kind: 'event'; type: string; paramTypes: string[] }
 
-/** 根级语义字段（从 CATALOG_OVERRIDES 文本中提取的结构化信息） */
+/** 根级语义字段（组件对 rule.json 的结构化语义说明） */
 export interface RootFieldEntry {
   name: string
   type: string

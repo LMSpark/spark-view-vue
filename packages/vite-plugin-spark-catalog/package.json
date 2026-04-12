@@ -16,8 +16,8 @@
         "typecheck": "tsc --noEmit -p tsconfig.json"
     },
     "dependencies": {
-        "glob": "^11.0.2",
-        "vue-component-meta": "^2.2.12"
+        "glob": "^13.0.6",
+        "vue-component-meta": "^3.2.6"
     },
     "peerDependencies": {
         "typescript": ">=5.0.0",

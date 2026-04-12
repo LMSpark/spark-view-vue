@@ -593,7 +593,7 @@ export default registerComponents
    * 生成组件元数据 JSON（用于构建时输出到 dist/ 并上传到服务端）
    *
    * 精简版：仅输出组件注册列表 + 基础 skill 信息。
-   * 完整 AI 元数据由 vite-plugin-spark-catalog 生成（component-catalog.ai.json）。
+  * 完整 AI 元数据由 vite-plugin-spark-catalog 生成（component-catalog.json）。
    */
   generateMetadataJson(): string {
     this.scan()

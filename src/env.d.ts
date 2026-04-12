@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __SPARK_CLASSIC_MODE__: boolean
+
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
   const component: DefineComponent<Record<string, never>, Record<string, never>, any>
