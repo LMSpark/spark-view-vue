@@ -4,8 +4,6 @@
  * 通过 Volar 类型检查器完整解析 Vue SFC，提取：
  * - Props（含完整类型解析、嵌套 schema、默认值、JSDoc）
  * - Events（含参数签名和 schema）
- * - Exposed（defineExpose 公开方法/属性）
- * - Slots（命名插槽及其 scope 类型）
  *
  * 提供完整类型推导能力。
  *
@@ -21,8 +19,6 @@ import ts from 'typescript'
 import type {
   PropEntry,
   EmitEntry,
-  ExposedEntry,
-  SlotEntry,
   PropSchema,
   PropSchemaProperty,
 } from './component-catalog-schema'
@@ -64,8 +60,6 @@ export interface VcmApiDescriptor {
   filePath: string
   props: PropEntry[]
   emits: EmitEntry[]
-  exposed: ExposedEntry[]
-  slots: SlotEntry[]
   /** Props 是否包含索引签名 */
   hasIndexSignature: boolean
 }
@@ -123,64 +117,34 @@ export function extractComponentApiVcm(
       return entry
     })
 
-    // -- Exposed --
-    // VCM 对没有 defineExpose 的 <script setup> 组件会把所有顶层绑定列为 exposed，
-    // 这不是真正的公开 API。只有源码中显式调用 defineExpose 才提取。
+    // -- Exposed → Props 恢复 --
+    // VCM 对 `Props extends SparkNode` + defineExpose 的组件，会把部分 defineProps
+    // 成员放入 exposed 而非 props。从 exposed 中恢复这些属性到 props。
     const hasDefineExpose = detectDefineExpose(absPath)
-    const exposed: ExposedEntry[] = hasDefineExpose
-      ? meta.exposed
-        .filter(e => !isVueInternalExposed(e.name))
-        .map(e => {
-          const entry: ExposedEntry = {
-            name: e.name,
-            type: e.type,
-          }
-          if (e.description !== '') entry.description = e.description
-          const schema = convertSchema(e.schema)
-          if (schema !== undefined) entry.schema = schema
-          return entry
-        })
-      : []
-
-    // -- Recover defineProps misclassified as exposed --
-    // VCM with `Props extends SparkNode` + defineExpose sometimes puts defineProps
-    // members into exposed instead of props. Recover them using naming heuristics:
-    // API methods follow verb-prefix naming (getXxx, setXxx, ...),
-    // props are nouns or event handlers (onXxx).
-    if (hasDefineExpose && exposed.length > 0) {
+    if (hasDefineExpose) {
       const propNameSet = new Set(props.map(p => p.name))
-      for (const exp of exposed) {
+      for (const exp of meta.exposed) {
+        if (isVueInternalExposed(exp.name)) continue
         if (propNameSet.has(exp.name)) continue
         if (isLikelyApiMethod(exp.name)) continue
         props.push({
           name: exp.name,
           type: exp.type,
           required: false,
-          ...(exp.description !== undefined ? { description: exp.description } : {}),
-          ...(exp.schema !== undefined ? { schema: exp.schema } : {}),
+          ...(exp.description !== '' ? { description: exp.description } : {}),
+          ...(() => {
+            const schema = convertSchema(exp.schema)
+            return schema !== undefined ? { schema } : {}
+          })(),
         })
       }
     }
-
-    // -- Slots --
-    const slots: SlotEntry[] = meta.slots.map(s => {
-      const entry: SlotEntry = {
-        name: s.name,
-        type: s.type,
-      }
-      if (s.description !== '') entry.description = s.description
-      const schema = convertSchema(s.schema)
-      if (schema !== undefined) entry.schema = schema
-      return entry
-    })
 
     return {
       type: componentType,
       filePath: relativePath,
       props,
       emits,
-      exposed,
-      slots,
       hasIndexSignature,
     }
   } catch {

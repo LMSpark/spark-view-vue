@@ -16,7 +16,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。
+ * @skill r-entity-picker
+ * @description 通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。
  */
 import { computed } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'

@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  generateComponentDescribeCatalog,
-  generateComponentQueryCatalog,
-  queryComponentCatalog,
-  queryComponentActionSpec,
-  queryComponentPromptRecord,
-} from '../packages/vite-plugin-spark-catalog/src/index'
 import type {
   ComponentCatalog,
   ComponentEntry,
@@ -78,64 +71,6 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
     ...overrides,
   }
 }
-
-describe('component query catalog', () => {
-  it('builds describe-shaped directory/spec artifacts for session.describe and actionSpec-style lookup', () => {
-    const catalog = makeCatalog()
-    const describeCatalog = generateComponentDescribeCatalog(catalog)
-
-    expect(describeCatalog.directory.summary.total).toBe(2)
-    expect(describeCatalog.directory.summary.containers).toBe(1)
-    expect(describeCatalog.directory.components).toContainEqual({
-      type: 'r-table',
-      category: 'container',
-      description: '表格容器',
-    })
-    expect(describeCatalog.specByType['r-table']).toMatchObject({
-      type: 'r-table',
-      category: 'container',
-      description: '表格容器',
-    })
-    expect(describeCatalog.specByType['r-table']?.props[0]?.name).toBe('dataKey')
-    expect(queryComponentActionSpec(describeCatalog.specByType, 'r-table')?.props[1]?.name).toBe('border')
-    expect(queryComponentActionSpec(describeCatalog.specByType, 'missing-widget')).toBeNull()
-  })
-
-  it('builds directory prompt and prompt-by-type as a first-class toolkit API', () => {
-    const catalog = makeCatalog()
-    const queryCatalog = generateComponentQueryCatalog(catalog)
-
-    expect(queryCatalog.directoryPrompt).toContain('## 组件目录')
-    expect(queryCatalog.directoryPrompt).toContain('## 组件索引')
-    expect(queryCatalog.directoryPrompt).toContain('| r-table | container | 表格容器 |')
-    expect(queryCatalog.promptByType['r-table']).toContain('**r-table**')
-    expect(queryCatalog.promptByType['r-table']).toContain('dataKey?: string — 表格数据源')
-  })
-
-  it('queries component directory from the toolkit instead of generated files', () => {
-    const catalog = makeCatalog()
-    const queryCatalog = generateComponentQueryCatalog(catalog)
-
-    const result = queryComponentPromptRecord(
-      queryCatalog.promptByType,
-      ['@list', 'r-table#dataKey', 'missing-widget'],
-      queryCatalog.directoryPrompt,
-    )
-
-    expect(result).toContain('## 组件目录')
-    expect(result).toContain('dataKey?: string — 表格数据源')
-    expect(result).toContain('❌ 未找到组件「missing-widget」')
-  })
-
-  it('keeps queryComponentCatalog aligned with the query catalog artifact semantics', () => {
-    const catalog = makeCatalog()
-
-    const result = queryComponentCatalog(catalog, ['@list', 'r-text'])
-
-    expect(result).toContain('## 组件目录')
-    expect(result).toContain('**r-text** — 文本字段')
-  })
-})
 
 describe('catalog-projections', () => {
   it('projectFcDirectory returns directory summary for session.describe', () => {

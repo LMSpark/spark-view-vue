@@ -28,8 +28,12 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 按钮组件，基于 el-button 可渲染子内容。
- * 支持 action（CRUD 动作）+ template（样式预设）+ 显式 props 三层样式合并。
+ * @skill r-button
+ * @description 声明式动作按钮，支持 action（CRUD 动作）+ template（样式预设）+ 显式 props 三层样式合并。
+ * @category container
+ * @binding action
+ * @notes 常用 action: append-row, refresh, patch-row, delete-row, delete-selected, message-row
+ * @notes dock='toolbar' 放置工具栏；dock='actions' 放置行操作
  */
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'

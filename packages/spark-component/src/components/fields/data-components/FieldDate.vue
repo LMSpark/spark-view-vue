@@ -20,7 +20,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。
+ * @skill r-date
+ * @description 日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。
  */
 import { computed } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'

@@ -16,7 +16,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。
+ * @skill r-alert
+ * @description 警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。
  */
 import { useSparkPageComponent } from '../../internal'
 import type { SparkRuntimeProps } from '../../shared-types.js'

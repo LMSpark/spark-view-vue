@@ -19,7 +19,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。
+ * @skill r-autocomplete
+ * @description 自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'

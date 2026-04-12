@@ -15,7 +15,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。
+ * @skill r-anchor-link
+ * @description 锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。
  */
 import { useSparkPageComponent, type SparkNode } from '../../internal'
 

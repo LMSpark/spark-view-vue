@@ -1,9 +1,9 @@
 /**
  * SPARK 组件目录 JSON Schema 类型定义
  *
- * 整个 AI 生成管线的**单一数据源**（SSoT）：
- * - 构建时：vue-component-meta 类型提取 + 补充数据合并 → 生成 component-catalog.json
- * - 运行时：读取 JSON → 生成提示词 / 校验 AI 输出 / 提供组件 API 查询
+ * 整个组件元数据管线的**单一数据源**（SSoT）：
+ * - 构建时：vue-component-meta 类型提取 + SFC JSDoc 注解解析 → 生成 component-catalog.json
+ * - 运行时：消费方按需投影 JSON 子集
  *
  * 完全脱离前端框架（零 Vue 依赖），可云部署。
  *
@@ -36,6 +36,9 @@ export interface ComponentCatalog {
 
   /** 组件条目：key = 组件 type（kebab-case） */
   components: Record<string, ComponentEntry>
+
+  /** API 全息表面：DataView / DataSet / 沙箱注入变量的公共方法签名 */
+  apiSurface?: ApiSurface
 
   /** 平台约束（校验器使用） */
   constraints: PlatformConstraints
@@ -72,8 +75,6 @@ export interface RawComponentEntry {
   filePath: string
   props: PropEntry[]
   emits: EmitEntry[]
-  exposed: ExposedEntry[]
-  slots: SlotEntry[]
   hasIndexSignature: boolean
 }
 
@@ -109,16 +110,16 @@ export interface ComponentEntry {
   /** Emits — 事件定义 */
   emits: EmitEntry[]
 
-  /** Exposed — defineExpose 公开的方法/属性 */
-  exposed?: ExposedEntry[]
-  /** Slots — 命名插槽及其 scope 类型 */
-  slots?: SlotEntry[]
-
   /** 根级语义字段（rule.json 中的顶级配置） */
   rootFields?: RootFieldEntry[]
 
   /** 附加约束 & 说明（补充文本，Markdown） */
   notes?: string
+
+  /** 本组件提供的能力键（SFC @provides 注解） */
+  provides?: string[]
+  /** 本组件消费的能力键（SFC @consumes 注解） */
+  consumes?: string[]
 
   /** 来源标记 */
   source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
@@ -147,22 +148,6 @@ export interface EmitEntry {
   schema?: PropSchema[]
   /** @deprecated 旧格式兼容 — 优先使用 type + schema */
   payload?: Array<{ name: string; type: string }>
-}
-
-/** defineExpose 公开的方法/属性 */
-export interface ExposedEntry {
-  name: string
-  type: string
-  description?: string
-  schema?: PropSchema
-}
-
-/** 命名插槽 */
-export interface SlotEntry {
-  name: string
-  type: string
-  description?: string
-  schema?: PropSchema
 }
 
 /** 对象 schema 中的属性条目 */
@@ -272,4 +257,51 @@ export interface CatalogBindingDescriptor {
   actionComponent?: boolean
   /** 列容器（权限控制整列隐藏） */
   columnLike?: boolean
+}
+
+/* --------------------------------------------------------------------------
+ * API 全息表面（DataView / DataSet / 沙箱）
+ * ----------------------------------------------------------------------- */
+
+/** 全息 API 表面：组件 catalog 之外的编程接口 */
+export interface ApiSurface {
+  /** DataView 公共方法 */
+  dataView: ApiMethodEntry[]
+  /** DataSet 公共方法 */
+  dataSet: ApiMethodEntry[]
+  /** SparkData 命名空间函数 */
+  sparkData: ApiMethodEntry[]
+  /** IScriptContext 沙箱注入变量 */
+  scriptContext: ApiMemberEntry[]
+  /** IPageServiceCapability 方法 */
+  pageService: ApiMethodEntry[]
+}
+
+/** API 方法条目 */
+export interface ApiMethodEntry {
+  name: string
+  /** 方法签名（TypeScript 格式） */
+  signature: string
+  /** JSDoc 描述 */
+  description?: string
+  /** 参数列表 */
+  params?: ApiParamEntry[]
+  /** 返回类型 */
+  returnType?: string
+}
+
+/** API 参数条目 */
+export interface ApiParamEntry {
+  name: string
+  type: string
+  required?: boolean
+  description?: string
+}
+
+/** API 成员条目（属性或方法） */
+export interface ApiMemberEntry {
+  name: string
+  type: string
+  kind: 'property' | 'method'
+  description?: string
 }

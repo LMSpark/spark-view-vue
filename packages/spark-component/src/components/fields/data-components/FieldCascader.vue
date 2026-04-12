@@ -17,7 +17,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。
+ * @skill r-cascader
+ * @description 级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。
  */
 import { computed } from 'vue'
 import { useOptionFieldState } from './composables/useOptionFieldState'

@@ -40,7 +40,15 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。
+ * @skill r-detail
+ * @description 数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。
+ * @category container
+ * @binding datakey-driven
+ * @provides DATA_SOURCE
+ * @provides CONTEXT_DATA
+ * @consumes PAGE_DATASET
+ * @notes children 内放 r-* 字段组件（只读模式展示）
+ * @notes dock='toolbar' 声明工具栏节点
  */
 /**
  * RendererDetail - 详情展示容器组件

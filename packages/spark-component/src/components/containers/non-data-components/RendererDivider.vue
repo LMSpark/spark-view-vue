@@ -12,7 +12,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。
+ * @skill r-divider
+ * @description 分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。
  */
 import { useSparkPageComponent, type SparkNode } from '../../internal'
 

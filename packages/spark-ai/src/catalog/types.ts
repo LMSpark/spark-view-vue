@@ -32,8 +32,6 @@ export interface RawComponentEntry {
   filePath: string
   props: PropEntry[]
   emits: EmitEntry[]
-  exposed: ExposedEntry[]
-  slots: SlotEntry[]
   hasIndexSignature: boolean
 }
 
@@ -75,8 +73,6 @@ export interface ComponentEntry {
   description: string
   props: PropEntry[]
   emits: EmitEntry[]
-  exposed?: ExposedEntry[]
-  slots?: SlotEntry[]
   rootFields?: RootFieldEntry[]
   notes?: string
   source: 'vcm' | 'vcm+override' | 'vcm+addendum' | 'override' | 'addendum'
@@ -114,19 +110,7 @@ export interface EmitEntry {
   payload?: Array<{ name: string; type: string }>
 }
 
-export interface ExposedEntry {
-  name: string
-  type: string
-  description?: string
-  schema?: PropSchema
-}
 
-export interface SlotEntry {
-  name: string
-  type: string
-  description?: string
-  schema?: PropSchema
-}
 
 export interface RootFieldEntry {
   name: string

@@ -15,7 +15,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。
+ * @skill display-countdown
+ * @description 倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。
  */
 import { computed, type CSSProperties } from 'vue'
 import { useSparkPageComponent } from '../../internal'

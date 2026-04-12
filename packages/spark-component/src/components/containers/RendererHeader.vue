@@ -17,7 +17,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 头部组件，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。
+ * @skill r-header
+ * @description 头部组件，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../internal'

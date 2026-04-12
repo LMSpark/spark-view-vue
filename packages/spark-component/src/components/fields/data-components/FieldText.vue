@@ -12,7 +12,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。
+ * @skill r-text
+ * @description 文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'

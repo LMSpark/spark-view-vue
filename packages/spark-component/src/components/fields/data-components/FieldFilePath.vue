@@ -28,7 +28,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。
+ * @skill r-file-path
+ * @description 文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。
  */
 import { computed } from 'vue'
 import { useFileFieldActions } from '../actions/useFileFieldActions'

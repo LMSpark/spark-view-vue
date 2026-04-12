@@ -22,7 +22,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。
+ * @skill r-card
+ * @description 卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

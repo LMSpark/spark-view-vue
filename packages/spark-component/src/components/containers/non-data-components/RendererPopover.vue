@@ -34,7 +34,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。
+ * @skill r-popover
+ * @description 弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

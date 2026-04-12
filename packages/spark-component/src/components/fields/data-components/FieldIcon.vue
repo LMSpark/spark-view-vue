@@ -49,7 +49,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。
+ * @skill r-icon
+ * @description 图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'

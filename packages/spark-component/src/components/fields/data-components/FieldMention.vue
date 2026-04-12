@@ -24,7 +24,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。
+ * @skill r-mention
+ * @description 提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。
  */
 import { ref, computed, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'

@@ -19,7 +19,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。
+ * @skill r-link
+ * @description 链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

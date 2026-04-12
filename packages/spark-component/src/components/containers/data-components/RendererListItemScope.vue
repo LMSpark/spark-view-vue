@@ -36,7 +36,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 列表项作用域组件（r-list 内部），为每一项子组件提供 DATA_ROW 上下文和卡片/网格包装。
+ * @skill r-list-item-scope
+ * @description 列表项作用域组件（r-list 内部），为每一项子组件提供 DATA_ROW 上下文和卡片/网格包装。
+ * @category internal
  */
 import { computed } from 'vue'
 import type { CSSProperties } from 'vue'

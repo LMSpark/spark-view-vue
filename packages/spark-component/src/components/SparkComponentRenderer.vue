@@ -35,7 +35,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。
+ * @skill spark-component-renderer
+ * @description 通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。
+ * @category internal
  */
 /**
  * SparkComponentRenderer — SPARK 通用组件递归渲染引擎（无上下文版本）

@@ -90,7 +90,11 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作区。
+ * @skill r-section
+ * @description 分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作区。
+ * @category container
+ * @notes dock='header' 声明头部操作区
+ * @notes r-block 是此组件的别名，功能完全一致
  */
 import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'

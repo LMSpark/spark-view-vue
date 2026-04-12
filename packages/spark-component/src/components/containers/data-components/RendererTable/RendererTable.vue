@@ -103,7 +103,17 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
+ * @skill r-table
+ * @description 数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
+ * @category container
+ * @binding datakey-driven
+ * @provides DATA_SOURCE
+ * @consumes PAGE_DATASET
+ * @consumes PAGE_SERVICE
+ * @consumes MODULE_CONTEXT
+ * @notes children 仅放 r-* 字段组件做列，禁止 el-table-column
+ * @notes dock='filter' 声明筛选区节点；dock='toolbar' 声明工具栏；dock='actions' 声明行操作
+ * @notes highlightCurrentRow 必须显式声明才生效
  */
 /**
  * RendererTable - 表格容器组件

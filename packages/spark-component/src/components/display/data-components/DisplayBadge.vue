@@ -23,7 +23,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。
+ * @skill r-badge
+ * @description 徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

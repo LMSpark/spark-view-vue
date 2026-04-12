@@ -15,7 +15,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。
+ * @skill r-breadcrumb
+ * @description 面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

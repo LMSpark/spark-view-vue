@@ -17,7 +17,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 尾部组件，在 r-toolbar 中作为工具栏末尾区域提取渲染。
+ * @skill r-tail
+ * @description 尾部组件，在 r-toolbar 中作为工具栏末尾区域提取渲染。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../internal'

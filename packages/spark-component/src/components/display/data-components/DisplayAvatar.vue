@@ -16,7 +16,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。
+ * @skill r-avatar
+ * @description 头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。
  */
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'

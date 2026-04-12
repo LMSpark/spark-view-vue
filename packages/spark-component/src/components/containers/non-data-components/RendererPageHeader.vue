@@ -19,7 +19,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。
+ * @skill r-page-header
+ * @description 页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

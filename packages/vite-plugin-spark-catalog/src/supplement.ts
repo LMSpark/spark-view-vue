@@ -150,10 +150,6 @@ props.docks.actions.align: 'left' | 'center' | 'right' — 默认 'left'
 props.docks.actions.fixed: boolean | 'left' | 'right' — 固定方向
 props.docks.actions.class: string — 操作列 CSS 类名
 
-【能力链】
-consumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT
-provides: DATA_SOURCE
-
 children 内仅用 r-* 字段组件做列，禁止 el-table-column`,
 
   'r-form': `**r-form** — 数据表单容器（读写 currentRow）
@@ -166,10 +162,6 @@ gridColumns: number — CSS Grid 列数，默认 24
 gridGap: number | string — 栅格间距，默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 
-【能力链】
-consumes: PAGE_DATASET
-provides: DATA_SOURCE, CONTEXT_DATA
-
 children 内放 r-* 字段组件`,
 
   'r-detail': `**r-detail** — 只读详情容器（展示 currentRow）
@@ -180,10 +172,6 @@ props.docks.toolbar.class: string — 工具栏 CSS 类名
 gridColumns: number — CSS Grid 列数，默认 24
 gridGap: number | string — 栅格间距，默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
-
-【能力链】
-consumes: PAGE_DATASET
-provides: DATA_SOURCE, CONTEXT_DATA
 
 children 内放 r-* 字段组件（只读模式）`,
 
@@ -198,11 +186,7 @@ allowDelete: boolean — 允许删除节点（自动生成删除按钮）
 onNodeClick: string — script.js 节点点击回调函数名
 onNodeExpand: string — 节点展开回调
 onNodeCollapse: string — 节点折叠回调
-其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）
-
-【能力链】
-consumes: PAGE_DATASET
-provides: DATA_SOURCE, CONTEXT_DATA`,
+其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）`,
 
   'r-list': `**r-list** — 列表容器
 dataKey: string — 数据绑定键
@@ -225,11 +209,7 @@ gridColumns: number — 默认 24
 gridGap: number | string — 默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 itemColSpan: number — 项跨列数
-itemRowSpan: number — 项跨行数，默认 1
-
-【能力链】
-consumes: PAGE_DATASET
-provides: DATA_SOURCE`,
+itemRowSpan: number — 项跨行数，默认 1`,
 
   'r-tabs': `**r-tabs** — 标签页容器
 dock='toolbar' children — 工具栏节点
@@ -313,26 +293,6 @@ gridColumns: number — 默认 24
 gridGap: number — 默认 0
 gridAutoRows: string — 行高定义
 适合做页面中的局部块，不强制数据绑定`,
-
-  // ── 规划组件（尚未实现） ───────────────────────────────────────────────
-
-  'r-user-picker': `**r-user-picker** — 用户选择器
-field / label / width — 同 r-text
-multiple: boolean — 多选
-deptScope: string — 部门范围
-includeDisabled: boolean — 包含禁用用户`,
-
-  'r-dept-picker': `**r-dept-picker** — 部门选择器
-field / label / width — 同 r-text
-multiple: boolean — 多选
-checkStrictly: boolean — 父子不关联勾选
-showPath: boolean — 展示完整路径`,
-
-  'r-product-picker': `**r-product-picker** — 产品选择器
-field / label / width — 同 r-text
-multiple: boolean — 多选
-categoryFilter: string[] — 类目过滤
-showStock: boolean — 显示库存`,
 }
 
 /* ==========================================================================
@@ -363,60 +323,18 @@ children 内放 r-* 字段组件作为实际数据列`,
 }
 
 /* ==========================================================================
- * 组件分类（用于生成提示词中的组件注册表）
+ * 组件分类（仅保留无法从目录/SFC 自动推断的条目）
+ *
+ * 大部分组件分类已通过目录推断（containers/ → container, fields/ → field）
+ * 或 SFC @category 注解声明。此处仅保留元概念和特殊映射。
  * ========================================================================== */
 
 export type ComponentCategory = 'container' | 'field' | 'group' | 'meta'
 
-/**
- * 手工分类的组件条目。
- * AST 自动提取的字段组件默认归为 'field'，无需在此列出。
- */
 export const COMPONENT_CATEGORIES: Record<string, ComponentCategory> = {
-  // 容器
-  'r-table': 'container',
-  'r-form': 'container',
-  'r-detail': 'container',
-  'r-tree': 'container',
-  'r-list': 'container',
-  'r-tabs': 'container',
-  'r-collapse': 'container',
-  'r-dialog': 'container',
-  'r-drawer': 'container',
-  'r-steps': 'container',
-  'r-section': 'container',
-  'r-block': 'container',
-  // 字段
-  'r-cascader': 'field',
-  'r-checkbox': 'field',
-  'r-checkbox-group': 'field',
-  'r-color': 'field',
-  'r-context-renderer': 'field',
-  'r-date': 'field',
-  'r-dept-picker': 'field',
-  'r-entity-picker': 'field',
-  'r-file-browser': 'field',
-  'r-file-path': 'field',
-  'r-html-editor': 'field',
-  'r-icon': 'field',
-  'r-image': 'field',
-  'r-multi-select': 'field',
-  'r-number': 'field',
-  'r-product-picker': 'field',
-  'r-radio': 'field',
-  'r-rate': 'field',
-  'r-select': 'field',
-  'r-slider': 'field',
-  'r-switch': 'field',
-  'r-text': 'field',
-  'r-textarea': 'field',
-  'r-transfer': 'field',
-  'r-tree-select': 'field',
-  'r-upload': 'field',
-  'r-user-picker': 'field',
-  // 分组
+  // 分组（注册为 FieldContextRenderer 别名，无独立 SFC）
   'r-column-group': 'group',
-  // 元概念（不进入注册表）
+  // 元概念（不进入注册表，无 SFC 文件）
   'builtin-action': 'meta',
   'context-aware-fields-api': 'meta',
 }

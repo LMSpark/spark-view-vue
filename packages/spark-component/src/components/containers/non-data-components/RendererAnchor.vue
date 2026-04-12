@@ -22,7 +22,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 锚点导航容器，基于 el-anchor 提供页面内锚点定位和跟随滚动高亮。
+ * @skill r-anchor
+ * @description 锚点导航容器，基于 el-anchor 提供页面内锚点定位和跟随滚动高亮。
  */
 import { computed } from 'vue'
 import {

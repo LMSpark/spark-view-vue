@@ -13,7 +13,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。
+ * @skill r-segmented
+ * @description 分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。
  */
 import { ref, computed, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'

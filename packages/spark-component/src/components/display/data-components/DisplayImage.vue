@@ -31,7 +31,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。
+ * @skill display-image
+ * @description 图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。
  */
 import { computed } from 'vue'
 import { Picture } from '@element-plus/icons-vue'

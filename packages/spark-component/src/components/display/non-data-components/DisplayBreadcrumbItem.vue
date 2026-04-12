@@ -11,7 +11,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 面包屑导航项，基于 el-breadcrumb-item 定义单个导航节点，支持链接跳转。
+ * @skill r-breadcrumb-item
+ * @description 面包屑导航项，基于 el-breadcrumb-item 定义单个导航节点，支持链接跳转。
  */
 import { useSparkPageComponent } from '../../internal'
 import type { SparkRuntimeProps } from '../../shared-types.js'

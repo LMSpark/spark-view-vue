@@ -43,7 +43,10 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏。
+ * @skill r-tabs
+ * @description 标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏。
+ * @category container
+ * @notes children 内放 r-tab-pane，每个 tab-pane 内可嵌套任意组件
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'

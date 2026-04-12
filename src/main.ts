@@ -401,11 +401,7 @@ async function startApp() {
           // 此处只需异步加载 AI Loop 模块并连接缓冲区。
           Promise.all([
             import('@spark-view/spark-ai'),
-            import('virtual:spark-skill-catalog').catch(() => null),
-          ]).then(([{ initAILoop, setupHotReload, setConfigLoader, triggerPageRefresh, configureAILoopHttp }, skillMod]) => {
-            // 生成 Skill Catalog Markdown（构建时从 @skill 注解采集）
-            const skillCatalog = skillMod?.buildSkillPrompt('## SPARK Skill 目录', 'compact')
-
+          ]).then(([{ initAILoop, setupHotReload, setConfigLoader, triggerPageRefresh, configureAILoopHttp }]) => {
             // 配置 AI Loop HTTP 客户端的认证头和租户作用域
             configureAILoopHttp({
               getHeaders: createAuthHeaders,
@@ -415,7 +411,7 @@ async function startApp() {
 
             const loop = initAILoop({
               aiEndpoint: appConfig.config.features.aiEndpoint ?? '/api/ai/chat',
-              ...(skillCatalog !== undefined ? { skillCatalog } : {}),
+
               onFilesUpdated: (pageId) => {
                 startupLogger.info('AI 已更新页面文件', { pageId })
               },

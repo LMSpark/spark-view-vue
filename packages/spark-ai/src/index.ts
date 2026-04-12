@@ -98,8 +98,6 @@ export type {
   PropEntry,
   PropSchema,
   EmitEntry,
-  ExposedEntry,
-  SlotEntry,
   PlatformConstraints,
   NestingRule,
   RootFieldEntry,

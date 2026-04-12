@@ -1,8 +1,7 @@
 /**
  * 组件目录 JSON 生成器
  *
- * 从 vue-component-meta 类型解析构建 raw 目录，并同时输出一份带 supplement
- * 补充信息的 AI 目录，避免把人工说明混进原始构建产物。
+ * 从 vue-component-meta 类型解析 + SFC JSDoc 注解构建单一 component-catalog.json。
  * 纯 Node.js 模块，不依赖 Vite / Vue 运行时。
  *
  * @module json-catalog-generator
@@ -35,14 +34,13 @@ import type {
   PlatformConstraints,
   PropEntry,
   EmitEntry,
-  ExposedEntry,
-  SlotEntry,
+  ApiSurface,
 } from './component-catalog-schema'
 import { inferBindingFromVcm, buildAllBindingDescriptors } from './infer-binding'
+import { extractApiSurface } from './extract-ts-api'
+import type { SkillMeta } from './utils'
 
 const logger = createLogger('spark-catalog-json')
-
-type CatalogFlavor = 'raw' | 'ai'
 
 /* --------------------------------------------------------------------------
  * 选项
@@ -70,6 +68,7 @@ interface ScannedComponent {
   relativePath: string
   skillType: string
   skillDescription: string
+  skillMeta: SkillMeta | null
 }
 
 function scanRendererComponents(root: string): ScannedComponent[] {
@@ -97,6 +96,7 @@ function scanRendererComponents(root: string): ScannedComponent[] {
         relativePath: file,
         skillType,
         skillDescription: meta?.description ?? buildImplicitSkillDescription(absolutePath, skillType),
+        skillMeta: meta,
       })
     }
   }
@@ -120,6 +120,7 @@ function scanFeatureComponents(root: string, patterns: string[], exclude: string
         relativePath: file,
         skillType: meta.type,
         skillDescription: meta.description,
+        skillMeta: meta,
       })
     }
   }
@@ -127,14 +128,37 @@ function scanFeatureComponents(root: string, patterns: string[], exclude: string
 }
 
 /* --------------------------------------------------------------------------
- * 分类判定
+ * 分类判定（目录推断 + SFC @category 覆盖）
  * ----------------------------------------------------------------------- */
 
-function resolveCategory(skillType: string): ComponentEntry['category'] {
+function resolveCategory(
+  skillType: string,
+  relativePath: string,
+  sfcCategory?: string,
+): ComponentEntry['category'] {
+  // 优先级 1：SFC @category 注解
+  if (sfcCategory !== undefined) {
+    const lower = sfcCategory.toLowerCase()
+    if (lower === 'container') return 'container'
+    if (lower === 'group') return 'group'
+    if (lower === 'meta') return 'meta'
+    if (lower === 'field') return 'field'
+    if (lower === 'feature') return 'feature'
+  }
+
+  // 优先级 2：COMPONENT_CATEGORIES（el-* 等第三方组件显式分类）
   const explicitCat = COMPONENT_CATEGORIES[skillType]
   if (explicitCat === 'container') return 'container'
   if (explicitCat === 'group') return 'group'
   if (explicitCat === 'meta') return 'meta'
+
+  // 优先级 3：目录结构推断
+  const normalizedPath = relativePath.replace(/\\/g, '/')
+  if (normalizedPath.includes('/containers/')) return 'container'
+  if (normalizedPath.includes('/fields/')) return 'field'
+  if (normalizedPath.includes('/display/')) return 'field'
+
+  // 优先级 4：前缀约定
   if (skillType.startsWith('r-')) return 'field'
   return 'feature'
 }
@@ -289,10 +313,12 @@ function buildComponentEntry(
   skillType: string,
   description: string,
   api: VcmApiDescriptor | null,
+  relativePath: string,
+  meta: SkillMeta | null,
   hasOverride: boolean,
   hasAddendum: boolean,
 ): ComponentEntry {
-  const category = resolveCategory(skillType)
+  const category = resolveCategory(skillType, relativePath, meta?.category)
   const overrideText = CATALOG_OVERRIDES[skillType]
   const addendumText = CATALOG_ADDENDUMS[skillType]
 
@@ -314,36 +340,34 @@ function buildComponentEntry(
   // Emits: VCM 格式（type + schema，无 payload）
   const emits: EmitEntry[] = api?.emits ?? []
 
-  // Exposed: VCM 提取
-  const exposed: ExposedEntry[] | undefined =
-    api !== null && api.exposed.length > 0 ? api.exposed : undefined
-
-  // Slots: VCM 提取
-  const slots: SlotEntry[] | undefined =
-    api !== null && api.slots.length > 0 ? api.slots : undefined
-
   // Root fields from override text
   const rootFields = hasOverride && overrideText !== undefined
     ? parseRootFieldsFromOverride(overrideText)
     : undefined
 
-  // Notes: override 原文始终保留（辅助 AI 阅读），addendum 追加
+  // Notes: 合并 SFC @notes + override + addendum
   let notes: string | undefined
+  if (meta?.notes !== undefined && meta.notes.length > 0) {
+    notes = meta.notes.join('\n')
+  }
   if (hasOverride && overrideText !== undefined) {
-    notes = overrideText
+    notes = notes !== undefined ? `${notes}\n\n${overrideText}` : overrideText
   }
   if (hasAddendum && addendumText !== undefined) {
     notes = notes !== undefined ? `${notes}\n\n${addendumText}` : addendumText
   }
 
+  // Provides / Consumes from SFC @provides / @consumes
+  const provides = meta?.provides !== undefined && meta.provides.length > 0 ? meta.provides : undefined
+  const consumes = meta?.consumes !== undefined && meta.consumes.length > 0 ? meta.consumes : undefined
+
   // Source
-  const prefix = api !== null ? 'vcm' : ''
+  const hasVcm = api !== null
+  const hasSfcMeta = meta !== null
   let source: ComponentEntry['source']
-  if (prefix !== '' && hasOverride) source = 'vcm+override'
-  else if (prefix !== '' && hasAddendum) source = 'vcm+addendum'
-  else if (prefix !== '') source = 'vcm'
-  else if (hasOverride) source = 'override'
-  else if (hasAddendum) source = 'addendum'
+  if (hasVcm && (hasOverride || hasSfcMeta)) source = 'vcm+override'
+  else if (hasVcm) source = 'vcm'
+  else if (hasOverride || hasSfcMeta) source = 'override'
   else source = 'override' // fallback for pure-text entries
 
   return {
@@ -352,46 +376,50 @@ function buildComponentEntry(
     description,
     props,
     emits,
-    ...(exposed !== undefined ? { exposed } : {}),
-    ...(slots !== undefined ? { slots } : {}),
     ...(rootFields !== undefined ? { rootFields } : {}),
     ...(notes !== undefined ? { notes } : {}),
+    ...(provides !== undefined ? { provides } : {}),
+    ...(consumes !== undefined ? { consumes } : {}),
     source,
-    ...(() => { const b = inferBindingFromVcm(skillType, props, category); return b !== undefined ? { binding: b } : {} })(),
+    ...(() => {
+      const b = inferBindingFromVcm(skillType, props, category, meta?.binding)
+      return b !== undefined ? { binding: b } : {}
+    })(),
   }
 }
 
-function buildComponentsForFlavor(
-  flavor: CatalogFlavor,
+function buildComponents(
   apiMap: Map<string, VcmApiDescriptor>,
   descriptionMap: Map<string, string>,
+  metaMap: Map<string, SkillMeta | null>,
+  pathMap: Map<string, string>,
 ): Record<string, ComponentEntry> {
   const components: Record<string, ComponentEntry> = {}
 
-  if (flavor === 'raw') {
-    for (const [key, api] of apiMap) {
-      const desc = descriptionMap.get(key) ?? ''
-      components[key] = buildComponentEntry(key, desc, api, false, false)
-    }
-    return components
-  }
-
-  for (const key of Object.keys(CATALOG_OVERRIDES)) {
+  // 1. 已扫描组件（有 VCM 或 SkillMeta）
+  const allKeys = new Set([...apiMap.keys(), ...metaMap.keys()])
+  for (const key of allKeys) {
     const api = apiMap.get(key) ?? null
-    const desc = descriptionMap.get(key) ?? extractDescriptionFromOverride(key)
-    components[key] = buildComponentEntry(key, desc, api, true, key in CATALOG_ADDENDUMS)
-  }
-
-  for (const [key, api] of apiMap) {
-    if (key in components) continue
     const desc = descriptionMap.get(key) ?? ''
-    components[key] = buildComponentEntry(key, desc, api, false, key in CATALOG_ADDENDUMS)
+    const meta = metaMap.get(key) ?? null
+    const relPath = pathMap.get(key) ?? ''
+    const hasOverride = key in CATALOG_OVERRIDES
+    const hasAddendum = key in CATALOG_ADDENDUMS
+    components[key] = buildComponentEntry(key, desc, api, relPath, meta, hasOverride, hasAddendum)
   }
 
+  // 2. CATALOG_OVERRIDES 中的纯文本条目（el-* 等无 SFC 的组件）
+  for (const key of Object.keys(CATALOG_OVERRIDES)) {
+    if (key in components) continue
+    const desc = descriptionMap.get(key) ?? extractDescriptionFromOverride(key)
+    components[key] = buildComponentEntry(key, desc, null, '', null, true, key in CATALOG_ADDENDUMS)
+  }
+
+  // 3. CATALOG_ADDENDUMS 中的纯补充条目
   for (const key of Object.keys(CATALOG_ADDENDUMS)) {
     if (key in components) continue
     const desc = descriptionMap.get(key) ?? ''
-    components[key] = buildComponentEntry(key, desc, null, false, true)
+    components[key] = buildComponentEntry(key, desc, null, '', null, false, true)
   }
 
   return components
@@ -421,16 +449,17 @@ function buildRegistry(components: Record<string, ComponentEntry>): ComponentReg
 }
 
 function buildCatalogDocument(
-  flavor: CatalogFlavor,
   components: Record<string, ComponentEntry>,
+  apiSurface?: ApiSurface,
 ): ComponentCatalog {
   return {
     version: '2.0.0',
     buildTime: new Date().toISOString(),
     componentCount: Object.keys(components).length,
     registry: buildRegistry(components),
-    sharedTypes: flavor === 'ai' ? SHARED_TYPE_DEFINITIONS : {},
+    sharedTypes: SHARED_TYPE_DEFINITIONS,
     components,
+    ...(apiSurface !== undefined ? { apiSurface } : {}),
     constraints: buildPlatformConstraints(),
     bindingDescriptors: buildAllBindingDescriptors(components),
   }
@@ -444,8 +473,6 @@ function buildRawCatalogDocument(apiMap: Map<string, VcmApiDescriptor>): RawComp
       filePath: api.filePath,
       props: api.props,
       emits: api.emits,
-      exposed: api.exposed,
-      slots: api.slots,
       hasIndexSignature: api.hasIndexSignature,
     }]),
   )
@@ -494,26 +521,33 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   }
 
   const descriptionMap = new Map<string, string>()
+  const metaMap = new Map<string, SkillMeta | null>()
+  const pathMap = new Map<string, string>()
 
-  // 从扫描结果收集描述
+  // 从扫描结果收集描述、元数据、路径
   for (const comp of [...renderers, ...features]) {
     descriptionMap.set(comp.skillType, comp.skillDescription)
+    metaMap.set(comp.skillType, comp.skillMeta)
+    pathMap.set(comp.skillType, comp.relativePath)
   }
 
-  const aiComponents = buildComponentsForFlavor('ai', apiMap, descriptionMap)
+  const components = buildComponents(apiMap, descriptionMap, metaMap, pathMap)
+
+  // 3. API 全息表面提取（DataView / DataSet / SparkData / IScriptContext / IPageServiceCapability）
+  const apiSurface = extractApiSurface(root)
 
   const rawCatalog = buildRawCatalogDocument(apiMap)
-  const aiCatalog = buildCatalogDocument('ai', aiComponents)
+  const catalog = buildCatalogDocument(components, apiSurface)
 
   logger.info(`📦 Raw 目录已构建: ${rawCatalog.componentCount} 条目`)
-  logger.info(`📦 AI 目录已构建: ${aiCatalog.componentCount} 条目`)
+  logger.info(`📦 组件目录已构建: ${catalog.componentCount} 条目`)
 
   const rawOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
-  const aiOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.ai.json')
+  const catalogOutputPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.ai.json')
   writeFileSync(rawOutputPath, JSON.stringify(rawCatalog, null, 2), 'utf-8')
-  writeFileSync(aiOutputPath, JSON.stringify(aiCatalog, null, 2), 'utf-8')
+  writeFileSync(catalogOutputPath, JSON.stringify(catalog, null, 2), 'utf-8')
   logger.info(`📄 Raw JSON 已写入: ${rawOutputPath}`)
-  logger.info(`📄 AI JSON 已写入: ${aiOutputPath}`)
+  logger.info(`📄 Catalog JSON 已写入: ${catalogOutputPath}`)
 
   // 按组件输出独立 JSON（便于逐一检查，仅在显式指定 perComponentDir 时）
   if (options.perComponentDir !== undefined) {

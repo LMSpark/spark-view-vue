@@ -19,7 +19,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。
+ * @skill r-descriptions
+ * @description 描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

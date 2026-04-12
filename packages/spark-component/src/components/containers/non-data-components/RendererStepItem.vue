@@ -30,7 +30,9 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。
+ * @skill r-step-item
+ * @description 步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。
+ * @category internal
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'

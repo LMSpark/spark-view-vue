@@ -20,7 +20,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。
+ * @skill r-skeleton
+ * @description 骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

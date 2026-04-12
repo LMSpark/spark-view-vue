@@ -1,6 +1,7 @@
 <script lang="ts">
 /**
- * @skill-description 用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。
+ * @skill r-user-picker
+ * @description 用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。
  */
 import { createPickerPreset } from '../createPickerPreset'
 

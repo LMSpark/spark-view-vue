@@ -69,23 +69,31 @@ export const EL_BINDING_DESCRIPTORS: Readonly<Record<string, CatalogBindingDescr
 /**
  * 从 VCM 提取的 props 推断组件绑定行为
  *
- * 推断规则：
- * - 有 `dataKey` prop → selfResolving
- * - container 类别 + dataKey + children(SparkNode[]) → dataContainer
- * - 有 `modelValue` prop → form-element delegate（按类型推断 valueType）
- * - 有 `options` 或 `optionKey` prop → hasOptions
- * - 有 `prop` prop → fieldProvider
+ * 推断规则（优先级从高到低）：
+ * 1. SFC @binding JSDoc 注解（显式声明）
+ * 2. 有 `dataKey` prop → selfResolving
+ * 3. container 类别 + dataKey + children(SparkNode[]) → dataContainer
+ * 4. 有 `modelValue` prop → form-element delegate（按类型推断 valueType）
+ * 5. 有 `options` 或 `optionKey` prop → hasOptions
+ * 6. 有 `prop` prop → fieldProvider
  *
+ * @param sfcBinding - SFC 内 @binding 注解值（优先于推断）
  * @returns 推断的描述符，无法推断时返回 undefined
  */
 export function inferBindingFromVcm(
   type: string,
   props: PropEntry[],
   category: ComponentEntry['category'],
+  sfcBinding?: string,
 ): CatalogBindingDescriptor | undefined {
   // el-* 走静态映射
   const elDescriptor = EL_BINDING_DESCRIPTORS[type]
   if (elDescriptor !== undefined) return elDescriptor
+
+  // SFC @binding 注解优先（解析已知的声明式绑定模式）
+  if (sfcBinding !== undefined) {
+    return parseSfcBinding(sfcBinding, props, category)
+  }
 
   const hasDataKey = props.some(p => p.name === 'dataKey')
   const hasChildren = props.some(p => p.name === 'children' && p.type.includes('SparkNode'))
@@ -165,4 +173,58 @@ export function buildAllBindingDescriptors(
   }
 
   return result
+}
+
+/* --------------------------------------------------------------------------
+ * SFC @binding 注解解析
+ * ----------------------------------------------------------------------- */
+
+/**
+ * 将 SFC @binding 声明式文本解析为 CatalogBindingDescriptor
+ *
+ * 支持的声明值：
+ * - `dataKey-driven` → selfResolving + dataContainer（容器时）
+ * - `field-driven` → fieldProvider
+ * - `form-element` → bindingDelegate: 'form-element'
+ * - `action` → actionComponent
+ * - `column` → fieldProvider + columnLike
+ *
+ * 可组合：`dataKey-driven, action` → 同时设多个标志
+ */
+function parseSfcBinding(
+  sfcBinding: string,
+  props: PropEntry[],
+  category: ComponentEntry['category'],
+): CatalogBindingDescriptor {
+  const tokens = sfcBinding.split(',').map(t => t.trim().toLowerCase())
+  const descriptor: CatalogBindingDescriptor = {}
+
+  for (const token of tokens) {
+    switch (token) {
+      case 'datakey-driven':
+        descriptor.selfResolving = true
+        if (category === 'container') descriptor.dataContainer = true
+        break
+      case 'field-driven':
+        descriptor.fieldProvider = true
+        break
+      case 'form-element':
+        descriptor.bindingDelegate = 'form-element'
+        break
+      case 'action':
+        descriptor.actionComponent = true
+        break
+      case 'column':
+        descriptor.fieldProvider = true
+        descriptor.columnLike = true
+        break
+    }
+  }
+
+  // 追加推断：hasOptions
+  if (props.some(p => p.name === 'options' || p.name === 'optionKey')) {
+    descriptor.hasOptions = true
+  }
+
+  return descriptor
 }

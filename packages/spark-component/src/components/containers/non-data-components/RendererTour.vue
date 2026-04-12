@@ -34,7 +34,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。
+ * @skill r-tour
+ * @description 引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。
  */
 import { ref, watch, computed } from 'vue'
 import {

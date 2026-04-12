@@ -49,7 +49,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。
+ * @skill r-html-editor
+ * @description 富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。
  */
 import { ref } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'

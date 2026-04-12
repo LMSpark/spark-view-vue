@@ -116,24 +116,8 @@ declare module 'virtual:spark-skill-catalog' {
     props?: PropMeta[]
   }
 
-  /** Skill 目录输出精度模式 */
-  export type SkillPromptMode = 'index' | 'compact' | 'full'
-
   /** 所有生成 Skill 元数据的组件 Skill 元数据列表 */
   export const skillCatalog: SkillMeta[]
 
-  /**
-   * 构建供 LLM 使用的 Skill 提示词字符串（Markdown 格式）
-   * @param header 可选的说明标题，默认为 "## 可用前端 Skill 目录"
-   * @param mode 输出精度：'index'（索引表）| 'compact'（默认，type+描述+能力）| 'full'（含 example）
-   * @param types 按 type 过滤，空数组 = 全量输出
-   */
-  export function buildSkillPrompt(
-    header?: string,
-    mode?: SkillPromptMode,
-    types?: string[],
-  ): string
-
   export default skillCatalog
 }
-

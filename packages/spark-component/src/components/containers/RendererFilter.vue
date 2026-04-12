@@ -68,7 +68,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 筛选区组件，独立使用时仅渲染 wrapper 子节点；被 r-table 复用时负责筛选面板壳、折叠和操作按钮。
+ * @skill r-filter
+ * @description 筛选区组件，独立使用时仅渲染 wrapper 子节点；被 r-table 复用时负责筛选面板壳、折叠和操作按钮。
  */
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'

@@ -64,7 +64,14 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器侧面板。
+ * @skill r-tree
+ * @description 树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器侧面板。
+ * @category container
+ * @binding datakey-driven
+ * @provides DATA_SOURCE
+ * @provides CONTEXT_DATA
+ * @consumes PAGE_DATASET
+ * @notes 其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）
  */
 /**
  * RendererTree - 树形容器组件

@@ -57,7 +57,10 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 对话框容器，基于 el-dialog 弹出模态窗口，支持 r-header/r-footer 和网格主体布局。
+ * @skill r-dialog
+ * @description 对话框容器，基于 el-dialog 弹出模态窗口，支持 header/footer dock 和网格主体布局。
+ * @category container
+ * @notes dock='header' 声明头部动作区；dock='footer' 声明底部动作区
  */
 import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'

@@ -38,7 +38,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。
+ * @skill r-image
+ * @description 图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。
  */
 import { computed } from 'vue'
 import { useFileFieldActions } from '../actions/useFileFieldActions'

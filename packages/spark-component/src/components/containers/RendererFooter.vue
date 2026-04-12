@@ -17,7 +17,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 底部组件，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。
+ * @skill r-footer
+ * @description 底部组件，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId } from '../internal'

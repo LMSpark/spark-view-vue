@@ -10,7 +10,8 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。
+ * @skill r-timeline
+ * @description 时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'

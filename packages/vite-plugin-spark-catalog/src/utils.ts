@@ -83,6 +83,16 @@ export function buildImplicitSkillDescription(absolutePath: string, skillType: s
 export interface SkillMeta {
   type: string
   description: string
+  /** @category 覆盖（优先于目录推断） */
+  category?: string
+  /** @binding 数据绑定模式声明 */
+  binding?: string
+  /** @provides 向子组件暴露的能力键列表 */
+  provides?: string[]
+  /** @consumes 从父组件消费的能力键列表 */
+  consumes?: string[]
+  /** @notes 使用注意事项（可多条） */
+  notes?: string[]
 }
 
 /**
@@ -123,13 +133,51 @@ export function parseSkillMeta(absolutePath: string, fallbackType: string): Skil
   const jsdocBody = match[1] ?? ''
   const lines = jsdocBody.split('\n').map((l) => l.replace(/^\s*\*\s?/, '').trim())
 
-  // 提取 @skill-description
-  const descLine = lines.find((l) => l.startsWith('@skill-description'))
+  // 提取 @skill-description / @description
+  const descLine = lines.find((l) => l.startsWith('@skill-description') || l.startsWith('@description'))
   const description = descLine
-    ? descLine.replace('@skill-description', '').trim()
+    ? descLine.replace(/^@(?:skill-description|description)\s*/, '').trim()
     : buildImplicitSkillDescription(absolutePath, skillType)
 
-  return { type: skillType, description }
+  // 提取 @category
+  const categoryLine = lines.find((l) => l.startsWith('@category'))
+  const category = categoryLine
+    ? categoryLine.replace('@category', '').trim() || undefined
+    : undefined
+
+  // 提取 @binding
+  const bindingLine = lines.find((l) => l.startsWith('@binding'))
+  const binding = bindingLine
+    ? bindingLine.replace('@binding', '').trim() || undefined
+    : undefined
+
+  // 提取 @provides（可多条，格式：@provides KEY - description）
+  const provides = lines
+    .filter((l) => l.startsWith('@provides'))
+    .map((l) => l.replace('@provides', '').trim())
+    .filter(Boolean)
+
+  // 提取 @consumes（可多条）
+  const consumes = lines
+    .filter((l) => l.startsWith('@consumes'))
+    .map((l) => l.replace('@consumes', '').trim())
+    .filter(Boolean)
+
+  // 提取 @notes（可多条）
+  const notes = lines
+    .filter((l) => l.startsWith('@notes'))
+    .map((l) => l.replace('@notes', '').trim())
+    .filter(Boolean)
+
+  return {
+    type: skillType,
+    description,
+    ...(category !== undefined ? { category } : {}),
+    ...(binding !== undefined ? { binding } : {}),
+    ...(provides.length > 0 ? { provides } : {}),
+    ...(consumes.length > 0 ? { consumes } : {}),
+    ...(notes.length > 0 ? { notes } : {}),
+  }
 }
 
 /* --------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 /**
  * SPARK 组件目录生成 Vite 插件
  *
- * 构建时通过 vue-component-meta 从 Vue SFC 提取完整的 Props/Emits/Exposed/Slots 类型，
- * 与手工补充数据合并，生成 component-props-catalog.ts 和 component-catalog.json 供 AI 管线消费。
+ * 构建时通过 vue-component-meta 从 Vue SFC 提取完整的 Props/Emits 类型，
+ * 结合 SFC JSDoc 注解，生成单一 component-catalog.json。
  *
  * @module @spark-view/vite-plugin-spark-catalog
  */
@@ -43,42 +43,22 @@ export type {
   ComponentEntry,
   PropEntry,
   EmitEntry,
-  ExposedEntry,
-  SlotEntry,
   PropSchema,
   RootFieldEntry,
   PlatformConstraints,
   NestingRule,
   CatalogBindingDescriptor,
+  ApiSurface,
+  ApiMethodEntry,
+  ApiParamEntry,
+  ApiMemberEntry,
 } from './component-catalog-schema'
 
 // ── 绑定行为推断 ──
 export { EL_BINDING_DESCRIPTORS, inferBindingFromVcm, buildAllBindingDescriptors } from './infer-binding'
 
-// ── 提示词生成器（JSON → prompt text） ──
-export {
-  generateRegistryPrompt,
-  generateComponentDirectoryPrompt,
-  generateComponentPrompt,
-  generatePropsCatalogPrompt,
-  generateComponentPromptRecord,
-  generateComponentDescribeCatalog,
-  generateComponentQueryCatalog,
-  queryComponentActionSpec,
-  queryComponentProps,
-  queryComponentPromptRecord,
-  queryComponentCatalog,
-  generateLegacyCatalogRecord,
-} from './prompt-generator'
-export type {
-  PromptGeneratorOptions,
-  PromptVerbosity,
-  ComponentDirectoryDescribeItem,
-  ComponentDirectoryDescribePayload,
-  ComponentActionSpecPayload,
-  ComponentDescribeCatalog,
-  ComponentQueryCatalog,
-} from './prompt-generator'
+// ── API 表面提取（TypeScript 编译器 API） ──
+export { extractApiSurface } from './extract-ts-api'
 
 // ── 校验器（JSON → 校验报告） ──
 export { validateWithCatalog } from './catalog-validator'

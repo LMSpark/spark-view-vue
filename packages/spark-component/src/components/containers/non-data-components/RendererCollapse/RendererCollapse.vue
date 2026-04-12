@@ -42,7 +42,10 @@
 
 <script setup lang="ts">
 /**
- * @skill-description 折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。
+ * @skill r-collapse
+ * @description 折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。
+ * @category container
+ * @notes children 内放 r-collapse-item
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
