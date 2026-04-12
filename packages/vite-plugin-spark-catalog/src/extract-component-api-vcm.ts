@@ -38,7 +38,7 @@ let _tsconfigPath: string | null = null
  */
 export function getOrCreateChecker(tsconfigPath: string): ComponentMetaChecker {
   if (_checker !== null && _tsconfigPath === tsconfigPath) return _checker
-  _checker = createChecker(tsconfigPath, { rawType: true })
+  _checker = createChecker(tsconfigPath, { rawType: true, schema: true })
   _tsconfigPath = tsconfigPath
   return _checker
 }
@@ -62,6 +62,8 @@ export interface VcmApiDescriptor {
   emits: EmitEntry[]
   /** Props 是否包含索引签名 */
   hasIndexSignature: boolean
+  /** 从 prop schema 树中递归发现的嵌套 object schema（如 FilterItemConfig） */
+  discoveredSchemas: PropSchema[]
 }
 
 type SchemaOwner = 'workspace' | 'external'
@@ -132,6 +134,7 @@ export function extractComponentApiVcm(
     const meta = checker.getComponentMeta(normalizedPath)
 
     // -- Props（过滤 global props 如 class/style/key/ref） --
+    const discoveredSchemas: PropSchema[] = []
     const props: PropEntryWithIdentity[] = meta.props
       .filter(p => !p.global)
       .map(p => {
@@ -144,6 +147,8 @@ export function extractComponentApiVcm(
         if (p.description !== '') entry.description = p.description
         // 嵌套 schema（仅当不是纯字符串时）
         const schema = convertSchema(p.schema)
+        // 递归收集 enum/array 内嵌套的 object schema（如 FilterItemConfig）
+        collectNestedObjectSchemas(p.schema, discoveredSchemas)
         if (schema !== undefined) {
           entry.schema = schema
           if (schema.kind === 'object') {
@@ -184,6 +189,7 @@ export function extractComponentApiVcm(
       props,
       emits,
       hasIndexSignature,
+      discoveredSchemas,
     }
   } catch {
     return null
@@ -306,6 +312,33 @@ function detectIndexSignature(absPath: string): boolean {
     return false
   } catch {
     return false
+  }
+}
+
+/**
+ * 递归遍历 VCM schema 树，收集嵌套的 object schema。
+ *
+ * 当 prop 类型是联合/数组包装（如 `(string | FilterItemConfig)[] | undefined`）时，
+ * 顶层 convertSchema 只提取类型字符串，内部的 object 定义被丢弃。
+ * 此函数深入 enum/array 子树，找到所有 kind:'object' 节点并转换收集。
+ */
+function collectNestedObjectSchemas(vcmSchema: PropertyMetaSchema, collector: PropSchema[]): void {
+  if (typeof vcmSchema === 'string') return
+
+  // 只深入 enum/array/event 的子 schema 数组
+  if (vcmSchema.kind !== 'object' && vcmSchema.schema !== undefined && Array.isArray(vcmSchema.schema)) {
+    for (const sub of vcmSchema.schema) {
+      if (typeof sub === 'string') continue
+      if (sub.kind === 'object' && sub.schema !== undefined) {
+        const converted = convertSchema(sub)
+        if (converted !== undefined) {
+          collector.push(converted)
+        }
+      } else {
+        // 继续递归（处理多层 enum/array 嵌套）
+        collectNestedObjectSchemas(sub, collector)
+      }
+    }
   }
 }
 

@@ -451,7 +451,10 @@ function shouldKeepStructuredSchema(schema: PropSchema, owner: SchemaOwner | und
   return !isSystemObjectType(schema.type) && isLikelyInternalStructuredType(schema.type)
 }
 
-function compactComponentSchemas(components: Record<string, ComponentEntry>): CompactSchemasResult {
+function compactComponentSchemas(
+  components: Record<string, ComponentEntry>,
+  discoveredSchemas?: PropSchema[],
+): CompactSchemasResult {
   const schemaPool: Record<string, PropSchema> = {}
   const schemaIdByLookup = new Map<string, string>()
   const schemaHashById = new Map<string, string>()
@@ -547,6 +550,40 @@ function compactComponentSchemas(components: Record<string, ComponentEntry>): Co
     }
   }
 
+  // 注册从 VCM schema 树中递归发现的嵌套 object schema（如 FilterItemConfig），
+  // 仅当某个 prop 的 type 文本确实引用了该类型名时才加入 schemaPool 并建立 schemaRef 链接。
+  if (discoveredSchemas !== undefined) {
+    // 按类型名去重，优先保留属性更多的定义
+    type ObjectPropSchema = Extract<PropSchema, { kind: 'object' }>
+    const candidatesByType = new Map<string, ObjectPropSchema>()
+    for (const schema of discoveredSchemas) {
+      if (schema.kind !== 'object') continue
+      const typeName = schema.type.trim()
+      if (typeName.length === 0 || typeName.startsWith('{') || isSystemObjectType(typeName)) continue
+      const existing = candidatesByType.get(typeName)
+      if (existing === undefined || Object.keys(schema.properties).length > Object.keys(existing.properties).length) {
+        candidatesByType.set(typeName, schema)
+      }
+    }
+
+    for (const [typeName, schema] of candidatesByType) {
+      // 检查是否有至少一个 prop 的 type 文本引用该类型名
+      let linked = false
+      for (const entry of Object.values(compactedComponents)) {
+        for (const prop of entry.props) {
+          if (prop.schemaRef !== undefined) continue
+          if (includesTypeToken(prop.type, typeName)) {
+            if (!linked) {
+              registerSchema(schema)
+              linked = true
+            }
+            prop.schemaRef = typeName
+          }
+        }
+      }
+    }
+  }
+
   return {
     components: compactedComponents,
     schemaPool,
@@ -556,8 +593,9 @@ function compactComponentSchemas(components: Record<string, ComponentEntry>): Co
 function buildCatalogDocument(
   components: Record<string, ComponentEntry>,
   apiSurface?: ApiSurface,
+  discoveredSchemas?: PropSchema[],
 ): ComponentCatalog {
-  const compacted = compactComponentSchemas(components)
+  const compacted = compactComponentSchemas(components, discoveredSchemas)
 
   return {
     version: '2.0.0',
@@ -622,10 +660,16 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
 
   const components = buildComponents(apiMap, descriptionMap, metaMap, pathMap)
 
+  // 收集所有 VCM 结果中递归发现的嵌套 object schema
+  const allDiscoveredSchemas: PropSchema[] = []
+  for (const vcm of apiMap.values()) {
+    allDiscoveredSchemas.push(...vcm.discoveredSchemas)
+  }
+
   // 3. API 全息表面提取（DataView / DataSet / SparkData / IScriptContext / IPageServiceCapability）
   const apiSurface = extractApiSurface(root)
 
-  const catalog = buildCatalogDocument(components, apiSurface)
+  const catalog = buildCatalogDocument(components, apiSurface, allDiscoveredSchemas)
 
   logger.info(`📦 组件目录已构建: ${catalog.componentCount} 条目`)
 

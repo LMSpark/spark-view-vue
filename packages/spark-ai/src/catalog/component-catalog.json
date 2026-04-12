@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-12T22:00:41.364Z",
+  "buildTime": "2026-04-12T22:56:30.192Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -150,7 +150,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -182,7 +183,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -214,7 +216,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -246,17 +249,20 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "model",
           "type": "IDataRow | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "IDataRow"
         },
         {
           "name": "configs",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "activeCount",
@@ -271,7 +277,8 @@
         {
           "name": "columns",
           "type": "(string | FilterItemConfig)[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "FilterItemConfig"
         },
         {
           "name": "collapsible",
@@ -348,7 +355,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "position",
@@ -374,7 +382,8 @@
         {
           "name": "actions",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "actionKeyPrefix",
@@ -409,7 +418,8 @@
         {
           "name": "resolveActions",
           "type": "((scope: Record<string, unknown>) => SparkNode[]) | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "resolveSlotScope",
@@ -431,7 +441,8 @@
           "name": "steps",
           "type": "TourStep[] | undefined",
           "required": false,
-          "description": "步骤配置列表"
+          "description": "步骤配置列表",
+          "schemaRef": "TourStep"
         },
         {
           "name": "open",
@@ -477,7 +488,8 @@
           "name": "scrollIntoViewOptions",
           "type": "boolean | ScrollIntoViewOptions | undefined",
           "required": false,
-          "description": "滚动选项"
+          "description": "滚动选项",
+          "schemaRef": "ScrollIntoViewOptions"
         },
         {
           "name": "type",
@@ -530,7 +542,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "content",
@@ -620,12 +633,14 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "tail",
           "type": "TailNode | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "TailNode"
         },
         {
           "name": "gap",
@@ -846,7 +861,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "direction",
@@ -906,12 +922,14 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "contentChildren",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "title",
@@ -1001,7 +1019,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "title",
@@ -1095,7 +1114,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "title",
@@ -1146,7 +1166,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "label",
@@ -1204,12 +1225,14 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "items",
           "type": "DropdownItem[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "DropdownItem"
         },
         {
           "name": "trigger",
@@ -1419,7 +1442,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "header",
@@ -1470,7 +1494,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "action",
@@ -1719,13 +1744,15 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点（标签面板配置）"
+          "description": "子节点（标签面板配置）",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
-          "description": "结构化工具栏"
+          "description": "结构化工具栏",
+          "schemaRef": "ToolbarNode"
         },
         {
           "name": "modelValue",
@@ -1783,13 +1810,15 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点（步骤配置）"
+          "description": "子节点（步骤配置）",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
-          "description": "结构化工具栏"
+          "description": "结构化工具栏",
+          "schemaRef": "ToolbarNode"
         },
         {
           "name": "modelValue",
@@ -1801,7 +1830,8 @@
           "name": "onStepChange",
           "type": "((value: string | number, step: SparkNode, index: number) => void) | undefined",
           "required": false,
-          "description": "步骤切换回调"
+          "description": "步骤切换回调",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "type",
@@ -1841,13 +1871,15 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点"
+          "description": "子节点",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "header",
           "type": "HeaderNode | undefined",
           "required": false,
-          "description": "结构化头部"
+          "description": "结构化头部",
+          "schemaRef": "HeaderNode"
         },
         {
           "name": "title",
@@ -1990,19 +2022,22 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点"
+          "description": "子节点",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "header",
           "type": "HeaderNode | undefined",
           "required": false,
-          "description": "结构化头部"
+          "description": "结构化头部",
+          "schemaRef": "HeaderNode"
         },
         {
           "name": "footer",
           "type": "FooterNode | undefined",
           "required": false,
-          "description": "结构化底部"
+          "description": "结构化底部",
+          "schemaRef": "FooterNode"
         },
         {
           "name": "title",
@@ -2108,19 +2143,22 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点"
+          "description": "子节点",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "header",
           "type": "HeaderNode | undefined",
           "required": false,
-          "description": "结构化头部"
+          "description": "结构化头部",
+          "schemaRef": "HeaderNode"
         },
         {
           "name": "footer",
           "type": "FooterNode | undefined",
           "required": false,
-          "description": "结构化底部"
+          "description": "结构化底部",
+          "schemaRef": "FooterNode"
         },
         {
           "name": "title",
@@ -2226,13 +2264,15 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点（折叠项配置）"
+          "description": "子节点（折叠项配置）",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
-          "description": "结构化工具栏"
+          "description": "结构化工具栏",
+          "schemaRef": "ToolbarNode"
         },
         {
           "name": "modelValue",
@@ -2296,19 +2336,22 @@
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
-          "description": "结构化工具栏"
+          "description": "结构化工具栏",
+          "schemaRef": "ToolbarNode"
         },
         {
           "name": "actions",
           "type": "ActionsNode | undefined",
           "required": false,
-          "description": "结构化节点动作"
+          "description": "结构化节点动作",
+          "schemaRef": "ActionsNode"
         },
         {
           "name": "editor",
           "type": "EditorNode | undefined",
           "required": false,
-          "description": "结构化编辑区"
+          "description": "结构化编辑区",
+          "schemaRef": "EditorNode"
         },
         {
           "name": "nodeKey",
@@ -2338,7 +2381,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点（树节点内容配置）"
+          "description": "子节点（树节点内容配置）",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "allowAppend",
@@ -2442,25 +2486,29 @@
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
-          "description": "结构化工具栏"
+          "description": "结构化工具栏",
+          "schemaRef": "ToolbarNode"
         },
         {
           "name": "filter",
           "type": "FilterNode | undefined",
           "required": false,
-          "description": "结构化筛选区"
+          "description": "结构化筛选区",
+          "schemaRef": "FilterNode"
         },
         {
           "name": "actions",
           "type": "ActionsNode | undefined",
           "required": false,
-          "description": "结构化行动作"
+          "description": "结构化行动作",
+          "schemaRef": "ActionsNode"
         },
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "表格内容列配置；toolbar / filter / actions 已由绑定层提升到 props"
+          "description": "表格内容列配置；toolbar / filter / actions 已由绑定层提升到 props",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "onRowClick",
@@ -2570,17 +2618,20 @@
         {
           "name": "data",
           "type": "IDataRow | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "IDataRow"
         },
         {
           "name": "fields",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         }
       ],
       "emits": [],
@@ -2642,17 +2693,20 @@
         {
           "name": "data",
           "type": "IDataRow | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "IDataRow"
         },
         {
           "name": "fields",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         }
       ],
       "emits": [],
@@ -2668,7 +2722,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "childKeyPrefix",
@@ -2702,19 +2757,22 @@
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
-          "description": "结构化工具栏"
+          "description": "结构化工具栏",
+          "schemaRef": "ToolbarNode"
         },
         {
           "name": "actions",
           "type": "ActionsNode | undefined",
           "required": false,
-          "description": "结构化列表项动作"
+          "description": "结构化列表项动作",
+          "schemaRef": "ActionsNode"
         },
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点（列表项内容配置）"
+          "description": "子节点（列表项内容配置）",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "columns",
@@ -2882,13 +2940,15 @@
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
-          "description": "结构化工具栏"
+          "description": "结构化工具栏",
+          "schemaRef": "ToolbarNode"
         },
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点列表"
+          "description": "子节点列表",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "labelWidth",
@@ -2983,13 +3043,15 @@
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
-          "description": "结构化工具栏"
+          "description": "结构化工具栏",
+          "schemaRef": "ToolbarNode"
         },
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点列表"
+          "description": "子节点列表",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "gridColumns",
@@ -3140,7 +3202,8 @@
           "name": "mergedChildren",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "合并后的子组件配置"
+          "description": "合并后的子组件配置",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "isCurrentFieldHidden",
@@ -3164,19 +3227,22 @@
           "name": "isTableCellHidden",
           "type": "((row: IDataRow) => boolean) | undefined",
           "required": false,
-          "description": "表格行级隐藏判断"
+          "description": "表格行级隐藏判断",
+          "schemaRef": "IDataRow"
         },
         {
           "name": "getTableCellDisplayValue",
           "type": "((row: IDataRow) => string) | undefined",
           "required": false,
-          "description": "表格行级显示值获取"
+          "description": "表格行级显示值获取",
+          "schemaRef": "IDataRow"
         },
         {
           "name": "validationRules",
           "type": "FormItemRule[] | undefined",
           "required": false,
-          "description": "表单验证规则"
+          "description": "表单验证规则",
+          "schemaRef": "FormItemRule"
         },
         {
           "name": "titleAlign",
@@ -3229,7 +3295,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "type",
@@ -3256,7 +3323,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "default": "undefined"
+          "default": "undefined",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -3281,6 +3349,18 @@
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined"
+        },
+        {
+          "name": "separator",
+          "type": "string | undefined",
+          "required": false,
+          "default": "', '"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false"
         },
         {
           "name": "field",
@@ -3337,22 +3417,10 @@
           "default": "true"
         },
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false"
-        },
-        {
           "name": "searchable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true"
-        },
-        {
-          "name": "separator",
-          "type": "string | undefined",
-          "required": false,
-          "default": "', '"
         },
         {
           "name": "valueMode",
@@ -4379,7 +4447,7 @@
         },
         {
           "name": "size",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸"
@@ -4587,7 +4655,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "default": "undefined"
+          "default": "undefined",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -4612,6 +4681,18 @@
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined"
+        },
+        {
+          "name": "separator",
+          "type": "string | undefined",
+          "required": false,
+          "default": "', '"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false"
         },
         {
           "name": "field",
@@ -4668,22 +4749,10 @@
           "default": "true"
         },
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false"
-        },
-        {
           "name": "searchable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true"
-        },
-        {
-          "name": "separator",
-          "type": "string | undefined",
-          "required": false,
-          "default": "', '"
         },
         {
           "name": "valueMode",
@@ -4941,7 +5010,8 @@
           "name": "options",
           "type": "MentionOption[] | undefined",
           "required": false,
-          "description": "选项列表"
+          "description": "选项列表",
+          "schemaRef": "MentionOption"
         },
         {
           "name": "prefix",
@@ -4961,7 +5031,8 @@
           "name": "filterOption",
           "type": "boolean | ((pattern: string, option: MentionOption) => boolean) | undefined",
           "required": false,
-          "description": "自定义过滤"
+          "description": "自定义过滤",
+          "schemaRef": "MentionOption"
         },
         {
           "name": "placement",
@@ -5035,16 +5106,16 @@
       ],
       "emits": [
         {
+          "name": "select",
+          "type": "[option: MentionOption, prefix: string]"
+        },
+        {
           "name": "update:modelValue",
           "type": "[value: string]"
         },
         {
           "name": "search",
           "type": "[pattern: string, prefix: string]"
-        },
-        {
-          "name": "select",
-          "type": "[option: MentionOption, prefix: string]"
         }
       ],
       "hasIndexSignature": false,
@@ -5665,7 +5736,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "子节点列表"
+          "description": "子节点列表",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "type",
@@ -5703,7 +5775,8 @@
           "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "default": "undefined"
+          "default": "undefined",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -5728,6 +5801,18 @@
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined"
+        },
+        {
+          "name": "separator",
+          "type": "string | undefined",
+          "required": false,
+          "default": "', '"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "false"
         },
         {
           "name": "field",
@@ -5784,22 +5869,10 @@
           "default": "true"
         },
         {
-          "name": "multiple",
-          "type": "boolean | undefined",
-          "required": false,
-          "default": "false"
-        },
-        {
           "name": "searchable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true"
-        },
-        {
-          "name": "separator",
-          "type": "string | undefined",
-          "required": false,
-          "default": "', '"
         },
         {
           "name": "valueMode",
@@ -6429,12 +6502,12 @@
       ],
       "emits": [
         {
-          "name": "update:modelValue",
-          "type": "[value: string]"
-        },
-        {
           "name": "select",
           "type": "[item: SuggestionItem]"
+        },
+        {
+          "name": "update:modelValue",
+          "type": "[value: string]"
         }
       ],
       "hasIndexSignature": false,
@@ -6584,7 +6657,8 @@
           "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
-          "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"
+          "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
+          "schemaRef": "ICapabilityContext"
         }
       ],
       "emits": [],
@@ -6612,7 +6686,8 @@
         {
           "name": "node",
           "type": "SparkNode",
-          "required": true
+          "required": true,
+          "schemaRef": "SparkNode"
         }
       ],
       "emits": [],
@@ -6842,7 +6917,8 @@
         {
           "name": "policy",
           "type": "JsonTreePolicy | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "JsonTreePolicy"
         },
         {
           "name": "rootLabel",
@@ -7080,7 +7156,8 @@
           "name": "mergedChildren",
           "type": "SparkNode[] | undefined",
           "required": false,
-          "description": "合并后的子组件配置"
+          "description": "合并后的子组件配置",
+          "schemaRef": "SparkNode"
         },
         {
           "name": "isCurrentFieldHidden",
@@ -7104,19 +7181,22 @@
           "name": "isTableCellHidden",
           "type": "((row: IDataRow) => boolean) | undefined",
           "required": false,
-          "description": "表格行级隐藏判断"
+          "description": "表格行级隐藏判断",
+          "schemaRef": "IDataRow"
         },
         {
           "name": "getTableCellDisplayValue",
           "type": "((row: IDataRow) => string) | undefined",
           "required": false,
-          "description": "表格行级显示值获取"
+          "description": "表格行级显示值获取",
+          "schemaRef": "IDataRow"
         },
         {
           "name": "validationRules",
           "type": "FormItemRule[] | undefined",
           "required": false,
-          "description": "表单验证规则"
+          "description": "表单验证规则",
+          "schemaRef": "FormItemRule"
         },
         {
           "name": "titleAlign",
@@ -7169,7 +7249,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "type",
@@ -7195,7 +7276,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "timestamp",
@@ -7233,7 +7315,7 @@
         },
         {
           "name": "itemSize",
-          "type": "\"large\" | \"normal\" | undefined",
+          "type": "\"normal\" | \"large\" | undefined",
           "required": false,
           "default": "\"normal\""
         },
@@ -7273,7 +7355,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "type",
@@ -7300,7 +7383,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "rows",
@@ -7357,7 +7441,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "icon",
@@ -7440,7 +7525,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "image",
@@ -7482,7 +7568,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "label",
@@ -7555,7 +7642,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "title",
@@ -7587,7 +7675,7 @@
         },
         {
           "name": "descriptionsSize",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\""
         },
@@ -7760,7 +7848,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "separator",
@@ -7994,7 +8083,7 @@
         },
         {
           "name": "size",
-          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\""
         },
@@ -8312,7 +8401,7 @@
         },
         {
           "name": "fit",
-          "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" | undefined",
+          "type": "\"fill\" | \"none\" | \"contain\" | \"cover\" | \"scale-down\" | undefined",
           "required": false,
           "default": "\"cover\"",
           "description": "图片适应模式"
@@ -8413,7 +8502,8 @@
         {
           "name": "children",
           "type": "SparkNode[] | undefined",
-          "required": false
+          "required": false,
+          "schemaRef": "SparkNode"
         },
         {
           "name": "badgeValue",
@@ -8504,7 +8594,7 @@
       "props": [
         {
           "name": "avatarSize",
-          "type": "number | \"default\" | \"small\" | \"large\" | undefined",
+          "type": "number | \"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\""
         },
@@ -8541,7 +8631,7 @@
         },
         {
           "name": "fit",
-          "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" | undefined",
+          "type": "\"fill\" | \"none\" | \"contain\" | \"cover\" | \"scale-down\" | undefined",
           "required": false,
           "default": "\"cover\""
         },
@@ -8572,7 +8662,524 @@
       "source": "vcm+meta"
     }
   },
-  "schemaPool": {},
+  "schemaPool": {
+    "SparkNode": {
+      "kind": "object",
+      "type": "SparkNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        "props": {
+          "name": "props",
+          "type": "Record<string, unknown> | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        "children": {
+          "name": "children",
+          "type": "SparkNodeChildren | undefined",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        }
+      }
+    },
+    "IDataRow": {
+      "kind": "object",
+      "type": "IDataRow",
+      "properties": {
+        "_perm": {
+          "name": "_perm",
+          "type": "IInstancePermission | undefined",
+          "required": false
+        }
+      }
+    },
+    "FilterItemConfig": {
+      "kind": "object",
+      "type": "FilterItemConfig",
+      "properties": {
+        "field": {
+          "name": "field",
+          "type": "string",
+          "required": true,
+          "description": "字段名（映射到数据源字段）"
+        },
+        "label": {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false,
+          "description": "显示标签（省略则用字段名）"
+        },
+        "component": {
+          "name": "component",
+          "type": "\"number\" | \"text\" | \"select\" | \"date\" | \"date-range\" | \"number-range\" | \"checkbox\" | \"radio\" | (string & {}) | undefined",
+          "required": false,
+          "description": "输入组件类型（默认 `text`）\r\n\r\n内置：`text` | `select` | `date` | `date-range` | `number` | `number-range` | `checkbox` | `radio`\r\n扩展：传任意组件 type 字符串"
+        },
+        "options": {
+          "name": "options",
+          "type": "{ label: string; value: unknown; }[] | undefined",
+          "required": false,
+          "description": "可选项列表（`component = select / radio / checkbox` 时使用）"
+        },
+        "optionLabelField": {
+          "name": "optionLabelField",
+          "type": "string | undefined",
+          "required": false,
+          "description": "选项字段映射（options 来自 DataKey 时使用）"
+        },
+        "optionValueField": {
+          "name": "optionValueField",
+          "type": "string | undefined",
+          "required": false
+        },
+        "logic": {
+          "name": "logic",
+          "type": "\"and\" | \"or\" | undefined",
+          "required": false,
+          "description": "与其他条件的逻辑关系（覆盖全局 filter.logic，默认继承）"
+        },
+        "span": {
+          "name": "span",
+          "type": "number | undefined",
+          "required": false,
+          "description": "跨列数（覆盖全局 filter.itemSpan）"
+        },
+        "componentProps": {
+          "name": "componentProps",
+          "type": "Record<string, unknown> | undefined",
+          "required": false,
+          "description": "透传到筛选组件的原生 props（如 placeholder、clearable 等）"
+        }
+      }
+    },
+    "TourStep": {
+      "kind": "object",
+      "type": "TourStep",
+      "properties": {
+        "target": {
+          "name": "target",
+          "type": "string | HTMLElement | null | undefined",
+          "required": false,
+          "description": "CSS 选择器或元素引用（运行时解析）"
+        },
+        "title": {
+          "name": "title",
+          "type": "string | undefined",
+          "required": false,
+          "description": "步骤标题"
+        },
+        "description": {
+          "name": "description",
+          "type": "string | undefined",
+          "required": false,
+          "description": "步骤描述"
+        },
+        "placement": {
+          "name": "placement",
+          "type": "string | undefined",
+          "required": false,
+          "description": "弹出位置"
+        },
+        "mask": {
+          "name": "mask",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "是否显示遮罩"
+        },
+        "showArrow": {
+          "name": "showArrow",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "是否显示箭头"
+        }
+      }
+    },
+    "ScrollIntoViewOptions": {
+      "kind": "object",
+      "type": "ScrollIntoViewOptions",
+      "properties": {
+        "block": {
+          "name": "block",
+          "type": "ScrollLogicalPosition | undefined",
+          "required": false
+        },
+        "inline": {
+          "name": "inline",
+          "type": "ScrollLogicalPosition | undefined",
+          "required": false
+        },
+        "behavior": {
+          "name": "behavior",
+          "type": "ScrollBehavior | undefined",
+          "required": false
+        }
+      }
+    },
+    "TailNode": {
+      "kind": "object",
+      "type": "TailNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "\"r-tail\"",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        "props": {
+          "name": "props",
+          "type": "(Record<string, unknown> & RendererTailConfigProps) | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        "children": {
+          "name": "children",
+          "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        }
+      }
+    },
+    "DropdownItem": {
+      "kind": "object",
+      "type": "DropdownItem",
+      "properties": {
+        "label": {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        "command": {
+          "name": "command",
+          "type": "string | undefined",
+          "required": false
+        },
+        "disabled": {
+          "name": "disabled",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        "divided": {
+          "name": "divided",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "string | undefined",
+          "required": false
+        }
+      }
+    },
+    "ToolbarNode": {
+      "kind": "object",
+      "type": "ToolbarNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "\"r-toolbar\"",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        "props": {
+          "name": "props",
+          "type": "(Record<string, unknown> & RendererToolbarConfigProps) | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        "children": {
+          "name": "children",
+          "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        }
+      }
+    },
+    "HeaderNode": {
+      "kind": "object",
+      "type": "HeaderNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "\"r-header\"",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        "props": {
+          "name": "props",
+          "type": "(Record<string, unknown> & RendererHeaderConfigProps) | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        "children": {
+          "name": "children",
+          "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        }
+      }
+    },
+    "FooterNode": {
+      "kind": "object",
+      "type": "FooterNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "\"r-footer\"",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        "props": {
+          "name": "props",
+          "type": "(Record<string, unknown> & RendererFooterConfigProps) | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        "children": {
+          "name": "children",
+          "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        }
+      }
+    },
+    "ActionsNode": {
+      "kind": "object",
+      "type": "ActionsNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "\"r-actions\"",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        "props": {
+          "name": "props",
+          "type": "(Record<string, unknown> & RendererActionsConfigProps) | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        "children": {
+          "name": "children",
+          "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        }
+      }
+    },
+    "EditorNode": {
+      "kind": "object",
+      "type": "EditorNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "\"r-editor\"",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        "props": {
+          "name": "props",
+          "type": "(Record<string, unknown> & RendererEditorConfigProps) | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        "children": {
+          "name": "children",
+          "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        }
+      }
+    },
+    "FilterNode": {
+      "kind": "object",
+      "type": "FilterNode",
+      "properties": {
+        "type": {
+          "name": "type",
+          "type": "\"r-filter\"",
+          "required": true,
+          "description": "组件类型（对应 ComponentDefinition.type）"
+        },
+        "props": {
+          "name": "props",
+          "type": "(Record<string, unknown> & RendererFilterConfigProps) | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
+        },
+        "children": {
+          "name": "children",
+          "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+          "required": false,
+          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
+        }
+      }
+    },
+    "FormItemRule": {
+      "kind": "object",
+      "type": "FormItemRule",
+      "properties": {
+        "required": {
+          "name": "required",
+          "type": "boolean | undefined",
+          "required": false
+        },
+        "message": {
+          "name": "message",
+          "type": "string | undefined",
+          "required": false
+        },
+        "trigger": {
+          "name": "trigger",
+          "type": "string | string[] | undefined",
+          "required": false
+        },
+        "type": {
+          "name": "type",
+          "type": "string | undefined",
+          "required": false
+        },
+        "min": {
+          "name": "min",
+          "type": "number | undefined",
+          "required": false
+        },
+        "max": {
+          "name": "max",
+          "type": "number | undefined",
+          "required": false
+        },
+        "pattern": {
+          "name": "pattern",
+          "type": "RegExp | undefined",
+          "required": false
+        },
+        "validator": {
+          "name": "validator",
+          "type": "((rule: unknown, value: unknown, callback: (error?: Error | undefined) => void) => void) | undefined",
+          "required": false
+        }
+      }
+    },
+    "MentionOption": {
+      "kind": "object",
+      "type": "MentionOption",
+      "properties": {
+        "value": {
+          "name": "value",
+          "type": "string",
+          "required": true
+        },
+        "label": {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false
+        },
+        "disabled": {
+          "name": "disabled",
+          "type": "boolean | undefined",
+          "required": false
+        }
+      }
+    },
+    "ICapabilityContext": {
+      "kind": "object",
+      "type": "ICapabilityContext",
+      "properties": {
+        "id": {
+          "name": "id",
+          "type": "string",
+          "required": true
+        },
+        "type": {
+          "name": "type",
+          "type": "string",
+          "required": true
+        },
+        "parent": {
+          "name": "parent",
+          "type": "ICapabilityContext | undefined",
+          "required": false
+        },
+        "capabilities": {
+          "name": "capabilities",
+          "type": "Map<CapabilityName, unknown>",
+          "required": true,
+          "description": "能力 Map：名称 → 实现"
+        }
+      }
+    },
+    "JsonTreePolicy": {
+      "kind": "object",
+      "type": "JsonTreePolicy",
+      "properties": {
+        "rootLabel": {
+          "name": "rootLabel",
+          "type": "string | undefined",
+          "required": false,
+          "description": "根节点显示标签。默认 '$'"
+        },
+        "isProtected": {
+          "name": "isProtected",
+          "type": "((path: JsonPath) => boolean) | undefined",
+          "required": false,
+          "description": "该路径是否受保护（不可删除）。默认全部可删除"
+        },
+        "canEditKey": {
+          "name": "canEditKey",
+          "type": "((path: JsonPath) => boolean) | undefined",
+          "required": false,
+          "description": "该路径的键是否可重命名。默认：对象属性可改，数组索引不可改"
+        },
+        "canEditType": {
+          "name": "canEditType",
+          "type": "((path: JsonPath) => boolean) | undefined",
+          "required": false,
+          "description": "该路径的类型是否可切换。默认：除根节点外均可"
+        },
+        "suggestChildKey": {
+          "name": "suggestChildKey",
+          "type": "((target: JsonObject, parentPath: JsonPath) => string) | undefined",
+          "required": false,
+          "description": "为目标对象建议新子键名"
+        },
+        "createDefaultArrayItem": {
+          "name": "createDefaultArrayItem",
+          "type": "((parentPath: JsonPath) => JsonValue) | undefined",
+          "required": false,
+          "description": "为数组添加子项时的默认值"
+        },
+        "createDefaultObjectValue": {
+          "name": "createDefaultObjectValue",
+          "type": "((parentPath: JsonPath, key: string) => JsonValue) | undefined",
+          "required": false,
+          "description": "为对象添加子项时的默认值"
+        },
+        "getValueOptions": {
+          "name": "getValueOptions",
+          "type": "((path: JsonPath) => string[] | undefined) | undefined",
+          "required": false,
+          "description": "返回该路径的可选值列表（用于下拉选择，优先级低于 Schema enum）"
+        },
+        "getValueLabels": {
+          "name": "getValueLabels",
+          "type": "((path: JsonPath) => { label: string; value: string; }[] | undefined) | undefined",
+          "required": false,
+          "description": "返回该路径的带标签下拉选项。优先级最高：getValueLabels > Schema enum > getValueOptions"
+        },
+        "getAutoPopulate": {
+          "name": "getAutoPopulate",
+          "type": "((changedPath: JsonPath, newValue: JsonValue) => AutoPopulateEntry[] | undefined) | undefined",
+          "required": false,
+          "description": "值变更后需要自动填充到文档的补丁。返回的条目中已有的键不会被覆盖"
+        }
+      }
+    }
+  },
   "apiSurface": {
     "dataView": [
       {
