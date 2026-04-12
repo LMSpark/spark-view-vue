@@ -88,11 +88,3 @@ export {
   ASYNC_COMPONENTS,
   SIZE_THRESHOLD,
 } from './scan-config'
-
-// ── API 差距分析报告 ──
-export { generateDiffReport, formatDiffReport } from './api-diff-report'
-export type {
-  ExtractedComponentApi,
-  ComponentGapReport,
-  DiffReportSummary,
-} from './api-diff-report'

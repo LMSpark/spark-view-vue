@@ -1,13 +1,3 @@
-<!--
-/**
- * @skill r-list
- * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件，支持工具栏与项操作区
- * @provides DATA_SOURCE
- * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string }, actions?: { position?: 'left'|'right', class?: string }, columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string } }
- * @example { "type": "r-list", "dataKey": "Users@rows", "children": [{ "type": "r-text", "name": "name" }] }
- */
--->
 <template>
   <div :class="['renderer-list-layout', `renderer-list-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-list-toolbar', toolbarClassValue]">

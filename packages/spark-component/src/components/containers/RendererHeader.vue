@@ -1,10 +1,3 @@
-<!--
-/**
- * @skill r-header
- * @description 头部区域组件。在容器（r-dialog/r-drawer/r-section）内使用时由容器提取并渲染为头部操作区。
- * @input { type: 'r-header', props?: { class? }, children?: SparkNode[] }
- */
--->
 <template>
   <div v-if="children.length > 0" class="renderer-header">
     <SparkComponentRenderer

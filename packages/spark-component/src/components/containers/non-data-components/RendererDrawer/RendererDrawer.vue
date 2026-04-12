@@ -1,11 +1,3 @@
-<!--
-/**
- * @skill r-drawer
- * @description 抽屉容器，支持 `r-header` / `r-footer` wrapper 动作区和 24 列 Grid 内容区
- * @input { props: { modelValue?: boolean, title?: string }, children?: [{ type: 'r-header'|'r-footer'|string, props?: Record<string, unknown>, children?: SparkNode[] }] }
- * @example { "type": "r-drawer", "props": { "title": "详情", "modelValue": true }, "children": [] }
- */
--->
 <template>
   <el-drawer
     v-bind="$attrs"

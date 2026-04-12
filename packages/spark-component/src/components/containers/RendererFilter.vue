@@ -1,10 +1,3 @@
-<!--
-/**
- * @skill r-filter
- * @description 筛选区组件。在容器（r-table）内使用时可复用为筛选面板壳；独立使用时保留 wrapper 子节点直出行为。
- * @input { type: 'r-filter', props?: { columns?, collapsible?, gridColumns?, ... }, children?: SparkNode[] }
- */
--->
 <template>
   <div v-if="isPanelMode && resolvedConfigs.length > 0" class="renderer-table-filters">
     <div v-if="props.collapsible" class="renderer-table-filters__header">

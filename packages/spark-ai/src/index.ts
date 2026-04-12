@@ -107,7 +107,7 @@ export type {
   PlatformConstraints,
   NestingRule,
   RootFieldEntry,
-  BindingDescriptor,
+  CatalogBindingDescriptor,
   SharedTypeDefinition,
 } from './catalog/types'
 

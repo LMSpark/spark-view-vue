@@ -69,7 +69,6 @@ function loadCatalog(path: string | null): ComponentCatalog | null {
   if (!path) {
     const defaults = [
       'packages/spark-ai/src/catalog/component-catalog.json',
-      'dist/spark-component-metadata.json',
       'spark-ai-server/data/component-metadata.json',
     ]
     for (const d of defaults) {

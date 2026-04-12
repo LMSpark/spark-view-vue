@@ -1,9 +1,3 @@
-<!--
-/**
- * @skill (internal) list-item-scope
- * @description r-list 列表项作用域组件，为每行数据提供 DATA_ROW 能力；字段语义由祖先 context.type 推断
- */
--->
 <template>
   <div :class="itemClass" :style="itemStyle">
     <el-card v-if="useCard" :shadow="cardShadow" class="renderer-list-card">

@@ -1,14 +1,3 @@
-<!--
-/**
- * @skill r-tree
- * @description 树形数据容器，绑定 DataView 渲染嵌套树结构，支持工具栏、懒加载、节点点击、展开/折叠事件
- * @provides DATA_SOURCE
- * @provides DATA_ROW
- * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string }, nodeKey?: string, lazy?: boolean } }
- * @example { "type": "r-tree", "dataKey": "departments@rows", "props": { "nodeKey": "id" } }
- */
--->
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">

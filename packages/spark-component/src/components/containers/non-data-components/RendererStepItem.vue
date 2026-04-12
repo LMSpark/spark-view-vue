@@ -1,10 +1,3 @@
-<!--
-/**
- * @skill r-step
- * @description 步骤子组件，双模式（header 渲染步骤头，content 渲染内容网格）；自行解析 title/description/status/disabled 等语义 props
- * @input { props: { title?: string, description?: string, status?: string, disabled?: boolean, name?: string|number, bodyClass?: string, gridColumns?: number } }
- */
--->
 <template>
   <el-step
     v-if="mode === 'header'"

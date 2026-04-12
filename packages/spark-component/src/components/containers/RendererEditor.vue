@@ -1,10 +1,3 @@
-<!--
-/**
- * @skill r-editor
- * @description 编辑面板组件。在容器（r-tree）内使用时由容器提取并渲染为侧边编辑区；独立使用时渲染子节点。
- * @input { type: 'r-editor', props?: { position?, width?, class? }, children?: SparkNode[] }
- */
--->
 <template>
   <div v-if="children.length > 0" class="renderer-editor">
     <SparkComponentRenderer

@@ -1,11 +1,3 @@
-<!--
-/**
- * @skill r-tabs
- * @description 标签页容器，内部使用 r-tab-pane 定义面板；支持 `r-toolbar` wrapper 工具栏，每个面板内容默认采用 24 列 CSS Grid
- * @input { props: { modelValue?: string|number }, children?: [{ type: 'r-toolbar'|'r-tab-pane', props?: Record<string, unknown>, children?: SparkNode[] }] }
- * @example { "type": "r-tabs", "children": [{ "type": "r-tab-pane", "props": { "label": "基本信息", "name": "base" }, "children": [] }] }
- */
--->
 <template>
   <div :class="['renderer-tabs-layout', `renderer-tabs-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-tabs-toolbar', toolbarClassValue]">

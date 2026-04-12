@@ -1,11 +1,3 @@
-<!--
-/**
- * @skill r-section
- * @description 分组块容器，支持标题、描述、折叠、header 动作区和 24 列网格布局；r-block 为其别名
- * @input { props: { title?: string, description?: string, collapsible?: boolean, defaultCollapsed?: boolean } }
- * @example { "type": "r-section", "props": { "title": "基本信息" }, "children": [] }
- */
--->
 <template>
   <el-card v-if="useCard" :shadow="cardShadow" class="renderer-section renderer-section--card">
     <template v-if="hasHeader || collapsible" #header>

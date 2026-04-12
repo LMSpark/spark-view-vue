@@ -1,11 +1,3 @@
-<!--
-/**
- * @skill r-data-scope
- * @description 通用数据作用域块容器 —— 向子组件注入 DATA_ROW，
- *              字段语义由祖先 context.type 推断，子节点递归交由 RendererDataHost 承接。
- * @provides DATA_ROW
- */
--->
 <template>
   <RendererDataHost :children="renderChildren" child-key-prefix="r-data-scope" />
 </template>

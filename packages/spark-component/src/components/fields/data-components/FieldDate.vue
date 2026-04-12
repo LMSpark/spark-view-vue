@@ -22,6 +22,9 @@
 /**
  * @skill r-date
  * @description 日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。
+ * @api type - 选择器类型（'date'|'datetime'|'daterange' 等）
+ * @api format - 显示格式
+ * @api valueFormat - 绑定值格式
  */
 import { computed } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'

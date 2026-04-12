@@ -1,10 +1,3 @@
-<!--
-/**
- * @skill r-tail
- * @description 工具栏尾区组件。在 r-toolbar 内使用时由容器提取并渲染到尾区；独立使用时横向排列子节点。
- * @input { type: 'r-tail', props?: { class?, width? }, children?: SparkNode[] }
- */
--->
 <template>
   <div v-if="children.length > 0" class="renderer-tail">
     <SparkComponentRenderer

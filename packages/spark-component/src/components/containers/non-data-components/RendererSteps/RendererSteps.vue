@@ -1,11 +1,3 @@
-<!--
-/**
- * @skill r-steps
- * @description 步骤容器，内部使用 r-step 定义步骤；支持 `r-toolbar` wrapper 工具栏，当前步骤内容区采用 24 列 CSS Grid
- * @input { props: { modelValue?: string|number }, children?: [{ type: 'r-toolbar'|'r-step', props?: Record<string, unknown>, children?: SparkNode[] }] }
- * @example { "type": "r-steps", "children": [{ "type": "r-step", "props": { "title": "步骤一", "name": "s1" }, "children": [] }] }
- */
--->
 <template>
   <div :class="['renderer-steps-layout', `renderer-steps-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-steps-toolbar', toolbarClassValue]">

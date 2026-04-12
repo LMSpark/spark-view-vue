@@ -1,15 +1,3 @@
-<!--
-/**
- * @skill r-form
- * @description 表单容器，绑定 DataView.currentRow 实现双向编辑，支持工具栏，子字段组件通过 DATA_ROW 读写表单值
- * @provides DATA_SOURCE
- * @provides DATA_ROW
- * @context 通过当前组件 type='r-form' 提供字段语义
- * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } } }
- * @example { "type": "r-form", "dataKey": "Users@currentRow", "children": [] }
- */
--->
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-form-toolbar', toolbarClassValue]">

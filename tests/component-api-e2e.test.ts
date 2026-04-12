@@ -1,5 +1,5 @@
 /**
- * 端到端验证：对真实组件文件运行 API 提取 + 差距分析
+ * 端到端验证：对真实组件文件运行 API 提取
  *
  * 使用 vue-component-meta (VCM) 提取真实 Vue 组件，验证提取引擎在真实代码上的表现。
  */
@@ -10,13 +10,7 @@ import {
   getOrCreateChecker,
   extractComponentApiVcm,
   extractAllComponentApisVcm,
-  generateDiffReport,
-  formatDiffReport,
 } from '../packages/vite-plugin-spark-catalog/src/index'
-import catalogJson from '../packages/spark-ai/src/catalog/component-catalog.json'
-import type { RawComponentCatalog } from '../packages/spark-ai/src/catalog/types'
-
-const COMPONENT_CATALOG = catalogJson as RawComponentCatalog
 
 const ROOT = resolve('.')
 const FIELD_DIR = 'packages/spark-component/src/components/fields/data-components'
@@ -25,16 +19,6 @@ const TABLE_COMPONENT = `${CONTAINER_DIR}/RendererTable/RendererTable.vue`
 const TREE_COMPONENT = `${CONTAINER_DIR}/RendererTree/RendererTree.vue`
 
 const checker = getOrCreateChecker(resolve(ROOT, 'tsconfig.catalog.json'))
-const diffCatalog = Object.fromEntries(
-  Object.entries(COMPONENT_CATALOG.components).map(([type, entry]) => {
-    const propLines = entry.props.map(prop => `${prop.name}: ${prop.description ?? ''}`)
-    const emitLines = entry.emits.map(emit => `emit ${emit.name}`)
-    const text = [entry.filePath, ...propLines, ...emitLines]
-      .filter(Boolean)
-      .join('\n')
-    return [type, text]
-  }),
-)
 
 describe('End-to-end: real component extraction (VCM)', () => {
   // VCM checker 首次调用需初始化 TypeScript 语言服务，CPU 密集，全量测试时可能超过默认 5s
@@ -99,32 +83,5 @@ describe('End-to-end: real component extraction (VCM)', () => {
       expect(names).toContain('field')
       expect(names).toContain('label')
     }
-  })
-})
-
-describe('End-to-end: diff report with real catalog', () => {
-  it('generates meaningful diff report', () => {
-    const components = [
-      { skillType: 'r-text', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldText.vue`), relativePath: `${FIELD_DIR}/FieldText.vue` },
-      { skillType: 'r-select', absolutePath: resolve(ROOT, `${FIELD_DIR}/FieldSelect.vue`), relativePath: `${FIELD_DIR}/FieldSelect.vue` },
-      { skillType: 'r-table', absolutePath: resolve(ROOT, TABLE_COMPONENT), relativePath: TABLE_COMPONENT },
-      { skillType: 'r-tree', absolutePath: resolve(ROOT, TREE_COMPONENT), relativePath: TREE_COMPONENT },
-    ]
-
-    const apis = extractAllComponentApisVcm(checker, components)
-    const report = generateDiffReport(apis, diffCatalog)
-    const output = formatDiffReport(report)
-
-    // 应该有报告输出
-    expect(output).toContain('Component API Coverage Report')
-
-    // 提取的 API 应该 > 0
-    expect(report.componentsWithApi).toBeGreaterThan(0)
-
-    // 检查特定组件
-    const rTable = report.components.find(c => c.type === 'r-table')
-    expect(rTable).toBeDefined()
-    expect(rTable!.hasExtractedApi).toBe(true)
-    expect(rTable!.hasCatalogEntry).toBe(true)
   })
 })

@@ -1594,7 +1594,7 @@ Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页�
 ```
 Step 1: mvn clean package -DskipTests     → JAR
 Step 2: 启动 Java 后端（后台）              → 等待就绪
-Step 3: vite build                          → dist/ + spark-component-metadata.json
+Step 3: vite build                          → dist/ + component-catalog.json（唯一组件元数据产出）
 Step 4: POST 元数据到 /api/ai/component-metadata → 服务端持久化
 Step 5: taskkill /PID /T /F                → 关闭 Java
 ```
@@ -1610,7 +1610,7 @@ Step 5: taskkill /PID /T /F                → 关闭 Java
 - `spark-ai-server/` 是独立 Maven 项目，**不是** pnpm workspace 成员
 - 页面配置已从 `public/pages-config/` 完全迁移到 `spark-ai-server/data/pages-config/`
 - `ComponentMetadataService` 启动时从 `data/component-metadata.json` 自动加载，无需每次构建
-- Vite `SparkComponentsPlugin`（`tools/vite-plugin-spark-components.ts`）构建时提取组件元数据到 `dist/spark-component-metadata.json`
+- Vite `SparkCatalogPlugin`（`packages/vite-plugin-spark-catalog`）构建时生成 `component-catalog.json`（唯一组件元数据产出）
 
 ## Performance notes ⚡
 - **`spark-data` 无框架依赖**——DataView 通过 `DataView.wrapInstance` 静态钩子让框架层注入包装（SparkPlugin 中设为 `shallowReactive()`，仅追踪顶层属性）

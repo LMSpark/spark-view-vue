@@ -44,8 +44,8 @@
  */
 
 import type { Plugin, ResolvedConfig } from 'vite'
-import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs'
-import { resolve, relative, dirname, basename } from 'node:path'
+import { readFileSync, existsSync, statSync } from 'node:fs'
+import { resolve, basename } from 'node:path'
 import { globSync } from 'glob'
 import {
   toKebabCase,
@@ -590,39 +590,6 @@ export default registerComponents
   }
 
   /**
-   * 生成组件元数据 JSON（用于构建时输出到 dist/ 并上传到服务端）
-   *
-   * 精简版：仅输出组件注册列表 + 基础 skill 信息。
-  * 完整 AI 元数据由 vite-plugin-spark-catalog 生成（component-catalog.json）。
-   */
-  generateMetadataJson(): string {
-    this.scan()
-
-    const skills = this.components
-      .filter(c => c.skillMeta !== null)
-      .map(c => c.skillMeta!)
-
-    const components = this.components.map(c => ({
-      type: c.name,
-      path: c.path,
-      size: c.size,
-      strategy: c.strategy,
-      hasSkill: c.skillMeta !== null,
-    }))
-
-    const metadata = {
-      version: '3.0.0',
-      buildTime: new Date().toISOString(),
-      componentCount: this.components.length,
-      skillCount: skills.length,
-      components,
-      skills,
-    }
-
-    return JSON.stringify(metadata, null, 2)
-  }
-
-  /**
    * 生成 Skill 目录虚拟模块代码
    *
    * 输出：virtual:spark-skill-catalog
@@ -750,25 +717,6 @@ export function sparkComponentsPlugin(
         return analyzer.generateSkillCatalog()
       }
       return null
-    },
-
-    /**
-     * 构建完成后输出组件元数据 JSON（仅生产构建）
-     */
-    writeBundle() {
-      if (!analyzer['viteConfig']) return
-      const outDir = analyzer['viteConfig'].build?.outDir ?? 'dist'
-      const root = analyzer['viteConfig'].root
-      const outputPath = resolve(root, outDir, 'spark-component-metadata.json')
-
-      try {
-        const metadataJson = analyzer.generateMetadataJson()
-        mkdirSync(dirname(outputPath), { recursive: true })
-        writeFileSync(outputPath, metadataJson, 'utf-8')
-        logger.info(`📦 组件元数据已输出: ${relative(root, outputPath)}`)
-      } catch (e) {
-        logger.error('❌ 输出组件元数据失败:', e)
-      }
     },
 
     /**

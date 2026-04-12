@@ -1,10 +1,3 @@
-<!--
-/**
- * @skill r-collapse-item
- * @description 折叠项子组件，自行解析 title/name/disabled 等语义 props；内容区采用 24 列 CSS Grid
- * @input { props: { title?: string, name?: string|number, disabled?: boolean, bodyClass?: string, gridColumns?: number } }
- */
--->
 <template>
   <el-collapse-item
     :name="itemName"

@@ -1,11 +1,3 @@
-<!--
-/**
- * @skill r-collapse
- * @description 折叠面板容器，内部使用 r-collapse-item 定义分组；支持 `r-toolbar` wrapper 工具栏，每个折叠项内容默认采用 24 列 CSS Grid
- * @input { props: { modelValue?: string|number|Array<string|number> }, children?: [{ type: 'r-toolbar'|'r-collapse-item', props?: Record<string, unknown>, children?: SparkNode[] }] }
- * @example { "type": "r-collapse", "children": [{ "type": "r-collapse-item", "props": { "title": "基本信息", "name": "base" }, "children": [] }] }
- */
--->
 <template>
   <div :class="['renderer-collapse-layout', `renderer-collapse-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-collapse-toolbar', toolbarClassValue]">

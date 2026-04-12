@@ -1,11 +1,3 @@
-<!--
-/**
- * @skill r-toolbar
- * @description 通用横向条带容器。以 wrapper 子节点模型工作：默认 children 进入主区，`r-tail` 子节点进入尾区；r-menu 先复用同实现。
- * @input { props: { gap?: number|string, zoneGap?: number|string, align?: 'start'|'center'|'end'|'stretch' } }
- * @example { "type": "r-toolbar", "children": [{ "type": "builtin-action" }, { "type": "r-tail", "children": [{ "type": "builtin-action" }] }] }
- */
--->
 <template>
   <div :class="rootClasses" :style="rootStyle">
     <div

@@ -1,10 +1,3 @@
-<!--
-/**
- * @skill r-footer
- * @description 底部区域组件。在容器（r-dialog/r-drawer）内使用时由容器提取并渲染为底部操作区。
- * @input { type: 'r-footer', props?: { class? }, children?: SparkNode[] }
- */
--->
 <template>
   <div v-if="children.length > 0" class="renderer-footer">
     <SparkComponentRenderer

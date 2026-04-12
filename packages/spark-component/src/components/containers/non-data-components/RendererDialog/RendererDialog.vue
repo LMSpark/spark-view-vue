@@ -1,11 +1,3 @@
-<!--
-/**
- * @skill r-dialog
- * @description 对话框容器，支持 `r-header` / `r-footer` wrapper 动作区和 24 列 Grid 内容区
- * @input { props: { modelValue?: boolean, title?: string }, children?: [{ type: 'r-header'|'r-footer'|string, props?: Record<string, unknown>, children?: SparkNode[] }] }
- * @example { "type": "r-dialog", "props": { "title": "编辑", "modelValue": true }, "children": [] }
- */
--->
 <template>
   <el-dialog
     v-bind="$attrs"

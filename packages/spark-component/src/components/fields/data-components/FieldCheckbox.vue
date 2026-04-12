@@ -16,6 +16,7 @@
 /**
  * @skill r-checkbox
  * @description 单个复选框字段，绑定 boolean 值，基于 el-checkbox，支持自定义选中/未选中显示文本。
+ * @api checkedText / uncheckedText - 自定义选中/未选中显示文本（代替 trueLabel / falseLabel）
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'

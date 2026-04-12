@@ -1,13 +1,3 @@
-<!--
-/**
- * @skill r-table
- * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据；除列区外，其它结构统一通过 wrapper 子节点（r-toolbar / r-filter / r-actions）组织，显示参数写入各 wrapper 的 props
- * @provides DATA_SOURCE
- * @consumes PAGE_DATASET
- * @input { dataKey: string, children?: [{ type: 'r-toolbar'|'r-filter'|'r-actions'|'el-table-column'|'r-*', props?: Record<string, unknown>, children?: SparkNode[] }], props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
- * @example { "type": "r-table", "dataKey": "Orders@rows", "props": { "border": true, "highlightCurrentRow": true } }
- */
--->
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->

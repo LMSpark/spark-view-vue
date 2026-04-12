@@ -1,15 +1,3 @@
-<!--
-/**
- * @skill r-detail
- * @description 只读详情容器，绑定 DataView.currentRow 展示当前行字段，支持工具栏，不支持编辑回写
- * @provides DATA_SOURCE
- * @provides DATA_ROW
- * @context 通过当前组件 type='r-detail' 提供字段语义
- * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { toolbar?: { position?: 'top'|'bottom'|'left'|'right', class?: string } } }
- * @example { "type": "r-detail", "dataKey": "Users@currentRow", "children": [] }
- */
--->
 <template>
   <div :class="['renderer-detail-layout', `renderer-detail-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-detail-toolbar', toolbarClassValue]">

@@ -1,10 +1,3 @@
-<!--
-/**
- * @skill r-tab-pane
- * @description 标签页面板子组件，自行解析 label/name/disabled 等语义 props；内容区采用 24 列 CSS Grid
- * @input { props: { label?: string, name?: string|number, disabled?: boolean, lazy?: boolean, closable?: boolean, bodyClass?: string, gridColumns?: number } }
- */
--->
 <template>
   <el-tab-pane
     :label="paneLabel"

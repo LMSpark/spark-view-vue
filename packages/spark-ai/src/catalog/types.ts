@@ -1,10 +1,9 @@
 /**
- * 组件目录 JSON Schema 类型定义（完整版）
+ * 组件目录 JSON Schema 类型定义（消费侧）
  *
- * 与 vite-plugin-spark-catalog/component-catalog-schema.ts 保持一致。
+ * spark-ai 不依赖 vite-plugin-spark-catalog（构建工具包），
+ * 因此需要独立维护消费侧类型声明。
  * component-catalog.json 是单一 rich 目录（VCM + SFC 元注解 + 平台约束）。
- *
- * ⚠️ 保持与 component-catalog-schema.ts 同步 — 当 schema 变更时需一并更新。
  */
 
 /** 组件目录 JSON 根结构 */
@@ -17,7 +16,7 @@ export interface ComponentCatalog {
   schemaPool?: Record<string, PropSchema>
   constraints: PlatformConstraints
   sharedTypes?: Record<string, SharedTypeDefinition>
-  bindingDescriptors?: Record<string, BindingDescriptor>
+  bindingDescriptors?: Record<string, CatalogBindingDescriptor>
   apiSurface?: object
 }
 
@@ -36,7 +35,7 @@ export interface RawComponentEntry {
   hasIndexSignature: boolean
 }
 
-export interface BindingDescriptor {
+export interface CatalogBindingDescriptor {
   selfResolving?: boolean
   bindingDelegate?: string
   dataContainer?: boolean
@@ -81,7 +80,7 @@ export interface ComponentEntry {
   provides?: string[]
   consumes?: string[]
   source: 'vcm' | 'meta' | 'vcm+meta'
-  binding?: BindingDescriptor
+  binding?: CatalogBindingDescriptor
 }
 
 export interface PropEntry {

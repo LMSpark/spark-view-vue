@@ -1,9 +1,3 @@
-<!--
-/**
- * @skill (internal) field-scope
- * @description 字段作用域容器，提供 el-form 包裹和 DATA_ROW 能力；字段语义由祖先 context.type 推断
- */
--->
 <template>
   <el-form
     :model="model"
