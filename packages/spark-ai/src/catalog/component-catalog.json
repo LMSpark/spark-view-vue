@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-12T22:56:30.192Z",
+  "buildTime": "2026-04-12T23:10:21.149Z",
   "componentCount": 111,
   "registry": {
     "containers": [
@@ -137,21 +137,9 @@
       "description": "尾部组件，在 r-toolbar 中作为工具栏末尾区域提取渲染。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-tail\" | undefined",
-          "required": false,
-          "default": "\"r-tail\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -170,21 +158,9 @@
       "description": "头部组件，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-header\" | undefined",
-          "required": false,
-          "default": "\"r-header\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -203,21 +179,9 @@
       "description": "底部组件，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-footer\" | undefined",
-          "required": false,
-          "default": "\"r-footer\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
         },
         {
           "name": "width",
@@ -236,21 +200,9 @@
       "description": "筛选区组件，独立使用时仅渲染 wrapper 子节点；被 r-table 复用时负责筛选面板壳、折叠和操作按钮。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-filter\" | undefined",
-          "required": false,
-          "default": "\"r-filter\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
         },
         {
           "name": "model",
@@ -342,21 +294,9 @@
       "description": "编辑面板组件，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-editor\" | undefined",
-          "required": false,
-          "default": "\"r-editor\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
         },
         {
           "name": "position",
@@ -490,25 +430,6 @@
           "required": false,
           "description": "滚动选项",
           "schemaRef": "ScrollIntoViewOptions"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-tour\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -538,13 +459,6 @@
       "category": "container",
       "description": "文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "content",
           "type": "string | undefined",
@@ -599,19 +513,6 @@
           "type": "boolean | undefined",
           "required": false,
           "default": "false"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-tooltip\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -624,18 +525,6 @@
       "category": "container",
       "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。",
       "props": [
-        {
-          "name": "type",
-          "type": "\"r-toolbar\" | undefined",
-          "required": false,
-          "default": "\"r-toolbar\""
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "tail",
           "type": "TailNode | undefined",
@@ -673,22 +562,6 @@
       "category": "container",
       "description": "标签页面板（r-tabs 内部），基于 el-tab-pane 在标签页体内以 24 列网格渲染子组件。",
       "props": [
-        {
-          "name": "type",
-          "type": "string | undefined",
-          "required": false,
-          "default": "\"r-tab-pane\""
-        },
-        {
-          "name": "props",
-          "type": "{ [key: string]: unknown; } | undefined",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren | undefined",
-          "required": false
-        },
         {
           "name": "id",
           "type": "string | undefined",
@@ -766,22 +639,6 @@
       "description": "步骤项组件（r-steps 内部），双模式渲染：步骤头部（el-step）和步骤内容区（24 列网格）。",
       "props": [
         {
-          "name": "type",
-          "type": "string | undefined",
-          "required": false,
-          "default": "\"r-step\""
-        },
-        {
-          "name": "props",
-          "type": "{ [key: string]: unknown; } | undefined",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren | undefined",
-          "required": false
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -858,13 +715,6 @@
       "description": "间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
-        {
           "name": "direction",
           "type": "\"horizontal\" | \"vertical\" | undefined",
           "required": false,
@@ -893,19 +743,6 @@
           "type": "\"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\" | undefined",
           "required": false,
           "default": "\"center\""
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-space\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -918,13 +755,6 @@
       "category": "container",
       "description": "弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "contentChildren",
           "type": "SparkNode[] | undefined",
@@ -990,19 +820,6 @@
           "name": "popperClass",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-popover\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -1015,13 +832,6 @@
       "category": "container",
       "description": "确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "title",
           "type": "string | undefined",
@@ -1076,19 +886,6 @@
           "type": "string | number | undefined",
           "required": false,
           "default": "150"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-popconfirm\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -1111,13 +908,6 @@
       "description": "页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
-        {
           "name": "title",
           "type": "string | undefined",
           "required": false,
@@ -1132,19 +922,6 @@
           "name": "content",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-page-header\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -1162,13 +939,6 @@
       "category": "container",
       "description": "链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "label",
           "type": "string | undefined",
@@ -1196,19 +966,6 @@
           "type": "\"_self\" | \"_blank\" | \"_parent\" | \"_top\" | undefined",
           "required": false,
           "default": "\"_self\""
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-link\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -1221,13 +978,6 @@
       "category": "container",
       "description": "下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "items",
           "type": "DropdownItem[] | undefined",
@@ -1283,19 +1033,6 @@
           "name": "maxHeight",
           "type": "string | number | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-dropdown\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -1330,25 +1067,6 @@
           "name": "content",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-divider\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -1361,22 +1079,6 @@
       "category": "container",
       "description": "折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。",
       "props": [
-        {
-          "name": "type",
-          "type": "string | undefined",
-          "required": false,
-          "default": "\"r-collapse-item\""
-        },
-        {
-          "name": "props",
-          "type": "{ [key: string]: unknown; } | undefined",
-          "required": false
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren | undefined",
-          "required": false
-        },
         {
           "name": "id",
           "type": "string | undefined",
@@ -1439,13 +1141,6 @@
       "description": "卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
-        {
           "name": "header",
           "type": "string | undefined",
           "required": false
@@ -1465,19 +1160,6 @@
           "name": "bodyClass",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-card\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -1490,13 +1172,6 @@
       "category": "container",
       "description": "声明式动作按钮，支持 action（CRUD 动作）+ template（样式预设）+ 显式 props 三层样式合并。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "action",
           "type": "string | undefined",
@@ -1582,19 +1257,6 @@
           "type": "boolean | undefined",
           "required": false,
           "default": "false"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-button\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -1622,25 +1284,6 @@
           "type": "string | undefined",
           "required": false,
           "description": "链接标题"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-anchor-link\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [],
@@ -1700,25 +1343,6 @@
           "required": false,
           "default": "\"default\"",
           "description": "锚点类型（避免与 SparkNode.type 冲突）"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-anchor\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -1740,13 +1364,6 @@
       "category": "container",
       "description": "标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点（标签面板配置）",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
@@ -1771,19 +1388,6 @@
           "type": "((pane: TabsClickEvent, event: Event) => void) | undefined",
           "required": false,
           "description": "标签页点击回调"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-tabs\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -1807,13 +1411,6 @@
       "description": "步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏和步骤内容切换。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点（步骤配置）",
-          "schemaRef": "SparkNode"
-        },
-        {
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
@@ -1832,19 +1429,6 @@
           "required": false,
           "description": "步骤切换回调",
           "schemaRef": "SparkNode"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-steps\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -1867,13 +1451,6 @@
       "category": "container",
       "description": "分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作区。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "header",
           "type": "HeaderNode | undefined",
@@ -1992,19 +1569,6 @@
           "required": false,
           "default": "\"minmax(32px, auto)\"",
           "description": "栅格行高"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-section\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -2018,13 +1582,6 @@
       "category": "container",
       "description": "抽屉容器，基于 el-drawer 侧滑面板，支持 header/footer dock 和网格主体布局。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "header",
           "type": "HeaderNode | undefined",
@@ -2104,19 +1661,6 @@
           "type": "(() => void) | undefined",
           "required": false,
           "description": "关闭动画结束回调"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-drawer\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -2139,13 +1683,6 @@
       "category": "container",
       "description": "对话框容器，基于 el-dialog 弹出模态窗口，支持 header/footer dock 和网格主体布局。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "header",
           "type": "HeaderNode | undefined",
@@ -2225,19 +1762,6 @@
           "type": "(() => void) | undefined",
           "required": false,
           "description": "关闭动画结束回调"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-dialog\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -2261,13 +1785,6 @@
       "description": "折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点（折叠项配置）",
-          "schemaRef": "SparkNode"
-        },
-        {
           "name": "toolbar",
           "type": "ToolbarNode | undefined",
           "required": false,
@@ -2285,19 +1802,6 @@
           "type": "((value: CollapseValue) => void) | undefined",
           "required": false,
           "description": "展开/折叠切换回调"
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"r-collapse\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [
@@ -2320,12 +1824,6 @@
       "category": "container",
       "description": "树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器侧面板。",
       "props": [
-        {
-          "name": "type",
-          "type": "\"r-tree\" | undefined",
-          "required": false,
-          "default": "\"r-tree\""
-        },
         {
           "name": "dataKey",
           "type": "string | undefined",
@@ -2376,13 +1874,6 @@
           "type": "number | undefined",
           "required": false,
           "description": "初始化自动展开到指定层级（根节点为第 1 层）"
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点（树节点内容配置）",
-          "schemaRef": "SparkNode"
         },
         {
           "name": "allowAppend",
@@ -2440,12 +1931,6 @@
           "name": "onRemoveRow",
           "type": "RemoveRowHandler | undefined",
           "required": false
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -2470,12 +1955,6 @@
       "category": "container",
       "description": "数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。",
       "props": [
-        {
-          "name": "type",
-          "type": "\"r-table\" | undefined",
-          "required": false,
-          "default": "\"r-table\""
-        },
         {
           "name": "dataKey",
           "type": "string | undefined",
@@ -2502,13 +1981,6 @@
           "required": false,
           "description": "结构化行动作",
           "schemaRef": "ActionsNode"
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "表格内容列配置；toolbar / filter / actions 已由绑定层提升到 props",
-          "schemaRef": "SparkNode"
         },
         {
           "name": "onRowClick",
@@ -2539,12 +2011,6 @@
           "name": "onRemoveRow",
           "type": "RemoveRowHandler | undefined",
           "required": false
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -2571,11 +2037,6 @@
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row-fragment-host\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-row-fragment\" | undefined",
-          "required": false
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -2623,12 +2084,6 @@
         },
         {
           "name": "fields",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
-        {
-          "name": "children",
           "type": "SparkNode[] | undefined",
           "required": false,
           "schemaRef": "SparkNode"
@@ -2645,12 +2100,6 @@
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-row-fragment\" 组织子组件。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-row-fragment\" | undefined",
-          "required": false,
-          "default": "\"r-row-fragment\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -2701,12 +2150,6 @@
           "type": "SparkNode[] | undefined",
           "required": false,
           "schemaRef": "SparkNode"
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
         }
       ],
       "emits": [],
@@ -2719,12 +2162,6 @@
       "category": "container",
       "description": "SPARK 容器组件，可在 rule.json 中通过 type=\"r-data-host\" 组织子组件。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "childKeyPrefix",
           "type": "string | undefined",
@@ -2741,12 +2178,6 @@
       "category": "container",
       "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。",
       "props": [
-        {
-          "name": "type",
-          "type": "\"r-list\" | undefined",
-          "required": false,
-          "default": "\"r-list\""
-        },
         {
           "name": "dataKey",
           "type": "string | undefined",
@@ -2766,13 +2197,6 @@
           "required": false,
           "description": "结构化列表项动作",
           "schemaRef": "ActionsNode"
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点（列表项内容配置）",
-          "schemaRef": "SparkNode"
         },
         {
           "name": "columns",
@@ -2890,12 +2314,6 @@
           "name": "onRemoveRow",
           "type": "RemoveRowHandler | undefined",
           "required": false
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -2920,12 +2338,6 @@
       "description": "数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-form\" | undefined",
-          "required": false,
-          "default": "\"r-form\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -2942,13 +2354,6 @@
           "required": false,
           "description": "结构化工具栏",
           "schemaRef": "ToolbarNode"
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点列表",
-          "schemaRef": "SparkNode"
         },
         {
           "name": "labelWidth",
@@ -2992,12 +2397,6 @@
           "name": "onRemoveRow",
           "type": "RemoveRowHandler | undefined",
           "required": false
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -3023,12 +2422,6 @@
       "description": "数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。",
       "props": [
         {
-          "name": "type",
-          "type": "\"r-detail\" | undefined",
-          "required": false,
-          "default": "\"r-detail\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -3045,13 +2438,6 @@
           "required": false,
           "description": "结构化工具栏",
           "schemaRef": "ToolbarNode"
-        },
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点列表",
-          "schemaRef": "SparkNode"
         },
         {
           "name": "gridColumns",
@@ -3102,12 +2488,6 @@
           "name": "onRemoveRow",
           "type": "RemoveRowHandler | undefined",
           "required": false
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
         }
       ],
       "emits": [],
@@ -3293,17 +2673,6 @@
           "description": "值 class（detail/table value）"
         },
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
-        {
-          "name": "type",
-          "type": "string | undefined",
-          "required": false
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -3319,13 +2688,6 @@
       "category": "field",
       "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "default": "undefined",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "width",
           "type": "number | undefined",
@@ -3550,12 +2912,6 @@
           "description": "只读模式按钮文案"
         },
         {
-          "name": "type",
-          "type": "\"r-upload\" | undefined",
-          "required": false,
-          "default": "\"r-upload\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -3684,12 +3040,6 @@
           "description": "展开后才渲染子节点"
         },
         {
-          "name": "type",
-          "type": "\"r-tree-select\" | undefined",
-          "required": false,
-          "default": "\"r-tree-select\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -3792,12 +3142,6 @@
           "description": "右侧排序方式"
         },
         {
-          "name": "type",
-          "type": "\"r-transfer\" | undefined",
-          "required": false,
-          "default": "\"r-transfer\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -3893,12 +3237,6 @@
           "required": false,
           "default": "true",
           "description": "可清空"
-        },
-        {
-          "name": "type",
-          "type": "\"r-time-select\" | undefined",
-          "required": false,
-          "default": "\"r-time-select\""
         },
         {
           "name": "id",
@@ -4006,12 +3344,6 @@
           "description": "可清空"
         },
         {
-          "name": "type",
-          "type": "\"r-time-picker\" | undefined",
-          "required": false,
-          "default": "\"r-time-picker\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -4095,12 +3427,6 @@
           "description": "占位提示"
         },
         {
-          "name": "type",
-          "type": "\"r-textarea\" | undefined",
-          "required": false,
-          "default": "\"r-textarea\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -4148,12 +3474,6 @@
           "type": "string | undefined",
           "required": false,
           "description": "双向绑定值"
-        },
-        {
-          "name": "type",
-          "type": "\"r-text\" | undefined",
-          "required": false,
-          "default": "\"r-text\""
         },
         {
           "name": "id",
@@ -4217,12 +3537,6 @@
           "required": false,
           "default": "\"\\u5426\"",
           "description": "未激活时文案"
-        },
-        {
-          "name": "type",
-          "type": "\"r-switch\" | undefined",
-          "required": false,
-          "default": "\"r-switch\""
         },
         {
           "name": "id",
@@ -4300,12 +3614,6 @@
           "required": false,
           "default": "false",
           "description": "显示输入框"
-        },
-        {
-          "name": "type",
-          "type": "\"r-slider\" | undefined",
-          "required": false,
-          "default": "\"r-slider\""
         },
         {
           "name": "id",
@@ -4402,12 +3710,6 @@
           "description": "可搜索"
         },
         {
-          "name": "type",
-          "type": "\"r-select\" | undefined",
-          "required": false,
-          "default": "\"r-select\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -4458,12 +3760,6 @@
           "required": false,
           "default": "false",
           "description": "是否撑满父容器"
-        },
-        {
-          "name": "type",
-          "type": "\"r-segmented\" | undefined",
-          "required": false,
-          "default": "\"r-segmented\""
         },
         {
           "name": "id",
@@ -4532,12 +3828,6 @@
           "required": false,
           "default": "false",
           "description": "允许半星"
-        },
-        {
-          "name": "type",
-          "type": "\"r-rate\" | undefined",
-          "required": false,
-          "default": "\"r-rate\""
         },
         {
           "name": "id",
@@ -4620,12 +3910,6 @@
           "description": "按钮风格"
         },
         {
-          "name": "type",
-          "type": "\"r-radio\" | undefined",
-          "required": false,
-          "default": "\"r-radio\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -4651,13 +3935,6 @@
       "category": "field",
       "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "default": "undefined",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "width",
           "type": "number | undefined",
@@ -4848,12 +4125,6 @@
           "description": "范围筛选标记"
         },
         {
-          "name": "type",
-          "type": "\"r-number\" | undefined",
-          "required": false,
-          "default": "\"r-number\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -4967,12 +4238,6 @@
           "required": false,
           "default": "1",
           "description": "最大显示标签数"
-        },
-        {
-          "name": "type",
-          "type": "\"r-multi-select\" | undefined",
-          "required": false,
-          "default": "\"r-multi-select\""
         },
         {
           "name": "id",
@@ -5093,12 +4358,6 @@
           "description": "textarea 行数"
         },
         {
-          "name": "type",
-          "type": "\"r-mention\" | undefined",
-          "required": false,
-          "default": "\"r-mention\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -5213,12 +4472,6 @@
           "description": "可清除"
         },
         {
-          "name": "type",
-          "type": "\"r-image\" | undefined",
-          "required": false,
-          "default": "\"r-image\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -5320,12 +4573,6 @@
           "description": "图标 CSS 类名前缀"
         },
         {
-          "name": "type",
-          "type": "\"r-icon\" | undefined",
-          "required": false,
-          "default": "\"r-icon\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -5381,12 +4628,6 @@
           "required": false,
           "default": "10",
           "description": "编辑器高度行数"
-        },
-        {
-          "name": "type",
-          "type": "\"r-html-editor\" | undefined",
-          "required": false,
-          "default": "\"r-html-editor\""
         },
         {
           "name": "id",
@@ -5494,12 +4735,6 @@
           "description": "可清除"
         },
         {
-          "name": "type",
-          "type": "\"r-file-path\" | undefined",
-          "required": false,
-          "default": "\"r-file-path\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -5589,12 +4824,6 @@
           "required": false,
           "default": "\"\\u6D4F\\u89C8\"",
           "description": "上传按钮文案"
-        },
-        {
-          "name": "type",
-          "type": "\"r-file-browser\" | undefined",
-          "required": false,
-          "default": "\"r-file-browser\""
         },
         {
           "name": "id",
@@ -5733,19 +4962,6 @@
           "description": "实体名称"
         },
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "description": "子节点列表",
-          "schemaRef": "SparkNode"
-        },
-        {
-          "name": "type",
-          "type": "\"r-entity-picker\" | undefined",
-          "required": false,
-          "default": "\"r-entity-picker\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -5771,13 +4987,6 @@
       "category": "field",
       "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "default": "undefined",
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "width",
           "type": "number | undefined",
@@ -6003,12 +5212,6 @@
           "description": "范围筛选标记"
         },
         {
-          "name": "type",
-          "type": "\"r-date\" | undefined",
-          "required": false,
-          "default": "\"r-date\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -6058,12 +5261,6 @@
           "description": "双向绑定值（颜色字符串，透传 el-color-picker）"
         },
         {
-          "name": "type",
-          "type": "\"r-color\" | undefined",
-          "required": false,
-          "default": "\"r-color\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -6100,12 +5297,6 @@
           "type": "string | undefined",
           "required": false,
           "description": "标签文本"
-        },
-        {
-          "name": "type",
-          "type": "\"r-check-tag\" | undefined",
-          "required": false,
-          "default": "\"r-check-tag\""
         },
         {
           "name": "id",
@@ -6188,12 +5379,6 @@
           "description": "按钮风格"
         },
         {
-          "name": "type",
-          "type": "\"r-checkbox-group\" | undefined",
-          "required": false,
-          "default": "\"r-checkbox-group\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -6263,12 +5448,6 @@
           "required": false,
           "default": "\"\"",
           "description": "复选框右侧文案"
-        },
-        {
-          "name": "type",
-          "type": "\"r-checkbox\" | undefined",
-          "required": false,
-          "default": "\"r-checkbox\""
         },
         {
           "name": "id",
@@ -6392,12 +5571,6 @@
           "description": "值是否为完整路径数组"
         },
         {
-          "name": "type",
-          "type": "\"r-cascader\" | undefined",
-          "required": false,
-          "default": "\"r-cascader\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -6487,12 +5660,6 @@
           "required": false,
           "default": "\"value\"",
           "description": "建议项的取值键"
-        },
-        {
-          "name": "type",
-          "type": "\"r-autocomplete\" | undefined",
-          "required": false,
-          "default": "\"r-autocomplete\""
         },
         {
           "name": "id",
@@ -6954,25 +6121,6 @@
           "name": "createDefaultObjectValue",
           "type": "((parentPath: JsonPath, key: string) => JsonValue) | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": true,
-          "default": "\"json-tree-editor\"",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        {
-          "name": "props",
-          "type": "Record<string, unknown> | undefined",
-          "required": false,
-          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）"
-        },
-        {
-          "name": "children",
-          "type": "SparkNodeChildren | undefined",
-          "required": false,
-          "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组"
         }
       ],
       "emits": [
@@ -7063,12 +6211,6 @@
           "type": "boolean | undefined",
           "required": false,
           "default": "false"
-        },
-        {
-          "name": "type",
-          "type": "\"r-tree-node-summary\" | undefined",
-          "required": false,
-          "default": "\"r-tree-node-summary\""
         },
         {
           "name": "id",
@@ -7247,17 +6389,6 @@
           "description": "值 class（detail/table value）"
         },
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
-        {
-          "name": "type",
-          "type": "string | undefined",
-          "required": false
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -7273,12 +6404,6 @@
       "category": "field",
       "description": "时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "timestamp",
           "type": "string | undefined",
@@ -7331,12 +6456,6 @@
           "required": false
         },
         {
-          "name": "type",
-          "type": "\"r-timeline-item\" | undefined",
-          "required": false,
-          "default": "\"r-timeline-item\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -7353,18 +6472,6 @@
       "description": "时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
-        {
-          "name": "type",
-          "type": "\"r-timeline\" | undefined",
-          "required": false,
-          "default": "\"r-timeline\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -7380,12 +6487,6 @@
       "category": "field",
       "description": "骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "rows",
           "type": "number | undefined",
@@ -7417,12 +6518,6 @@
           "default": "0"
         },
         {
-          "name": "type",
-          "type": "\"r-skeleton\" | undefined",
-          "required": false,
-          "default": "\"r-skeleton\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -7439,12 +6534,6 @@
       "description": "结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
-        {
           "name": "icon",
           "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
           "required": false,
@@ -7459,12 +6548,6 @@
           "name": "subTitle",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "\"r-result\" | undefined",
-          "required": false,
-          "default": "\"r-result\""
         },
         {
           "name": "id",
@@ -7501,12 +6584,6 @@
           "description": "图标颜色"
         },
         {
-          "name": "type",
-          "type": "\"display-icon\" | undefined",
-          "required": false,
-          "default": "\"display-icon\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -7523,12 +6600,6 @@
       "description": "空状态占位组件，基于 el-empty 显示自定义空状态图片和描述文字。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
-        {
           "name": "image",
           "type": "string | undefined",
           "required": false
@@ -7542,12 +6613,6 @@
           "name": "description",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "\"r-empty\" | undefined",
-          "required": false,
-          "default": "\"r-empty\""
         },
         {
           "name": "id",
@@ -7565,12 +6630,6 @@
       "category": "field",
       "description": "描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "label",
           "type": "string | undefined",
@@ -7618,12 +6677,6 @@
           "required": false
         },
         {
-          "name": "type",
-          "type": "\"r-descriptions-item\" | undefined",
-          "required": false,
-          "default": "\"r-descriptions-item\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -7639,12 +6692,6 @@
       "category": "field",
       "description": "描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "title",
           "type": "string | undefined",
@@ -7678,12 +6725,6 @@
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\""
-        },
-        {
-          "name": "type",
-          "type": "\"r-descriptions\" | undefined",
-          "required": false,
-          "default": "\"r-descriptions\""
         },
         {
           "name": "id",
@@ -7739,12 +6780,6 @@
           "description": "值样式"
         },
         {
-          "name": "type",
-          "type": "\"display-countdown\" | undefined",
-          "required": false,
-          "default": "\"display-countdown\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -7780,12 +6815,6 @@
           "type": "[Date, Date] | undefined",
           "required": false,
           "description": "日期范围 [start, end]"
-        },
-        {
-          "name": "type",
-          "type": "\"display-calendar\" | undefined",
-          "required": false,
-          "default": "\"display-calendar\""
         },
         {
           "name": "id",
@@ -7824,12 +6853,6 @@
           "default": "false"
         },
         {
-          "name": "type",
-          "type": "\"r-breadcrumb-item\" | undefined",
-          "required": false,
-          "default": "\"r-breadcrumb-item\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -7846,12 +6869,6 @@
       "description": "面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。",
       "props": [
         {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
-        {
           "name": "separator",
           "type": "string | undefined",
           "required": false,
@@ -7861,12 +6878,6 @@
           "name": "separatorIcon",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "\"r-breadcrumb\" | undefined",
-          "required": false,
-          "default": "\"r-breadcrumb\""
         },
         {
           "name": "id",
@@ -7928,12 +6939,6 @@
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\""
-        },
-        {
-          "name": "type",
-          "type": "\"r-alert\" | undefined",
-          "required": false,
-          "default": "\"r-alert\""
         },
         {
           "name": "id",
@@ -8008,12 +7013,6 @@
           "name": "textStyle",
           "type": "string | object | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "\"r-text-display\" | undefined",
-          "required": false,
-          "default": "\"r-text-display\""
         },
         {
           "name": "id",
@@ -8094,12 +7093,6 @@
           "default": "\"light\""
         },
         {
-          "name": "type",
-          "type": "\"r-tag\" | undefined",
-          "required": false,
-          "default": "\"r-tag\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -8172,12 +7165,6 @@
           "name": "valueStyle",
           "type": "string | object | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "\"r-statistic\" | undefined",
-          "required": false,
-          "default": "\"r-statistic\""
         },
         {
           "name": "id",
@@ -8276,12 +7263,6 @@
           "required": false
         },
         {
-          "name": "type",
-          "type": "\"r-progress\" | undefined",
-          "required": false,
-          "default": "\"r-progress\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -8349,12 +7330,6 @@
           "type": "boolean | undefined",
           "required": false,
           "default": "false"
-        },
-        {
-          "name": "type",
-          "type": "\"r-pagination\" | undefined",
-          "required": false,
-          "default": "\"r-pagination\""
         },
         {
           "name": "id",
@@ -8478,12 +7453,6 @@
           "description": "图片高度"
         },
         {
-          "name": "type",
-          "type": "\"display-image\" | undefined",
-          "required": false,
-          "default": "\"display-image\""
-        },
-        {
           "name": "id",
           "type": "string | undefined",
           "required": false
@@ -8499,12 +7468,6 @@
       "category": "field",
       "description": "徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。",
       "props": [
-        {
-          "name": "children",
-          "type": "SparkNode[] | undefined",
-          "required": false,
-          "schemaRef": "SparkNode"
-        },
         {
           "name": "badgeValue",
           "type": "string | number | undefined",
@@ -8569,12 +7532,6 @@
           "name": "badgeClass",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "\"r-badge\" | undefined",
-          "required": false,
-          "default": "\"r-badge\""
         },
         {
           "name": "id",
@@ -8644,12 +7601,6 @@
           "name": "icon",
           "type": "string | undefined",
           "required": false
-        },
-        {
-          "name": "type",
-          "type": "\"r-avatar\" | undefined",
-          "required": false,
-          "default": "\"r-avatar\""
         },
         {
           "name": "id",

@@ -133,10 +133,13 @@ export function extractComponentApiVcm(
   try {
     const meta = checker.getComponentMeta(normalizedPath)
 
-    // -- Props（过滤 global props 如 class/style/key/ref） --
+    // -- Props（过滤 global props 如 class/style/key/ref，以及 SparkNode 结构字段） --
+    // type/props/children 是 h(type, props, children) 三段式结构键，由 SparkComponentRenderer 消费，
+    // 不属于组件业务 API，从 catalog 中排除。
+    const SPARK_NODE_STRUCT_KEYS = new Set(['type', 'props', 'children'])
     const discoveredSchemas: PropSchema[] = []
     const props: PropEntryWithIdentity[] = meta.props
-      .filter(p => !p.global)
+      .filter(p => !p.global && !SPARK_NODE_STRUCT_KEYS.has(p.name))
       .map(p => {
         const entry: PropEntryWithIdentity = {
           name: p.name,
