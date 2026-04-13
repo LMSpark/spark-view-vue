@@ -64,6 +64,7 @@ type SchemaOwner = 'workspace' | 'external'
 interface PropEntryWithMeta extends PropEntry {
   __schemaIdentityKey?: string
   __schemaOwner?: SchemaOwner
+  __componentRef?: string
 }
 
 interface SchemaPoolContext {
@@ -343,7 +344,11 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
       ...(prop.description !== undefined ? { description: prop.description } : {}),
     }
 
-    if (prop.schema !== undefined) {
+    // @componentRef 优先：prop 有 componentRef 标签时，用组件引用覆盖 schema
+    // 因为 VCM 对复杂类型只能生成 enum 字符串变体，不如组件引用有用
+    if (prop.__componentRef !== undefined) {
+      compacted.schemaRef = `component:${prop.__componentRef}`
+    } else if (prop.schema !== undefined) {
       const isExternalObjectSchema = prop.schema.kind === 'object' && prop.__schemaOwner === 'external'
       if (!isExternalObjectSchema && shouldRetainSchema(prop.schema)) {
         compacted.schemaRef = resolveSchemaRef(schemaPool, prop.schema, prop.__schemaIdentityKey)

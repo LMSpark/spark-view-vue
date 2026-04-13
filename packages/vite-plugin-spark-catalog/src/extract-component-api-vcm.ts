@@ -112,6 +112,7 @@ type SchemaOwner = 'workspace' | 'external'
 type PropEntryWithIdentity = PropEntry & {
   __schemaIdentityKey?: string
   __schemaOwner?: SchemaOwner
+  __componentRef?: string
 }
 
 const normalizedWorkspaceRoot = `${process.cwd().replace(/\\/g, '/').toLowerCase()}/`
@@ -195,7 +196,9 @@ export function extractComponentApiVcm(
     const meta = checker.getComponentMeta(normalizedPath)
 
     // 默认过滤 VCM 自动注入的全局 props，例如 class/style/key/ref。
-    const sourceProps = includeGlobalProps ? meta.props : meta.props.filter(p => !p.global)
+    // 同时过滤带 @internal JSDoc 标签的 props（由 Vue 源码声明，不属于配置层面）。
+    const sourceProps = (includeGlobalProps ? meta.props : meta.props.filter(p => !p.global))
+      .filter(p => !p.tags.some(t => t.name === 'internal'))
     const props: PropEntryWithIdentity[] = sourceProps.map(buildPropEntry)
 
     const emits: EmitEntry[] = meta.events.map(buildEmitEntry)
@@ -248,6 +251,7 @@ function buildPropEntry(p: {
   required: boolean
   default?: string | undefined
   description: string
+  tags: Array<{ name: string; text?: string }>
   schema: PropertyMetaSchema
   rawType?: unknown
 }): PropEntryWithIdentity {
@@ -259,6 +263,12 @@ function buildPropEntry(p: {
 
   if (p.default !== undefined && p.default !== '') entry.default = p.default
   if (p.description !== '') entry.description = p.description
+
+  // @componentRef tag — 由 JSDoc 声明该 prop 引用的组件类型
+  const componentRefTag = p.tags.find(t => t.name === 'componentRef')
+  if (componentRefTag?.text !== undefined && componentRefTag.text.trim() !== '') {
+    entry.__componentRef = componentRefTag.text.trim()
+  }
 
   // schema 为纯字符串时不落盘；只有真正的结构信息才保留。
   const schema = convertSchema(p.schema)
