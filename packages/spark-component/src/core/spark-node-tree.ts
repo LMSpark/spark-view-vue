@@ -109,13 +109,6 @@ export interface SparkNodeTreeRemoveNodesParams {
 }
 
 /**
- * 重排直接子节点时使用的参数。
- */
-export interface SparkNodeTreeReorderChildrenParams extends SparkNodeTreeChildrenParams {
-  childIds: string[]
-}
-
-/**
  * 节点在树中的位置信息。
  *
  * - node: 命中的节点本身
@@ -188,13 +181,6 @@ export interface SparkNodeRemoveResult {
  */
 export interface SparkNodeRemoveNodesResult {
   items: SparkNodeRemoveResult[]
-}
-
-/**
- * reorderChildren 的返回结果。
- */
-export interface SparkNodeReorderChildrenResult {
-  children: SparkNodeChildren
 }
 
 // ====================
@@ -523,15 +509,6 @@ export class SparkNodeTree {
     return { items }
   }
 
-  /**
-   * 按 childIds 重排当前组件实例或指定子组件的直接子节点。
-   */
-  reorderChildren(params: SparkNodeTreeReorderChildrenParams): SparkNodeReorderChildrenResult {
-    const next = normalizeReorderChildrenParams(params)
-    const operation = applyReorderChildren(this._root, next)
-    this._commitWrite(operation.nextRoot, 'reorderChildren')
-    return operation.result
-  }
 }
 
 // ====================
@@ -727,22 +704,6 @@ function normalizeRemoveNodesParams(
   return { nodeIds }
 }
 
-/**
- * 归一化 reorderChildren 输入参数。
- */
-function normalizeReorderChildrenParams(
-  params: SparkNodeTreeReorderChildrenParams,
-): SparkNodeTreeReorderChildrenParams {
-  const next = requireObjectArg(params, 'reorderChildren.params')
-  const parentId = next.parentId === undefined
-    ? undefined
-    : normalizeOptionalNodeId(next.parentId, 'reorderChildren.parentId')
-  return {
-    childIds: requireNonEmptyStringArray(next.childIds, 'reorderChildren.childIds'),
-    ...(parentId !== undefined ? { parentId } : {}),
-  }
-}
-
 // ====================
 // 内部辅助方法
 // ====================
@@ -875,19 +836,6 @@ function assertUniqueNodeIds(nodeIds: string[], fieldName: string): void {
 }
 
 /**
- * 断言 childIds 列表中不存在重复 id。
- */
-function assertUniqueChildIds(childIds: string[]): void {
-  const seen = new Set<string>()
-  for (const childId of childIds) {
-    if (seen.has(childId)) {
-      throw new Error(`Duplicate child id "${childId}" in childIds`)
-    }
-    seen.add(childId)
-  }
-}
-
-/**
  * 计算插入位置。
  */
 function clampInsertIndex(index: number | undefined, length: number): number {
@@ -930,7 +878,7 @@ function copySparkNode(
 }
 
 /**
- * 深度优先递归查找节点位置。
+ * 递归查找 nodeId 对应的位置信息。
  */
 function findLocationRecursive(
   current: SparkNode,
@@ -1085,69 +1033,6 @@ function applyRemoveNode(
   }))
 
   const { next, result } = assertRewriteSucceeded(rewritten, 'removeNode')
-  return {
-    nextRoot: next,
-    result,
-  }
-}
-
-/**
- * 对 reorderChildren 做一次不可变写入。
- */
-function applyReorderChildren(
-  root: SparkNode,
-  params: SparkNodeTreeReorderChildrenParams,
-): { nextRoot: SparkNode; result: SparkNodeReorderChildrenResult } {
-  assertUniqueChildIds(params.childIds)
-
-  const parent = resolveParentNode(root, params.parentId)
-  const currentChildren = parent.children ?? []
-  const childMap = new Map<string, SparkNode>()
-
-  for (const child of currentChildren) {
-    if (isSparkNode(child)) {
-      const childId = readNodeId(child)
-      if (typeof childId === 'string' && childId.length > 0) {
-        childMap.set(childId, child)
-      }
-    }
-  }
-
-  for (const childId of params.childIds) {
-    if (!childMap.has(childId)) {
-      throw new Error(`Child node "${childId}" not found under the target parent`)
-    }
-  }
-
-  const orderedChildren: SparkNodeChildren = params.childIds
-    .map((childId) => childMap.get(childId))
-    .filter((child): child is SparkNode => child !== undefined)
-
-  const addressedIds = new Set(params.childIds)
-  const remainingChildren = currentChildren.filter((child) => {
-    if (!isSparkNode(child)) return true
-    const cid = readNodeId(child)
-    if (typeof cid !== 'string' || cid.length === 0) return true
-    return !addressedIds.has(cid)
-  })
-
-  const nextChildren: SparkNodeChildren = [...orderedChildren, ...remainingChildren]
-
-  if (params.parentId === null || params.parentId === undefined) {
-    return {
-      nextRoot: copySparkNode(root, KEEP, KEEP, nextChildren),
-      result: { children: nextChildren },
-    }
-  }
-
-  const rewritten = rewriteNodeById(root, params.parentId, (location) => ({
-    nextNode: copySparkNode(location.node, KEEP, KEEP, nextChildren),
-    result: {
-      children: nextChildren,
-    },
-  }))
-
-  const { next, result } = assertRewriteSucceeded(rewritten, 'reorderChildren')
   return {
     nextRoot: next,
     result,

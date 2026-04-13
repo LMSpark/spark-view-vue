@@ -40,7 +40,8 @@ import * as ElIcons from '@element-plus/icons-vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 import { resolveButtonStyle } from '../button-templates'
 
-interface Props extends SparkNode {
+interface RendererButtonProps {
+  type?: 'r-button'
   children?: SparkNode[]
   /** CRUD 动作名（如 'refresh', 'delete-row'），由容器自动绑定处理器 */
   action?: string
@@ -62,7 +63,7 @@ interface Props extends SparkNode {
   dark?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererButtonProps>(), {
   type: 'r-button',
   bg: false,
   loading: false,

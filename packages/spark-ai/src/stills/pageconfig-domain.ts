@@ -105,12 +105,17 @@ function readId(node: SparkNode): string | undefined {
   return typeof id === 'string' ? id : undefined
 }
 
+/** 判断 children 项是否为结构节点（排除文本子节点） */
+function isNodeChild(child: SparkNodeChildren[number]): child is SparkNode {
+  return typeof child !== 'string'
+}
+
 /** 递归查找节点 by id */
 function findById(node: SparkNode, id: string): SparkNode | null {
   if (readId(node) === id) return node
   if (!Array.isArray(node.children)) return null
   for (const child of node.children) {
-    if (typeof child === 'string' || typeof child === 'number') continue
+    if (!isNodeChild(child)) continue
     const found = findById(child, id)
     if (found !== null) return found
   }
@@ -121,7 +126,7 @@ function findById(node: SparkNode, id: string): SparkNode | null {
 function findParent(root: SparkNode, targetId: string): SparkNode | null {
   if (!Array.isArray(root.children)) return null
   for (const child of root.children) {
-    if (typeof child === 'string' || typeof child === 'number') continue
+    if (!isNodeChild(child)) continue
     if (readId(child) === targetId) return root
     const found = findParent(child, targetId)
     if (found !== null) return found
@@ -133,7 +138,7 @@ function findParent(root: SparkNode, targetId: string): SparkNode | null {
 function removeFromParent(parent: SparkNode, targetId: string): boolean {
   if (!Array.isArray(parent.children)) return false
   const index = parent.children.findIndex(
-    (child) => typeof child !== 'string' && typeof child !== 'number' && readId(child) === targetId,
+    (child) => isNodeChild(child) && readId(child) === targetId,
   )
   if (index === -1) return false
   parent.children.splice(index, 1)
@@ -156,7 +161,7 @@ function walkHandlers(node: SparkNode, out: Set<string>): void {
   }
   if (!Array.isArray(node.children)) return
   for (const child of node.children) {
-    if (typeof child !== 'string' && typeof child !== 'number') walkHandlers(child, out)
+    if (isNodeChild(child)) walkHandlers(child, out)
   }
 }
 
@@ -172,7 +177,7 @@ function walkDataKeys(node: SparkNode, out: Set<string>): void {
   if (typeof dataKey === 'string' && dataKey.length > 0) out.add(dataKey)
   if (!Array.isArray(node.children)) return
   for (const child of node.children) {
-    if (typeof child !== 'string' && typeof child !== 'number') walkDataKeys(child, out)
+    if (isNodeChild(child)) walkDataKeys(child, out)
   }
 }
 
@@ -439,73 +444,6 @@ const ruleRemoveComponent: StillDefinition<RemoveComponentParams, void> = {
       }
       removeFromParent(parent, params.nodeId)
       return { ok: true, data: undefined, summary: `已移除节点 ${params.nodeId}` }
-    })
-  },
-}
-
-// ═══════════════════════════════════════════════════════════
-// Still: rule.reorder
-// ═══════════════════════════════════════════════════════════
-
-interface ReorderParams {
-  parentId: string | null
-  childIds: string[]
-}
-
-const ruleReorder: StillDefinition<ReorderParams, void> = {
-  action: 'rule.reorder',
-  type: 'request',
-  description: '重新排列指定父节点下的子组件顺序。',
-  guard: guardBootstrapped,
-  guardDescription: guardBootstrappedDesc,
-  paramsSchema: {
-    parentId: 'string | null — 父节点 id（null=根节点）',
-    childIds: 'string[] — 新的子节点 id 顺序',
-  },
-  validate: (params) => {
-    if (params.parentId !== null && !isNonEmptyString(params.parentId)) return 'parentId 必须是字符串或 null'
-    if (!Array.isArray(params.childIds) || params.childIds.length === 0) return missingParam('childIds')
-    return null
-  },
-  execute: (session, params): StillResult<void> => {
-    return withPC(session, (pc) => {
-      if (pc.rule === null) {
-        return { ok: false, code: 'NO_RULE', msg: '组件树为空', fix: '先执行 pageconfig.init' }
-      }
-      const target = params.parentId === null
-        ? pc.rule
-        : findById(pc.rule, params.parentId)
-      if (target === null) {
-        return { ok: false, code: 'PARENT_NOT_FOUND', msg: `找不到父节点 ${params.parentId}`, fix: '确认 parentId' }
-      }
-      if (!Array.isArray(target.children)) {
-        return { ok: false, code: 'NO_CHILDREN', msg: '目标节点没有子节点', fix: '先添加子节点' }
-      }
-
-      const nodeMap = new Map<string, SparkNode>()
-      const textChildren: SparkNodeChildren = []
-      for (const child of target.children) {
-        if (typeof child === 'string' || typeof child === 'number') {
-          textChildren.push(child)
-        } else if (readId(child)) {
-          const childId = readId(child) as string
-          nodeMap.set(childId, child)
-        }
-      }
-
-      const reordered: SparkNodeChildren = []
-      for (const id of params.childIds) {
-        const node = nodeMap.get(id)
-        if (node) {
-          reordered.push(node)
-          nodeMap.delete(id)
-        }
-      }
-      for (const [, node] of nodeMap) reordered.push(node)
-      for (const textChild of textChildren) reordered.push(textChild)
-
-      target.children = reordered
-      return { ok: true, data: undefined, summary: `子节点已重排 (${params.childIds.length} items)` }
     })
   },
 }
@@ -957,7 +895,7 @@ function countNodes(node: SparkNode): number {
   let count = 1
   if (Array.isArray(node.children)) {
     for (const child of node.children) {
-      if (typeof child !== 'string' && typeof child !== 'number') count += countNodes(child)
+      if (isNodeChild(child)) count += countNodes(child)
     }
   }
   return count
@@ -972,7 +910,6 @@ const allPageConfigStills: StillDefinition[] = [
   ruleAddComponent,
   ruleSetProps,
   ruleRemoveComponent,
-  ruleReorder,
   ruleSetLayout,
   scriptAddHandler,
   scriptAddInitLogic,

@@ -1,0 +1,421 @@
+{
+  "version": "vcm-rawtype-schema-preview",
+  "buildTime": "2026-04-13T00:21:07.747Z",
+  "componentCount": 2,
+  "part": 27,
+  "totalParts": 27,
+  "note": "每个文件固定 4 个组件，供结构对比",
+  "components": {
+    "tree-node-summary": {
+      "type": "tree-node-summary",
+      "filePath": "packages\\spark-component\\src\\components\\fields\\non-data-components\\TreeNodeSummary.vue",
+      "props": [
+        {
+          "name": "nameField",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\"name\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "typeField",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\"type\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "statusField",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\"status\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ownerField",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\"owner\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "metaField",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\"route\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "extraField",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\"childPlacement\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "showType",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "true",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "showStatus",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "true",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "showOwner",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "false",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "showMeta",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "true",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "showExtra",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "false",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "type",
+          "global": false,
+          "required": false,
+          "type": "\"r-tree-node-summary\" | undefined",
+          "default": "\"r-tree-node-summary\"",
+          "description": "",
+          "schema": "\"r-tree-node-summary\" | undefined",
+          "rawType": {
+            "flags": 134217728,
+            "checker": "[Circular]",
+            "id": 26583,
+            "objectFlags": 32768,
+            "types": [
+              "[Circular]",
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 26484,
+                "value": "r-tree-node-summary",
+                "regularType": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 26485,
+                  "value": "r-tree-node-summary",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "key",
+          "global": false,
+          "required": false,
+          "type": "PropertyKey | undefined",
+          "description": "",
+          "schema": "PropertyKey | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref",
+          "global": false,
+          "required": false,
+          "type": "VNodeRef | undefined",
+          "description": "",
+          "schema": "VNodeRef | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_for",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_key",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeMount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:mounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUpdate",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:updated",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUnmount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:unmounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "class",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "style",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        }
+      ],
+      "events": []
+    },
+    "unregistered-node-fallback": {
+      "type": "unregistered-node-fallback",
+      "filePath": "packages\\spark-component\\src\\components\\support\\UnregisteredNodeFallback.vue",
+      "props": [
+        {
+          "name": "title",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "'未注册的组件类型'",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "description",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "''",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "class",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "style",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "key",
+          "global": false,
+          "required": false,
+          "type": "PropertyKey | undefined",
+          "description": "",
+          "schema": "PropertyKey | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref",
+          "global": false,
+          "required": false,
+          "type": "VNodeRef | undefined",
+          "description": "",
+          "schema": "VNodeRef | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_for",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_key",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeMount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:mounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUpdate",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:updated",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUnmount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:unmounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "node",
+          "global": false,
+          "required": true,
+          "type": "SparkNode",
+          "description": "",
+          "schema": "SparkNode",
+          "rawType": "[Circular]"
+        }
+      ],
+      "events": []
+    }
+  }
+}

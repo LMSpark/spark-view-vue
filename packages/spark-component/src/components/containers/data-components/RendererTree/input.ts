@@ -32,7 +32,7 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const nodeContentChildren = computed<SparkNode[]>(() => {
     const nodes: SparkNode[] = []
     for (const child of contentChildren.value) {
-      if (typeof child === 'string' || typeof child === 'number') continue
+      if (typeof child === 'string') continue
       nodes.push(child)
     }
     return nodes

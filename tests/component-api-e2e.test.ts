@@ -61,9 +61,7 @@ describe('End-to-end: real component extraction (VCM)', () => {
     const api = extractComponentApiVcm(checker, absPath, TREE_COMPONENT, 'r-tree')
 
     expect(api).not.toBeNull()
-
-    // 索引签名已移除（VCM 修复）
-    expect(api!.hasIndexSignature).toBe(false)
+    expect(api!.props.length).toBeGreaterThan(0)
   })
 
   it('batch extracts multiple field components', () => {
@@ -83,5 +81,50 @@ describe('End-to-end: real component extraction (VCM)', () => {
       expect(names).toContain('field')
       expect(names).toContain('label')
     }
+  })
+
+  it('supports includeGlobalProps option', () => {
+    const absPath = resolve(ROOT, `${FIELD_DIR}/FieldText.vue`)
+
+    const apiDefault = extractComponentApiVcm(checker, absPath, `${FIELD_DIR}/FieldText.vue`, 'r-text')
+    const apiWithGlobal = extractComponentApiVcm(
+      checker,
+      absPath,
+      `${FIELD_DIR}/FieldText.vue`,
+      'r-text',
+      { includeGlobalProps: true },
+    )
+
+    expect(apiDefault).not.toBeNull()
+    expect(apiWithGlobal).not.toBeNull()
+
+    const defaultPropNames = apiDefault!.props.map(p => p.name)
+    const withGlobalPropNames = apiWithGlobal!.props.map(p => p.name)
+
+    expect(defaultPropNames).not.toContain('class')
+    expect(withGlobalPropNames).toContain('class')
+    expect(withGlobalPropNames).toContain('style')
+  })
+
+  it('supports VCM checker options parameter', () => {
+    const tsconfigPath = resolve(ROOT, 'tsconfig.catalog.json')
+    const checkerWithRawType = getOrCreateChecker(tsconfigPath, {
+      rawType: true,
+      schema: true,
+      noDeclarations: true,
+    })
+    const checkerWithRawTypeAgain = getOrCreateChecker(tsconfigPath, {
+      rawType: true,
+      schema: true,
+      noDeclarations: true,
+    })
+
+    expect(checkerWithRawTypeAgain).toBe(checkerWithRawType)
+    expect(checkerWithRawType).not.toBe(checker)
+
+    const absPath = resolve(ROOT, `${FIELD_DIR}/FieldText.vue`)
+    const api = extractComponentApiVcm(checkerWithRawType, absPath, `${FIELD_DIR}/FieldText.vue`, 'r-text')
+    expect(api).not.toBeNull()
+    expect(api!.props.length).toBeGreaterThan(0)
   })
 })

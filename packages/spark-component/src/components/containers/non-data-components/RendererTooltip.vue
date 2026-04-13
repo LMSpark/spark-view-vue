@@ -32,7 +32,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererTooltipProps {
+  type?: 'r-tooltip'
   children?: SparkNode[]
   content?: string
   placement?: string
@@ -46,7 +47,7 @@ interface Props extends SparkNode {
   rawContent?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererTooltipProps>(), {
   type: 'r-tooltip',
   placement: 'bottom',
   effect: 'dark',

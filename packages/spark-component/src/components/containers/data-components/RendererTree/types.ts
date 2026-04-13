@@ -1,7 +1,7 @@
-import type { CrudResult, IDataSource, IDataRow } from '@spark-view/spark-data'
+import type { IDataRow } from '@spark-view/spark-data'
+import type { BaseCrudContainerApi } from '../../support/base-container-api.js'
 
-export interface RendererTreeApi {
-  getDataSource(): IDataSource | null
+export interface RendererTreeApi extends BaseCrudContainerApi {
   getTreeData(): IDataRow[]
   getNativeTree(): unknown
   getCurrentNode(): IDataRow | null
@@ -10,9 +10,6 @@ export interface RendererTreeApi {
   filter(keyword: string): void
   getCheckedKeys(): Array<string | number>
   setCheckedKeys(keys: Array<string | number>): void
-  addRow(row: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow> | null>
-  editRowById(id: string | number, patch: Partial<IDataRow>): Promise<boolean | CrudResult<IDataRow>>
-  removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
   moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<IDataRow | null>
   appendNode(parentKey: string | number | null, nodeData: IDataRow): void
   insertBefore(refKey: string | number, nodeData: IDataRow): void

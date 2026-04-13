@@ -122,6 +122,12 @@ import {
   getSparkNodeChildren, nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT,
 } from '../../../internal'
+import type {
+  SparkChildrenProps,
+  SparkTableModelProps,
+  SparkCrudEventProps,
+  SparkRowInteractionEventProps,
+} from '../../../shared-types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
@@ -139,10 +145,6 @@ import { useModuleContext } from '../../context/useModuleContext'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import { useTableFilters } from '../../layout/useTableFilters'
-import {
-  type AddRowHandler, type EditRowHandler, type RemoveRowHandler,
-  type RowClickHandler, type RowSelectionHandler, type CurrentRowChangeHandler,
-} from '../../support/index.js'
 import { bindActionClick, isBuiltinAction, injectActionDisabled, injectRowActionDefaults } from '../../builtin-actions'
 
 // ── 基础工具与本地属性约定 ───────────────────────────────────────────────
@@ -182,27 +184,20 @@ const TABLE_LOCAL_ATTR_KEYS = new Set<string>(
 
 // ── Props / attrs / slots 输入 ───────────────────────────────────────────
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: 'r-table'
-  /** DataKey 格式：tableName@field */
-  dataKey?: string
+interface RendererTableProps
+  extends SparkChildrenProps<'r-table'>,
+    SparkTableModelProps<DataView>,
+    SparkCrudEventProps,
+    SparkRowInteractionEventProps {
   /** 结构化工具栏 */
   toolbar?: ToolbarNode
   /** 结构化筛选区 */
   filter?: FilterNode
   /** 结构化行动作 */
   actions?: ActionsNode
-  /** 表格内容列配置；toolbar / filter / actions 已由绑定层提升到 props */
-  children?: SparkNode[]
-  onRowClick?: RowClickHandler
-  onSelectionChange?: RowSelectionHandler
-  onCurrentChange?: CurrentRowChangeHandler
-  onAddRow?: AddRowHandler
-  onEditRow?: EditRowHandler
-  onRemoveRow?: RemoveRowHandler
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererTableProps>(), {
   type: 'r-table',
 })
 
@@ -277,6 +272,7 @@ const pageService = sparkConsume(PAGE_SERVICE)
 const moduleContext = useModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+  externalDataSource: computed(() => props.dataSource),
   dataKey: effectiveDataKey,
   pageDataSet,
   mapView: view => view,

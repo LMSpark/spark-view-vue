@@ -1,0 +1,2529 @@
+{
+  "componentType": "r-table",
+  "componentPath": "D:/SPARK_VIEW/packages/spark-component/src/components/containers/data-components/RendererTable/RendererTable.vue",
+  "checkerOptions": {
+    "rawType": false,
+    "schema": true,
+    "noDeclarations": true
+  },
+  "generatedAt": "2026-04-13T01:23:27.080Z",
+  "propsCount": 25,
+  "schemaKindSummary": {
+    "enum": 23,
+    "string": 2
+  },
+  "validation": {
+    "passed": true,
+    "errorCount": 0,
+    "errors": []
+  },
+  "sample": [
+    {
+      "propName": "type",
+      "kind": "enum",
+      "schemaPreview": {
+        "kind": "enum",
+        "type": "\"r-table\" | undefined",
+        "schema": [
+          "undefined",
+          "\"r-table\""
+        ]
+      }
+    },
+    {
+      "propName": "dataKey",
+      "kind": "enum",
+      "schemaPreview": {
+        "kind": "enum",
+        "type": "string | undefined",
+        "schema": [
+          "undefined",
+          "string"
+        ]
+      }
+    },
+    {
+      "propName": "toolbar",
+      "kind": "enum",
+      "schemaPreview": {
+        "kind": "enum",
+        "type": "ToolbarNode | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "object",
+            "type": "ToolbarNode",
+            "schema": {
+              "type": {
+                "name": "type",
+                "global": false,
+                "description": "组件类型（对应 ComponentDefinition.type）",
+                "tags": [],
+                "required": true,
+                "type": "\"r-toolbar\"",
+                "schema": "\"r-toolbar\"",
+                "declarations": []
+              },
+              "props": {
+                "name": "props",
+                "global": false,
+                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+                "tags": [],
+                "required": false,
+                "type": "(Record<string, unknown> & RendererToolbarConfigProps) | undefined",
+                "schema": {
+                  "kind": "enum",
+                  "type": "(Record<string, unknown> & RendererToolbarConfigProps) | undefined",
+                  "schema": [
+                    "undefined",
+                    {
+                      "kind": "object",
+                      "type": "Record<string, unknown> & RendererToolbarConfigProps",
+                      "schema": {
+                        "position": {
+                          "name": "position",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "ToolbarPosition | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "ToolbarPosition | undefined",
+                            "schema": [
+                              "undefined",
+                              "\"top\"",
+                              "\"bottom\"",
+                              "\"left\"",
+                              "\"right\""
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "class": {
+                          "name": "class",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "string | undefined",
+                            "schema": [
+                              "undefined",
+                              "string"
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "gap": {
+                          "name": "gap",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | number | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "string | number | undefined",
+                            "schema": [
+                              "undefined",
+                              "string",
+                              "number"
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "zoneGap": {
+                          "name": "zoneGap",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | number | undefined",
+                          "schema": "string | number | undefined",
+                          "declarations": []
+                        },
+                        "align": {
+                          "name": "align",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "InlineAlign | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "InlineAlign | undefined",
+                            "schema": [
+                              "undefined",
+                              "\"start\"",
+                              "\"center\"",
+                              "\"end\"",
+                              "\"stretch\""
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "justify": {
+                          "name": "justify",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "InlineJustify | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "InlineJustify | undefined",
+                            "schema": [
+                              "undefined",
+                              "\"start\"",
+                              "\"center\"",
+                              "\"end\"",
+                              "\"space-between\""
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "tail": {
+                          "name": "tail",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "TailNode | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "TailNode | undefined",
+                            "schema": [
+                              "undefined",
+                              {
+                                "kind": "object",
+                                "type": "TailNode",
+                                "schema": {
+                                  "type": {
+                                    "name": "type",
+                                    "global": false,
+                                    "description": "组件类型（对应 ComponentDefinition.type）",
+                                    "tags": [],
+                                    "required": true,
+                                    "type": "\"r-tail\"",
+                                    "schema": "\"r-tail\"",
+                                    "declarations": []
+                                  },
+                                  "props": {
+                                    "name": "props",
+                                    "global": false,
+                                    "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+                                    "tags": [],
+                                    "required": false,
+                                    "type": "(Record<string, unknown> & RendererTailConfigProps) | undefined",
+                                    "schema": {
+                                      "kind": "enum",
+                                      "type": "(Record<string, unknown> & RendererTailConfigProps) | undefined",
+                                      "schema": [
+                                        "undefined",
+                                        {
+                                          "kind": "object",
+                                          "type": "Record<string, unknown> & RendererTailConfigProps",
+                                          "schema": {
+                                            "class": {
+                                              "name": "class",
+                                              "global": false,
+                                              "description": "",
+                                              "tags": [],
+                                              "required": false,
+                                              "type": "string | undefined",
+                                              "schema": "string | undefined",
+                                              "declarations": []
+                                            },
+                                            "width": {
+                                              "name": "width",
+                                              "global": false,
+                                              "description": "",
+                                              "tags": [],
+                                              "required": false,
+                                              "type": "string | number | undefined",
+                                              "schema": "string | number | undefined",
+                                              "declarations": []
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "declarations": []
+                                  },
+                                  "children": {
+                                    "name": "children",
+                                    "global": false,
+                                    "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+                                    "tags": [],
+                                    "required": false,
+                                    "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+                                    "schema": {
+                                      "kind": "enum",
+                                      "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+                                      "schema": [
+                                        "undefined",
+                                        {
+                                          "kind": "array",
+                                          "type": "SparkNodeChildren & SparkNode[]",
+                                          "schema": []
+                                        }
+                                      ]
+                                    },
+                                    "declarations": []
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "declarations": []
+                        }
+                      }
+                    }
+                  ]
+                },
+                "declarations": []
+              },
+              "children": {
+                "name": "children",
+                "global": false,
+                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+                "tags": [],
+                "required": false,
+                "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+                "schema": "(SparkNodeChildren & SparkNode[]) | undefined",
+                "declarations": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "propName": "filter",
+      "kind": "enum",
+      "schemaPreview": {
+        "kind": "enum",
+        "type": "FilterNode | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "object",
+            "type": "FilterNode",
+            "schema": {
+              "type": {
+                "name": "type",
+                "global": false,
+                "description": "组件类型（对应 ComponentDefinition.type）",
+                "tags": [],
+                "required": true,
+                "type": "\"r-filter\"",
+                "schema": "\"r-filter\"",
+                "declarations": []
+              },
+              "props": {
+                "name": "props",
+                "global": false,
+                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+                "tags": [],
+                "required": false,
+                "type": "(Record<string, unknown> & RendererFilterConfigProps) | undefined",
+                "schema": {
+                  "kind": "enum",
+                  "type": "(Record<string, unknown> & RendererFilterConfigProps) | undefined",
+                  "schema": [
+                    "undefined",
+                    {
+                      "kind": "object",
+                      "type": "Record<string, unknown> & RendererFilterConfigProps",
+                      "schema": {
+                        "class": {
+                          "name": "class",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "string | undefined",
+                            "schema": [
+                              "undefined",
+                              "string"
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "columns": {
+                          "name": "columns",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "(string | FilterItemConfig)[] | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "(string | FilterItemConfig)[] | undefined",
+                            "schema": [
+                              "undefined",
+                              {
+                                "kind": "array",
+                                "type": "(string | FilterItemConfig)[]",
+                                "schema": [
+                                  {
+                                    "kind": "enum",
+                                    "type": "string | FilterItemConfig",
+                                    "schema": [
+                                      "string",
+                                      {
+                                        "kind": "object",
+                                        "type": "FilterItemConfig",
+                                        "schema": {
+                                          "field": {
+                                            "name": "field",
+                                            "global": false,
+                                            "description": "字段名（映射到数据源字段）",
+                                            "tags": [],
+                                            "required": true,
+                                            "type": "string",
+                                            "schema": "string",
+                                            "declarations": []
+                                          },
+                                          "label": {
+                                            "name": "label",
+                                            "global": false,
+                                            "description": "显示标签（省略则用字段名）",
+                                            "tags": [],
+                                            "required": false,
+                                            "type": "string | undefined",
+                                            "schema": "string | undefined",
+                                            "declarations": []
+                                          },
+                                          "component": {
+                                            "name": "component",
+                                            "global": false,
+                                            "description": "输入组件类型（默认 `text`）\r\n\r\n内置：`text` | `select` | `date` | `date-range` | `number` | `number-range` | `checkbox` | `radio`\r\n扩展：传任意组件 type 字符串",
+                                            "tags": [],
+                                            "required": false,
+                                            "type": "\"number\" | \"text\" | \"select\" | \"date\" | \"date-range\" | \"number-range\" | \"checkbox\" | \"radio\" | (string & {}) | undefined",
+                                            "schema": {
+                                              "kind": "enum",
+                                              "type": "\"number\" | \"text\" | \"select\" | \"date\" | \"date-range\" | \"number-range\" | \"checkbox\" | \"radio\" | (string & {}) | undefined",
+                                              "schema": [
+                                                "undefined",
+                                                "\"number\"",
+                                                "\"text\"",
+                                                "\"select\"",
+                                                "\"date\"",
+                                                "\"date-range\"",
+                                                "\"number-range\"",
+                                                "\"checkbox\"",
+                                                "\"radio\"",
+                                                {
+                                                  "kind": "object",
+                                                  "type": "string & {}",
+                                                  "schema": {
+                                                    "toString": {
+                                                      "name": "toString",
+                                                      "global": false,
+                                                      "description": "Returns a string representation of a string.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "charAt": {
+                                                      "name": "charAt",
+                                                      "global": false,
+                                                      "description": "Returns the character at the specified index.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "pos The zero-based index of the desired character."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(pos: number) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(pos: number): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "charCodeAt": {
+                                                      "name": "charCodeAt",
+                                                      "global": false,
+                                                      "description": "Returns the Unicode value of the character at the specified location.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "index The zero-based index of the desired character. If there is no character at the specified index, NaN is returned."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(index: number) => number",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(index: number): number",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "concat": {
+                                                      "name": "concat",
+                                                      "global": false,
+                                                      "description": "Returns a string that contains the concatenation of two or more strings.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "strings The strings to append to the end of the string."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(...strings: string[]) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(...strings: string[]): string",
+                                                        "schema": [
+                                                          "string"
+                                                        ]
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "indexOf": {
+                                                      "name": "indexOf",
+                                                      "global": false,
+                                                      "description": "Returns the position of the first occurrence of a substring, or -1 if it is not present.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchString The substring to search for in the string"
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "position The index at which to begin searching the String object. If omitted, search starts at the beginning of the string."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(searchString: string, position?: number | undefined) => number",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(searchString: string, position?: number | undefined): number",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "lastIndexOf": {
+                                                      "name": "lastIndexOf",
+                                                      "global": false,
+                                                      "description": "Returns the last occurrence of a substring in the string, or -1 if it is not present.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchString The substring to search for."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "position The index at which to begin searching. If omitted, the search begins at the end of the string."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(searchString: string, position?: number | undefined) => number",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(searchString: string, position?: number | undefined): number",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "localeCompare": {
+                                                      "name": "localeCompare",
+                                                      "global": false,
+                                                      "description": "Determines whether two strings are equivalent in the current locale.\nDetermines whether two strings are equivalent in the current or specified locale.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "that String to compare to target string"
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "that String to compare to target string"
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "locales A locale string or array of locale strings that contain one or more language or locale tags. If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale. If you omit this parameter, the default locale of the JavaScript runtime is used. This parameter must conform to BCP 47 standards; see the Intl.Collator object for details."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "options An object that contains one or more properties that specify comparison options. see the Intl.Collator object for details."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "that String to compare to target string"
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "locales A locale string or array of locale strings that contain one or more language or locale tags. If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale. If you omit this parameter, the default locale of the JavaScript runtime is used. This parameter must conform to BCP 47 standards; see the Intl.Collator object for details."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "options An object that contains one or more properties that specify comparison options. see the Intl.Collator object for details."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "{ (that: string): number; (that: string, locales?: string | string[] | undefined, options?: Intl.CollatorOptions | undefined): number; (that: string, locales?: Intl.LocalesArgument, options?: Intl.CollatorOptions | undefined): number; }",
+                                                      "schema": "{ (that: string): number; (that: string, locales?: string | string[] | undefined, options?: Intl.CollatorOptions | undefined): number; (that: string, locales?: Intl.LocalesArgument, options?: Intl.CollatorOptions | undefined): number; }",
+                                                      "declarations": []
+                                                    },
+                                                    "match": {
+                                                      "name": "match",
+                                                      "global": false,
+                                                      "description": "Matches a string with a regular expression, and returns an array containing the results of that search.\nMatches a string or an object that supports being matched against, and returns an array\ncontaining the results of that search, or null if no matches are found.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "regexp A variable name or string literal containing the regular expression pattern and flags."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "matcher An object that supports being matched against."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "{ (regexp: string | RegExp): RegExpMatchArray | null; (matcher: { [Symbol.match](string: string): RegExpMatchArray | null; }): RegExpMatchArray | null; }",
+                                                      "schema": "{ (regexp: string | RegExp): RegExpMatchArray | null; (matcher: { [Symbol.match](string: string): RegExpMatchArray | null; }): RegExpMatchArray | null; }",
+                                                      "declarations": []
+                                                    },
+                                                    "replace": {
+                                                      "name": "replace",
+                                                      "global": false,
+                                                      "description": "Replaces text in a string, using a regular expression or search string.\nPasses a string and {@linkcode replaceValue} to the `[Symbol.replace]` method on {@linkcode searchValue}. This method is expected to implement its own replacement algorithm.\nReplaces text in a string, using an object that supports replacement within a string.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchValue A string or regular expression to search for."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "replaceValue A string containing the text to replace. When the {@linkcode searchValue} is a `RegExp`, all matches are replaced if the `g` flag is set (or only those matches at the beginning, if the `y` flag is also present). Otherwise, only the first match of {@linkcode searchValue} is replaced."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchValue A string to search for."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "replacer A function that returns the replacement text."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchValue An object that supports searching for and replacing matches within a string."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "replaceValue The replacement text."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchValue A object can search for and replace matches within a string."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "replacer A function that returns the replacement text."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "{ (searchValue: string | RegExp, replaceValue: string): string; (searchValue: string | RegExp, replacer: (substring: string, ...args: any[]) => string): string; (searchValue: { [Symbol.replace](string: string, replaceValue: string): string; }, replaceValue: string): string; (searchValue: { [Symbol.replace](string: string, replacer: (substring: string, ...args: any[]) => string): string; }, replacer: (substring: string, ...args: any[]) => string): string; }",
+                                                      "schema": "{ (searchValue: string | RegExp, replaceValue: string): string; (searchValue: string | RegExp, replacer: (substring: string, ...args: any[]) => string): string; (searchValue: { [Symbol.replace](string: string, replaceValue: string): string; }, replaceValue: string): string; (searchValue: { [Symbol.replace](string: string, replacer: (substring: string, ...args: any[]) => string): string; }, replacer: (substring: string, ...args: any[]) => string): string; }",
+                                                      "declarations": []
+                                                    },
+                                                    "search": {
+                                                      "name": "search",
+                                                      "global": false,
+                                                      "description": "Finds the first substring match in a regular expression search.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "regexp The regular expression pattern and applicable flags."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searcher An object which supports searching within a string."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "{ (regexp: string | RegExp): number; (searcher: { [Symbol.search](string: string): number; }): number; }",
+                                                      "schema": "{ (regexp: string | RegExp): number; (searcher: { [Symbol.search](string: string): number; }): number; }",
+                                                      "declarations": []
+                                                    },
+                                                    "slice": {
+                                                      "name": "slice",
+                                                      "global": false,
+                                                      "description": "Returns a section of a string.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "start The index to the beginning of the specified portion of stringObj."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "end The index to the end of the specified portion of stringObj. The substring includes the characters up to, but not including, the character indicated by end.\nIf this value is not specified, the substring continues to the end of stringObj."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(start?: number | undefined, end?: number | undefined) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(start?: number | undefined, end?: number | undefined): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "split": {
+                                                      "name": "split",
+                                                      "global": false,
+                                                      "description": "Split a string into substrings using the specified separator and return them as an array.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "separator A string that identifies character or characters to use in separating the string. If omitted, a single-element array containing the entire string is returned."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "limit A value used to limit the number of elements returned in the array."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "splitter An object that can split a string."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "limit A value used to limit the number of elements returned in the array."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "{ (separator: string | RegExp, limit?: number | undefined): string[]; (splitter: { [Symbol.split](string: string, limit?: number | undefined): string[]; }, limit?: number | undefined): string[]; }",
+                                                      "schema": "{ (separator: string | RegExp, limit?: number | undefined): string[]; (splitter: { [Symbol.split](string: string, limit?: number | undefined): string[]; }, limit?: number | undefined): string[]; }",
+                                                      "declarations": []
+                                                    },
+                                                    "substring": {
+                                                      "name": "substring",
+                                                      "global": false,
+                                                      "description": "Returns the substring at the specified location within a String object.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "start The zero-based index number indicating the beginning of the substring."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "end Zero-based index number indicating the end of the substring. The substring includes the characters up to, but not including, the character indicated by end.\nIf end is omitted, the characters from start through the end of the original string are returned."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(start: number, end?: number | undefined) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(start: number, end?: number | undefined): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "toLowerCase": {
+                                                      "name": "toLowerCase",
+                                                      "global": false,
+                                                      "description": "Converts all the alphabetic characters in a string to lowercase.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "toLocaleLowerCase": {
+                                                      "name": "toLocaleLowerCase",
+                                                      "global": false,
+                                                      "description": "Converts all alphabetic characters to lowercase, taking into account the host environment's current locale.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "{ (locales?: string | string[] | undefined): string; (locales?: Intl.LocalesArgument): string; }",
+                                                      "schema": "{ (locales?: string | string[] | undefined): string; (locales?: Intl.LocalesArgument): string; }",
+                                                      "declarations": []
+                                                    },
+                                                    "toUpperCase": {
+                                                      "name": "toUpperCase",
+                                                      "global": false,
+                                                      "description": "Converts all the alphabetic characters in a string to uppercase.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "toLocaleUpperCase": {
+                                                      "name": "toLocaleUpperCase",
+                                                      "global": false,
+                                                      "description": "Returns a string where all alphabetic characters have been converted to uppercase, taking into account the host environment's current locale.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "{ (locales?: string | string[] | undefined): string; (locales?: Intl.LocalesArgument): string; }",
+                                                      "schema": "{ (locales?: string | string[] | undefined): string; (locales?: Intl.LocalesArgument): string; }",
+                                                      "declarations": []
+                                                    },
+                                                    "trim": {
+                                                      "name": "trim",
+                                                      "global": false,
+                                                      "description": "Removes the leading and trailing white space and line terminator characters from a string.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "length": {
+                                                      "name": "length",
+                                                      "global": false,
+                                                      "description": "Returns the length of a String object.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "number",
+                                                      "schema": "number",
+                                                      "declarations": []
+                                                    },
+                                                    "substr": {
+                                                      "name": "substr",
+                                                      "global": false,
+                                                      "description": "Gets a substring beginning at the specified location and having the specified length.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "from The starting position of the desired substring. The index of the first character in the string is zero."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "length The number of characters to include in the returned substring."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(from: number, length?: number | undefined) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(from: number, length?: number | undefined): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "valueOf": {
+                                                      "name": "valueOf",
+                                                      "global": false,
+                                                      "description": "Returns the primitive value of the specified object.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "codePointAt": {
+                                                      "name": "codePointAt",
+                                                      "global": false,
+                                                      "description": "Returns a nonnegative integer Number less than 1114112 (0x110000) that is the code point\nvalue of the UTF-16 encoded code point starting at the string element at position pos in\nthe String resulting from converting this object to a String.\nIf there is no element at that position, the result is undefined.\nIf a valid UTF-16 surrogate pair does not begin at pos, the result is the code unit at pos.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "(pos: number) => number | undefined",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(pos: number): number | undefined",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "includes": {
+                                                      "name": "includes",
+                                                      "global": false,
+                                                      "description": "Returns true if searchString appears as a substring of the result of converting this\nobject to a String, at one or more positions that are\ngreater than or equal to position; otherwise, returns false.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchString search string"
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "position If position is undefined, 0 is assumed, so as to search all of the String."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(searchString: string, position?: number | undefined) => boolean",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(searchString: string, position?: number | undefined): boolean",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "endsWith": {
+                                                      "name": "endsWith",
+                                                      "global": false,
+                                                      "description": "Returns true if the sequence of elements of searchString converted to a String is the\nsame as the corresponding elements of this object (converted to a String) starting at\nendPosition – length(this). Otherwise returns false.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "(searchString: string, endPosition?: number | undefined) => boolean",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(searchString: string, endPosition?: number | undefined): boolean",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "normalize": {
+                                                      "name": "normalize",
+                                                      "global": false,
+                                                      "description": "Returns the String value result of normalizing the string into the normalization form\nnamed by form as specified in Unicode Standard Annex #15, Unicode Normalization Forms.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "form Applicable values: \"NFC\", \"NFD\", \"NFKC\", or \"NFKD\", If not specified default\nis \"NFC\""
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "form Applicable values: \"NFC\", \"NFD\", \"NFKC\", or \"NFKD\", If not specified default\nis \"NFC\""
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "{ (form: \"NFC\" | \"NFD\" | \"NFKC\" | \"NFKD\"): string; (form?: string | undefined): string; }",
+                                                      "schema": "{ (form: \"NFC\" | \"NFD\" | \"NFKC\" | \"NFKD\"): string; (form?: string | undefined): string; }",
+                                                      "declarations": []
+                                                    },
+                                                    "repeat": {
+                                                      "name": "repeat",
+                                                      "global": false,
+                                                      "description": "Returns a String value that is made from count copies appended together. If count is 0,\nthe empty string is returned.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "count number of copies to append"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(count: number) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(count: number): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "startsWith": {
+                                                      "name": "startsWith",
+                                                      "global": false,
+                                                      "description": "Returns true if the sequence of elements of searchString converted to a String is the\nsame as the corresponding elements of this object (converted to a String) starting at\nposition. Otherwise returns false.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "(searchString: string, position?: number | undefined) => boolean",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(searchString: string, position?: number | undefined): boolean",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "anchor": {
+                                                      "name": "anchor",
+                                                      "global": false,
+                                                      "description": "Returns an `<a>` HTML anchor element and sets the name attribute to the text value",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "name"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(name: string) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(name: string): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "big": {
+                                                      "name": "big",
+                                                      "global": false,
+                                                      "description": "Returns a `<big>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "blink": {
+                                                      "name": "blink",
+                                                      "global": false,
+                                                      "description": "Returns a `<blink>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "bold": {
+                                                      "name": "bold",
+                                                      "global": false,
+                                                      "description": "Returns a `<b>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "fixed": {
+                                                      "name": "fixed",
+                                                      "global": false,
+                                                      "description": "Returns a `<tt>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "fontcolor": {
+                                                      "name": "fontcolor",
+                                                      "global": false,
+                                                      "description": "Returns a `<font>` HTML element and sets the color attribute value",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(color: string) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(color: string): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "fontsize": {
+                                                      "name": "fontsize",
+                                                      "global": false,
+                                                      "description": "Returns a `<font>` HTML element and sets the size attribute value",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        },
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "{ (size: number): string; (size: string): string; }",
+                                                      "schema": "{ (size: number): string; (size: string): string; }",
+                                                      "declarations": []
+                                                    },
+                                                    "italics": {
+                                                      "name": "italics",
+                                                      "global": false,
+                                                      "description": "Returns an `<i>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "link": {
+                                                      "name": "link",
+                                                      "global": false,
+                                                      "description": "Returns an `<a>` HTML element and sets the href attribute value",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(url: string) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(url: string): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "small": {
+                                                      "name": "small",
+                                                      "global": false,
+                                                      "description": "Returns a `<small>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "strike": {
+                                                      "name": "strike",
+                                                      "global": false,
+                                                      "description": "Returns a `<strike>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "sub": {
+                                                      "name": "sub",
+                                                      "global": false,
+                                                      "description": "Returns a `<sub>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "sup": {
+                                                      "name": "sup",
+                                                      "global": false,
+                                                      "description": "Returns a `<sup>` HTML element",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "padStart": {
+                                                      "name": "padStart",
+                                                      "global": false,
+                                                      "description": "Pads the current string with a given string (possibly repeated) so that the resulting string reaches a given length.\nThe padding is applied from the start (left) of the current string.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "maxLength The length of the resulting string once the current string has been padded.\nIf this parameter is smaller than the current string's length, the current string will be returned as it is."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "fillString The string to pad the current string with.\nIf this string is too long, it will be truncated and the left-most part will be applied.\nThe default value for this parameter is \" \" (U+0020)."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(maxLength: number, fillString?: string | undefined) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(maxLength: number, fillString?: string | undefined): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "padEnd": {
+                                                      "name": "padEnd",
+                                                      "global": false,
+                                                      "description": "Pads the current string with a given string (possibly repeated) so that the resulting string reaches a given length.\nThe padding is applied from the end (right) of the current string.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "maxLength The length of the resulting string once the current string has been padded.\nIf this parameter is smaller than the current string's length, the current string will be returned as it is."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "fillString The string to pad the current string with.\nIf this string is too long, it will be truncated and the left-most part will be applied.\nThe default value for this parameter is \" \" (U+0020)."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(maxLength: number, fillString?: string | undefined) => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(maxLength: number, fillString?: string | undefined): string",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "trimEnd": {
+                                                      "name": "trimEnd",
+                                                      "global": false,
+                                                      "description": "Removes the trailing white space and line terminator characters from a string.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "trimStart": {
+                                                      "name": "trimStart",
+                                                      "global": false,
+                                                      "description": "Removes the leading white space and line terminator characters from a string.",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "trimLeft": {
+                                                      "name": "trimLeft",
+                                                      "global": false,
+                                                      "description": "Removes the leading white space and line terminator characters from a string.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility. Use `trimStart` instead"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "trimRight": {
+                                                      "name": "trimRight",
+                                                      "global": false,
+                                                      "description": "Removes the trailing white space and line terminator characters from a string.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "deprecated",
+                                                          "text": "A legacy feature for browser compatibility. Use `trimEnd` instead"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "() => string",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): string"
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "matchAll": {
+                                                      "name": "matchAll",
+                                                      "global": false,
+                                                      "description": "Matches a string with a regular expression, and returns an iterable of matches\ncontaining the results of that search.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "regexp A regular expression"
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(regexp: RegExp) => RegExpStringIterator<RegExpExecArray>",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(regexp: RegExp): RegExpStringIterator<RegExpExecArray>",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "replaceAll": {
+                                                      "name": "replaceAll",
+                                                      "global": false,
+                                                      "description": "Replace all instances of a substring in a string, using a regular expression or search string.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchValue A string to search for."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "replaceValue A string containing the text to replace for every successful match of searchValue in this string."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "searchValue A string to search for."
+                                                        },
+                                                        {
+                                                          "name": "param",
+                                                          "text": "replacer A function that returns the replacement text."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "{ (searchValue: string | RegExp, replaceValue: string): string; (searchValue: string | RegExp, replacer: (substring: string, ...args: any[]) => string): string; }",
+                                                      "schema": "{ (searchValue: string | RegExp, replaceValue: string): string; (searchValue: string | RegExp, replacer: (substring: string, ...args: any[]) => string): string; }",
+                                                      "declarations": []
+                                                    },
+                                                    "at": {
+                                                      "name": "at",
+                                                      "global": false,
+                                                      "description": "Returns a new String consisting of the single UTF-16 code unit located at the specified index.",
+                                                      "tags": [
+                                                        {
+                                                          "name": "param",
+                                                          "text": "index The zero-based index of the desired code unit. A negative index will count back from the last item."
+                                                        }
+                                                      ],
+                                                      "required": true,
+                                                      "type": "(index: number) => string | undefined",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(index: number): string | undefined",
+                                                        "schema": []
+                                                      },
+                                                      "declarations": []
+                                                    },
+                                                    "__@iterator@456": {
+                                                      "name": "__@iterator@456",
+                                                      "global": false,
+                                                      "description": "Iterator",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "() => StringIterator<string>",
+                                                      "schema": {
+                                                        "kind": "event",
+                                                        "type": "(): StringIterator<string>"
+                                                      },
+                                                      "declarations": []
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            "declarations": []
+                                          },
+                                          "options": {
+                                            "name": "options",
+                                            "global": false,
+                                            "description": "可选项列表（`component = select / radio / checkbox` 时使用）",
+                                            "tags": [],
+                                            "required": false,
+                                            "type": "{ label: string; value: unknown; }[] | undefined",
+                                            "schema": {
+                                              "kind": "enum",
+                                              "type": "{ label: string; value: unknown; }[] | undefined",
+                                              "schema": [
+                                                "undefined",
+                                                {
+                                                  "kind": "array",
+                                                  "type": "{ label: string; value: unknown; }[]",
+                                                  "schema": [
+                                                    {
+                                                      "kind": "object",
+                                                      "type": "{ label: string; value: unknown; }",
+                                                      "schema": {
+                                                        "label": {
+                                                          "name": "label",
+                                                          "global": false,
+                                                          "description": "",
+                                                          "tags": [],
+                                                          "required": true,
+                                                          "type": "string",
+                                                          "schema": "string",
+                                                          "declarations": []
+                                                        },
+                                                        "value": {
+                                                          "name": "value",
+                                                          "global": false,
+                                                          "description": "",
+                                                          "tags": [],
+                                                          "required": true,
+                                                          "type": "unknown",
+                                                          "schema": "unknown",
+                                                          "declarations": []
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "declarations": []
+                                          },
+                                          "optionLabelField": {
+                                            "name": "optionLabelField",
+                                            "global": false,
+                                            "description": "选项字段映射（options 来自 DataKey 时使用）",
+                                            "tags": [],
+                                            "required": false,
+                                            "type": "string | undefined",
+                                            "schema": "string | undefined",
+                                            "declarations": []
+                                          },
+                                          "optionValueField": {
+                                            "name": "optionValueField",
+                                            "global": false,
+                                            "description": "",
+                                            "tags": [],
+                                            "required": false,
+                                            "type": "string | undefined",
+                                            "schema": "string | undefined",
+                                            "declarations": []
+                                          },
+                                          "logic": {
+                                            "name": "logic",
+                                            "global": false,
+                                            "description": "与其他条件的逻辑关系（覆盖全局 filter.logic，默认继承）",
+                                            "tags": [],
+                                            "required": false,
+                                            "type": "\"and\" | \"or\" | undefined",
+                                            "schema": {
+                                              "kind": "enum",
+                                              "type": "\"and\" | \"or\" | undefined",
+                                              "schema": [
+                                                "undefined",
+                                                "\"and\"",
+                                                "\"or\""
+                                              ]
+                                            },
+                                            "declarations": []
+                                          },
+                                          "span": {
+                                            "name": "span",
+                                            "global": false,
+                                            "description": "跨列数（覆盖全局 filter.itemSpan）",
+                                            "tags": [],
+                                            "required": false,
+                                            "type": "number | undefined",
+                                            "schema": {
+                                              "kind": "enum",
+                                              "type": "number | undefined",
+                                              "schema": [
+                                                "undefined",
+                                                "number"
+                                              ]
+                                            },
+                                            "declarations": []
+                                          },
+                                          "componentProps": {
+                                            "name": "componentProps",
+                                            "global": false,
+                                            "description": "透传到筛选组件的原生 props（如 placeholder、clearable 等）",
+                                            "tags": [],
+                                            "required": false,
+                                            "type": "Record<string, unknown> | undefined",
+                                            "schema": {
+                                              "kind": "enum",
+                                              "type": "Record<string, unknown> | undefined",
+                                              "schema": [
+                                                "undefined",
+                                                "Record<string, unknown>"
+                                              ]
+                                            },
+                                            "declarations": []
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "collapsible": {
+                          "name": "collapsible",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "boolean | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "boolean | undefined",
+                            "schema": [
+                              "undefined",
+                              "false",
+                              "true"
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "defaultCollapsed": {
+                          "name": "defaultCollapsed",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "boolean | undefined",
+                          "schema": "boolean | undefined",
+                          "declarations": []
+                        },
+                        "autoFitMinWidth": {
+                          "name": "autoFitMinWidth",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | undefined",
+                          "schema": "string | undefined",
+                          "declarations": []
+                        },
+                        "itemSpan": {
+                          "name": "itemSpan",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "number | undefined",
+                          "schema": "number | undefined",
+                          "declarations": []
+                        },
+                        "gridColumns": {
+                          "name": "gridColumns",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "number | undefined",
+                          "schema": "number | undefined",
+                          "declarations": []
+                        },
+                        "gridGap": {
+                          "name": "gridGap",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | number | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "string | number | undefined",
+                            "schema": [
+                              "undefined",
+                              "string",
+                              "number"
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "gridAutoRows": {
+                          "name": "gridAutoRows",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | undefined",
+                          "schema": "string | undefined",
+                          "declarations": []
+                        }
+                      }
+                    }
+                  ]
+                },
+                "declarations": []
+              },
+              "children": {
+                "name": "children",
+                "global": false,
+                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+                "tags": [],
+                "required": false,
+                "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+                "schema": {
+                  "kind": "enum",
+                  "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+                  "schema": [
+                    "undefined",
+                    {
+                      "kind": "array",
+                      "type": "SparkNodeChildren & SparkNode[]",
+                      "schema": []
+                    }
+                  ]
+                },
+                "declarations": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "propName": "actions",
+      "kind": "enum",
+      "schemaPreview": {
+        "kind": "enum",
+        "type": "ActionsNode | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "object",
+            "type": "ActionsNode",
+            "schema": {
+              "type": {
+                "name": "type",
+                "global": false,
+                "description": "组件类型（对应 ComponentDefinition.type）",
+                "tags": [],
+                "required": true,
+                "type": "\"r-actions\"",
+                "schema": "\"r-actions\"",
+                "declarations": []
+              },
+              "props": {
+                "name": "props",
+                "global": false,
+                "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+                "tags": [],
+                "required": false,
+                "type": "(Record<string, unknown> & RendererActionsConfigProps) | undefined",
+                "schema": {
+                  "kind": "enum",
+                  "type": "(Record<string, unknown> & RendererActionsConfigProps) | undefined",
+                  "schema": [
+                    "undefined",
+                    {
+                      "kind": "object",
+                      "type": "Record<string, unknown> & RendererActionsConfigProps",
+                      "schema": {
+                        "position": {
+                          "name": "position",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "ActionsPosition | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "ActionsPosition | undefined",
+                            "schema": [
+                              "undefined",
+                              "\"left\"",
+                              "\"right\""
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "label": {
+                          "name": "label",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "string | undefined",
+                            "schema": [
+                              "undefined",
+                              "string"
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "width": {
+                          "name": "width",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | number | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "string | number | undefined",
+                            "schema": [
+                              "undefined",
+                              "string",
+                              "number"
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "align": {
+                          "name": "align",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "ActionsAlign | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "ActionsAlign | undefined",
+                            "schema": [
+                              "undefined",
+                              "\"left\"",
+                              "\"right\"",
+                              "\"center\""
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "fixed": {
+                          "name": "fixed",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "boolean | ActionsPosition | undefined",
+                          "schema": {
+                            "kind": "enum",
+                            "type": "boolean | ActionsPosition | undefined",
+                            "schema": [
+                              "undefined",
+                              "false",
+                              "true",
+                              "\"left\"",
+                              "\"right\""
+                            ]
+                          },
+                          "declarations": []
+                        },
+                        "class": {
+                          "name": "class",
+                          "global": false,
+                          "description": "",
+                          "tags": [],
+                          "required": false,
+                          "type": "string | undefined",
+                          "schema": "string | undefined",
+                          "declarations": []
+                        }
+                      }
+                    }
+                  ]
+                },
+                "declarations": []
+              },
+              "children": {
+                "name": "children",
+                "global": false,
+                "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+                "tags": [],
+                "required": false,
+                "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+                "schema": {
+                  "kind": "enum",
+                  "type": "(SparkNodeChildren & SparkNode[]) | undefined",
+                  "schema": [
+                    "undefined",
+                    {
+                      "kind": "array",
+                      "type": "SparkNodeChildren & SparkNode[]",
+                      "schema": []
+                    }
+                  ]
+                },
+                "declarations": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "propName": "children",
+      "kind": "enum",
+      "schemaPreview": {
+        "kind": "enum",
+        "type": "SparkNode[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "array",
+            "type": "SparkNode[]",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "SparkNode",
+                "schema": {
+                  "type": {
+                    "name": "type",
+                    "global": false,
+                    "description": "组件类型（对应 ComponentDefinition.type）",
+                    "tags": [],
+                    "required": true,
+                    "type": "string",
+                    "schema": "string",
+                    "declarations": []
+                  },
+                  "props": {
+                    "name": "props",
+                    "global": false,
+                    "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+                    "tags": [],
+                    "required": false,
+                    "type": "Record<string, unknown> | undefined",
+                    "schema": {
+                      "kind": "enum",
+                      "type": "Record<string, unknown> | undefined",
+                      "schema": [
+                        "undefined",
+                        "Record<string, unknown>"
+                      ]
+                    },
+                    "declarations": []
+                  },
+                  "children": {
+                    "name": "children",
+                    "global": false,
+                    "description": "子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组",
+                    "tags": [],
+                    "required": false,
+                    "type": "SparkNodeChildren | undefined",
+                    "schema": {
+                      "kind": "enum",
+                      "type": "SparkNodeChildren | undefined",
+                      "schema": [
+                        "undefined",
+                        {
+                          "kind": "array",
+                          "type": "SparkNodeChildren",
+                          "schema": [
+                            {
+                              "kind": "enum",
+                              "type": "SparkNode | SparkTextChild",
+                              "schema": [
+                                "string",
+                                "number",
+                                "SparkNode"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "declarations": []
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "propName": "onRowClick",
+      "kind": "enum",
+      "schemaPreview": {
+        "kind": "enum",
+        "type": "RowClickHandler | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(args_0: IDataRow, args_1: unknown, args_2: Event | undefined, args_3: CancellableControl): void | Promise<void>",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "IDataRow",
+                "schema": {
+                  "_perm": {
+                    "name": "_perm",
+                    "global": false,
+                    "description": "",
+                    "tags": [],
+                    "required": false,
+                    "type": "IInstancePermission | undefined",
+                    "schema": {
+                      "kind": "enum",
+                      "type": "IInstancePermission | undefined",
+                      "schema": [
+                        "undefined",
+                        {
+                          "kind": "object",
+                          "type": "IInstancePermission",
+                          "schema": {
+                            "allowCreateChild": {
+                              "name": "allowCreateChild",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "boolean | undefined",
+                              "schema": {
+                                "kind": "enum",
+                                "type": "boolean | undefined",
+                                "schema": [
+                                  "undefined",
+                                  "false",
+                                  "true"
+                                ]
+                              },
+                              "declarations": []
+                            },
+                            "allowDelete": {
+                              "name": "allowDelete",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "boolean | undefined",
+                              "schema": "boolean | undefined",
+                              "declarations": []
+                            },
+                            "editableFields": {
+                              "name": "editableFields",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "string[] | undefined",
+                              "schema": {
+                                "kind": "enum",
+                                "type": "string[] | undefined",
+                                "schema": [
+                                  "undefined",
+                                  {
+                                    "kind": "array",
+                                    "type": "string[]",
+                                    "schema": [
+                                      "string"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "declarations": []
+                            },
+                            "hiddenFields": {
+                              "name": "hiddenFields",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "string[] | undefined",
+                              "schema": "string[] | undefined",
+                              "declarations": []
+                            },
+                            "maskedFields": {
+                              "name": "maskedFields",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "string[] | undefined",
+                              "schema": "string[] | undefined",
+                              "declarations": []
+                            },
+                            "permissionToken": {
+                              "name": "permissionToken",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "string | undefined",
+                              "schema": {
+                                "kind": "enum",
+                                "type": "string | undefined",
+                                "schema": [
+                                  "undefined",
+                                  "string"
+                                ]
+                              },
+                              "declarations": []
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "declarations": []
+                  }
+                }
+              },
+              "unknown",
+              {
+                "kind": "enum",
+                "type": "Event | undefined",
+                "schema": [
+                  "undefined",
+                  {
+                    "kind": "object",
+                    "type": "Event",
+                    "schema": {
+                      "bubbles": {
+                        "name": "bubbles",
+                        "global": false,
+                        "description": "The **`bubbles`** read-only property of the Event interface indicates whether the event bubbles up through the DOM tree or not.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/bubbles)",
+                        "tags": [],
+                        "required": true,
+                        "type": "boolean",
+                        "schema": {
+                          "kind": "enum",
+                          "type": "boolean",
+                          "schema": [
+                            "false",
+                            "true"
+                          ]
+                        },
+                        "declarations": []
+                      },
+                      "cancelBubble": {
+                        "name": "cancelBubble",
+                        "global": false,
+                        "description": "The **`cancelBubble`** property of the Event interface is deprecated. Use Event.stopPropagation() instead. Setting its value to true before returning from an event handler prevents propagation of the event. In later implementations, setting this to false does nothing. See Browser compatibility for details.",
+                        "tags": [
+                          {
+                            "name": "deprecated",
+                            "text": "[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/cancelBubble)"
+                          }
+                        ],
+                        "required": true,
+                        "type": "boolean",
+                        "schema": "boolean",
+                        "declarations": []
+                      },
+                      "cancelable": {
+                        "name": "cancelable",
+                        "global": false,
+                        "description": "The **`cancelable`** read-only property of the Event interface indicates whether the event can be canceled, and therefore prevented as if the event never happened.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/cancelable)",
+                        "tags": [],
+                        "required": true,
+                        "type": "boolean",
+                        "schema": "boolean",
+                        "declarations": []
+                      },
+                      "composed": {
+                        "name": "composed",
+                        "global": false,
+                        "description": "The read-only **`composed`** property of the Event interface returns a boolean value which indicates whether or not the event will propagate across the shadow DOM boundary into the standard DOM.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/composed)",
+                        "tags": [],
+                        "required": true,
+                        "type": "boolean",
+                        "schema": "boolean",
+                        "declarations": []
+                      },
+                      "currentTarget": {
+                        "name": "currentTarget",
+                        "global": false,
+                        "description": "The **`currentTarget`** read-only property of the Event interface identifies the element to which the event handler has been attached.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/currentTarget)",
+                        "tags": [],
+                        "required": true,
+                        "type": "EventTarget | null",
+                        "schema": {
+                          "kind": "enum",
+                          "type": "EventTarget | null",
+                          "schema": [
+                            "null",
+                            {
+                              "kind": "object",
+                              "type": "EventTarget",
+                              "schema": {
+                                "addEventListener": {
+                                  "name": "addEventListener",
+                                  "global": false,
+                                  "description": "The **`addEventListener()`** method of the EventTarget interface sets up a function that will be called whenever the specified event is delivered to the target.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/EventTarget/addEventListener)",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(type: string, callback: EventListenerOrEventListenerObject | null, options?: boolean | AddEventListenerOptions | undefined) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(type: string, callback: EventListenerOrEventListenerObject | null, options?: boolean | AddEventListenerOptions | undefined): void",
+                                    "schema": []
+                                  },
+                                  "declarations": []
+                                },
+                                "dispatchEvent": {
+                                  "name": "dispatchEvent",
+                                  "global": false,
+                                  "description": "The **`dispatchEvent()`** method of the EventTarget sends an Event to the object, (synchronously) invoking the affected event listeners in the appropriate order. The normal event processing rules (including the capturing and optional bubbling phase) also apply to events dispatched manually with dispatchEvent().\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/EventTarget/dispatchEvent)",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(event: Event) => boolean",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(event: Event): boolean",
+                                    "schema": []
+                                  },
+                                  "declarations": []
+                                },
+                                "removeEventListener": {
+                                  "name": "removeEventListener",
+                                  "global": false,
+                                  "description": "The **`removeEventListener()`** method of the EventTarget interface removes an event listener previously registered with EventTarget.addEventListener() from the target. The event listener to be removed is identified using a combination of the event type, the event listener function itself, and various optional options that may affect the matching process; see Matching event listeners for removal.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/EventTarget/removeEventListener)",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(type: string, callback: EventListenerOrEventListenerObject | null, options?: boolean | EventListenerOptions | undefined) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(type: string, callback: EventListenerOrEventListenerObject | null, options?: boolean | EventListenerOptions | undefined): void",
+                                    "schema": []
+                                  },
+                                  "declarations": []
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "declarations": []
+                      },
+                      "defaultPrevented": {
+                        "name": "defaultPrevented",
+                        "global": false,
+                        "description": "The **`defaultPrevented`** read-only property of the Event interface returns a boolean value indicating whether or not the call to Event.preventDefault() canceled the event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/defaultPrevented)",
+                        "tags": [],
+                        "required": true,
+                        "type": "boolean",
+                        "schema": "boolean",
+                        "declarations": []
+                      },
+                      "eventPhase": {
+                        "name": "eventPhase",
+                        "global": false,
+                        "description": "The **`eventPhase`** read-only property of the Event interface indicates which phase of the event flow is currently being evaluated.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/eventPhase)",
+                        "tags": [],
+                        "required": true,
+                        "type": "number",
+                        "schema": "number",
+                        "declarations": []
+                      },
+                      "isTrusted": {
+                        "name": "isTrusted",
+                        "global": false,
+                        "description": "The **`isTrusted`** read-only property of the Event interface is a boolean value that is true when the event was generated by the user agent (including via user actions and programmatic methods such as HTMLElement.focus()), and false when the event was dispatched via EventTarget.dispatchEvent(). The only exception is the click event, which initializes the isTrusted property to false in user agents.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/isTrusted)",
+                        "tags": [],
+                        "required": true,
+                        "type": "boolean",
+                        "schema": "boolean",
+                        "declarations": []
+                      },
+                      "returnValue": {
+                        "name": "returnValue",
+                        "global": false,
+                        "description": "The Event property **`returnValue`** indicates whether the default action for this event has been prevented or not.",
+                        "tags": [
+                          {
+                            "name": "deprecated",
+                            "text": "[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/returnValue)"
+                          }
+                        ],
+                        "required": true,
+                        "type": "boolean",
+                        "schema": "boolean",
+                        "declarations": []
+                      },
+                      "srcElement": {
+                        "name": "srcElement",
+                        "global": false,
+                        "description": "The deprecated **`Event.srcElement`** is an alias for the Event.target property. Use Event.target instead.",
+                        "tags": [
+                          {
+                            "name": "deprecated",
+                            "text": "[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/srcElement)"
+                          }
+                        ],
+                        "required": true,
+                        "type": "EventTarget | null",
+                        "schema": "EventTarget | null",
+                        "declarations": []
+                      },
+                      "target": {
+                        "name": "target",
+                        "global": false,
+                        "description": "The read-only **`target`** property of the Event interface is a reference to the object onto which the event was dispatched. It is different from Event.currentTarget when the event handler is called during the bubbling or capturing phase of the event.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/target)",
+                        "tags": [],
+                        "required": true,
+                        "type": "EventTarget | null",
+                        "schema": "EventTarget | null",
+                        "declarations": []
+                      },
+                      "timeStamp": {
+                        "name": "timeStamp",
+                        "global": false,
+                        "description": "The **`timeStamp`** read-only property of the Event interface returns the time (in milliseconds) at which the event was created.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/timeStamp)",
+                        "tags": [],
+                        "required": true,
+                        "type": "number",
+                        "schema": "number",
+                        "declarations": []
+                      },
+                      "type": {
+                        "name": "type",
+                        "global": false,
+                        "description": "The **`type`** read-only property of the Event interface returns a string containing the event's type. It is set when the event is constructed and is the name commonly used to refer to the specific event, such as click, load, or error.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/type)",
+                        "tags": [],
+                        "required": true,
+                        "type": "string",
+                        "schema": "string",
+                        "declarations": []
+                      },
+                      "composedPath": {
+                        "name": "composedPath",
+                        "global": false,
+                        "description": "The **`composedPath()`** method of the Event interface returns the event's path which is an array of the objects on which listeners will be invoked. This does not include nodes in shadow trees if the shadow root was created with its ShadowRoot.mode closed.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/composedPath)",
+                        "tags": [],
+                        "required": true,
+                        "type": "() => EventTarget[]",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(): EventTarget[]"
+                        },
+                        "declarations": []
+                      },
+                      "initEvent": {
+                        "name": "initEvent",
+                        "global": false,
+                        "description": "The **`Event.initEvent()`** method is used to initialize the value of an event created using Document.createEvent().",
+                        "tags": [
+                          {
+                            "name": "deprecated",
+                            "text": "[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/initEvent)"
+                          }
+                        ],
+                        "required": true,
+                        "type": "(type: string, bubbles?: boolean | undefined, cancelable?: boolean | undefined) => void",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(type: string, bubbles?: boolean | undefined, cancelable?: boolean | undefined): void",
+                          "schema": []
+                        },
+                        "declarations": []
+                      },
+                      "preventDefault": {
+                        "name": "preventDefault",
+                        "global": false,
+                        "description": "The **`preventDefault()`** method of the Event interface tells the user agent that the event is being explicitly handled, so its default action, such as page scrolling, link navigation, or pasting text, should not be taken.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/preventDefault)",
+                        "tags": [],
+                        "required": true,
+                        "type": "() => void",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(): void"
+                        },
+                        "declarations": []
+                      },
+                      "stopImmediatePropagation": {
+                        "name": "stopImmediatePropagation",
+                        "global": false,
+                        "description": "The **`stopImmediatePropagation()`** method of the Event interface prevents other listeners of the same event from being called.\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/stopImmediatePropagation)",
+                        "tags": [],
+                        "required": true,
+                        "type": "() => void",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(): void"
+                        },
+                        "declarations": []
+                      },
+                      "stopPropagation": {
+                        "name": "stopPropagation",
+                        "global": false,
+                        "description": "The **`stopPropagation()`** method of the Event interface prevents further propagation of the current event in the capturing and bubbling phases. It does not, however, prevent any default behaviors from occurring; for instance, clicks on links are still processed. If you want to stop those behaviors, see the preventDefault() method. It also does not prevent propagation to other event-handlers of the current element. If you want to stop those, see stopImmediatePropagation().\n\n[MDN Reference](https://developer.mozilla.org/docs/Web/API/Event/stopPropagation)",
+                        "tags": [],
+                        "required": true,
+                        "type": "() => void",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(): void"
+                        },
+                        "declarations": []
+                      },
+                      "NONE": {
+                        "name": "NONE",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "0",
+                        "schema": "0",
+                        "declarations": []
+                      },
+                      "CAPTURING_PHASE": {
+                        "name": "CAPTURING_PHASE",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "1",
+                        "schema": "1",
+                        "declarations": []
+                      },
+                      "AT_TARGET": {
+                        "name": "AT_TARGET",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "2",
+                        "schema": "2",
+                        "declarations": []
+                      },
+                      "BUBBLING_PHASE": {
+                        "name": "BUBBLING_PHASE",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "3",
+                        "schema": "3",
+                        "declarations": []
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "schema": {
+                  "cancel": {
+                    "name": "cancel",
+                    "global": false,
+                    "description": "",
+                    "tags": [],
+                    "required": true,
+                    "type": "boolean",
+                    "schema": "boolean",
+                    "declarations": []
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "propName": "onSelectionChange",
+      "kind": "enum",
+      "schemaPreview": {
+        "kind": "enum",
+        "type": "RowSelectionHandler | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(args_0: IDataRow[], args_1: CancellableControl): void | Promise<void>",
+            "schema": [
+              {
+                "kind": "array",
+                "type": "IDataRow[]",
+                "schema": [
+                  {
+                    "kind": "object",
+                    "type": "IDataRow",
+                    "schema": {
+                      "_perm": {
+                        "name": "_perm",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": false,
+                        "type": "IInstancePermission | undefined",
+                        "schema": {
+                          "kind": "enum",
+                          "type": "IInstancePermission | undefined",
+                          "schema": [
+                            "undefined",
+                            {
+                              "kind": "object",
+                              "type": "IInstancePermission",
+                              "schema": {
+                                "allowCreateChild": {
+                                  "name": "allowCreateChild",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": false,
+                                  "type": "boolean | undefined",
+                                  "schema": {
+                                    "kind": "enum",
+                                    "type": "boolean | undefined",
+                                    "schema": [
+                                      "undefined",
+                                      "false",
+                                      "true"
+                                    ]
+                                  },
+                                  "declarations": []
+                                },
+                                "allowDelete": {
+                                  "name": "allowDelete",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": false,
+                                  "type": "boolean | undefined",
+                                  "schema": "boolean | undefined",
+                                  "declarations": []
+                                },
+                                "editableFields": {
+                                  "name": "editableFields",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": false,
+                                  "type": "string[] | undefined",
+                                  "schema": {
+                                    "kind": "enum",
+                                    "type": "string[] | undefined",
+                                    "schema": [
+                                      "undefined",
+                                      {
+                                        "kind": "array",
+                                        "type": "string[]",
+                                        "schema": [
+                                          "string"
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  "declarations": []
+                                },
+                                "hiddenFields": {
+                                  "name": "hiddenFields",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": false,
+                                  "type": "string[] | undefined",
+                                  "schema": "string[] | undefined",
+                                  "declarations": []
+                                },
+                                "maskedFields": {
+                                  "name": "maskedFields",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": false,
+                                  "type": "string[] | undefined",
+                                  "schema": "string[] | undefined",
+                                  "declarations": []
+                                },
+                                "permissionToken": {
+                                  "name": "permissionToken",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": false,
+                                  "type": "string | undefined",
+                                  "schema": {
+                                    "kind": "enum",
+                                    "type": "string | undefined",
+                                    "schema": [
+                                      "undefined",
+                                      "string"
+                                    ]
+                                  },
+                                  "declarations": []
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "declarations": []
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "object",
+                "type": "CancellableControl",
+                "schema": {
+                  "cancel": {
+                    "name": "cancel",
+                    "global": false,
+                    "description": "",
+                    "tags": [],
+                    "required": true,
+                    "type": "boolean",
+                    "schema": {
+                      "kind": "enum",
+                      "type": "boolean",
+                      "schema": [
+                        "false",
+                        "true"
+                      ]
+                    },
+                    "declarations": []
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -23,7 +23,7 @@ export interface TreeNode {
 export interface ElTreeNode {
   level: number
   expanded: boolean
-  data?: Record<string, unknown>
+  data?: IDataRow
   parent?: ElTreeNode | null
   [key: string]: unknown
 }
@@ -47,7 +47,7 @@ export interface NativeTreeLike {
 
 export interface NativeTreeNodeLike {
   expand?: () => void
-  data?: Record<string, unknown>
+  data?: IDataRow
 }
 
 export type TreeEventControl = CancellableControl
@@ -87,7 +87,7 @@ interface RendererTreeZeroCodeOptions {
 
 export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions) {
   function getNodeKey(data: unknown): string | number | null {
-    const node = data as Record<string, unknown> | null | undefined
+    const node = data as IDataRow | null | undefined
     const key = node?.[options.nodeKeyField.value]
     return typeof key === 'string' || typeof key === 'number' ? key : null
   }
@@ -188,7 +188,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     updateNode(key, patch) {
       const tree = options.nativeTreeRef.value as NativeTreeLike | null
       if (!tree) return false
-      const elNode = tree.getNode?.(key) as { data?: Record<string, unknown> } | undefined
+      const elNode = tree.getNode?.(key) as { data?: IDataRow } | undefined
       if (elNode?.data === undefined) return false
       Object.assign(elNode.data, patch)
       return true
@@ -314,7 +314,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   }
 
   async function handleAppendNode(data: unknown) {
-    const node = data as Record<string, unknown> | undefined
+    const node = data as IDataRow | undefined
     const nodeKey = getNodeKey(node)
     await runTreeNodeAction(options.props.onNodeAppend, (node ?? {}) as TreeNode, () => {
       treeApi.appendNode(nodeKey, {})
@@ -322,7 +322,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   }
 
   async function handleDeleteNode(data: unknown) {
-    const node = data as Record<string, unknown> | undefined
+    const node = data as IDataRow | undefined
     const nodeKey = getNodeKey(node)
     if (nodeKey === null) return
     await runTreeNodeAction(options.props.onNodeDelete, (node ?? {}) as TreeNode, () => {

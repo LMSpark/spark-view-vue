@@ -1,0 +1,543 @@
+{
+  "componentType": "r-table",
+  "componentPath": "D:/SPARK_VIEW/packages/spark-component/src/components/containers/data-components/RendererTable/RendererTable.vue",
+  "generatedAt": "2026-04-13T01:10:25.884Z",
+  "totalCases": 18,
+  "results": [
+    {
+      "label": "rawType=false,schema=false,noDeclarations=false,forceUseTs=false",
+      "options": {
+        "rawType": false,
+        "schema": false,
+        "noDeclarations": false,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 10481,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "string": 25
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "string",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=false,schema=false,noDeclarations=false,forceUseTs=true",
+      "options": {
+        "rawType": false,
+        "schema": false,
+        "noDeclarations": false,
+        "forceUseTs": true
+      },
+      "ok": true,
+      "durationMs": 10355,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "string": 25
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "string",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=false,schema=false,noDeclarations=true,forceUseTs=false",
+      "options": {
+        "rawType": false,
+        "schema": false,
+        "noDeclarations": true,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 10748,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 0,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 0,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "string": 25
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "string",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=false,schema=false,noDeclarations=true,forceUseTs=true",
+      "options": {
+        "rawType": false,
+        "schema": false,
+        "noDeclarations": true,
+        "forceUseTs": true
+      },
+      "ok": true,
+      "durationMs": 11378,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 0,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 0,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "string": 25
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "string",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=false,schema=true,noDeclarations=false,forceUseTs=false",
+      "options": {
+        "rawType": false,
+        "schema": true,
+        "noDeclarations": false,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 10139,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=false,schema=true,noDeclarations=false,forceUseTs=true",
+      "options": {
+        "rawType": false,
+        "schema": true,
+        "noDeclarations": false,
+        "forceUseTs": true
+      },
+      "ok": true,
+      "durationMs": 10482,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=false,schema=true,noDeclarations=true,forceUseTs=false",
+      "options": {
+        "rawType": false,
+        "schema": true,
+        "noDeclarations": true,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 8751,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 0,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 0,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=false,schema=true,noDeclarations=true,forceUseTs=true",
+      "options": {
+        "rawType": false,
+        "schema": true,
+        "noDeclarations": true,
+        "forceUseTs": true
+      },
+      "ok": true,
+      "durationMs": 10872,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 0,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 0,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=true,schema=false,noDeclarations=false,forceUseTs=false",
+      "options": {
+        "rawType": true,
+        "schema": false,
+        "noDeclarations": false,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 8719,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 25,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "string": 25
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "string",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=true,schema=false,noDeclarations=false,forceUseTs=true",
+      "options": {
+        "rawType": true,
+        "schema": false,
+        "noDeclarations": false,
+        "forceUseTs": true
+      },
+      "ok": true,
+      "durationMs": 9112,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 25,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "string": 25
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "string",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=true,schema=false,noDeclarations=true,forceUseTs=false",
+      "options": {
+        "rawType": true,
+        "schema": false,
+        "noDeclarations": true,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 10018,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 25,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 0,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 0,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "string": 25
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "string",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=true,schema=false,noDeclarations=true,forceUseTs=true",
+      "options": {
+        "rawType": true,
+        "schema": false,
+        "noDeclarations": true,
+        "forceUseTs": true
+      },
+      "ok": true,
+      "durationMs": 9961,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 25,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 0,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 0,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "string": 25
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "string",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=true,schema=true,noDeclarations=false,forceUseTs=false",
+      "options": {
+        "rawType": true,
+        "schema": true,
+        "noDeclarations": false,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 10074,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 25,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=true,schema=true,noDeclarations=false,forceUseTs=true",
+      "options": {
+        "rawType": true,
+        "schema": true,
+        "noDeclarations": false,
+        "forceUseTs": true
+      },
+      "ok": true,
+      "durationMs": 10472,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 25,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=true,schema=true,noDeclarations=true,forceUseTs=false",
+      "options": {
+        "rawType": true,
+        "schema": true,
+        "noDeclarations": true,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 10871,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 25,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 0,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 0,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "rawType=true,schema=true,noDeclarations=true,forceUseTs=true",
+      "options": {
+        "rawType": true,
+        "schema": true,
+        "noDeclarations": true,
+        "forceUseTs": true
+      },
+      "ok": true,
+      "durationMs": 10133,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 25,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 0,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 0,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "baseline+printer(default)",
+      "options": {
+        "rawType": false,
+        "schema": true,
+        "noDeclarations": false,
+        "forceUseTs": false
+      },
+      "ok": true,
+      "durationMs": 5518,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    },
+    {
+      "label": "baseline+printer(newLine=1)",
+      "options": {
+        "rawType": false,
+        "schema": true,
+        "noDeclarations": false,
+        "forceUseTs": false,
+        "printer": {
+          "newLine": 1
+        }
+      },
+      "ok": true,
+      "durationMs": 3724,
+      "metrics": {
+        "propsCount": 25,
+        "eventsCount": 0,
+        "slotsCount": 2,
+        "exposedCount": 31,
+        "propsWithRawType": 0,
+        "eventsWithRawType": 0,
+        "propsWithDecl": 25,
+        "eventsWithDecl": 0,
+        "totalPropDecl": 25,
+        "totalEventDecl": 0,
+        "propSchemaKinds": {
+          "enum": 23,
+          "string": 2
+        },
+        "eventSchemaKinds": {},
+        "toolbarSchemaKind": "enum",
+        "typeDefault": "\"r-table\""
+      }
+    }
+  ]
+}

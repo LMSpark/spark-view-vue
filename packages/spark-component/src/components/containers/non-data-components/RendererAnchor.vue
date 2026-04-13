@@ -34,7 +34,9 @@ import {
   type SparkNode,
 } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererAnchorProps {
+  type?: 'r-anchor'
+  children?: SparkNode[]
   /** 滚动容器选择器 */
   container?: string
   /** 偏移量 */
@@ -51,7 +53,7 @@ interface Props extends SparkNode {
   anchorType?: 'default' | 'underline'
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererAnchorProps>(), {
   type: 'r-anchor',
   offset: 0,
   bound: 15,

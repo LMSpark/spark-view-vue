@@ -61,7 +61,9 @@ interface TourStep {
   showArrow?: boolean
 }
 
-interface Props extends SparkNode {
+interface RendererTourProps {
+  type?: 'r-tour'
+  children?: SparkNode[]
   /** 步骤配置列表 */
   steps?: TourStep[]
   /** 是否显示 */
@@ -80,7 +82,7 @@ interface Props extends SparkNode {
   scrollIntoViewOptions?: boolean | ScrollIntoViewOptions
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererTourProps>(), {
   type: 'r-tour',
   showArrow: true,
   mask: true,

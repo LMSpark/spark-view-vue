@@ -53,7 +53,8 @@ interface DropdownItem {
   icon?: string
 }
 
-interface Props extends SparkNode {
+interface RendererDropdownProps {
+  type?: 'r-dropdown'
   children?: SparkNode[]
   items?: DropdownItem[]
   trigger?: 'hover' | 'click' | 'contextmenu'
@@ -67,7 +68,7 @@ interface Props extends SparkNode {
   maxHeight?: number | string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererDropdownProps>(), {
   type: 'r-dropdown',
   trigger: 'hover',
   effect: 'light',

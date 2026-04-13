@@ -16,7 +16,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererSpaceProps {
+  type?: 'r-space'
   children?: SparkNode[]
   direction?: 'horizontal' | 'vertical'
   size?: number | string
@@ -25,7 +26,7 @@ interface Props extends SparkNode {
   alignment?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline'
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererSpaceProps>(), {
   type: 'r-space',
   direction: 'horizontal',
   size: 12,

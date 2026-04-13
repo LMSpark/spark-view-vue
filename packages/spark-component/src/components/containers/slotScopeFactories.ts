@@ -46,8 +46,8 @@ export function createRowActionSlotScope<TSource>(params: {
 export function createCurrentRowSlotScope<TSource>(params: {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
-  row: Record<string, unknown>
-  model?: Record<string, unknown>
+  row: IDataRow
+  model?: IDataRow
 }) {
   return withBaseScope(params, {
     row: params.row,

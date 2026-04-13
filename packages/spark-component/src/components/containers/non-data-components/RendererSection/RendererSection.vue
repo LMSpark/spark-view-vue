@@ -97,7 +97,8 @@ import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useControlledValue } from '../state'
 
-interface Props extends SparkNode {
+interface RendererSectionProps {
+  type?: 'r-section'
   /** 子节点 */
   children?: SparkNode[]
   /** 结构化头部 */
@@ -136,7 +137,7 @@ interface Props extends SparkNode {
   gridAutoRows?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererSectionProps>(), {
   type: 'r-section',
   title: '',
   description: '',

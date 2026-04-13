@@ -28,7 +28,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererCardProps {
+  type?: 'r-card'
   children?: SparkNode[]
   header?: string
   shadow?: 'always' | 'hover' | 'never'
@@ -36,7 +37,7 @@ interface Props extends SparkNode {
   bodyClass?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererCardProps>(), {
   type: 'r-card',
   shadow: 'always',
 })

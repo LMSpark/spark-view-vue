@@ -42,29 +42,20 @@
 import { ref } from 'vue'
 import { SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode } from '../../../internal'
+import type { SparkChildrenProps, SparkTableModelProps, SparkCrudEventProps } from '../../../shared-types'
+import type { DataView } from '@spark-view/spark-data'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import {
-  type AddRowHandler,
-  type EditRowHandler,
-  type RemoveRowHandler,
-} from '../../support/index.js'
-import {
   bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: 'r-form'
-  id?: string
-  /** 数据绑定键，如 "Users@currentRow" */
-  dataKey?: string
+interface RendererFormProps extends SparkChildrenProps<'r-form'>, SparkTableModelProps<DataView>, SparkCrudEventProps {
   /** 结构化工具栏 */
   toolbar?: ToolbarNode
-  /** 子节点列表 */
-  children?: SparkNode[]
   /** 表单标签宽度 */
   labelWidth?: string
   /** CSS Grid 列数 */
@@ -73,12 +64,9 @@ interface Props extends Omit<SparkNode, 'type'> {
   gridGap?: number | string
   /** 栅格行高 */
   gridAutoRows?: string
-  onAddRow?: AddRowHandler
-  onEditRow?: EditRowHandler
-  onRemoveRow?: RemoveRowHandler
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererFormProps>(), {
   type: 'r-form',
   labelWidth: '100px',
   gridColumns: 24,
@@ -105,6 +93,7 @@ const {
   ...(props.id !== undefined ? { id: props.id } : {}),
   ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
   ...(props.children !== undefined ? { children: props.children } : {}),
+  ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
   dataKey: props.dataKey,
   gridColumns: props.gridColumns,
   gridGap: props.gridGap,

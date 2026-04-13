@@ -15,16 +15,17 @@
  * @skill r-divider
  * @description 分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。
  */
-import { useSparkPageComponent, type SparkNode } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererDividerProps {
+  type?: 'r-divider'
   direction?: 'horizontal' | 'vertical'
   borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'none'
   contentPosition?: 'left' | 'center' | 'right'
   content?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererDividerProps>(), {
   type: 'r-divider',
   direction: 'horizontal',
   borderStyle: 'solid',

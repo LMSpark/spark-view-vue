@@ -86,7 +86,6 @@ function createMiniCatalog(): ComponentCatalog {
         source: 'vcm' as const,
       },
     },
-    constraints: {} as ComponentCatalog['constraints'],
   }
 }
 

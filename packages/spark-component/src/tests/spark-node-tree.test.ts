@@ -87,7 +87,7 @@ describe('SparkNodeTree', () => {
     })
 
     const children = tree.listChildren({ parentId: 'toolbar' })
-      .filter((child): child is SparkNode => typeof child !== 'string' && typeof child !== 'number')
+      .filter((child): child is SparkNode => typeof child !== 'string')
 
     expect(result.indexes).toEqual([0, 1])
     expect(children.map((child) => child.id)).toEqual(['refresh-action', 'export-action'])
@@ -200,28 +200,11 @@ describe('SparkNodeTree', () => {
     expect(tree.getNode({ nodeId: 'toolbar' })).toBeNull()
   })
 
-  it('reorderChildren 应按 childIds 重排直接子节点', () => {
-    const root = createSparkNodeTree()
-    const tree = new SparkNodeTree({ root })
-
-    const result = tree.reorderChildren({
-      parentId: null,
-      childIds: ['table', 'toolbar'],
-    })
-
-    const children = tree.listChildren()
-      .filter((child): child is SparkNode => typeof child !== 'string' && typeof child !== 'number')
-
-    expect(children.map((child) => child.id)).toEqual(['table', 'toolbar'])
-    expect(result.children).toHaveLength(3)
-  })
-
   it('应拒绝缺失节点和位置参数式调用', () => {
     const root = createSparkNodeTree()
     const tree = new SparkNodeTree({ root })
 
     expect(() => tree.addNode({ parentId: 'missing', node: { type: 'r-text' } })).toThrow(/not found/i)
-    expect(() => tree.reorderChildren({ childIds: ['missing'] })).toThrow(/not found/i)
 
     if (false) {
       // @ts-expect-error SparkNodeTree 构造函数只接受命名参数对象
@@ -392,7 +375,7 @@ describe('SparkNodeTree — undo / redo', () => {
     expect(tree.historyCursor).toBe(1)
   })
 
-  it('所有 5 种写操作均自动记录历史', () => {
+  it('所有 4 种写操作均自动记录历史', () => {
     const tree = new SparkNodeTree({ root: createSparkNodeTree() })
 
     tree.addNode({ parentId: 'toolbar', node: { type: 'r-text', id: 'x' } })
@@ -401,10 +384,8 @@ describe('SparkNodeTree — undo / redo', () => {
     expect(tree.historyCursor).toBe(2)
     tree.replaceNode({ nodeId: 'x', node: { type: 'r-text', id: 'x', props: {} } })
     expect(tree.historyCursor).toBe(3)
-    tree.reorderChildren({ parentId: 'toolbar', childIds: ['x'] })
-    expect(tree.historyCursor).toBe(4)
     tree.removeNode({ nodeId: 'x' })
-    expect(tree.historyCursor).toBe(5)
+    expect(tree.historyCursor).toBe(4)
 
     // 全部可 undo
     expect(tree.canUndo).toBe(true)

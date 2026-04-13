@@ -14,9 +14,11 @@ export interface ComponentCatalog {
   registry?: ComponentRegistry
   components: Record<string, ComponentEntry>
   schemaPool?: Record<string, PropSchema>
-  constraints: PlatformConstraints
+  constraints?: PlatformConstraints
+  canonical?: CatalogCanonicalModel
   sharedTypes?: Record<string, SharedTypeDefinition>
   bindingDescriptors?: Record<string, CatalogBindingDescriptor>
+  governance?: CatalogGovernance
   apiSurface?: object
 }
 
@@ -32,7 +34,6 @@ export interface RawComponentEntry {
   filePath: string
   props: PropEntry[]
   emits: EmitEntry[]
-  hasIndexSignature: boolean
 }
 
 export interface CatalogBindingDescriptor {
@@ -44,6 +45,16 @@ export interface CatalogBindingDescriptor {
   actionComponent?: boolean
   hasOptions?: boolean
   valueType?: string
+}
+
+export interface CatalogGovernance {
+  contracts: Record<string, GovernanceContract>
+}
+
+export interface GovernanceContract {
+  layer: 'props' | 'events' | 'api'
+  description: string
+  members: string[]
 }
 
 export interface SharedTypeDefinition {
@@ -70,17 +81,48 @@ export interface ComponentRegistry {
 export interface ComponentEntry {
   type: string
   filePath?: string
-  category: 'container' | 'field' | 'group' | 'meta' | 'feature'
-  description: string
+  category?: 'container' | 'field' | 'group' | 'meta' | 'feature'
+  description?: string
   props: PropEntry[]
   emits: EmitEntry[]
-  hasIndexSignature?: boolean
+  contracts?: ComponentContractRefs
   rootFields?: RootFieldEntry[]
   notes?: string
   provides?: string[]
   consumes?: string[]
-  source: 'vcm' | 'meta' | 'vcm+meta'
+  source?: 'vcm' | 'meta' | 'vcm+meta'
   binding?: CatalogBindingDescriptor
+}
+
+export interface ComponentContractRefs {
+  props?: string[]
+  events?: string[]
+  api?: string[]
+}
+
+export interface CatalogCanonicalModel {
+  dictionaries: CatalogCanonicalDictionaries
+  components: Record<string, CatalogCanonicalComponent>
+}
+
+export interface CatalogCanonicalDictionaries {
+  props: Record<string, PropEntry>
+  emits: Record<string, EmitEntry>
+}
+
+export interface CatalogCanonicalComponent {
+  type: string
+  category: NonNullable<ComponentEntry['category']>
+  description: string
+  filePath?: string
+  propRefs: string[]
+  emitRefs: string[]
+  source: NonNullable<ComponentEntry['source']>
+  binding?: CatalogBindingDescriptor
+  contracts?: ComponentContractRefs
+  provides?: string[]
+  consumes?: string[]
+  notes?: string
 }
 
 export interface PropEntry {

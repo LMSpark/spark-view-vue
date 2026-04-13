@@ -1,0 +1,1039 @@
+{
+  "version": "vcm-rawtype-schema-preview",
+  "buildTime": "2026-04-13T00:21:07.747Z",
+  "componentCount": 4,
+  "part": 7,
+  "totalParts": 27,
+  "note": "每个文件固定 4 个组件，供结构对比",
+  "components": {
+    "display-statistic": {
+      "type": "display-statistic",
+      "filePath": "packages\\spark-component\\src\\components\\display\\data-components\\DisplayStatistic.vue",
+      "props": [
+        {
+          "name": "title",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "value",
+          "global": false,
+          "required": false,
+          "type": "string | number | undefined",
+          "description": "",
+          "schema": "string | number | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "dataKey",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "field",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "precision",
+          "global": false,
+          "required": false,
+          "type": "number | undefined",
+          "default": "0",
+          "description": "",
+          "schema": "number | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "decimalSeparator",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\".\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "groupSeparator",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\",\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "prefix",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "suffix",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "valueStyle",
+          "global": false,
+          "required": false,
+          "type": "string | object | undefined",
+          "description": "",
+          "schema": "string | object | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "type",
+          "global": false,
+          "required": false,
+          "type": "\"r-statistic\" | undefined",
+          "default": "\"r-statistic\"",
+          "description": "",
+          "schema": "\"r-statistic\" | undefined",
+          "rawType": {
+            "flags": 134217728,
+            "checker": "[Circular]",
+            "id": 29785,
+            "objectFlags": 32768,
+            "types": [
+              "[Circular]",
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 29699,
+                "value": "r-statistic",
+                "regularType": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 29700,
+                  "value": "r-statistic",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "key",
+          "global": false,
+          "required": false,
+          "type": "PropertyKey | undefined",
+          "description": "",
+          "schema": "PropertyKey | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref",
+          "global": false,
+          "required": false,
+          "type": "VNodeRef | undefined",
+          "description": "",
+          "schema": "VNodeRef | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_for",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_key",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeMount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:mounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUpdate",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:updated",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUnmount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:unmounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "class",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "style",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        }
+      ],
+      "events": []
+    },
+    "display-tag": {
+      "type": "display-tag",
+      "filePath": "packages\\spark-component\\src\\components\\display\\data-components\\DisplayTag.vue",
+      "props": [
+        {
+          "name": "content",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "value",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "field",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "tagType",
+          "global": false,
+          "required": false,
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "default": "\"\"",
+          "description": "",
+          "schema": "\"\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "rawType": {
+            "flags": 134217728,
+            "checker": "[Circular]",
+            "id": 29591,
+            "objectFlags": 557056,
+            "types": [
+              "[Circular]",
+              "[Circular]",
+              "[Circular]",
+              "[Circular]",
+              "[Circular]",
+              "[Circular]"
+            ]
+          }
+        },
+        {
+          "name": "closable",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "false",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "disableTransitions",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "false",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "hit",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "false",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "round",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "default": "false",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "color",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "size",
+          "global": false,
+          "required": false,
+          "type": "\"default\" | \"small\" | \"large\" | undefined",
+          "default": "\"default\"",
+          "description": "",
+          "schema": "\"default\" | \"small\" | \"large\" | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "effect",
+          "global": false,
+          "required": false,
+          "type": "\"dark\" | \"light\" | \"plain\" | undefined",
+          "default": "\"light\"",
+          "description": "",
+          "schema": "\"dark\" | \"light\" | \"plain\" | undefined",
+          "rawType": {
+            "flags": 134217728,
+            "checker": "[Circular]",
+            "id": 29544,
+            "objectFlags": 557056,
+            "types": [
+              "[Circular]",
+              "[Circular]",
+              "[Circular]",
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 7795,
+                "value": "plain",
+                "regularType": "[Circular]",
+                "immediateBaseConstraint": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 29542,
+                  "value": "plain",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "type",
+          "global": false,
+          "required": false,
+          "type": "\"r-tag\" | undefined",
+          "default": "\"r-tag\"",
+          "description": "",
+          "schema": "\"r-tag\" | undefined",
+          "rawType": {
+            "flags": 134217728,
+            "checker": "[Circular]",
+            "id": 29520,
+            "objectFlags": 32768,
+            "types": [
+              "[Circular]",
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 29433,
+                "value": "r-tag",
+                "regularType": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 29434,
+                  "value": "r-tag",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "key",
+          "global": false,
+          "required": false,
+          "type": "PropertyKey | undefined",
+          "description": "",
+          "schema": "PropertyKey | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref",
+          "global": false,
+          "required": false,
+          "type": "VNodeRef | undefined",
+          "description": "",
+          "schema": "VNodeRef | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_for",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_key",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeMount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:mounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUpdate",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:updated",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUnmount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:unmounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "class",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "style",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        }
+      ],
+      "events": [
+        {
+          "name": "close",
+          "type": "[]",
+          "description": "",
+          "schema": []
+        }
+      ]
+    },
+    "display-text": {
+      "type": "display-text",
+      "filePath": "packages\\spark-component\\src\\components\\display\\data-components\\DisplayText.vue",
+      "props": [
+        {
+          "name": "value",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "field",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "tag",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\"span\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "prefix",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "suffix",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "format",
+          "global": false,
+          "required": false,
+          "type": "\"number\" | \"date\" | \"currency\" | \"percent\" | undefined",
+          "description": "",
+          "schema": "\"number\" | \"date\" | \"currency\" | \"percent\" | undefined",
+          "rawType": {
+            "flags": 134217728,
+            "checker": "[Circular]",
+            "id": 29336,
+            "objectFlags": 557056,
+            "types": [
+              "[Circular]",
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 55,
+                "value": "number",
+                "regularType": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 29330,
+                  "value": "number",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              },
+              "[Circular]",
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 29331,
+                "value": "currency",
+                "regularType": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 29332,
+                  "value": "currency",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              },
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 29333,
+                "value": "percent",
+                "regularType": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 29334,
+                  "value": "percent",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "precision",
+          "global": false,
+          "required": false,
+          "type": "number | undefined",
+          "default": "2",
+          "description": "",
+          "schema": "number | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "placeholder",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "default": "\"-\"",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "textClass",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "textStyle",
+          "global": false,
+          "required": false,
+          "type": "string | object | undefined",
+          "description": "",
+          "schema": "string | object | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "type",
+          "global": false,
+          "required": false,
+          "type": "\"r-text-display\" | undefined",
+          "default": "\"r-text-display\"",
+          "description": "",
+          "schema": "\"r-text-display\" | undefined",
+          "rawType": {
+            "flags": 134217728,
+            "checker": "[Circular]",
+            "id": 29302,
+            "objectFlags": 32768,
+            "types": [
+              "[Circular]",
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 29216,
+                "value": "r-text-display",
+                "regularType": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 29217,
+                  "value": "r-text-display",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "key",
+          "global": false,
+          "required": false,
+          "type": "PropertyKey | undefined",
+          "description": "",
+          "schema": "PropertyKey | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref",
+          "global": false,
+          "required": false,
+          "type": "VNodeRef | undefined",
+          "description": "",
+          "schema": "VNodeRef | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_for",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_key",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeMount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:mounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUpdate",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:updated",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUnmount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:unmounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "class",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "style",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        }
+      ],
+      "events": []
+    },
+    "display-timeline": {
+      "type": "display-timeline",
+      "filePath": "packages\\spark-component\\src\\components\\display\\non-data-components\\DisplayTimeline.vue",
+      "props": [
+        {
+          "name": "children",
+          "global": false,
+          "required": false,
+          "type": "SparkNode[] | undefined",
+          "description": "",
+          "schema": "SparkNode[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "type",
+          "global": false,
+          "required": false,
+          "type": "\"r-timeline\" | undefined",
+          "default": "\"r-timeline\"",
+          "description": "",
+          "schema": "\"r-timeline\" | undefined",
+          "rawType": {
+            "flags": 134217728,
+            "checker": "[Circular]",
+            "id": 27048,
+            "objectFlags": 32768,
+            "types": [
+              "[Circular]",
+              {
+                "flags": 1024,
+                "checker": "[Circular]",
+                "id": 26967,
+                "value": "r-timeline",
+                "regularType": "[Circular]",
+                "freshType": {
+                  "flags": 1024,
+                  "checker": "[Circular]",
+                  "id": 26968,
+                  "value": "r-timeline",
+                  "regularType": "[Circular]",
+                  "freshType": "[Circular]"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "key",
+          "global": false,
+          "required": false,
+          "type": "PropertyKey | undefined",
+          "description": "",
+          "schema": "PropertyKey | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref",
+          "global": false,
+          "required": false,
+          "type": "VNodeRef | undefined",
+          "description": "",
+          "schema": "VNodeRef | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_for",
+          "global": false,
+          "required": false,
+          "type": "boolean | undefined",
+          "description": "",
+          "schema": "boolean | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "ref_key",
+          "global": false,
+          "required": false,
+          "type": "string | undefined",
+          "description": "",
+          "schema": "string | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeMount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:mounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUpdate",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:updated",
+          "global": false,
+          "required": false,
+          "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "description": "",
+          "schema": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:beforeUnmount",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "onVue:unmounted",
+          "global": false,
+          "required": false,
+          "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "description": "",
+          "schema": "VNodeMountHook | VNodeMountHook[] | undefined",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "class",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        },
+        {
+          "name": "style",
+          "global": false,
+          "required": false,
+          "type": "unknown",
+          "description": "",
+          "schema": "unknown",
+          "rawType": "[Circular]"
+        }
+      ],
+      "events": []
+    }
+  }
+}

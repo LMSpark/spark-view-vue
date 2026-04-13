@@ -42,7 +42,8 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useDataScope } from '../context/useDataScope'
 
-interface Props extends SparkNode {
+interface RendererListItemScopeProps {
+  type?: 'r-list-item'
   id?: string
   /** 当前行数据 */
   row: IDataRow
@@ -64,7 +65,7 @@ interface Props extends SparkNode {
   gridAutoRows?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererListItemScopeProps>(), {
   type: 'r-list-item',
   itemClass: '',
   itemStyle: () => ({}),

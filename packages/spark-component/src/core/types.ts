@@ -95,7 +95,7 @@ export type SparkCapabilityContext = ICapabilityContext
  * }
  * ```
  */
-export type SparkTextChild = string | number
+export type SparkTextChild = string
 
 export type SparkNodeChildren = Array<SparkNode | SparkTextChild>
 
@@ -104,7 +104,7 @@ export interface SparkNode {
   type: string
   /** 组件属性（所有组件可见的数据均通过 props 传递，含 id） */
   props?: Record<string, unknown>
-  /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串/数字文本子节点数组 */
+  /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串文本子节点数组 */
   children?: SparkNodeChildren
 }
 

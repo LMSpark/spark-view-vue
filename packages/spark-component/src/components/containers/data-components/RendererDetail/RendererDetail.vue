@@ -43,26 +43,17 @@
  */
 import { SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
-import { nodeId, type SparkNode } from '../../../internal'
+import { nodeId } from '../../../internal'
+import type { SparkChildrenProps, SparkTableModelProps, SparkCrudEventProps } from '../../../shared-types'
+import type { DataView } from '@spark-view/spark-data'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'
-import {
-  type AddRowHandler,
-  type EditRowHandler,
-  type RemoveRowHandler,
-} from '../../support/index.js'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: 'r-detail'
-  id?: string
-  /** 数据绑定键 */
-  dataKey?: string
+interface RendererDetailProps extends SparkChildrenProps<'r-detail'>, SparkTableModelProps<DataView>, SparkCrudEventProps {
   /** 结构化工具栏 */
   toolbar?: ToolbarNode
-  /** 子节点列表 */
-  children?: SparkNode[]
   /** CSS Grid 列数 */
   gridColumns?: number
   /** 栅格间距 */
@@ -73,12 +64,9 @@ interface Props extends Omit<SparkNode, 'type'> {
   titleAlign?: 'left' | 'center' | 'right'
   /** 值对齐 */
   valueAlign?: 'left' | 'center' | 'right'
-  onAddRow?: AddRowHandler
-  onEditRow?: EditRowHandler
-  onRemoveRow?: RemoveRowHandler
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererDetailProps>(), {
   type: 'r-detail',
   gridColumns: 24,
   gridGap: 0,
@@ -109,6 +97,7 @@ const {
   ...(props.id !== undefined ? { id: props.id } : {}),
   ...(props.toolbar !== undefined ? { toolbar: props.toolbar } : {}),
   ...(props.children !== undefined ? { children: props.children } : {}),
+  ...(props.dataSource !== undefined ? { dataSource: props.dataSource } : {}),
   dataKey: props.dataKey,
   gridColumns: props.gridColumns,
   gridGap: props.gridGap,

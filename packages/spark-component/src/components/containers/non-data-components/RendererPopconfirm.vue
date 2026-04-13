@@ -33,7 +33,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererPopconfirmProps {
+  type?: 'r-popconfirm'
   children?: SparkNode[]
   title?: string
   confirmButtonText?: string
@@ -47,7 +48,7 @@ interface Props extends SparkNode {
   width?: number | string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererPopconfirmProps>(), {
   type: 'r-popconfirm',
   confirmButtonType: 'primary',
   cancelButtonType: '',

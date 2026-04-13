@@ -25,14 +25,15 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererPageHeaderProps {
+  type?: 'r-page-header'
   children?: SparkNode[]
   title?: string
   icon?: string
   content?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererPageHeaderProps>(), {
   type: 'r-page-header',
   title: '返回',
 })

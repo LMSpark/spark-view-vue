@@ -21,6 +21,22 @@ import type {
 } from './types'
 
 // ══════════════════════════════════════════════════════════════
+// 辅助：从 type/filePath 推断 category（raw VCM 无 category 时使用）
+// ══════════════════════════════════════════════════════════════
+
+const CONTAINER_TYPES = /^r-(table|form|detail|tree|list)$/
+
+function inferCategory(entry: ComponentEntry): NonNullable<ComponentEntry['category']> {
+  if (entry.category !== undefined) return entry.category
+  const t = entry.type
+  if (CONTAINER_TYPES.test(t)) return 'container'
+  const fp = entry.filePath ?? ''
+  if (fp.includes('/containers/')) return 'container'
+  if (fp.includes('/fields/') || t.startsWith('r-')) return 'field'
+  return 'feature'
+}
+
+// ══════════════════════════════════════════════════════════════
 // FC 投影：session.describe + stills.actionSpec
 // ══════════════════════════════════════════════════════════════
 
@@ -47,14 +63,14 @@ export interface FcDirectoryPayload {
  */
 export function projectFcDirectory(catalog: ComponentCatalog): FcDirectoryPayload {
   const entries = Object.entries(catalog.components)
-  const featureCount = entries.filter(([, e]) => e.category === 'feature').length
+  const featureCount = entries.filter(([, e]) => inferCategory(e) === 'feature').length
 
   // 兼容旧格式 metadata.json（无 registry 字段）：从 components 按 category 动态生成
   const registry: NonNullable<ComponentCatalog['registry']> = catalog.registry ?? {
-    containers: entries.filter(([, e]) => e.category === 'container').map(([t]) => t),
-    fields: entries.filter(([, e]) => e.category === 'field').map(([t]) => t),
-    groups: entries.filter(([, e]) => e.category === 'group').map(([t]) => t),
-    meta: entries.filter(([, e]) => e.category === 'meta').map(([t]) => t),
+    containers: entries.filter(([, e]) => inferCategory(e) === 'container').map(([t]) => t),
+    fields: entries.filter(([, e]) => inferCategory(e) === 'field').map(([t]) => t),
+    groups: entries.filter(([, e]) => inferCategory(e) === 'group').map(([t]) => t),
+    meta: entries.filter(([, e]) => inferCategory(e) === 'meta').map(([t]) => t),
   }
 
   return {
@@ -70,8 +86,8 @@ export function projectFcDirectory(catalog: ComponentCatalog): FcDirectoryPayloa
     registry,
     components: entries.map(([type, e]) => ({
       type,
-      category: e.category,
-      description: e.description,
+      category: inferCategory(e),
+      description: e.description ?? '',
     })),
   }
 }
@@ -149,8 +165,8 @@ export function projectFcSpec(catalog: ComponentCatalog, type: string): FcCompon
 
   return {
     type: entry.type,
-    category: entry.category,
-    description: entry.description,
+    category: inferCategory(entry),
+    description: entry.description ?? '',
     props: entry.props.map(p => ({
       name: p.name,
       type: p.type,
@@ -301,7 +317,7 @@ export function projectDevTypeLabels(
 ): Record<string, string> {
   const result: Record<string, string> = {}
   for (const [type, entry] of Object.entries(catalog.components)) {
-    const label = extractShortLabel(entry.description)
+    const label = extractShortLabel(entry.description ?? '')
     result[type] = label.length > 0 ? `[${label}] ${type}` : type
   }
   return result

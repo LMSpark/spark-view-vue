@@ -14,6 +14,17 @@
 - 这是内部工作区包，不是业务页面直接依赖的运行时模块。
 - 当组件 API、提示词目录或组件元数据生成逻辑需要调整时，优先从这里入手。
 
+## CLI 环境变量
+
+通过 `packages/vite-plugin-spark-catalog/src/cli.ts` 执行目录生成时，可用以下环境变量覆盖默认行为：
+
+- `SPARK_CATALOG_INCLUDE_GLOBAL_PROPS`：`true/false`，是否保留 VCM 全局 props
+- `SPARK_CATALOG_VCM_RAW_TYPE`：`true/false`，透传 VCM `rawType`
+- `SPARK_CATALOG_VCM_SCHEMA`：`true/false`，透传 VCM `schema`
+- `SPARK_CATALOG_VCM_NO_DECLARATIONS`：`true/false`，透传 VCM `noDeclarations`
+
+未设置时保持现有默认值。
+
 ## 相关位置
 
 - `src/index.ts`：插件主入口

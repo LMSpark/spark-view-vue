@@ -70,6 +70,7 @@
 import { computed, ref } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
+import type { SparkChildrenProps, SparkTableModelProps, SparkCrudEventProps } from '../../../shared-types'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { usePermission } from '../../../../permission/index.js'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
@@ -102,16 +103,8 @@ import type { ActionsNode } from '../../support/RendererActionHost.types'
 import type { EditorNode } from '../../RendererEditor.types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import RendererDataScope from '../RendererRowFragment/RendererDataScope.vue'
-import {
-  type AddRowHandler,
-  type EditRowHandler,
-  type RemoveRowHandler,
-} from '../../support/index.js'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: 'r-tree'
-  /** 数据绑定键，如 "TreeData@rows" */
-  dataKey?: string
+interface RendererTreeProps extends SparkChildrenProps<'r-tree'>, SparkTableModelProps<DataView>, SparkCrudEventProps {
   /** 结构化工具栏 */
   toolbar?: ToolbarNode
   /** 结构化节点动作 */
@@ -126,8 +119,6 @@ interface Props extends Omit<SparkNode, 'type'> {
   expandToKey?: string | number | null
   /** 初始化自动展开到指定层级（根节点为第 1 层） */
   expandLevel?: number
-  /** 子节点（树节点内容配置） */
-  children?: SparkNode[]
   /** 允许追加子节点（自动生成追加按钮） */
   allowAppend?: boolean
   /** 允许删除节点（自动生成删除按钮） */
@@ -142,12 +133,9 @@ interface Props extends Omit<SparkNode, 'type'> {
   onNodeAppend?: TreeNodeActionHandler
   /** 节点删除前回调 */
   onNodeDelete?: TreeNodeActionHandler
-  onAddRow?: AddRowHandler
-  onEditRow?: EditRowHandler
-  onRemoveRow?: RemoveRowHandler
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererTreeProps>(), {
   type: 'r-tree',
 })
 const {
@@ -171,6 +159,7 @@ const pageService = sparkConsume(PAGE_SERVICE)
 const perm = usePermission()
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+  externalDataSource: computed(() => props.dataSource),
   dataKey: effectiveDataKey,
   pageDataSet,
   mapView: view => view,

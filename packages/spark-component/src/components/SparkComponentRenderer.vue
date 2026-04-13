@@ -120,7 +120,7 @@ const NATIVE_RENDERABLE_TAGS = new Set([
   'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
 ])
 
-type RenderableChild = SparkNode | string | number
+type RenderableChild = SparkNode | string
 type RecursiveChildrenList = RenderableChild[]
 type NodeRuntimeProps = Record<string, unknown>
 type RenderBranch = 'hidden' | 'registry' | 'external' | 'fallback'
@@ -179,7 +179,7 @@ const currentRendererComponent = currentInstance?.type ?? null
 /**
  * children 归一：
  * 1. 保留 SparkNode 子节点（已提升为容器 props 的子节点不在此列）。
- * 2. 保留字符串/数字字面量，供统一 slot / fallback 路径直接渲染成文本节点。
+ * 2. 保留字符串字面量，供统一 slot / fallback 路径直接渲染成文本节点。
  */
 function normalizeRenderableChildren(children: SparkNodeChildren | undefined): RenderableChild[] {
   if (!Array.isArray(children) || children.length === 0) return []
@@ -190,7 +190,7 @@ function normalizeRenderableChildren(children: SparkNodeChildren | undefined): R
       normalized.push(child)
       continue
     }
-    if (typeof child === 'string' || typeof child === 'number') {
+    if (typeof child === 'string') {
       normalized.push(child)
     }
   }

@@ -39,7 +39,8 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useDataScope } from '../context/useDataScope'
 
-interface Props extends SparkNode {
+interface RendererFieldScopeProps {
+  type?: 'r-field-scope'
   id?: string
   /** 表单数据模型 */
   model: IDataRow
@@ -65,7 +66,7 @@ interface Props extends SparkNode {
   compact?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererFieldScopeProps>(), {
   type: 'r-field-scope',
   gridColumns: 24,
   gridGap: 12,

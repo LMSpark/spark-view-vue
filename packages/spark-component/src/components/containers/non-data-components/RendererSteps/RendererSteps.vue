@@ -51,7 +51,8 @@ import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
 
-interface Props extends SparkNode {
+interface RendererStepsProps {
+  type?: 'r-steps'
   /** 子节点（步骤配置） */
   children?: SparkNode[]
   /** 结构化工具栏 */
@@ -62,7 +63,7 @@ interface Props extends SparkNode {
   onStepChange?: (value: string | number, step: SparkNode, index: number) => void
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererStepsProps>(), {
   type: 'r-steps',
 })
 

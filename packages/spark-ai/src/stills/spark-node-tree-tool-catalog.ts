@@ -71,7 +71,6 @@ const NODE_PARAM = {
   },
   note: 'node 必须是完整 SparkNode 对象，不要只传类型名字符串。',
 } as const
-const CHILD_IDS_PARAM = 'string[] — 目标组件下的直接子节点新顺序'
 
 const CATALOG_ONLY_RULE = '本 catalog 只定义核心层动作目录，不接 spark-ai stills registry，也不提供 execute 实现。'
 const INSTANCE_RULE = '需先通过 new SparkNodeTree({ root }) 绑定一个当前组件实例（SparkNode）；该实例既可以是页面组件，也可以是任意子组件，后续动作都作用于它的当前子树状态。'
@@ -490,41 +489,6 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
         code: 'CANNOT_REMOVE_ROOT',
         when: 'nodeIds 中包含根节点',
         fix: '只删除根节点的子节点。',
-      },
-    ],
-  }),
-  defineRequestRow({
-    action: 'sparkNodeTree.reorderChildren',
-    target: 'children',
-    coreMethod: 'reorderChildren',
-    description: '按 childIds 重排当前组件实例或指定子组件的直接结构子节点。',
-    paramsSchema: {
-      parentId: PARENT_ID_PARAM,
-      childIds: CHILD_IDS_PARAM,
-    },
-    resultSchema: {
-      children: 'SparkNodeChildren — 重排后的直接子节点数组',
-    },
-    example: {
-      parentId: null,
-      childIds: ['table', 'toolbar'],
-    },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, DIRECT_CHILDREN_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
-    failureModes: [
-      {
-        code: 'PARENT_NOT_FOUND',
-        when: 'parentId 未命中现有节点',
-        fix: '先确认父节点存在。',
-      },
-      {
-        code: 'CHILD_NOT_FOUND',
-        when: 'childIds 中包含不属于该父节点的 id',
-        fix: '先通过 sparkNodeTree.listChildren 确认直接子节点列表。',
-      },
-      {
-        code: 'DUPLICATE_CHILD_ID',
-        when: 'childIds 中存在重复项',
-        fix: '保证每个直接子节点 id 只出现一次。',
       },
     ],
   }),

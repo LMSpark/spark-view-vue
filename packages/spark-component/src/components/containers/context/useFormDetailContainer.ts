@@ -14,6 +14,7 @@ import { createCurrentRowSlotScope } from '../slotScopeFactories'
 
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
+  dataSource?: DataView
   children?: SparkNode[]
   toolbar?: ToolbarNode
   gridColumns: number | undefined
@@ -45,6 +46,7 @@ export function useFormDetailContainer(
   const pageService = sparkConsume(PAGE_SERVICE)
 
   const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+    externalDataSource: computed(() => props.dataSource),
     dataKey: effectiveDataKey,
     pageDataSet,
     mapView: view => view,

@@ -213,26 +213,6 @@ describe('rule.removeComponent', () => {
 })
 
 // ═══════════════════════════════════════════════════════════
-// rule.reorder
-// ═══════════════════════════════════════════════════════════
-
-describe('rule.reorder', () => {
-  beforeEach(() => {
-    setupPrerequisites()
-    exec('pageconfig.init')
-    exec('rule.addComponent', { parentId: null, type: 'div', id: 'a' })
-    exec('rule.addComponent', { parentId: null, type: 'div', id: 'b' })
-    exec('rule.addComponent', { parentId: null, type: 'div', id: 'c' })
-  })
-
-  it('reorders children', () => {
-    expectOk(exec('rule.reorder', { parentId: null, childIds: ['c', 'a', 'b'] }))
-    const ids = pcData().rule!.children!.map((c) => typeof c !== 'string' && typeof c !== 'number' ? c.props?.['id'] : null)
-    expect(ids).toEqual(['c', 'a', 'b'])
-  })
-})
-
-// ═══════════════════════════════════════════════════════════
 // script stills
 // ═══════════════════════════════════════════════════════════
 

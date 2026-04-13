@@ -88,6 +88,11 @@ import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
+import type {
+  SparkChildrenProps,
+  SparkTableModelProps,
+  SparkCrudEventProps,
+} from '../../../shared-types'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
@@ -102,23 +107,13 @@ import type { ActionsNode } from '../../support/RendererActionHost.types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
 import { createRendererListZeroCode } from './zero-code'
-import {
-  type AddRowHandler,
-  type EditRowHandler,
-  type RemoveRowHandler,
-  type RowClickHandler,
-} from '../../support/index.js'
+import { type RowClickHandler } from '../../support/index.js'
 
-interface Props extends Omit<SparkNode, 'type'> {
-  type?: 'r-list'
-  /** 数据绑定键 */
-  dataKey?: string
+interface RendererListProps extends SparkChildrenProps<'r-list'>, SparkTableModelProps<DataView>, SparkCrudEventProps {
   /** 结构化工具栏 */
   toolbar?: ToolbarNode
   /** 结构化列表项动作 */
   actions?: ActionsNode
-  /** 子节点（列表项内容配置） */
-  children?: SparkNode[]
   /** 列数 */
   columns?: number
   /** 列表项间距 */
@@ -148,12 +143,9 @@ interface Props extends Omit<SparkNode, 'type'> {
   /** 项跨行数 */
   itemRowSpan?: number
   onItemClick?: RowClickHandler
-  onAddRow?: AddRowHandler
-  onEditRow?: EditRowHandler
-  onRemoveRow?: RemoveRowHandler
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererListProps>(), {
   type: 'r-list',
   columns: 1,
   gap: 0,
@@ -191,6 +183,7 @@ const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponen
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
+  externalDataSource: computed(() => props.dataSource),
   dataKey: effectiveDataKey,
   pageDataSet,
   mapView: view => view,

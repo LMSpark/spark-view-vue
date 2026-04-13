@@ -40,7 +40,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererPopoverProps {
+  type?: 'r-popover'
   children?: SparkNode[]
   contentChildren?: SparkNode[]
   title?: string
@@ -56,7 +57,7 @@ interface Props extends SparkNode {
   popperClass?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererPopoverProps>(), {
   type: 'r-popover',
   placement: 'bottom',
   width: 150,

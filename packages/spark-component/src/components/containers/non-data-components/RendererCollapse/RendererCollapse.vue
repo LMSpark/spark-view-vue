@@ -51,7 +51,8 @@ import { useControlledValue } from '../state'
 
 type CollapseValue = string | number | Array<string | number>
 
-interface Props extends SparkNode {
+interface RendererCollapseProps {
+  type?: 'r-collapse'
   /** 子节点（折叠项配置） */
   children?: SparkNode[]
   /** 结构化工具栏 */
@@ -62,7 +63,7 @@ interface Props extends SparkNode {
   onChange?: (value: CollapseValue) => void
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererCollapseProps>(), {
   type: 'r-collapse',
 })
 

@@ -56,7 +56,8 @@ interface TabsClickEvent {
 
 import type { ToolbarNode } from '../RendererToolbar.types'
 
-interface Props extends SparkNode {
+interface RendererTabsProps {
+  type?: 'r-tabs'
   /** 子节点（标签面板配置） */
   children?: SparkNode[]
   /** 结构化工具栏 */
@@ -69,7 +70,7 @@ interface Props extends SparkNode {
   onTabClick?: (pane: TabsClickEvent, event: Event) => void
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererTabsProps>(), {
   type: 'r-tabs',
 })
 

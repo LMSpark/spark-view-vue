@@ -1,0 +1,667 @@
+{
+  "version": "vcm-native-preview",
+  "buildTime": "2026-04-13T11:02:56.3637100+08:00",
+  "componentCount": 4,
+  "note": "样本：2个容器(r-table,r-form)+2个字段(r-text,r-number)，纯 VCM 原生输出（无 AST 补充）",
+  "components": {
+    "r-table": {
+      "type": "r-table",
+      "filePath": "packages\\spark-component\\src\\components\\containers\\data-components\\RendererTable\\RendererTable.vue",
+      "props": [
+        {
+          "name": "type",
+          "type": "\"r-table\" | undefined",
+          "required": false,
+          "default": "\"r-table\"",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-table\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-table\""
+            ]
+          }
+        },
+        {
+          "name": "dataKey",
+          "type": "string | undefined",
+          "required": false,
+          "description": "DataKey 格式：tableName@field",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "ToolbarNode | undefined",
+          "required": false,
+          "description": "结构化工具栏",
+          "schema": {
+            "kind": "enum",
+            "type": "ToolbarNode | undefined",
+            "variants": [
+              "undefined",
+              "ToolbarNode"
+            ]
+          }
+        },
+        {
+          "name": "filter",
+          "type": "FilterNode | undefined",
+          "required": false,
+          "description": "结构化筛选区",
+          "schema": {
+            "kind": "enum",
+            "type": "FilterNode | undefined",
+            "variants": [
+              "undefined",
+              "FilterNode"
+            ]
+          }
+        },
+        {
+          "name": "actions",
+          "type": "ActionsNode | undefined",
+          "required": false,
+          "description": "结构化行动作",
+          "schema": {
+            "kind": "enum",
+            "type": "ActionsNode | undefined",
+            "variants": [
+              "undefined",
+              "ActionsNode"
+            ]
+          }
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[] | undefined",
+          "required": false,
+          "description": "表格内容列配置；toolbar / filter / actions 已由绑定层提升到 props",
+          "schema": {
+            "kind": "enum",
+            "type": "SparkNode[] | undefined",
+            "variants": [
+              "undefined",
+              "SparkNode[]"
+            ]
+          }
+        },
+        {
+          "name": "onRowClick",
+          "type": "RowClickHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "RowClickHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: IDataRow, args_1: unknown, args_2: Event | undefined, args_3: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "RowSelectionHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "RowSelectionHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: IDataRow[], args_1: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "onCurrentChange",
+          "type": "CurrentRowChangeHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "CurrentRowChangeHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: IDataRow | null, args_1: IDataRow | null | undefined, args_2: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "onAddRow",
+          "type": "AddRowHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "AddRowHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: Partial<IDataRow>, args_1: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "onEditRow",
+          "type": "EditRowHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "EditRowHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: string | number, args_1: Partial<IDataRow>, args_2: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "onRemoveRow",
+          "type": "RemoveRowHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "RemoveRowHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: string | number, args_1: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown> | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+          "schema": {
+            "kind": "enum",
+            "type": "Record<string, unknown> | undefined",
+            "variants": [
+              "undefined",
+              "Record<string, unknown>"
+            ]
+          }
+        }
+      ],
+      "emits": []
+    },
+    "r-form": {
+      "type": "r-form",
+      "filePath": "packages\\spark-component\\src\\components\\containers\\data-components\\RendererForm\\RendererForm.vue",
+      "props": [
+        {
+          "name": "type",
+          "type": "\"r-form\" | undefined",
+          "required": false,
+          "default": "\"r-form\"",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-form\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-form\""
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "type": "string | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "dataKey",
+          "type": "string | undefined",
+          "required": false,
+          "description": "数据绑定键，如 \"Users@currentRow\"",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "toolbar",
+          "type": "ToolbarNode | undefined",
+          "required": false,
+          "description": "结构化工具栏",
+          "schema": {
+            "kind": "enum",
+            "type": "ToolbarNode | undefined",
+            "variants": [
+              "undefined",
+              "ToolbarNode"
+            ]
+          }
+        },
+        {
+          "name": "children",
+          "type": "SparkNode[] | undefined",
+          "required": false,
+          "description": "子节点列表",
+          "schema": {
+            "kind": "enum",
+            "type": "SparkNode[] | undefined",
+            "variants": [
+              "undefined",
+              "SparkNode[]"
+            ]
+          }
+        },
+        {
+          "name": "labelWidth",
+          "type": "string | undefined",
+          "required": false,
+          "default": "\"100px\"",
+          "description": "表单标签宽度",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "gridColumns",
+          "type": "number | undefined",
+          "required": false,
+          "default": "24",
+          "description": "CSS Grid 列数",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number | undefined",
+          "required": false,
+          "default": "0",
+          "description": "栅格间距",
+          "schema": {
+            "kind": "enum",
+            "type": "string | number | undefined",
+            "variants": [
+              "undefined",
+              "string",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string | undefined",
+          "required": false,
+          "default": "\"minmax(32px, auto)\"",
+          "description": "栅格行高",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "onAddRow",
+          "type": "AddRowHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "AddRowHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: Partial<IDataRow>, args_1: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "onEditRow",
+          "type": "EditRowHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "EditRowHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: string | number, args_1: Partial<IDataRow>, args_2: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "onRemoveRow",
+          "type": "RemoveRowHandler | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "RemoveRowHandler | undefined",
+            "variants": [
+              "undefined",
+              "(args_0: string | number, args_1: CancellableControl): void | Promise<void>"
+            ]
+          }
+        },
+        {
+          "name": "props",
+          "type": "Record<string, unknown> | undefined",
+          "required": false,
+          "description": "组件属性（所有组件可见的数据均通过 props 传递，含 id）",
+          "schema": {
+            "kind": "enum",
+            "type": "Record<string, unknown> | undefined",
+            "variants": [
+              "undefined",
+              "Record<string, unknown>"
+            ]
+          }
+        }
+      ],
+      "emits": []
+    },
+    "r-text": {
+      "type": "r-text",
+      "filePath": "packages\\spark-component\\src\\components\\fields\\data-components\\FieldText.vue",
+      "props": [
+        {
+          "name": "field",
+          "type": "string | undefined",
+          "required": false,
+          "description": "字段绑定名，映射到 DataView 行字段",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false,
+          "description": "显示标签",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "description": "r-table 内列宽",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "modelValue",
+          "type": "string | undefined",
+          "required": false,
+          "description": "双向绑定值",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "type",
+          "type": "\"r-text\" | undefined",
+          "required": false,
+          "default": "\"r-text\"",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-text\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-text\""
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "type": "string | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: string]"
+        }
+      ]
+    },
+    "r-number": {
+      "type": "r-number",
+      "filePath": "packages\\spark-component\\src\\components\\fields\\data-components\\FieldNumber.vue",
+      "props": [
+        {
+          "name": "field",
+          "type": "string | undefined",
+          "required": false,
+          "description": "字段绑定名",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "label",
+          "type": "string | undefined",
+          "required": false,
+          "description": "显示标签",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "description": "r-table 内列宽",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "modelValue",
+          "type": "number | [number | undefined, number | undefined] | undefined",
+          "required": false,
+          "description": "双向绑定值，范围模式时为元组",
+          "schema": {
+            "kind": "enum",
+            "type": "number | [number | undefined, number | undefined] | undefined",
+            "variants": [
+              "undefined",
+              "number",
+              "[number | undefined, number | undefined]"
+            ]
+          }
+        },
+        {
+          "name": "min",
+          "type": "number | undefined",
+          "required": false,
+          "description": "最小值",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "max",
+          "type": "number | undefined",
+          "required": false,
+          "description": "最大值",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "precision",
+          "type": "number | undefined",
+          "required": false,
+          "description": "小数精度",
+          "schema": {
+            "kind": "enum",
+            "type": "number | undefined",
+            "variants": [
+              "undefined",
+              "number"
+            ]
+          }
+        },
+        {
+          "name": "filterMode",
+          "type": "string | undefined",
+          "required": false,
+          "description": "筛选模式（'range' 启用范围输入）",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "filterVariant",
+          "type": "string | undefined",
+          "required": false,
+          "description": "筛选变体",
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        },
+        {
+          "name": "filterRange",
+          "type": "boolean | undefined",
+          "required": false,
+          "description": "范围筛选标记",
+          "schema": {
+            "kind": "enum",
+            "type": "boolean | undefined",
+            "variants": [
+              "undefined",
+              "false",
+              "true"
+            ]
+          }
+        },
+        {
+          "name": "type",
+          "type": "\"r-number\" | undefined",
+          "required": false,
+          "default": "\"r-number\"",
+          "schema": {
+            "kind": "enum",
+            "type": "\"r-number\" | undefined",
+            "variants": [
+              "undefined",
+              "\"r-number\""
+            ]
+          }
+        },
+        {
+          "name": "id",
+          "type": "string | undefined",
+          "required": false,
+          "schema": {
+            "kind": "enum",
+            "type": "string | undefined",
+            "variants": [
+              "undefined",
+              "string"
+            ]
+          }
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: number | [number | undefined, number | undefined]]",
+          "schema": [
+            {
+              "kind": "enum",
+              "type": "number | [number | undefined, number | undefined]",
+              "variants": [
+                "number",
+                "[number | undefined, number | undefined]"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

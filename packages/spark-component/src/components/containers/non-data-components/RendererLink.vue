@@ -25,7 +25,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 
-interface Props extends SparkNode {
+interface RendererLinkProps {
+  type?: 'r-link'
   children?: SparkNode[]
   label?: string
   linkType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger'
@@ -34,7 +35,7 @@ interface Props extends SparkNode {
   target?: '_blank' | '_self' | '_parent' | '_top'
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererLinkProps>(), {
   type: 'r-link',
   linkType: 'default',
   underline: true,

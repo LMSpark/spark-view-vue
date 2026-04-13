@@ -30,6 +30,10 @@ export {
 
 export { createCrudEventDefaults } from './crud-event-defaults.js'
 
-export type { BaseContainerApi } from './base-container-api.js'
+export type {
+  BaseCrudContainerApi,
+  BaseContainerApi,
+  VisibilityContainerApi,
+} from './base-container-api.js'
 
 export { createBaseCrudMethods } from './base-crud-methods.js'

@@ -13,6 +13,7 @@ interface UseContainerDataSourceOptions<TSource> {
   dataKey: ComputedRef<string | undefined>
   pageDataSet: IDataSet | null
   mapView: (view: DataView) => TSource
+  externalDataSource?: ComputedRef<TSource | undefined>
 }
 
 interface UseContainerDataSourceEffectsOptions<TSource> {
@@ -24,6 +25,9 @@ interface UseContainerDataSourceEffectsOptions<TSource> {
 
 export function useContainerDataSource<TSource>(options: UseContainerDataSourceOptions<TSource>) {
   const resolvedDataSource = computed<TSource | null>(() => {
+    const provided = options.externalDataSource?.value
+    if (provided !== undefined) return provided
+
     const view = resolveViewFromDataKey(options.dataKey.value, options.pageDataSet)
     if (view) return options.mapView(view)
     return null

@@ -42,13 +42,11 @@ export type {
   SparkNodeTreeSetPropsParams,
   SparkNodeTreeReplaceParams,
   SparkNodeTreeRemoveParams,
-  SparkNodeTreeReorderChildrenParams,
   SparkNodeLocation,
   SparkNodeAddResult,
   SparkNodeSetPropsResult,
   SparkNodeReplaceResult,
   SparkNodeRemoveResult,
-  SparkNodeReorderChildrenResult,
 } from './spark-node-tree.js'
 
 export { SPARK_REGISTRY_KEY } from '../system/keys.js'

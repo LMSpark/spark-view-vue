@@ -12,6 +12,7 @@
 
 import type { Plugin } from 'vite'
 import { generateJsonCatalog } from './json-catalog-generator'
+import type { VcmCheckerOptions } from './extract-component-api-vcm'
 import { createLogger, normalizePath } from './utils'
 
 const logger = createLogger('spark-catalog')
@@ -27,6 +28,10 @@ export interface SparkCatalogPluginOptions {
   exclude?: string[]
   /** 启用详细日志 */
   verbose?: boolean
+  /** 是否保留 VCM 全局 props（class/style/key/ref 等） */
+  includeGlobalProps?: boolean
+  /** 透传给 vue-component-meta createChecker 的选项 */
+  vcmCheckerOptions?: VcmCheckerOptions
 }
 
 /* --------------------------------------------------------------------------
@@ -61,6 +66,8 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
           featurePatterns: options.featurePatterns,
           exclude: options.exclude,
           verbose: options.verbose,
+          includeGlobalProps: options.includeGlobalProps,
+          vcmCheckerOptions: options.vcmCheckerOptions,
         })
       }
     },

@@ -1,20 +1,20 @@
 /**
  * vue-component-meta 驱动的组件 API 提取器
  *
- * 通过 Volar 类型检查器完整解析 Vue SFC，提取：
- * - Props（含完整类型解析、嵌套 schema、默认值、JSDoc）
- * - Events（含参数签名和 schema）
+ * 这个文件只负责两件事：
+ * 1. 复用 vue-component-meta checker，避免重复创建带来的高成本。
+ * 2. 把 VCM 返回的组件元信息整理成 component-catalog 使用的稳定结构。
  *
- * 提供完整类型推导能力。
+ * 提取范围聚焦在目录真正消费的字段：
+ * - Props：名称、类型、必填、默认值、JSDoc、可选 schema
+ * - Events：名称、签名、JSDoc、可选 schema
  *
  * @module extract-component-api-vcm
  * @since 2.0.0
  */
 
 import { createChecker } from 'vue-component-meta'
-import type { ComponentMetaChecker, PropertyMetaSchema } from 'vue-component-meta'
-import { readFileSync } from 'node:fs'
-import ts from 'typescript'
+import type { ComponentMetaChecker, MetaCheckerOptions, PropertyMetaSchema } from 'vue-component-meta'
 
 import type {
   PropEntry,
@@ -24,22 +24,61 @@ import type {
 } from './component-catalog-schema'
 
 /* ==========================================================================
- * VCM 提取器：创建 & 缓存 checker
+ * 1) checker 缓存
+ *
+ * createChecker 会加载 tsconfig 并初始化完整类型系统，开销较大。
+ * 这里按 tsconfigPath 做单例缓存，命中时直接复用。
  * ========================================================================== */
 
 let _checker: ComponentMetaChecker | null = null
 let _tsconfigPath: string | null = null
+let _checkerOptionsKey: string | null = null
+
+type SupportedCheckerOptions = Pick<MetaCheckerOptions, 'rawType' | 'schema' | 'noDeclarations'>
+
+export type VcmCheckerOptions = Partial<SupportedCheckerOptions>
+
+const DEFAULT_CHECKER_OPTIONS: SupportedCheckerOptions = {
+  rawType: false,
+  schema: true,
+  noDeclarations: true,
+}
+
+function resolveCheckerOptions(options: VcmCheckerOptions): SupportedCheckerOptions {
+  return {
+    ...DEFAULT_CHECKER_OPTIONS,
+    ...options,
+  }
+}
+
+function buildCheckerOptionsKey(options: SupportedCheckerOptions): string {
+  return `rawType:${String(options.rawType)}|schema:${String(options.schema)}|noDeclarations:${String(options.noDeclarations)}`
+}
 
 /**
  * 创建或复用 vue-component-meta checker
  *
  * checker 绑定 tsconfig，文件范围由 tsconfig.catalog.json 的 include 决定。
+ * 这里固定使用 `rawType: false` + `schema: true` + `noDeclarations: true`。
+ * - rawType: false 避免输出体积暴涨与循环引用问题
+ * - schema: true 开启 schema 信息，便于目录消费侧做结构分析
+ * - noDeclarations: true 关闭声明位置信息，减小输出体积
  * 同一进程内复用同一个 checker（重建开销大）。
  */
-export function getOrCreateChecker(tsconfigPath: string): ComponentMetaChecker {
-  if (_checker !== null && _tsconfigPath === tsconfigPath) return _checker
-  _checker = createChecker(tsconfigPath, { rawType: true, schema: true })
+export function getOrCreateChecker(
+  tsconfigPath: string,
+  checkerOptions: VcmCheckerOptions = {},
+): ComponentMetaChecker {
+  const resolvedCheckerOptions = resolveCheckerOptions(checkerOptions)
+  const optionsKey = buildCheckerOptionsKey(resolvedCheckerOptions)
+
+  if (_checker !== null && _tsconfigPath === tsconfigPath && _checkerOptionsKey === optionsKey) {
+    return _checker
+  }
+
+  _checker = createChecker(tsconfigPath, resolvedCheckerOptions)
   _tsconfigPath = tsconfigPath
+  _checkerOptionsKey = optionsKey
   return _checker
 }
 
@@ -47,10 +86,11 @@ export function getOrCreateChecker(tsconfigPath: string): ComponentMetaChecker {
 export function resetChecker(): void {
   _checker = null
   _tsconfigPath = null
+  _checkerOptionsKey = null
 }
 
 /* ==========================================================================
- * 完整 API 提取
+ * 2) 提取结果结构
  * ========================================================================== */
 
 export interface VcmApiDescriptor {
@@ -60,10 +100,11 @@ export interface VcmApiDescriptor {
   filePath: string
   props: PropEntry[]
   emits: EmitEntry[]
-  /** Props 是否包含索引签名 */
-  hasIndexSignature: boolean
-  /** 从 prop schema 树中递归发现的嵌套 object schema（如 FilterItemConfig） */
-  discoveredSchemas: PropSchema[]
+}
+
+export interface ExtractComponentApiVcmOptions {
+  /** 是否保留 VCM 注入的全局 props（class/style/key/ref 等） */
+  includeGlobalProps?: boolean
 }
 
 type SchemaOwner = 'workspace' | 'external'
@@ -74,6 +115,17 @@ type PropEntryWithIdentity = PropEntry & {
 }
 
 const normalizedWorkspaceRoot = `${process.cwd().replace(/\\/g, '/').toLowerCase()}/`
+
+/* ==========================================================================
+ * 3) 消费 VCM rawType
+ *
+ * rawType 不是这里额外推导出来的，而是 VCM 在 `rawType: true` 时原生提供的底层 TS 类型对象。
+ * 当前主流程已固定为 `rawType: false`，本节逻辑仅保留兼容/实验用途。
+ * VCM 自带的 schema 有时不足以区分“工作区内类型”与“外部依赖类型”，
+ * 所以这里继续消费 rawType，追溯声明文件并整理出两类辅助信息：
+ * - owner：类型来源于 workspace 还是 external
+ * - identityKey：对象 schema 的稳定身份标识
+ * ========================================================================== */
 
 function getRawTypeDeclarationFiles(rawType: unknown): string[] {
   if (rawType === null || typeof rawType !== 'object') return []
@@ -114,6 +166,13 @@ function getRawTypeIdentityKey(rawType: unknown): string | undefined {
   return typeof rawTypeId === 'number' ? `ts:${rawTypeId}` : undefined
 }
 
+/* ==========================================================================
+ * 4) 对外提取入口
+ *
+ * extractComponentApiVcm：提取单个组件
+ * extractAllComponentApisVcm：批量提取组件
+ * ========================================================================== */
+
 /**
  * 使用 vue-component-meta 提取单个组件的完整 API
  *
@@ -127,72 +186,25 @@ export function extractComponentApiVcm(
   absPath: string,
   relativePath: string,
   componentType: string,
+  options: ExtractComponentApiVcmOptions = {},
 ): VcmApiDescriptor | null {
   const normalizedPath = absPath.replace(/\\/g, '/')
+  const { includeGlobalProps = false } = options
 
   try {
     const meta = checker.getComponentMeta(normalizedPath)
 
-    // -- Props（过滤 global props 如 class/style/key/ref，以及 SparkNode 结构字段） --
-    // type/props/children 是 h(type, props, children) 三段式结构键，由 SparkComponentRenderer 消费，
-    // 不属于组件业务 API，从 catalog 中排除。
-    const SPARK_NODE_STRUCT_KEYS = new Set(['type', 'props', 'children'])
-    const discoveredSchemas: PropSchema[] = []
-    const props: PropEntryWithIdentity[] = meta.props
-      .filter(p => !p.global && !SPARK_NODE_STRUCT_KEYS.has(p.name))
-      .map(p => {
-        const entry: PropEntryWithIdentity = {
-          name: p.name,
-          type: p.type,
-          required: p.required,
-        }
-        if (p.default !== undefined && p.default !== '') entry.default = p.default
-        if (p.description !== '') entry.description = p.description
-        // 嵌套 schema（仅当不是纯字符串时）
-        const schema = convertSchema(p.schema)
-        // 递归收集 enum/array 内嵌套的 object schema（如 FilterItemConfig）
-        collectNestedObjectSchemas(p.schema, discoveredSchemas)
-        if (schema !== undefined) {
-          entry.schema = schema
-          if (schema.kind === 'object') {
-            const schemaIdentityKey = getRawTypeIdentityKey(p.rawType)
-            if (schemaIdentityKey !== undefined) entry.__schemaIdentityKey = schemaIdentityKey
-          }
-          if (schema.kind === 'object' || schema.kind === 'array') {
-            const schemaOwner = getRawTypeOwner(p.rawType)
-            if (schemaOwner !== undefined) entry.__schemaOwner = schemaOwner
-          }
-        }
-        return entry
-      })
+    // 默认过滤 VCM 自动注入的全局 props，例如 class/style/key/ref。
+    const sourceProps = includeGlobalProps ? meta.props : meta.props.filter(p => !p.global)
+    const props: PropEntryWithIdentity[] = sourceProps.map(buildPropEntry)
 
-    // Props 索引签名检测（从源码 AST）
-    const hasIndexSignature = detectIndexSignature(absPath)
-
-    // -- Events --
-    const emits: EmitEntry[] = meta.events.map(e => {
-      const entry: EmitEntry = {
-        name: e.name,
-        type: e.type,
-      }
-      if (e.description !== '') entry.description = e.description
-      // 事件参数 schema
-      if (e.schema.length > 0) {
-        const converted = e.schema.map(convertSchema).filter(isNotUndefined)
-        if (converted.length > 0) {
-          entry.schema = converted
-        }
-      }
-      return entry
-    })
+    const emits: EmitEntry[] = meta.events.map(buildEmitEntry)
 
     return {
       type: componentType,
       filePath: relativePath,
       props,
       emits,
-      hasIndexSignature,
-      discoveredSchemas,
     }
   } catch {
     return null
@@ -200,11 +212,15 @@ export function extractComponentApiVcm(
 }
 
 /**
- * 批量提取多个组件
+ * 批量提取多个组件。
+ *
+ * 保持“单组件失败不拖垮全量生成”的策略：
+ * 某个组件解析失败时，extractComponentApiVcm 会返回 null，这里直接跳过。
  */
 export function extractAllComponentApisVcm(
   checker: ComponentMetaChecker,
   components: Array<{ absolutePath: string; relativePath: string; skillType: string }>,
+  options: ExtractComponentApiVcmOptions = {},
 ): VcmApiDescriptor[] {
   const results: VcmApiDescriptor[] = []
   for (const comp of components) {
@@ -213,6 +229,7 @@ export function extractAllComponentApisVcm(
       comp.absolutePath,
       comp.relativePath,
       comp.skillType,
+      options,
     )
     if (api !== null) results.push(api)
   }
@@ -220,13 +237,86 @@ export function extractAllComponentApisVcm(
 }
 
 /* ==========================================================================
- * Schema 转换
+ * 5) props / emits 组装
+ *
+ * 这一层把 VCM 元信息收敛为 catalog 需要的字段，保持“只保留目录实际消费的值”。
+ * ========================================================================== */
+
+function buildPropEntry(p: {
+  name: string
+  type: string
+  required: boolean
+  default?: string | undefined
+  description: string
+  schema: PropertyMetaSchema
+  rawType?: unknown
+}): PropEntryWithIdentity {
+  const entry: PropEntryWithIdentity = {
+    name: p.name,
+    type: p.type,
+    required: p.required,
+  }
+
+  if (p.default !== undefined && p.default !== '') entry.default = p.default
+  if (p.description !== '') entry.description = p.description
+
+  // schema 为纯字符串时不落盘；只有真正的结构信息才保留。
+  const schema = convertSchema(p.schema)
+  if (schema === undefined) return entry
+
+  entry.schema = schema
+
+  // 这里不是生成 rawType，而是消费 VCM 已经给出的 rawType，提取稳定身份。
+  if (schema.kind === 'object') {
+    const schemaIdentityKey = getRawTypeIdentityKey(p.rawType)
+    if (schemaIdentityKey !== undefined) entry.__schemaIdentityKey = schemaIdentityKey
+  }
+
+  // 对象 / 数组 schema 才有继续利用 rawType 追踪来源的意义。
+  if (schema.kind === 'object' || schema.kind === 'array') {
+    const schemaOwner = getRawTypeOwner(p.rawType)
+    if (schemaOwner !== undefined) entry.__schemaOwner = schemaOwner
+  }
+
+  return entry
+}
+
+function buildEmitEntry(e: {
+  name: string
+  type: string
+  description: string
+  schema: PropertyMetaSchema[]
+}): EmitEntry {
+  const entry: EmitEntry = {
+    name: e.name,
+    type: e.type,
+  }
+
+  if (e.description !== '') entry.description = e.description
+
+  // 事件参数 schema 是数组；逐项转换后仅保留有效结构。
+  if (e.schema.length > 0) {
+    const converted = e.schema.map(convertSchema).filter(isNotUndefined)
+    if (converted.length > 0) entry.schema = converted
+  }
+
+  return entry
+}
+
+/* ==========================================================================
+ * 6) schema 转换
+ *
+ * VCM 的 PropertyMetaSchema 是一个通用联合结构，这里只投影出 catalog 需要的四类：
+ * object / enum / array / event。
  * ========================================================================== */
 
 /**
  * 将 VCM 的 PropertyMetaSchema 转换为我们的 PropSchema
  *
- * 仅纯字符串类型不产生 schema 对象；其余结构以扁平形式保留。
+ * 设计约束：
+ * - 纯字符串类型不生成 schema，避免无意义噪音
+ * - object 只保留一层 properties，避免把目录变成深度结构镜像
+ * - enum / array / event 只保留消费侧真正需要的关键信息
  */
 function convertSchema(vcmSchema: PropertyMetaSchema): PropSchema | undefined {
   if (typeof vcmSchema === 'string') {
@@ -283,69 +373,10 @@ function uniqueSchemaTypes(schemas: PropertyMetaSchema[]): string[] {
 }
 
 /* ==========================================================================
- * 源码 AST 辅助函数
- * ========================================================================== */
+ * 7) 通用小工具
+ * ========================================================================= */
 
-/** 从 Vue SFC 源码中提取 <script setup> 内容 */
-function extractScriptSetupContent(sfcSource: string): string | null {
-  const match = sfcSource.match(/<script\s+setup(?:\s+lang=["']\w+["'])?\s*>([\s\S]*?)<\/script>/)
-  return match?.[1] ?? null
-}
-
-/** 检测 Props 接口是否含索引签名（从源码 AST） */
-function detectIndexSignature(absPath: string): boolean {
-  try {
-    const sfcSource = readFileSync(absPath, 'utf-8')
-    const scriptContent = extractScriptSetupContent(sfcSource)
-    if (scriptContent === null) return false
-
-    const sourceFile = ts.createSourceFile(
-      `${absPath}.ts`,
-      scriptContent,
-      ts.ScriptTarget.Latest,
-      true,
-      ts.ScriptKind.TS,
-    )
-
-    for (const stmt of sourceFile.statements) {
-      if (ts.isInterfaceDeclaration(stmt) && stmt.name.text === 'Props') {
-        return stmt.members.some(ts.isIndexSignatureDeclaration)
-      }
-    }
-    return false
-  } catch {
-    return false
-  }
-}
-
-/**
- * 递归遍历 VCM schema 树，收集嵌套的 object schema。
- *
- * 当 prop 类型是联合/数组包装（如 `(string | FilterItemConfig)[] | undefined`）时，
- * 顶层 convertSchema 只提取类型字符串，内部的 object 定义被丢弃。
- * 此函数深入 enum/array 子树，找到所有 kind:'object' 节点并转换收集。
- */
-function collectNestedObjectSchemas(vcmSchema: PropertyMetaSchema, collector: PropSchema[]): void {
-  if (typeof vcmSchema === 'string') return
-
-  // 只深入 enum/array/event 的子 schema 数组
-  if (vcmSchema.kind !== 'object' && vcmSchema.schema !== undefined && Array.isArray(vcmSchema.schema)) {
-    for (const sub of vcmSchema.schema) {
-      if (typeof sub === 'string') continue
-      if (sub.kind === 'object' && sub.schema !== undefined) {
-        const converted = convertSchema(sub)
-        if (converted !== undefined) {
-          collector.push(converted)
-        }
-      } else {
-        // 继续递归（处理多层 enum/array 嵌套）
-        collectNestedObjectSchemas(sub, collector)
-      }
-    }
-  }
-}
-
-/** 类型守卫 */
+/** 过滤掉 undefined，便于数组链式处理中保留精确类型。 */
 function isNotUndefined<T>(value: T | undefined): value is T {
   return value !== undefined
 }

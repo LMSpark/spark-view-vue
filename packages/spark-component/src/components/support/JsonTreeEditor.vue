@@ -189,7 +189,6 @@
  */
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
-import type { SparkNode } from '../internal'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import {
   addChildNode,
@@ -237,7 +236,8 @@ interface DisplayRow extends TreeDisplayNode {
 
 // ── Props ─────────────────────────────────────────────────────
 
-interface Props extends SparkNode {
+interface JsonTreeEditorProps {
+  type?: 'json-tree-editor'
   /** 字段绑定名，映射到 DataView 行字段 */
   field?: string
   /** 显示标签 */
@@ -262,7 +262,7 @@ interface Props extends SparkNode {
   createDefaultObjectValue?: (parentPath: JsonPath, key: string) => JsonValue
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<JsonTreeEditorProps>(), {
   modelValue: '',
   documentValue: null,
   height: 420,

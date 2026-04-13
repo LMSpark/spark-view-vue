@@ -56,16 +56,15 @@
  */
 import { computed, useAttrs, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
-import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
+import { getSparkNodeChildren, nodeId } from '../../../internal'
+import type { SparkChildrenProps, SparkVisibilityEventProps } from '../../../shared-types'
 import type { FooterNode } from '../../RendererFooter.types'
 import type { HeaderNode } from '../../RendererHeader.types'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererDialogApi } from './types'
 import { createRendererDialogZeroCode } from './zero-code'
 
-interface Props extends SparkNode {
-  /** 子节点 */
-  children?: SparkNode[]
+interface RendererDialogProps extends SparkChildrenProps<'r-dialog'>, SparkVisibilityEventProps {
   /** 结构化头部 */
   header?: HeaderNode
   /** 结构化底部 */
@@ -82,17 +81,9 @@ interface Props extends SparkNode {
   gridGap?: number | string
   /** 栅格行高 */
   gridAutoRows?: string
-  /** 打开回调 */
-  onOpen?: () => void
-  /** 关闭回调 */
-  onClose?: () => void
-  /** 打开动画结束回调 */
-  onOpened?: () => void
-  /** 关闭动画结束回调 */
-  onClosed?: () => void
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RendererDialogProps>(), {
   type: 'r-dialog',
   title: '',
   modelValue: false,

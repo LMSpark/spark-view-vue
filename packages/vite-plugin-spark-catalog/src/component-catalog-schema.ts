@@ -51,6 +51,15 @@ export interface ComponentCatalog {
   constraints: PlatformConstraints
 
   /**
+   * 规范化主模型（长期目标，治理优先）
+   *
+   * 说明：
+   * - 该模型通过字典 + 引用（refs）表达组件结构，减少重复信息
+   * - AI 侧应优先消费此模型做约束推理与生成
+   */
+  canonical?: CatalogCanonicalModel
+
+  /**
    * 组件绑定行为描述符（全量映射）
    *
    * 包含所有在绑定管线中有角色的组件类型（el-* 静态 + r-* 推断），
@@ -58,6 +67,14 @@ export interface ComponentCatalog {
    * AI 可查阅此表理解组件的数据绑定行为。
    */
   bindingDescriptors: Record<string, CatalogBindingDescriptor>
+
+  /**
+   * 治理契约字典（Vue 约束 -> AI 可读契约）
+   *
+   * 将组件公共 Props / 事件 / API 的“约束层”显式建模，
+   * 让 AI 在生成配置时优先基于契约推理，而不是逐组件重复学习。
+   */
+  governance?: CatalogGovernance
 }
 
 /**
@@ -82,7 +99,6 @@ export interface RawComponentEntry {
   filePath: string
   props: PropEntry[]
   emits: EmitEntry[]
-  hasIndexSignature: boolean
 }
 
 /* --------------------------------------------------------------------------
@@ -136,9 +152,46 @@ export interface ComponentEntry {
   /** 绑定行为描述符（从 VCM props 推断或静态声明） */
   binding?: CatalogBindingDescriptor
 
-  /** Props 是否包含索引签名（诊断字段） */
-  hasIndexSignature?: boolean
+  /** 组件命中的治理契约引用（按层分组） */
+  contracts?: ComponentContractRefs
 }
+
+/** 组件命中的治理契约引用 */
+export interface ComponentContractRefs {
+  props?: string[]
+  events?: string[]
+  api?: string[]
+}
+
+/* --------------------------------------------------------------------------
+ * 规范化主模型（长期目标）
+ * ----------------------------------------------------------------------- */
+
+export interface CatalogCanonicalModel {
+  dictionaries: CatalogCanonicalDictionaries
+  components: Record<string, CatalogCanonicalComponent>
+}
+
+export interface CatalogCanonicalDictionaries {
+  props: Record<string, PropEntry>
+  emits: Record<string, EmitEntry>
+}
+
+export interface CatalogCanonicalComponent {
+  type: string
+  category: ComponentEntry['category']
+  description: string
+  filePath?: string
+  propRefs: string[]
+  emitRefs: string[]
+  source: ComponentEntry['source']
+  binding?: CatalogBindingDescriptor
+  contracts?: ComponentContractRefs
+  provides?: string[]
+  consumes?: string[]
+  notes?: string
+}
+
 
 export interface PropEntry {
   name: string
@@ -276,6 +329,20 @@ export interface CatalogBindingDescriptor {
   actionComponent?: boolean
   /** 列容器（权限控制整列隐藏） */
   columnLike?: boolean
+}
+
+/* --------------------------------------------------------------------------
+ * 治理契约（Vue 侧标准 -> AI 侧标准）
+ * ----------------------------------------------------------------------- */
+
+export interface CatalogGovernance {
+  contracts: Record<string, GovernanceContract>
+}
+
+export interface GovernanceContract {
+  layer: 'props' | 'events' | 'api'
+  description: string
+  members: string[]
 }
 
 /* --------------------------------------------------------------------------

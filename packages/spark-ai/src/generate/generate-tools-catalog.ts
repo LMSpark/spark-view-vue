@@ -504,7 +504,7 @@ const SN_STRUCTURE_SPEC = buildFromActions(
     type: 'string — 组件类型（kebab-case），必须通过 queryComponentCatalog(type) 确认存在',
     props: 'object — 该组件接收的全部属性；每个组件的可用 props 不同，必须查询组件元数据确认',
     children: 'SparkNode[] | (string | number | SparkNode)[] — 子节点数组',
-    _树操作: '详见 actions[]: getNode / addNode / setProps / replaceNode / removeNode / reorderChildren 等',
+    _树操作: '详见 actions[]: getNode / addNode / setProps / replaceNode / removeNode 等',
   },
 )
 

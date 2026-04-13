@@ -1,6 +1,3 @@
-export interface RendererDrawerApi {
-  open(): void
-  close(): void
-  isVisible(): boolean
-  toggle(): void
-}
+import type { VisibilityContainerApi } from '../../support/base-container-api.js'
+
+export interface RendererDrawerApi extends VisibilityContainerApi {}
