@@ -2,7 +2,7 @@ import type { CSSProperties } from 'vue'
 import type { SparkComponentBaseProps } from '../../shared-types'
 
 export interface RDisplayCountdownProps extends SparkComponentBaseProps<'display-countdown'> {
-/** 目标时间（时间戳或 Date） */
+  /** 目标时间（时间戳或 Date） */
   value?: number | Date
   /** 格式化字符串，如 HH:mm:ss */
   format?: string

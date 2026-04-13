@@ -4,7 +4,7 @@ import type { ToolbarNode } from '../RendererToolbar.types'
 export type CollapseValue = string | number | Array<string | number>
 
 export interface RCollapseProps extends SparkChildrenProps<'r-collapse'> {
-  /** 结构化工具栏 */
+  /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 当前展开的面板 */
   modelValue?: CollapseValue

@@ -18,7 +18,7 @@ export interface RListProps
   extends SparkChildrenProps,
     SparkTableModelProps<DataView>,
     SparkCrudEventProps {
-  /** 结构化工具栏 */
+  /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 结构化列表项动作 */
   actions?: ActionsNode

@@ -19,7 +19,7 @@ export interface RTableProps
     SparkTableModelProps<DataView>,
     SparkCrudEventProps,
     SparkRowInteractionEventProps {
-  /** 结构化工具栏 */
+  /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 结构化筛选区 */
   filter?: FilterNode

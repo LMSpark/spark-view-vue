@@ -24,6 +24,7 @@ export type ToolbarNode = SparkNode & {
 export interface RendererToolbarProps {
 	type?: 'r-toolbar'
 	children?: SparkNode[]
+	/** @componentRef r-tail */
 	tail?: TailNode
 	gap?: number | string
 	zoneGap?: number | string

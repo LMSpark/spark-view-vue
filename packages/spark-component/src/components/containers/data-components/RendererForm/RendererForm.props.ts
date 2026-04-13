@@ -17,7 +17,7 @@ export interface RFormProps
     SparkTableModelProps<DataView>,
     SparkRowInstanceProps,
     SparkCrudEventProps {
-  /** 结构化工具栏 */
+  /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 表单标签宽度 */
   labelWidth?: string

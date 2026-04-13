@@ -1,8 +1,12 @@
 import type { SparkChildrenProps } from '../../shared-types'
 
 export interface RCardProps extends SparkChildrenProps<'r-card'> {
+  /** 卡片头部文本 */
   header?: string
+  /** 阴影显示策略 */
   shadow?: 'always' | 'hover' | 'never'
-  bodyStyle?: object | string
+  /** 卡片主体样式 */
+  bodyStyle?: Record<string, unknown> | string
+  /** 卡片主体 class */
   bodyClass?: string
 }

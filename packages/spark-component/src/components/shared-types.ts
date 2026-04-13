@@ -39,6 +39,16 @@ export interface SparkChildrenProps<TType extends string = string> extends Spark
 }
 
 /**
+ * 标题 + 内容文本语义（容器/展示组件复用）。
+ */
+export interface SparkTitleContentProps {
+  /** 标题文本 */
+  title?: string
+  /** 主内容文本 */
+  content?: string
+}
+
+/**
  * 字段级属性（第二层）：用于 field 语义组件。
  *
  * 继承 SparkComponentBaseProps，字段组件自动获得 type / id。
@@ -52,6 +62,16 @@ export interface SparkFieldProps<TType extends string = string> extends SparkCom
   readonly?: boolean
   /** 占位文案 */
   placeholder?: string
+}
+
+/**
+ * 展示值绑定属性：display 组件常见的 value / field 双通道绑定模型。
+ */
+export interface SparkValueBindingProps<TValue = unknown> {
+  /** 直接传入的展示值 */
+  value?: TValue
+  /** 数据字段绑定键（通常映射到当前行 field） */
+  field?: string
 }
 
 export interface SparkOptionItem {
@@ -72,9 +92,58 @@ export interface SparkOptionFieldProps<TType extends string = string, TDataLine 
 }
 
 /**
+ * 选项源配置（字段层通用）：用于 select/radio/cascader/tree-select 等组件。
+ */
+export interface SparkOptionSourceProps<TOption = unknown> {
+  /** 可选项数据源 */
+  options?: TOption[]
+  /** 选项主键字段（用于稳定 key） */
+  optionKey?: string
+  /** 选项显示字段 */
+  optionLabelField?: string
+  /** 选项值字段 */
+  optionValueField?: string
+  /** 子级字段（树形选项） */
+  optionChildrenField?: string
+}
+
+/**
+ * 选择行为配置（字段层通用）：抽离 clearable/filterable/multiple 重复定义。
+ */
+export interface SparkSelectionBehaviorProps {
+  /** 是否可清空 */
+  clearable?: boolean
+  /** 是否可搜索 */
+  filterable?: boolean
+  /** 是否多选 */
+  multiple?: boolean
+}
+
+/**
+ * 浮层行为配置（容器层通用）：popover/tooltip 等浮层组件共用。
+ */
+export interface SparkFloatingLayerProps {
+  /** 浮层位置 */
+  placement?: string
+  /** 主题 */
+  effect?: 'dark' | 'light'
+  /** 偏移量 */
+  offset?: number
+  /** 显示延迟（毫秒） */
+  showAfter?: number
+  /** 隐藏延迟（毫秒） */
+  hideAfter?: number
+  /** 是否显示箭头 */
+  showArrow?: boolean
+  /** 浮层额外 class */
+  popperClass?: string
+}
+
+/**
  * 行级实例属性（第四层）：行上下文组件复用。
  */
 export interface SparkRowInstanceProps {
+  /** @internal 运行时注入的行数据，不属于页面配置 */
   row?: IDataRow
   rowIndex?: number
 }
@@ -83,6 +152,7 @@ export interface SparkRowInstanceProps {
  * 数据线属性（第五层基础）：容器可直接接入已解析的数据线。
  */
 export interface SparkDataLineProps<TDataLine extends IDataSource = IDataSource> {
+  /** @internal 运行时数据线，由框架注入，不属于页面配置 */
   dataSource?: TDataLine
 }
 
