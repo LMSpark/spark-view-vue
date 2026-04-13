@@ -25,36 +25,9 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RTimePickerProps } from './FieldTimePicker.props'
 
-interface Props extends SparkRuntimeProps<'r-time-picker'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: string | Date
-  /** 占位文本 */
-  placeholder?: string
-  /** 是否为范围选择 */
-  isRange?: boolean
-  /** 范围分隔符 */
-  rangeSeparator?: string
-  /** 范围开始占位 */
-  startPlaceholder?: string
-  /** 范围结束占位 */
-  endPlaceholder?: string
-  /** 箭头控制 */
-  arrowControl?: boolean
-  /** 时间格式 */
-  format?: string
-  /** 可清空 */
-  clearable?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTimePickerProps>(), {
   type: 'r-time-picker',
   placeholder: '选择时间',
   isRange: false,

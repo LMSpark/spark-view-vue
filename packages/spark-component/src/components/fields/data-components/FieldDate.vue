@@ -30,45 +30,9 @@ import { computed } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RDateProps, DatePickerType } from './FieldDate.props'
 
-type DatePickerType = 'year' | 'month' | 'date' | 'dates' | 'datetime' | 'week'
-  | 'datetimerange' | 'daterange' | 'monthrange' | 'yearrange'
-
-interface Props extends SparkRuntimeProps<'r-date'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值，日期范围时为数组 */
-  modelValue?: string | Date | (string | Date)[]
-  /** 日期选择器类型 */
-  dateType?: DatePickerType
-  /** 占位文本 */
-  placeholder?: string
-  /** 范围开始占位 */
-  startPlaceholder?: string
-  /** 范围结束占位 */
-  endPlaceholder?: string
-  /** 范围分隔符 */
-  rangeSeparator?: string
-  /** 显示格式 */
-  format?: string
-  /** 值格式 */
-  valueFormat?: string
-  /** 可清空 */
-  clearable?: boolean
-  /** 筛选模式 */
-  filterMode?: string
-  /** 筛选变体 */
-  filterVariant?: string
-  /** 范围筛选标记 */
-  filterRange?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RDateProps>(), {
   type: 'r-date',
   placeholder: '选择日期',
   startPlaceholder: '开始日期',

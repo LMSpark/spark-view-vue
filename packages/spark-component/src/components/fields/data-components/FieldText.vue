@@ -17,20 +17,9 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RTextProps } from './FieldText.props'
 
-interface Props extends SparkRuntimeProps<'r-text'> {
-  /** 字段绑定名，映射到 DataView 行字段 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTextProps>(), {
   type: 'r-text',
 })
 

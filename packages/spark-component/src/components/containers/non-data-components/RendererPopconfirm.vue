@@ -31,24 +31,12 @@
  * @description 确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RPopconfirmProps } from './RendererPopconfirm.props'
 
-interface RendererPopconfirmProps {
-  type?: 'r-popconfirm'
-  children?: SparkNode[]
-  title?: string
-  confirmButtonText?: string
-  cancelButtonText?: string
-  confirmButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger'
-  cancelButtonType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger'
-  icon?: string
-  iconColor?: string
-  hideIcon?: boolean
-  hideAfter?: number
-  width?: number | string
-}
 
-const props = withDefaults(defineProps<RendererPopconfirmProps>(), {
+
+const props = withDefaults(defineProps<RPopconfirmProps>(), {
   type: 'r-popconfirm',
   confirmButtonType: 'primary',
   cancelButtonType: '',

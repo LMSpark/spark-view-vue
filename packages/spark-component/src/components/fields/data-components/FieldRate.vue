@@ -19,24 +19,9 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RRateProps } from './FieldRate.props'
 
-interface Props extends SparkRuntimeProps<'r-rate'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: number
-  /** 最大值 */
-  max?: number
-  /** 允许半星 */
-  allowHalf?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RRateProps>(), {
   type: 'r-rate',
   max: 5,
   allowHalf: false,

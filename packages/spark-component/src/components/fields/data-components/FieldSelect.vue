@@ -28,34 +28,9 @@
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RSelectProps } from './FieldSelect.props'
 
-interface Props extends SparkRuntimeProps<'r-select'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: string | number
-  /** 选项列表 */
-  options?: unknown[]
-  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
-  optionKey?: string
-  /** 选项标签字段 */
-  optionLabelField?: string
-  /** 选项值字段 */
-  optionValueField?: string
-  /** 占位提示 */
-  placeholder?: string
-  /** 可清除 */
-  clearable?: boolean
-  /** 可搜索 */
-  filterable?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RSelectProps>(), {
   type: 'r-select',
   placeholder: '请选择',
   clearable: true,

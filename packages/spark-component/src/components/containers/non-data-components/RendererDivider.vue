@@ -16,16 +16,11 @@
  * @description 分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。
  */
 import { useSparkPageComponent } from '../../internal'
+import type { RDividerProps } from './RendererDivider.props'
 
-interface RendererDividerProps {
-  type?: 'r-divider'
-  direction?: 'horizontal' | 'vertical'
-  borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'none'
-  contentPosition?: 'left' | 'center' | 'right'
-  content?: string
-}
 
-const props = withDefaults(defineProps<RendererDividerProps>(), {
+
+const props = withDefaults(defineProps<RDividerProps>(), {
   type: 'r-divider',
   direction: 'horizontal',
   borderStyle: 'solid',

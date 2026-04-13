@@ -23,32 +23,18 @@
 import { computed, useAttrs } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RTagProps, TagType } from './DisplayTag.props'
 
 const TAG_TYPES = ['success', 'info', 'warning', 'danger'] as const
-type TagType = (typeof TAG_TYPES)[number]
 
 function normalizeTagType(value: unknown): TagType | undefined {
   if (typeof value !== 'string') return undefined
   return TAG_TYPES.includes(value as TagType) ? (value as TagType) : undefined
 }
 
-interface Props extends SparkRuntimeProps<'r-tag'> {
-  content?: string
-  value?: string
-  field?: string
-  tagType?: '' | TagType
-  dynamicType?: Record<string, '' | TagType>
-  closable?: boolean
-  disableTransitions?: boolean
-  hit?: boolean
-  round?: boolean
-  color?: string
-  size?: 'large' | 'default' | 'small'
-  effect?: 'dark' | 'light' | 'plain'
-}
 
-const props = withDefaults(defineProps<Props>(), {
+
+const props = withDefaults(defineProps<RTagProps>(), {
   type: 'r-tag',
   closable: false,
   disableTransitions: false,

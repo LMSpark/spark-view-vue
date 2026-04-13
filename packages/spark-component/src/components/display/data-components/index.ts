@@ -6,3 +6,13 @@ export { default as DisplayAvatar } from './DisplayAvatar.vue'
 export { default as DisplayText } from './DisplayText.vue'
 export { default as DisplayPagination } from './DisplayPagination.vue'
 export { default as DisplayImage } from './DisplayImage.vue'
+
+// ── Props 类型 ──
+export type { RStatisticProps } from './DisplayStatistic.props'
+export type { RProgressProps, ProgressColor } from './DisplayProgress.props'
+export type { RTagProps, TagType } from './DisplayTag.props'
+export type { RBadgeProps } from './DisplayBadge.props'
+export type { RAvatarProps } from './DisplayAvatar.props'
+export type { RTextDisplayProps } from './DisplayText.props'
+export type { RPaginationProps } from './DisplayPagination.props'
+export type { RDisplayImageProps } from './DisplayImage.props'

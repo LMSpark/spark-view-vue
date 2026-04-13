@@ -46,36 +46,9 @@ import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RImageProps } from './FieldImage.props'
 
-interface Props extends SparkRuntimeProps<'r-image'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值（图片路径） */
-  modelValue?: string
-  /** 上传 URL */
-  action?: string
-  /** 接受文件类型 */
-  accept?: string
-  /** 多选 */
-  multiple?: boolean
-  /** 多图分隔符 */
-  separator?: string
-  /** 占位提示 */
-  placeholder?: string
-  /** 上传按钮文案 */
-  buttonText?: string
-  /** 只读模式按钮文案 */
-  readonlyButtonText?: string
-  /** 可清除 */
-  clearable?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RImageProps>(), {
   type: 'r-image',
   action: '#',
   accept: 'image/*',

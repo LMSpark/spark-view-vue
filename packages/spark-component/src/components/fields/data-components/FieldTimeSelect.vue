@@ -24,34 +24,9 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RTimeSelectProps } from './FieldTimeSelect.props'
 
-interface Props extends SparkRuntimeProps<'r-time-select'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: string
-  /** 占位文本 */
-  placeholder?: string
-  /** 起始时间 */
-  start?: string
-  /** 结束时间 */
-  end?: string
-  /** 时间间隔步长 */
-  step?: string
-  /** 最小可选时间 */
-  minTime?: string
-  /** 最大可选时间 */
-  maxTime?: string
-  /** 可清空 */
-  clearable?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTimeSelectProps>(), {
   type: 'r-time-select',
   placeholder: '选择时间',
   start: '08:30',

@@ -20,56 +20,13 @@
  * @description 通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。
  */
 import { computed } from 'vue'
-import type { PageSelectableValue } from '@spark-view/spark-utils'
-import type { SparkNode } from '../../internal'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import { useSelectorFieldActions } from '../actions/useSelectorFieldActions'
 import { useEntityPickerState } from './composables/useEntityPickerState'
 import { useOptionFieldState } from './composables/useOptionFieldState'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import type { REntityPickerProps, EntityPickerValue } from './FieldEntityPicker.props'
 
-type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
-
-interface Props extends SparkRuntimeChildrenProps<'r-entity-picker'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: EntityPickerValue
-  /** 选项列表 */
-  options?: unknown[]
-  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
-  optionKey?: string
-  /** 选项标签字段 */
-  optionLabelField?: string
-  /** 选项值字段 */
-  optionValueField?: string
-  /** 占位提示 */
-  placeholder?: string
-  /** 选择按钮文案 */
-  buttonText?: string
-  /** 只读模式按钮文案 */
-  readonlyButtonText?: string
-  /** 可清除 */
-  clearable?: boolean
-  /** 多选 */
-  multiple?: boolean
-  /** 可搜索 */
-  searchable?: boolean
-  /** 多值分隔符 */
-  separator?: string
-  /** 值模式 */
-  valueMode?: 'auto' | 'array' | 'comma-string'
-  /** 实体名称 */
-  entityName?: string
-  /** 子节点列表 */
-  children?: SparkNode[]
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<REntityPickerProps>(), {
   type: 'r-entity-picker',
   placeholder: '请选择',
   buttonText: '选择',

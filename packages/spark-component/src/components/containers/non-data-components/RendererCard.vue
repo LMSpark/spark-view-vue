@@ -26,18 +26,12 @@
  * @description 卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RCardProps } from './RendererCard.props'
 
-interface RendererCardProps {
-  type?: 'r-card'
-  children?: SparkNode[]
-  header?: string
-  shadow?: 'always' | 'hover' | 'never'
-  bodyStyle?: object | string
-  bodyClass?: string
-}
 
-const props = withDefaults(defineProps<RendererCardProps>(), {
+
+const props = withDefaults(defineProps<RCardProps>(), {
   type: 'r-card',
   shadow: 'always',
 })

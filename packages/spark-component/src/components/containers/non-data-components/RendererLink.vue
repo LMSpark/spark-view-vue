@@ -23,19 +23,12 @@
  * @description 链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RLinkProps } from './RendererLink.props'
 
-interface RendererLinkProps {
-  type?: 'r-link'
-  children?: SparkNode[]
-  label?: string
-  linkType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger'
-  underline?: boolean
-  href?: string
-  target?: '_blank' | '_self' | '_parent' | '_top'
-}
 
-const props = withDefaults(defineProps<RendererLinkProps>(), {
+
+const props = withDefaults(defineProps<RLinkProps>(), {
   type: 'r-link',
   linkType: 'default',
   underline: true,

@@ -41,20 +41,9 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RColorProps } from './FieldColor.props'
 
-interface Props extends SparkRuntimeProps<'r-color'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值（颜色字符串，透传 el-color-picker） */
-  modelValue?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RColorProps>(), {
   type: 'r-color',
 })
 

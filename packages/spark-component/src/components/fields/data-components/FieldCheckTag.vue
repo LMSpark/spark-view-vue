@@ -17,16 +17,9 @@
  */
 import { ref, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RCheckTagProps } from './FieldCheckTag.props'
 
-interface Props extends SparkRuntimeProps<'r-check-tag'> {
-  /** 是否选中 */
-  checked?: boolean
-  /** 标签文本 */
-  label?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RCheckTagProps>(), {
   type: 'r-check-tag',
   checked: false,
 })

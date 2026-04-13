@@ -88,11 +88,7 @@ import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
-import type {
-  SparkChildrenProps,
-  SparkTableModelProps,
-  SparkCrudEventProps,
-} from '../../../shared-types'
+import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
@@ -103,49 +99,10 @@ import { useContainerDataSource, useContainerDataSourceEffects } from '../../use
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
-import type { ActionsNode } from '../../support/RendererActionHost.types'
-import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
 import { createRendererListZeroCode } from './zero-code'
-import { type RowClickHandler } from '../../support/index.js'
 
-interface RendererListProps extends SparkChildrenProps<'r-list'>, SparkTableModelProps<DataView>, SparkCrudEventProps {
-  /** 结构化工具栏 */
-  toolbar?: ToolbarNode
-  /** 结构化列表项动作 */
-  actions?: ActionsNode
-  /** 列数 */
-  columns?: number
-  /** 列表项间距 */
-  gap?: number | string
-  /** 最小项宽度 */
-  minItemWidth?: string
-  /** 行唯一键字段 */
-  rowKey?: string
-  /** 空数据提示文案 */
-  emptyText?: string
-  /** 列表项 CSS 类名 */
-  itemClass?: string
-  /** 列表项行内样式 */
-  itemStyle?: CSSProperties
-  /** 使用卡片包裹 */
-  useCard?: boolean
-  /** 卡片阴影模式 */
-  cardShadow?: 'always' | 'hover' | 'never'
-  /** CSS Grid 列数 */
-  gridColumns?: number
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
-  /** 项跨列数 */
-  itemColSpan?: number
-  /** 项跨行数 */
-  itemRowSpan?: number
-  onItemClick?: RowClickHandler
-}
-
-const props = withDefaults(defineProps<RendererListProps>(), {
+const props = withDefaults(defineProps<RListProps>(), {
   type: 'r-list',
   columns: 1,
   gap: 0,

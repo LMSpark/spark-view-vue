@@ -19,16 +19,11 @@
  * @description 锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。
  */
 import { useSparkPageComponent } from '../../internal'
+import type { RAnchorLinkProps } from './RendererAnchorLink.props'
 
-interface RendererAnchorLinkProps {
-  type?: 'r-anchor-link'
-  /** 锚点链接 */
-  href?: string
-  /** 链接标题 */
-  title?: string
-}
 
-const props = withDefaults(defineProps<RendererAnchorLinkProps>(), {
+
+const props = withDefaults(defineProps<RAnchorLinkProps>(), {
   type: 'r-anchor-link',
 })
 

@@ -37,33 +37,13 @@
  */
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
 import { resolveButtonStyle } from '../button-templates'
+import type { RButtonProps } from './RendererButton.props'
 
-interface RendererButtonProps {
-  type?: 'r-button'
-  children?: SparkNode[]
-  /** CRUD 动作名（如 'refresh', 'delete-row'），由容器自动绑定处理器 */
-  action?: string
-  /** 样式模板名（如 'primary', 'toolbar-danger', 'icon-add'） */
-  template?: string
-  label?: string
-  buttonType?: string
-  buttonSize?: string
-  plain?: boolean
-  text?: boolean
-  bg?: boolean
-  link?: boolean
-  round?: boolean
-  circle?: boolean
-  loading?: boolean
-  icon?: string
-  autoInsertSpace?: boolean
-  color?: string
-  dark?: boolean
-}
 
-const props = withDefaults(defineProps<RendererButtonProps>(), {
+
+const props = withDefaults(defineProps<RButtonProps>(), {
   type: 'r-button',
   bg: false,
   loading: false,

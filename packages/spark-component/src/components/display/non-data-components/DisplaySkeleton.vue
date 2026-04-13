@@ -24,19 +24,10 @@
  * @description 骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RSkeletonProps } from './DisplaySkeleton.props'
 
-interface Props extends SparkRuntimeChildrenProps<'r-skeleton'> {
-  children?: SparkNode[]
-  rows?: number
-  count?: number
-  loading?: boolean
-  animated?: boolean
-  throttle?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RSkeletonProps>(), {
   type: 'r-skeleton',
   rows: 3,
   count: 1,

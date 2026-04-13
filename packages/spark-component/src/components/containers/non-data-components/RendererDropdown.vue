@@ -43,32 +43,10 @@
  * @description 下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RDropdownProps } from './RendererDropdown.props'
 
-interface DropdownItem {
-  label: string
-  command?: string
-  disabled?: boolean
-  divided?: boolean
-  icon?: string
-}
-
-interface RendererDropdownProps {
-  type?: 'r-dropdown'
-  children?: SparkNode[]
-  items?: DropdownItem[]
-  trigger?: 'hover' | 'click' | 'contextmenu'
-  effect?: 'dark' | 'light'
-  placement?: string
-  hideOnClick?: boolean
-  showTimeout?: number
-  hideTimeout?: number
-  splitButton?: boolean
-  popperClass?: string
-  maxHeight?: number | string
-}
-
-const props = withDefaults(defineProps<RendererDropdownProps>(), {
+const props = withDefaults(defineProps<RDropdownProps>(), {
   type: 'r-dropdown',
   trigger: 'hover',
   effect: 'light',

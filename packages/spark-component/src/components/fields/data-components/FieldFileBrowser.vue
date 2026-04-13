@@ -37,32 +37,9 @@ import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useFileBrowserFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RFileBrowserProps } from './FieldFileBrowser.props'
 
-interface Props extends SparkRuntimeProps<'r-file-browser'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值（文件路径） */
-  modelValue?: string
-  /** 接受文件类型 */
-  accept?: string
-  /** 多选 */
-  multiple?: boolean
-  /** 可清除 */
-  clearable?: boolean
-  /** 多文件分隔符 */
-  separator?: string
-  /** 占位提示 */
-  placeholder?: string
-  /** 上传按钮文案 */
-  buttonText?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RFileBrowserProps>(), {
   type: 'r-file-browser',
   accept: '',
   multiple: false,

@@ -22,17 +22,10 @@
  * @description 结果页组件，基于 el-result 显示操作结果状态（成功/警告/信息/错误），含标题、副标题和按钮区。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RResultProps } from './DisplayResult.props'
 
-interface Props extends SparkRuntimeChildrenProps<'r-result'> {
-  children?: SparkNode[]
-  icon?: 'success' | 'warning' | 'info' | 'error'
-  title?: string
-  subTitle?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RResultProps>(), {
   type: 'r-result',
   icon: 'info',
 })

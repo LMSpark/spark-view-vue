@@ -28,6 +28,28 @@ export { default as RendererTour } from './RendererTour.vue'
 export { default as RendererAnchor } from './RendererAnchor.vue'
 export { default as RendererAnchorLink } from './RendererAnchorLink.vue'
 
+// ── Props 类型 ──
+export type { RTabsProps, TabsClickEvent } from './RendererTabs/index.js'
+export type { RCollapseProps, CollapseValue } from './RendererCollapse/index.js'
+export type { RDialogProps } from './RendererDialog/index.js'
+export type { RDrawerProps } from './RendererDrawer/index.js'
+export type { RStepsProps } from './RendererSteps/index.js'
+export type { RSectionProps } from './RendererSection/index.js'
+export type { RToolbarProps } from './RendererToolbar.props'
+export type { RCardProps } from './RendererCard.props'
+export type { RSpaceProps } from './RendererSpace.props'
+export type { RDividerProps } from './RendererDivider.props'
+export type { RButtonProps } from './RendererButton.props'
+export type { RLinkProps } from './RendererLink.props'
+export type { RPageHeaderProps } from './RendererPageHeader.props'
+export type { RDropdownProps, DropdownItem } from './RendererDropdown.props'
+export type { RTooltipProps } from './RendererTooltip.props'
+export type { RPopoverProps } from './RendererPopover.props'
+export type { RPopconfirmProps } from './RendererPopconfirm.props'
+export type { RTourProps, TourStep } from './RendererTour.props'
+export type { RAnchorProps } from './RendererAnchor.props'
+export type { RAnchorLinkProps } from './RendererAnchorLink.props'
+
 // ── Passthrough（工厂生成，替代独立 .vue 文件）──
 import { createPassthrough } from '../../create-passthrough.js'
 

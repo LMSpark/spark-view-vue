@@ -18,23 +18,9 @@
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import { DATA_ROW, useSparkComponent } from '../../internal'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RTreeNodeSummaryProps } from './TreeNodeSummary.props'
 
-interface Props extends SparkRuntimeProps<'r-tree-node-summary'> {
-  nameField?: string
-  typeField?: string
-  statusField?: string
-  ownerField?: string
-  metaField?: string
-  extraField?: string
-  showType?: boolean
-  showStatus?: boolean
-  showOwner?: boolean
-  showMeta?: boolean
-  showExtra?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTreeNodeSummaryProps>(), {
   type: 'r-tree-node-summary',
   nameField: 'name',
   typeField: 'type',

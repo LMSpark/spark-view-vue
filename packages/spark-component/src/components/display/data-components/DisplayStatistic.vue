@@ -21,22 +21,9 @@
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RStatisticProps } from './DisplayStatistic.props'
 
-interface Props extends SparkRuntimeProps<'r-statistic'> {
-  title?: string
-  value?: number | string
-  dataKey?: string
-  field?: string
-  precision?: number
-  decimalSeparator?: string
-  groupSeparator?: string
-  prefix?: string
-  suffix?: string
-  valueStyle?: object | string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RStatisticProps>(), {
   type: 'r-statistic',
   precision: 0,
   decimalSeparator: '.',

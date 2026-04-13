@@ -40,40 +40,9 @@ import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RUploadProps } from './FieldUpload.props'
 
-interface Props extends SparkRuntimeProps<'r-upload'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值（文件路径） */
-  modelValue?: string
-  /** 上传 URL */
-  action?: string
-  /** 接受文件类型 */
-  accept?: string
-  /** 上传按钮文案 */
-  buttonText?: string
-  /** 自动上传 */
-  autoUpload?: boolean
-  /** 显示文件列表 */
-  showFileList?: boolean
-  /** 最大文件数 */
-  limit?: number
-  /** 列表展示类型 */
-  listType?: 'text' | 'picture' | 'picture-card'
-  /** 多文件分隔符 */
-  separator?: string
-  /** 占位提示 */
-  placeholder?: string
-  /** 只读模式按钮文案 */
-  readonlyButtonText?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RUploadProps>(), {
   type: 'r-upload',
   action: '#',
   accept: '',

@@ -18,22 +18,9 @@
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RTextDisplayProps } from './DisplayText.props'
 
-interface Props extends SparkRuntimeProps<'r-text-display'> {
-  value?: unknown
-  field?: string
-  tag?: string
-  prefix?: string
-  suffix?: string
-  format?: 'number' | 'currency' | 'percent' | 'date'
-  precision?: number
-  placeholder?: string
-  textClass?: string
-  textStyle?: object | string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTextDisplayProps>(), {
   type: 'r-text-display',
   tag: 'span',
   precision: 2,

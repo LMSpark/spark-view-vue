@@ -23,17 +23,12 @@
  * @description 页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RPageHeaderProps } from './RendererPageHeader.props'
 
-interface RendererPageHeaderProps {
-  type?: 'r-page-header'
-  children?: SparkNode[]
-  title?: string
-  icon?: string
-  content?: string
-}
 
-const props = withDefaults(defineProps<RendererPageHeaderProps>(), {
+
+const props = withDefaults(defineProps<RPageHeaderProps>(), {
   type: 'r-page-header',
   title: '返回',
 })

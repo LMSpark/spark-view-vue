@@ -35,30 +35,9 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RTextareaProps } from './FieldTextarea.props'
 
-interface Props extends SparkRuntimeProps<'r-textarea'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: string
-  /** 行数 */
-  rows?: number
-  /** 自适应高度 */
-  autosize?: boolean | { minRows?: number; maxRows?: number }
-  /** 最大长度 */
-  maxlength?: number
-  /** 显示字数统计 */
-  showWordLimit?: boolean
-  /** 占位提示 */
-  placeholder?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTextareaProps>(), {
   type: 'r-textarea',
   rows: 4,
   autosize: false,

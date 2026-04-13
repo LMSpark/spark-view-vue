@@ -24,21 +24,9 @@
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, useSparkConsume, DATA_SOURCE } from '../../internal'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RPaginationProps } from './DisplayPagination.props'
 
-interface Props extends SparkRuntimeProps<'r-pagination'> {
-  total?: number
-  pageSize?: number
-  currentPage?: number
-  pageSizes?: number[]
-  pagerCount?: number
-  layout?: string
-  background?: boolean
-  small?: boolean
-  hideOnSinglePage?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RPaginationProps>(), {
   type: 'r-pagination',
   pageSize: 10,
   currentPage: 1,

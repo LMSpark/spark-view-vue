@@ -21,16 +21,9 @@
  */
 import { ref } from 'vue'
 import { useSparkPageComponent } from '../../internal'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RDisplayCalendarProps } from './DisplayCalendar.props'
 
-interface Props extends SparkRuntimeProps<'display-calendar'> {
-  /** 当前日期 */
-  modelValue?: Date
-  /** 日期范围 [start, end] */
-  range?: [Date, Date]
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RDisplayCalendarProps>(), {
   type: 'display-calendar',
 })
 

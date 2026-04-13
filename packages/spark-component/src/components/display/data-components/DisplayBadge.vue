@@ -27,27 +27,11 @@
  * @description 徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import type { RBadgeProps } from './DisplayBadge.props'
 
-interface Props extends SparkRuntimeChildrenProps<'r-badge'> {
-  children?: SparkNode[]
-  badgeValue?: string | number
-  value?: string | number
-  field?: string
-  max?: number
-  isDot?: boolean
-  hiddenBadge?: boolean
-  badgeType?: '' | 'primary' | 'success' | 'warning' | 'info' | 'danger'
-  showZero?: boolean
-  color?: string
-  offset?: [number, number]
-  badgeStyle?: object
-  badgeClass?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RBadgeProps>(), {
   type: 'r-badge',
   max: 99,
   isDot: false,

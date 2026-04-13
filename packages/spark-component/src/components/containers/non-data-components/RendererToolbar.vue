@@ -33,9 +33,9 @@
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
-import type { InlineAlign, InlineJustify, RendererToolbarProps as Props } from './RendererToolbar.types'
+import type { InlineAlign, InlineJustify, RToolbarProps } from './RendererToolbar.props'
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RToolbarProps>(), {
   type: 'r-toolbar',
 })
 

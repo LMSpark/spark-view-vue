@@ -19,16 +19,10 @@
  * @description 面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RBreadcrumbProps } from './DisplayBreadcrumb.props'
 
-interface Props extends SparkRuntimeChildrenProps<'r-breadcrumb'> {
-  children?: SparkNode[]
-  separator?: string
-  separatorIcon?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RBreadcrumbProps>(), {
   type: 'r-breadcrumb',
   separator: '/',
 })

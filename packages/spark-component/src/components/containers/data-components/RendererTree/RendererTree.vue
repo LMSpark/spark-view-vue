@@ -70,7 +70,7 @@
 import { computed, ref } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
-import type { SparkChildrenProps, SparkTableModelProps, SparkCrudEventProps } from '../../../shared-types'
+import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { usePermission } from '../../../../permission/index.js'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
@@ -82,8 +82,6 @@ import {
   type TreeNode,
   type ElTreeNode,
   type ElTreeComponent,
-  type TreeEventHandler,
-  type TreeNodeActionHandler,
 } from './zero-code'
 import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
@@ -99,43 +97,9 @@ import {
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
-import type { ActionsNode } from '../../support/RendererActionHost.types'
-import type { EditorNode } from '../../RendererEditor.types'
-import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import RendererDataScope from '../RendererRowFragment/RendererDataScope.vue'
 
-interface RendererTreeProps extends SparkChildrenProps<'r-tree'>, SparkTableModelProps<DataView>, SparkCrudEventProps {
-  /** 结构化工具栏 */
-  toolbar?: ToolbarNode
-  /** 结构化节点动作 */
-  actions?: ActionsNode
-  /** 结构化编辑区 */
-  editor?: EditorNode
-  /** 节点主键字段名，默认取 treeConfig.idField */
-  nodeKey?: string
-  /** 当前选中节点 ID */
-  currentKey?: string | number | null
-  /** 初始化展开并定位到目标节点 ID */
-  expandToKey?: string | number | null
-  /** 初始化自动展开到指定层级（根节点为第 1 层） */
-  expandLevel?: number
-  /** 允许追加子节点（自动生成追加按钮） */
-  allowAppend?: boolean
-  /** 允许删除节点（自动生成删除按钮） */
-  allowDelete?: boolean
-  /** 节点点击回调 */
-  onNodeClick?: TreeEventHandler
-  /** 节点展开回调 */
-  onNodeExpand?: TreeEventHandler
-  /** 节点折叠回调 */
-  onNodeCollapse?: TreeEventHandler
-  /** 节点追加前回调 */
-  onNodeAppend?: TreeNodeActionHandler
-  /** 节点删除前回调 */
-  onNodeDelete?: TreeNodeActionHandler
-}
-
-const props = withDefaults(defineProps<RendererTreeProps>(), {
+const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
 })
 const {

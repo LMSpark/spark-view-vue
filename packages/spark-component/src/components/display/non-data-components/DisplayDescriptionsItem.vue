@@ -26,24 +26,11 @@
  * @description 描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import type { RDescriptionsItemProps } from './DisplayDescriptionsItem.props'
 
-interface Props extends SparkRuntimeChildrenProps<'r-descriptions-item'> {
-  children?: SparkNode[]
-  label?: string
-  span?: number
-  labelAlign?: 'left' | 'center' | 'right'
-  contentAlign?: 'left' | 'center' | 'right'
-  labelClassName?: string
-  className?: string
-  content?: string
-  value?: unknown
-  field?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RDescriptionsItemProps>(), {
   type: 'r-descriptions-item',
   span: 1,
 })

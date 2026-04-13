@@ -14,14 +14,10 @@
  * @description 时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RTimelineProps } from './DisplayTimeline.props'
 
-interface Props extends SparkRuntimeChildrenProps<'r-timeline'> {
-  children?: SparkNode[]
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTimelineProps>(), {
   type: 'r-timeline',
 })
 

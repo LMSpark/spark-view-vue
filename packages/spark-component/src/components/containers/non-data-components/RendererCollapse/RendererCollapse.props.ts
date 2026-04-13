@@ -1,0 +1,13 @@
+import type { SparkChildrenProps } from '../../../shared-types'
+import type { ToolbarNode } from '../RendererToolbar.types'
+
+export type CollapseValue = string | number | Array<string | number>
+
+export interface RCollapseProps extends SparkChildrenProps<'r-collapse'> {
+  /** 结构化工具栏 */
+  toolbar?: ToolbarNode
+  /** 当前展开的面板 */
+  modelValue?: CollapseValue
+  /** 展开/折叠切换回调 */
+  onChange?: (value: CollapseValue) => void
+}

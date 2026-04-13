@@ -122,12 +122,7 @@ import {
   getSparkNodeChildren, nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT,
 } from '../../../internal'
-import type {
-  SparkChildrenProps,
-  SparkTableModelProps,
-  SparkCrudEventProps,
-  SparkRowInteractionEventProps,
-} from '../../../shared-types'
+import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
@@ -137,13 +132,10 @@ import { useContainerActions, type LateralActionPosition } from '../../useContai
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import type { ActionsNode } from '../../support/RendererActionHost.types'
-import type { FilterNode } from '../../RendererFilter.types'
 import RendererFilter from '../../RendererFilter.vue'
 import { createRowActionSlotScope } from '../../slotScopeFactories'
 import { useModuleContext } from '../../context/useModuleContext'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
-import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import { useTableFilters } from '../../layout/useTableFilters'
 import { bindActionClick, isBuiltinAction, injectActionDisabled, injectRowActionDefaults } from '../../builtin-actions'
 
@@ -184,20 +176,7 @@ const TABLE_LOCAL_ATTR_KEYS = new Set<string>(
 
 // ── Props / attrs / slots 输入 ───────────────────────────────────────────
 
-interface RendererTableProps
-  extends SparkChildrenProps<'r-table'>,
-    SparkTableModelProps<DataView>,
-    SparkCrudEventProps,
-    SparkRowInteractionEventProps {
-  /** 结构化工具栏 */
-  toolbar?: ToolbarNode
-  /** 结构化筛选区 */
-  filter?: FilterNode
-  /** 结构化行动作 */
-  actions?: ActionsNode
-}
-
-const props = withDefaults(defineProps<RendererTableProps>(), {
+const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 

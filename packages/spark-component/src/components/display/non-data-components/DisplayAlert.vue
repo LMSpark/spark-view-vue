@@ -20,20 +20,9 @@
  * @description 警告提示组件，基于 el-alert 显示带图标的提示信息，支持 success/warning/info/error 四种类型。
  */
 import { useSparkPageComponent } from '../../internal'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RAlertProps } from './DisplayAlert.props'
 
-interface Props extends SparkRuntimeProps<'r-alert'> {
-  title?: string
-  description?: string
-  alertType?: 'success' | 'warning' | 'info' | 'error'
-  closable?: boolean
-  closeText?: string
-  center?: boolean
-  showIcon?: boolean
-  effect?: 'light' | 'dark'
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RAlertProps>(), {
   type: 'r-alert',
   alertType: 'info',
   closable: true,

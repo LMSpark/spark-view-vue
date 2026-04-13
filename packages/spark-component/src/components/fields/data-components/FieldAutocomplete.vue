@@ -24,35 +24,11 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RAutocompleteProps } from './FieldAutocomplete.props'
 
 type SuggestionItem = Record<string, unknown>
-type FetchSuggestionsCallback = (suggestions: SuggestionItem[]) => void
 
-interface Props extends SparkRuntimeProps<'r-autocomplete'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: string
-  /** 占位文本 */
-  placeholder?: string
-  /** 获取建议的回调函数 */
-  fetchSuggestions?: (queryString: string, cb: FetchSuggestionsCallback) => void
-  /** 聚焦时是否触发建议 */
-  triggerOnFocus?: boolean
-  /** 高亮第一项 */
-  highlightFirstItem?: boolean
-  /** 可清空 */
-  clearable?: boolean
-  /** 建议项的取值键 */
-  valueKey?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RAutocompleteProps>(), {
   type: 'r-autocomplete',
   placeholder: '请输入',
   triggerOnFocus: true,

@@ -28,23 +28,10 @@
  * @description 时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RTimelineItemProps } from './DisplayTimelineItem.props'
 
-interface Props extends SparkRuntimeChildrenProps<'r-timeline-item'> {
-  children?: SparkNode[]
-  timestamp?: string
-  hideTimestamp?: boolean
-  center?: boolean
-  placement?: 'top' | 'bottom'
-  itemType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
-  color?: string
-  itemSize?: 'normal' | 'large'
-  hollow?: boolean
-  content?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTimelineItemProps>(), {
   type: 'r-timeline-item',
   hideTimestamp: false,
   center: false,

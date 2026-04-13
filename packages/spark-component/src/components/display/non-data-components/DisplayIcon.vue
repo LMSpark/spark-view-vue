@@ -12,18 +12,9 @@
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
 import { useSparkPageComponent } from '../../internal'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RDisplayIconProps } from './DisplayIcon.props'
 
-interface Props extends SparkRuntimeProps<'display-icon'> {
-  /** 图标名称（Element Plus 图标名，如 'Edit', 'Delete', 'Search'） */
-  icon?: string
-  /** 图标大小 */
-  iconSize?: number | string
-  /** 图标颜色 */
-  color?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RDisplayIconProps>(), {
   type: 'display-icon',
 })
 

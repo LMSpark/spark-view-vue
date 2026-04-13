@@ -45,25 +45,13 @@ import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import type { ToolbarNode } from '../RendererToolbar.types'
 import RendererStepItem from '../RendererStepItem.vue'
 import type { RendererStepsApi } from './types'
 import { createRendererStepsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
+import type { RStepsProps } from './RendererSteps.props'
 
-interface RendererStepsProps {
-  type?: 'r-steps'
-  /** 子节点（步骤配置） */
-  children?: SparkNode[]
-  /** 结构化工具栏 */
-  toolbar?: ToolbarNode
-  /** 当前步骤 */
-  modelValue?: string | number
-  /** 步骤切换回调 */
-  onStepChange?: (value: string | number, step: SparkNode, index: number) => void
-}
-
-const props = withDefaults(defineProps<RendererStepsProps>(), {
+const props = withDefaults(defineProps<RStepsProps>(), {
   type: 'r-steps',
 })
 

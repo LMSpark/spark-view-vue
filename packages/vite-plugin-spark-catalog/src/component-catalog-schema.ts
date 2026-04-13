@@ -154,6 +154,29 @@ export interface ComponentEntry {
 
   /** 组件命中的治理契约引用（按层分组） */
   contracts?: ComponentContractRefs
+
+  /**
+   * Props 接口命名规范信息。
+   *
+   * 当组件有匹配命名规范的公开 Props 接口时填充，
+   * 供 AI 和外部工具以稳定的类型名引用组件属性。
+   */
+  propsInterface?: PropsInterfaceRef
+}
+
+/**
+ * Props 接口命名规范引用。
+ *
+ * 命名规范：组件 type `r-xxx` → 接口名 `RXxxProps`，
+ * 定义在 `{ComponentName}.props.ts` 中并通过 barrel 导出。
+ */
+export interface PropsInterfaceRef {
+  /** 接口名（如 `RTableProps`） */
+  name: string
+  /** 定义文件相对路径 */
+  file: string
+  /** 是否通过包入口公开导出 */
+  exported: boolean
 }
 
 /** 组件命中的治理契约引用 */

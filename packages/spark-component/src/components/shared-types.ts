@@ -40,8 +40,10 @@ export interface SparkChildrenProps<TType extends string = string> extends Spark
 
 /**
  * 字段级属性（第二层）：用于 field 语义组件。
+ *
+ * 继承 SparkComponentBaseProps，字段组件自动获得 type / id。
  */
-export interface SparkFieldProps {
+export interface SparkFieldProps<TType extends string = string> extends SparkComponentBaseProps<TType> {
   /** 字段绑定键（通常映射到 currentRow[field]） */
   field?: string
   /** 展示标签 */
@@ -61,8 +63,8 @@ export interface SparkOptionItem {
 /**
  * 带选项字段属性（第三层）：在字段层上增加 options 语义，并支持对接数据线。
  */
-export interface SparkOptionFieldProps<TDataLine extends IDataSource = IDataSource>
-  extends SparkFieldProps, SparkDataLineProps<TDataLine> {
+export interface SparkOptionFieldProps<TType extends string = string, TDataLine extends IDataSource = IDataSource>
+  extends SparkFieldProps<TType>, SparkDataLineProps<TDataLine> {
   options?: SparkOptionItem[]
   optionKey?: string
   labelKey?: string

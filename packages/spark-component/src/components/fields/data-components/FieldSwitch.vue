@@ -20,24 +20,9 @@
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useSwitchNullValue } from './composables/useSwitchNullValue'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RSwitchProps } from './FieldSwitch.props'
 
-interface Props extends SparkRuntimeProps<'r-switch'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: boolean | null
-  /** 激活时文案 */
-  activeText?: string
-  /** 未激活时文案 */
-  inactiveText?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RSwitchProps>(), {
   type: 'r-switch',
   activeText: '是',
   inactiveText: '否',

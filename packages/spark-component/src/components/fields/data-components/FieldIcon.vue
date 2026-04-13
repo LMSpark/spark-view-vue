@@ -54,36 +54,9 @@
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RIconProps } from './FieldIcon.props'
 
-interface Props extends SparkRuntimeProps<'r-icon'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值（图标名） */
-  modelValue?: string
-  /** 图标选项列表 */
-  options?: unknown[]
-  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
-  optionKey?: string
-  /** 选项标签字段 */
-  optionLabelField?: string
-  /** 选项值字段 */
-  optionValueField?: string
-  /** 占位提示 */
-  placeholder?: string
-  /** 可清除 */
-  clearable?: boolean
-  /** 可搜索 */
-  filterable?: boolean
-  /** 图标 CSS 类名前缀 */
-  classPrefix?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RIconProps>(), {
   type: 'r-icon',
   placeholder: '请选择图标',
   clearable: true,

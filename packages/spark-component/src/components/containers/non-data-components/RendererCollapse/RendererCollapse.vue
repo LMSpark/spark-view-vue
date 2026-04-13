@@ -43,27 +43,13 @@ import { computed } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, nodeInputProp, type SparkNode } from '../../../internal'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
-import type { ToolbarNode } from '../RendererToolbar.types'
 import RendererCollapseItem from '../RendererCollapseItem.vue'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
 import { useControlledValue } from '../state'
+import type { RCollapseProps, CollapseValue } from './RendererCollapse.props'
 
-type CollapseValue = string | number | Array<string | number>
-
-interface RendererCollapseProps {
-  type?: 'r-collapse'
-  /** 子节点（折叠项配置） */
-  children?: SparkNode[]
-  /** 结构化工具栏 */
-  toolbar?: ToolbarNode
-  /** 当前展开的面板 */
-  modelValue?: CollapseValue
-  /** 展开/折叠切换回调 */
-  onChange?: (value: CollapseValue) => void
-}
-
-const props = withDefaults(defineProps<RendererCollapseProps>(), {
+const props = withDefaults(defineProps<RCollapseProps>(), {
   type: 'r-collapse',
 })
 

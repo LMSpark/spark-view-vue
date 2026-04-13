@@ -23,32 +23,11 @@
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RCheckboxGroupProps } from './FieldCheckboxGroup.props'
 
 type MultiValue = Array<string | number | boolean>
 
-interface Props extends SparkRuntimeProps<'r-checkbox-group'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值（数组） */
-  modelValue?: MultiValue
-  /** 选项列表 */
-  options?: unknown[]
-  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
-  optionKey?: string
-  /** 选项标签字段 */
-  optionLabelField?: string
-  /** 选项值字段 */
-  optionValueField?: string
-  /** 按钮风格 */
-  buttonStyle?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RCheckboxGroupProps>(), {
   type: 'r-checkbox-group',
   buttonStyle: false,
 })

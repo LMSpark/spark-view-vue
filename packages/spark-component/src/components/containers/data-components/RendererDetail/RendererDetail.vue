@@ -44,29 +44,12 @@
 import { SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
 import { nodeId } from '../../../internal'
-import type { SparkChildrenProps, SparkTableModelProps, SparkCrudEventProps } from '../../../shared-types'
-import type { DataView } from '@spark-view/spark-data'
+import type { RDetailProps } from './RendererDetail.props'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
-import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'
 
-interface RendererDetailProps extends SparkChildrenProps<'r-detail'>, SparkTableModelProps<DataView>, SparkCrudEventProps {
-  /** 结构化工具栏 */
-  toolbar?: ToolbarNode
-  /** CSS Grid 列数 */
-  gridColumns?: number
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
-  /** 标题对齐 */
-  titleAlign?: 'left' | 'center' | 'right'
-  /** 值对齐 */
-  valueAlign?: 'left' | 'center' | 'right'
-}
-
-const props = withDefaults(defineProps<RendererDetailProps>(), {
+const props = withDefaults(defineProps<RDetailProps>(), {
   type: 'r-detail',
   gridColumns: 24,
   gridGap: 0,

@@ -30,24 +30,12 @@
  * @description 文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import type { RTooltipProps } from './RendererTooltip.props'
 
-interface RendererTooltipProps {
-  type?: 'r-tooltip'
-  children?: SparkNode[]
-  content?: string
-  placement?: string
-  effect?: 'dark' | 'light'
-  offset?: number
-  showAfter?: number
-  hideAfter?: number
-  showArrow?: boolean
-  enterable?: boolean
-  popperClass?: string
-  rawContent?: boolean
-}
 
-const props = withDefaults(defineProps<RendererTooltipProps>(), {
+
+const props = withDefaults(defineProps<RTooltipProps>(), {
   type: 'r-tooltip',
   placement: 'bottom',
   effect: 'dark',

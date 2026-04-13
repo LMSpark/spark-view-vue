@@ -25,28 +25,9 @@
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RProgressProps } from './DisplayProgress.props'
 
-type ProgressColor = string | Array<{ color: string; percentage: number }>
-
-interface Props extends SparkRuntimeProps<'r-progress'> {
-  percentage?: number
-  value?: number
-  field?: string
-  progressType?: 'line' | 'circle' | 'dashboard'
-  strokeWidth?: number
-  textInside?: boolean
-  status?: 'success' | 'exception' | 'warning'
-  indeterminate?: boolean
-  duration?: number
-  color?: ProgressColor
-  circleWidth?: number
-  showText?: boolean
-  strokeLinecap?: 'butt' | 'round' | 'square'
-  formatText?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RProgressProps>(), {
   type: 'r-progress',
   progressType: 'line',
   strokeWidth: 6,

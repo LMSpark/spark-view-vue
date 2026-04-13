@@ -49,28 +49,9 @@ import type { RendererTabsApi } from './types'
 import { createRendererTabsZeroCode } from './zero-code'
 import { useDefaultedSelection } from '../state'
 
-interface TabsClickEvent {
-  paneName?: string | number
-  [key: string]: unknown
-}
+import type { RTabsProps, TabsClickEvent } from './RendererTabs.props'
 
-import type { ToolbarNode } from '../RendererToolbar.types'
-
-interface RendererTabsProps {
-  type?: 'r-tabs'
-  /** 子节点（标签面板配置） */
-  children?: SparkNode[]
-  /** 结构化工具栏 */
-  toolbar?: ToolbarNode
-  /** 当前激活标签页 */
-  modelValue?: string | number
-  /** 标签页切换回调 */
-  onTabChange?: (name: string | number) => void
-  /** 标签页点击回调 */
-  onTabClick?: (pane: TabsClickEvent, event: Event) => void
-}
-
-const props = withDefaults(defineProps<RendererTabsProps>(), {
+const props = withDefaults(defineProps<RTabsProps>(), {
   type: 'r-tabs',
 })
 

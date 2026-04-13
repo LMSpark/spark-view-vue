@@ -22,22 +22,9 @@
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RAvatarProps } from './DisplayAvatar.props'
 
-interface Props extends SparkRuntimeProps<'r-avatar'> {
-  avatarSize?: number | 'large' | 'default' | 'small'
-  shape?: 'circle' | 'square'
-  src?: string
-  value?: string
-  field?: string
-  srcSet?: string
-  alt?: string
-  fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
-  text?: string
-  icon?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RAvatarProps>(), {
   type: 'r-avatar',
   avatarSize: 'default',
   shape: 'circle',

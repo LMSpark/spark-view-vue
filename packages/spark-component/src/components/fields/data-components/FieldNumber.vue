@@ -43,32 +43,9 @@ import { useBasicFieldState } from './composables/useBasicFieldState'
 import { useNumberFieldState } from './composables/useNumberFieldState'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RNumberProps } from './FieldNumber.props'
 
-interface Props extends SparkRuntimeProps<'r-number'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值，范围模式时为元组 */
-  modelValue?: number | [number | undefined, number | undefined]
-  /** 最小值 */
-  min?: number
-  /** 最大值 */
-  max?: number
-  /** 小数精度 */
-  precision?: number
-  /** 筛选模式（'range' 启用范围输入） */
-  filterMode?: string
-  /** 筛选变体 */
-  filterVariant?: string
-  /** 范围筛选标记 */
-  filterRange?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RNumberProps>(), {
   type: 'r-number',
 })
 

@@ -29,46 +29,9 @@
  */
 import { ref, computed, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RMentionProps, MentionOption } from './FieldMention.props'
 
-interface MentionOption {
-  value: string
-  label?: string
-  disabled?: boolean
-}
-
-interface Props extends SparkRuntimeProps<'r-mention'> {
-  /** 文本内容 */
-  modelValue?: string
-  /** 选项列表 */
-  options?: MentionOption[]
-  /** 触发前缀字符 */
-  prefix?: string | string[]
-  /** 分隔符 */
-  split?: string
-  /** 自定义过滤 */
-  filterOption?: boolean | ((pattern: string, option: MentionOption) => boolean)
-  /** 弹出位置 */
-  placement?: 'top' | 'bottom'
-  /** 显示箭头 */
-  showArrow?: boolean
-  /** 偏移量 */
-  offset?: number
-  /** 匹配整体 */
-  whole?: boolean
-  /** 校验整体函数 */
-  checkIsWhole?: (pattern: string, prefix: string) => boolean
-  /** 加载状态 */
-  loading?: boolean
-  /** 输入类型 */
-  inputType?: 'text' | 'textarea'
-  /** 占位提示 */
-  placeholder?: string
-  /** textarea 行数 */
-  rows?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RMentionProps>(), {
   type: 'r-mention',
   prefix: '@',
   split: ' ',

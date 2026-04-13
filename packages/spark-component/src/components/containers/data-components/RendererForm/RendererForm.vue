@@ -42,31 +42,16 @@
 import { ref } from 'vue'
 import { SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode } from '../../../internal'
-import type { SparkChildrenProps, SparkTableModelProps, SparkCrudEventProps } from '../../../shared-types'
-import type { DataView } from '@spark-view/spark-data'
+import type { RFormProps } from './RendererForm.props'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
-import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import {
   bindActionClick,
   isBuiltinAction,
 } from '../../builtin-actions'
 
-interface RendererFormProps extends SparkChildrenProps<'r-form'>, SparkTableModelProps<DataView>, SparkCrudEventProps {
-  /** 结构化工具栏 */
-  toolbar?: ToolbarNode
-  /** 表单标签宽度 */
-  labelWidth?: string
-  /** CSS Grid 列数 */
-  gridColumns?: number
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
-}
-
-const props = withDefaults(defineProps<RendererFormProps>(), {
+const props = withDefaults(defineProps<RFormProps>(), {
   type: 'r-form',
   labelWidth: '100px',
   gridColumns: 24,

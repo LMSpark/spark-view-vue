@@ -22,38 +22,9 @@
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RTransferProps, TransferValue } from './FieldTransfer.props'
 
-type TransferValue = Array<string | number>
-
-interface Props extends SparkRuntimeProps<'r-transfer'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值（已选值数组） */
-  modelValue?: TransferValue
-  /** 数据源（左侧候选列表） */
-  options?: unknown[]
-  /** 选项数据源 DataKey（如 'Categories@rows'），从 DataView 动态获取选项 */
-  optionKey?: string
-  /** 选项标签字段 */
-  optionLabelField?: string
-  /** 选项值字段 */
-  optionValueField?: string
-  /** 左右面板标题 */
-  titles?: [string, string]
-  /** 可搜索 */
-  filterable?: boolean
-  /** 搜索框占位符 */
-  filterPlaceholder?: string
-  /** 右侧排序方式 */
-  targetOrder?: 'original' | 'push' | 'unshift'
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RTransferProps>(), {
   type: 'r-transfer',
   titles: () => ['待选', '已选'] as [string, string],
   filterable: false,

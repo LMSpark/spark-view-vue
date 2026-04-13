@@ -18,22 +18,9 @@
  */
 import { ref, computed, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RSegmentedProps } from './FieldSegmented.props'
 
-type SegmentedOption = string | number | { label: string; value: string | number; disabled?: boolean }
-
-interface Props extends SparkRuntimeProps<'r-segmented'> {
-  /** 当前选中值 */
-  modelValue?: string | number
-  /** 选项列表 */
-  options?: SegmentedOption[]
-  /** 尺寸 */
-  size?: 'large' | 'default' | 'small'
-  /** 是否撑满父容器 */
-  block?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RSegmentedProps>(), {
   type: 'r-segmented',
   size: 'default',
   block: false,

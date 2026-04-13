@@ -20,26 +20,9 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RCheckboxProps } from './FieldCheckbox.props'
 
-interface Props extends SparkRuntimeProps<'r-checkbox'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值 */
-  modelValue?: boolean
-  /** 选中时显示文案 */
-  checkedText?: string
-  /** 未选时显示文案 */
-  uncheckedText?: string
-  /** 复选框右侧文案 */
-  checkboxText?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RCheckboxProps>(), {
   type: 'r-checkbox',
   checkedText: '是',
   uncheckedText: '否',

@@ -56,22 +56,9 @@ import { ref } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { stripHtml, useHtmlEditorState } from './composables/useHtmlEditorState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { SparkRuntimeProps } from '../../shared-types.js'
+import type { RHtmlEditorProps } from './FieldHtmlEditor.props'
 
-interface Props extends SparkRuntimeProps<'r-html-editor'> {
-  /** 字段绑定名 */
-  field?: string
-  /** 显示标签 */
-  label?: string
-  /** r-table 内列宽 */
-  width?: number
-  /** 双向绑定值（HTML 字符串） */
-  modelValue?: string
-  /** 编辑器高度行数 */
-  rows?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<RHtmlEditorProps>(), {
   type: 'r-html-editor',
   rows: 10,
 })

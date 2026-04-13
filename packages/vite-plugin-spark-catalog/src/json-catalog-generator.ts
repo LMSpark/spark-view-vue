@@ -1,5 +1,5 @@
-import { writeFileSync } from 'node:fs'
-import { resolve, basename } from 'node:path'
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { dirname, resolve, basename } from 'node:path'
 import { globSync } from 'glob'
 import { getOrCreateChecker, extractComponentApiVcm } from './extract-component-api-vcm'
 import type { VcmCheckerOptions } from './extract-component-api-vcm'
@@ -22,12 +22,41 @@ import type {
   GovernanceContract,
   CatalogCanonicalModel,
   CatalogCanonicalComponent,
+  PropsInterfaceRef,
 } from './component-catalog-schema'
+import { auditCatalog, logAuditReport } from './catalog-quality-audit'
+import type { AuditReport, AuditOptions } from './catalog-quality-audit'
 
 const logger = createLogger('spark-catalog-json')
 
+const CANONICAL_CATALOG_FILE = 'component-catalog.json'
+const LEGACY_CATALOG_FILES = ['component-catalog.ai.json'] as const
+
 export interface JsonCatalogOptions {
-  featurePatterns?: string[] | undefined; exclude?: string[] | undefined; tsconfigPath?: string | undefined; verbose?: boolean | undefined; includeGlobalProps?: boolean | undefined; vcmCheckerOptions?: VcmCheckerOptions | undefined
+  featurePatterns?: string[] | undefined
+  exclude?: string[] | undefined
+  tsconfigPath?: string | undefined
+  verbose?: boolean | undefined
+  includeGlobalProps?: boolean | undefined
+  vcmCheckerOptions?: VcmCheckerOptions | undefined
+  /** 质量审计选项（传入则自动运行审计） */
+  audit?: AuditOptions | boolean | undefined
+}
+
+export function getCanonicalCatalogOutputPath(root: string): string {
+  return resolve(root, 'packages/spark-ai/src/catalog', CANONICAL_CATALOG_FILE)
+}
+
+export function cleanupLegacyCatalogOutputs(canonicalPath: string): void {
+  const catalogDir = dirname(canonicalPath)
+
+  for (const legacyFileName of LEGACY_CATALOG_FILES) {
+    const legacyPath = resolve(catalogDir, legacyFileName)
+    if (!existsSync(legacyPath)) continue
+
+    unlinkSync(legacyPath)
+    logger.info(`🧹 已清理旧目录产物: ${legacyFileName}`)
+  }
 }
 
 type SchemaOwner = 'workspace' | 'external'
@@ -171,6 +200,57 @@ function allocSchemaKey(context: SchemaPoolContext): string {
 
 function pushUnique(target: string[], value: string): void {
   if (!target.includes(value)) target.push(value)
+}
+
+// ── Props 命名规范检测 ────────────────────────────────────────────────────
+
+/**
+ * 从组件 type（kebab-case）推导期望的 Props 接口名。
+ *
+ * 规则：`r-xxx-yyy` → `RXxxYyyProps`
+ */
+function deriveExpectedPropsName(componentType: string): string {
+  const pascal = componentType
+    .replace(/^r-/, '')
+    .split('-')
+    .map(seg => seg.charAt(0).toUpperCase() + seg.slice(1))
+    .join('')
+  return `R${pascal}Props`
+}
+
+/**
+ * 检测组件是否有匹配命名规范的 `.props.ts` 文件。
+ *
+ * 检查逻辑：
+ * 1. .vue 文件所在目录下查找 `*.props.ts`
+ * 2. 读文件内容匹配 `export interface {ExpectedName}`
+ */
+function detectPropsInterface(
+  root: string,
+  vueRelativePath: string,
+  componentType: string,
+): PropsInterfaceRef | undefined {
+  const expectedName = deriveExpectedPropsName(componentType)
+  const vueAbsPath = resolve(root, vueRelativePath)
+  const vueDir = dirname(vueAbsPath)
+  const vueName = basename(vueAbsPath, '.vue')
+  const propsFile = resolve(vueDir, `${vueName}.props.ts`)
+
+  if (!existsSync(propsFile)) return undefined
+
+  const content = readFileSync(propsFile, 'utf-8')
+  const hasExport = content.includes(`export interface ${expectedName}`)
+  if (!hasExport) return undefined
+
+  const relPropsPath = normalizePath(
+    propsFile.slice(resolve(root).length + 1),
+  )
+
+  return {
+    name: expectedName,
+    file: relPropsPath,
+    exported: true,
+  }
 }
 
 function inferCategory(filePath: string, explicitCategory?: string): ComponentEntry['category'] {
@@ -445,6 +525,7 @@ function buildSortedComponents(
     const emits = compactEmits(vcmApi.emits, schemaPool)
     const binding = inferBinding(props)
     const contracts = inferContracts(type, rawProps)
+    const propsInterface = detectPropsInterface(root, file, type)
 
     const entry: ComponentEntry = {
       type,
@@ -456,6 +537,7 @@ function buildSortedComponents(
       source: explicitSkillMeta === null ? 'vcm' : 'vcm+meta',
       ...(binding !== undefined ? { binding } : {}),
       ...(contracts !== undefined ? { contracts } : {}),
+      ...(propsInterface !== undefined ? { propsInterface } : {}),
       ...(skillMeta?.provides !== undefined ? { provides: skillMeta.provides } : {}),
       ...(skillMeta?.consumes !== undefined ? { consumes: skillMeta.consumes } : {}),
       ...(skillMeta?.notes !== undefined && skillMeta.notes.length > 0 ? { notes: skillMeta.notes.join('\n') } : {}),
@@ -502,6 +584,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     tsconfigPath = 'tsconfig.catalog.json',
     includeGlobalProps = false,
     vcmCheckerOptions = {},
+    audit,
   } = options
   const patterns = ['./packages/spark-component/src/components/containers/**/Renderer*.vue',
     './packages/spark-component/src/components/fields/**/Field*.vue', ...featurePatterns]
@@ -531,9 +614,31 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     ...(governance !== undefined ? { governance } : {}),
   }
 
-  const outPath = resolve(root, 'packages/spark-ai/src/catalog/component-catalog.json')
+  const outPath = getCanonicalCatalogOutputPath(root)
   writeFileSync(outPath, JSON.stringify(catalog, null, 2), 'utf-8')
+  cleanupLegacyCatalogOutputs(outPath)
   logger.info(`📦 ${catalog.componentCount} 组件已写入`)
-  return catalog
+
+  // 命名规范统计
+  const entries = Object.values(components)
+  const withInterface = entries.filter(e => e.propsInterface !== undefined)
+  if (withInterface.length > 0) {
+    const interfaceNames = withInterface
+      .map(entry => entry.propsInterface?.name)
+      .filter((name): name is string => name !== undefined)
+    logger.info(
+      `🏷️  Props 命名规范：${withInterface.length}/${entries.length} 组件已声明（${interfaceNames.join(', ')}）`,
+    )
+  }
+
+  // 质量审计
+  let auditReport: AuditReport | undefined
+  if (audit !== undefined && audit !== false) {
+    const auditOptions = typeof audit === 'object' ? audit : {}
+    auditReport = auditCatalog(catalog, auditOptions)
+    logAuditReport(auditReport)
+  }
+
+  return { catalog, auditReport }
 }
 

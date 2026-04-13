@@ -24,6 +24,10 @@ export type { VcmApiDescriptor, ExtractComponentApiVcmOptions, VcmCheckerOptions
 export { generateJsonCatalog } from './json-catalog-generator'
 export type { JsonCatalogOptions } from './json-catalog-generator'
 
+// ── 质量审计 ──
+export { auditCatalog, logAuditReport, generateFixGuide } from './catalog-quality-audit'
+export type { AuditReport, AuditIssue, AuditSeverity, AuditOptions } from './catalog-quality-audit'
+
 // ── JSON Schema 类型 ──
 export type {
   ComponentCatalog,
@@ -42,6 +46,7 @@ export type {
   CatalogBindingDescriptor,
   CatalogGovernance,
   GovernanceContract,
+  PropsInterfaceRef,
   ApiSurface,
   ApiMethodEntry,
   ApiParamEntry,
