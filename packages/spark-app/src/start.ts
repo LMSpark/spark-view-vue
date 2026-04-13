@@ -7,7 +7,7 @@
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import { SparkPageConfig, type ConfigLoaderOptions } from '@spark-view/spark-page-config'
-import { createSparkPlugin, SparkPageRenderer } from '@spark-view/spark-component'
+import { createSparkPlugin, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
 import { setConfigLoader } from '@spark-view/spark-ai'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
@@ -254,6 +254,10 @@ export async function start(options: StartOptions): Promise<void> {
       const shouldAutoRegister = spark?.autoRegister !== false
       
       if (shouldAutoRegister) {
+        logStartDebug('注册内置 renderer 别名...')
+        registerAllRenderers()
+        startLogger.info('内置 renderer 注册完成: r-* 核心组件已就绪')
+
         try {
           logStartDebug('自动导入 virtual:spark-components...')
           // 动态导入虚拟模块（由 vite-plugin-spark-components 生成）

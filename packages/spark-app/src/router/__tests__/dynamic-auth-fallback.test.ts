@@ -50,6 +50,7 @@ describe('DynamicRouter unauthorized fallback', () => {
     expect(loadNavigation).toHaveBeenCalledOnce()
     expect(dynamicRouter.getRegisteredRoutes()).toContain('/login')
     expect(dynamicRouter.getRegisteredRoutes()).toContain('/demo/template-dsl')
+    expect(router.getRoutes().find((route) => route.path === '/demo/template-dsl')?.meta['type']).toBe('invalid-system-page')
     expect(dynamicRouter.getNavTree()).toEqual(PRE_AUTH_NAV)
   })
 

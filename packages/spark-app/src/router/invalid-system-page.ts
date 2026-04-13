@@ -1,0 +1,85 @@
+import { computed, defineComponent, h } from 'vue'
+import { useRoute } from 'vue-router'
+
+const rootStyle: Record<string, string> = {
+  minHeight: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '32px',
+  boxSizing: 'border-box',
+  background: 'linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%)',
+}
+
+const cardStyle: Record<string, string> = {
+  width: 'min(720px, 100%)',
+  padding: '28px 32px',
+  borderRadius: '20px',
+  background: 'rgba(255, 255, 255, 0.92)',
+  boxShadow: '0 18px 48px rgba(15, 23, 42, 0.12)',
+  border: '1px solid rgba(148, 163, 184, 0.22)',
+  color: '#0f172a',
+}
+
+const eyebrowStyle: Record<string, string> = {
+  margin: '0 0 10px',
+  color: '#b45309',
+  fontSize: '12px',
+  fontWeight: '700',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+}
+
+const titleStyle: Record<string, string> = {
+  margin: '0 0 12px',
+  fontSize: '28px',
+  lineHeight: '36px',
+  fontWeight: '700',
+}
+
+const bodyStyle: Record<string, string> = {
+  margin: '0 0 18px',
+  color: '#334155',
+  fontSize: '15px',
+  lineHeight: '24px',
+}
+
+const metaBlockStyle: Record<string, string> = {
+  margin: '0',
+  padding: '16px 18px',
+  borderRadius: '14px',
+  background: '#0f172a',
+  color: '#e2e8f0',
+  fontSize: '13px',
+  lineHeight: '22px',
+  overflowX: 'auto',
+}
+
+function readMetaString(meta: Record<string, unknown>, key: string): string | null {
+  const value = meta[key]
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed === '' ? null : trimmed
+}
+
+export const InvalidSystemPage = defineComponent({
+  name: 'InvalidSystemPage',
+  setup() {
+    const route = useRoute()
+    const meta = computed(() => route.meta as Record<string, unknown>)
+    const title = computed(() => readMetaString(meta.value, 'title') ?? '未注册的系统页面')
+    const pageId = computed(() => readMetaString(meta.value, 'pageId') ?? '(missing)')
+    const path = computed(() => route.path)
+
+    return () => h('section', { style: rootStyle }, [
+      h('div', { style: cardStyle }, [
+        h('p', { style: eyebrowStyle }, 'System Page Mapping Error'),
+        h('h1', { style: titleStyle }, title.value),
+        h('p', { style: bodyStyle }, '该导航节点被声明为 system-page，但当前前端没有在 VUE_PAGE_MAP 中注册对应路径。路由层已停止把它误当成配置页加载，因此不会再继续触发 pages-config 404。'),
+        h('pre', { style: metaBlockStyle }, `path: ${path.value}\npageId: ${pageId.value}\nreason: route meta declares system-page, but no VUE_PAGE_MAP entry exists for this path`),
+      ]),
+    ])
+  },
+})
+
+export default InvalidSystemPage

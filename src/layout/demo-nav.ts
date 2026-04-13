@@ -104,7 +104,6 @@ export const demoNavRoot: AppNavRoot = {
       children: [
         { id: 'renderer-demo', nodeKind: 'page', title: 'Renderer 架构', icon: 'Brush', path: '/renderer-demo' },
         { id: 'section-grid', nodeKind: 'page', title: 'Section 栅格', icon: 'Grid', path: '/section-grid-demo' },
-        { id: 'template-dsl-demo', nodeKind: 'system-page', title: 'DSL DEMO', icon: 'SetUp', path: '/demo/template-dsl' },
         { id: 'el-table-demo', nodeKind: 'page', title: 'el-table 操作列', icon: 'List', path: '/el-table-demo' },
         { id: 'vxe-demo', nodeKind: 'page', title: 'VXE 表格', icon: 'TrendCharts', path: '/vxe-demo' },
         { id: 'filter-demo', nodeKind: 'page', title: '过滤面板', icon: 'Search', path: '/filter-demo' },

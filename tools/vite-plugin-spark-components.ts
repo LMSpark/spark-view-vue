@@ -357,9 +357,11 @@ function generateRegisterStatement(componentName: string): string {
     .split('-')
     .map((part, i) => i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1))
     .join('')
-  
-  // 使用 registerOnce 避免重复注册警告（HMR 场景）
-  return `  registry.registerOnce('${componentName}', ${varName})`
+
+  // smart 模式必须走 Spark.register，确保异步 loader 被 defineAsyncComponent 正确包装。
+  // 直接 registry.register/registerOnce 会把 () => import(...) 原样塞进 registry，
+  // 渲染器随后把它当普通组件函数处理，导致按需注册完全失效。
+  return `  if (!registry.has('${componentName}')) Spark.register('${componentName}', ${varName})`
 }
 
 /* -----------------------------------------------------------------------------

@@ -389,7 +389,7 @@ async function startApp() {
           const ModuleContextBadge = (await import('./components/ModuleContextBadge.vue')).default
           Spark.register('r-module-context-badge', ModuleContextBadge)
 
-          startupLogger.info('✅ smart 模式组件注册完成（virtual:spark-components + 本地扩展）')
+          startupLogger.info('✅ smart 模式组件注册完成（内置 renderer + virtual:spark-components + 本地扩展）')
         }
 
         // ai-studio-panel 由 virtual:spark-components 自动扫描注册

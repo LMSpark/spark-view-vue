@@ -127,7 +127,6 @@ const EXTRA_TYPE_LABELS: Record<string, string> = {
   'ai-chat-widget': '[AI对话挂件] ai-chat-widget',
   'ai-chat-panel': '[AI对话面板] ai-chat-panel',
   'ai-assistant-hub': '[AI助手中心] ai-assistant-hub',
-  'template-dsl-demo': '[模板DSL演示] template-dsl-demo',
   'ai-studio-panel': '[AI工作室] ai-studio-panel',
   'spark-json-editor': '[JSON编辑器] spark-json-editor',
   'json-tree-editor': '[JSON树编辑器] json-tree-editor',

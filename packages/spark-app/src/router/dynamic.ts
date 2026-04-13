@@ -12,6 +12,7 @@ import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
 import { createLogger } from '../logger'
 import { CrossProjectRefPage } from './cross-project-ref-page'
 import { ExternalLinkFramePage } from './external-link-frame-page'
+import { InvalidSystemPage } from './invalid-system-page'
 
 function isUnauthorizedError(error: unknown): boolean {
   if (error === null || error === undefined || typeof error !== 'object') return false
@@ -399,10 +400,31 @@ export class DynamicRouter {
           if (shouldLogDynamicRouteDetails()) {
             routerLogger.debug(`Vue 组件路由已注册(nav): ${routePath}`)
           }
-      } else {
-        if (node.nodeKind === 'system-page') {
-          routerLogger.debug('system-page 节点无 componentMap 映射，使用 PageRenderer', { path: node.path, nodeId: node.id })
+      } else if (node.nodeKind === 'system-page') {
+        routerLogger.warn('system-page 节点未在 componentMap / VUE_PAGE_MAP 中注册，使用显式错误页', {
+          path: node.path,
+          nodeId: node.id,
+          pageId,
+        })
+        const route: RouteRecordRaw = {
+          path: routePath,
+          name: `nav-${node.id}`,
+          component: InvalidSystemPage,
+          meta: {
+            type: 'invalid-system-page',
+            pageId,
+            title: node.title,
+            ...(node.description !== undefined && { description: node.description }),
+            ...(node.icon !== undefined && { icon: node.icon }),
+            ...(node.permissionMode !== undefined && { permissionMode: node.permissionMode }),
+          },
         }
+        this.router.addRoute(route)
+        this.registeredRoutes.add(routePath)
+        if (shouldLogDynamicRouteDetails()) {
+          routerLogger.debug(`无效 system-page 路由已注册(nav): ${routePath}`, { pageId })
+        }
+      } else {
         // config 页面 → PageRenderer
         const route: RouteRecordRaw = {
           path: routePath,

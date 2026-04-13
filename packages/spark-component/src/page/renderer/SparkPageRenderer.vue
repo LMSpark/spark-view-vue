@@ -86,7 +86,25 @@ import type { ComponentRegistry } from '../../core/types'
 const logger = Logger('SparkPageRenderer')
 
 type RenderFunction = (props?: Record<string, unknown>) => unknown
-const renderFunctionRegistry = new WeakMap<object, Map<string, ReturnType<typeof shallowRef<RenderFunction | null>>>>()
+type RenderFunctionRef = ReturnType<typeof shallowRef<RenderFunction | null>>
+const RENDER_FUNCTION_REGISTRY_KEY = Symbol.for('spark:page-render-function-registry')
+
+type RenderFunctionRegistryOwner = {
+  component(name: string): unknown
+  component(name: string, component: object): void
+} & Record<PropertyKey, unknown>
+
+function getRenderFunctionRegistry(app: object): Map<string, RenderFunctionRef> {
+  const owner = app as RenderFunctionRegistryOwner
+  const existing = owner[RENDER_FUNCTION_REGISTRY_KEY]
+  if (existing instanceof Map) {
+    return existing as Map<string, RenderFunctionRef>
+  }
+
+  const created = new Map<string, RenderFunctionRef>()
+  owner[RENDER_FUNCTION_REGISTRY_KEY] = created
+  return created
+}
 
 function createPageRoute(route: RouteLocationNormalizedLoaded): IPageRoute {
   return {
@@ -118,18 +136,15 @@ function registerRenderFunctionsForPage(
   app: object,
   pageFunctions: Record<string, (...args: unknown[]) => unknown>,
 ): void {
-  let fnMap = renderFunctionRegistry.get(app)
-  if (!fnMap) {
-    fnMap = new Map()
-    renderFunctionRegistry.set(app, fnMap)
-  }
+  const fnMap = getRenderFunctionRegistry(app)
+  const vueApp = app as RenderFunctionRegistryOwner
 
   for (const [name, fn] of Object.entries(pageFunctions)) {
     if (!name.startsWith('Render') || typeof fn !== 'function') continue
     const camelName = name.charAt(0).toLowerCase() + name.slice(1)
 
-    if (fnMap.has(name)) {
-      const existingRef = fnMap.get(name)
+    const existingRef = fnMap.get(name) ?? fnMap.get(camelName)
+    if (existingRef) {
       if (existingRef) existingRef.value = fn as RenderFunction
       continue
     }
@@ -142,7 +157,6 @@ function registerRenderFunctionsForPage(
       name,
       setup: (_, { attrs }) => () => fnRef.value?.({ ...attrs }),
     }))
-    const vueApp = app as { component: (name: string, component: object) => void }
     vueApp.component(name, component)
     vueApp.component(camelName, component)
   }
