@@ -14,7 +14,7 @@ export type {
 } from './system/index.js'
 
 // ── 2. Core 层（基础 composable / 类型 / 能力键） ──
-export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHost, useSparkHostScope, resolveSparkHost } from './core/index.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHost, useSparkHostScope, resolveSparkHost, resolvePlaceholderProps } from './core/index.js'
 export type {
   UseSparkComponentReturn,
   UseSparkPageComponentReturn,

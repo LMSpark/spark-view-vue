@@ -1,4 +1,4 @@
-import { watch } from 'vue'
+import { shallowReactive, watch } from 'vue'
 import type { MaybeRefOrGetter } from 'vue'
 import { toValue } from 'vue'
 import { useSparkComponent } from '../../internal'
@@ -26,9 +26,27 @@ export function useDataScope(options: UseDataScopeOptions): UseDataScopeReturn {
     nodeConfig ?? { type }
   )
 
+  const mirror = shallowReactive<IDataRow>({})
+  sparkProvide(DATA_ROW, mirror)
+
   watch(
     () => toValue(data),
-    (d) => { sparkProvide(DATA_ROW, d) },
+    (incoming) => {
+      const row: IDataRow = incoming
+      const incomingKeys = new Set(Object.keys(row))
+
+      for (const key of Object.keys(mirror)) {
+        if (!incomingKeys.has(key)) {
+          mirror[key] = undefined
+        }
+      }
+
+      for (const key of incomingKeys) {
+        if (mirror[key] !== row[key]) {
+          mirror[key] = row[key]
+        }
+      }
+    },
     { immediate: true },
   )
 

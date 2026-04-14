@@ -1,5 +1,5 @@
 <template>
-  <FieldContextRenderer v-bind="fieldCtx" v-bind="forwardedAttrs">
+  <FieldContextRenderer v-bind="{ ...fieldCtx, ...forwardedAttrs }">
     <template #form>
       <div class="entity-picker-field">
         <el-input

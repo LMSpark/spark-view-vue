@@ -19,6 +19,8 @@ interface RendererTableZeroCodeOptions {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
   nativeTableRef: ValueRef<NativeTableLike | null>
+  currentRowOriginatorId?: string
+  selectedRowsOriginatorId?: string
   pageService: IPageServiceCapability | null | undefined
   logger: LoggerApi
   filterModel: Record<string, unknown>
@@ -90,18 +92,27 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
   const { dispatch } = useEventDefaults(createCrudEventDefaults({
     'current-change': {
       systemDefault: (currentRow: unknown) => {
-        options.resolvedView.value?.selection.setCurrentRow((currentRow as IDataRow | null) ?? null)
+        options.resolvedView.value?.selection.setCurrentRow(
+          (currentRow as IDataRow | null) ?? null,
+          options.currentRowOriginatorId,
+        )
       },
     },
     'row-click': {
       systemDefault: (row: unknown) => {
-        options.resolvedView.value?.selection.setCurrentRow(row as IDataRow)
+        options.resolvedView.value?.selection.setCurrentRow(
+          row as IDataRow,
+          options.currentRowOriginatorId,
+        )
         options.nativeTableRef.value?.setCurrentRow?.(row as IDataRow)
       },
     },
     'selection-change': {
       systemDefault: (selection: unknown) => {
-        options.resolvedView.value?.selection.setSelectedRows(selection as IDataRow[])
+        options.resolvedView.value?.selection.setSelectedRows(
+          selection as IDataRow[],
+          options.selectedRowsOriginatorId,
+        )
       },
     },
   }), options.props)

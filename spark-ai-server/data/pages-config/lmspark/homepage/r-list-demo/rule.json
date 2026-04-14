@@ -333,7 +333,7 @@
                                                 "name": "新成员",
                                                 "role": "待分配",
                                                 "email": "new@spark.dev",
-                                                "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=newmember",
+                                                "avatar": "/config/default-avatar.svg?seed=newmember",
                                                 "status": "离线"
                                             }
                                         }

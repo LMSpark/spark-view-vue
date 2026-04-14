@@ -7,7 +7,7 @@
  * - capability keys
  */
 
-export { useSparkComponent, useSparkConsume, useSparkPageComponent } from './useSparkComponent.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent, resolvePlaceholderProps } from './useSparkComponent.js'
 export { useSparkHost, useSparkHostScope, resolveSparkHost } from './useSparkHost.js'
 export type {
   UseSparkComponentReturn,

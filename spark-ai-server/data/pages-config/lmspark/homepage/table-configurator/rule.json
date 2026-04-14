@@ -1,0 +1,227 @@
+[
+    {
+        "type": "div",
+        "style": {
+            "padding": "20px",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "16px",
+            "height": "100%"
+        },
+        "children": [
+            {
+                "type": "h2",
+                "children": [
+                    "表格配置器"
+                ]
+            },
+            {
+                "type": "el-alert",
+                "props": {
+                    "type": "info",
+                    "showIcon": true,
+                    "closable": false,
+                    "title": "本页演示列配置数据结构，可直接用于 r-table 列动态生成。"
+                }
+            },
+            {
+                "type": "div",
+                "style": {
+                    "display": "flex",
+                    "gap": "16px",
+                    "alignItems": "stretch",
+                    "minHeight": "420px"
+                },
+                "children": [
+                    {
+                        "type": "div",
+                        "style": {
+                            "flex": "1",
+                            "minWidth": "0"
+                        },
+                        "children": [
+                            {
+                                "type": "r-table",
+                                "id": "tableConfiguratorColumns",
+                                "dataKey": "columns@rows",
+                                "props": {
+                                    "border": true,
+                                    "stripe": true,
+                                    "highlightCurrentRow": true,
+                                    "rowActionsLabel": "操作",
+                                    "rowActionsWidth": 140
+                                },
+                                "children": [
+                                    {
+                                        "type": "r-toolbar",
+                                        "props": {
+                                            "position": "top"
+                                        },
+                                        "children": [
+                                            {
+                                                "type": "r-button",
+                                                "props": {
+                                                    "action": "append-row",
+                                                    "label": "新增列",
+                                                    "buttonType": "primary",
+                                                    "appendPayload": {
+                                                        "field": "newField",
+                                                        "label": "新列",
+                                                        "width": 140,
+                                                        "align": "left",
+                                                        "sortable": false,
+                                                        "visible": true
+                                                    },
+                                                    "successMessage": "已新增列配置"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-button",
+                                                "props": {
+                                                    "action": "delete-current",
+                                                    "label": "删除当前",
+                                                    "buttonType": "danger",
+                                                    "confirmTitle": "删除确认",
+                                                    "confirmMessage": "确定删除当前列配置吗？",
+                                                    "successMessage": "当前列配置已删除"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "field": "field",
+                                        "props": {
+                                            "label": "字段名",
+                                            "width": 180
+                                        }
+                                    },
+                                    {
+                                        "type": "r-text",
+                                        "field": "label",
+                                        "props": {
+                                            "label": "标题",
+                                            "width": 160
+                                        }
+                                    },
+                                    {
+                                        "type": "r-number",
+                                        "field": "width",
+                                        "props": {
+                                            "label": "宽度",
+                                            "width": 110
+                                        }
+                                    },
+                                    {
+                                        "type": "r-select",
+                                        "field": "align",
+                                        "props": {
+                                            "label": "对齐",
+                                            "width": 110,
+                                            "options": [
+                                                {
+                                                    "label": "左",
+                                                    "value": "left"
+                                                },
+                                                {
+                                                    "label": "中",
+                                                    "value": "center"
+                                                },
+                                                {
+                                                    "label": "右",
+                                                    "value": "right"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "r-switch",
+                                        "field": "sortable",
+                                        "props": {
+                                            "label": "可排序",
+                                            "width": 110
+                                        }
+                                    },
+                                    {
+                                        "type": "r-switch",
+                                        "field": "visible",
+                                        "props": {
+                                            "label": "可见",
+                                            "width": 110
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "type": "div",
+                        "style": {
+                            "width": "320px",
+                            "border": "1px solid #e4e7ed",
+                            "borderRadius": "8px",
+                            "padding": "12px"
+                        },
+                        "children": [
+                            {
+                                "type": "h3",
+                                "style": {
+                                    "margin": "0 0 12px"
+                                },
+                                "children": [
+                                    "当前列详情"
+                                ]
+                            },
+                            {
+                                "type": "r-detail",
+                                "dataKey": "columns@currentRow",
+                                "children": [
+                                    {
+                                        "type": "r-text-display",
+                                        "field": "field",
+                                        "props": {
+                                            "label": "字段名"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-text-display",
+                                        "field": "label",
+                                        "props": {
+                                            "label": "标题"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-text-display",
+                                        "field": "width",
+                                        "props": {
+                                            "label": "宽度"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-text-display",
+                                        "field": "align",
+                                        "props": {
+                                            "label": "对齐"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-tag",
+                                        "props": {
+                                            "content": "可排序: $[sortable]"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-tag",
+                                        "props": {
+                                            "content": "可见: $[visible]"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

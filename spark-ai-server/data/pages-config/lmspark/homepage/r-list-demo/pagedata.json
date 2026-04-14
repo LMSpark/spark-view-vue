@@ -58,7 +58,7 @@
                     "price": 19999,
                     "stock": 45,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/mac/400/250",
+                    "image": "/config/default-product.svg?seed=mac",
                     "rating": 4.8,
                     "description": "M3 Pro 芯片，18GB 内存，512GB 固态",
                     "tags": "热销,新品"
@@ -70,7 +70,7 @@
                     "price": 8999,
                     "stock": 120,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/iphone/400/250",
+                    "image": "/config/default-product.svg?seed=iphone",
                     "rating": 4.7,
                     "description": "A18 Pro 芯片，钛金属设计，4800 万像素",
                     "tags": "热销"
@@ -82,7 +82,7 @@
                     "price": 1899,
                     "stock": 200,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/airpods/400/250",
+                    "image": "/config/default-product.svg?seed=airpods",
                     "rating": 4.6,
                     "description": "主动降噪，自适应音频，USB-C 充电",
                     "tags": "热销,推荐"
@@ -94,7 +94,7 @@
                     "price": 4799,
                     "stock": 80,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/ipad/400/250",
+                    "image": "/config/default-product.svg?seed=ipad",
                     "rating": 4.5,
                     "description": "M2 芯片，10.9 英寸 Liquid Retina 显示屏",
                     "tags": "新品"
@@ -106,7 +106,7 @@
                     "price": 6499,
                     "stock": 35,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/watch/400/250",
+                    "image": "/config/default-product.svg?seed=watch",
                     "rating": 4.4,
                     "description": "49mm 钛金属表壳，双频 GPS，水下深度计",
                     "tags": "新品,推荐"
@@ -118,7 +118,7 @@
                     "price": 11499,
                     "stock": 15,
                     "status": "预售",
-                    "image": "https://picsum.photos/seed/display/400/250",
+                    "image": "/config/default-product.svg?seed=display",
                     "rating": 4.3,
                     "description": "27 英寸 5K Retina，600 尼特亮度，P3 色域",
                     "tags": "专业"
@@ -130,7 +130,7 @@
                     "price": 999,
                     "stock": 0,
                     "status": "缺货",
-                    "image": "https://picsum.photos/seed/keyboard/400/250",
+                    "image": "/config/default-product.svg?seed=keyboard",
                     "rating": 4.2,
                     "description": "触控 ID，背光按键，USB-C 充电",
                     "tags": ""
@@ -142,7 +142,7 @@
                     "price": 4499,
                     "stock": 60,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/macmini/400/250",
+                    "image": "/config/default-product.svg?seed=macmini",
                     "rating": 4.6,
                     "description": "M2 芯片，8GB 内存，256GB 固态",
                     "tags": "推荐"
@@ -154,7 +154,7 @@
                     "price": 2299,
                     "stock": 40,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/homepod/400/250",
+                    "image": "/config/default-product.svg?seed=homepod",
                     "rating": 4.1,
                     "description": "高保真音频，空间音频，智能家居中枢",
                     "tags": ""
@@ -166,7 +166,7 @@
                     "price": 29999,
                     "stock": 5,
                     "status": "预售",
-                    "image": "https://picsum.photos/seed/vision/400/250",
+                    "image": "/config/default-product.svg?seed=vision",
                     "rating": 4.9,
                     "description": "空间计算设备，M2 + R1 双芯片，Micro-OLED",
                     "tags": "新品,热销"
@@ -178,7 +178,7 @@
                     "price": 10999,
                     "stock": 75,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/air15/400/250",
+                    "image": "/config/default-product.svg?seed=air15",
                     "rating": 4.7,
                     "description": "M3 芯片，15.3 英寸 Liquid Retina 显示屏",
                     "tags": "推荐"
@@ -190,7 +190,7 @@
                     "price": 779,
                     "stock": 150,
                     "status": "在售",
-                    "image": "https://picsum.photos/seed/airtag/400/250",
+                    "image": "/config/default-product.svg?seed=airtag",
                     "rating": 4.3,
                     "description": "精确查找，内置扬声器，可更换电池",
                     "tags": ""
@@ -250,7 +250,7 @@
                     "name": "张三",
                     "role": "前端工程师",
                     "email": "zhangsan@spark.dev",
-                    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=zhangsan",
+                    "avatar": "/config/default-avatar.svg?seed=zhangsan",
                     "status": "在线"
                 },
                 {
@@ -258,7 +258,7 @@
                     "name": "李四",
                     "role": "后端工程师",
                     "email": "lisi@spark.dev",
-                    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=lisi",
+                    "avatar": "/config/default-avatar.svg?seed=lisi",
                     "status": "在线"
                 },
                 {
@@ -266,7 +266,7 @@
                     "name": "王五",
                     "role": "产品经理",
                     "email": "wangwu@spark.dev",
-                    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=wangwu",
+                    "avatar": "/config/default-avatar.svg?seed=wangwu",
                     "status": "离线"
                 },
                 {
@@ -274,7 +274,7 @@
                     "name": "赵六",
                     "role": "UI 设计师",
                     "email": "zhaoliu@spark.dev",
-                    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=zhaoliu",
+                    "avatar": "/config/default-avatar.svg?seed=zhaoliu",
                     "status": "忙碌"
                 },
                 {
@@ -282,7 +282,7 @@
                     "name": "孙七",
                     "role": "测试工程师",
                     "email": "sunqi@spark.dev",
-                    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=sunqi",
+                    "avatar": "/config/default-avatar.svg?seed=sunqi",
                     "status": "在线"
                 },
                 {
@@ -290,7 +290,7 @@
                     "name": "周八",
                     "role": "DevOps 工程师",
                     "email": "zhouba@spark.dev",
-                    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=zhouba",
+                    "avatar": "/config/default-avatar.svg?seed=zhouba",
                     "status": "在线"
                 }
             ]

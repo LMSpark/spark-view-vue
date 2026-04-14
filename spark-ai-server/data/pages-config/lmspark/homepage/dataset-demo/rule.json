@@ -31,7 +31,7 @@
             ]
           },
           {
-            "type": "el-table",
+            "type": "r-table",
             "dataKey": "Users@rows",
             "props": {
               "border": true,
@@ -126,7 +126,7 @@
             ]
           },
           {
-            "type": "el-table",
+            "type": "r-table",
             "dataKey": "Orders@rows",
             "props": {
               "border": true,
@@ -214,7 +214,7 @@
             ]
           },
           {
-            "type": "el-table",
+            "type": "r-table",
             "dataKey": "OrderItems@rows",
             "props": {
               "border": true,

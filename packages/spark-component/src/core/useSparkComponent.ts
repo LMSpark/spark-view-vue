@@ -31,6 +31,7 @@ export interface UseSparkComponentReturn {
   parentType: string | null
   isVisible: { readonly value: boolean }
   isDisabled: { readonly value: boolean }
+  resolvedProps: { readonly value: Record<string, unknown> }
   sparkProvide: {
     <K extends keyof CapabilityTypeMap>(name: K, implementation: CapabilityTypeMap[K]): void
     <T>(name: CapabilityKey<T>, implementation: T): void
@@ -176,6 +177,59 @@ function createPageLoggerProxy(context: SparkCapabilityContext): LoggerApi {
   }
 }
 
+// ===== 占位符解析 =====
+
+const PLACEHOLDER_RE = /\$\[([^\]]+)\]/g
+const PURE_PLACEHOLDER_RE = /^\$\[([^\]]+)\]$/
+
+function hasPlaceholderString(value: unknown): boolean {
+  if (typeof value === 'string') return value.includes('$[')
+  if (Array.isArray(value)) return value.some(hasPlaceholderString)
+  if (value !== null && typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>).some(hasPlaceholderString)
+  }
+  return false
+}
+
+function resolveValuePlaceholders(value: unknown, row: Record<string, unknown>): unknown {
+  if (typeof value === 'string') {
+    const pureMatch = PURE_PLACEHOLDER_RE.exec(value)
+    const pureField = pureMatch?.[1]
+    if (pureField !== undefined) return row[pureField]
+    if (!value.includes('$[')) return value
+    return value.replace(PLACEHOLDER_RE, (_, fieldName: string) => {
+      const val = row[fieldName]
+      return val === null || val === undefined ? '' : String(val)
+    })
+  }
+  if (Array.isArray(value)) {
+    if (!value.some(hasPlaceholderString)) return value
+    return value.map(v => resolveValuePlaceholders(v, row))
+  }
+  if (value !== null && typeof value === 'object') {
+    const obj = value as Record<string, unknown>
+    if (!Object.values(obj).some(hasPlaceholderString)) return value
+    const result: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(obj)) {
+      result[k] = resolveValuePlaceholders(v, row)
+    }
+    return result
+  }
+  return value
+}
+
+export function resolvePlaceholderProps(
+  props: Record<string, unknown>,
+  row: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
+  if (!row || !hasPlaceholderString(props)) return props
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(props)) {
+    result[key] = resolveValuePlaceholders(value, row)
+  }
+  return result
+}
+
 // ===== 对外入口 =====
 
 /**
@@ -218,6 +272,13 @@ export function useSparkComponent(
   }
   const isVisible = computed(() => readNormalizedConfigProp('visible') !== false)
   const isDisabled = computed(() => readNormalizedConfigProp('disabled') === true)
+
+  // 占位符解析：将 props 中的 $[fieldName] 替换为 DATA_ROW 对应字段值。
+  const resolvedProps = computed(() => {
+    const props = buildEffectiveConfig(currentInstance, fallbackConfig).props ?? {}
+    const row = consumeCapability(DATA_ROW) as Record<string, unknown> | null
+    return resolvePlaceholderProps(props, row)
+  })
 
   // 能力提供：向当前上下文写入能力。
   function sparkProvide(name: string | symbol, implementation?: unknown): void {
@@ -271,6 +332,7 @@ export function useSparkComponent(
     parentType,
     isVisible,
     isDisabled,
+    resolvedProps,
     sparkProvide,
     sparkConsume,
     initialize,

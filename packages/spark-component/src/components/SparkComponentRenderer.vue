@@ -94,6 +94,7 @@ import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapab
 import type { BeforeRenderContext } from './support/beforeRender.js'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from './support/beforeRender.js'
 import { extractModelPermission } from '../permission/index.js'
+import { resolvePlaceholderProps } from '../core/useSparkComponent.js'
 
 // ── 常量与局部类型：渲染器内部约束、运行时局部类型 ───────────────────────────
 
@@ -536,9 +537,20 @@ const beforeRenderState = computed(() => {
 })
 
 // 生效节点：把 beforeRender 的 patch 合并回 SparkNode，后续解析都基于它。
-const effectiveNode = computed<SparkNode>(() =>
+const effectiveNodeBeforePlaceholder = computed<SparkNode>(() =>
   mergeNodeBeforeRenderProps(normalizedNode.value, beforeRenderState.value.propsPatch)
 )
+
+// 占位符解析：将 $[fieldName] 替换为当前行数据字段值。
+const effectiveNode = computed<SparkNode>(() => {
+  const node = effectiveNodeBeforePlaceholder.value
+  const props = node.props
+  if (!props) return node
+  const row = resolveScopedRow({ rawProps: props, parentContext: parentCapabilityContext.value })
+  const resolved = resolvePlaceholderProps(props, row)
+  if (resolved === props) return node
+  return { ...node, props: resolved }
+})
 
 // ── 组件解析：registry 组件 / 全局组件 / 原生标签 / 未注册降级 ────────────────
 

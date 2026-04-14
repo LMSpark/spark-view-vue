@@ -1,0 +1,170 @@
+[
+    {
+        "type": "div",
+        "style": {
+            "height": "100vh",
+            "display": "flex",
+            "flexDirection": "column",
+            "overflow": "hidden",
+            "padding": "20px",
+            "gap": "16px"
+        },
+        "children": [
+            {
+                "type": "h2",
+                "style": {
+                    "margin": "0"
+                },
+                "children": [
+                    "$[fieldName] 占位符演示"
+                ]
+            },
+            {
+                "type": "div",
+                "style": {
+                    "display": "flex",
+                    "gap": "20px",
+                    "flex": "1",
+                    "overflow": "hidden"
+                },
+                "children": [
+                    {
+                        "type": "r-table",
+                        "dataKey": "employees@rows",
+                        "props": {
+                            "border": true,
+                            "stripe": true,
+                            "highlightCurrentRow": true
+                        },
+                        "children": [
+                            {
+                                "type": "r-text",
+                                "field": "id",
+                                "props": {
+                                    "label": "ID",
+                                    "width": 60
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "field": "name",
+                                "props": {
+                                    "label": "姓名",
+                                    "width": 100
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "field": "department",
+                                "props": {
+                                    "label": "部门",
+                                    "width": 100
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "field": "role",
+                                "props": {
+                                    "label": "职位"
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "field": "age",
+                                "props": {
+                                    "label": "年龄",
+                                    "width": 80
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "field": "status",
+                                "props": {
+                                    "label": "状态",
+                                    "width": 80
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "div",
+                        "style": {
+                            "width": "360px",
+                            "border": "1px solid #e4e7ed",
+                            "borderRadius": "8px",
+                            "padding": "16px",
+                            "overflow": "auto"
+                        },
+                        "children": [
+                            {
+                                "type": "h3",
+                                "style": {
+                                    "margin": "0 0 16px 0"
+                                },
+                                "children": [
+                                    "占位符绑定详情"
+                                ]
+                            },
+                            {
+                                "type": "r-detail",
+                                "dataKey": "employees@currentRow",
+                                "children": [
+                                    {
+                                        "type": "r-text-display",
+                                        "props": {
+                                            "field": "name",
+                                            "label": "纯占位符（保留类型）",
+                                            "suffix": "$[role]"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-text-display",
+                                        "props": {
+                                            "field": "email",
+                                            "label": "混合文本前缀",
+                                            "prefix": "$[name] 的邮箱: "
+                                        }
+                                    },
+                                    {
+                                        "type": "r-text-display",
+                                        "props": {
+                                            "field": "age",
+                                            "label": "多占位符混合后缀",
+                                            "suffix": " — $[department] / $[role]"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-statistic",
+                                        "props": {
+                                            "field": "age",
+                                            "title": "$[name] 的年龄",
+                                            "suffix": "岁"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-tag",
+                                        "props": {
+                                            "content": "$[department] - $[role]",
+                                            "tagType": "info"
+                                        }
+                                    },
+                                    {
+                                        "type": "r-tag",
+                                        "props": {
+                                            "content": "$[status]",
+                                            "dynamicType": {
+                                                "在职": "success",
+                                                "休假": "warning",
+                                                "出差": "info"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

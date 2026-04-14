@@ -1,0 +1,47 @@
+<template>
+  <section class="template-dsl-demo">
+    <el-card shadow="never" class="template-dsl-demo__card">
+      <template #header>
+        <div class="template-dsl-demo__header">
+          <h2>Template DSL Demo</h2>
+          <el-tag type="info">system-page</el-tag>
+        </div>
+      </template>
+
+      <p>该页面用于承接导航中的 <code>/demo/template-dsl</code> system-page 路由。</p>
+      <p>当前为占位实现，避免未注册 system-page 触发动态路由告警。</p>
+    </el-card>
+  </section>
+</template>
+
+<script setup lang="ts">
+defineOptions({ name: 'TemplateDslDemo' })
+</script>
+
+<style scoped>
+.template-dsl-demo {
+  padding: 20px;
+}
+
+.template-dsl-demo__card {
+  max-width: 840px;
+}
+
+.template-dsl-demo__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.template-dsl-demo__header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.template-dsl-demo p {
+  margin: 0 0 8px;
+  line-height: 1.7;
+}
+</style>
