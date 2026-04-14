@@ -22,6 +22,7 @@
  * @description 复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RCheckboxGroupProps } from './FieldCheckboxGroup.props'
 
@@ -32,9 +33,7 @@ const props = withDefaults(defineProps<RCheckboxGroupProps>(), {
   buttonStyle: false,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: MultiValue]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<MultiValue>>()
 
 const {
   fieldOptions: options,
@@ -46,7 +45,7 @@ const {
   props,
   fieldType: 'r-checkbox-group',
   fallbackValue: [],
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 async function handleChange(value: MultiValue): Promise<void> {

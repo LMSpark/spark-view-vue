@@ -4,15 +4,19 @@ import type { DataColumn } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { usePermission } from '../../../permission/index.js'
+import type { SparkFieldProps } from '../../shared-types.js'
 import { useSparkConsume, DATA_SOURCE, DATA_ROW } from '../../internal'
 import { columnToFormRules } from '../columnFormRules'
 import type { FormItemRule } from '../columnFormRules'
 import { useResolvedFieldContext } from './useResolvedFieldContext'
 
-export interface FieldPermissionProps<TValue> {
-  field?: string | undefined
-  label?: string | undefined
-  modelValue?: TValue | undefined
+type OptionalWithUndefined<T> = {
+  [K in keyof T]?: T[K] | undefined
+}
+
+export interface FieldPermissionProps<TValue>
+  extends OptionalWithUndefined<Omit<Pick<SparkFieldProps, 'field' | 'label' | 'value'>, 'value'>> {
+  value?: TValue | undefined
 }
 
 interface UseFieldPermissionOptions<TValue> {
@@ -50,7 +54,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   })
 
   const sourceFieldValue = computed<TValue>(() => {
-    if (props.modelValue !== undefined) return props.modelValue
+    if (props.value !== undefined) return props.value
     if (contextData !== null && fieldName.value && fieldName.value in contextData) {
       return contextData[fieldName.value] as TValue
     }

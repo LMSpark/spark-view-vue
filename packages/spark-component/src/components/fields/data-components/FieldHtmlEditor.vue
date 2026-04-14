@@ -54,6 +54,7 @@
  */
 import { ref } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { stripHtml, useHtmlEditorState } from './composables/useHtmlEditorState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RHtmlEditorProps } from './FieldHtmlEditor.props'
@@ -63,16 +64,14 @@ const props = withDefaults(defineProps<RHtmlEditorProps>(), {
   rows: 10,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string>>()
 
 const { permission, fieldCtx } = useBasicFieldState<string>({
   props,
   fieldType: 'r-html-editor',
   fallbackValue: '',
   formatDisplay: stripHtml,
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const {
@@ -98,7 +97,7 @@ const {
   fieldValue,
   isCurrentFieldEditable,
   syncValue,
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
   getRowRawValue,
 })
 </script>

@@ -22,6 +22,7 @@
  * @description 单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RRadioProps } from './FieldRadio.props'
 
@@ -30,9 +31,7 @@ const props = withDefaults(defineProps<RRadioProps>(), {
   buttonStyle: false,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string | number>>()
 
 const {
   fieldOptions: options,
@@ -44,7 +43,7 @@ const {
   props,
   fieldType: 'r-radio',
   fallbackValue: '',
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 async function handleChange(value: string | number): Promise<void> {

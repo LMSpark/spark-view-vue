@@ -18,6 +18,7 @@
  * @description 开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useSwitchNullValue } from './composables/useSwitchNullValue'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RSwitchProps } from './FieldSwitch.props'
@@ -28,9 +29,7 @@ const props = withDefaults(defineProps<RSwitchProps>(), {
   inactiveText: '否',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean | null]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<boolean | null>>()
 
 function formatSwitchValue(value: unknown): string {
   return value ? props.activeText : props.inactiveText
@@ -41,7 +40,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<bool
   fieldType: 'r-switch',
   fallbackValue: false,
   formatDisplay: formatSwitchValue,
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { boundColumn, contextData, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission

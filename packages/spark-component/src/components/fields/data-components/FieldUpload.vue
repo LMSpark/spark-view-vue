@@ -38,6 +38,7 @@
 import { computed } from 'vue'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RUploadProps } from './FieldUpload.props'
@@ -56,16 +57,14 @@ const props = withDefaults(defineProps<RUploadProps>(), {
   readonlyButtonText: '浏览',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string>>()
 
 const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string>({
   props,
   fieldType: 'r-upload',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const {

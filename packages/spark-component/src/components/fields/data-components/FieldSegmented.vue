@@ -1,13 +1,13 @@
 <template>
   <el-segmented
     v-if="isVisible"
-    v-model="selectedValue"
+    :model-value="selectedValue"
     :options="resolvedOptions"
     :size="size"
     :block="block"
-    :disabled="isDisabled"
+    :disabled="isDisabled || !isCurrentFieldEditable"
     v-bind="$attrs"
-    @change="handleChange"
+    @update:model-value="handleChange"
   />
 </template>
 
@@ -18,6 +18,8 @@
  */
 import { ref, computed, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { useOptionFieldState } from './composables/useOptionFieldState'
 import type { RSegmentedProps } from './FieldSegmented.props'
 
 const props = withDefaults(defineProps<RSegmentedProps>(), {
@@ -26,25 +28,57 @@ const props = withDefaults(defineProps<RSegmentedProps>(), {
   block: false,
 })
 
-const emit = defineEmits<{
+const emit = defineEmits<FieldValueUpdateEmits<string | number> & {
   change: [value: string | number]
-  'update:modelValue': [value: string | number]
 }>()
 
 const { isVisible, isDisabled } = useSparkPageComponent(props)
 
-const resolvedOptions = computed(() => props.options ?? [])
-
-const selectedValue = ref(props.modelValue ?? (resolvedOptions.value[0] != null
-  ? (typeof resolvedOptions.value[0] === 'object' ? resolvedOptions.value[0].value : resolvedOptions.value[0])
-  : ''))
-
-watch(() => props.modelValue, (v) => {
-  if (v !== undefined) selectedValue.value = v
+const { optionResult, handleControlledChange } = useOptionFieldState<string | number>({
+  props,
+  fieldType: 'r-segmented',
+  fallbackValue: '',
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
-function handleChange(val: string | number) {
-  emit('update:modelValue', val)
+const { options: fieldOptions, fieldValue, isCurrentFieldEditable } = optionResult
+
+interface ResolvedSegmentedOption {
+  label: string
+  value: string | number
+  disabled?: boolean
+}
+
+function toSegmentedValue(value: string | number | boolean): string | number {
+  return typeof value === 'boolean' ? String(value) : value
+}
+
+const resolvedOptions = computed<ResolvedSegmentedOption[]>(() =>
+  fieldOptions.value.map(option => {
+    const segmentedOption: ResolvedSegmentedOption = {
+      label: option.label,
+      value: toSegmentedValue(option.value),
+    }
+    if (option.disabled === true) {
+      segmentedOption.disabled = true
+    }
+    return segmentedOption
+  }),
+)
+
+const selectedValue = ref(props.value ?? resolvedOptions.value[0]?.value ?? '')
+
+watch(() => fieldValue.value, (value) => {
+  if (value === undefined || value === null || value === '') {
+    selectedValue.value = resolvedOptions.value[0]?.value ?? ''
+    return
+  }
+  selectedValue.value = toSegmentedValue(value)
+})
+
+async function handleChange(val: string | number) {
+  selectedValue.value = val
+  await handleControlledChange(val)
   emit('change', val)
 }
 </script>

@@ -19,6 +19,7 @@
  * @api checkedText / uncheckedText - 自定义选中/未选中显示文本（代替 trueLabel / falseLabel）
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RCheckboxProps } from './FieldCheckbox.props'
 
@@ -29,9 +30,7 @@ const props = withDefaults(defineProps<RCheckboxProps>(), {
   checkboxText: '',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<boolean>>()
 
 function formatCheckboxValue(value: unknown): string {
   return value ? props.checkedText : props.uncheckedText
@@ -42,7 +41,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<bool
   fieldType: 'r-checkbox',
   fallbackValue: false,
   formatDisplay: formatCheckboxValue,
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { fieldValue, isCurrentFieldEditable, displayLabel } = permission

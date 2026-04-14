@@ -21,6 +21,7 @@
  * @description 级联选择字段，绑定路径数组值，基于 el-cascader 支持多级分类选择、多选和搜索过滤。
  */
 import { computed } from 'vue'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RCascaderProps, CascaderValue } from './FieldCascader.props'
@@ -35,16 +36,14 @@ const props = withDefaults(defineProps<RCascaderProps>(), {
   emitPath: true,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: CascaderValue]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<CascaderValue>>()
 
 const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<CascaderValue>({
   props,
   fieldType: 'r-cascader',
   fallbackValue: [],
   formatDisplay: (value, helpers) => helpers.formatCascaderValue(value),
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { options, fieldValue, isCurrentFieldEditable } = optionResult

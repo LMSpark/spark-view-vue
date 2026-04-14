@@ -53,6 +53,7 @@
  * @description 图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RIconProps } from './FieldIcon.props'
 
@@ -64,15 +65,13 @@ const props = withDefaults(defineProps<RIconProps>(), {
   classPrefix: '',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string>>()
 
 const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<string>({
   props,
   fieldType: 'r-icon',
   fallbackValue: '',
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const {

@@ -1,24 +1,19 @@
-import type { SparkNodeChildren } from '../../../internal'
+import type { SparkOptionFieldProps } from '../../../shared-types.js'
 import { useFieldControlState } from './useFieldControlState'
 import { useOptionField } from '../../options/useFieldOptions'
 import type { useFieldOptions } from '../../options/useFieldOptions'
 
-interface OptionFieldProps<TValue> {
-  type?: string | undefined
-  width?: number | undefined
-  children?: SparkNodeChildren | undefined
-  modelValue?: TValue | undefined
-  field?: string | undefined
-  label?: string | undefined
+type OptionalWithUndefined<T> = {
+  [K in keyof T]?: T[K] | undefined
+}
+
+export type OptionFieldStateProps<TValue> = OptionalWithUndefined<Omit<SparkOptionFieldProps, 'value' | 'options'>> & {
+  value?: TValue | undefined
   options?: unknown[] | undefined
-  optionKey?: string | undefined
-  optionLabelField?: string | undefined
-  optionValueField?: string | undefined
-  optionChildrenField?: string | undefined
 }
 
 interface UseOptionFieldStateOptions<TValue> {
-  props: OptionFieldProps<TValue>
+  props: OptionFieldStateProps<TValue>
   fieldType: string
   fallbackValue: TValue
   emitUpdate: (value: TValue) => void
@@ -40,9 +35,24 @@ export function useOptionFieldState<TValue>(options: UseOptionFieldStateOptions<
     emitUpdate: value => options.emitUpdate(value),
   })
 
+  function syncTextStorage(value: TValue): void {
+    const storageField = options.props.textStorageField?.trim()
+    if (!storageField || optionResult.contextData === null) return
+
+    const labels = optionResult.findOptionLabels(value)
+    optionResult.contextData[storageField] = labels.length > 1
+      ? labels.join(options.props.textSeparator ?? ', ')
+      : (labels[0] ?? '')
+  }
+
+  async function handleOptionFieldChange(value: TValue): Promise<void> {
+    await handleControlledChange(value)
+    syncTextStorage(value)
+  }
+
   return {
     optionResult,
     fieldCtx,
-    handleControlledChange,
+    handleControlledChange: handleOptionFieldChange,
   }
 }

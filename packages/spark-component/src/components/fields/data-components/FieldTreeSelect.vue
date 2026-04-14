@@ -24,6 +24,7 @@
  * @description 树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RTreeSelectProps, TreeSelectValue } from './FieldTreeSelect.props'
 
@@ -38,15 +39,13 @@ const props = withDefaults(defineProps<RTreeSelectProps>(), {
   renderAfterExpand: true,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: TreeSelectValue]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<TreeSelectValue>>()
 
 const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<TreeSelectValue>({
   props,
   fieldType: 'r-tree-select',
   fallbackValue: '',
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { options, fieldValue, isCurrentFieldEditable } = optionResult

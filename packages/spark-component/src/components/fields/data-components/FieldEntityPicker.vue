@@ -1,5 +1,5 @@
 <template>
-  <FieldContextRenderer v-bind="fieldCtx">
+  <FieldContextRenderer v-bind="fieldCtx" v-bind="forwardedAttrs">
     <template #form>
       <div class="entity-picker-field">
         <el-input
@@ -19,12 +19,15 @@
  * @skill r-entity-picker
  * @description 通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。
  */
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import { useSelectorFieldActions } from '../actions/useSelectorFieldActions'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useEntityPickerState } from './composables/useEntityPickerState'
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import type { REntityPickerProps, EntityPickerValue } from './FieldEntityPicker.props'
+
+defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<REntityPickerProps>(), {
   type: 'r-entity-picker',
@@ -34,20 +37,28 @@ const props = withDefaults(defineProps<REntityPickerProps>(), {
   clearable: true,
   multiple: false,
   searchable: true,
-  separator: ', ',
   valueMode: 'auto',
   entityName: '项目',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: EntityPickerValue]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<EntityPickerValue>>()
+const attrs = useAttrs()
+const compatAttrs = attrs as Readonly<Record<string, unknown>>
+
+const forwardedAttrs = computed<Record<string, unknown>>(() => {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(compatAttrs)) {
+    if (key === 'separator') continue
+    result[key] = value
+  }
+  return result
+})
 
 const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<EntityPickerValue>({
   props,
   fieldType: 'r-entity-picker',
   fallbackValue: '',
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const {
@@ -58,6 +69,8 @@ const {
   isCurrentFieldEditable,
   currentDisplayValue,
 } = optionResult
+
+const resolvedValueSeparator = computed(() => props.valueSeparator ?? (compatAttrs['separator'] as string | undefined) ?? ', ')
 
 const { hasSelectorCapability, primaryAction, selectEntities } = useSelectorFieldActions({
   pageService,
@@ -79,7 +92,7 @@ const {
   clearable: computed(() => props.clearable),
   multiple: computed(() => props.multiple),
   searchable: computed(() => props.searchable),
-  separator: computed(() => props.separator),
+  valueSeparator: resolvedValueSeparator,
   valueMode: computed(() => props.valueMode),
   entityName: computed(() => props.entityName),
   placeholder: computed(() => props.placeholder),

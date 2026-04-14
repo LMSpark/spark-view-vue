@@ -34,6 +34,7 @@
  * @description 多行文本字段，绑定 string 值，基于 el-input textarea 模式，支持自动高度和字数限制。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RTextareaProps } from './FieldTextarea.props'
 
@@ -45,15 +46,13 @@ const props = withDefaults(defineProps<RTextareaProps>(), {
   placeholder: '请输入内容',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string>>()
 
 const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string>({
   props,
   fieldType: 'r-textarea',
   fallbackValue: '',
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { fieldValue, isCurrentFieldEditable, currentDisplayValue } = permission

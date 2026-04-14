@@ -1,12 +1,6 @@
-import type { SparkFieldProps } from '../../shared-types'
+import type { SparkFieldProps, SparkNumericBoundsProps, SparkRangeFilterProps } from '../../shared-types'
 
-export interface RNumberProps extends SparkFieldProps {
-  width?: number
-  modelValue?: number | [number | undefined, number | undefined]
-  min?: number
-  max?: number
+export interface RNumberProps extends SparkFieldProps, SparkRangeFilterProps, SparkNumericBoundsProps {
+  value?: number | [number | undefined, number | undefined]
   precision?: number
-  filterMode?: string
-  filterVariant?: string
-  filterRange?: boolean
 }

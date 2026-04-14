@@ -1,6 +1,10 @@
-import type { SparkNodeProps, SparkValueBindingProps } from '../../shared-types'
+import type { SparkFieldProps, SparkNodeProps } from '../../shared-types'
 
-export interface RStatisticProps extends SparkNodeProps, SparkValueBindingProps<number | string> {
+export interface RStatisticProps extends SparkNodeProps {
+  /** 显式统计值 */
+  value?: number | string
+  /** 数据字段绑定键（通常映射到当前行 field） */
+  field?: SparkFieldProps['field']
   /** 统计标题 */
   title?: string
   /** 数据绑定键（值级绑定） */

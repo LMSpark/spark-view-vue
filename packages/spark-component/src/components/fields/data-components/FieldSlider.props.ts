@@ -1,10 +1,7 @@
-import type { SparkFieldProps } from '../../shared-types'
+import type { SparkFieldProps, SparkNumericBoundsProps } from '../../shared-types'
 
-export interface RSliderProps extends SparkFieldProps {
-  width?: number
-  modelValue?: number
-  min?: number
-  max?: number
+export interface RSliderProps extends SparkFieldProps, SparkNumericBoundsProps {
+  value?: number
   step?: number
   showInput?: boolean
 }

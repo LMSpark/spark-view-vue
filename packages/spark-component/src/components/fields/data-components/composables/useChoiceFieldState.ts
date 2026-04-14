@@ -1,21 +1,8 @@
-import type { SparkNodeChildren } from '../../../internal'
 import { useOptionFieldState } from './useOptionFieldState'
-
-interface ChoiceFieldProps<TValue> {
-  type?: string | undefined
-  width?: number | undefined
-  children?: SparkNodeChildren | undefined
-  modelValue?: TValue | undefined
-  field?: string | undefined
-  label?: string | undefined
-  options?: unknown[] | undefined
-  optionKey?: string | undefined
-  optionLabelField?: string | undefined
-  optionValueField?: string | undefined
-}
+import type { OptionFieldStateProps } from './useOptionFieldState'
 
 interface UseChoiceFieldStateOptions<TValue> {
-  props: ChoiceFieldProps<TValue>
+  props: OptionFieldStateProps<TValue>
   fieldType: string
   fallbackValue: TValue
   emitUpdate: (value: TValue) => void

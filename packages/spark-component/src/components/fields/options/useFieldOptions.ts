@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
+import type { SparkOptionFieldProps } from '../../shared-types.js'
 import { PAGE_DATASET, useSparkConsume } from '../../internal'
 import { resolveViewFromDataKey } from '../../../core/data-key-resolver.js'
 import { useFieldPermission } from '../context/useFieldPermission'
@@ -7,6 +8,7 @@ import type { FieldPermissionProps } from '../context/useFieldPermission'
 import { buildOptionSourceFromView } from './option-source.js'
 import {
   flattenOptions,
+  type FieldOptionValue,
   normalizeMultiValue,
   normalizeOption,
   type FieldOption,
@@ -20,18 +22,27 @@ export interface FieldTransferOption {
   disabled?: boolean
 }
 
-interface FieldOptionProps {
-  options?: unknown[] | undefined
-  optionLabelField?: string | undefined
-  optionValueField?: string | undefined
-  optionChildrenField?: string | undefined
-  optionKey?: string | undefined
+type OptionalWithUndefined<T> = {
+  [K in keyof T]?: T[K] | undefined
 }
+
+type FieldOptionProps = OptionalWithUndefined<Pick<
+  SparkOptionFieldProps,
+  'options'
+  | 'optionLabelField'
+  | 'optionValueField'
+  | 'optionDisabledField'
+  | 'optionChildrenField'
+  | 'optionKey'
+  | 'valueSeparator'
+>>
 
 interface UseFieldOptionsReturn {
   options: ComputedRef<FieldOption[]>
   flatOptions: ComputedRef<FieldOption[]>
+  normalizeOptionValues: (value: unknown) => FieldOptionValue[]
   findOptionLabel: (value: unknown) => string
+  findOptionLabels: (value: unknown) => string[]
   formatOptionValue: (value: unknown) => string
   formatCascaderValue: (value: unknown) => string
   transferData: ComputedRef<FieldTransferOption[]>
@@ -65,7 +76,9 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
     ?? optionKeyView.value?.treeConfig?.idField
     ?? 'value'
   )
+  const optionDisabledField = computed(() => props.optionDisabledField ?? 'disabled')
   const optionChildrenField = computed(() => props.optionChildrenField ?? 'children')
+  const valueSeparator = computed(() => props.valueSeparator ?? ',')
 
   const options = computed<FieldOption[]>(() => {
     const view = optionKeyView.value
@@ -75,13 +88,13 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
         optionLabelField.value,
         optionChildrenField.value,
       )
-        .map(row => normalizeOption(row, optionLabelField.value, optionValueField.value, optionChildrenField.value))
+        .map(row => normalizeOption(row, optionLabelField.value, optionValueField.value, optionChildrenField.value, optionDisabledField.value))
         .filter((item): item is FieldOption => item !== null)
     }
     const source = props.options ?? []
     if (!Array.isArray(source)) return []
     return source
-      .map(item => normalizeOption(item, optionLabelField.value, optionValueField.value, optionChildrenField.value))
+      .map(item => normalizeOption(item, optionLabelField.value, optionValueField.value, optionChildrenField.value, optionDisabledField.value))
       .filter((item): item is FieldOption => item !== null)
   })
 
@@ -92,8 +105,16 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
     return match?.label ?? String(value ?? '')
   }
 
+  function normalizeOptionValues(value: unknown): FieldOptionValue[] {
+    return normalizeMultiValue(value, valueSeparator.value)
+  }
+
+  function findOptionLabels(value: unknown): string[] {
+    return normalizeOptionValues(value).map(findOptionLabel)
+  }
+
   function formatOptionValue(value: unknown): string {
-    const values = normalizeMultiValue(value)
+    const values = normalizeOptionValues(value)
     if (values.length === 0) return ''
     return values.map(findOptionLabel).join(' / ')
   }
@@ -132,7 +153,9 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
   return {
     options,
     flatOptions,
+    normalizeOptionValues,
     findOptionLabel,
+    findOptionLabels,
     formatOptionValue,
     formatCascaderValue,
     transferData,

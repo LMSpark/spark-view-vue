@@ -24,6 +24,7 @@
  * @description 时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RTimePickerProps } from './FieldTimePicker.props'
 
@@ -39,9 +40,7 @@ const props = withDefaults(defineProps<RTimePickerProps>(), {
   clearable: true,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string | Date]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string | Date>>()
 
 function formatTimeValue(value: unknown): string {
   if (!value) return ''
@@ -55,7 +54,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   fieldType: 'r-time-picker',
   fallbackValue: '',
   formatDisplay: formatTimeValue,
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { fieldValue, isCurrentFieldEditable } = permission

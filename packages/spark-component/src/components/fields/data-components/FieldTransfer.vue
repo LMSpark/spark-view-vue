@@ -21,6 +21,7 @@
  * @description 穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RTransferProps, TransferValue } from './FieldTransfer.props'
 
@@ -32,15 +33,13 @@ const props = withDefaults(defineProps<RTransferProps>(), {
   targetOrder: 'original',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: TransferValue]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<TransferValue>>()
 
 const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<TransferValue>({
   props,
   fieldType: 'r-transfer',
   fallbackValue: [],
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { transferData, fieldValue, isCurrentFieldEditable } = optionResult

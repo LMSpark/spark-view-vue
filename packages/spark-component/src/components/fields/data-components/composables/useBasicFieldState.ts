@@ -1,12 +1,14 @@
-import type { SparkNodeChildren } from '../../../internal'
+import type { SparkFieldProps } from '../../../shared-types.js'
 import { useFieldPermission } from '../../context/useFieldPermission'
 import type { FieldPermissionProps } from '../../context/useFieldPermission'
 import { useFieldControlState } from './useFieldControlState'
 
-interface BasicFieldProps<TValue> extends FieldPermissionProps<TValue> {
-  type?: string | undefined
-  width?: number | undefined
-  children?: SparkNodeChildren | undefined
+type OptionalWithUndefined<T> = {
+  [K in keyof T]?: T[K] | undefined
+}
+
+interface BasicFieldProps<TValue>
+  extends FieldPermissionProps<TValue>, OptionalWithUndefined<Pick<SparkFieldProps, 'type' | 'width' | 'children'>> {
 }
 
 interface UseBasicFieldStateOptions<TValue> {

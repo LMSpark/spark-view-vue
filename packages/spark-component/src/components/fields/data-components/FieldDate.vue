@@ -28,6 +28,7 @@
  */
 import { computed } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RDateProps, DatePickerType } from './FieldDate.props'
@@ -41,9 +42,7 @@ const props = withDefaults(defineProps<RDateProps>(), {
   clearable: true,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string | Date | Array<string | Date>]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string | Date | Array<string | Date>>>()
 
 function formatDateValue(value: unknown): string {
   if (!value) return ''
@@ -69,7 +68,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   fieldType: 'r-date',
   fallbackValue: '',
   formatDisplay: formatDateValue,
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { fieldValue, isCurrentFieldEditable } = permission

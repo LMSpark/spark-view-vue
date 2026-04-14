@@ -27,6 +27,7 @@
  * @description 单选下拉字段，绑定 string/number 值，基于 el-select，支持静态选项列表或 optionKey 动态数据源绑定。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RSelectProps } from './FieldSelect.props'
 
@@ -37,9 +38,7 @@ const props = withDefaults(defineProps<RSelectProps>(), {
   filterable: false,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string | number>>()
 
 const {
   fieldOptions: options,
@@ -51,7 +50,7 @@ const {
   props,
   fieldType: 'r-select',
   fallbackValue: '',
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 async function handleChange(value: string | number): Promise<void> {

@@ -1,8 +1,6 @@
-import type { SparkFieldProps } from '../../shared-types'
+import type { SparkFieldProps, SparkNumericMaxProps } from '../../shared-types'
 
-export interface RRateProps extends SparkFieldProps {
-  width?: number
-  modelValue?: number
-  max?: number
+export interface RRateProps extends SparkFieldProps, SparkNumericMaxProps {
+  value?: number
   allowHalf?: boolean
 }

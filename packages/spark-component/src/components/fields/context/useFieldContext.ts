@@ -1,8 +1,9 @@
 import { computed, useAttrs } from 'vue'
 import type { ComputedRef } from 'vue'
-import { getSparkNodeChildren, type SparkNode, type SparkNodeChildren } from '../../internal'
+import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../columnFormRules'
+import type { SparkFieldProps } from '../../shared-types.js'
 
 type TextAlign = 'left' | 'center' | 'right'
 
@@ -37,8 +38,16 @@ interface FieldPermissionForContext {
   validationRules: ComputedRef<FormItemRule[]>
 }
 
+type OptionalWithUndefined<T> = {
+  [K in keyof T]?: T[K] | undefined
+}
+
+type FieldContextInputProps = OptionalWithUndefined<Pick<SparkFieldProps, 'type' | 'width' | 'children'>> & {
+  type: string
+}
+
 export function useFieldContext(
-  fieldProps: { type: string; width: number | undefined; children?: SparkNodeChildren | undefined },
+  fieldProps: FieldContextInputProps,
   permission: FieldPermissionForContext,
 ): ComputedRef<FieldContextProps> {
   const attrs = useAttrs()

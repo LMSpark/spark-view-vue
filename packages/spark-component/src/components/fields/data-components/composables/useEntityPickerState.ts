@@ -1,20 +1,27 @@
 import { computed } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import type { FieldOption } from '../../options/index.js'
-import type { ValueRef } from '../../../shared-types.js'
+import type {
+  SparkFieldProps,
+  SparkOptionFieldProps,
+  SparkOptionValueMode,
+  SparkPrimaryActionTextProps,
+  SparkReadonlyActionTextProps,
+  ValueRef,
+} from '../../../shared-types.js'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
 interface UseEntityPickerStateOptions {
-  buttonText: ValueRef<string>
-  readonlyButtonText: ValueRef<string>
-  clearable: ValueRef<boolean>
-  multiple: ValueRef<boolean>
+  buttonText: ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>
+  readonlyButtonText: ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>
+  clearable: ValueRef<NonNullable<SparkFieldProps['clearable']>>
+  multiple: ValueRef<NonNullable<SparkOptionFieldProps['multiple']>>
   searchable: ValueRef<boolean>
-  separator: ValueRef<string>
-  valueMode: ValueRef<'auto' | 'array' | 'comma-string'>
+  valueSeparator: ValueRef<NonNullable<SparkOptionFieldProps['valueSeparator']>>
+  valueMode: ValueRef<SparkOptionValueMode>
   entityName: ValueRef<string>
-  placeholder: ValueRef<string>
+  placeholder: ValueRef<NonNullable<SparkFieldProps['placeholder']>>
   flatOptions: ValueRef<FieldOption[]>
   currentRawValue: ValueRef<EntityPickerValue>
   currentRawStringValue: ValueRef<string>
@@ -44,7 +51,7 @@ export function useEntityPickerState(options: UseEntityPickerStateOptions) {
     if (options.multiple.value) {
       if (options.valueMode.value === 'array') return values
       if (options.valueMode.value === 'auto' && Array.isArray(options.currentRawValue.value)) return values
-      return values.map(value => String(value)).join(options.separator.value)
+      return values.map(value => String(value)).join(options.valueSeparator.value)
     }
     return values[0] ?? ''
   }

@@ -1,9 +1,7 @@
-import type { SparkFieldProps } from '../../shared-types'
+import type { SparkFieldProps, SparkMultilineRowsProps } from '../../shared-types'
 
-export interface RTextareaProps extends SparkFieldProps {
-  width?: number
-  modelValue?: string
-  rows?: number
+export interface RTextareaProps extends SparkFieldProps, SparkMultilineRowsProps {
+  value?: string
   autosize?: boolean | { minRows?: number; maxRows?: number }
   maxlength?: number
   showWordLimit?: boolean

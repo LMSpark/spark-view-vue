@@ -1,13 +1,6 @@
-import type { SparkFieldProps } from '../../shared-types'
+import type { SparkOptionFieldProps } from '../../shared-types'
 
-export interface RIconProps extends SparkFieldProps {
-  width?: number
-  modelValue?: string
-  options?: unknown[]
-  optionKey?: string
-  optionLabelField?: string
-  optionValueField?: string
-  clearable?: boolean
-  filterable?: boolean
+export interface RIconProps extends SparkOptionFieldProps {
+  value?: string
   classPrefix?: string
 }

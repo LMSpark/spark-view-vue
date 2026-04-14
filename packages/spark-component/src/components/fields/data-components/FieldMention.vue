@@ -1,11 +1,11 @@
 <template>
   <el-mention
     v-if="isVisible"
-    v-model="textValue"
+    :model-value="textValue"
     :options="resolvedOptions"
-    :prefix="prefix"
-    :split="split"
-    :filter-option="filterOption"
+    :prefix="resolvedPrefixes"
+    :split="resolvedSplit"
+    :filter-option="resolvedFilterOption"
     :placement="placement"
     :show-arrow="showArrow"
     :offset="offset"
@@ -17,6 +17,7 @@
     :placeholder="placeholder"
     :rows="rows"
     v-bind="$attrs"
+    @update:model-value="handleTextInput"
     @select="handleSelect"
     @search="handleSearch"
   />
@@ -28,8 +29,16 @@
  * @description 提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。
  */
 import { ref, computed, watch } from 'vue'
-import { useSparkPageComponent } from '../../internal'
-import type { RMentionProps, MentionOption } from './FieldMention.props'
+import { DATA_ROW, useSparkConsume, useSparkPageComponent } from '../../internal'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { useFieldOptions } from '../options'
+import type { RMentionProps } from './FieldMention.props'
+
+type MentionResolvedOption = NonNullable<RMentionProps['options']>[number]
+type MentionTrigger = NonNullable<RMentionProps['mentionTriggers']>[number]
+type MentionRuntimeOption = MentionResolvedOption & {
+  persistedValue?: string | number | boolean
+}
 
 const props = withDefaults(defineProps<RMentionProps>(), {
   type: 'r-mention',
@@ -41,31 +50,154 @@ const props = withDefaults(defineProps<RMentionProps>(), {
   rows: 3,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-  select: [option: MentionOption, prefix: string]
+const emit = defineEmits<FieldValueUpdateEmits<string> & {
+  select: [option: MentionResolvedOption, prefix: string]
   search: [pattern: string, prefix: string]
 }>()
 
 const { isVisible, isDisabled } = useSparkPageComponent(props)
+const { sparkConsume } = useSparkConsume()
+const contextData = sparkConsume(DATA_ROW)
+const activePrefix = ref<string | null>(null)
 
-const resolvedOptions = computed(() => props.options ?? [])
+function normalizeTextValue(value: unknown): string {
+  return typeof value === 'string' ? value : String(value ?? '')
+}
 
-const textValue = ref(props.modelValue ?? '')
+const mentionTriggers = computed<MentionTrigger[]>(() => {
+  if (props.mentionTriggers && props.mentionTriggers.length > 0) {
+    return props.mentionTriggers
+  }
 
-watch(() => props.modelValue, (v) => {
-  if (v !== undefined) textValue.value = v
+  const prefixes = Array.isArray(props.prefix) ? props.prefix : [props.prefix]
+  return prefixes.map(prefix => {
+    const trigger: MentionTrigger = {
+      prefix,
+      split: props.split,
+    }
+    return trigger
+  })
 })
 
-watch(textValue, (v) => {
-  emit('update:modelValue', v)
+const resolvedPrefixes = computed(() => {
+  const prefixes = mentionTriggers.value.map(trigger => trigger.prefix)
+  if (prefixes.length === 0) {
+    throw new Error('[r-mention] 至少需要一个 mention 触发前缀。')
+  }
+  if (prefixes.some(prefix => prefix.length !== 1)) {
+    throw new Error('[r-mention] mentionTriggers.prefix 必须是单个字符，这与 el-mention 的底层约束一致。')
+  }
+  if (new Set(prefixes).size !== prefixes.length) {
+    throw new Error('[r-mention] mentionTriggers.prefix 不能重复。')
+  }
+  return prefixes
 })
 
-function handleSelect(option: MentionOption, prefix: string) {
+const resolvedSplit = computed(() => {
+  const configuredSplits = mentionTriggers.value
+    .map(trigger => trigger.split)
+    .filter((split): split is string => typeof split === 'string' && split.length > 0)
+
+  const uniqueSplits = [...new Set(configuredSplits)]
+  if (uniqueSplits.length > 1) {
+    throw new Error('[r-mention] el-mention 只支持一个全局 split；mentionTriggers 中如果声明 split，所有项必须一致。')
+  }
+
+  const split = uniqueSplits[0] ?? props.split
+  if (split.length !== 1) {
+    throw new Error('[r-mention] split 必须是单个字符，这与 el-mention 的底层约束一致。')
+  }
+  return split
+})
+
+const activeTrigger = computed<MentionTrigger>(() => {
+  const matched = mentionTriggers.value.find(trigger => trigger.prefix === activePrefix.value)
+  const fallback = mentionTriggers.value[0]
+  if (!fallback) {
+    throw new Error('[r-mention] 未找到可用的 mention 触发器配置。')
+  }
+  return matched ?? fallback
+})
+
+const resolvedFilterOption = computed(() => {
+  if (activeTrigger.value.searchable === false) {
+    return false
+  }
+  return undefined
+})
+
+// Mention 的公开配置输入只来自 mentionTriggers；
+// `props.options` 只作为内部运行时结果覆盖值，不参与页面配置解析。
+const mentionOptionSource = {
+  get optionKey() {
+    return activeTrigger.value.options?.dataKey
+  },
+  get optionLabelField() {
+    return activeTrigger.value.options?.labelField
+  },
+  get optionValueField() {
+    return activeTrigger.value.options?.valueField
+  },
+  get optionDisabledField() {
+    return activeTrigger.value.options?.disabledField
+  },
+}
+
+const { options: computedFieldOptions } = useFieldOptions(mentionOptionSource)
+
+const resolvedOptions = computed<MentionRuntimeOption[]>(() => {
+  if (props.options !== undefined) {
+    return props.options.map(option => ({
+      ...option,
+      persistedValue: option.persistedValue ?? option.value,
+    }))
+  }
+
+  return computedFieldOptions.value.map(option => {
+    const mentionOption: MentionRuntimeOption = {
+      value: option.label,
+      label: option.label,
+      persistedValue: option.value,
+    }
+    if (option.disabled === true) {
+      mentionOption.disabled = true
+    }
+    return mentionOption
+  })
+})
+
+const textValue = ref(normalizeTextValue(props.value))
+
+watch(() => props.value, (v) => {
+  const nextValue = normalizeTextValue(v)
+  if (nextValue !== textValue.value) {
+    textValue.value = nextValue
+  }
+})
+
+function syncMainField(value: string): void {
+  textValue.value = value
+  emitFieldValueUpdate(emit, value)
+  if (contextData !== null && props.field) {
+    contextData[props.field] = value
+  }
+}
+
+function handleTextInput(value: string): void {
+  syncMainField(value)
+}
+
+function handleSelect(option: MentionRuntimeOption, prefix: string) {
+  activePrefix.value = prefix
+  const writebackField = activeTrigger.value.writebackField
+  if (contextData !== null && writebackField) {
+    contextData[writebackField] = option.persistedValue ?? option.value
+  }
   emit('select', option, prefix)
 }
 
 function handleSearch(pattern: string, prefix: string) {
+  activePrefix.value = prefix
   emit('search', pattern, prefix)
 }
 </script>

@@ -10,7 +10,9 @@
 import { computed, defineComponent, h, useAttrs } from 'vue'
 import type { PropType } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
-import type { SparkNode } from '../internal'
+import type { SparkNodeChildren } from '../internal'
+import type { SparkOptionValueMode } from '../shared-types'
+import { emitFieldValueUpdate } from './data-components/composables/useControlledFieldChange'
 import FieldEntityPicker from './data-components/FieldEntityPicker.vue'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
@@ -31,7 +33,7 @@ const SHARED_PROPS = {
   name: { type: String, default: undefined },
   label: { type: String, default: undefined },
   width: { type: Number, default: undefined },
-  modelValue: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
+  value: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
   options: { type: Array as PropType<unknown[]>, default: undefined },
   optionKey: { type: String, default: undefined },
   optionLabelField: { type: String, default: undefined },
@@ -42,10 +44,12 @@ const SHARED_PROPS = {
   clearable: { type: Boolean, default: true },
   multiple: { type: Boolean, default: false },
   searchable: { type: Boolean, default: true },
-  separator: { type: String, default: ', ' },
-  valueMode: { type: String as PropType<'auto' | 'array' | 'comma-string'>, default: 'auto' },
+  valueSeparator: { type: String, default: undefined },
+  textSeparator: { type: String, default: undefined },
+  textStorageField: { type: String, default: undefined },
+  valueMode: { type: String as PropType<SparkOptionValueMode>, default: 'auto' },
   entityName: { type: String, default: undefined },
-  children: { type: Array as PropType<SparkNode[]>, default: undefined },
+  children: { type: Array as PropType<SparkNodeChildren>, default: undefined },
 } as const
 
 /**
@@ -55,9 +59,19 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
   return defineComponent({
     name: `FieldEntityPicker[${defaults.entityName}]`,
     props: SHARED_PROPS,
-    emits: ['update:modelValue'],
-    setup(props) {
+    emits: ['update:value', 'update:modelValue'],
+    setup(props, { emit }) {
       const attrs = useAttrs()
+      const compatAttrs = attrs as Readonly<Record<string, unknown>>
+
+      const passthroughAttrs = computed<Record<string, unknown>>(() => {
+        const result: Record<string, unknown> = {}
+        for (const [key, value] of Object.entries(compatAttrs)) {
+          if (key === 'modelValue' || key === 'separator') continue
+          result[key] = value
+        }
+        return result
+      })
 
       const forwardedProps = computed<Record<string, unknown>>(() => {
         const result: Record<string, unknown> = {}
@@ -65,13 +79,19 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
         // 定义值 prop 列表（仅在 !== undefined 时透传，避免覆盖 EntityPicker 默认值）
         const conditionalKeys = [
           'label', 'width',
-          'modelValue', 'options', 'optionKey', 'optionLabelField', 'optionValueField', 'children',
+          'options', 'optionKey', 'optionLabelField', 'optionValueField', 'children',
         ] as const
 
         for (const key of conditionalKeys) {
           if (props[key] !== undefined) {
             result[key] = props[key]
           }
+        }
+
+        const compatModelValue = compatAttrs['modelValue'] as EntityPickerValue | undefined
+        const resolvedValue = props['value'] ?? compatModelValue
+        if (resolvedValue !== undefined) {
+          result['value'] = resolvedValue
         }
 
         const resolvedField = props['field'] ?? props['name']
@@ -89,13 +109,28 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
         result['clearable'] = props['clearable']
         result['multiple'] = props['multiple']
         result['searchable'] = props['searchable']
-        result['separator'] = props['separator']
+        const compatSeparator = compatAttrs['separator'] as string | undefined
+        const resolvedValueSeparator = props['valueSeparator'] ?? compatSeparator
+        if (resolvedValueSeparator !== undefined) {
+          result['valueSeparator'] = resolvedValueSeparator
+        }
+        if (props['textSeparator'] !== undefined) {
+          result['textSeparator'] = props['textSeparator']
+        }
+        if (props['textStorageField'] !== undefined) {
+          result['textStorageField'] = props['textStorageField']
+        }
         result['valueMode'] = props['valueMode']
 
         return result
       })
 
-      return () => h(FieldEntityPicker, { type: 'r-entity-picker', ...attrs, ...forwardedProps.value })
+      return () => h(FieldEntityPicker, {
+        type: 'r-entity-picker',
+        ...passthroughAttrs.value,
+        ...forwardedProps.value,
+        'onUpdate:value': (value: EntityPickerValue) => emitFieldValueUpdate(emit, value),
+      })
     },
   })
 }

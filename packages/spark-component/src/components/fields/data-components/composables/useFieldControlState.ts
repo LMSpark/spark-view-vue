@@ -1,7 +1,7 @@
 import type { ComputedRef } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../../columnFormRules'
-import type { SparkNodeChildren } from '../../../internal'
+import type { SparkFieldProps } from '../../../shared-types.js'
 import { useFieldContext } from '../../context/useFieldContext'
 import { useControlledFieldChange } from './useControlledFieldChange'
 
@@ -21,10 +21,11 @@ interface ControlledFieldStateLike<TValue> extends FieldContextStateLike {
   syncValue: (value: TValue) => void
 }
 
-interface FieldControlProps {
-  type?: string | undefined
-  width?: number | undefined
-  children?: SparkNodeChildren | undefined
+type OptionalWithUndefined<T> = {
+  [K in keyof T]?: T[K] | undefined
+}
+
+interface FieldControlProps extends OptionalWithUndefined<Pick<SparkFieldProps, 'type' | 'width' | 'children'>> {
 }
 
 interface UseFieldControlStateOptions<TValue> {

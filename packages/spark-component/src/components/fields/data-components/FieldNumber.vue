@@ -40,6 +40,7 @@
  * @api filterMode - 'range' 启用范围过滤模式
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useNumberFieldState } from './composables/useNumberFieldState'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
@@ -49,9 +50,7 @@ const props = withDefaults(defineProps<RNumberProps>(), {
   type: 'r-number',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: number | [number | undefined, number | undefined]]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<number | [number | undefined, number | undefined]>>()
 
 function formatNumberValue(value: unknown): string {
   if (Array.isArray(value)) return value.map(item => formatNumberValue(item)).join(' ~ ')
@@ -67,7 +66,7 @@ const { permission, fieldCtx } = useBasicFieldState<number | [number | undefined
   fieldType: 'r-number',
   fallbackValue: 0,
   formatDisplay: formatNumberValue,
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
@@ -80,7 +79,7 @@ const {
   handleRangeEndChange,
 } = useNumberFieldState({
   fieldValue,
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
   syncValue,
 })
 </script>

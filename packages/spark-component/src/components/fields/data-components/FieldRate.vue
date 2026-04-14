@@ -18,6 +18,7 @@
  * @description 评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RRateProps } from './FieldRate.props'
 
@@ -27,16 +28,14 @@ const props = withDefaults(defineProps<RRateProps>(), {
   allowHalf: false,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: number]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<number>>()
 
 const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<number>({
   props,
   fieldType: 'r-rate',
   fallbackValue: 0,
   formatDisplay: value => String(value ?? 0),
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { fieldValue, isCurrentFieldEditable } = permission

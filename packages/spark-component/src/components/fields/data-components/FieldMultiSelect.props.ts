@@ -1,16 +1,9 @@
-import type { SparkFieldProps } from '../../shared-types'
+import type { SparkOptionFieldProps } from '../../shared-types'
 
 export type MultiValue = Array<string | number | boolean>
 
-export interface RMultiSelectProps extends SparkFieldProps {
-  width?: number
-  modelValue?: MultiValue
-  options?: unknown[]
-  optionKey?: string
-  optionLabelField?: string
-  optionValueField?: string
-  clearable?: boolean
-  filterable?: boolean
+export interface RMultiSelectProps extends SparkOptionFieldProps {
+  value?: MultiValue
   collapseTags?: boolean
   collapseTagsTooltip?: boolean
   maxCollapseTags?: number

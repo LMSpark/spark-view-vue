@@ -1,12 +1,7 @@
 import { computed } from 'vue'
+import type { SparkRangeFilterProps } from '../../../shared-types.js'
 
-interface RangeFilterProps {
-  filterMode?: string | undefined
-  filterVariant?: string | undefined
-  filterRange?: boolean | undefined
-}
-
-export function useRangeFilterMode(props: RangeFilterProps) {
+export function useRangeFilterMode(props: SparkRangeFilterProps) {
   return computed(() => (
     props.filterMode === 'range'
     || props.filterVariant === 'range'

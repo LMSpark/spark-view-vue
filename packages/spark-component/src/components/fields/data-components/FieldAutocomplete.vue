@@ -23,6 +23,7 @@
  * @description 自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RAutocompleteProps } from './FieldAutocomplete.props'
 
@@ -37,8 +38,7 @@ const props = withDefaults(defineProps<RAutocompleteProps>(), {
   valueKey: 'value',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
+const emit = defineEmits<FieldValueUpdateEmits<string> & {
   'select': [item: SuggestionItem]
 }>()
 
@@ -47,7 +47,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   fieldType: 'r-autocomplete',
   fallbackValue: '',
   formatDisplay: value => (value != null ? String(value) : ''),
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { fieldValue, isCurrentFieldEditable } = permission

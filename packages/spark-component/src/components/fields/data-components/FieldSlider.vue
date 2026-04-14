@@ -20,6 +20,7 @@
  * @description 滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RSliderProps } from './FieldSlider.props'
 
@@ -31,16 +32,14 @@ const props = withDefaults(defineProps<RSliderProps>(), {
   showInput: false,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: number]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<number>>()
 
 const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<number>({
   props,
   fieldType: 'r-slider',
   fallbackValue: 0,
   formatDisplay: value => String(value ?? 0),
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const { fieldValue, isCurrentFieldEditable } = permission

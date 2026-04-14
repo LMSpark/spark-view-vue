@@ -12,6 +12,7 @@ export function normalizeOption(
   labelField: string,
   valueField: string,
   childrenField: string,
+  disabledField: string,
 ): FieldOption | null {
   if (raw === null || raw === undefined) return null
   if (typeof raw === 'string' || typeof raw === 'number' || typeof raw === 'boolean') {
@@ -27,14 +28,16 @@ export function normalizeOption(
   const rawChildren = record[childrenField] ?? record['children'] ?? record['items'] ?? record['nodes']
   const children = Array.isArray(rawChildren)
     ? rawChildren
-      .map(item => normalizeOption(item, labelField, valueField, childrenField))
+      .map(item => normalizeOption(item, labelField, valueField, childrenField, disabledField))
       .filter((item): item is FieldOption => item !== null)
     : []
+
+  const rawDisabled = record[disabledField] ?? record['disabled']
 
   const option: FieldOption = {
     label: String(label),
     value: value as FieldOptionValue,
-    disabled: record['disabled'] === true,
+    disabled: rawDisabled === true,
   }
 
   if (children.length > 0) {
@@ -44,11 +47,11 @@ export function normalizeOption(
   return option
 }
 
-export function normalizeMultiValue(value: unknown): FieldOptionValue[] {
+export function normalizeMultiValue(value: unknown, separator = ','): FieldOptionValue[] {
   if (Array.isArray(value)) return value as FieldOptionValue[]
   if (typeof value === 'string') {
     if (!value.trim()) return []
-    return value.split(',').map(item => item.trim())
+    return value.split(separator).map(item => item.trim())
   }
   if (value === null || value === undefined || value === '') return []
   return [value as FieldOptionValue]

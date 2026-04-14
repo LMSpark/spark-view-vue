@@ -34,6 +34,7 @@
 import { computed } from 'vue'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useUploadBrowseFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RFilePathProps } from './FieldFilePath.props'
@@ -50,16 +51,14 @@ const props = withDefaults(defineProps<RFilePathProps>(), {
   clearable: true,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string>>()
 
 const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string>({
   props,
   fieldType: 'r-file-path',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const {

@@ -31,6 +31,7 @@
  * @description 多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RMultiSelectProps, MultiValue } from './FieldMultiSelect.props'
 
@@ -44,9 +45,7 @@ const props = withDefaults(defineProps<RMultiSelectProps>(), {
   maxCollapseTags: 1,
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: MultiValue]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<MultiValue>>()
 
 const {
   fieldOptions: options,
@@ -58,7 +57,7 @@ const {
   props,
   fieldType: 'r-multi-select',
   fallbackValue: [],
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 async function handleChange(value: MultiValue): Promise<void> {

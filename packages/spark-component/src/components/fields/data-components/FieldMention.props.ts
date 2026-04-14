@@ -1,25 +1,101 @@
-import type { SparkNodeProps } from '../../shared-types'
+import type { SparkFieldProps, SparkMultilineRowsProps } from '../../shared-types'
 
-export interface MentionOption {
-  /** 展示值（必填） */
-  value: string
-  /** 展示标签 */
-  label?: string
-  /** 是否禁用 */
-  disabled?: boolean
-}
+export interface RMentionProps extends SparkFieldProps, SparkMultilineRowsProps {
+  /**
+   * 完整的提及触发规则列表。
+   *
+   * 每一项描述一个前缀触发器的完整结构：
+   * - `prefix`：触发字符
+   * - `split`：选中后写回文本的分隔符
+   * - `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段
+   * - `options.dataKey`：候选项数据源
+    * - `options.valueField / labelField / disabledField`：候选项字段映射
+   * - `searchable`：是否启用本地候选项过滤
+   *
+   * 主输入文本本身走继承自 `SparkFieldProps` 的 `value/field` 语义：
+   * - `value` 表示当前 Mention 输入框中的文本值
+   * - `field` 表示这份文本最终持久化到宿主数据行的哪个字段
+   *
+   * 注意：底层 el-mention 只支持一个全局 `split`；
+   * 若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。
+   */
+  mentionTriggers?: Array<{
+    /** 触发字符，必须是单个字符。 */
+    prefix: string
+    /** 选中后写回文本的分隔符。 */
+    split?: string
+    /**
+     * 额外回写宿主字段。
+     *
+     * 选中候选项后，会把 `options.valueField` 对应的候选项值写入当前宿主数据行的这个字段。
+     * 这用于“输入框里保留可读文本，但额外持久化选项 ID”这一类场景。
+     */
+    writebackField?: string
+    /** 是否启用本地候选项过滤。 */
+    searchable?: boolean
+    /** 候选项来源与字段映射。 */
+    options?: {
+      /** 候选项数据源，例如 `Users@rows`。 */
+      dataKey?: string
+      /**
+       * 候选项值字段。
+       *
+       * 用于指定从候选项数据源的哪个字段读取值，并映射为 el-mention 的 `option.value`。
+       * 用户选中候选项后，这个值会进入宿主输入框文本；
+       * 但这不是对候选项数据源的“回写”，候选项表本身不会因此被修改。
+       */
+      valueField?: string
+      /** 候选项显示字段。 */
+      labelField?: string
+      /** 候选项禁用字段。 */
+      disabledField?: string
+    }
+  }>
 
-export interface RMentionProps extends SparkNodeProps {
-  /** 输入值 */
-  modelValue?: string
-  /** 候选项 */
-  options?: MentionOption[]
-  /** 触发前缀 */
+  /**
+   * @internal Mention 候选项结果集。
+   *
+   * 页面配置层应通过 `mentionTriggers[].options` 提供候选项来源；
+   * 组件运行时会先把这些配置解析为真正传给 el-mention 的候选项。
+   * 这里保留该字段，只用于组件内部或受控场景直接覆盖那份“已计算好的结果集”。
+   *
+   * `persistedValue` 只服务于内部回写宿主字段，不会直接显示在输入框里。
+   */
+  options?: Array<{
+    /** 展示值（必填） */
+    value: string
+    /** 展示标签 */
+    label?: string
+    /** 当前候选项是否禁用 */
+    disabled?: boolean
+    /** @internal 供 trigger.writebackField 使用的持久化值，例如选项 ID。 */
+    persistedValue?: string | number | boolean
+  }>
+
+  /**
+    * @internal 旧版单触发器前缀简写。
+    *
+   * 触发前缀。
+   *
+   * 未提供 `mentionTriggers` 时，这个字段作为旧版单触发器简写继续生效。
+   *
+   * 它决定输入文本里哪些片段会进入 mention 解析流程，
+   * 属于提及语法规则，不直接承载最终业务值。
+   */
   prefix?: string | string[]
-  /** 分隔符 */
+
+  /**
+    * @internal 旧版单触发器分隔符简写。
+    *
+   * 分隔符。
+   *
+   * 未提供 `mentionTriggers` 时，这个字段作为旧版单触发器简写继续生效。
+   *
+   * 用户选中候选项后，这个字符会被实际写回到输入文本中，
+   * 因而会影响最终持久化文本的编码结果；按你的口径，它属于“广义值”相关配置。
+   */
   split?: string
-  /** 过滤逻辑 */
-  filterOption?: boolean | ((pattern: string, option: MentionOption) => boolean)
+
   /** 候选浮层位置 */
   placement?: 'top' | 'bottom'
   /** 是否显示箭头 */
@@ -34,8 +110,4 @@ export interface RMentionProps extends SparkNodeProps {
   loading?: boolean
   /** 输入框类型 */
   inputType?: 'text' | 'textarea'
-  /** 占位文本 */
-  placeholder?: string
-  /** 多行输入行数 */
-  rows?: number
 }

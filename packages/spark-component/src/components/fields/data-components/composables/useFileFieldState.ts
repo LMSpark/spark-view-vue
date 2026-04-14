@@ -1,6 +1,14 @@
 import { computed } from 'vue'
 import type { IPageSelectedFile, IPageUploadedFile } from '@spark-view/spark-utils'
-import type { ValueRef } from '../../../shared-types.js'
+import type {
+  SparkFieldProps,
+  SparkFileFieldProps,
+  SparkFilePickerFieldProps,
+  SparkFileUploadActionProps,
+  SparkPrimaryActionTextProps,
+  SparkReadonlyActionTextProps,
+  ValueRef,
+} from '../../../shared-types.js'
 
 interface UploadBrowseFieldStateOptions {
   displayLabel: ValueRef<string>
@@ -10,13 +18,13 @@ interface UploadBrowseFieldStateOptions {
   hasBrowseCapability: ValueRef<boolean>
   hasUploadCapability: ValueRef<boolean>
   primaryAction: ValueRef<'upload' | 'browse'>
-  buttonText: ValueRef<string>
-  readonlyButtonText: ValueRef<string>
-  canClear: ValueRef<boolean>
-  action: ValueRef<string>
-  accept: ValueRef<string>
-  multiple: ValueRef<boolean>
-  separator: ValueRef<string>
+  buttonText: ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>
+  readonlyButtonText: ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>
+  canClear: ValueRef<NonNullable<SparkFieldProps['clearable']>>
+  action: ValueRef<NonNullable<SparkFileUploadActionProps['action']>>
+  accept: ValueRef<NonNullable<SparkFileFieldProps['accept']>>
+  multiple: ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>
+  separator: ValueRef<NonNullable<SparkFileFieldProps['separator']>>
   browseFiles: (options: {
     title: string
     accept: string
@@ -41,10 +49,10 @@ interface FileBrowserFieldStateOptions {
   currentRawStringValue: ValueRef<string>
   isCurrentFieldEditable: ValueRef<boolean>
   hasBrowseCapability: ValueRef<boolean>
-  accept: ValueRef<string>
-  multiple: ValueRef<boolean>
-  separator: ValueRef<string>
-  canClear: ValueRef<boolean>
+  accept: ValueRef<NonNullable<SparkFileFieldProps['accept']>>
+  multiple: ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>
+  separator: ValueRef<NonNullable<SparkFileFieldProps['separator']>>
+  canClear: ValueRef<NonNullable<SparkFieldProps['clearable']>>
   browseFiles: (options: {
     title: string
     accept: string

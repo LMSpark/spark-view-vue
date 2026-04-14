@@ -40,6 +40,7 @@
  * @api predefine - 预置颜色列表（string[]）
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
+import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RColorProps } from './FieldColor.props'
 
@@ -47,16 +48,14 @@ const props = withDefaults(defineProps<RColorProps>(), {
   type: 'r-color',
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+const emit = defineEmits<FieldValueUpdateEmits<string>>()
 
 const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<string>({
   props,
   fieldType: 'r-color',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
 const {
