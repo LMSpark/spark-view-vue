@@ -2,7 +2,7 @@ import type { SparkFieldProps } from '../../shared-types'
 
 export type MultiValue = Array<string | number | boolean>
 
-export interface RMultiSelectProps extends SparkFieldProps<'r-multi-select'> {
+export interface RMultiSelectProps extends SparkFieldProps {
   width?: number
   modelValue?: MultiValue
   options?: unknown[]

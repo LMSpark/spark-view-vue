@@ -1,7 +1,7 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 import type { SparkNode } from '../../internal'
 
-export interface RPopoverProps extends SparkChildrenProps<'r-popover'> {
+export interface RPopoverProps extends SparkNodeProps {
   contentChildren?: SparkNode[]
   title?: string
   content?: string

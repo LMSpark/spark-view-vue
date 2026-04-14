@@ -1,6 +1,6 @@
-import type { SparkComponentBaseProps, SparkValueBindingProps } from '../../shared-types'
+import type { SparkNodeProps, SparkValueBindingProps } from '../../shared-types'
 
-export interface RTextDisplayProps extends SparkComponentBaseProps<'r-text-display'>, SparkValueBindingProps {
+export interface RTextDisplayProps extends SparkNodeProps, SparkValueBindingProps {
   /** 包裹标签名，如 span/div */
   tag?: string
   /** 前缀 */

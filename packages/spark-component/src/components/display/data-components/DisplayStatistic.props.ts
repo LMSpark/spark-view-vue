@@ -1,6 +1,6 @@
-import type { SparkComponentBaseProps, SparkValueBindingProps } from '../../shared-types'
+import type { SparkNodeProps, SparkValueBindingProps } from '../../shared-types'
 
-export interface RStatisticProps extends SparkComponentBaseProps<'r-statistic'>, SparkValueBindingProps<number | string> {
+export interface RStatisticProps extends SparkNodeProps, SparkValueBindingProps<number | string> {
   /** 统计标题 */
   title?: string
   /** 数据绑定键（值级绑定） */

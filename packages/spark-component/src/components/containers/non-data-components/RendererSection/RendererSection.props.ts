@@ -1,7 +1,7 @@
-import type { SparkChildrenProps } from '../../../shared-types'
+import type { SparkNodeProps } from '../../../shared-types'
 import type { HeaderNode } from '../../RendererHeader.types'
 
-export interface RSectionProps extends SparkChildrenProps<'r-section'> {
+export interface RSectionProps extends SparkNodeProps {
   /** 结构化头部 */
   header?: HeaderNode
   /** 分区标题 */

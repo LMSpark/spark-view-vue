@@ -1,6 +1,6 @@
-import type { SparkComponentBaseProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RDisplayCalendarProps extends SparkComponentBaseProps<'display-calendar'> {
+export interface RDisplayCalendarProps extends SparkNodeProps {
 /** 当前日期 */
   modelValue?: Date
   /** 日期范围 [start, end] */

@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RPopconfirmProps extends SparkChildrenProps<'r-popconfirm'> {
+export interface RPopconfirmProps extends SparkNodeProps {
   /** 确认框标题 */
   title?: string
   /** 确认按钮文案 */

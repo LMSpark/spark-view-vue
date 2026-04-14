@@ -1,4 +1,4 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RTimelineProps extends SparkChildrenProps<'r-timeline'> {
+export interface RTimelineProps extends SparkNodeProps {
 }

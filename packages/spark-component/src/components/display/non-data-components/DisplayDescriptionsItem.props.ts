@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RDescriptionsItemProps extends SparkChildrenProps<'r-descriptions-item'> {
+export interface RDescriptionsItemProps extends SparkNodeProps {
 label?: string
   span?: number
   labelAlign?: 'left' | 'center' | 'right'

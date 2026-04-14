@@ -1,4 +1,4 @@
-import type { SparkChildrenProps } from '../../../shared-types'
+import type { SparkNodeProps } from '../../../shared-types'
 import type { ToolbarNode } from '../RendererToolbar.types'
 
 export interface TabsClickEvent {
@@ -7,7 +7,7 @@ export interface TabsClickEvent {
   [key: string]: unknown
 }
 
-export interface RTabsProps extends SparkChildrenProps<'r-tabs'> {
+export interface RTabsProps extends SparkNodeProps {
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 当前激活标签页 */

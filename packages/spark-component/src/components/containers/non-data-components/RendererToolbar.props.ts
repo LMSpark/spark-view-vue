@@ -1,10 +1,10 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 import type { TailNode } from '../RendererTail.types'
 import type { InlineAlign, InlineJustify } from './RendererToolbar.types'
 
 export type { InlineAlign, InlineJustify }
 
-export interface RToolbarProps extends SparkChildrenProps<'r-toolbar'> {
+export interface RToolbarProps extends SparkNodeProps {
   /** 尾部动作区（通常放次要按钮） @componentRef r-tail */
   tail?: TailNode
   /** 主区内元素间距 */

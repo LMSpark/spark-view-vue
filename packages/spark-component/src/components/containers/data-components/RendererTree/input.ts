@@ -7,7 +7,7 @@ import type { ToolbarNode } from '../../non-data-components/RendererToolbar.type
 
 interface RendererTreeInputProps {
   dataKey?: string | undefined
-  children?: SparkNode[] | undefined
+  children?: SparkNode['children'] | undefined
   toolbar?: ToolbarNode | undefined
   actions?: ActionsNode | undefined
   editor?: EditorNode | undefined

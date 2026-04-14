@@ -1,6 +1,6 @@
 import type { DataView } from '@spark-view/spark-data'
 import type {
-  SparkChildrenProps,
+  SparkNodeProps,
   SparkTableModelProps,
   SparkCrudEventProps,
   SparkRowInteractionEventProps,
@@ -15,10 +15,12 @@ import type { ActionsNode } from '../../support/RendererActionHost.types'
  * 命名规范：组件 type `r-table` → 接口名 `RTableProps`。
  */
 export interface RTableProps
-  extends SparkChildrenProps,
-    SparkTableModelProps<DataView>,
+  extends SparkNodeProps,
+    SparkTableModelProps,
     SparkCrudEventProps,
     SparkRowInteractionEventProps {
+  /** 显式收窄为表格容器使用的 DataView 数据线。 */
+  dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 结构化筛选区 */

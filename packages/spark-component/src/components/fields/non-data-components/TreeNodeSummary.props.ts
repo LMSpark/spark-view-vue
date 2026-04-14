@@ -1,6 +1,6 @@
-import type { SparkComponentBaseProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RTreeNodeSummaryProps extends SparkComponentBaseProps<'r-tree-node-summary'> {
+export interface RTreeNodeSummaryProps extends SparkNodeProps {
   /** 名称字段名 */
   nameField?: string
   /** 类型字段名 */

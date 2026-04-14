@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RSkeletonProps extends SparkChildrenProps<'r-skeleton'> {
+export interface RSkeletonProps extends SparkNodeProps {
 rows?: number
   count?: number
   loading?: boolean

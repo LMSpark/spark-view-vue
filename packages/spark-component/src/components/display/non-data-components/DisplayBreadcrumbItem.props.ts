@@ -1,6 +1,6 @@
-import type { SparkComponentBaseProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RBreadcrumbItemProps extends SparkComponentBaseProps<'r-breadcrumb-item'> {
+export interface RBreadcrumbItemProps extends SparkNodeProps {
   /** 面包屑文本 */
   label?: string
   /** 跳转目标（路径或路由对象） */

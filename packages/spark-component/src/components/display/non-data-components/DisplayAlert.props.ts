@@ -1,6 +1,6 @@
-import type { SparkComponentBaseProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RAlertProps extends SparkComponentBaseProps<'r-alert'> {
+export interface RAlertProps extends SparkNodeProps {
   /** 标题 */
   title?: string
   /** 描述文本 */

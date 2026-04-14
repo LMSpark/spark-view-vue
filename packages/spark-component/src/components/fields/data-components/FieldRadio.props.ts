@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RRadioProps extends SparkFieldProps<'r-radio'> {
+export interface RRadioProps extends SparkFieldProps {
   width?: number
   modelValue?: string | number
   options?: unknown[]

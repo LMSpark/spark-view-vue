@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RLinkProps extends SparkChildrenProps<'r-link'> {
+export interface RLinkProps extends SparkNodeProps {
   /** 链接文本 */
   label?: string
   /** 链接类型 */

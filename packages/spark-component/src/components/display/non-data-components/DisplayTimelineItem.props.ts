@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RTimelineItemProps extends SparkChildrenProps<'r-timeline-item'> {
+export interface RTimelineItemProps extends SparkNodeProps {
 timestamp?: string
   hideTimestamp?: boolean
   center?: boolean

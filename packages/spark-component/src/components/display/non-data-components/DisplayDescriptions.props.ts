@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RDescriptionsProps extends SparkChildrenProps<'r-descriptions'> {
+export interface RDescriptionsProps extends SparkNodeProps {
 title?: string
   extra?: string
   border?: boolean

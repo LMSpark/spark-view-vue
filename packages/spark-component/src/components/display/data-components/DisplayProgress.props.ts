@@ -1,8 +1,8 @@
-import type { SparkComponentBaseProps, SparkValueBindingProps } from '../../shared-types'
+import type { SparkNodeProps, SparkValueBindingProps } from '../../shared-types'
 
 export type ProgressColor = string | Array<{ color: string; percentage: number }>
 
-export interface RProgressProps extends SparkComponentBaseProps<'r-progress'>, SparkValueBindingProps<number> {
+export interface RProgressProps extends SparkNodeProps, SparkValueBindingProps<number> {
   /** 百分比值（优先级高于 value/field） */
   percentage?: number
   /** 进度条类型 */

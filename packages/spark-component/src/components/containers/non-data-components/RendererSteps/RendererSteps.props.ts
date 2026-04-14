@@ -1,8 +1,8 @@
-import type { SparkChildrenProps } from '../../../shared-types'
+import type { SparkNodeProps } from '../../../shared-types'
 import type { SparkNode } from '../../../internal'
 import type { ToolbarNode } from '../RendererToolbar.types'
 
-export interface RStepsProps extends SparkChildrenProps<'r-steps'> {
+export interface RStepsProps extends SparkNodeProps {
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 当前步骤 */

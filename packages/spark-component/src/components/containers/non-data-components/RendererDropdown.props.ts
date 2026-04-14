@@ -1,4 +1,4 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
 export interface DropdownItem {
   /** 菜单项文本 */
@@ -13,7 +13,7 @@ export interface DropdownItem {
   icon?: string
 }
 
-export interface RDropdownProps extends SparkChildrenProps<'r-dropdown'> {
+export interface RDropdownProps extends SparkNodeProps {
   /** 菜单项列表 */
   items?: DropdownItem[]
   /** 触发方式 */

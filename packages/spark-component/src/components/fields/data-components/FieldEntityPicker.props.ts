@@ -1,9 +1,9 @@
 import type { PageSelectableValue } from '@spark-view/spark-utils'
-import type { SparkChildrenProps, SparkFieldProps } from '../../shared-types'
+import type { SparkFieldProps } from '../../shared-types'
 
 export type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
-export interface REntityPickerProps extends SparkChildrenProps<'r-entity-picker'>, SparkFieldProps<'r-entity-picker'> {
+export interface REntityPickerProps extends SparkFieldProps {
   width?: number
   modelValue?: EntityPickerValue
   options?: unknown[]

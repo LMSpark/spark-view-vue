@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RImageProps extends SparkFieldProps<'r-image'> {
+export interface RImageProps extends SparkFieldProps {
   width?: number
   modelValue?: string
   action?: string

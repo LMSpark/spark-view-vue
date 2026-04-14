@@ -1,8 +1,8 @@
-import type { SparkComponentBaseProps, SparkValueBindingProps } from '../../shared-types'
+import type { SparkNodeProps, SparkValueBindingProps } from '../../shared-types'
 
 export type TagType = 'success' | 'info' | 'warning' | 'danger'
 
-export interface RTagProps extends SparkComponentBaseProps<'r-tag'>, SparkValueBindingProps<string> {
+export interface RTagProps extends SparkNodeProps, SparkValueBindingProps<string> {
   /** 显式内容，优先级高于 value/field */
   content?: string
   /** 标签类型 */

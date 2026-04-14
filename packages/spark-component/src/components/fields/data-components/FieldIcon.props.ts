@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RIconProps extends SparkFieldProps<'r-icon'> {
+export interface RIconProps extends SparkFieldProps {
   width?: number
   modelValue?: string
   options?: unknown[]

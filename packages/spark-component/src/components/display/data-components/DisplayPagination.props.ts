@@ -1,6 +1,6 @@
-import type { SparkComponentBaseProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RPaginationProps extends SparkComponentBaseProps<'r-pagination'> {
+export interface RPaginationProps extends SparkNodeProps {
   /** 总条数 */
 total?: number
   /** 每页条数 */

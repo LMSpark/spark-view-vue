@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RFilePathProps extends SparkFieldProps<'r-file-path'> {
+export interface RFilePathProps extends SparkFieldProps {
   width?: number
   modelValue?: string
   action?: string

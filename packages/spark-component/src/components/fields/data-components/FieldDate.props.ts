@@ -4,7 +4,7 @@ export type DatePickerType =
   | 'year' | 'month' | 'date' | 'dates' | 'datetime'
   | 'week' | 'datetimerange' | 'daterange' | 'monthrange' | 'yearrange'
 
-export interface RDateProps extends SparkFieldProps<'r-date'> {
+export interface RDateProps extends SparkFieldProps {
   width?: number
   modelValue?: string | Date | Array<string | Date>
   dateType?: DatePickerType

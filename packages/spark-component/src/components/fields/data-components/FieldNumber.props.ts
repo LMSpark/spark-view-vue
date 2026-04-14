@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RNumberProps extends SparkFieldProps<'r-number'> {
+export interface RNumberProps extends SparkFieldProps {
   width?: number
   modelValue?: number | [number | undefined, number | undefined]
   min?: number

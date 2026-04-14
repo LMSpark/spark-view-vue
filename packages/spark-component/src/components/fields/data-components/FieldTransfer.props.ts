@@ -2,7 +2,7 @@ import type { SparkFieldProps } from '../../shared-types'
 
 export type TransferValue = Array<string | number>
 
-export interface RTransferProps extends SparkFieldProps<'r-transfer'> {
+export interface RTransferProps extends SparkFieldProps {
   width?: number
   modelValue?: TransferValue
   options?: unknown[]

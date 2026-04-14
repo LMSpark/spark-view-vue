@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RBadgeProps extends SparkChildrenProps<'r-badge'> {
+export interface RBadgeProps extends SparkNodeProps {
 badgeValue?: string | number
   value?: string | number
   field?: string

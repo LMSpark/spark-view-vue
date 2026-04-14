@@ -1,4 +1,4 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
 export interface TourStep {
   /** CSS 选择器或元素引用（运行时解析） */
@@ -15,7 +15,7 @@ export interface TourStep {
   showArrow?: boolean
 }
 
-export interface RTourProps extends SparkChildrenProps<'r-tour'> {
+export interface RTourProps extends SparkNodeProps {
   /** 步骤配置列表 */
   steps?: TourStep[]
   /** 是否显示 */

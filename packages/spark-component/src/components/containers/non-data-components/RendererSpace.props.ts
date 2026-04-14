@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RSpaceProps extends SparkChildrenProps<'r-space'> {
+export interface RSpaceProps extends SparkNodeProps {
   /** 主轴方向 */
   direction?: 'horizontal' | 'vertical'
   /** 间距 */

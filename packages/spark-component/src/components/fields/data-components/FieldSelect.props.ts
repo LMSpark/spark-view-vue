@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RSelectProps extends SparkFieldProps<'r-select'> {
+export interface RSelectProps extends SparkFieldProps {
   width?: number
   modelValue?: string | number
   options?: unknown[]

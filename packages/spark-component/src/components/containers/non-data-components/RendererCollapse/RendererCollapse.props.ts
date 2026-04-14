@@ -1,9 +1,9 @@
-import type { SparkChildrenProps } from '../../../shared-types'
+import type { SparkNodeProps } from '../../../shared-types'
 import type { ToolbarNode } from '../RendererToolbar.types'
 
 export type CollapseValue = string | number | Array<string | number>
 
-export interface RCollapseProps extends SparkChildrenProps<'r-collapse'> {
+export interface RCollapseProps extends SparkNodeProps {
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 当前展开的面板 */

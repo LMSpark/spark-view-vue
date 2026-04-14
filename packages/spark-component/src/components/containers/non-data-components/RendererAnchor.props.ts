@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RAnchorProps extends SparkChildrenProps<'r-anchor'> {
+export interface RAnchorProps extends SparkNodeProps {
   /** 滚动容器选择器 */
   container?: string
   /** 偏移量 */

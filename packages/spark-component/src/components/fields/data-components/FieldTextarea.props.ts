@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RTextareaProps extends SparkFieldProps<'r-textarea'> {
+export interface RTextareaProps extends SparkFieldProps {
   width?: number
   modelValue?: string
   rows?: number

@@ -1,4 +1,4 @@
-import type { SparkComponentBaseProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
 export interface MentionOption {
   /** 展示值（必填） */
@@ -9,7 +9,7 @@ export interface MentionOption {
   disabled?: boolean
 }
 
-export interface RMentionProps extends SparkComponentBaseProps<'r-mention'> {
+export interface RMentionProps extends SparkNodeProps {
   /** 输入值 */
   modelValue?: string
   /** 候选项 */

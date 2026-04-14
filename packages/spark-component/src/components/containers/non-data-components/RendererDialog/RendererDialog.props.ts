@@ -1,8 +1,8 @@
-import type { SparkChildrenProps, SparkVisibilityEventProps } from '../../../shared-types'
+import type { SparkNodeProps, SparkVisibilityEventProps } from '../../../shared-types'
 import type { FooterNode } from '../../RendererFooter.types'
 import type { HeaderNode } from '../../RendererHeader.types'
 
-export interface RDialogProps extends SparkChildrenProps<'r-dialog'>, SparkVisibilityEventProps {
+export interface RDialogProps extends SparkNodeProps, SparkVisibilityEventProps {
   /** 结构化头部 */
   header?: HeaderNode
   /** 结构化底部 */

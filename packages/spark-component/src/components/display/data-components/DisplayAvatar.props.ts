@@ -1,6 +1,6 @@
-import type { SparkComponentBaseProps, SparkValueBindingProps } from '../../shared-types'
+import type { SparkNodeProps, SparkValueBindingProps } from '../../shared-types'
 
-export interface RAvatarProps extends SparkComponentBaseProps<'r-avatar'>, SparkValueBindingProps<string> {
+export interface RAvatarProps extends SparkNodeProps, SparkValueBindingProps<string> {
   /** 头像尺寸 */
   avatarSize?: number | 'large' | 'default' | 'small'
   /** 头像形状 */

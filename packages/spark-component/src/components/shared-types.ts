@@ -4,8 +4,8 @@
  * ValueRef<T> 是 Vue Ref<T> 的最小结构约束，
  * 用于纯 TS 文件中接受 ref-like 对象而无需 import vue。
  */
-import type { SparkNode } from '../core/types.js'
-import type { IDataRow, IDataSource } from '@spark-view/spark-data'
+import type { SparkNodeChildren } from '../core/types.js'
+import type { IDataSource } from '@spark-view/spark-data'
 import type {
   AddRowHandler,
   EditRowHandler,
@@ -20,22 +20,20 @@ export interface ValueRef<T> {
 }
 
 /**
- * 组件基础属性（第一层）：所有组件共享。
+ * SPARK 组件共享基类（第一层）：所有 SPARK 组件 props 的统一起点。
  *
  * 说明：
  * - type 由渲染器路由与组件默认值共同决定
  * - id 对应 SparkNode.props.id 的运行时映射
+ * - children 必须对齐 `SparkNode.children` 的真实运行时形态
+ * - registry 分支会直接把 `node.children` 透传给目标组件
+ * - `children` 允许包含文本子节点，因此不能错误收窄成 `SparkNode[]`
+ * - 只消费结构子节点的容器，应在本地使用 `getSparkNodeChildren()` 再收窄
  */
-export interface SparkComponentBaseProps<TType extends string = string> {
-  type?: TType
+export interface SparkNodeProps {
+  type?: string
   id?: string
-}
-
-/**
- * 含结构子节点的基础属性（第一层扩展）。
- */
-export interface SparkChildrenProps<TType extends string = string> extends SparkComponentBaseProps<TType> {
-  children?: SparkNode[]
+  children?: SparkNodeChildren
 }
 
 /**
@@ -51,9 +49,11 @@ export interface SparkTitleContentProps {
 /**
  * 字段级属性（第二层）：用于 field 语义组件。
  *
- * 继承 SparkComponentBaseProps，字段组件自动获得 type / id。
+ * 继承 SparkNodeProps，字段组件自动获得 type / id / children。
+ * 共享层不再通过泛型收窄 type；如某组件需要更具体的 type 字面量，
+ * 应在该组件自己的 props 接口里显式声明，而不是让共享基类携带泛型。
  */
-export interface SparkFieldProps<TType extends string = string> extends SparkComponentBaseProps<TType> {
+export interface SparkFieldProps extends SparkNodeProps {
   /** 字段绑定键（通常映射到 currentRow[field]） */
   field?: string
   /** 展示标签 */
@@ -83,12 +83,20 @@ export interface SparkOptionItem {
 /**
  * 带选项字段属性（第三层）：在字段层上增加 options 语义，并支持对接数据线。
  */
-export interface SparkOptionFieldProps<TType extends string = string, TDataLine extends IDataSource = IDataSource>
-  extends SparkFieldProps<TType>, SparkDataLineProps<TDataLine> {
+export interface SparkOptionFieldProps
+  extends SparkFieldProps {
+  /** @internal 运行时数据线，由框架注入，不属于页面配置 */
+  dataSource?: IDataSource
   options?: SparkOptionItem[]
   optionKey?: string
   labelKey?: string
   valueKey?: string
+  /** 是否可清空 */
+  clearable?: boolean
+  /** 是否可搜索 */
+  filterable?: boolean
+  /** 是否多选 */
+  multiple?: boolean
 }
 
 /**
@@ -105,18 +113,6 @@ export interface SparkOptionSourceProps<TOption = unknown> {
   optionValueField?: string
   /** 子级字段（树形选项） */
   optionChildrenField?: string
-}
-
-/**
- * 选择行为配置（字段层通用）：抽离 clearable/filterable/multiple 重复定义。
- */
-export interface SparkSelectionBehaviorProps {
-  /** 是否可清空 */
-  clearable?: boolean
-  /** 是否可搜索 */
-  filterable?: boolean
-  /** 是否多选 */
-  multiple?: boolean
 }
 
 /**
@@ -140,26 +136,11 @@ export interface SparkFloatingLayerProps {
 }
 
 /**
- * 行级实例属性（第四层）：行上下文组件复用。
- */
-export interface SparkRowInstanceProps {
-  /** @internal 运行时注入的行数据，不属于页面配置 */
-  row?: IDataRow
-  rowIndex?: number
-}
-
-/**
- * 数据线属性（第五层基础）：容器可直接接入已解析的数据线。
- */
-export interface SparkDataLineProps<TDataLine extends IDataSource = IDataSource> {
-  /** @internal 运行时数据线，由框架注入，不属于页面配置 */
-  dataSource?: TDataLine
-}
-
-/**
  * 表级模型属性（第五层）：DataView/DataKey 驱动容器复用。
  */
-export interface SparkTableModelProps<TDataLine extends IDataSource = IDataSource> extends SparkDataLineProps<TDataLine> {
+export interface SparkTableModelProps {
+  /** @internal 运行时数据线，由框架注入，不属于页面配置 */
+  dataSource?: IDataSource
   /** 数据绑定键，推荐格式 table@field 或 table@viewId@field */
   dataKey?: string
 }
@@ -193,6 +174,6 @@ export interface SparkVisibilityEventProps {
 }
 
 // Backward compatibility aliases
-export interface SparkRuntimeProps<TType extends string = string> extends SparkComponentBaseProps<TType> {}
+export interface SparkRuntimeProps extends SparkNodeProps {}
 
-export interface SparkRuntimeChildrenProps<TType extends string = string> extends SparkChildrenProps<TType> {}
+export interface SparkRuntimeChildrenProps extends SparkNodeProps {}

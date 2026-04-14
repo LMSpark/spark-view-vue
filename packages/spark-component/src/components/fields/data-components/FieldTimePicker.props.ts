@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RTimePickerProps extends SparkFieldProps<'r-time-picker'> {
+export interface RTimePickerProps extends SparkFieldProps {
   width?: number
   modelValue?: string | Date
   isRange?: boolean

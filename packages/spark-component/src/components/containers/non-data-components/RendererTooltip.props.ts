@@ -1,6 +1,6 @@
-import type { SparkChildrenProps } from '../../shared-types'
+import type { SparkNodeProps } from '../../shared-types'
 
-export interface RTooltipProps extends SparkChildrenProps<'r-tooltip'> {
+export interface RTooltipProps extends SparkNodeProps {
   content?: string
   placement?: string
   effect?: 'dark' | 'light'

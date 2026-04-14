@@ -1,6 +1,6 @@
 import type { DataView } from '@spark-view/spark-data'
 import type {
-  SparkChildrenProps,
+  SparkNodeProps,
   SparkTableModelProps,
   SparkCrudEventProps,
 } from '../../../shared-types'
@@ -12,9 +12,11 @@ import type { ToolbarNode } from '../../non-data-components/RendererToolbar.type
  * 命名规范：组件 type `r-detail` → 接口名 `RDetailProps`。
  */
 export interface RDetailProps
-  extends SparkChildrenProps,
-    SparkTableModelProps<DataView>,
+  extends SparkNodeProps,
+    SparkTableModelProps,
     SparkCrudEventProps {
+  /** 显式收窄为详情容器使用的 DataView 数据线。 */
+  dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** CSS Grid 列数 */

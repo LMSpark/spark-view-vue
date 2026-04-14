@@ -1,6 +1,6 @@
 import type { SparkFieldProps } from '../../shared-types'
 
-export interface RUploadProps extends SparkFieldProps<'r-upload'> {
+export interface RUploadProps extends SparkFieldProps {
   width?: number
   modelValue?: string
   action?: string

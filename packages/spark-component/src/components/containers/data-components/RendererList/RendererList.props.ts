@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'vue'
 import type { DataView } from '@spark-view/spark-data'
 import type {
-  SparkChildrenProps,
+  SparkNodeProps,
   SparkTableModelProps,
   SparkCrudEventProps,
 } from '../../../shared-types'
@@ -15,9 +15,11 @@ import type { ActionsNode } from '../../support/RendererActionHost.types'
  * 命名规范：组件 type `r-list` → 接口名 `RListProps`。
  */
 export interface RListProps
-  extends SparkChildrenProps,
-    SparkTableModelProps<DataView>,
+  extends SparkNodeProps,
+    SparkTableModelProps,
     SparkCrudEventProps {
+  /** 显式收窄为列表容器使用的 DataView 数据线。 */
+  dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 结构化列表项动作 */

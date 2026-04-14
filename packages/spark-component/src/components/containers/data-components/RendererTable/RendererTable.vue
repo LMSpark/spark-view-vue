@@ -63,7 +63,7 @@
 
           <!-- 主数据列：直接按绑定层整理后的 children 配置渲染 -->
           <SparkComponentRenderer
-            v-for="(child, index) in props.children ?? []"
+            v-for="(child, index) in contentChildNodes"
             :key="nodeId(child) ?? `r-table-child-${index}`"
             :config="child"
           />
@@ -179,6 +179,9 @@ const TABLE_LOCAL_ATTR_KEYS = new Set<string>(
 const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
+
+// 共享 props.children 允许文本子节点；表格列区只接受结构节点，局部显式收窄。
+const contentChildNodes = computed(() => getSparkNodeChildren(props.children))
 
 const attrs = useAttrs()
 const slots = useSlots()

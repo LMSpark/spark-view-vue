@@ -3,7 +3,7 @@ import type { SparkFieldProps } from '../../shared-types'
 export type CascaderPath = Array<string | number | boolean>
 export type CascaderValue = CascaderPath | CascaderPath[]
 
-export interface RCascaderProps extends SparkFieldProps<'r-cascader'> {
+export interface RCascaderProps extends SparkFieldProps {
   width?: number
   modelValue?: CascaderValue
   options?: unknown[]

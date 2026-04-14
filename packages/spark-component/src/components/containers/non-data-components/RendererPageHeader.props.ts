@@ -1,6 +1,6 @@
-import type { SparkChildrenProps, SparkTitleContentProps } from '../../shared-types'
+import type { SparkNodeProps, SparkTitleContentProps } from '../../shared-types'
 
-export interface RPageHeaderProps extends SparkChildrenProps<'r-page-header'>, SparkTitleContentProps {
+export interface RPageHeaderProps extends SparkNodeProps, SparkTitleContentProps {
   /** 图标名称 */
   icon?: string
 }
