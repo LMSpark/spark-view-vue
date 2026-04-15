@@ -5,8 +5,8 @@
         <RendererActionContextScope
           v-if="hasResolvedContext(scope)"
           :children="getResolvedActions(scope)"
-          :row="getResolvedRow(scope)"
-          :host="getResolvedHost(scope)"
+          :row="getResolvedRow(scope) ?? undefined"
+          :host="getResolvedHost(scope) ?? undefined"
           :child-key-prefix="resolvedActionKeyPrefix"
         />
         <template v-else v-for="(action, index) in getResolvedActions(scope)" :key="nodeId(action) ?? `${resolvedActionKeyPrefix}-${index}`">
@@ -20,8 +20,8 @@
     <RendererActionContextScope
       v-if="hasStaticContext"
       :children="resolvedActions"
-      :row="props.row"
-      :host="props.host"
+      :row="props.row ?? undefined"
+      :host="props.host ?? undefined"
       :child-key-prefix="resolvedActionKeyPrefix"
     />
     <template v-else v-for="(action, index) in resolvedActions" :key="nodeId(action) ?? `${resolvedActionKeyPrefix}-${index}`">

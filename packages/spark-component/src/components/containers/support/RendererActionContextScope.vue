@@ -18,8 +18,8 @@ import { DATA_ROW, SparkComponentRenderer, nodeId, type SparkNode, type SparkCom
 const props = withDefaults(defineProps<{
   type?: 'r-action-context-scope'
   children?: SparkNode[]
-  row?: IDataRow
-  host?: SparkComponentHost
+  row?: IDataRow | undefined
+  host?: SparkComponentHost | undefined
   childKeyPrefix?: string
 }>(), {
   type: 'r-action-context-scope',
@@ -30,7 +30,7 @@ const { context, sparkProvide } = useSparkComponent({ type: props.type })
 // @spark-design: host 通过 reactive 代理保持引用稳定，scope 内 host 随行变化
 const currentHost = computed(() => props.host)
 const hostProxy: SparkComponentHost = {
-  get variant() {
+  get variant(): string | undefined {
     return currentHost.value?.variant
   },
   isDisabled(action) {

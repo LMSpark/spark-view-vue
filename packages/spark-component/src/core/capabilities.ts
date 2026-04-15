@@ -224,7 +224,7 @@ export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capabil
  */
 export interface SparkComponentHost {
   /** 宿主变体标识（如 'toolbar' | 'row-action'），子组件可据此调整自身行为 */
-  readonly variant?: string
+  readonly variant?: string | undefined
   /** 判断指定动作节点在当前宿主上下文中是否应禁用 */
   isDisabled?(action: SparkNode): boolean
   /** 执行指定动作节点 */

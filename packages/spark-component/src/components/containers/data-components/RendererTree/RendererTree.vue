@@ -202,6 +202,8 @@ const {
   handleNodeDrop,
   handleAppendNode,
   handleDeleteNode,
+  isBuiltinNodeActionDisabled,
+  isBuiltinToolbarActionDisabled,
   handleBuiltinToolbarAction,
   handleBuiltinNodeAction,
 }: {
