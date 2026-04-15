@@ -1,57 +1,31 @@
 /**
- * 内置声明式动作映射（builtin-action）
+ * 内置声明式动作系统 — 执行处理器工厂
  *
- * 从 RendererTable.vue 提取的零脚本动作系统：
- *  - 动作名校验与类型（BuiltinActionName）
- *  - 标签映射、按钮样式查询
- *  - 禁用逻辑（行/选中/当前行感知）
- *  - 执行处理器（append / refresh / delete / patch / message）
- *
- * 容器组件（r-table 等）通过 createBuiltinActionHandler 构建实例后使用。
+ * 容器组件通过 createBuiltinActionHandler 构建绑定上下文后,
+ * 将 handleToolbar / handleRow 交由 RendererHostScope 分发给子动作按钮。
  */
 
-import type { SparkNode } from '../internal'
-import type { CrudResult, IDataRow, DataView, IDataSource } from '@spark-view/spark-data'
+import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'
 import type { PageMessageType, IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
+import type { SparkNode } from '../internal'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from './support/crud-result-helpers.js'
-import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../support/beforeRender.js'
-import { extractModelPermission } from '../../permission/index.js'
+import { getBuiltinActionName, getBuiltinActionLabel, type BuiltinActionScope } from './builtin-action-meta'
+import {
+  readString,
+  readBoolean,
+  readStringArray,
+  readMessageType,
+  getActionProps,
+  asRecord,
+  hasOwnProp,
+  resolveConfiguredText,
+  extractErrorMessage,
+  getSelectedRows,
+  resolveEditTargetRow,
+} from './builtin-action-helpers'
 
-// ── 类型定义 ──────────────────────────────────────────────────────────────
+// ── 执行上下文 ────────────────────────────────────────────────────────────
 
-interface BuiltinActionMeta {
-  label: string
-}
-
-const BUILTIN_ACTION_META = {
-  'append-row': { label: '新增' },
-  'prompt-append': { label: '新增' },
-  'prompt-edit': { label: '编辑' },
-  'submit-current-form': { label: '保存当前' },
-  'clear-rows': { label: '清空' },
-  'move-row': { label: '移动' },
-  'move-current': { label: '移动当前' },
-  'refresh': { label: '刷新' },
-  'delete-row': { label: '删除' },
-  'delete-current': { label: '删除当前' },
-  'delete-selected': { label: '删除勾选' },
-  'patch-row': { label: '更新' },
-  'patch-current': { label: '更新当前' },
-  'patch-selected': { label: '批量更新' },
-  'message-row': { label: '查看' },
-  'message-current': { label: '查看当前' },
-} as const satisfies Record<string, BuiltinActionMeta>
-
-type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
-
-const BUILTIN_ACTION_META_RECORD: Record<BuiltinActionName, BuiltinActionMeta> = BUILTIN_ACTION_META
-
-interface BuiltinActionScope {
-  row?: IDataRow
-  index?: number
-}
-
-/** 执行上下文：由容器组件在运行时提供 */
 interface BuiltinActionContext {
   getView: () => DataView | null | undefined
   getPageService: () => IPageServiceCapability | null | undefined
@@ -64,118 +38,7 @@ interface BuiltinActionContext {
   } | null | undefined
 }
 
-// ── 纯函数：值解析辅助 ───────────────────────────────────────────────────
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : null
-}
-
-function readString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
-}
-
-function readBoolean(value: unknown): boolean | undefined {
-  return typeof value === 'boolean' ? value : undefined
-}
-
-function readStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return []
-  return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
-}
-
-function readMessageType(value: unknown): PageMessageType {
-  const text = readString(value)
-  if (!text) return 'info'
-
-  switch (text) {
-    case 'success':
-    case 'error':
-    case 'warning':
-    case 'info':
-      return text
-    default:
-      return 'info'
-  }
-}
-
-function getActionProps(action: SparkNode): Record<string, unknown> {
-  return asRecord(action.props) ?? {}
-}
-
-function resolveBuiltinBeforeRenderAction(
-  action: SparkNode,
-  view: DataView | null | undefined,
-  scope?: BuiltinActionScope,
-): SparkNode {
-  const currentRow = scope?.row ?? view?.currentRow ?? null
-  const dataSource = (view ?? null) as IDataSource | null
-  const state = resolveNodeBeforeRender(action, {
-    row: currentRow,
-    data: currentRow,
-    index: scope?.index,
-    dataSource,
-    modelPermission: extractModelPermission(dataSource),
-    parentType: null,
-  }, (message, error) => {
-    if (!import.meta.env.DEV) return
-    console.warn(`[builtin-actions] ${message}`, error)
-  })
-
-  return mergeNodeBeforeRenderProps(action, state.propsPatch, {
-    mirrorDisabledToButtonDisabled: true,
-  })
-}
-
-function hasOwnProp(record: Record<string, unknown>, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(record, key)
-}
-
-function resolveConfiguredText(record: Record<string, unknown>, key: string, fallback: string): string {
-  if (!hasOwnProp(record, key)) return fallback
-  const raw = record[key]
-  if (typeof raw === 'string') return raw.trim()
-  return ''
-}
-
-// ── 动作名校验 ────────────────────────────────────────────────────────────
-
-function isBuiltinActionName(value: string): value is BuiltinActionName {
-  return value in BUILTIN_ACTION_META
-}
-
-function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
-  const propsMap = getActionProps(action)
-  const actionName = readString(propsMap['action']) ?? readString(propsMap['builtinAction'])
-  if (!actionName) return null
-  return isBuiltinActionName(actionName) ? actionName : null
-}
-
-export function isBuiltinAction(action: SparkNode): boolean {
-  return getBuiltinActionName(action) !== null
-}
-
-// ── 标签映射 ──────────────────────────────────────────────────────────────
-
-export function getBuiltinActionLabel(action: SparkNode): string {
-  const propsMap = getActionProps(action)
-  const explicit = readString(propsMap['label'])
-  if (explicit) return explicit
-
-  const actionName = getBuiltinActionName(action)
-  if (!actionName) return '执行'
-  return BUILTIN_ACTION_META_RECORD[actionName].label
-}
-
-// ── 容器注入辅助 ──────────────────────────────────────────────────────────
-
 // ── 行辅助 ────────────────────────────────────────────────────────────────
-
-/** 安全读取 DataView 的 selectedRows（null-guard），供容器 & 内置动作共用 */
-export function getSelectedRows(view: DataView): IDataRow[] {
-  return Array.isArray(view.selectedRows) ? view.selectedRows : []
-}
 
 function getIdField(propsMap: Record<string, unknown>): string {
   return readString(propsMap['idField']) ?? 'id'
@@ -233,21 +96,6 @@ function applyScopeRowAppendPayload(
   }
 
   return appendPayload
-}
-
-function resolveEditTargetRow(
-  view: DataView,
-  scope: BuiltinActionScope | undefined,
-  propsMap: Record<string, unknown>,
-): IDataRow | null {
-  const targetRow = readString(propsMap['targetRow'])
-  if (targetRow === 'current') {
-    return view.currentRow
-  }
-  if (targetRow === 'scope') {
-    return scope?.row ?? null
-  }
-  return scope?.row ?? view.currentRow ?? null
 }
 
 function resolveMoveTargetParentId(
@@ -316,25 +164,6 @@ function resolvePatch(propsMap: Record<string, unknown>): Partial<IDataRow> {
   return resolved
 }
 
-function normalizeComparable(value: unknown): unknown {
-  if (value === '') return null
-  return value ?? null
-}
-
-function matchesRowCondition(row: IDataRow | null | undefined, condition: Record<string, unknown> | null): boolean {
-  if (!row || !condition) return false
-  for (const [field, expected] of Object.entries(condition)) {
-    if (normalizeComparable(row[field]) !== normalizeComparable(expected)) {
-      return false
-    }
-  }
-  return true
-}
-
-function resolveBuiltinTargetRow(view: DataView, scope: BuiltinActionScope | undefined): IDataRow | null {
-  return scope?.row ?? view.currentRow ?? null
-}
-
 function resolveRowLabel(row: IDataRow, idField: string): string {
   const candidates = ['orderNo', 'name', 'title', idField]
   for (const key of candidates) {
@@ -384,65 +213,6 @@ function formatRowMessage(row: IDataRow, propsMap: Record<string, unknown>): str
       .slice(0, 6)
   )
   return JSON.stringify(compact)
-}
-
-function extractErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
-  if (typeof error === 'string' && error.trim().length > 0) {
-    return error.trim()
-  }
-  return ''
-}
-
-// ── 禁用逻辑 ──────────────────────────────────────────────────────────────
-
-export function isBuiltinActionDisabled(
-  action: SparkNode,
-  view: DataView | null | undefined,
-  scope?: BuiltinActionScope,
-): boolean {
-  const resolvedAction = resolveBuiltinBeforeRenderAction(action, view, scope)
-  const propsMap = getActionProps(resolvedAction)
-  if (readBoolean(propsMap['buttonDisabled']) === true || readBoolean(propsMap['disabled']) === true) return true
-
-  const actionName = getBuiltinActionName(resolvedAction)
-  if (!actionName || !view) return false
-
-  const disabledWhenRow = asRecord(propsMap['disabledWhenRow'])
-  if (matchesRowCondition(resolveBuiltinTargetRow(view, scope), disabledWhenRow)) {
-    return true
-  }
-
-  switch (actionName) {
-    case 'append-row':
-    case 'prompt-append':
-    case 'refresh':
-      return false
-    case 'clear-rows':
-      return view.rows.length === 0
-    case 'submit-current-form':
-      return view.currentRow === null
-    case 'move-row':
-      return scope?.row === undefined
-    case 'delete-row':
-    case 'patch-row':
-    case 'message-row':
-      return scope?.row === undefined
-    case 'delete-current':
-    case 'patch-current':
-    case 'message-current':
-    case 'move-current':
-      return view.currentRow === null
-    case 'prompt-edit':
-      return resolveEditTargetRow(view, scope, propsMap) === null
-    case 'delete-selected':
-    case 'patch-selected':
-      return getSelectedRows(view).length === 0
-    default:
-      return false
-  }
 }
 
 // ── 执行处理器工厂 ───────────────────────────────────────────────────────

@@ -39,7 +39,7 @@
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, findNearestHost, type SparkNode } from '../../internal'
-import { isBuiltinAction } from '../builtin-actions'
+import { isBuiltinAction } from '../builtin-action-meta'
 import { resolveButtonStyle } from '../button-templates'
 import type { RButtonProps } from './RendererButton.props'
 

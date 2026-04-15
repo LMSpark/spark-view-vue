@@ -7,7 +7,8 @@ import {
 } from '../../../internal'
 import type { SparkNode } from '../../../internal'
 import type { ValueRef } from '../../../shared-types.js'
-import { createBuiltinActionHandler, isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../builtin-actions'
+import { createBuiltinActionHandler } from '../../builtin-action-handler'
+import { isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../builtin-action-disabled'
 import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
 import type { RendererTreeApi } from './types'
 

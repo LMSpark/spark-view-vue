@@ -4,7 +4,7 @@ import type { SparkNode } from '../internal'
 import type { IDataRow, IDataSource, IModelPermission } from '@spark-view/spark-data'
 import { usePermission } from '../../permission/index.js'
 import { isActionDisplayed } from './action-permission'
-import { isBuiltinAction } from './builtin-actions'
+import { isBuiltinAction } from './builtin-action-meta'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../support/beforeRender.js'
 
 export type LateralActionPosition = 'left' | 'right'
