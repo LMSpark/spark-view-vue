@@ -1,10 +1,12 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
-      <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
-        <SparkComponentRenderer :config="resolveToolbarActionConfig(action)" />
-      </template>
-    </div>
+    <RendererHostScope v-if="showToolbar" :host="toolbarHost">
+      <div :class="['renderer-tree-toolbar', toolbarClassValue]">
+        <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
+          <SparkComponentRenderer :config="action" />
+        </template>
+      </div>
+    </RendererHostScope>
 
     <div :class="['renderer-tree-body', `renderer-tree-body--editor-${editorPositionValue}`]">
       <div class="renderer-tree-main">
@@ -32,7 +34,9 @@
               </slot>
               <RendererActionHost
                 v-if="hasNodeActions"
-                :actions="getRenderedNodeActions(((slotProps?.data as IDataRow) ?? {}))"
+                :actions="getNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))"
+                :row="((slotProps?.data as IDataRow) ?? {})"
+                :host="getNodeActionHost(((slotProps?.data as IDataRow) ?? {}), 0)"
                 action-key-prefix="r-tree-node-action"
                 wrapper-tag="span"
                 wrapper-class="tree-node-actions"
@@ -87,12 +91,8 @@ import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useContainerActions } from '../../useContainerActions'
-import {
-  bindActionClick,
-  isBuiltinAction,
-  injectActionDisabled,
-  injectRowActionDefaults,
-} from '../../builtin-actions'
+import RendererHostScope from '../../support/RendererHostScope.vue'
+import type { SparkComponentHost } from '../../../internal'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
@@ -214,6 +214,8 @@ const {
   handleNodeDrop: (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => Promise<void>
   handleAppendNode: (data: unknown) => Promise<void>
   handleDeleteNode: (data: unknown) => Promise<void>
+  isBuiltinNodeActionDisabled: (action: SparkNode, row: IDataRow, index: number) => boolean
+  isBuiltinToolbarActionDisabled: (action: SparkNode) => boolean
   handleBuiltinToolbarAction: (action: SparkNode) => void
   handleBuiltinNodeAction: (action: SparkNode, row: IDataRow, index: number) => void
 } = createRendererTreeZeroCode({
@@ -248,15 +250,26 @@ registerApi(treeApi)
 
 defineExpose(treeApi)
 
-function resolveToolbarActionConfig(action: SparkNode): SparkNode {
-  if (!isBuiltinAction(action)) return action
-  return injectActionDisabled(bindActionClick(action, () => handleBuiltinToolbarAction(action)), resolvedView.value)
+const toolbarHost: SparkComponentHost = {
+  variant: 'toolbar',
+  isDisabled(action) {
+    return isBuiltinToolbarActionDisabled(action)
+  },
+  execute(action) {
+    handleBuiltinToolbarAction(action)
+  },
 }
 
-function resolveNodeActionConfig(action: SparkNode, row: IDataRow, index: number): SparkNode {
-  if (!isBuiltinAction(action)) return action
-  const bound = bindActionClick(action, () => handleBuiltinNodeAction(action, row, index))
-  return injectRowActionDefaults(injectActionDisabled(bound, resolvedView.value, { row, index }))
+function getNodeActionHost(row: IDataRow, index: number): SparkComponentHost {
+  return {
+    variant: 'row-action',
+    isDisabled(action) {
+      return isBuiltinNodeActionDisabled(action, row, index)
+    },
+    execute(action) {
+      handleBuiltinNodeAction(action, row, index)
+    },
+  }
 }
 
 function getLegacyNodeActionConfigs(row: IDataRow): SparkNode[] {
@@ -301,10 +314,8 @@ function getLegacyNodeActionConfigs(row: IDataRow): SparkNode[] {
   return actions
 }
 
-function getRenderedNodeActions(row: IDataRow): SparkNode[] {
-  const scopedActions = getScopedNodeActions({ row, index: 0 })
-    .map(action => resolveNodeActionConfig(action, row, 0))
-  return [...scopedActions, ...getLegacyNodeActionConfigs(row)]
+function getNodeActionConfigs(row: IDataRow): SparkNode[] {
+  return [...getScopedNodeActions({ row, index: 0 }), ...getLegacyNodeActionConfigs(row)]
 }
 
 // 事件处理器与零代码动作由 createRendererTreeZeroCode 收口

@@ -51,8 +51,6 @@ interface BuiltinActionScope {
   index?: number
 }
 
-type ActionClickHandler = (...args: unknown[]) => void
-
 /** 执行上下文：由容器组件在运行时提供 */
 interface BuiltinActionContext {
   getView: () => DataView | null | undefined
@@ -104,41 +102,6 @@ function readMessageType(value: unknown): PageMessageType {
 
 function getActionProps(action: SparkNode): Record<string, unknown> {
   return asRecord(action.props) ?? {}
-}
-
-function callActionClick(handler: unknown, args: unknown[]): void {
-  if (typeof handler === 'function') {
-    ;(handler as ActionClickHandler)(...args)
-    return
-  }
-
-  if (!Array.isArray(handler)) return
-
-  for (const item of handler) {
-    if (typeof item === 'function') {
-      ;(item as ActionClickHandler)(...args)
-    }
-  }
-}
-
-export function bindActionClick(action: SparkNode, handler: ActionClickHandler): SparkNode {
-  const propsMap = getActionProps(action)
-  const onMap = asRecord(propsMap['on'])
-  const currentClick = onMap?.['click']
-
-  return {
-    ...action,
-    props: {
-      ...propsMap,
-      on: {
-        ...(onMap ?? {}),
-        click: (...args: unknown[]) => {
-          handler(...args)
-          callActionClick(currentClick, args)
-        },
-      },
-    },
-  }
 }
 
 function resolveBuiltinBeforeRenderAction(
@@ -206,39 +169,6 @@ export function getBuiltinActionLabel(action: SparkNode): string {
 }
 
 // ── 容器注入辅助 ──────────────────────────────────────────────────────────
-
-/**
- * 为有 action 属性的 r-button 注入 disabled 状态。
- * 容器在每次渲染时调用，保持响应式。
- */
-export function injectActionDisabled(
-  action: SparkNode,
-  view: DataView | null | undefined,
-  scope?: BuiltinActionScope,
-): SparkNode {
-  const disabled = isBuiltinActionDisabled(action, view, scope)
-  if (!disabled) return action
-  return {
-    ...action,
-    props: { ...(action.props ?? {}), disabled: true },
-  }
-}
-
-/**
- * 为行操作按钮注入默认样式 — buttonSize: 'small' + text: true。
- * 仅在用户未显式设置时注入。
- */
-export function injectRowActionDefaults(action: SparkNode): SparkNode {
-  const propsMap = getActionProps(action)
-  const patch: Record<string, unknown> = {}
-  if (propsMap['buttonSize'] === undefined) patch['buttonSize'] = 'small'
-  if (propsMap['text'] === undefined) patch['text'] = true
-  if (Object.keys(patch).length === 0) return action
-  return {
-    ...action,
-    props: { ...propsMap, ...patch },
-  }
-}
 
 // ── 行辅助 ────────────────────────────────────────────────────────────────
 

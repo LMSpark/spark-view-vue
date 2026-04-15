@@ -1,13 +1,14 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <RendererToolbar
-      v-if="showToolbar"
-      type="r-toolbar"
-      :class="['renderer-table-toolbar', toolbarClassValue]"
-      v-bind="toolbarComponentProps"
-      :children="resolvedToolbarChildren"
-    />
+    <RendererHostScope v-if="showToolbar" :host="toolbarHost">
+      <RendererToolbar
+        type="r-toolbar"
+        :class="['renderer-table-toolbar', toolbarClassValue]"
+        v-bind="toolbarComponentProps"
+        :children="visibleToolbarConfigs"
+      />
+    </RendererHostScope>
 
     <!-- 过滤区 -->
     <RendererFilter
@@ -39,53 +40,55 @@
         @selection-change="handleSelectionChange"
       >
         <!--
-          列区必须直接成为 el-table 的子级。
-          SparkTableColumns 只是一个透明转发层，用来同时容纳：
+          列区必须在编译后直接成为 el-table 的子级。
+          这里直接串联三类列内容，不再引入额外透明包装层：
           1. 配置驱动列（props.children）
           2. 模板驱动列（默认 slot）
           3. 行操作列（左右）
         -->
-        <SparkTableColumns>
-          <!-- 行操作列（左） -->
-          <RendererActionHost
-            v-if="showRowActionsLeftValue"
-            host-tag="el-table-column"
-            :host-attrs="rowActionColumnAttrs"
-            :resolve-actions="getRenderedRowActions"
-            :resolve-slot-scope="getScopedRowActionSlotScope"
-            action-key-prefix="r-table-row-action"
-            :wrapper-class="['renderer-table-row-actions', rowActionsClassValue]"
-          >
-            <template #actions="scope">
-              <slot name="row-actions" v-bind="scope" />
-            </template>
-          </RendererActionHost>
+        <!-- 行操作列（左） -->
+        <RendererActionHost
+          v-if="showRowActionsLeftValue"
+          host-tag="el-table-column"
+          :host-attrs="rowActionColumnAttrs"
+          :resolve-actions="getScopedRowActionConfigs"
+          :resolve-row="getScopedRowActionRow"
+          :resolve-host="getScopedRowActionHost"
+          :resolve-slot-scope="getScopedRowActionSlotScope"
+          action-key-prefix="r-table-row-action"
+          :wrapper-class="['renderer-table-row-actions', rowActionsClassValue]"
+        >
+          <template #actions="scope">
+            <slot name="row-actions" v-bind="scope" />
+          </template>
+        </RendererActionHost>
 
-          <!-- 主数据列：直接按绑定层整理后的 children 配置渲染 -->
-          <SparkComponentRenderer
-            v-for="(child, index) in contentChildNodes"
-            :key="nodeId(child) ?? `r-table-child-${index}`"
-            :config="child"
-          />
+        <!-- 主数据列：直接按绑定层整理后的 children 配置渲染 -->
+        <SparkComponentRenderer
+          v-for="(child, index) in contentChildNodes"
+          :key="nodeId(child) ?? `r-table-child-${index}`"
+          :config="child"
+        />
 
-          <!-- 模板驱动补充列：兼容直接手写 el-table-column -->
-          <slot />
+        <!-- 模板驱动补充列：兼容直接手写 el-table-column -->
+        <slot />
 
-          <!-- 行操作列（右） -->
-          <RendererActionHost
-            v-if="showRowActionsRightValue"
-            host-tag="el-table-column"
-            :host-attrs="rowActionColumnAttrs"
-            :resolve-actions="getRenderedRowActions"
-            :resolve-slot-scope="getScopedRowActionSlotScope"
-            action-key-prefix="r-table-row-action"
-            :wrapper-class="['renderer-table-row-actions', rowActionsClassValue]"
-          >
-            <template #actions="scope">
-              <slot name="row-actions" v-bind="scope" />
-            </template>
-          </RendererActionHost>
-        </SparkTableColumns>
+        <!-- 行操作列（右） -->
+        <RendererActionHost
+          v-if="showRowActionsRightValue"
+          host-tag="el-table-column"
+          :host-attrs="rowActionColumnAttrs"
+          :resolve-actions="getScopedRowActionConfigs"
+          :resolve-row="getScopedRowActionRow"
+          :resolve-host="getScopedRowActionHost"
+          :resolve-slot-scope="getScopedRowActionSlotScope"
+          action-key-prefix="r-table-row-action"
+          :wrapper-class="['renderer-table-row-actions', rowActionsClassValue]"
+        >
+          <template #actions="scope">
+            <slot name="row-actions" v-bind="scope" />
+          </template>
+        </RendererActionHost>
       </el-table>
     </div>
   </div>
@@ -118,7 +121,7 @@
  */
 import { computed, ref, useAttrs, useSlots } from 'vue'
 import {
-  useSparkPageComponent, SparkComponentRenderer, SparkTableColumns,
+  useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
   PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT,
 } from '../../../internal'
@@ -136,8 +139,9 @@ import RendererFilter from '../../RendererFilter.vue'
 import { createRowActionSlotScope } from '../../slotScopeFactories'
 import { useModuleContext } from '../../context/useModuleContext'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
-import { bindActionClick, isBuiltinAction, injectActionDisabled, injectRowActionDefaults } from '../../builtin-actions'
+import type { SparkComponentHost } from '../../../internal'
 
 // ── 基础工具与本地属性约定 ───────────────────────────────────────────────
 
@@ -267,7 +271,7 @@ useContainerDataSourceEffects({
   logPrefix: 'RendererTable',
 })
 
-// ── 工具栏区：读取提升后的 props.toolbar，并处理内置动作绑定 ─────────────
+// ── 工具栏区：读取提升后的 props.toolbar，并向工具栏子树提供内置动作宿主能力 ──
 
 const {
   toolbarPositionValue,
@@ -281,12 +285,6 @@ const {
   modelPermission,
   dataSource: resolvedView,
 })
-
-const resolvedToolbarChildren = computed<SparkNode[]>(() =>
-  visibleToolbarConfigs.value.map(action =>
-    isBuiltinAction(action) ? injectActionDisabled(bindActionClick(action, () => handleBuiltinToolbarAction(action)), resolvedView.value) : action,
-  ),
-)
 
 /** 过滤掉结构元信息后，剩余 props 继续透传给 RendererToolbar。 */
 const toolbarComponentProps = computed<Record<string, unknown>>(() => {
@@ -347,6 +345,7 @@ const nativeTableRef = ref<NativeTableLike | null>(null)
 const {
   dispatch,
   tableApi,
+  isBuiltinActionDisabled,
   handleBuiltinToolbarAction,
   handleBuiltinRowAction,
 } = createRendererTableZeroCode({
@@ -365,6 +364,16 @@ const {
 registerApi(tableApi)
 
 defineExpose(tableApi)
+
+const toolbarHost: SparkComponentHost = {
+  variant: 'toolbar',
+  isDisabled(action) {
+    return isBuiltinActionDisabled(action)
+  },
+  execute(action) {
+    handleBuiltinToolbarAction(action)
+  },
+}
 
 // ── 行操作区：结构化 actions + row-actions 命名插槽共同组成行操作列 ─────
 
@@ -430,23 +439,37 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
   })
 }
 
-/** 内置动作补齐点击处理，自定义动作维持原配置透传。行操作自动注入 small + text 样式。 */
-function resolveRowActionConfig(action: SparkNode, row: IDataRow, index: number): SparkNode {
-  if (!isBuiltinAction(action)) return action
-  const bound = bindActionClick(action, () => handleBuiltinRowAction(action, row, index))
-  return injectRowActionDefaults(injectActionDisabled(bound, resolvedView.value, { row, index }))
+function resolveRowActionScope(scope: Record<string, unknown>) {
+  return {
+    row: (scope['row'] as IDataRow | undefined) ?? {},
+    index: typeof scope['$index'] === 'number' ? scope['$index'] : 0,
+  }
 }
 
-function getRenderedRowActions(scope: Record<string, unknown>): SparkNode[] {
-  const row = (scope['row'] as IDataRow | undefined) ?? {}
-  const index = typeof scope['$index'] === 'number' ? scope['$index'] : 0
+function getScopedRowActionConfigs(scope: Record<string, unknown>): SparkNode[] {
+  const { row, index } = resolveRowActionScope(scope)
   return getScopedRowActions({ row, index })
-    .map(action => resolveRowActionConfig(action, row, index))
+}
+
+function getScopedRowActionRow(scope: Record<string, unknown>): IDataRow {
+  return resolveRowActionScope(scope).row
+}
+
+function getScopedRowActionHost(scope: Record<string, unknown>): SparkComponentHost {
+  const { row, index } = resolveRowActionScope(scope)
+  return {
+    variant: 'row-action',
+    isDisabled(action) {
+      return isBuiltinActionDisabled(action, { row, index })
+    },
+    execute(action) {
+      handleBuiltinRowAction(action, row, index)
+    },
+  }
 }
 
 function getScopedRowActionSlotScope(scope: Record<string, unknown>): object {
-  const row = (scope['row'] as IDataRow | undefined) ?? {}
-  const index = typeof scope['$index'] === 'number' ? scope['$index'] : 0
+  const { row, index } = resolveRowActionScope(scope)
   return getRowActionSlotScope(row, index)
 }
 

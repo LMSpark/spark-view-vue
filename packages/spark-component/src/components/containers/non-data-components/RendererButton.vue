@@ -11,11 +11,12 @@
     :round="resolved.round"
     :circle="resolved.circle"
     :loading="loading"
-    :disabled="isDisabled"
+    :disabled="effectiveDisabled"
     :icon="resolvedIcon"
     :auto-insert-space="autoInsertSpace"
     :color="color"
     :dark="dark"
+    @click="handleClick"
   >
     {{ resolved.label }}
     <SparkComponentRenderer
@@ -37,11 +38,10 @@
  */
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, findNearestHost, type SparkNode } from '../../internal'
+import { isBuiltinAction } from '../builtin-actions'
 import { resolveButtonStyle } from '../button-templates'
 import type { RButtonProps } from './RendererButton.props'
-
-
 
 const props = withDefaults(defineProps<RButtonProps>(), {
   type: 'r-button',
@@ -51,7 +51,26 @@ const props = withDefaults(defineProps<RButtonProps>(), {
   dark: false,
 })
 
-const { isVisible, isDisabled } = useSparkPageComponent(props)
+const { isVisible, isDisabled, resolvedProps, context } = useSparkPageComponent(props)
+
+// @spark-design: 沿 parent 链查找最近宿主，子组件不需要知道宿主具体类型
+const host = findNearestHost(context)
+
+const currentNode = computed<SparkNode>(() => ({
+  type: props.type,
+  props: resolvedProps.value,
+  ...(props.children !== undefined ? { children: props.children } : {}),
+}))
+
+const hasBuiltinAction = computed(() => isBuiltinAction(currentNode.value))
+
+const hostActionDisabled = computed(() =>
+  hasBuiltinAction.value && host !== null
+    ? host.isDisabled?.(currentNode.value) ?? false
+    : false,
+)
+
+const effectiveDisabled = computed(() => isDisabled.value || hostActionDisabled.value)
 
 const resolved = computed(() => {
   const explicit: Record<string, unknown> = {}
@@ -64,6 +83,10 @@ const resolved = computed(() => {
   if (props.circle !== undefined) explicit['circle'] = props.circle
   if (props.icon !== undefined) explicit['icon'] = props.icon
   if (props.label !== undefined) explicit['label'] = props.label
+  if (hasBuiltinAction.value && host?.variant === 'row-action') {
+    if (explicit['buttonSize'] === undefined) explicit['buttonSize'] = 'small'
+    if (explicit['text'] === undefined) explicit['text'] = true
+  }
   return resolveButtonStyle(props.action, props.template, explicit)
 })
 
@@ -76,4 +99,9 @@ const resolvedIcon = computed((): Component | null => {
 })
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
+
+function handleClick() {
+  if (!hasBuiltinAction.value || host === null) return
+  host.execute?.(currentNode.value)
+}
 </script>

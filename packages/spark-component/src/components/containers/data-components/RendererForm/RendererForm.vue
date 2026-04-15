@@ -1,10 +1,12 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
-    <div v-if="showToolbar" :class="['renderer-form-toolbar', toolbarClassValue]">
-      <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
-        <SparkComponentRenderer :config="resolveToolbarActionConfig(action)" />
-      </template>
-    </div>
+    <RendererHostScope v-if="showToolbar" :host="toolbarHost">
+      <div :class="['renderer-form-toolbar', toolbarClassValue]">
+        <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
+          <SparkComponentRenderer :config="action" />
+        </template>
+      </div>
+    </RendererHostScope>
 
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="$attrs">
@@ -44,12 +46,10 @@ import { SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
-import {
-  bindActionClick,
-  isBuiltinAction,
-} from '../../builtin-actions'
+import type { SparkComponentHost } from '../../../internal'
 
 const props = withDefaults(defineProps<RFormProps>(), {
   type: 'r-form',
@@ -88,9 +88,11 @@ const {
 const nativeFormRef = ref<unknown>(null)
 const {
   formApi,
+  isBuiltinActionDisabled,
   handleBuiltinToolbarAction,
 }: {
   formApi: RendererFormApi
+  isBuiltinActionDisabled: (action: SparkNode) => boolean
   handleBuiltinToolbarAction: (action: SparkNode) => void
 } = createRendererFormZeroCode({
   props,
@@ -105,10 +107,13 @@ registerApi(formApi)
 
 defineExpose(formApi)
 
-function resolveToolbarActionConfig(action: SparkNode): SparkNode {
-  return isBuiltinAction(action)
-    ? bindActionClick(action, () => handleBuiltinToolbarAction(action))
-    : action
+const toolbarHost: SparkComponentHost = {
+  isDisabled(action) {
+    return isBuiltinActionDisabled(action)
+  },
+  execute(action) {
+    handleBuiltinToolbarAction(action)
+  },
 }
 </script>
 
