@@ -106,7 +106,6 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
           row as IDataRow,
           options.currentRowOriginatorId,
         )
-        options.nativeTableRef.value?.setCurrentRow?.(row as IDataRow)
       },
     },
     'selection-change': {
@@ -168,18 +167,15 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
       const result = await view.searchTreeNested(keyword, limit)
       return sanitizeTreePayload(result, view)
     },
-    // Override: Table uses selection.setCurrentRow + nativeTableRef sync
+    // DataView-first: watcher in RendererTable.vue syncs to nativeTableRef
     setCurrentRow(row) {
       const targetRow = row ?? null
       options.resolvedView.value?.selection.setCurrentRow(targetRow)
-      options.nativeTableRef.value?.setCurrentRow?.(targetRow)
     },
     setCurrentRowById(id) {
       const view = options.resolvedView.value
       if (!view) return false
-      const updated = view.selection.setCurrentRowById(id ?? null)
-      options.nativeTableRef.value?.setCurrentRow?.(view.currentRow ?? null)
-      return updated
+      return view.selection.setCurrentRowById(id ?? null)
     },
     setSelectedRows(rows) {
       options.resolvedView.value?.selection.setSelectedRows(rows)

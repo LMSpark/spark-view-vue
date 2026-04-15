@@ -119,7 +119,7 @@
  * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
  * - 到达此组件时，props.children 只保留表格内容列配置，不再做运行时二次分拣。
  */
-import { computed, ref, useAttrs, useSlots } from 'vue'
+import { computed, nextTick, ref, watch, useAttrs, useSlots } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
@@ -362,6 +362,15 @@ const {
 })
 
 registerApi(tableApi)
+
+// DataView → el-table 当前行单向同步
+watch(
+  () => resolvedView.value?.currentRow,
+  async (row) => {
+    await nextTick()
+    nativeTableRef.value?.setCurrentRow?.(row ?? null)
+  },
+)
 
 const toolbarHost: SparkComponentHost = {
   variant: 'toolbar',
