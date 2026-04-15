@@ -26,9 +26,7 @@ function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
     $dataSet: null,
     $components: {
       get: vi.fn(() => null),
-      getApi: vi.fn(() => null),
       list: vi.fn(() => []),
-      getApis: vi.fn(() => []),
     },
     $refreshData: async () => {},
     $page: {
@@ -159,13 +157,11 @@ describe('createSandbox — compileFunctions', () => {
     expect(fns['canEditField']!()).toBe(true)
   })
 
-  it('应支持通过 $components 使用 ID 寻址访问组件实例与 API', () => {
+  it('应支持通过 $components 使用 ID 寻址访问组件元数据', () => {
     const ctx = createMockContext({
       $components: {
         get: vi.fn((id: string) => id === 'orders-table' ? { id, type: 'r-table' } : null),
-        getApi: vi.fn((id: string) => id === 'orders-table' ? { refresh: () => 'ok' } : null),
-        list: vi.fn(() => []),
-        getApis: vi.fn(() => []),
+        list: vi.fn((type?: string) => type === 'r-table' ? [{ id: 'orders-table', type: 'r-table' }] : []),
       },
     })
 
@@ -174,15 +170,14 @@ describe('createSandbox — compileFunctions', () => {
         var comp = $components.get('orders-table')
         return comp ? comp.type : 'none'
       }
-      function callRefresh() {
-        var api = $components.getApi('orders-table')
-        return api && api.refresh ? api.refresh() : 'none'
+      function countTables() {
+        return $components.list('r-table').length
       }
     `
 
     const fns = compileFunctions(script, ctx)
     expect(fns['getTableType']!()).toBe('r-table')
-    expect(fns['callRefresh']!()).toBe('ok')
+    expect(fns['countTables']!()).toBe(1)
   })
 
   // ── 原型链安全（Proxy 拦截）─────────────────────────────────────────────────

@@ -78,7 +78,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   })
 
   const shouldSuppressReadableValueInWritableForm = computed(() => {
-    if (context.value !== 'r-form') return false
+    if (context.value !== 'form') return false
     const state = currentFieldState.value
     if (!state?.editable) return false
     return state.visibility !== FieldVisibility.Visible
@@ -94,7 +94,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const shouldRenderCurrentField = computed(() => {
     const state = currentFieldState.value
     if (!state) return true
-    if (context.value === 'r-form') return state.readable || state.editable
+    if (context.value === 'form') return state.readable || state.editable
     return state.readable
   })
 

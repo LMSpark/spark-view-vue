@@ -1,36 +1,16 @@
-import { useSparkHost } from '../../internal'
-
-type FieldHostType = 'r-table' | 'r-form' | 'r-detail' | 'r-tree' | 'r-list'
+import { computed } from 'vue'
+import { useSparkConsume } from '../../internal'
 
 /**
- * 字段宿主解析规则：
- * 1. 只认真正承载字段语义的宿主容器 type。
- * 2. 中间组件保持自己的真实 type，不去伪装成宿主。
- * 3. 字段侧通过统一映射处理已知字段作用域组件；未知中间层一律透明跳过。
+ * 字段渲染模式 — 与容器 type 名解耦的语义标签。
+ *
+ * 约定值：'table' | 'form' | 'tree' | 'detail'。
+ * 容器通过 `host.setHost({ fieldMode: '...' })` 声明，字段通过 `nearestHost().fieldMode` 读取。
+ * 新容器只需一行 setHost，字段侧零改动。
  */
-const FIELD_HOST_TYPES = new Set<FieldHostType>(['r-table', 'r-form', 'r-detail', 'r-tree', 'r-list'])
-
-const FIELD_HOST_ALIASES: Readonly<Record<string, FieldHostType>> = {
-  'r-field-scope': 'r-form',
-  'r-list-item': 'r-list',
-}
-
-function normalizeFieldHostType(type: string | null): FieldHostType | null {
-  if (type === null) return null
-  if (FIELD_HOST_TYPES.has(type as FieldHostType)) return type as FieldHostType
-  return FIELD_HOST_ALIASES[type] ?? null
-}
+export type FieldRenderMode = string
 
 export function useResolvedFieldContext() {
-  const { hostType } = useSparkHost<FieldHostType>({
-    hostTypes: Array.from(FIELD_HOST_TYPES),
-    aliases: FIELD_HOST_ALIASES,
-    fallbackType: 'r-detail',
-  })
-
-  return hostType
-}
-
-export function resolveFieldHostType(type: string | null): FieldHostType | null {
-  return type === null ? null : normalizeFieldHostType(type)
+  const { host } = useSparkConsume()
+  return computed<FieldRenderMode>(() => host.nearestHost()?.fieldMode ?? 'detail')
 }

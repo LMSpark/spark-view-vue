@@ -5,7 +5,7 @@ import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
 import { mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
-import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
@@ -473,15 +473,17 @@ function createInlineDataSet(tableName: string, rows: IDataRow[]): IDataSet {
   })
 }
 
-const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
-  'r-table': new Set(['r-toolbar', 'r-actions', 'r-filter']),
-  'r-tree': new Set(['r-toolbar', 'r-actions', 'r-editor']),
+const TEST_LIFT_AS_MAP: Record<string, string> = {
+  'r-toolbar': 'toolbar',
+  'r-actions': 'actions',
+  'r-filter': 'filter',
+  'r-editor': 'editor',
 }
-const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
+const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
 
 function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
   if (!props['children']) return props
-  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetChildProps)
+  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetLiftAs)
   const { children: _, ...rest } = props
   return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
 }

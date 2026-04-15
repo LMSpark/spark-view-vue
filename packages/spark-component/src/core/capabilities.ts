@@ -223,6 +223,10 @@ export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capabil
  *   不应走能力键分散注册。
  */
 export interface SparkComponentHost {
+  /** 字段渲染模式 — 容器对子树声明自身的字段展示语义。
+   *  约定值：'table' | 'form' | 'tree' | 'detail'；开放 string 支持自定义容器扩展。
+   *  字段组件通过 `nearestHost().fieldMode` 读取，无需感知容器精确类型名。 */
+  readonly fieldMode?: string | undefined
   /** 宿主变体标识（如 'toolbar' | 'row-action'），子组件可据此调整自身行为 */
   readonly variant?: string | undefined
   /** 判断指定动作节点在当前宿主上下文中是否应禁用 */

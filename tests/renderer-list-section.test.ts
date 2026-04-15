@@ -4,19 +4,19 @@ import { defineComponent, h, nextTick } from 'vue'
 import { RendererList, RendererSection, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
-import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
-const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
-  'r-list': new Set(['r-toolbar', 'r-actions']),
-  'r-section': new Set(['r-header']),
-  'r-block': new Set(['r-header']),
+const TEST_LIFT_AS_MAP: Record<string, string> = {
+  'r-toolbar': 'toolbar',
+  'r-actions': 'actions',
+  'r-header': 'header',
 }
-const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
+const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
 
 function liftTestChildProps(containerType: string, props: Record<string, unknown>): Record<string, unknown> {
   if (!props['children']) return props
-  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetChildProps)
+  const node = liftChildProps({ type: containerType, children: props['children'] as SparkNode[] }, testGetLiftAs)
   const { children: _, ...rest } = props
   return { ...rest, ...node.props, ...(node.children?.length ? { children: node.children } : {}) }
 }

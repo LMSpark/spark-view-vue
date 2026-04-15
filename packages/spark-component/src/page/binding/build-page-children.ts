@@ -20,21 +20,21 @@ import { normalizeRuleEvents, normalizeOnProps } from './bind-normalize.js'
 
 export type PageScriptCaller = (functionName: string, ...args: unknown[]) => unknown
 
-/** 查询容器可提升的子类型集合（来自 registry meta.childProps） */
-export type ChildPropLookup = (containerType: string) => ReadonlySet<string> | undefined
+/** 查询子组件自声明的区域角色（来自 registry meta.liftAs），返回 prop 名或 undefined */
+export type LiftAsLookup = (childType: string) => string | undefined
 
 export interface BuildPageChildrenOptions {
   callFunc: PageScriptCaller
   actionCtx: ActionExecutionContext
-  /** 子类型→prop 映射查询（不提供时跳过提升） */
-  getChildProps?: ChildPropLookup
+  /** 子类型→prop 名查询（不提供时跳过提升） */
+  getLiftAs?: LiftAsLookup
 }
 
 export function buildPageChildren(
   rules: RuleConfig[],
   options: BuildPageChildrenOptions,
 ): SparkNode[] {
-  const { callFunc, actionCtx, getChildProps } = options
+  const { callFunc, actionCtx, getLiftAs } = options
   const usedIds = new Set<string>()
 
   function isSparkChild(value: unknown): value is SparkNodeChildren[number] {
@@ -118,41 +118,36 @@ export function buildPageChildren(
       cloned.props = propsObj
     }
 
-    return liftChildProps(cloned, getChildProps)
+    return liftChildProps(cloned, getLiftAs)
   }
 
   return rules.map(rule => bindNode(rule as unknown as Record<string, unknown>))
 }
 
-/** 去掉 `r-` 前缀得到 prop 名（r-toolbar → toolbar） */
-function childTypeToPropName(childType: string): string {
-  return childType.startsWith('r-') ? childType.slice(2) : childType
-}
-
 /**
- * 将容器节点 children 中的特定类型子节点提升为 props。
+ * 将容器节点 children 中拥有 `liftAs` 声明的子节点提升为 props。
  *
- * 例如 `{ type: 'r-table', children: [{ type: 'r-toolbar', ... }, ...content] }`
- * → `{ type: 'r-table', props: { toolbar: { type: 'r-toolbar', ... } }, children: [...content] }`
+ * 例如 `r-toolbar` 声明 `liftAs: 'toolbar'`，当它出现在任意容器的 children 时
+ * 自动提升为 `props.toolbar`，容器无需列举可接受的子类型。
  *
- * 容器组件只需通过 `props.toolbar` 直接访问，无需运行时提取。
+ * `{ type: 'r-table', children: [{ type: 'r-toolbar', ... }, ...rows] }`
+ * → `{ type: 'r-table', props: { toolbar: { type: 'r-toolbar', ... } }, children: [...rows] }`
  */
-export function liftChildProps(node: SparkNode, getChildProps?: ChildPropLookup): SparkNode {
-  const liftableTypes = getChildProps?.(node.type)
-  if (!liftableTypes || !node.children || node.children.length === 0) return node
+export function liftChildProps(node: SparkNode, getLiftAs?: LiftAsLookup): SparkNode {
+  if (!getLiftAs || !node.children || node.children.length === 0) return node
 
   const contentChildren: SparkNodeChildren = []
   const liftedProps: Record<string, SparkNode> = {}
 
   for (const child of node.children) {
-    if (isSparkNode(child) && liftableTypes.has(child.type)) {
-      const propName = childTypeToPropName(child.type)
-      if (!(propName in liftedProps)) {
+    if (isSparkNode(child)) {
+      const propName = getLiftAs(child.type)
+      if (propName !== undefined && !(propName in liftedProps)) {
         liftedProps[propName] = child
+        continue
       }
-    } else {
-      contentChildren.push(child)
     }
+    contentChildren.push(child)
   }
 
   if (Object.keys(liftedProps).length === 0) return node

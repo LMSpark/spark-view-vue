@@ -85,30 +85,30 @@ type RegistrationEntry = readonly [string, RegisteredComponent] | readonly [stri
 
 /** 同步注册：核心 + Passthrough */
 const CORE_COMPONENTS: RegistrationEntry[] = [
-  // 数据容器（meta.childProps 声明可提升的子类型，绑定层据此将 children 中的匹配子节点提升为 props）
-  ['r-table', RendererTable, { childProps: ['r-toolbar', 'r-actions', 'r-filter'] }],
-  ['r-form', RendererForm, { childProps: ['r-toolbar'] }],
-  ['r-detail', RendererDetail, { childProps: ['r-toolbar'] }],
-  ['r-tree', RendererTree, { childProps: ['r-toolbar', 'r-actions', 'r-editor'] }],
-  ['r-list', RendererList, { childProps: ['r-toolbar', 'r-actions'] }],
+  // 数据容器（区域子组件通过自身 meta.liftAs 声明角色，容器无需枚举子类型）
+  ['r-table', RendererTable],
+  ['r-form', RendererForm],
+  ['r-detail', RendererDetail],
+  ['r-tree', RendererTree],
+  ['r-list', RendererList],
   ['r-row-fragment', RendererRowFragment],
-  // 可提升子组件
-  ['r-actions', RendererActionHost],
-  ['r-filter', RendererFilter],
-  ['r-editor', RendererEditor],
-  ['r-header', RendererHeader],
-  ['r-footer', RendererFooter],
-  ['r-tail', RendererTail],
+  // 区域子组件（meta.liftAs 声明提升后的 prop 名，绑定层据此将其提升为容器 props）
+  ['r-actions', RendererActionHost, { liftAs: 'actions' }],
+  ['r-filter', RendererFilter, { liftAs: 'filter' }],
+  ['r-editor', RendererEditor, { liftAs: 'editor' }],
+  ['r-header', RendererHeader, { liftAs: 'header' }],
+  ['r-footer', RendererFooter, { liftAs: 'footer' }],
+  ['r-tail', RendererTail, { liftAs: 'tail' }],
   // 核心非数据容器
-  ['r-section', RendererSection, { childProps: ['r-header'] }],
-  ['r-block', RendererSection, { childProps: ['r-header'] }],
-  ['r-toolbar', RendererToolbar, { childProps: ['r-tail'] }],
-  ['r-menu', RendererToolbar, { childProps: ['r-tail'] }],
-  ['r-tabs', RendererTabs, { childProps: ['r-toolbar'] }],
-  ['r-collapse', RendererCollapse, { childProps: ['r-toolbar'] }],
-  ['r-dialog', RendererDialog, { childProps: ['r-header', 'r-footer'] }],
-  ['r-drawer', RendererDrawer, { childProps: ['r-header', 'r-footer'] }],
-  ['r-steps', RendererSteps, { childProps: ['r-toolbar'] }],
+  ['r-section', RendererSection],
+  ['r-block', RendererSection],
+  ['r-toolbar', RendererToolbar, { liftAs: 'toolbar' }],
+  ['r-menu', RendererToolbar],
+  ['r-tabs', RendererTabs],
+  ['r-collapse', RendererCollapse],
+  ['r-dialog', RendererDialog],
+  ['r-drawer', RendererDrawer],
+  ['r-steps', RendererSteps],
   ['r-button', RendererButton],
   ['r-link', RendererLink],
   // 核心布局

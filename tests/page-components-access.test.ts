@@ -18,16 +18,14 @@ const mockPageService = {
   navigate: vi.fn(),
 }
 
-describe('PageContext $components (ID-first)', () => {
-  it('should resolve component instance and api by id', () => {
+describe('PageContext $components (metadata only)', () => {
+  it('should resolve component instance by id and list by type', () => {
     const registry = createPageComponentRegistry()
     registry.registerInstance({ id: 'orders-table', type: 'r-table' })
     registry.registerApi({
       id: 'orders-table',
       type: 'r-table',
-      api: {
-        refresh: () => 'ok',
-      },
+      api: { refresh: () => 'ok' },
     })
 
     const context = buildPageContext({
@@ -42,11 +40,22 @@ describe('PageContext $components (ID-first)', () => {
     expect(instance?.id).toBe('orders-table')
     expect(instance?.type).toBe('r-table')
 
-    const api = context.$components.getApi<{ refresh: () => string }>('orders-table')
-    expect(api?.refresh()).toBe('ok')
-
     expect(context.$components.list('r-table')).toHaveLength(1)
-    expect(context.$components.getApis<{ refresh: () => string }>('r-table')).toHaveLength(1)
+    expect(context.$components.list()).toHaveLength(1)
+  })
+
+  it('should return null for unknown id', () => {
+    const registry = createPageComponentRegistry()
+    const context = buildPageContext({
+      getDataSet: () => null,
+      getComponentRegistry: () => registry,
+      pageRoute: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
+      pageContainer: ref<HTMLElement | null>(null),
+      pageService: mockPageService as unknown as IPageServiceCapability,
+    })
+
+    expect(context.$components.get('nonexistent')).toBeNull()
+    expect(context.$components.list('r-table')).toHaveLength(0)
   })
 
   it('should expose permission helpers to page scripts', () => {

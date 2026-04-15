@@ -109,8 +109,10 @@ export interface IScriptContext {
   $queryAll: (selector: string) => NodeListOf<Element>
 
   /**
-   * 刷新数据——重新触发 DataTable 的加载接口。
-   * @param key 可选表名；省略则刷新所有 `autoLoad: true` 的视图
+   * 刷新数据——重新触发指定 DataView 的远端加载接口。
+   * @param key 可选视图键；格式为 `'tableName'`（等同 `'tableName@default'`）
+   *            或 `'tableName@viewId'`（指定具体视图）。
+   *            省略则刷新页面内所有有远端加载接口的 DataView。
    */
   $refreshData: (key?: string) => Promise<void>
 
@@ -277,14 +279,10 @@ export interface IPageComponentInstanceInScript {
 
 /** 页面级组件访问 API（脚本可用） */
 export interface IPageComponentAccessInScript {
-  /** 按组件 id 获取实例快照（推荐） */
+  /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */
   get(id: string): IPageComponentInstanceInScript | null
-  /** 按组件 id 获取组件 API（推荐） */
-  getApi<T = unknown>(id: string): T | null
-  /** 列出页面组件实例（可按 type 过滤） */
+  /** 列出页面组件实例（可按 type 过滤，只读元数据） */
   list(type?: string): IPageComponentInstanceInScript[]
-  /** 列出组件 API（可按 type 过滤） */
-  getApis<T = unknown>(type?: string): T[]
 }
 
 export type PageDialogResultInScript = 'confirm' | 'cancel' | 'close'

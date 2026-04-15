@@ -4,12 +4,14 @@ import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, registerAllRenderers, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
-import { liftChildProps, type ChildPropLookup } from '../packages/spark-component/src/page/binding/build-page-children'
+import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 
-const TEST_CHILD_PROP_MAP: Record<string, ReadonlySet<string>> = {
-  'r-tree': new Set(['r-toolbar', 'r-actions', 'r-editor']),
+const TEST_LIFT_AS_MAP: Record<string, string> = {
+  'r-toolbar': 'toolbar',
+  'r-actions': 'actions',
+  'r-editor': 'editor',
 }
-const testGetChildProps: ChildPropLookup = (type) => TEST_CHILD_PROP_MAP[type]
+const testGetLiftAs: LiftAsLookup = (type) => TEST_LIFT_AS_MAP[type]
 
 describe('SparkNode runtime contract', () => {
   function createTestPlugin() {
@@ -84,7 +86,7 @@ describe('SparkNode runtime contract', () => {
       ],
     }
 
-    const lifted = liftChildProps(node, testGetChildProps)
+    const lifted = liftChildProps(node, testGetLiftAs)
 
     // Lifted child nodes become props
     expect(lifted.props?.['editor']).toBeDefined()

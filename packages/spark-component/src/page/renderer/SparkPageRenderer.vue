@@ -212,18 +212,16 @@ const route = useRoute()
 const vueApp = getCurrentInstance()?.appContext.app
 const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
 
-// 子类型提升查询：从注册表 meta.childProps 读取容器可提升的子类型集合
+// 子类型提升查询：从注册表 meta.liftAs 读取子组件自声明的区域角色
 const sparkRegistry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
-const _childPropCache = new Map<string, ReadonlySet<string>>()
-function getChildPropTypes(containerType: string): ReadonlySet<string> | undefined {
-  const cached = _childPropCache.get(containerType)
-  if (cached !== undefined) return cached
-  const def = sparkRegistry?.get(containerType)
-  const childProps = def?.meta?.['childProps'] as string[] | undefined
-  if (!childProps?.length) return undefined
-  const set: ReadonlySet<string> = new Set(childProps)
-  _childPropCache.set(containerType, set)
-  return set
+const _liftAsCache = new Map<string, string | null>()
+function getChildLiftAs(childType: string): string | undefined {
+  const cached = _liftAsCache.get(childType)
+  if (cached !== undefined) return cached ?? undefined
+  const def = sparkRegistry?.get(childType)
+  const liftAs = def?.meta?.['liftAs'] as string | undefined
+  _liftAsCache.set(childType, liftAs ?? null)
+  return liftAs
 }
 
 // PAGE_SERVICE
@@ -417,7 +415,7 @@ function rebuildChildren(): void {
   children.value = buildPageChildren(ruleNodes as unknown as import('@spark-view/spark-page-config').RuleConfig[], {
     callFunc: callPageFunction,
     actionCtx,
-    getChildProps: getChildPropTypes,
+    getLiftAs: getChildLiftAs,
   })
 }
 

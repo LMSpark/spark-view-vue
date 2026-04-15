@@ -136,7 +136,7 @@ const mergedChildren = computed<SparkNode[]>(() => {
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+const { host: listHost, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
@@ -152,6 +152,8 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererList',
 })
+
+listHost.setHost({ fieldMode: 'detail' })
 
 const listRows = computed<IDataRow[]>(() => resolvedView.value?.rows ?? [])
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))

@@ -19,14 +19,10 @@ export type { IPageRoute }
 
 /** 页面脚本组件访问 API（由渲染器根节点注入） */
 export interface PageComponentAccessApi {
-  /** 按组件 id 获取实例快照（推荐） */
+  /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */
   get(id: string): PageComponentInstanceEntry | null
-  /** 按组件 id 获取组件 API（推荐） */
-  getApi<T = unknown>(id: string): T | null
-  /** 列出页面组件实例（可按 type 过滤） */
+  /** 列出页面组件实例（可按 type 过滤，只读元数据） */
   list(type?: string): PageComponentInstanceEntry[]
-  /** 列出组件 API（可按 type 过滤） */
-  getApis<T = unknown>(type?: string): T[]
 }
 
 /**

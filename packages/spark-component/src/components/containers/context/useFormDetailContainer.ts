@@ -77,6 +77,9 @@ export function useFormDetailContainer(
 
   sparkProvide(DATA_ROW, contextData)
 
+
+  host.setHost({ fieldMode: containerType === 'r-form' ? 'form' : 'detail' })
+
   function getDefaultSlotScope() {
     return createCurrentRowSlotScope({
       dataSource: resolvedView.value,

@@ -117,7 +117,7 @@ const {
 } = useRendererTreeInput({ props })
 
 // 接入 SPARK 能力链
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+const { host: treeHost, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 const perm = usePermission()
@@ -135,6 +135,8 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererTree',
 })
+
+treeHost.setHost({ fieldMode: 'tree' })
 
 const nodeKeyField = computed(() =>
   props.nodeKey ?? resolvedView.value?.primaryKey ?? resolvedView.value?.treeConfig?.idField ?? 'id'

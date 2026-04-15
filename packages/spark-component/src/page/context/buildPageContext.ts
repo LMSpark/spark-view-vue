@@ -11,7 +11,7 @@ import type { IPageRoute } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from './types'
-import type { PageComponentApiEntry, PageComponentRegistry } from '../../core/capabilities'
+import type { PageComponentRegistry } from '../../core/capabilities'
 import {
   isPermittedAction, resolveFieldPermissionState,
   canCreate, canImport, canExport,
@@ -28,12 +28,25 @@ import { pageLogger } from '../services/pageLogger'
 
 // ─── 共享 $refreshData 实现 ──────────────────────────────────────────────────
 
-function createRefreshData(getDataSet: () => DataSet | null): (tableName?: string) => Promise<void> {
-  return async (tableName?: string) => {
+/**
+ * 解析 $refreshData 的 key 参数：
+ *   'Orders'          → { tableName: 'Orders', viewId: 'default' }
+ *   'Orders@default'  → { tableName: 'Orders', viewId: 'default' }
+ *   'Orders@myView'   → { tableName: 'Orders', viewId: 'myView' }
+ */
+function parseRefreshKey(key: string): { tableName: string; viewId: string } {
+  const atIdx = key.indexOf('@')
+  if (atIdx === -1) return { tableName: key, viewId: 'default' }
+  return { tableName: key.slice(0, atIdx), viewId: key.slice(atIdx + 1) }
+}
+
+function createRefreshData(getDataSet: () => DataSet | null): (key?: string) => Promise<void> {
+  return async (key?: string) => {
     const ds = getDataSet()
     if (!ds) return
-    if (tableName) {
-      const view = ds.getView(tableName, 'default')
+    if (key) {
+      const { tableName, viewId } = parseRefreshKey(key)
+      const view = ds.getView(tableName, viewId)
       if (view?.crudService) {
         await view.refresh()
       }
@@ -75,43 +88,13 @@ interface PageContextDeps {
   getModuleContext?: () => IModuleContext | null
 }
 
-function createEmptyComponentAccess(): PageContext['$components'] {
-  return {
-    get: () => null,
-    getApi: () => null,
-    list: () => [],
-    getApis: () => [],
-  }
-}
-
 function createComponentAccess(getRegistry?: () => PageComponentRegistry | null): PageContext['$components'] {
-  const fallback = createEmptyComponentAccess()
-
-  const getSafeRegistry = (): PageComponentRegistry | null => {
-    const registry = getRegistry?.() ?? null
-    return registry
-  }
-
   return {
     get(id: string) {
-      const registry = getSafeRegistry()
-      return registry?.getInstance(id) ?? fallback.get(id)
-    },
-    getApi<T = unknown>(id: string) {
-      const registry = getSafeRegistry()
-      return registry?.getApi<T>(id) ?? fallback.getApi<T>(id)
+      return getRegistry?.()?.getInstance(id) ?? null
     },
     list(type?: string) {
-      const registry = getSafeRegistry()
-      return registry?.listInstances(type) ?? fallback.list(type)
-    },
-    getApis<T = unknown>(type?: string) {
-      const registry = getSafeRegistry()
-      if (!registry) return fallback.getApis<T>(type)
-      if (type === undefined || type.trim().length === 0) {
-        return registry.listApis().map((item: PageComponentApiEntry) => item.api as T)
-      }
-      return registry.getApisByType<T>(type)
+      return getRegistry?.()?.listInstances(type) ?? []
     },
   }
 }

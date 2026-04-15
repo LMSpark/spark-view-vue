@@ -251,7 +251,7 @@ const effectiveDataKey = computed(() => props.dataKey)
 
 // ── SPARK 上下文与数据源：解析 DataKey → DataView，并向下游提供 DATA_SOURCE ──
 
-const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+const { host: tableHost, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
@@ -270,6 +270,8 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererTable',
 })
+
+tableHost.setHost({ fieldMode: 'table' })
 
 // ── 工具栏区：读取提升后的 props.toolbar，并向工具栏子树提供内置动作宿主能力 ──
 
