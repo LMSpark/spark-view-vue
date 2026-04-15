@@ -3,7 +3,7 @@ import type { ComputedRef } from 'vue'
 import type { SparkNode } from '../internal'
 import type { IDataRow, IDataSource, IModelPermission } from '@spark-view/spark-data'
 import { usePermission } from '../../permission/index.js'
-import { isActionDisplayed } from './action-permission'
+import { isActionDisplayed } from './action-visibility'
 import { isBuiltinAction } from './builtin-action-meta'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../support/beforeRender.js'
 
@@ -88,9 +88,7 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
           return null
         }
 
-        const currentOn = patchedAction.props?.['on']
-        const legacyOn = (patchedAction as SparkNode & { on?: unknown }).on
-        const listenerSource = currentOn ?? legacyOn
+        const listenerSource = patchedAction.props?.['on']
         const listenerMap = listenerSource !== null && listenerSource !== undefined && typeof listenerSource === 'object' && !Array.isArray(listenerSource)
           ? listenerSource as ListenerMap
           : undefined

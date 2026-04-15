@@ -2,7 +2,7 @@
  * 权限动作解析器 — 纯函数集
  *
  * 统一的动作级权限判断 + 字段权限状态解析。
- * 合并了原 action-permission.ts 的模型/行级判断。
+ * 合并了动作权限相关的模型/行级判断。
  */
 
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
@@ -76,7 +76,7 @@ export function resolveFieldPermissionState(
   return computeFieldState({ field, ...config }, row, permissionMode)
 }
 
-// ── SparkNode 动作分类 + 判断（原 action-permission.ts）──
+// ── SparkNode 动作分类 + 判断 ──
 
 /** 是否为模型级权限动作（create/import/export/create-child） */
 export function isModelScopedPermAction(action: string | undefined): boolean {

@@ -865,79 +865,6 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(observed).toEqual(['expand:false', 'collapse:false'])
   })
 
-  it('RendererTree should run append/delete business handlers first and support cancel', async () => {
-    const ds = SparkData.createDataSet({
-      dataSetName: 'RTDS3-Node-Actions',
-      tables: {
-        Nodes: {
-          tableName: 'Nodes',
-          columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
-          views: {
-            default: {
-              rows: [{ id: 'node-1', label: '节点 1', _perm: { allowDelete: true, allowCreateChild: true } }] as IDataRow[],
-            },
-          },
-        }
-      }
-    })
-
-    const dv = ds.getView('Nodes', 'default')!
-    ;(dv as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: true }
-    const appendNativeSpy = vi.fn()
-    const removeNativeSpy = vi.fn()
-    const ActionTreeStub = defineComponent({
-      emits: ['node-click', 'node-expand', 'node-collapse'],
-      setup(_, { slots, expose }) {
-        const treeData = { id: 'node-1', label: '节点 1', _perm: { allowDelete: true, allowCreateChild: true } }
-        const treeNode = { level: 1, expanded: false }
-        const treeComponent = { stub: true }
-        expose({
-          append: appendNativeSpy,
-          remove: removeNativeSpy,
-          getNode: (key: string | number) => ({ key, data: treeData }),
-        })
-        return () => h('div', { class: 'el-tree-action-stub' }, [
-          h('button', {
-            class: 'tree-click-trigger',
-            onClick: () => undefined,
-          }, 'click'),
-          slots['default']?.({ node: treeNode, data: treeData, component: treeComponent }),
-        ])
-      },
-    })
-
-    const wrapper = await mountRendererTreeWithView(dv, {
-      allowAppend: true,
-      allowDelete: true,
-      onNodeAppend: async (_data: unknown, control: { cancel: boolean }) => {
-        await Promise.resolve()
-        control.cancel = true
-      },
-      onNodeDelete: async (_data: unknown, _control: { cancel: boolean }) => {
-        await Promise.resolve()
-      },
-    }, {
-      global: {
-        stubs: {
-          'el-tree': ActionTreeStub,
-          'el-button': ElButtonStub,
-          SparkComponentRenderer: SparkActionStub,
-        }
-      },
-    })
-
-    const buttons = wrapper.findAll('.el-button-stub')
-    expect(buttons).toHaveLength(2)
-
-    await buttons[0]!.trigger('click')
-    await flushPromises()
-    await buttons[1]!.trigger('click')
-    await flushPromises()
-
-    expect(appendNativeSpy).not.toHaveBeenCalled()
-    expect(removeNativeSpy).toHaveBeenCalledTimes(1)
-  })
-
   it('RendererTree API should expand to target node through DataView and native tree', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS3-Expand-To-Node',
@@ -3011,11 +2938,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const dv = ds.getView('Users', 'default')!
     const wrapper = mountRendererTableWithView(dv, {
-      filterCollapsible: true,
-      filterDefaultCollapsed: true,
       children: [
         { type: 'r-text', props: { field: 'name', label: '姓名' } },
-        { type: 'r-filter', children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }] },
+        {
+          type: 'r-filter',
+          props: { collapsible: true, defaultCollapsed: true },
+          children: [{ type: 'r-text', props: { field: 'name', label: '姓名' } }],
+        },
       ],
     }, {
       global: {

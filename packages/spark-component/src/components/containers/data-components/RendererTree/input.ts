@@ -11,8 +11,6 @@ interface RendererTreeInputProps {
   toolbar?: ToolbarNode | undefined
   actions?: ActionsNode | undefined
   editor?: EditorNode | undefined
-  allowAppend?: boolean | undefined
-  allowDelete?: boolean | undefined
 }
 
 interface RendererTreeInputOptions {
@@ -21,9 +19,6 @@ interface RendererTreeInputOptions {
 
 export function useRendererTreeInput(options: RendererTreeInputOptions) {
   const effectiveDataKey = computed(() => options.props.dataKey)
-
-  const effectiveAllowAppend = computed(() => options.props.allowAppend ?? false)
-  const effectiveAllowDelete = computed(() => options.props.allowDelete ?? false)
 
   // 子节点类型已由绑定层从 children 提升为 props（toolbar / actions / editor），
   // 此处 children 仅包含内容子节点。
@@ -38,12 +33,7 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
     return nodes
   })
   const dockedNodeActions = computed(() => getSparkNodeChildren(options.props.actions?.children))
-
-  const hasLegacyNodeActions = computed(() =>
-    dockedNodeActions.value.length === 0 && (effectiveAllowAppend.value || effectiveAllowDelete.value)
-  )
-
-  const hasNodeActions = computed(() => dockedNodeActions.value.length > 0 || hasLegacyNodeActions.value)
+  const hasNodeActions = computed(() => dockedNodeActions.value.length > 0)
   const editorConfigs = computed(() => getSparkNodeChildren(options.props.editor?.children))
   const editorPositionValue = computed<ToolbarPosition>(() => options.props.editor?.props?.position ?? 'right')
   const editorClassValue = computed(() => options.props.editor?.props?.class ?? '')
@@ -68,10 +58,7 @@ export function useRendererTreeInput(options: RendererTreeInputOptions) {
 
   return {
     effectiveDataKey,
-    effectiveAllowAppend,
-    effectiveAllowDelete,
     nodeContentChildren,
-    hasLegacyNodeActions,
     hasNodeActions,
     editorConfigs,
     editorPositionValue,

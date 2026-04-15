@@ -370,26 +370,13 @@ export interface SparkTemporalPickerProps<TValue = unknown> extends SparkFieldSe
  *
  * 适用于既可作为普通输入字段，也可切换到“区间筛选”模式的组件，
  * 例如 number/date 这类在查询表单里支持单值与范围值两种交互的字段。
- *
- * 这里显式保留 `| undefined`，是为了兼容 `defineProps()` 产出的可选属性类型
- * 在 `exactOptionalPropertyTypes` 下传入组合子时的赋值约束。
  */
 export interface SparkRangeFilterProps {
   /**
    * 过滤模式。
    * 当值为 `range` 时，组件通常切换到范围筛选 UI。
    */
-  filterMode?: string | undefined
-  /**
-   * 过滤变体。
-   * 作为 `filterMode` 的兼容补充入口，历史配置可继续用它表达范围筛选。
-   */
-  filterVariant?: string | undefined
-  /**
-   * 范围筛选开关。
-   * 提供布尔式兼容入口，避免旧配置必须迁移到字符串模式枚举。
-   */
-  filterRange?: boolean | undefined
+  filterMode?: 'range' | undefined
 }
 
 /**
@@ -438,9 +425,8 @@ export interface SparkHierarchicalSelectionProps {
  * - `auto`：尽量保持当前宿主字段已有的值形态
  * - `array`：始终以数组值持久化
  * - `separated-string`：始终以分隔字符串持久化，分隔规则由 `valueSeparator` 决定
- * - `comma-string`：历史兼容别名，语义等同于 `separated-string`
  */
-export type SparkOptionValueMode = 'auto' | 'array' | 'separated-string' | 'comma-string'
+export type SparkOptionValueMode = 'auto' | 'array' | 'separated-string'
 
 /**
  * 带选项字段属性（第三层）：
@@ -763,20 +749,3 @@ export interface SparkVisibilityEventProps {
  */
 export interface SparkVisibilityContainerProps extends SparkVisibilityEventProps {}
 
-/**
- * 兼容别名：保留给旧组件、旧生成物或尚未迁移完的类型引用。
- *
- * 说明：
- * - 不引入新的语义层
- * - 仅作为 `SparkNodeProps` 的历史名称映射
- * - 新代码应直接使用 `SparkNodeProps`
- */
-export interface SparkRuntimeProps extends SparkNodeProps {}
-
-/**
- * 兼容别名：历史上用于表达“带 children 的运行时 props”。
- *
- * 现在它与 `SparkNodeProps` 完全等价，保留它只是为了兼容旧引用；
- * 新代码应直接使用 `SparkNodeProps`。
- */
-export interface SparkRuntimeChildrenProps extends SparkNodeProps {}

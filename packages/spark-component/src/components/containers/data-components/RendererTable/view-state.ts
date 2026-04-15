@@ -9,8 +9,6 @@ interface RendererTableViewStateOptions {
   resolvedView: ValueRef<DataView | null | undefined>
   filteredRows: ValueRef<IDataRow[] | undefined>
   readStringAttr: (name: string) => string | undefined
-  readBooleanAttr: (name: string) => boolean | undefined
-  readNumberAttr: (name: string) => number | undefined
 }
 
 interface TableTreeSeedNode extends Record<string, unknown> {
@@ -56,10 +54,10 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     return result
   })
 
-  const filterCollapsibleValue = computed(() => options.filterNode.value?.props?.collapsible ?? options.readBooleanAttr('filterCollapsible') ?? false)
-  const filterDefaultCollapsedValue = computed(() => options.filterNode.value?.props?.defaultCollapsed ?? options.readBooleanAttr('filterDefaultCollapsed') ?? false)
-  const filterAutoFitMinWidthValue = computed(() => options.filterNode.value?.props?.autoFitMinWidth ?? options.readStringAttr('filterAutoFitMinWidth') ?? '220px')
-  const filterItemSpanValue = computed(() => options.filterNode.value?.props?.itemSpan ?? options.readNumberAttr('filterItemSpan') ?? 1)
+  const filterCollapsibleValue = computed(() => options.filterNode.value?.props?.collapsible ?? false)
+  const filterDefaultCollapsedValue = computed(() => options.filterNode.value?.props?.defaultCollapsed ?? false)
+  const filterAutoFitMinWidthValue = computed(() => options.filterNode.value?.props?.autoFitMinWidth ?? '220px')
+  const filterItemSpanValue = computed(() => options.filterNode.value?.props?.itemSpan ?? 1)
 
   const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
 

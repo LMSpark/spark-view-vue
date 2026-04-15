@@ -43,16 +43,7 @@ const props = withDefaults(defineProps<REntityPickerProps>(), {
 
 const emit = defineEmits<FieldValueUpdateEmits<EntityPickerValue>>()
 const attrs = useAttrs()
-const compatAttrs = attrs as Readonly<Record<string, unknown>>
-
-const forwardedAttrs = computed<Record<string, unknown>>(() => {
-  const result: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(compatAttrs)) {
-    if (key === 'separator') continue
-    result[key] = value
-  }
-  return result
-})
+const forwardedAttrs = computed<Record<string, unknown>>(() => ({ ...(attrs as Readonly<Record<string, unknown>>) }))
 
 const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<EntityPickerValue>({
   props,
@@ -70,7 +61,7 @@ const {
   currentDisplayValue,
 } = optionResult
 
-const resolvedValueSeparator = computed(() => props.valueSeparator ?? (compatAttrs['separator'] as string | undefined) ?? ', ')
+const resolvedValueSeparator = computed(() => props.valueSeparator ?? ', ')
 
 const { hasSelectorCapability, primaryAction, selectEntities } = useSelectorFieldActions({
   pageService,

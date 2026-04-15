@@ -60,17 +60,10 @@ export type TreeEventHandler = (
   control: TreeEventControl,
 ) => void | Promise<void>
 
-export type TreeNodeActionHandler = (
-  data: TreeNode,
-  control: TreeEventControl,
-) => void | Promise<void>
-
 interface RendererTreeBehaviorProps extends Readonly<Record<string, unknown>> {
   onNodeClick?: TreeEventHandler | undefined
   onNodeExpand?: TreeEventHandler | undefined
   onNodeCollapse?: TreeEventHandler | undefined
-  onNodeAppend?: TreeNodeActionHandler | undefined
-  onNodeDelete?: TreeNodeActionHandler | undefined
 }
 
 interface RendererTreeZeroCodeOptions {
@@ -82,8 +75,6 @@ interface RendererTreeZeroCodeOptions {
   pageService: IPageServiceCapability | null | undefined
   nodeKeyField: ValueRef<string>
   treeIdField: ValueRef<string>
-  effectiveAllowAppend: ValueRef<boolean>
-  effectiveAllowDelete: ValueRef<boolean>
 }
 
 export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions) {
@@ -202,12 +193,6 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
       tree.remove?.(elNode)
       return true
     },
-    getAllowAppend() {
-      return options.effectiveAllowAppend.value
-    },
-    getAllowDelete() {
-      return options.effectiveAllowDelete.value
-    },
   }
 
   const builtinHandler = createBuiltinActionHandler({
@@ -246,20 +231,6 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   ): Promise<void> {
     const control = createTreeEventControl()
     await handler?.(data, node, component, control)
-    if (!control.cancel) {
-      if (autoHandle) {
-        autoHandle()
-      }
-    }
-  }
-
-  async function runTreeNodeAction(
-    handler: TreeNodeActionHandler | undefined,
-    data: TreeNode,
-    autoHandle?: () => void,
-  ): Promise<void> {
-    const control = createTreeEventControl()
-    await handler?.(data, control)
     if (!control.cancel) {
       if (autoHandle) {
         autoHandle()
@@ -314,23 +285,6 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     await moveTreeNode(draggedKey, newParentId, -1)
   }
 
-  async function handleAppendNode(data: unknown) {
-    const node = data as IDataRow | undefined
-    const nodeKey = getNodeKey(node)
-    await runTreeNodeAction(options.props.onNodeAppend, (node ?? {}) as TreeNode, () => {
-      treeApi.appendNode(nodeKey, {})
-    })
-  }
-
-  async function handleDeleteNode(data: unknown) {
-    const node = data as IDataRow | undefined
-    const nodeKey = getNodeKey(node)
-    if (nodeKey === null) return
-    await runTreeNodeAction(options.props.onNodeDelete, (node ?? {}) as TreeNode, () => {
-      treeApi.removeNode(nodeKey)
-    })
-  }
-
   return {
     treeApi,
     getNodeKey,
@@ -339,8 +293,6 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     handleNodeExpand,
     handleNodeCollapse,
     handleNodeDrop,
-    handleAppendNode,
-    handleDeleteNode,
     isBuiltinNodeActionDisabled,
     isBuiltinToolbarActionDisabled,
     handleBuiltinToolbarAction,

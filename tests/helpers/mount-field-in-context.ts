@@ -32,6 +32,13 @@ interface SparkTestSystem {
   rootContext: SparkCapabilityContext
 }
 
+function resolveFieldModeByParentType(type: string): string {
+  if (type === 'r-table') return 'table'
+  if (type === 'r-form' || type === 'r-field-scope') return 'form'
+  if (type === 'r-tree') return 'tree'
+  return 'detail'
+}
+
 function createTestSystem(): SparkTestSystem {
   return Spark.createSystem()
 }
@@ -43,7 +50,9 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
 
   const Provider = defineComponent({
     setup() {
-      const { sparkProvide } = useSparkComponent({ type: options.parentType ?? 'r-form' } as SparkNode, { hostContext: rootContext })
+      const parentType = options.parentType ?? 'r-form'
+      const { sparkProvide, host } = useSparkComponent({ type: parentType } as SparkNode, { hostContext: rootContext })
+      host.setHost({ fieldMode: resolveFieldModeByParentType(parentType) })
       sparkProvide(DATA_ROW, options.model)
 
       if (options.pageDataSet !== undefined) {

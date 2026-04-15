@@ -46,8 +46,7 @@ function isEmptyFilterValue(value: unknown): boolean {
 }
 
 function isRangeFilterConfig(config: SparkNode): boolean {
-  const filterMode = nodeInputProp(config, 'filterMode') ?? nodeInputProp(config, 'filterVariant')
-  return filterMode === 'range' || nodeInputProp(config, 'filterRange') === true
+  return nodeInputProp(config, 'filterMode') === 'range'
 }
 
 function getNodeField(config: SparkNode): string | undefined {

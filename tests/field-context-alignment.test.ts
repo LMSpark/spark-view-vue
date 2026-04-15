@@ -241,7 +241,7 @@ describe('字段宿主解析会考虑中间层', () => {
     })
   }
 
-  it('会跳过结构层插入的中间节点，继续向上找到真实宿主', () => {
+  it('会跳过结构层插入的中间节点，继承最近宿主 fieldMode', () => {
     const SlotBridge = createIntermediateBridge('r-slot')
 
     const wrapper = mountFieldInContext({
@@ -252,10 +252,10 @@ describe('字段宿主解析会考虑中间层', () => {
       parentType: 'r-table',
     })
 
-    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('r-table')
+    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('table')
   })
 
-  it('会将字段作用域中间层映射为对应宿主语义', () => {
+  it('中间作用域节点不改写宿主 fieldMode', () => {
     const FieldScopeBridge = createIntermediateBridge('r-field-scope')
 
     const wrapper = mountFieldInContext({
@@ -266,10 +266,10 @@ describe('字段宿主解析会考虑中间层', () => {
       parentType: 'r-table',
     })
 
-    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('r-form')
+    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('table')
   })
 
-  it('会跨越多层中间组件解析到最近宿主', () => {
+  it('会跨越多层中间组件解析到最近宿主 fieldMode', () => {
     const DataScopeBridge = createIntermediateBridge('r-data-scope')
     const ListItemBridge = createIntermediateBridge('r-list-item', DataScopeBridge)
 
@@ -281,7 +281,7 @@ describe('字段宿主解析会考虑中间层', () => {
       parentType: 'r-list',
     })
 
-    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('r-list')
+    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('detail')
   })
 
   it('字段宿主解析不能污染页面注册表中的真实组件 type', () => {
@@ -332,7 +332,8 @@ describe('字段宿主解析会考虑中间层', () => {
     const NativeTableWrapper = defineComponent({
       name: 'NativeTableWrapper',
       setup() {
-        useSparkHostScope('r-table')
+        const hostScope = useSparkHostScope('r-table')
+        hostScope.host.setHost({ fieldMode: 'table' })
         return () => h(ElTableStub, null, {
           default: () => h(FieldText as never, {
             type: 'r-text',

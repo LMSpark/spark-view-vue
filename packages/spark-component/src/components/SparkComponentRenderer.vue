@@ -125,15 +125,15 @@ type RenderableChild = SparkNode | string
 type RecursiveChildrenList = RenderableChild[]
 type NodeRuntimeProps = Record<string, unknown>
 type RenderBranch = 'hidden' | 'registry' | 'external' | 'fallback'
-type ParentCapabilityContext = SparkCapabilityContext | null
-type ParentTypeConstraintState = {
+type HostCapabilityContext = SparkCapabilityContext | null
+type HostTypeConstraintState = {
   matched: boolean
   expectedTypes: string[]
   actualTypes: string[]
 }
 type ScopedRuntimeInput = {
   rawProps: NodeRuntimeProps
-  hostContext: ParentCapabilityContext
+  hostContext: HostCapabilityContext
 }
 type ResolvedBeforeRenderContext = Omit<BeforeRenderContext, 'id' | 'type' | 'props' | 'children'>
 
@@ -142,9 +142,6 @@ type DeclaredProps = NodeRuntimeProps | string[]
 
 interface VueComponentLike {
   props?: DeclaredProps
-  __vccOpts?: {
-    props?: DeclaredProps
-  }
 }
 
 // 复用空对象常量，避免多个 computed 在“无 props”场景反复制造新引用。
@@ -241,19 +238,14 @@ const RecursiveChildrenBlock = defineComponent({
 /**
  * 读取组件 props 声明。
  *
- * 兼容两种来源：
- * 1. 普通组件对象直接暴露的 props
- * 2. SFC 编译产物挂在 __vccOpts 上的原始 props
- *
  * 该函数只用于判断组件是否显式声明某个 prop，不参与真实 props 合并。
  */
 function readDeclaredProps(component: unknown): DeclaredProps | null {
   if (component === null || component === undefined) return null
   if (typeof component !== 'object' && typeof component !== 'function') return null
 
-  // 兼容两种来源：普通组件选项对象，或 SFC 编译产物挂在 __vccOpts 上的原始选项。
   const normalizedComponent = component as VueComponentLike
-  return normalizedComponent.props ?? normalizedComponent.__vccOpts?.props ?? null
+  return normalizedComponent.props ?? null
 }
 
 // 渲染器内部统一的诊断输出入口，避免 beforeRender / 未注册分支各自散落 console.warn。
@@ -280,8 +272,8 @@ function resolveChildrenMode(meta: NodeRuntimeProps | undefined): ComponentChild
   return value === 'prop' || value === 'slot' ? value : 'auto'
 }
 
-function readParentTypeConstraints(meta: NodeRuntimeProps | undefined): string[] {
-  const rawValue = meta?.['parentTypes'] ?? meta?.['hostTypes']
+function readHostTypeConstraints(meta: NodeRuntimeProps | undefined): string[] {
+  const rawValue = meta?.['hostTypes']
   if (typeof rawValue === 'string') {
     return rawValue.length > 0 ? [rawValue] : []
   }
@@ -291,7 +283,7 @@ function readParentTypeConstraints(meta: NodeRuntimeProps | undefined): string[]
   return rawValue.filter((value): value is string => typeof value === 'string' && value.length > 0)
 }
 
-function collectParentTypeChain(hostContext: ParentCapabilityContext): string[] {
+function collectHostTypeChain(hostContext: HostCapabilityContext): string[] {
   const chain: string[] = []
   let currentContext = hostContext
 
@@ -305,11 +297,11 @@ function collectParentTypeChain(hostContext: ParentCapabilityContext): string[] 
   return chain
 }
 
-function resolveParentTypeConstraintState(
+function resolveHostTypeConstraintState(
   meta: NodeRuntimeProps | undefined,
-  hostContext: ParentCapabilityContext,
-): ParentTypeConstraintState {
-  const expectedTypes = readParentTypeConstraints(meta)
+  hostContext: HostCapabilityContext,
+): HostTypeConstraintState {
+  const expectedTypes = readHostTypeConstraints(meta)
   if (expectedTypes.length === 0) {
     return {
       matched: true,
@@ -325,7 +317,7 @@ function resolveParentTypeConstraintState(
   return {
     matched: resolvedHost.hostType !== null,
     expectedTypes,
-    actualTypes: collectParentTypeChain(hostContext),
+    actualTypes: collectHostTypeChain(hostContext),
   }
 }
 
@@ -569,14 +561,14 @@ const registryDefinition = computed(() => {
   return type !== null ? (registry?.get(type) ?? null) : null
 })
 
-const registryParentTypeState = computed<ParentTypeConstraintState>(() => {
-  return resolveParentTypeConstraintState(registryDefinition.value?.meta, parentCapabilityContext.value)
+const registryHostTypeState = computed<HostTypeConstraintState>(() => {
+  return resolveHostTypeConstraintState(registryDefinition.value?.meta, parentCapabilityContext.value)
 })
 
 const registryComponent = computed(() => {
   const definition = registryDefinition.value
   if (!definition) return null
-  if (!registryParentTypeState.value.matched) return null
+  if (!registryHostTypeState.value.matched) return null
   return definition.component ? markRaw(definition.component as object) : null
 })
 
@@ -616,17 +608,17 @@ const renderBranch = computed<RenderBranch>(() => {
 })
 
 const fallbackTitle = computed(() => {
-  return registryDefinition.value !== null && !registryParentTypeState.value.matched
-    ? '父组件类型不匹配'
+  return registryDefinition.value !== null && !registryHostTypeState.value.matched
+    ? '宿主类型不匹配'
     : '未注册的组件类型'
 })
 
 const fallbackDescription = computed(() => {
-  if (registryDefinition.value === null || registryParentTypeState.value.matched) return ''
+  if (registryDefinition.value === null || registryHostTypeState.value.matched) return ''
 
-  const expected = registryParentTypeState.value.expectedTypes.join(' / ')
-  const actual = registryParentTypeState.value.actualTypes.join(' / ')
-  return `期望父链类型: ${expected}；当前父链类型: ${actual || '无'}`
+  const expected = registryHostTypeState.value.expectedTypes.join(' / ')
+  const actual = registryHostTypeState.value.actualTypes.join(' / ')
+  return `期望宿主链类型: ${expected}；当前宿主链类型: ${actual || '无'}`
 })
 
 // ── 子节点策略：哪些 child 继续递归，哪些 child 透传给目标组件 ──────────────

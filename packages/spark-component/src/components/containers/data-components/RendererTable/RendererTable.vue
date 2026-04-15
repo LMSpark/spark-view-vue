@@ -143,40 +143,12 @@ import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
 import type { SparkComponentHost } from '../../../internal'
 
-// ── 基础工具与本地属性约定 ───────────────────────────────────────────────
+// ── 基础工具 ─────────────────────────────────────────────────────────────
 
-/** 将 camelCase 属性名转换为 kebab-case，兼容模板透传属性的两种写法。 */
+/** 将 camelCase 属性名转换为 kebab-case，统一读取模板透传属性。 */
 function toKebabCase(name: string): string {
   return name.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)
 }
-
-/**
- * 这些属性由 RendererTable 内部消费，不应继续透传给底层 el-table。
- * 其中包含：工具栏/筛选区/行操作区的结构化配置，以及少量旧 attrs 兼容入口。
- */
-const TABLE_LOCAL_ATTR_BASE_KEYS = [
-  'toolbar',
-  'filterColumns',
-  'rowActions',
-  'rowActionsPosition',
-  'rowActionsAlign',
-  'rowActionsFixed',
-  'rowActionsClass',
-  'rowActionsLabel',
-  'rowActionsWidth',
-  'filterClass',
-  'filterGridColumns',
-  'filterGridGap',
-  'filterGridAutoRows',
-  'filterCollapsible',
-  'filterDefaultCollapsed',
-  'filterAutoFitMinWidth',
-  'filterItemSpan',
-] as const
-
-const TABLE_LOCAL_ATTR_KEYS = new Set<string>(
-  TABLE_LOCAL_ATTR_BASE_KEYS.flatMap(key => [key, toKebabCase(key)]),
-)
 
 // ── Props / attrs / slots 输入 ───────────────────────────────────────────
 
@@ -190,7 +162,7 @@ const contentChildNodes = computed(() => getSparkNodeChildren(props.children))
 const attrs = useAttrs()
 const slots = useSlots()
 
-// ── 属性读取工具：兼容 attrs 与结构化子节点 props ────────────────────────
+// ── 属性读取工具（仅用于 el-table 透传属性） ──────────────────────────────
 
 const _attrs = attrs as Readonly<Record<string, unknown>>
 
@@ -207,31 +179,6 @@ function readStringAttr(name: string): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined
 }
 
-/** 读取布尔属性；兼容模板中空属性、字符串 true/false。 */
-function readBooleanAttr(name: string): boolean | undefined {
-  const value = readAttr(name)
-  if (typeof value === 'boolean') return value
-  if (value === '') return true
-  if (value === 'true') return true
-  if (value === 'false') return false
-  return undefined
-}
-
-/** 读取数字属性；仅接受有限数值。 */
-function readNumberAttr(name: string): number | undefined {
-  const value = readAttr(name)
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  return undefined
-}
-
-/** 读取 number|string 联合属性，常用于宽度、间距等布局参数。 */
-function readNumberOrStringAttr(name: string): number | string | undefined {
-  const value = readAttr(name)
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  if (typeof value === 'string' && value.length > 0) return value
-  return undefined
-}
-
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
   return child?.props?.[name] as T | undefined
@@ -239,14 +186,7 @@ function childProp<T>(child: SparkNode | undefined, name: string): T | undefined
 
 // ── 基础输入解析：DataKey 与传给 el-table 的基础 attrs ───────────────────
 
-const baseTableAttrs = computed<Record<string, unknown>>(() => {
-  const result: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(_attrs)) {
-    if (TABLE_LOCAL_ATTR_KEYS.has(key)) continue
-    result[key] = value
-  }
-  return result
-})
+const baseTableAttrs = computed<Record<string, unknown>>(() => ({ ..._attrs }))
 const effectiveDataKey = computed(() => props.dataKey)
 
 // ── SPARK 上下文与数据源：解析 DataKey → DataView，并向下游提供 DATA_SOURCE ──
@@ -315,10 +255,10 @@ const {
 } = useTableFilters({
   filterChildren: computed(() => getSparkNodeChildren(props.filter?.children)),
   dataView: resolvedView,
-  filterClass: computed(() => childProp<string>(props.filter, 'class') ?? readStringAttr('filterClass') ?? ''),
-  filterGridColumns: computed(() => childProp<number>(props.filter, 'gridColumns') ?? readNumberAttr('filterGridColumns') ?? 24),
-  filterGridGap: computed(() => childProp<number | string>(props.filter, 'gridGap') ?? readNumberOrStringAttr('filterGridGap') ?? 12),
-  filterGridAutoRows: computed(() => childProp<string>(props.filter, 'gridAutoRows') ?? readStringAttr('filterGridAutoRows') ?? 'minmax(32px, auto)'),
+  filterClass: computed(() => childProp<string>(props.filter, 'class') ?? ''),
+  filterGridColumns: computed(() => childProp<number>(props.filter, 'gridColumns') ?? 24),
+  filterGridGap: computed(() => childProp<number | string>(props.filter, 'gridGap') ?? 12),
+  filterGridAutoRows: computed(() => childProp<string>(props.filter, 'gridAutoRows') ?? 'minmax(32px, auto)'),
   logger,
 })
 
@@ -336,8 +276,6 @@ const {
   resolvedView,
   filteredRows,
   readStringAttr,
-  readBooleanAttr,
-  readNumberAttr,
 })
 
 // ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
@@ -395,7 +333,7 @@ const {
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
   actionPosition: computed(() => childProp<LateralActionPosition>(props.actions, 'position') ?? 'right'),
-  actionClass: computed(() => childProp<string>(props.actions, 'class') ?? readStringAttr('rowActionsClass') ?? ''),
+  actionClass: computed(() => childProp<string>(props.actions, 'class') ?? ''),
   modelPermission,
   dataSource: resolvedView,
   resolveScope: ({ row, index }) => ({
@@ -416,22 +354,14 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
-/** 行操作列统一属性（child props → legacy attrs → defaults） */
+/** 行操作列统一属性（仅 child props + defaults） */
 const rowActionColumnAttrs = computed(() => {
-  const label = childProp<string>(props.actions, 'label') ?? readStringAttr('rowActionsLabel') ?? '操作'
-  const width = childProp<number | string>(props.actions, 'width') ?? readNumberOrStringAttr('rowActionsWidth') ?? 160
-  const rawAlign = childProp<string>(props.actions, 'align') ?? readStringAttr('rowActionsAlign')
+  const label = childProp<string>(props.actions, 'label') ?? '操作'
+  const width = childProp<number | string>(props.actions, 'width') ?? 160
+  const rawAlign = childProp<string>(props.actions, 'align')
   const align = rawAlign === 'left' || rawAlign === 'center' || rawAlign === 'right' ? rawAlign : 'left'
   const childFixed = childProp<boolean | 'left' | 'right'>(props.actions, 'fixed')
-  let fixed: boolean | 'left' | 'right'
-  if (childFixed !== undefined) {
-    fixed = childFixed
-  } else {
-    const attrFixed = readAttr('rowActionsFixed')
-    fixed = typeof attrFixed === 'boolean' ? attrFixed
-      : attrFixed === 'left' || attrFixed === 'right' ? attrFixed
-      : rowActionsPositionValue.value
-  }
+  const fixed: boolean | 'left' | 'right' = childFixed ?? rowActionsPositionValue.value
   return { label, width, align, fixed, className: rowActionsClassValue.value || undefined }
 })
 

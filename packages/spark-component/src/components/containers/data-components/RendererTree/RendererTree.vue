@@ -76,7 +76,6 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
-import { usePermission } from '../../../../permission/index.js'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
@@ -104,10 +103,7 @@ const props = withDefaults(defineProps<RTreeProps>(), {
 })
 const {
   effectiveDataKey,
-  effectiveAllowAppend,
-  effectiveAllowDelete,
   nodeContentChildren,
-  hasLegacyNodeActions,
   hasNodeActions,
   editorConfigs,
   editorPositionValue,
@@ -120,7 +116,6 @@ const {
 const { host: treeHost, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
-const perm = usePermission()
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
@@ -175,19 +170,6 @@ const {
   }),
 })
 
-function shouldShowLegacyAppend(row: IDataRow): boolean {
-  return hasLegacyNodeActions.value
-    && effectiveAllowAppend.value
-    && perm.isPermitted('create', modelPermission.value ? { modelPermission: modelPermission.value } : {})
-    && perm.isPermitted('create-child', { row })
-}
-
-function shouldShowLegacyDelete(row: IDataRow): boolean {
-  return hasLegacyNodeActions.value
-    && effectiveAllowDelete.value
-    && perm.isPermitted('delete', { row })
-}
-
 sparkProvide(DATA_ROW, {} as IDataRow)
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────
@@ -202,8 +184,6 @@ const {
   handleNodeExpand,
   handleNodeCollapse,
   handleNodeDrop,
-  handleAppendNode,
-  handleDeleteNode,
   isBuiltinNodeActionDisabled,
   isBuiltinToolbarActionDisabled,
   handleBuiltinToolbarAction,
@@ -216,8 +196,6 @@ const {
   handleNodeExpand: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => Promise<void>
   handleNodeCollapse: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => Promise<void>
   handleNodeDrop: (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => Promise<void>
-  handleAppendNode: (data: unknown) => Promise<void>
-  handleDeleteNode: (data: unknown) => Promise<void>
   isBuiltinNodeActionDisabled: (action: SparkNode, row: IDataRow, index: number) => boolean
   isBuiltinToolbarActionDisabled: (action: SparkNode) => boolean
   handleBuiltinToolbarAction: (action: SparkNode) => void
@@ -231,8 +209,6 @@ const {
   pageService,
   nodeKeyField,
   treeIdField,
-  effectiveAllowAppend,
-  effectiveAllowDelete,
 })
 
 const {
@@ -274,50 +250,8 @@ function getNodeActionHost(row: IDataRow, index: number): SparkComponentHost {
   }
 }
 
-function getLegacyNodeActionConfigs(row: IDataRow): SparkNode[] {
-  const actions: SparkNode[] = []
-
-  if (shouldShowLegacyAppend(row)) {
-    actions.push({
-      type: 'el-button',
-      props: {
-        type: 'primary',
-        size: 'small',
-        link: true,
-        on: {
-          click: (event?: Event) => {
-            event?.stopPropagation?.()
-            void handleAppendNode(row)
-          },
-        },
-      },
-      children: ['添加'],
-    })
-  }
-
-  if (shouldShowLegacyDelete(row)) {
-    actions.push({
-      type: 'el-button',
-      props: {
-        type: 'danger',
-        size: 'small',
-        link: true,
-        on: {
-          click: (event?: Event) => {
-            event?.stopPropagation?.()
-            void handleDeleteNode(row)
-          },
-        },
-      },
-      children: ['删除'],
-    })
-  }
-
-  return actions
-}
-
 function getNodeActionConfigs(row: IDataRow): SparkNode[] {
-  return [...getScopedNodeActions({ row, index: 0 }), ...getLegacyNodeActionConfigs(row)]
+  return getScopedNodeActions({ row, index: 0 })
 }
 
 // 事件处理器与零代码动作由 createRendererTreeZeroCode 收口

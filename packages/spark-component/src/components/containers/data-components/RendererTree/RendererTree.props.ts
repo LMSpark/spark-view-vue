@@ -6,7 +6,7 @@ import type {
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import type { ActionsNode } from '../../support/RendererActionHost.types'
 import type { EditorNode } from '../../RendererEditor.types'
-import type { TreeEventHandler, TreeNodeActionHandler } from './zero-code'
+import type { TreeEventHandler } from './zero-code'
 
 /**
  * r-tree 组件公开属性接口。
@@ -32,18 +32,10 @@ export interface RTreeProps
   expandToKey?: string | number | null
   /** 初始化自动展开到指定层级（根节点为第 1 层） */
   expandLevel?: number
-  /** 允许追加子节点（自动生成追加按钮） */
-  allowAppend?: boolean
-  /** 允许删除节点（自动生成删除按钮） */
-  allowDelete?: boolean
   /** 节点点击回调 */
   onNodeClick?: TreeEventHandler
   /** 节点展开回调 */
   onNodeExpand?: TreeEventHandler
   /** 节点折叠回调 */
   onNodeCollapse?: TreeEventHandler
-  /** 节点追加前回调 */
-  onNodeAppend?: TreeNodeActionHandler
-  /** 节点删除前回调 */
-  onNodeDelete?: TreeNodeActionHandler
 }

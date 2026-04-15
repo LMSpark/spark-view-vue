@@ -82,15 +82,10 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
     emits: ['update:value', 'update:modelValue'],
     setup(props, { emit }) {
       const attrs = useAttrs()
-      const compatAttrs = attrs as Readonly<Record<string, unknown>>
+      const rawAttrs = attrs as Readonly<Record<string, unknown>>
 
       const passthroughAttrs = computed<Record<string, unknown>>(() => {
-        const result: Record<string, unknown> = {}
-        for (const [key, value] of Object.entries(compatAttrs)) {
-          if (key === 'modelValue' || key === 'separator') continue
-          result[key] = value
-        }
-        return result
+        return { ...rawAttrs }
       })
 
       const forwardedProps = computed<Record<string, unknown>>(() => {
@@ -108,10 +103,8 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
           }
         }
 
-        const compatModelValue = compatAttrs['modelValue'] as EntityPickerValue | undefined
-        const resolvedValue = props['value'] ?? compatModelValue
-        if (resolvedValue !== undefined) {
-          result['value'] = resolvedValue
+        if (props['value'] !== undefined) {
+          result['value'] = props['value']
         }
 
         const resolvedField = props['field'] ?? props['name']
@@ -129,10 +122,8 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
         result['clearable'] = props['clearable']
         result['multiple'] = props['multiple']
         result['searchable'] = props['searchable']
-        const compatSeparator = compatAttrs['separator'] as string | undefined
-        const resolvedValueSeparator = props['valueSeparator'] ?? compatSeparator
-        if (resolvedValueSeparator !== undefined) {
-          result['valueSeparator'] = resolvedValueSeparator
+        if (props['valueSeparator'] !== undefined) {
+          result['valueSeparator'] = props['valueSeparator']
         }
         if (props['textSeparator'] !== undefined) {
           result['textSeparator'] = props['textSeparator']

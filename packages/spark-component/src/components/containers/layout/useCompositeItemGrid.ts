@@ -1,7 +1,6 @@
 import { computed } from 'vue'
-import type { CSSProperties } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
-import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
+import { useContainerGrid } from './useContainerGrid'
 
 interface UseCompositeItemGridOptions {
   children?: () => SparkNode['children'] | undefined
@@ -22,35 +21,29 @@ export function useCompositeItemGrid(options: UseCompositeItemGridOptions) {
     return typeof bodyClass === 'string' ? bodyClass : ''
   })
 
-  const contentGridStyle = computed<CSSProperties>(() => {
-    const columns = normalizeSpan(options.gridColumns?.(), 24)
-    const autoRowsValue = options.gridAutoRows?.()
-    const autoRows = typeof autoRowsValue === 'string' && autoRowsValue.trim().length > 0
-      ? autoRowsValue
-      : 'minmax(32px, auto)'
-
-    return {
-      display: 'grid',
-      gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-      gap: normalizeGridGap(options.gridGap?.()),
-      gridAutoRows: autoRows,
-      alignItems: 'start',
-    }
+  const {
+    gridStyle: contentGridStyle,
+    getChildGridStyle: getContentChildGridStyle,
+  } = useContainerGrid({
+    children: () => contentChildren.value,
+    columns: () => {
+      const value = options.gridColumns?.()
+      if (typeof value === 'number' && Number.isFinite(value)) return value
+      if (typeof value === 'string') {
+        const parsed = Number.parseInt(value, 10)
+        if (Number.isFinite(parsed)) return parsed
+      }
+      return 24
+    },
+    gap: () => {
+      const value = options.gridGap?.()
+      return typeof value === 'number' || typeof value === 'string' ? value : 0
+    },
+    autoRows: () => {
+      const value = options.gridAutoRows?.()
+      return typeof value === 'string' ? value : ''
+    },
   })
-
-  function getContentChildGridStyle(child: SparkNode): CSSProperties {
-    const childProps = child.props ?? {}
-    const colSpan = normalizeSpan(
-      childProps['colSpan'] ?? childProps['gridColSpan'] ?? childProps['span'],
-      24,
-    )
-    const rowSpan = normalizeSpan(childProps['rowSpan'] ?? childProps['gridRowSpan'], 1)
-    return {
-      gridColumn: `span ${colSpan} / span ${colSpan}`,
-      gridRow: `span ${rowSpan} / span ${rowSpan}`,
-      minWidth: 0,
-    }
-  }
 
   return {
     contentChildren,

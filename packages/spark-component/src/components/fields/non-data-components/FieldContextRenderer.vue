@@ -86,13 +86,13 @@ import { computed } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
-import type { SparkRuntimeChildrenProps } from '../../shared-types.js'
+import type { SparkNodeProps } from '../../shared-types.js'
 import type { FormItemRule } from '../columnFormRules'
 import { useResolvedFieldContext } from '../context/useResolvedFieldContext'
 
 type TextAlign = 'left' | 'center' | 'right'
 
-interface Props extends SparkRuntimeChildrenProps {
+interface Props extends SparkNodeProps {
   /** 显示标签 */
   displayLabel?: string | undefined
   /** 直接传入的标签（供 r-column-group 直连使用） */

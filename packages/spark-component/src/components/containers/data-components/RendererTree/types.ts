@@ -16,6 +16,4 @@ export interface RendererTreeApi extends BaseCrudContainerApi {
   insertAfter(refKey: string | number, nodeData: IDataRow): void
   updateNode(key: string | number, patch: Partial<IDataRow>): boolean
   removeNode(key: string | number): boolean
-  getAllowAppend(): boolean
-  getAllowDelete(): boolean
 }
