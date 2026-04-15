@@ -47,10 +47,10 @@ export function unbindCapabilityContextOwner(owner: object): void {
 
 export function resolveParentCapabilityContext(
 	owner: SparkRuntimeOwner | null,
-	overrideParentContext?: SparkCapabilityContext,
+	overrideHostContext?: SparkCapabilityContext,
 ): SparkCapabilityContext | null {
-	if (overrideParentContext !== undefined) {
-		return overrideParentContext
+	if (overrideHostContext !== undefined) {
+		return overrideHostContext
 	}
 
 	let currentOwner = owner?.parent ?? null

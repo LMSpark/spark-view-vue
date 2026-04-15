@@ -101,6 +101,26 @@ const LOW_SIGNAL_ENUM_VARIANTS = new Set([
   'void',
 ])
 
+const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
+  'Event',
+  'UIEvent',
+  'MouseEvent',
+  'KeyboardEvent',
+  'FocusEvent',
+  'PointerEvent',
+  'WheelEvent',
+  'InputEvent',
+  'SubmitEvent',
+  'EventTarget',
+  'Window',
+  'Document',
+  'Element',
+  'HTMLElement',
+  'Node',
+  'CSSProperties',
+  'CSSStyleDeclaration',
+])
+
 const GOVERNANCE_CONTRACTS: Record<string, GovernanceContract> = {
   'spark:props:component-base': {
     layer: 'props',
@@ -300,7 +320,25 @@ function stableStringify(value: unknown): string {
   return JSON.stringify(value)
 }
 
+function isMdnPropertyDescription(text?: string): boolean {
+  return typeof text === 'string' && text.includes('MDN Reference')
+}
+
+function isLowSignalObjectSchema(schema: Extract<PropSchema, { kind: 'object' }>): boolean {
+  if (LOW_SIGNAL_OBJECT_SCHEMA_TYPES.has(schema.type)) return true
+
+  const properties = Object.values(schema.properties)
+  if (properties.length < 5) return false
+
+  const mdnLikeCount = properties.filter((property) => isMdnPropertyDescription(property.description)).length
+  return mdnLikeCount === properties.length
+}
+
 function shouldRetainSchema(schema: PropSchema): boolean {
+  if (schema.kind === 'object' && isLowSignalObjectSchema(schema)) {
+    return false
+  }
+
   if (schema.kind === 'enum') {
     const hasLiteralVariant = schema.variants.some((variant) =>
       /^".*"$/.test(variant) || /^'.*'$/.test(variant),
@@ -422,11 +460,33 @@ function toCanonicalComponent(
     emitRefs,
     source: entry.source,
     ...(entry.binding !== undefined ? { binding: entry.binding } : {}),
-    ...(entry.contracts !== undefined ? { contracts: entry.contracts } : {}),
-    ...(entry.provides !== undefined ? { provides: entry.provides } : {}),
-    ...(entry.consumes !== undefined ? { consumes: entry.consumes } : {}),
-    ...(entry.notes !== undefined ? { notes: entry.notes } : {}),
   }
+}
+
+function createCatalogFilePayload(catalog: ComponentCatalog): unknown {
+  const payload = JSON.parse(JSON.stringify(catalog)) as {
+    components?: Record<string, Record<string, unknown>>
+    canonical?: { components?: Record<string, Record<string, unknown>> }
+  }
+
+  const components = payload.components
+  if (components !== undefined) {
+    for (const entry of Object.values(components)) {
+      delete entry['emits']
+      delete entry['source']
+      delete entry['binding']
+    }
+  }
+
+  const canonicalComponents = payload.canonical?.components
+  if (canonicalComponents !== undefined) {
+    for (const entry of Object.values(canonicalComponents)) {
+      delete entry['source']
+      delete entry['binding']
+    }
+  }
+
+  return payload
 }
 
 function hasAny(names: Set<string>, expected: readonly string[]): boolean {
@@ -531,6 +591,8 @@ function buildSortedComponents(
     const binding = inferBinding(props)
     const contracts = inferContracts(type, rawProps)
     const propsInterface = detectPropsInterface(root, file, type)
+    void contracts
+    void propsInterface
 
     const entry: ComponentEntry = {
       type,
@@ -541,11 +603,6 @@ function buildSortedComponents(
       emits,
       source: explicitSkillMeta === null ? 'vcm' : 'vcm+meta',
       ...(binding !== undefined ? { binding } : {}),
-      ...(contracts !== undefined ? { contracts } : {}),
-      ...(propsInterface !== undefined ? { propsInterface } : {}),
-      ...(skillMeta?.provides !== undefined ? { provides: skillMeta.provides } : {}),
-      ...(skillMeta?.consumes !== undefined ? { consumes: skillMeta.consumes } : {}),
-      ...(skillMeta?.notes !== undefined && skillMeta.notes.length > 0 ? { notes: skillMeta.notes.join('\n') } : {}),
     }
 
     components[type] = entry
@@ -619,8 +676,10 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     ...(governance !== undefined ? { governance } : {}),
   }
 
+  const filePayload = createCatalogFilePayload(catalog)
+
   const outPath = getCanonicalCatalogOutputPath(root)
-  writeFileSync(outPath, JSON.stringify(catalog, null, 2), 'utf-8')
+  writeFileSync(outPath, JSON.stringify(filePayload, null, 2), 'utf-8')
   cleanupLegacyCatalogOutputs(outPath)
   logger.info(`📦 ${catalog.componentCount} 组件已写入`)
 

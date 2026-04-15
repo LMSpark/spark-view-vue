@@ -8,27 +8,33 @@
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import { sparkProvide as rawSparkProvide, normalizeKey, APP_SERVICES } from '@spark-view/spark-utils'
-import type { CapabilityKey, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
+import type { CapabilityKey, CapabilityTypeMap, LoggerApi } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode } from './types.js'
 import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
 import {
   DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
-  consumeSparkCapability,
   createSparkCapabilityConsumer,
   createSparkCapabilityContext,
+  findNearestHost,
 } from './capabilities.js'
-import type { PageComponentRegistry, SparkCapabilityConsumer } from './capabilities.js'
+import type { PageComponentRegistry, SparkCapabilityConsumer, SparkComponentHost } from './capabilities.js'
 
 // 基础类型：约束当前文件内部的运行时实例。
 type RuntimeInstance = ReturnType<typeof getCurrentInstance>
 
 // 对外返回类型：定义组件上下文 API 与轻量消费 API。
 export interface UseSparkComponentReturn {
-  context: SparkCapabilityContext
-  parentContext: SparkCapabilityContext | null
-  parentType: string | null
+  host: {
+    readonly type: string | null
+    readonly context: SparkCapabilityContext | null
+    self(): { id: string; type: string }
+    parent(): { id: string; type: string } | null
+    ancestors(): Array<{ id: string; type: string }>
+    nearestHost(): SparkComponentHost | null
+    setHost(host: SparkComponentHost): void
+  }
   isVisible: { readonly value: boolean }
   isDisabled: { readonly value: boolean }
   resolvedProps: { readonly value: Record<string, unknown> }
@@ -48,13 +54,18 @@ export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
 }
 
 export interface UseSparkCapabilityReaderReturn {
-  parentContext: SparkCapabilityContext | null
-  parentType: string | null
+  host: {
+    readonly type: string | null
+    readonly context: SparkCapabilityContext | null
+    parent(): { id: string; type: string } | null
+    ancestors(): Array<{ id: string; type: string }>
+    nearestHost(): SparkComponentHost | null
+  }
   sparkConsume: SparkCapabilityConsumer
 }
 
 export interface UseSparkComponentOptions {
-  parentContext?: SparkCapabilityContext
+  hostContext?: SparkCapabilityContext
 }
 
 export type SparkNodeInput = {
@@ -125,12 +136,42 @@ function readConfigProp(instance: RuntimeInstance, fallbackConfig: SparkNodeInpu
 // 上下文解析：能力消费只依赖 Spark 自己的上下文树，不依赖 Vue provide/inject 传父链。
 function resolveParentAccess(
   currentOwner: SparkRuntimeOwner | null,
-  overrideParentContext?: SparkCapabilityContext,
+  overrideHostContext?: SparkCapabilityContext,
 ): Omit<UseSparkCapabilityReaderReturn, 'sparkConsume'> {
-  const resolvedParentContext = resolveParentCapabilityContext(currentOwner, overrideParentContext)
+  const resolvedHostContext = resolveParentCapabilityContext(currentOwner, overrideHostContext)
+  const ancestors = (): Array<{ id: string; type: string }> => {
+    const result: Array<{ id: string; type: string }> = []
+    let current = resolvedHostContext
+    while (current !== null) {
+      result.push({ id: current.id, type: current.type })
+      current = current.parent ?? null
+    }
+    return result
+  }
+
+  const nearestHost = (): SparkComponentHost | null => {
+    let current = resolvedHostContext
+    while (current !== null) {
+      if (current.host !== undefined && current.host !== null) {
+        return current.host as SparkComponentHost
+      }
+      current = current.parent ?? null
+    }
+    return null
+  }
+
   return {
-    parentContext: resolvedParentContext,
-    parentType: resolvedParentContext?.type ?? null,
+    host: {
+      type: resolvedHostContext?.type ?? null,
+      context: resolvedHostContext,
+      parent() {
+        return resolvedHostContext === null
+          ? null
+          : { id: resolvedHostContext.id, type: resolvedHostContext.type }
+      },
+      ancestors,
+      nearestHost,
+    },
   }
 }
 
@@ -164,8 +205,9 @@ function isLoggerApi(value: unknown): value is LoggerApi {
 
 // 日志解析：统一取页面层 APP_SERVICES.logger，缺失时回退到开发日志。
 function createPageLoggerProxy(context: SparkCapabilityContext): LoggerApi {
+  const consumeFromCurrent = createSparkCapabilityConsumer(context)
   const resolveLogger = (): LoggerApi => {
-    const appServices = consumeSparkCapability<IAppServicesCapability>(context, APP_SERVICES)
+    const appServices = consumeFromCurrent(APP_SERVICES)
     return isLoggerApi(appServices?.logger) ? appServices.logger : DEV_FALLBACK_LOGGER
   }
 
@@ -237,11 +279,10 @@ export function resolvePlaceholderProps(
  */
 export function useSparkConsume(): UseSparkCapabilityReaderReturn {
   const currentOwner = getCurrentInstance() as SparkRuntimeOwner | null
-  const { parentContext, parentType } = resolveParentAccess(currentOwner)
+  const { host } = resolveParentAccess(currentOwner)
   return {
-    parentContext,
-    parentType,
-    sparkConsume: createSparkCapabilityConsumer(parentContext),
+    host,
+    sparkConsume: createSparkCapabilityConsumer(host.context),
   }
 }
 
@@ -254,15 +295,42 @@ export function useSparkComponent(
   const currentOwner = currentInstance as SparkRuntimeOwner | null
   const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
   const contextId = nodeId(config) ?? `spark-${++_idCounter}`
-  const { parentContext, parentType } = resolveParentAccess(currentOwner, options?.parentContext)
-  const context = createSparkCapabilityContext({ id: contextId, type: config.type }, parentContext)
+  const { host } = resolveParentAccess(currentOwner, options?.hostContext)
+  const hostContext = host.context
+  const context = createSparkCapabilityContext({ id: contextId, type: config.type }, hostContext)
+  const currentHost: UseSparkComponentReturn['host'] = {
+    type: hostContext?.type ?? null,
+    context: hostContext,
+    self() {
+      return { id: context.id, type: context.type }
+    },
+    parent() {
+      return hostContext === null ? null : { id: hostContext.id, type: hostContext.type }
+    },
+    ancestors() {
+      const result: Array<{ id: string; type: string }> = []
+      let current = hostContext
+      while (current !== null) {
+        result.push({ id: current.id, type: current.type })
+        current = current.parent ?? null
+      }
+      return result
+    },
+    nearestHost() {
+      return findNearestHost(context)
+    },
+    setHost(nextHost: SparkComponentHost) {
+      context.host = nextHost
+    },
+  }
+  const consumeCapability = createSparkCapabilityConsumer(hostContext, context)
 
   if (currentInstance !== null) {
     bindCapabilityContextOwner(currentInstance as object, context)
   }
 
   // 页面注册：让页面级注册表可以按 id/type 找到当前组件实例。
-  const pageComponentRegistry = consumeSparkCapability<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
+  const pageComponentRegistry = consumeCapability(PAGE_COMPONENT_REGISTRY)
   registerPageComponentInstance(pageComponentRegistry, context, config.props)
 
   // 可视状态：统一从归一化后的配置读取 visible 和 disabled。
@@ -288,9 +356,6 @@ export function useSparkComponent(
       logger.debug(`[spark] provided: ${String(name)}`)
     }
   }
-
-  // 能力消费：优先读取当前上下文，再按父链向上查找。
-  const consumeCapability = createSparkCapabilityConsumer(parentContext, context)
 
   function sparkConsume(name: string | symbol): unknown {
     const impl = consumeCapability(name)
@@ -327,9 +392,7 @@ export function useSparkComponent(
   onUnmounted(destroy)
 
   return {
-    context,
-    parentContext,
-    parentType,
+    host: currentHost,
     isVisible,
     isDisabled,
     resolvedProps,
@@ -348,9 +411,10 @@ export function useSparkPageComponent(
   const component = useSparkComponent(fallbackConfig, options)
 
   function registerApi(api: unknown): void {
-    const pageComponentRegistry = consumeSparkCapability<PageComponentRegistry>(component.context, PAGE_COMPONENT_REGISTRY)
+    const pageComponentRegistry = component.sparkConsume(PAGE_COMPONENT_REGISTRY)
     if (!pageComponentRegistry) return
-    pageComponentRegistry.registerApi({ id: component.context.id, type: component.context.type, api })
+    const self = component.host.self()
+    pageComponentRegistry.registerApi({ id: self.id, type: self.type, api })
   }
 
   return {

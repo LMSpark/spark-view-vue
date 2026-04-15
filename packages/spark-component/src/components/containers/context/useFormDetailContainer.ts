@@ -41,7 +41,7 @@ export function useFormDetailContainer(
 
   const logPrefix = containerType === 'r-form' ? 'RendererForm' : 'RendererDetail'
 
-  const { context, sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
+  const { host, sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
   const pageDataSet = sparkConsume(PAGE_DATASET)
   const pageService = sparkConsume(PAGE_SERVICE)
 
@@ -88,7 +88,7 @@ export function useFormDetailContainer(
 
   return {
     registerApi,
-    context,
+    host,
     logger,
     pageService,
     resolvedView,

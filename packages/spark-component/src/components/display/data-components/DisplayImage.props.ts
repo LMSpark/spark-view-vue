@@ -1,12 +1,8 @@
-import type { SparkNodeProps } from '../../shared-types'
+import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RDisplayImageProps extends SparkNodeProps {
-/** 图片 URL（静态传入） */
+export interface RDisplayImageProps extends SparkNodeProps, SparkDataDisplayProps<string> {
+  /** 图片 URL（静态传入）。 */
   src?: string
-  /** 字段名（从当前行读取 URL） */
-  field?: string
-  /** 静态值 */
-  value?: string
   /** 图片适应模式 */
   fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
   /** 替代文本 */

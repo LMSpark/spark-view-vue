@@ -94,7 +94,7 @@ export interface PageCssScopeCapability {
  */
 export function createSparkCapabilityContext(
   config: { id: string; type: string },
-  parentContext?: SparkCapabilityContext | null,
+  hostContext?: SparkCapabilityContext | null,
 ): SparkCapabilityContext {
   const context: SparkCapabilityContext = {
     id: config.id,
@@ -102,8 +102,8 @@ export function createSparkCapabilityContext(
     capabilities: new Map<CapabilityName, unknown>(),
   }
 
-  if (parentContext !== undefined && parentContext !== null) {
-    context.parent = parentContext
+  if (hostContext !== undefined && hostContext !== null) {
+    context.parent = hostContext
   }
 
   return context
@@ -122,13 +122,13 @@ export function consumeSparkCapability<T>(
   return implementation ?? null
 }
 
-/** 创建能力消费器：优先从 fallbackContext 开始查找，否则从 parentContext 开始。 */
+/** 创建能力消费器：优先从 fallbackContext 开始查找，否则从 hostContext 开始。 */
 export function createSparkCapabilityConsumer(
-  parentContext: SparkCapabilityContext | null,
+  hostContext: SparkCapabilityContext | null,
   fallbackContext?: SparkCapabilityContext,
 ): SparkCapabilityConsumer {
   return ((name: string | symbol): unknown => {
-    const lookupContext = fallbackContext ?? parentContext
+    const lookupContext = fallbackContext ?? hostContext
     return consumeSparkCapability(lookupContext, name)
   }) as SparkCapabilityConsumer
 }

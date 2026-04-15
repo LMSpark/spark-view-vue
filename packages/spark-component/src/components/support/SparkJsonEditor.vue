@@ -56,19 +56,33 @@ interface SparkJsonEditorModule {
 }
 
 interface Props {
+  /** JSON 字符串内容 */
   modelValue?: string
+  /** 是否只读 */
   readOnly?: boolean
+  /** 编辑器高度 */
   height?: number | string
+  /** 编辑模式 */
   mode?: SparkJsonEditorMode
+  /** 缩进空格数 */
   indentation?: number | string
+  /** Tab 缩进空格数 */
   tabSize?: number
+  /** 是否显示主菜单栏 */
   mainMenuBar?: boolean
+  /** 是否显示导航栏 */
   navigationBar?: boolean
+  /** 是否显示状态栏 */
   statusBar?: boolean
+  /** 是否提示格式化 */
   askToFormat?: boolean
+  /** JSON Schema 校验规则 */
   schema?: SparkJsonSchema | null
+  /** JSON Schema 定义引用 */
   schemaDefinitions?: SparkJsonSchema | null
+  /** 是否启用 Schema 校验 */
   enableSchemaValidation?: boolean
+  /** 是否启用 Schema 枚举渲染 */
   enableSchemaEnumRenderer?: boolean
 }
 

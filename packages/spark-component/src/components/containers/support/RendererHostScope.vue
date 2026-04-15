@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<{
   type: 'r-host-scope',
 })
 
-const { context } = useSparkComponent({ type: props.type })
+const { host } = useSparkComponent({ type: props.type })
 
-context.host = props.host
+host.setHost(props.host)
 </script>

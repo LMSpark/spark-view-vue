@@ -1,10 +1,6 @@
-import type { SparkFieldProps, SparkNodeProps } from '../../shared-types'
+import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RAvatarProps extends SparkNodeProps {
-  /** 显式头像值 */
-  value?: string
-  /** 数据字段绑定键（通常映射到当前行 field） */
-  field?: SparkFieldProps['field']
+export interface RAvatarProps extends SparkNodeProps, SparkDataDisplayProps<string> {
   /** 头像尺寸 */
   avatarSize?: number | 'large' | 'default' | 'small'
   /** 头像形状 */

@@ -149,18 +149,11 @@ function auditEmitDescriptions(entry: ComponentEntry, issues: AuditIssue[]): voi
 }
 
 function auditBindingCompleteness(entry: ComponentEntry, issues: AuditIssue[]): void {
+  if (entry.binding === undefined) return
+
   const propNames = new Set(entry.props.map((p) => p.name))
 
-  if (propNames.has('dataKey') && entry.binding === undefined) {
-    issues.push({
-      severity: 'warning',
-      rule: 'binding-descriptor-missing',
-      component: entry.type,
-      message: `组件有 dataKey prop 但缺少 binding 描述符`,
-    })
-  }
-
-  if (propNames.has('field') && entry.binding?.fieldProvider !== true) {
+  if (propNames.has('field') && entry.binding.fieldProvider !== true) {
     issues.push({
       severity: 'info',
       rule: 'binding-field-provider-missing',

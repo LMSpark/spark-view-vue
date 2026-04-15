@@ -89,7 +89,7 @@ export const SPARK_NODE_COMPONENT_ENTRIES: readonly SparkNodeComponentEntry[] = 
           'r-column-group — 分组列头（有 children 的 r-* 节点，内部嵌套字段组件）',
         ],
         children过滤: 'isCollectedTableColumn: 接受 r-* + field 或 r-* + children；排斥 Render*、非 r-* 组件',
-        渲染方式: 'SparkTableColumns + SparkChildrenBridge（均无 DOM）→ SparkComponentRenderer',
+        渲染方式: '列节点直接挂在 el-table 下，由 SparkComponentRenderer 逐个展开',
         渲染链: 'r-table → el-table → r-text → FieldContextRenderer → el-table-column',
         关键: 'el-table-column 由 FieldContextRenderer 在 r-table 上下文中自动生成，禁止在 rule.json 中手写',
         keyProps: 'highlightCurrentRow, stripe, border',
@@ -267,7 +267,7 @@ export const SPARK_NODE_COMPONENT_ENTRIES: readonly SparkNodeComponentEntry[] = 
       _渲染链路: {
         说明: '字段组件通过 FieldContextRenderer 根据宿主上下文自动选择渲染模板',
         中间组件: [
-          'SparkTableColumns / SparkChildrenBridge — 无 DOM，仅传递上下文和子组件',
+          'SparkChildrenBridge — 无 DOM，仅传递上下文和子组件',
           'SparkComponentRenderer — 无 DOM，组件路由器',
           '字段组件（r-text 等）— 无 DOM，纯代理，委托给 FieldContextRenderer',
           'FieldContextRenderer — 有 DOM，根据宿主类型输出对应 Element Plus 组件',

@@ -39,9 +39,10 @@ type SupportedCheckerOptions = Pick<MetaCheckerOptions, 'rawType' | 'schema' | '
 export type VcmCheckerOptions = Partial<SupportedCheckerOptions>
 
 const DEFAULT_CHECKER_OPTIONS: SupportedCheckerOptions = {
-  rawType: false,
-  schema: true,
-  noDeclarations: true,
+  // 默认走 typeObject 路径，不依赖 VCM schema 展开。
+  rawType: true,
+  schema: false,
+  noDeclarations: false,
 }
 
 function resolveCheckerOptions(options: VcmCheckerOptions): SupportedCheckerOptions {
@@ -51,18 +52,26 @@ function resolveCheckerOptions(options: VcmCheckerOptions): SupportedCheckerOpti
   }
 }
 
+function stringifySchemaOption(schema: SupportedCheckerOptions['schema']): string {
+  if (schema === undefined || typeof schema === 'boolean') return String(schema)
+  const normalizedIgnores = (schema.ignore ?? [])
+    .map((item) => (typeof item === 'string' ? `s:${item}` : 'f:dynamic'))
+    .sort()
+  return `object(${normalizedIgnores.join(',')})`
+}
+
 function buildCheckerOptionsKey(options: SupportedCheckerOptions): string {
-  return `rawType:${String(options.rawType)}|schema:${String(options.schema)}|noDeclarations:${String(options.noDeclarations)}`
+  return `rawType:${String(options.rawType)}|schema:${stringifySchemaOption(options.schema)}|noDeclarations:${String(options.noDeclarations)}`
 }
 
 /**
  * 创建或复用 vue-component-meta checker
  *
  * checker 绑定 tsconfig，文件范围由 tsconfig.catalog.json 的 include 决定。
- * 这里固定使用 `rawType: false` + `schema: true` + `noDeclarations: true`。
- * - rawType: false 避免输出体积暴涨与循环引用问题
- * - schema: true 开启 schema 信息，便于目录消费侧做结构分析
- * - noDeclarations: true 关闭声明位置信息，减小输出体积
+ * 这里默认使用 `rawType: true` + `schema: false` + `noDeclarations: false`。
+ * - rawType: true 允许从 `getTypeObject()` 获取 ts.Type 做类型来源分析
+ * - schema: false 不依赖 VCM schema 展开，减少目录噪音
+ * - noDeclarations: false 保留声明位置信息，便于调试/溯源
  * 同一进程内复用同一个 checker（重建开销大）。
  */
 export function getOrCreateChecker(
@@ -197,8 +206,10 @@ export function extractComponentApiVcm(
 
     // 默认过滤 VCM 自动注入的全局 props，例如 class/style/key/ref。
     // 同时过滤带 @internal JSDoc 标签的 props（由 Vue 源码声明，不属于配置层面）。
+    // 另外剔除 TSX 监听器透传伪属性（onUpdate:*），避免与 emits 重复污染目录。
     const sourceProps = (includeGlobalProps ? meta.props : meta.props.filter(p => !p.global))
       .filter(p => !p.tags.some(t => t.name === 'internal'))
+      .filter(p => !p.name.startsWith('onUpdate:'))
     const props: PropEntryWithIdentity[] = sourceProps.map(buildPropEntry)
 
     const emits: EmitEntry[] = meta.events.map(buildEmitEntry)
@@ -252,8 +263,9 @@ function buildPropEntry(p: {
   default?: string | undefined
   description: string
   tags: Array<{ name: string; text?: string }>
-  schema: PropertyMetaSchema
+  schema?: PropertyMetaSchema
   rawType?: unknown
+  getTypeObject?: (() => unknown) | undefined
 }): PropEntryWithIdentity {
   const entry: PropEntryWithIdentity = {
     name: p.name,
@@ -270,6 +282,8 @@ function buildPropEntry(p: {
     entry.__componentRef = componentRefTag.text.trim()
   }
 
+  const typeObject = resolveTypeObject(p)
+
   // schema 为纯字符串时不落盘；只有真正的结构信息才保留。
   const schema = convertSchema(p.schema)
   if (schema === undefined) return entry
@@ -278,24 +292,35 @@ function buildPropEntry(p: {
 
   // 这里不是生成 rawType，而是消费 VCM 已经给出的 rawType，提取稳定身份。
   if (schema.kind === 'object') {
-    const schemaIdentityKey = getRawTypeIdentityKey(p.rawType)
+    const schemaIdentityKey = getRawTypeIdentityKey(typeObject)
     if (schemaIdentityKey !== undefined) entry.__schemaIdentityKey = schemaIdentityKey
   }
 
   // 对象 / 数组 schema 才有继续利用 rawType 追踪来源的意义。
   if (schema.kind === 'object' || schema.kind === 'array') {
-    const schemaOwner = getRawTypeOwner(p.rawType)
+    const schemaOwner = getRawTypeOwner(typeObject)
     if (schemaOwner !== undefined) entry.__schemaOwner = schemaOwner
   }
 
   return entry
 }
 
+function resolveTypeObject(p: { rawType?: unknown; getTypeObject?: (() => unknown) | undefined }): unknown {
+  if (typeof p.getTypeObject === 'function') {
+    try {
+      return p.getTypeObject()
+    } catch {
+      // ignore and fallback to rawType
+    }
+  }
+  return p.rawType
+}
+
 function buildEmitEntry(e: {
   name: string
   type: string
   description: string
-  schema: PropertyMetaSchema[]
+  schema?: PropertyMetaSchema[]
 }): EmitEntry {
   const entry: EmitEntry = {
     name: e.name,
@@ -305,7 +330,7 @@ function buildEmitEntry(e: {
   if (e.description !== '') entry.description = e.description
 
   // 事件参数 schema 是数组；逐项转换后仅保留有效结构。
-  if (e.schema.length > 0) {
+  if (Array.isArray(e.schema) && e.schema.length > 0) {
     const converted = e.schema.map(convertSchema).filter(isNotUndefined)
     if (converted.length > 0) entry.schema = converted
   }
@@ -328,7 +353,11 @@ function buildEmitEntry(e: {
  * - object 只保留一层 properties，避免把目录变成深度结构镜像
  * - enum / array / event 只保留消费侧真正需要的关键信息
  */
-function convertSchema(vcmSchema: PropertyMetaSchema): PropSchema | undefined {
+function convertSchema(vcmSchema: PropertyMetaSchema | undefined): PropSchema | undefined {
+  if (vcmSchema === undefined) {
+    return undefined
+  }
+
   if (typeof vcmSchema === 'string') {
     return undefined
   }

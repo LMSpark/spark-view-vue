@@ -65,6 +65,9 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
                   : undefined,
                 dataSource,
                 modelPermission: options.modelPermission.value,
+                host: {
+                  type: null,
+                },
                 parentType: null,
               }, (message, error) => {
                 if (!import.meta.env.DEV) return

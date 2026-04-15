@@ -41,6 +41,9 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
                 data: dataSource?.currentRow ?? null,
                 dataSource,
                 modelPermission: options.modelPermission.value,
+                host: {
+                  type: null,
+                },
                 parentType: null,
               }, (message, error) => {
                 if (!import.meta.env.DEV) return

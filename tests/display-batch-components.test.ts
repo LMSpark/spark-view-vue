@@ -80,7 +80,7 @@ function mountDisplayComponent(
 
   const Provider = defineComponent({
     setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'test-parent' } as SparkNode, { parentContext: rootContext })
+      const { sparkProvide } = useSparkComponent({ type: 'test-parent' } as SparkNode, { hostContext: rootContext })
       if (dataRow) {
         sparkProvide(DATA_ROW, dataRow)
       }

@@ -244,21 +244,33 @@ interface JsonTreeEditorProps {
   label?: string
   /** r-table 内列宽 */
   width?: number
+  /** JSON 字符串内容 */
   modelValue?: string
+  /** 已解析的 JSON 文档对象 */
   documentValue?: JsonDocument | null
+  /** 编辑器高度 */
   height?: number | string
+  /** 是否只读 */
   readOnly?: boolean
+  /** JSON Schema 校验规则 */
   schema?: { [key: string]: unknown } | null
+  /** 筛选框占位文本 */
   filterPlaceholder?: string
-  // ── policy 聚合对象（复杂场景一次传入）──
+  /** 策略聚合对象（复杂场景一次传入） */
   policy?: JsonTreePolicy
-  // ── policy 平铺 props（优先级高于 policy 对象）──
+  /** 根节点标签 */
   rootLabel?: string
+  /** 判断路径是否受保护 */
   isProtected?: (path: JsonPath) => boolean
+  /** 判断路径是否可编辑键名 */
   canEditKey?: (path: JsonPath) => boolean
+  /** 判断路径是否可编辑类型 */
   canEditType?: (path: JsonPath) => boolean
+  /** 推荐子节点键名 */
   suggestChildKey?: (target: JsonObject, parentPath: JsonPath) => string
+  /** 创建数组默认子项 */
   createDefaultArrayItem?: (parentPath: JsonPath) => JsonValue
+  /** 创建对象默认子值 */
   createDefaultObjectValue?: (parentPath: JsonPath, key: string) => JsonValue
 }
 

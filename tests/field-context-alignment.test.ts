@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
-import { Spark, PAGE_COMPONENT_REGISTRY, FieldText, SparkTableColumns, useSparkHostScope } from '@spark-view/spark-component'
+import { Spark, PAGE_COMPONENT_REGISTRY, FieldText, useSparkHostScope } from '@spark-view/spark-component'
 import FieldContextRenderer from '../packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue'
 import { useFieldContext } from '../packages/spark-component/src/components/fields/context/useFieldContext'
 import { useResolvedFieldContext } from '../packages/spark-component/src/components/fields/context/useResolvedFieldContext'
@@ -321,7 +321,7 @@ describe('字段宿主解析会考虑中间层', () => {
     expect(registry.getInstance('filter-scope')?.type).toBe('r-field-scope')
   })
 
-  it('原生 el-table 包装组件可通过 host scope 和 SparkTableColumns 直接承载 r-text', () => {
+  it('原生 el-table 包装组件可通过 host scope 直接承载 r-text', () => {
     const ElTableStub = defineComponent({
       name: 'ElTable',
       setup(_, { slots }) {
@@ -334,12 +334,10 @@ describe('字段宿主解析会考虑中间层', () => {
       setup() {
         useSparkHostScope('r-table')
         return () => h(ElTableStub, null, {
-          default: () => h(SparkTableColumns as never, null, {
-            default: () => h(FieldText as never, {
-              type: 'r-text',
-              field: 'name',
-              label: '姓名',
-            }),
+          default: () => h(FieldText as never, {
+            type: 'r-text',
+            field: 'name',
+            label: '姓名',
           }),
         })
       },

@@ -51,7 +51,7 @@
  * - **不创建自己的 ComponentContext**：渲染器是透明的路由层，不加入能力链
  * - 直接 inject(SPARK_REGISTRY_KEY) 获取注册表，不经过 useSparkComponent
  * - 父能力上下文通过运行时实例锚点表发现，不依赖 Vue provide/inject
- * - 根节点 / 测试场景通过 parentContext prop 显式挂载初始父上下文
+ * - 根节点 / 测试场景通过 hostContext prop 显式挂载初始宿主上下文
  *
  * 上下文链对比：
  *   旧：rootContext → rendererContext → businessContext  ← 多一层噪声
@@ -63,7 +63,7 @@
  * <SparkComponentRenderer :config="pageConfig" />
  *
  * <!-- 测试时指定 rootContext -->
- * <SparkComponentRenderer :config="config" :parent-context="rootContext" />
+ * <SparkComponentRenderer :config="config" :host-context="rootContext" />
  * ```
  */
 import {
@@ -133,7 +133,7 @@ type ParentTypeConstraintState = {
 }
 type ScopedRuntimeInput = {
   rawProps: NodeRuntimeProps
-  parentContext: ParentCapabilityContext
+  hostContext: ParentCapabilityContext
 }
 type ResolvedBeforeRenderContext = Omit<BeforeRenderContext, 'id' | 'type' | 'props' | 'children'>
 
@@ -166,7 +166,7 @@ interface RendererProps {
    * 仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。
    * 普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。
    */
-  parentContext?: SparkCapabilityContext
+  hostContext?: SparkCapabilityContext
 }
 
 const rendererProps = defineProps<RendererProps>()
@@ -291,9 +291,9 @@ function readParentTypeConstraints(meta: NodeRuntimeProps | undefined): string[]
   return rawValue.filter((value): value is string => typeof value === 'string' && value.length > 0)
 }
 
-function collectParentTypeChain(parentContext: ParentCapabilityContext): string[] {
+function collectParentTypeChain(hostContext: ParentCapabilityContext): string[] {
   const chain: string[] = []
-  let currentContext = parentContext
+  let currentContext = hostContext
 
   while (currentContext !== null) {
     if (typeof currentContext.type === 'string' && currentContext.type.length > 0) {
@@ -307,7 +307,7 @@ function collectParentTypeChain(parentContext: ParentCapabilityContext): string[
 
 function resolveParentTypeConstraintState(
   meta: NodeRuntimeProps | undefined,
-  parentContext: ParentCapabilityContext,
+  hostContext: ParentCapabilityContext,
 ): ParentTypeConstraintState {
   const expectedTypes = readParentTypeConstraints(meta)
   if (expectedTypes.length === 0) {
@@ -318,14 +318,14 @@ function resolveParentTypeConstraintState(
     }
   }
 
-  const resolvedHost = resolveSparkHost(parentContext?.type ?? null, parentContext, {
+  const resolvedHost = resolveSparkHost(hostContext?.type ?? null, hostContext, {
     hostTypes: expectedTypes,
   })
 
   return {
     matched: resolvedHost.hostType !== null,
     expectedTypes,
-    actualTypes: collectParentTypeChain(parentContext),
+    actualTypes: collectParentTypeChain(hostContext),
   }
 }
 
@@ -350,16 +350,16 @@ function resolveScopedRowIndex(rawProps: NodeRuntimeProps): number | undefined {
 }
 
 // dataSource 优先取节点显式注入，其次沿父能力链回溯 DATA_SOURCE。
-function resolveScopedDataSource({ rawProps, parentContext }: ScopedRuntimeInput): IDataSource | null {
+function resolveScopedDataSource({ rawProps, hostContext }: ScopedRuntimeInput): IDataSource | null {
   return asDataSource(rawProps['dataSource'])
-    ?? consumeSparkCapability<IDataSource>(parentContext, DATA_SOURCE)
+    ?? consumeSparkCapability<IDataSource>(hostContext, DATA_SOURCE)
 }
 
 // row 优先取节点局部作用域，其次退回 data，再次沿父能力链回溯 DATA_ROW。
-function resolveScopedRow({ rawProps, parentContext }: ScopedRuntimeInput): IDataRow | null {
+function resolveScopedRow({ rawProps, hostContext }: ScopedRuntimeInput): IDataRow | null {
   return asDataRow(rawProps['row'])
     ?? asDataRow(rawProps['data'])
-    ?? consumeSparkCapability<IDataRow>(parentContext, DATA_ROW)
+    ?? consumeSparkCapability<IDataRow>(hostContext, DATA_ROW)
 }
 
 /**
@@ -367,9 +367,9 @@ function resolveScopedRow({ rawProps, parentContext }: ScopedRuntimeInput): IDat
  *
  * 这里把作用域数据解析集中到一个 helper 里，避免 computed 主体里既做状态流转又做上下文拼装。
  */
-function buildBeforeRenderContext({ rawProps, parentContext }: ScopedRuntimeInput): ResolvedBeforeRenderContext {
-  const dataSource = resolveScopedDataSource({ rawProps, parentContext })
-  const row = resolveScopedRow({ rawProps, parentContext })
+function buildBeforeRenderContext({ rawProps, hostContext }: ScopedRuntimeInput): ResolvedBeforeRenderContext {
+  const dataSource = resolveScopedDataSource({ rawProps, hostContext })
+  const row = resolveScopedRow({ rawProps, hostContext })
 
   return {
     row,
@@ -377,7 +377,10 @@ function buildBeforeRenderContext({ rawProps, parentContext }: ScopedRuntimeInpu
     index: resolveScopedRowIndex(rawProps),
     dataSource,
     modelPermission: extractModelPermission(dataSource),
-    parentType: parentContext?.type ?? null,
+    host: {
+      type: hostContext?.type ?? null,
+    },
+    parentType: hostContext?.type ?? null,
   }
 }
 
@@ -496,8 +499,8 @@ function filterNativeDomProps(rawProps: NodeRuntimeProps): NodeRuntimeProps {
 // ── 渲染器运行时锚点：父能力上下文与注册表入口 ──────────────────────────────
 
 // 根节点 / 测试场景：显式把父能力上下文锚到当前 renderer 实例上。
-if (rendererProps.parentContext !== undefined && currentInstance !== null) {
-  bindCapabilityContextOwner(currentInstance, rendererProps.parentContext)
+if (rendererProps.hostContext !== undefined && currentInstance !== null) {
+  bindCapabilityContextOwner(currentInstance, rendererProps.hostContext)
   onUnmounted(() => {
     unbindCapabilityContextOwner(currentInstance)
   })
@@ -513,7 +516,7 @@ const normalizedNode = computed<SparkNode>(() => normalizeSparkNode(rendererProp
 
 // 通过运行时实例锚点表解析父能力上下文，不走 Vue provide/inject。
 const parentCapabilityContext = computed(() =>
-  resolveParentCapabilityContext(currentOwner, rendererProps.parentContext)
+  resolveParentCapabilityContext(currentOwner, rendererProps.hostContext)
 )
 
 /**
@@ -530,7 +533,7 @@ const beforeRenderState = computed(() => {
     node,
     buildBeforeRenderContext({
       rawProps,
-      parentContext: parentCapabilityContext.value,
+      hostContext: parentCapabilityContext.value,
     }),
     warnRendererIssue,
   )
@@ -546,7 +549,7 @@ const effectiveNode = computed<SparkNode>(() => {
   const node = effectiveNodeBeforePlaceholder.value
   const props = node.props
   if (!props) return node
-  const row = resolveScopedRow({ rawProps: props, parentContext: parentCapabilityContext.value })
+  const row = resolveScopedRow({ rawProps: props, hostContext: parentCapabilityContext.value })
   const resolved = resolvePlaceholderProps(props, row)
   if (resolved === props) return node
   return { ...node, props: resolved }

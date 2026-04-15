@@ -64,45 +64,60 @@ export type SparkCapabilityContext = ICapabilityContext
 /**
  * SparkNode - 组件配置的最小输入类型
  *
- * 严格对齐 Vue `h(type, props, children)` 三段式，仅保留 3 个根级字段 + 结构标识 `id`。
+ * 严格对齐 Vue `h(type, props, children)` 三段式，仅保留 `type / props / children` 3 个根级字段。
+ *
+ * 业务输入统一放在 `props` 中，包括：
+ * - `id`
+ * - `dataKey`
+ * - `class`
+ * - 组件自有配置项
  *
  * 停靠区域（toolbar / actions / filter / header / footer / editor / tail）
- * 推荐通过结构化 props 表达，例如 `props.toolbar = { type: 'r-toolbar', children: [...] }`。
- * 容器运行时也兼容等价的 wrapper 子节点输入，例如 `r-toolbar` / `r-actions` / `r-filter` / `r-header` / `r-footer`。
+ * 在规范形态下通过结构化 props 表达，例如
+ * `props: { toolbar: { type: 'r-toolbar', children: [...] } }`。
+ * 页面绑定层当前也兼容等价的 wrapper 子节点输入（如 `r-toolbar` / `r-actions`），
+ * 但会在构建阶段提升为 `props.toolbar / props.actions / ...`；运行时容器直接消费这些 props。
  *
  * @example
  * ```jsonc
  * {
  *   "type": "r-table",
- *   "dataKey": "Orders@rows",
- *   "children": [
- *     {
+ *   "props": {
+ *     "id": "orders-table",
+ *     "dataKey": "Orders@rows",
+ *     "toolbar": {
  *       "type": "r-toolbar",
  *       "props": { "position": "top" },
  *       "children": [
  *         { "type": "r-button", "props": { "action": "append-row" } }
  *       ]
  *     },
- *     {
+ *     "actions": {
  *       "type": "r-actions",
  *       "props": { "position": "right" },
  *       "children": [
  *         { "type": "r-button", "props": { "action": "delete-row" } }
  *       ]
- *     },
+ *     }
+ *   },
+ *   "children": [
  *     { "type": "el-table-column", "props": { "field": "name", "label": "姓名" } }
  *   ]
  * }
  * ```
  */
-export type SparkTextChild = string
 
-export type SparkNodeChildren = Array<SparkNode | SparkTextChild>
+/**
+ * SparkNode 子节点数组。
+ *
+ * 允许混合结构节点与纯文本子节点（string）；消费侧可用 `getSparkNodeChildren()` 过滤出结构节点。
+ */
+export type SparkNodeChildren = Array<SparkNode | string>
 
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
-  /** 组件属性（所有组件可见的数据均通过 props 传递，含 id） */
+  /** 组件属性（所有业务输入均通过 props 传递，含 id / dataKey / class） */
   props?: Record<string, unknown>
   /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串文本子节点数组 */
   children?: SparkNodeChildren

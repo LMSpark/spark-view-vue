@@ -1,6 +1,6 @@
-import type { SparkFieldProps, SparkNumericMaxProps } from '../../shared-types'
+import type { SparkMaxNumericFieldProps, SparkNodeProps } from '../../shared-types'
 
-export interface RRateProps extends SparkFieldProps, SparkNumericMaxProps {
-  value?: number
+export interface RRateProps extends SparkNodeProps, SparkMaxNumericFieldProps<number> {
+  /** 是否允许选择半星。 */
   allowHalf?: boolean
 }

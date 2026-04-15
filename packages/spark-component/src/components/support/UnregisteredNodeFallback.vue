@@ -38,14 +38,17 @@ import type { PropType } from 'vue'
 import type { SparkNode } from '../../core/types.js'
 
 const props = defineProps({
+  /** 未注册的源节点 */
   node: {
     type: Object as PropType<SparkNode>,
     required: true,
   },
+  /** 提示标题 */
   title: {
     type: String,
     default: '未注册的组件类型',
   },
+  /** 说明文本 */
   description: {
     type: String,
     default: '',

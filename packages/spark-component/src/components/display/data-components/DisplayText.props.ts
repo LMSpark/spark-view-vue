@@ -1,10 +1,6 @@
-import type { SparkFieldProps, SparkNodeProps } from '../../shared-types'
+import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RTextDisplayProps extends SparkNodeProps {
-  /** 显式文本值 */
-  value?: unknown
-  /** 数据字段绑定键（通常映射到当前行 field） */
-  field?: SparkFieldProps['field']
+export interface RTextDisplayProps extends SparkNodeProps, SparkDataDisplayProps<unknown> {
   /** 包裹标签名，如 span/div */
   tag?: string
   /** 前缀 */

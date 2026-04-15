@@ -167,7 +167,7 @@ export const Spark = {
 
   // ── SparkNode 工具方法 ────────────────────────────────────────────────────
 
-  /** SparkNode 结构键集合（type/props/children/id） */
+  /** SparkNode 结构键集合（type/props/children） */
   STRUCT_KEYS: SPARK_NODE_STRUCT_KEYS,
 
   /** 归一化节点结构语义（type/children） */
@@ -176,7 +176,7 @@ export const Spark = {
   },
 
   /**
-   * 读取节点 id（顶层 `node.id` 优先，兼容 `node.props.id`）
+   * 读取节点 id（严格从 `node.props.id`）
    *
    * @example Spark.nodeId(child) ?? `fallback-${i}`
    */

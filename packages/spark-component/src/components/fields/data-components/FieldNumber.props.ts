@@ -1,6 +1,8 @@
-import type { SparkFieldProps, SparkNumericBoundsProps, SparkRangeFilterProps } from '../../shared-types'
+import type { SparkNodeProps, SparkRangeNumericFieldProps } from '../../shared-types'
 
-export interface RNumberProps extends SparkFieldProps, SparkRangeFilterProps, SparkNumericBoundsProps {
-  value?: number | [number | undefined, number | undefined]
+export interface RNumberProps
+  extends SparkNodeProps,
+    SparkRangeNumericFieldProps<number | [number | undefined, number | undefined]> {
+  /** 数值展示与写回时使用的小数精度。 */
   precision?: number
 }

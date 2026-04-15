@@ -88,7 +88,7 @@
                 },
                 "children": [
                   {
-                    "type": "el-table",
+                    "type": "r-table",
                     "dataKey": "Categories@rows",
                     "props": {
                       "border": true,
@@ -129,7 +129,7 @@
                 },
                 "children": [
                   {
-                    "type": "el-table",
+                    "type": "r-table",
                     "dataKey": "Products@rows",
                     "props": {
                       "border": true,
@@ -186,7 +186,7 @@
                 },
                 "children": [
                   {
-                    "type": "el-table",
+                    "type": "r-table",
                     "dataKey": "OrderDetails@rows",
                     "props": {
                       "border": true,

@@ -16,6 +16,7 @@ import type {
   ComponentCatalog,
   ComponentEntry,
   ComponentRegistry,
+  EmitEntry,
   PropEntry,
   PropSchema,
 } from './types'
@@ -138,7 +139,7 @@ export function projectHydratedComponent(catalog: ComponentCatalog, type: string
     }
   })
 
-  const emits: HydratedEmitEntry[] = entry.emits.map((emit) => {
+  const emits: HydratedEmitEntry[] = (entry.emits ?? []).map((emit) => {
     const schema = resolveEmitSchemas(catalog, emit)
     return {
       ...emit,
@@ -273,7 +274,7 @@ function resolvePropSchema(catalog: ComponentCatalog, prop: PropEntry): PropSche
 
 function resolveEmitSchemas(
   catalog: ComponentCatalog,
-  emit: ComponentEntry['emits'][number],
+  emit: EmitEntry,
 ): PropSchema[] | undefined {
   if (emit.schema !== undefined && emit.schema.length > 0) return emit.schema
   if (emit.schemaRefs === undefined || emit.schemaRefs.length === 0) return undefined

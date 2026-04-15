@@ -1,10 +1,6 @@
-import type { SparkFieldProps, SparkNodeProps } from '../../shared-types'
+import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RStatisticProps extends SparkNodeProps {
-  /** 显式统计值 */
-  value?: number | string
-  /** 数据字段绑定键（通常映射到当前行 field） */
-  field?: SparkFieldProps['field']
+export interface RStatisticProps extends SparkNodeProps, SparkDataDisplayProps<number | string> {
   /** 统计标题 */
   title?: string
   /** 数据绑定键（值级绑定） */

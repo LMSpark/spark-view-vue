@@ -1,5 +1,3 @@
-import type { SparkOptionButtonStyleProps, SparkOptionFieldProps } from '../../shared-types'
+import type { SparkButtonOptionFieldProps, SparkNodeProps } from '../../shared-types'
 
-export interface RRadioProps extends SparkOptionFieldProps, SparkOptionButtonStyleProps {
-  value?: string | number
-}
+export interface RRadioProps extends SparkNodeProps, SparkButtonOptionFieldProps<string | number> {}

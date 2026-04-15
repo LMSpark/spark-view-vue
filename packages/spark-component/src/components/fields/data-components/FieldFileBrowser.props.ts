@@ -1,5 +1,3 @@
-import type { SparkFileFieldProps } from '../../shared-types'
+import type { SparkFilePickerFieldProps, SparkNodeProps } from '../../shared-types'
 
-export interface RFileBrowserProps extends SparkFileFieldProps {
-  multiple?: boolean
-}
+export interface RFileBrowserProps extends SparkNodeProps, SparkFilePickerFieldProps {}

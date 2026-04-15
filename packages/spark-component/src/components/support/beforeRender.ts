@@ -13,6 +13,9 @@ export interface BeforeRenderContext {
   index?: number | undefined
   dataSource?: IDataSource | null | undefined
   modelPermission?: IModelPermission | undefined
+  host?: {
+    type: string | null
+  } | undefined
   parentType?: string | null | undefined
 }
 

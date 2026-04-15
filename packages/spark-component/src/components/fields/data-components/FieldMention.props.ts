@@ -1,6 +1,6 @@
-import type { SparkFieldProps, SparkMultilineRowsProps } from '../../shared-types'
+import type { SparkMultilineFieldProps, SparkNodeProps } from '../../shared-types'
 
-export interface RMentionProps extends SparkFieldProps, SparkMultilineRowsProps {
+export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps {
   /**
    * 完整的提及触发规则列表。
    *

@@ -12,17 +12,12 @@ interface UseDataScopeOptions {
   nodeConfig?: SparkNode
 }
 
-interface UseDataScopeReturn {
-  context: UseSparkComponentReturn['context']
-  sparkProvide: UseSparkComponentReturn['sparkProvide']
-  sparkConsume: UseSparkComponentReturn['sparkConsume']
-  logger: UseSparkComponentReturn['logger']
-}
+type UseDataScopeReturn = Pick<UseSparkComponentReturn, 'host' | 'sparkProvide' | 'sparkConsume' | 'logger'>
 
 export function useDataScope(options: UseDataScopeOptions): UseDataScopeReturn {
   const { type, data, nodeConfig } = options
 
-  const { context, sparkProvide, sparkConsume, logger } = useSparkComponent(
+  const { host, sparkProvide, sparkConsume, logger } = useSparkComponent(
     nodeConfig ?? { type }
   )
 
@@ -50,5 +45,6 @@ export function useDataScope(options: UseDataScopeOptions): UseDataScopeReturn {
     { immediate: true },
   )
 
-  return { context, sparkProvide, sparkConsume, logger }
+  const result: UseDataScopeReturn = { host, sparkProvide, sparkConsume, logger }
+  return result
 }

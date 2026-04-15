@@ -33,6 +33,9 @@ function resolveBuiltinBeforeRenderAction(
     index: scope?.index,
     dataSource,
     modelPermission: extractModelPermission(dataSource),
+    host: {
+      type: null,
+    },
     parentType: null,
   }, (message, error) => {
     if (!import.meta.env.DEV) return

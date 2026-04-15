@@ -27,11 +27,17 @@ import type { EditorView } from '@codemirror/view'
 type SparkCodeLanguage = 'javascript' | 'css'
 
 interface Props {
+  /** 编辑器内容 */
   modelValue?: string
+  /** 语言模式 */
   language?: SparkCodeLanguage
+  /** 是否只读 */
   readOnly?: boolean
+  /** 编辑器高度 */
   height?: number | string
+  /** Tab 缩进空格数 */
   tabSize?: number
+  /** 是否自动换行 */
   lineWrapping?: boolean
 }
 

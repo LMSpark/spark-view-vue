@@ -1,5 +1,3 @@
-import type { SparkFieldProps } from '../../shared-types'
+import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types'
 
-export interface RColorProps extends SparkFieldProps {
-  value?: string
-}
+export interface RColorProps extends SparkNodeProps, SparkFieldSemanticProps<string> {}

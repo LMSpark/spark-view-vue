@@ -43,7 +43,7 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
 
   const Provider = defineComponent({
     setup() {
-      const { sparkProvide } = useSparkComponent({ type: options.parentType ?? 'r-form' } as SparkNode, { parentContext: rootContext })
+      const { sparkProvide } = useSparkComponent({ type: options.parentType ?? 'r-form' } as SparkNode, { hostContext: rootContext })
       sparkProvide(DATA_ROW, options.model)
 
       if (options.pageDataSet !== undefined) {

@@ -1,7 +1,7 @@
 import { computed, type ComputedRef } from 'vue'
 import type { SparkCapabilityContext } from './types.js'
 import { useSparkComponent, useSparkConsume } from './useSparkComponent.js'
-import type { UseSparkComponentOptions, UseSparkComponentReturn } from './useSparkComponent.js'
+import type { UseSparkCapabilityReaderReturn, UseSparkComponentOptions, UseSparkComponentReturn } from './useSparkComponent.js'
 import type { SparkCapabilityConsumer } from './capabilities.js'
 
 export interface SparkHostResolverOptions<T extends string = string> {
@@ -16,8 +16,7 @@ export interface ResolvedSparkHost<T extends string = string> {
 }
 
 export interface UseSparkHostReturn<T extends string = string> {
-  parentContext: SparkCapabilityContext | null
-  parentType: string | null
+  host: ComputedRef<UseSparkCapabilityReaderReturn['host']>
   hostType: ComputedRef<T | null>
   hostContext: ComputedRef<SparkCapabilityContext | null>
   sparkConsume: SparkCapabilityConsumer
@@ -40,12 +39,12 @@ function normalizeHostType<T extends string>(
 }
 
 export function resolveSparkHost<T extends string = string>(
-  parentType: string | null,
-  parentContext: SparkCapabilityContext | null,
+  hostType: string | null,
+  hostContext: SparkCapabilityContext | null,
   options: SparkHostResolverOptions<T> = {},
 ): ResolvedSparkHost<T> {
-  let currentType = parentType
-  let currentContext = parentContext
+  let currentType = hostType
+  let currentContext = hostContext
 
   while (currentType !== null) {
     const normalizedType = normalizeHostType(currentType, options)
@@ -69,13 +68,12 @@ export function resolveSparkHost<T extends string = string>(
 export function useSparkHost<T extends string = string>(
   options: SparkHostResolverOptions<T> = {},
 ): UseSparkHostReturn<T> {
-  const { parentContext, parentType, sparkConsume } = useSparkConsume()
+  const { host, sparkConsume } = useSparkConsume()
 
-  const resolvedHost = computed(() => resolveSparkHost(parentType, parentContext, options))
+  const resolvedHost = computed(() => resolveSparkHost(host.type, host.context, options))
 
   return {
-    parentContext,
-    parentType,
+    host: computed(() => host),
     hostType: computed(() => resolvedHost.value.hostType),
     hostContext: computed(() => resolvedHost.value.hostContext),
     sparkConsume,

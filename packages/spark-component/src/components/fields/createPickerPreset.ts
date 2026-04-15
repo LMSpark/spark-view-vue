@@ -29,25 +29,45 @@ interface PickerPresetDefaults {
  * 与 FieldEntityPicker 的 Props 接口一一对应，确保 v-bind 透传正确。
  */
 const SHARED_PROPS = {
+  /** 字段绑定名 */
   field: { type: String, default: undefined },
+  /** 组件名称 */
   name: { type: String, default: undefined },
+  /** 展示标签 */
   label: { type: String, default: undefined },
+  /** 字段宽度 */
   width: { type: Number, default: undefined },
+  /** 直接传入的值 */
   value: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
+  /** 可选项数组 */
   options: { type: Array as PropType<unknown[]>, default: undefined },
+  /** 选项绑定键 */
   optionKey: { type: String, default: undefined },
+  /** 选项显示字段 */
   optionLabelField: { type: String, default: undefined },
+  /** 选项值字段 */
   optionValueField: { type: String, default: undefined },
+  /** 占位文案 */
   placeholder: { type: String, default: undefined },
+  /** 主动作按钮文案 */
   buttonText: { type: String, default: undefined },
+  /** 只读模式按钮文案 */
   readonlyButtonText: { type: String, default: undefined },
+  /** 是否允许清空 */
   clearable: { type: Boolean, default: true },
+  /** 是否启用多选 */
   multiple: { type: Boolean, default: false },
+  /** 是否支持搜索 */
   searchable: { type: Boolean, default: true },
+  /** 值分隔符 */
   valueSeparator: { type: String, default: undefined },
+  /** 文本分隔符 */
   textSeparator: { type: String, default: undefined },
+  /** 文本储存字段 */
   textStorageField: { type: String, default: undefined },
+  /** 主值持久化模式 */
   valueMode: { type: String as PropType<SparkOptionValueMode>, default: 'auto' },
+  /** 实体名称 */
   entityName: { type: String, default: undefined },
   children: { type: Array as PropType<SparkNodeChildren>, default: undefined },
 } as const

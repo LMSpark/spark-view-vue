@@ -32,10 +32,10 @@ describe('Logger Context Integration', () => {
 
     const TestComponent = defineComponent({
       setup() {
-        const { context, logger } = useSparkComponent({ type: 'test-comp' })
+        const { host, logger } = useSparkComponent({ type: 'test-comp' })
         logger.info('test message')
 
-        return () => h('div', { id: context.id }, 'test')
+        return () => h('div', { id: host.self().id }, 'test')
       }
     })
 
@@ -61,12 +61,12 @@ describe('Logger Context Integration', () => {
 
     const ChildComponent = defineComponent({
       setup() {
-        const { context, logger } = useSparkComponent({ type: 'test-comp' })
+        const { host, logger } = useSparkComponent({ type: 'test-comp' })
         nextTick(() => {
           logger.info('custom message')
           logger.warn('warning message')
         })
-        return () => h('div', { id: context.id }, 'child')
+        return () => h('div', { id: host.self().id }, 'child')
       }
     })
 
@@ -102,22 +102,22 @@ describe('Logger Context Integration', () => {
     const ChildComponent = defineComponent({
       name: 'ChildComponent',
       setup() {
-        const { context, logger } = useSparkComponent({ type: 'child-comp' })
+        const { host, logger } = useSparkComponent({ type: 'child-comp' })
 
         logger.info('child message')
 
-        return () => h('div', { id: context.id }, 'child')
+        return () => h('div', { id: host.self().id }, 'child')
       }
     })
 
     const PageRoot = defineComponent({
       name: 'PageRoot',
       setup() {
-        const { context, logger, sparkProvide } = useSparkComponent({ type: 'parent-comp' })
+        const { host, logger, sparkProvide } = useSparkComponent({ type: 'parent-comp' })
         sparkProvide(APP_SERVICES, createAppServices(customLogger))
         logger.info('parent message')
 
-        return () => h('div', { id: context.id }, [
+        return () => h('div', { id: host.self().id }, [
           h('span', 'parent'),
           h(ChildComponent)
         ])

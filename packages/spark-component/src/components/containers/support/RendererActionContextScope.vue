@@ -25,7 +25,7 @@ const props = withDefaults(defineProps<{
   type: 'r-action-context-scope',
 })
 
-const { context, sparkProvide } = useSparkComponent({ type: props.type })
+const { host, sparkProvide } = useSparkComponent({ type: props.type })
 
 // @spark-design: host 通过 reactive 代理保持引用稳定，scope 内 host 随行变化
 const currentHost = computed(() => props.host)
@@ -42,7 +42,7 @@ const hostProxy: SparkComponentHost = {
 }
 
 if (props.host !== undefined) {
-  context.host = hostProxy
+  host.setHost(hostProxy)
 }
 
 // DATA_ROW 是数据域能力键，组件层级 ≠ 数据层级时需通过能力键桥接

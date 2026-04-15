@@ -1,5 +1,3 @@
-import type { SparkFieldProps } from '../../shared-types'
+import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types'
 
-export interface RTextProps extends SparkFieldProps {
-  value?: string
-}
+export interface RTextProps extends SparkNodeProps, SparkFieldSemanticProps<string> {}

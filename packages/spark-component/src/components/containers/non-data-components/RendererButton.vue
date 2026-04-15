@@ -38,7 +38,7 @@
  */
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, findNearestHost, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
 import { isBuiltinAction } from '../builtin-action-meta'
 import { resolveButtonStyle } from '../button-templates'
 import type { RButtonProps } from './RendererButton.props'
@@ -51,10 +51,10 @@ const props = withDefaults(defineProps<RButtonProps>(), {
   dark: false,
 })
 
-const { isVisible, isDisabled, resolvedProps, context } = useSparkPageComponent(props)
+const { isVisible, isDisabled, resolvedProps, host } = useSparkPageComponent(props)
 
 // @spark-design: 沿 parent 链查找最近宿主，子组件不需要知道宿主具体类型
-const host = findNearestHost(context)
+const nearestHost = host.nearestHost()
 
 const currentNode = computed<SparkNode>(() => ({
   type: props.type,
@@ -65,8 +65,8 @@ const currentNode = computed<SparkNode>(() => ({
 const hasBuiltinAction = computed(() => isBuiltinAction(currentNode.value))
 
 const hostActionDisabled = computed(() =>
-  hasBuiltinAction.value && host !== null
-    ? host.isDisabled?.(currentNode.value) ?? false
+  hasBuiltinAction.value && nearestHost !== null
+    ? nearestHost.isDisabled?.(currentNode.value) ?? false
     : false,
 )
 
@@ -83,7 +83,7 @@ const resolved = computed(() => {
   if (props.circle !== undefined) explicit['circle'] = props.circle
   if (props.icon !== undefined) explicit['icon'] = props.icon
   if (props.label !== undefined) explicit['label'] = props.label
-  if (hasBuiltinAction.value && host?.variant === 'row-action') {
+  if (hasBuiltinAction.value && nearestHost?.variant === 'row-action') {
     if (explicit['buttonSize'] === undefined) explicit['buttonSize'] = 'small'
     if (explicit['text'] === undefined) explicit['text'] = true
   }
@@ -101,7 +101,7 @@ const resolvedIcon = computed((): Component | null => {
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 
 function handleClick() {
-  if (!hasBuiltinAction.value || host === null) return
-  host.execute?.(currentNode.value)
+  if (!hasBuiltinAction.value || nearestHost === null) return
+  nearestHost.execute?.(currentNode.value)
 }
 </script>

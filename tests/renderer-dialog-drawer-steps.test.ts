@@ -231,10 +231,10 @@ describe('Direct Vue children bridge (dialog / drawer)', () => {
   const ContextProbe = defineComponent({
     name: 'ContextProbe',
     setup() {
-      const { parentType } = useSparkComponent({ type: 'probe-field' })
+      const { host } = useSparkComponent({ type: 'probe-field' })
       return () => h('div', {
         class: 'context-probe',
-        'data-parent-type': parentType ?? '',
+        'data-parent-type': host.type ?? '',
       }, 'probe')
     },
   })

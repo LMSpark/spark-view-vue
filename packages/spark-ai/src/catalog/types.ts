@@ -84,7 +84,7 @@ export interface ComponentEntry {
   category?: 'container' | 'field' | 'group' | 'meta' | 'feature'
   description?: string
   props: PropEntry[]
-  emits: EmitEntry[]
+  emits?: EmitEntry[]
   contracts?: ComponentContractRefs
   rootFields?: RootFieldEntry[]
   notes?: string
@@ -117,7 +117,7 @@ export interface CatalogCanonicalComponent {
   filePath?: string
   propRefs: string[]
   emitRefs: string[]
-  source: NonNullable<ComponentEntry['source']>
+  source?: NonNullable<ComponentEntry['source']>
   binding?: CatalogBindingDescriptor
   contracts?: ComponentContractRefs
   provides?: string[]

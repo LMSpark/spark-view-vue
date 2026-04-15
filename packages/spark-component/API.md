@@ -127,7 +127,7 @@ const {
 |------|------|------|
 | `config` | `ComponentConfig` | 组件配置，通常来自 `props.config` |
 | `options.registry` | `ComponentRegistry?` | 覆盖注入的注册表（测试用） |
-| `options.parentContext` | `SparkCapabilityContext?` | 覆盖注入的父上下文（测试用） |
+| `options.hostContext` | `SparkCapabilityContext?` | 覆盖注入的宿主上下文（测试用） |
 | `options.mode` | `'full' \| 'consume-only'` | `full` 返回完整组件能力对象；`consume-only` 仅返回轻量能力读取接口 |
 
 ### 轻量只读模式
@@ -135,9 +135,7 @@ const {
 当组件只需要读取祖先能力、不需要创建自身上下文时，统一使用同一个入口的 `consume-only` 模式：
 
 ```typescript
-const { parentContext, parentType, sparkConsume } = useSparkComponent(undefined, {
-  mode: 'consume-only',
-})
+const { host, sparkConsume } = useSparkConsume()
 
 const dataSource = sparkConsume(DATA_SOURCE)
 ```
@@ -151,12 +149,11 @@ const dataSource = sparkConsume(DATA_SOURCE)
 纯能力上下文，包含 `id`、`type`、`capabilities`、`parent` 等最小字段。
 
 额外返回：
-- `parentContext: SparkCapabilityContext | null`
-- `parentType: string | null`
+- `host.context: SparkCapabilityContext | null`
+- `host.type: string | null`
 
-在 `consume-only` 模式下，仅返回：
-- `parentContext`
-- `parentType`
+在轻量消费入口 `useSparkConsume()` 下，仅返回：
+- `host`
 - `sparkConsume()`
 
 #### `isVisible: ComputedRef<boolean>`

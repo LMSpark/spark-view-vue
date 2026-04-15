@@ -32,7 +32,7 @@ describe('SparkNode runtime contract', () => {
         const result = useSparkComponent({ type: 'test-child' } as SparkNode)
         const pageRegistry = result.sparkConsume(PAGE_COMPONENT_REGISTRY)
 
-        expect(result.context.id).toBe('orders-table')
+        expect(result.host.self().id).toBe('orders-table')
         expect(result.isVisible.value).toBe(false)
         expect(result.isDisabled.value).toBe(true)
 

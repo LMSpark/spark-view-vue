@@ -54,7 +54,7 @@ describe('Capability system integration', () => {
           const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
 
           // 核心状态
-          expect(result.context).toBeDefined()
+          expect(result.host).toBeDefined()
           expect(result.isVisible).toBeDefined()
           expect(result.isDisabled).toBeDefined()
 
@@ -105,8 +105,8 @@ describe('Capability system integration', () => {
       const ChildComp = defineComponent({
         setup() {
           const result = useSparkConsume()
-          expect(result.parentContext).toBeDefined()
-          expect(result.parentType).toBe('parent-comp')
+          expect(result.host.context).toBeDefined()
+          expect(result.host.type).toBe('parent-comp')
           return () => h('span')
         }
       })
@@ -129,8 +129,8 @@ describe('Capability system integration', () => {
       const ChildComp = defineComponent({
         setup() {
           const result = useSparkComponent({ type: 'child-comp' } as SparkNode)
-          expect(result.parentContext).toBeDefined()
-          expect(result.parentType).toBe('parent-comp')
+          expect(result.host.context).toBeDefined()
+          expect(result.host.type).toBe('parent-comp')
           return () => h('span')
         }
       })
@@ -162,7 +162,7 @@ describe('Capability system integration', () => {
           const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
           const pageRegistry = result.sparkConsume(PAGE_COMPONENT_REGISTRY)
 
-          expect(result.context.id).toBe('orders-table')
+          expect(result.host.self().id).toBe('orders-table')
           expect(result.isVisible.value).toBe(false)
           expect(result.isDisabled.value).toBe(true)
 

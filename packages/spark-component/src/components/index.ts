@@ -10,7 +10,6 @@ export { default as SparkCodeEditor } from './support/SparkCodeEditor.vue'
 export { default as SparkJsonEditor } from './support/SparkJsonEditor.vue'
 export { default as JsonTreeEditor } from './support/JsonTreeEditor.vue'
 export * from './support/jsonTreeEditor.js'
-export { default as SparkTableColumns } from './support/SparkTableColumns.js'
 
 // ── 组件 re-exports（leaf barrel 统一导出）──────────────────────────────────
 export * from './containers/data-components/index.js'
