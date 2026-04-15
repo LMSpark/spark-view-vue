@@ -1,8 +1,7 @@
 import type { DataView } from '@spark-view/spark-data'
 import type {
+  SparkCrudDataContainerProps,
   SparkNodeProps,
-  SparkTableModelProps,
-  SparkCrudEventProps,
 } from '../../../shared-types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import type { ActionsNode } from '../../support/RendererActionHost.types'
@@ -16,8 +15,7 @@ import type { TreeEventHandler, TreeNodeActionHandler } from './zero-code'
  */
 export interface RTreeProps
   extends SparkNodeProps,
-    SparkTableModelProps,
-    SparkCrudEventProps {
+    SparkCrudDataContainerProps {
   /** 显式收窄为树容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */

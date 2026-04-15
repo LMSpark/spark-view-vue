@@ -138,8 +138,6 @@ const {
 
 registerApi(dialogApi)
 
-defineExpose(dialogApi)
-
 function getHeaderSlotScope() {
   return {
     title: resolvedTitle.value,

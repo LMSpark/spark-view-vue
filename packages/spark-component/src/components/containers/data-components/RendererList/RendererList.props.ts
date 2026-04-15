@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'vue'
 import type { DataView } from '@spark-view/spark-data'
 import type {
+  SparkCrudDataContainerProps,
+  SparkGridLayoutProps,
   SparkNodeProps,
-  SparkTableModelProps,
-  SparkCrudEventProps,
 } from '../../../shared-types'
 import type { RowClickHandler } from '../../support'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
@@ -16,8 +16,8 @@ import type { ActionsNode } from '../../support/RendererActionHost.types'
  */
 export interface RListProps
   extends SparkNodeProps,
-    SparkTableModelProps,
-    SparkCrudEventProps {
+    SparkCrudDataContainerProps,
+    SparkGridLayoutProps {
   /** 显式收窄为列表容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
@@ -42,12 +42,6 @@ export interface RListProps
   useCard?: boolean
   /** 卡片阴影模式 */
   cardShadow?: 'always' | 'hover' | 'never'
-  /** CSS Grid 列数 */
-  gridColumns?: number
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
   /** 项跨列数 */
   itemColSpan?: number
   /** 项跨行数 */

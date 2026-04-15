@@ -215,8 +215,6 @@ const {
 
 registerApi(listApi)
 
-defineExpose(listApi)
-
 const normalizedGridGap = computed(() => {
   const value = props.gridGap ?? props.gap
   return typeof value === 'number' ? `${value}px` : value

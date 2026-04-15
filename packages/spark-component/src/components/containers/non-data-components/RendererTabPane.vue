@@ -33,20 +33,33 @@ import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
   type?: string
+  /** 原始属性包（透传） */
   props?: { [key: string]: unknown }
   children?: SparkNode['children']
   id?: string
+  /** 标签页唯一标识 */
   name?: string | number
+  /** 标签页值 */
   value?: string | number
+  /** 标签页标签文本 */
   label?: string
+  /** 标签页标题（label 别名） */
   title?: string
+  /** 是否禁用 */
   disabled?: boolean
+  /** 是否延迟加载 */
   lazy?: boolean
+  /** 是否可关闭 */
   closable?: boolean
+  /** 标签页体自定义 class */
   bodyClass?: string
+  /** CSS Grid 列数 */
   gridColumns?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 在父容器中的位置序号 */
   index: number
 }
 

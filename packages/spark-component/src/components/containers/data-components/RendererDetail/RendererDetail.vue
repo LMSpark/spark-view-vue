@@ -96,8 +96,6 @@ const { detailApi }: { detailApi: RendererDetailApi } = createRendererDetailZero
 })
 
 registerApi(detailApi)
-
-defineExpose(detailApi)
 </script>
 
 <style scoped>

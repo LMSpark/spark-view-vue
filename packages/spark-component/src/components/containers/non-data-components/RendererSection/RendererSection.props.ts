@@ -1,7 +1,7 @@
-import type { SparkNodeProps } from '../../../shared-types'
+import type { SparkGridLayoutProps, SparkNodeProps } from '../../../shared-types'
 import type { HeaderNode } from '../../RendererHeader.types'
 
-export interface RSectionProps extends SparkNodeProps {
+export interface RSectionProps extends SparkNodeProps, SparkGridLayoutProps {
   /** 结构化头部 */
   header?: HeaderNode
   /** 分区标题 */
@@ -30,10 +30,4 @@ export interface RSectionProps extends SparkNodeProps {
   expandIconText?: string
   /** 收起图标文案 */
   collapseIconText?: string
-  /** CSS Grid 列数 */
-  gridColumns?: number
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
 }

@@ -1,14 +1,10 @@
-import type { SparkNodeProps } from '../../shared-types'
+import type { SparkFloatingLayerContainerProps, SparkNodeProps } from '../../shared-types'
 
-export interface RTooltipProps extends SparkNodeProps {
+export interface RTooltipProps extends SparkNodeProps, SparkFloatingLayerContainerProps {
+  /** 提示内容文本。 */
   content?: string
-  placement?: string
-  effect?: 'dark' | 'light'
-  offset?: number
-  showAfter?: number
-  hideAfter?: number
-  showArrow?: boolean
+  /** 鼠标移入浮层内容时是否保持展开。 */
   enterable?: boolean
-  popperClass?: string
+  /** 是否按原始 HTML 内容渲染。 */
   rawContent?: boolean
 }

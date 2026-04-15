@@ -99,8 +99,6 @@ const {
 
 registerApi(collapseApi)
 
-defineExpose(collapseApi)
-
 function hasItemChildren(item: SparkNode): boolean {
   return getSparkNodeChildren(item.children).length > 0
 }

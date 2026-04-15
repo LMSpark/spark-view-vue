@@ -156,8 +156,6 @@ const { sectionApi, handleHeaderClick, toggleCollapsed }: {
 
 registerApi(sectionApi)
 
-defineExpose(sectionApi)
-
 function getHeaderSlotScope() {
   return {
     title: props.title,

@@ -138,8 +138,6 @@ const {
 
 registerApi(drawerApi)
 
-defineExpose(drawerApi)
-
 function getHeaderSlotScope() {
   return {
     title: resolvedTitle.value,

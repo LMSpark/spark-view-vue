@@ -105,8 +105,6 @@ const {
 
 registerApi(tabsApi)
 
-defineExpose(tabsApi)
-
 function hasPaneChildren(pane: SparkNode): boolean {
   return getSparkNodeChildren(pane.children).length > 0
 }

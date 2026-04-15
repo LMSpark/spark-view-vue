@@ -248,8 +248,6 @@ const {
 
 registerApi(treeApi)
 
-defineExpose(treeApi)
-
 const toolbarHost: SparkComponentHost = {
   variant: 'toolbar',
   isDisabled(action) {

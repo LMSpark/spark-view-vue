@@ -133,8 +133,6 @@ const {
 
 registerApi(stepsApi)
 
-defineExpose(stepsApi)
-
 function getStepSlotScope(step: SparkNode, index: number) {
   return {
     step,

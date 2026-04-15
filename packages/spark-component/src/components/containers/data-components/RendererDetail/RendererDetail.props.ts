@@ -1,8 +1,8 @@
 import type { DataView } from '@spark-view/spark-data'
 import type {
+  SparkCrudDataContainerProps,
+  SparkGridLayoutProps,
   SparkNodeProps,
-  SparkTableModelProps,
-  SparkCrudEventProps,
 } from '../../../shared-types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 
@@ -13,18 +13,12 @@ import type { ToolbarNode } from '../../non-data-components/RendererToolbar.type
  */
 export interface RDetailProps
   extends SparkNodeProps,
-    SparkTableModelProps,
-    SparkCrudEventProps {
+    SparkCrudDataContainerProps,
+    SparkGridLayoutProps {
   /** 显式收窄为详情容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
-  /** CSS Grid 列数 */
-  gridColumns?: number
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
   /** 标题对齐 */
   titleAlign?: 'left' | 'center' | 'right'
   /** 值对齐 */

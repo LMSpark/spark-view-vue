@@ -105,8 +105,6 @@ const {
 
 registerApi(formApi)
 
-defineExpose(formApi)
-
 const toolbarHost: SparkComponentHost = {
   isDisabled(action) {
     return isBuiltinActionDisabled(action)

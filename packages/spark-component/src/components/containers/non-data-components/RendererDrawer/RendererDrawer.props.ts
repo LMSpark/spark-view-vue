@@ -1,8 +1,15 @@
-import type { SparkNodeProps, SparkVisibilityEventProps } from '../../../shared-types'
+import type {
+  SparkGridLayoutProps,
+  SparkNodeProps,
+  SparkVisibilityContainerProps,
+} from '../../../shared-types'
 import type { FooterNode } from '../../RendererFooter.types'
 import type { HeaderNode } from '../../RendererHeader.types'
 
-export interface RDrawerProps extends SparkNodeProps, SparkVisibilityEventProps {
+export interface RDrawerProps
+  extends SparkNodeProps,
+    SparkVisibilityContainerProps,
+    SparkGridLayoutProps {
   /** 结构化头部 */
   header?: HeaderNode
   /** 结构化底部 */
@@ -13,10 +20,4 @@ export interface RDrawerProps extends SparkNodeProps, SparkVisibilityEventProps 
   modelValue?: boolean
   /** 内容区 CSS 类名 */
   bodyClass?: string
-  /** CSS Grid 列数 */
-  gridColumns?: number
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
 }

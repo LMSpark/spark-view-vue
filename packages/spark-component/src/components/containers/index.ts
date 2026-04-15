@@ -14,7 +14,7 @@ export { default as RendererTail } from './RendererTail.vue'
 // ── 结构节点类型（供容器 Props 组合使用） ──
 export type { ToolbarNode, RendererToolbarConfigProps, RendererToolbarProps, InlineAlign, InlineJustify } from './non-data-components/RendererToolbar.types.js'
 export type { FilterNode, RendererFilterConfigProps, RendererFilterProps } from './RendererFilter.types.js'
-export type { ActionsNode, RendererActionsConfigProps, ActionsAlign, ActionsPosition } from './support/RendererActionHost.types.js'
+export type { ActionsNode, RendererActionsConfigProps, ActionsAlign, ActionsPosition, ActionsFixed } from './support/RendererActionHost.types.js'
 export type { EditorNode, RendererEditorConfigProps, RendererEditorProps } from './RendererEditor.types.js'
 export type { HeaderNode, RendererHeaderConfigProps, RendererHeaderProps } from './RendererHeader.types.js'
 export type { FooterNode, RendererFooterConfigProps, RendererFooterProps } from './RendererFooter.types.js'

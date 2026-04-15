@@ -1,9 +1,7 @@
 import type { DataView } from '@spark-view/spark-data'
 import type {
+  SparkInteractiveDataContainerProps,
   SparkNodeProps,
-  SparkTableModelProps,
-  SparkCrudEventProps,
-  SparkRowInteractionEventProps,
 } from '../../../shared-types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
@@ -16,9 +14,7 @@ import type { ActionsNode } from '../../support/RendererActionHost.types'
  */
 export interface RTableProps
   extends SparkNodeProps,
-    SparkTableModelProps,
-    SparkCrudEventProps,
-    SparkRowInteractionEventProps {
+    SparkInteractiveDataContainerProps {
   /** 显式收窄为表格容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 结构化工具栏 @componentRef r-toolbar */

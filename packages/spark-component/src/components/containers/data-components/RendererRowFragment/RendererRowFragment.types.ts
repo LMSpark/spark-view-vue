@@ -1,6 +1,7 @@
 import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../../../internal'
 
+/** 行片段内容对齐方式。 */
 export type RowFragmentAlign = 'left' | 'center' | 'right'
 
 /**
@@ -13,35 +14,70 @@ export type RowFragmentAlign = 'left' | 'center' | 'right'
  * 底层 `RendererDataScope` 本身保持透明，不直接解释这些属性。
  */
 export interface RendererRowFragmentConfigProps {
+  /** 标题位文本。 */
   title?: string
+  /** 标签文本（title 别名）。 */
   label?: string
+  /** 描述文本。 */
   description?: string
+  /** 宽度。 */
   width?: string | number
+  /** 最小宽度。 */
   minWidth?: string | number
+  /** 内容对齐方式。 */
   align?: RowFragmentAlign
+  /** 表头对齐方式。 */
   headerAlign?: RowFragmentAlign
+  /** 片段附加 class。 */
   class?: string
+  /** 片段字段节点列表。 */
   fields?: SparkNode[]
 }
 
-export type RowFragmentNode = SparkNode & {
+/**
+ * `r-row-fragment` 结构化节点。
+ *
+ * 作为行片段配置挂在集合宿主下，由宿主按自身语义消费 title/width/fields 等元属性。
+ */
+export interface RowFragmentNode extends SparkNode {
+  /** 节点类型固定为 `r-row-fragment`。 */
   type: 'r-row-fragment'
+  /** 行片段结构化配置。 */
   props?: RendererRowFragmentConfigProps & Record<string, unknown>
+  /** 嵌套内容节点列表。 */
   children?: SparkNode[]
 }
 
+/**
+ * `RendererRowFragment` 运行时公开属性。
+ *
+ * 用于把一组字段组织成可复用的“行片段”，交给 table/list/tree 等宿主决定最终承载方式。
+ */
 export interface RendererRowFragmentProps {
+  /** 组件类型固定为 `r-row-fragment`。 */
   type?: 'r-row-fragment'
+  /** 节点标识。 */
   id?: string
+  /** 标题位文本。 */
   title?: string
+  /** 标签文本（title 别名）。 */
   label?: string
+  /** 描述文本。 */
   description?: string
+  /** 宽度。 */
   width?: string | number
+  /** 最小宽度。 */
   minWidth?: string | number
+  /** 内容对齐方式。 */
   align?: RowFragmentAlign
+  /** 表头对齐方式。 */
   headerAlign?: RowFragmentAlign
+  /** 片段附加 class。 */
   class?: string
+  /** 当前数据行。 */
   data?: IDataRow
+  /** 片段字段节点列表。 */
   fields?: SparkNode[]
+  /** 嵌套内容节点列表。 */
   children?: SparkNode[]
 }
