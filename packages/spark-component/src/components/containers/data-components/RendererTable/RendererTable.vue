@@ -119,7 +119,7 @@
  * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
  * - 到达此组件时，props.children 只保留表格内容列配置，不做运行时二次分拣。
  */
-import { computed, getCurrentInstance, nextTick, ref, watch, useSlots } from 'vue'
+import { computed, nextTick, ref, watch, useAttrs, useSlots } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
@@ -161,44 +161,27 @@ const allChildNodes = computed(() => getSparkNodeChildren(props.children))
 const contentChildNodes = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
 
 const slots = useSlots()
-const currentInstance = getCurrentInstance()
-
-function normalizePropNameVariants(name: string): string[] {
-  const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
-  const camel = kebab.replace(/-([a-z])/g, (_, ch: string) => ch.toUpperCase())
-  return Array.from(new Set([name, kebab, camel]))
-}
-
-function collectDeclaredPropKeys(raw: unknown): ReadonlySet<string> | undefined {
-  if (!raw) return undefined
-  const normalized = new Set<string>()
-
-  if (Array.isArray(raw)) {
-    for (const key of raw) {
-      if (typeof key !== 'string') continue
-      for (const variant of normalizePropNameVariants(key)) normalized.add(variant)
-    }
-    return normalized
-  }
-
-  if (typeof raw !== 'object') return undefined
-
-  for (const key of Object.keys(raw as Record<string, unknown>)) {
-    for (const variant of normalizePropNameVariants(key)) normalized.add(variant)
-  }
-  return normalized
-}
-
-const declaredElTablePropKeys = computed<ReadonlySet<string> | undefined>(() => {
-  const components = currentInstance?.appContext.components
-  if (!components) return undefined
-  const elTableComponent = (components['ElTable'] ?? components['el-table']) as { props?: unknown } | undefined
-  return collectDeclaredPropKeys(elTableComponent?.props)
-})
+const attrs = useAttrs()
 
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
   return child?.props?.[name] as T | undefined
+}
+
+function toKebabCase(name: string): string {
+  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+function readRootPropCompat(name: string): unknown {
+  const rootProps = props as unknown as Record<string, unknown>
+  const propValue = rootProps[name]
+  if (propValue !== undefined) return propValue
+
+  const attrMap = attrs as Record<string, unknown>
+  const attrValue = attrMap[name]
+  if (attrValue !== undefined) return attrValue
+
+  return attrMap[toKebabCase(name)]
 }
 
 const toolbarNode = computed(() => props.toolbar ?? allChildNodes.value.find(child => child.type === 'r-toolbar'))
@@ -210,9 +193,34 @@ const normalizedFilterNode = computed<FilterNode | undefined>(() => {
   return node as FilterNode
 })
 
+const LEGACY_EL_TABLE_PROP_KEYS = [
+  'border', 'stripe', 'fit', 'size', 'width', 'height', 'maxHeight',
+  'showHeader', 'highlightCurrentRow', 'rowKey', 'emptyText',
+  'defaultExpandAll', 'expandRowKeys', 'defaultSort', 'tooltipEffect',
+  'showSummary', 'sumText', 'summaryMethod', 'spanMethod',
+  'selectOnIndeterminate', 'indent', 'lazy', 'load', 'treeProps',
+  'tableLayout', 'scrollbarAlwaysOn', 'showOverflowTooltip', 'flexible',
+  'allowDragLastColumn', 'rowClassName', 'rowStyle', 'cellClassName', 'cellStyle',
+  'headerRowClassName', 'headerRowStyle', 'headerCellClassName', 'headerCellStyle',
+] as const
+
+function readLegacyElTableProps(): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+  for (const key of LEGACY_EL_TABLE_PROP_KEYS) {
+    const value = readRootPropCompat(key)
+    if (value !== undefined) {
+      result[key] = value
+    }
+  }
+  return result
+}
+
 // ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
 
-const baseElTableProps = computed<Record<string, unknown>>(() => ({ ...(props.tableProps ?? {}) }))
+const baseElTableProps = computed<Record<string, unknown>>(() => ({
+  ...readLegacyElTableProps(),
+  ...(props.tableProps ?? {}),
+}))
 const effectiveDataKey = computed(() => props.dataKey)
 
 // ── SPARK 上下文与数据源：解析 DataKey → DataView，并向下游提供 DATA_SOURCE ──
@@ -313,10 +321,6 @@ const {
   baseElTableProps,
   resolvedView,
   filteredRows,
-  declaredElTablePropKeys,
-  warnUnknownTableProp: (propName: string) => {
-    logger.warn(`[RendererTable] tableProps 包含 el-table 未声明属性: ${propName}`)
-  },
 })
 
 // ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
@@ -395,15 +399,43 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
+function readLegacyActionDockProp(name: string): unknown {
+  const docks = readRootPropCompat('docks')
+  if (typeof docks !== 'object' || docks === null || Array.isArray(docks)) return undefined
+  const actions = (docks as Record<string, unknown>)['actions']
+  if (typeof actions !== 'object' || actions === null || Array.isArray(actions)) return undefined
+
+  const camelValue = (actions as Record<string, unknown>)[name]
+  if (camelValue !== undefined) return camelValue
+  return (actions as Record<string, unknown>)[toKebabCase(name)]
+}
+
+function readLegacyRowActionsWidth(): number | string | undefined {
+  const legacy = readRootPropCompat('rowActionsWidth')
+  if (typeof legacy === 'number' || typeof legacy === 'string') return legacy
+  return undefined
+}
+
 /** 行操作列统一属性（仅 child props + defaults） */
 const rowActionColumnAttrs = computed(() => {
   const label = childProp<string>(actionsNode.value, 'label') ?? '操作'
-  const width = childProp<number | string>(actionsNode.value, 'width') ?? 160
+  const width = childProp<number | string>(actionsNode.value, 'width')
+    ?? (readLegacyActionDockProp('width') as number | string | undefined)
+    ?? readLegacyRowActionsWidth()
+    ?? 160
   const rawAlign = childProp<string>(actionsNode.value, 'align')
   const align = rawAlign === 'left' || rawAlign === 'center' || rawAlign === 'right' ? rawAlign : 'left'
   const childFixed = childProp<boolean | 'left' | 'right'>(actionsNode.value, 'fixed')
   const fixed: boolean | 'left' | 'right' = childFixed ?? rowActionsPositionValue.value
-  return { label, width, align, fixed, className: rowActionsClassValue.value || undefined }
+  return {
+    label,
+    width,
+    minWidth: width,
+    align,
+    fixed,
+    resizable: true,
+    className: rowActionsClassValue.value || undefined,
+  }
 })
 
 /** 为 row-actions 命名插槽构造统一上下文，确保模板插槽与内置动作拿到同一套作用域。 */
@@ -523,6 +555,8 @@ async function handleSelectionChange(selection: IDataRow[]) {
   grid-auto-flow: row;
   grid-auto-rows: max-content;
 }
+
+
 
 </style>
 

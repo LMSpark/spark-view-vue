@@ -12,8 +12,6 @@ interface RendererTableViewStateOptions {
   baseElTableProps: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
   filteredRows: ValueRef<IDataRow[] | undefined>
-  declaredElTablePropKeys?: ValueRef<ReadonlySet<string> | undefined>
-  warnUnknownTableProp?: (propName: string) => void
 }
 
 interface TableTreeSeedNode extends Record<string, unknown> {
@@ -31,16 +29,11 @@ const DEFAULT_TABLE_TREE_PROPS: Readonly<Record<string, unknown>> = Object.freez
   hasChildren: 'hasChildren',
 })
 
-// 防止覆盖宿主组件内部实例字段，导致列父链解析异常。
-const FORBIDDEN_EL_TABLE_INTERNAL_KEYS = new Set(['tableId', 'columnId'])
-
 // ==============================
 // 主状态：RendererTable 视图态
 // ==============================
 
 export function useRendererTableViewState(options: RendererTableViewStateOptions) {
-  const warnedUnknownTableProps = new Set<string>()
-
   // 表格数据：普通列表直接透传；树形配置下按需构造成嵌套 children
   const tableData = computed(() => buildTreeTableRows(
     options.resolvedView.value,
@@ -61,31 +54,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
 
   // 组装传给 el-table 的最终 props，仅在未显式配置时注入默认值
   const elTableProps = computed<Record<string, unknown>>(() => {
-    const sanitized: Record<string, unknown> = {}
-
-    // 显式 tableProps 出现未知原生属性时告警并过滤，避免误配静默失效或污染宿主实例。
-    const declaredKeys = options.declaredElTablePropKeys?.value
-
-    for (const [key, value] of Object.entries(options.baseElTableProps.value)) {
-      const isForbiddenInternalKey = FORBIDDEN_EL_TABLE_INTERNAL_KEYS.has(key)
-      const isUnknownDeclaredProp = !isForbiddenInternalKey
-        && declaredKeys
-        && declaredKeys.size > 0
-        && !key.startsWith('on')
-        && !declaredKeys.has(key)
-
-      if (isForbiddenInternalKey || isUnknownDeclaredProp) {
-        if (!warnedUnknownTableProps.has(key)) {
-          warnedUnknownTableProps.add(key)
-          options.warnUnknownTableProp?.(key)
-        }
-        continue
-      }
-
-      sanitized[key] = value
-    }
-
-    const result = sanitized
+    const result = { ...options.baseElTableProps.value }
 
     if (!options.resolvedView.value?.treeConfig) return result
 
