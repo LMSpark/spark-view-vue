@@ -5,12 +5,10 @@ import type { CancellableControl } from '../../../internal'
 export type FieldChangeControl = CancellableControl
 
 export type FieldValueUpdateEmitter<TValue> =
-  & ((event: 'update:value', value: TValue) => void)
-  & ((event: 'update:modelValue', value: TValue) => void)
+  (event: 'update:value', value: TValue) => void
 
 export type FieldValueUpdateEmits<TValue> = {
   'update:value': [value: TValue]
-  'update:modelValue': [value: TValue]
 }
 
 export function emitFieldValueUpdate<TValue>(
@@ -18,7 +16,6 @@ export function emitFieldValueUpdate<TValue>(
   value: TValue,
 ): void {
   emit('update:value', value)
-  emit('update:modelValue', value)
 }
 
 interface UseControlledFieldChangeOptions<TValue> {

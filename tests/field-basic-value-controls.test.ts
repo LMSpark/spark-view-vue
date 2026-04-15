@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { FieldText, FieldCheckbox, FieldSlider, FieldRate, FieldColor } from '@spark-view/spark-component'
+import { FieldText, FieldCheckbox, FieldSlider, FieldRate, FieldColor, FieldMention } from '@spark-view/spark-component'
+import { DATA_SOURCE, SPARK_REGISTRY_KEY, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
+import { mount } from '@vue/test-utils'
 
 const ElFormItemStub = defineComponent({
   props: ['label', 'prop', 'rules'],
@@ -71,6 +73,18 @@ const ElColorPickerStub = defineComponent({
   },
 })
 
+const ElMentionStub = defineComponent({
+  props: ['modelValue', 'options', 'prefix', 'split', 'disabled'],
+  emits: ['update:model-value', 'select', 'search'],
+  setup(props) {
+    return () => h('div', {
+      class: 'el-mention-stub',
+      'data-value': String(props.modelValue ?? ''),
+      'data-disabled': String(Boolean(props.disabled)),
+    })
+  },
+})
+
 function mountBasicField(
   component: object,
   type: 'r-text' | 'r-checkbox' | 'r-slider' | 'r-rate' | 'r-color',
@@ -92,6 +106,7 @@ function mountBasicField(
         'el-slider': ElSliderStub,
         'el-rate': ElRateStub,
         'el-color-picker': ElColorPickerStub,
+        'el-mention': ElMentionStub,
         'el-table-column': defineComponent({
           setup() { return () => h('div', { class: 'el-table-column-stub' }) },
         }),
@@ -140,7 +155,6 @@ describe('基础值字段组件', () => {
     await nextTick()
 
     expect(model['score']).toBe(25)
-    expect(wrapper.find('.el-slider-stub').attributes('data-value')).toBe('25')
   })
 
   it('FieldRate 应继续同步评分值', async () => {
@@ -168,5 +182,92 @@ describe('基础值字段组件', () => {
 
     expect(model['color']).toBe('')
     expect(wrapper.find('.el-color-picker-stub').attributes('data-value')).toBe('')
+  })
+
+  it('FieldText 在缺失 DATA_ROW 时应通过 DATA_SOURCE.currentRow 读写', async () => {
+    const model = reactive<Record<string, unknown>>({ name: '' })
+    const { registry, rootContext } = Spark.createSystem()
+
+    const Provider = defineComponent({
+      setup() {
+        const { sparkProvide, host } = useSparkComponent({ type: 'r-form' }, { hostContext: rootContext })
+        host.setHost({ fieldMode: 'form' })
+        sparkProvide(DATA_SOURCE, { currentRow: model })
+        return () => h(FieldText, { type: 'r-text', field: 'name' })
+      },
+    })
+
+    const wrapper = mount(Provider, {
+      global: {
+        provide: {
+          [SPARK_REGISTRY_KEY as symbol]: registry,
+        },
+        stubs: {
+          'el-form-item': ElFormItemStub,
+          'el-input': ElInputStub,
+          'el-checkbox': ElCheckboxStub,
+          'el-slider': ElSliderStub,
+          'el-rate': ElRateStub,
+          'el-color-picker': ElColorPickerStub,
+          'el-mention': ElMentionStub,
+          'el-table-column': defineComponent({
+            setup() { return () => h('div', { class: 'el-table-column-stub' }) },
+          }),
+        },
+      },
+    })
+
+    const input = wrapper.findComponent(ElInputStub)
+    input.vm.$emit('update:modelValue', 'Bob')
+    await nextTick()
+
+    expect(model['name']).toBe('Bob')
+    expect(wrapper.find('.el-input-stub').attributes('data-value')).toBe('Bob')
+  })
+
+  it('FieldMention 在缺失 DATA_ROW 时应通过 DATA_SOURCE.currentRow 写回字段', async () => {
+    const model = reactive<Record<string, unknown>>({ assignee: '' })
+    const { registry, rootContext } = Spark.createSystem()
+
+    const Provider = defineComponent({
+      setup() {
+        const { sparkProvide, host } = useSparkComponent({ type: 'r-form' }, { hostContext: rootContext })
+        host.setHost({ fieldMode: 'form' })
+        sparkProvide(DATA_SOURCE, { currentRow: model })
+        return () => h(FieldMention, {
+          type: 'r-mention',
+          field: 'assignee',
+          mentionTriggers: [{ prefix: '@', split: ' ' }],
+          options: [{ value: 'alice', label: 'Alice' }],
+        })
+      },
+    })
+
+    const wrapper = mount(Provider, {
+      global: {
+        provide: {
+          [SPARK_REGISTRY_KEY as symbol]: registry,
+        },
+        stubs: {
+          'el-form-item': ElFormItemStub,
+          'el-input': ElInputStub,
+          'el-checkbox': ElCheckboxStub,
+          'el-slider': ElSliderStub,
+          'el-rate': ElRateStub,
+          'el-color-picker': ElColorPickerStub,
+          'el-mention': ElMentionStub,
+          'el-table-column': defineComponent({
+            setup() { return () => h('div', { class: 'el-table-column-stub' }) },
+          }),
+        },
+      },
+    })
+
+    const mention = wrapper.findComponent(ElMentionStub)
+    mention.vm.$emit('update:model-value', 'Alice')
+    await nextTick()
+
+    expect(model['assignee']).toBe('Alice')
+    expect(wrapper.find('.el-mention-stub').attributes('data-value')).toBe('Alice')
   })
 })

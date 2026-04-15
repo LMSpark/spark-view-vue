@@ -43,11 +43,11 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     const result = { ...options.baseTableAttrs.value }
     if (!options.resolvedView.value?.treeConfig) return result
 
-    if (result['rowKey'] === undefined && result['row-key'] === undefined && tableRowKeyValue.value) {
+    if (result['rowKey'] === undefined && tableRowKeyValue.value) {
       result['rowKey'] = tableRowKeyValue.value
     }
 
-    if (result['treeProps'] === undefined && result['tree-props'] === undefined && tableTreePropsValue.value) {
+    if (result['treeProps'] === undefined && tableTreePropsValue.value) {
       result['treeProps'] = tableTreePropsValue.value
     }
 

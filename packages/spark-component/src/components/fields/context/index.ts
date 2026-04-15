@@ -1,4 +1,5 @@
 export { useResolvedFieldContext } from './useResolvedFieldContext.js'
+export { useActiveFieldRow } from './useActiveFieldRow.js'
 export {
   useFieldPermission,
 } from './useFieldPermission.js'

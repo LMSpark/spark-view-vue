@@ -6,8 +6,6 @@ import type { SparkCapabilityConsumer } from './capabilities.js'
 
 export interface SparkHostResolverOptions<T extends string = string> {
   hostTypes?: readonly T[]
-  aliases?: Readonly<Record<string, T>>
-  fallbackType?: T | null
 }
 
 export interface ResolvedSparkHost<T extends string = string> {
@@ -28,9 +26,6 @@ function normalizeHostType<T extends string>(
   type: string,
   options: SparkHostResolverOptions<T>,
 ): T | null {
-  const aliasType = options.aliases?.[type]
-  if (aliasType !== undefined) return aliasType
-
   if (options.hostTypes === undefined) {
     return type as T
   }
@@ -60,7 +55,7 @@ export function resolveSparkHost<T extends string = string>(
   }
 
   return {
-    hostType: options.fallbackType ?? null,
+    hostType: null,
     hostContext: null,
   }
 }

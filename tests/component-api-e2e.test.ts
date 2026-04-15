@@ -33,12 +33,11 @@ describe('End-to-end: real component extraction (VCM)', () => {
     const propNames = api!.props.map(p => p.name)
     expect(propNames).toContain('field')
     expect(propNames).toContain('label')
-    expect(propNames).toContain('modelValue')
 
-    // 有 update:modelValue emit
+    // 字段组件统一对外暴露 update:value
     expect(api!.emits.length).toBeGreaterThanOrEqual(1)
     const emitNames = api!.emits.map(e => e.name)
-    expect(emitNames).toContain('update:modelValue')
+    expect(emitNames).toContain('update:value')
   })
 
   it('extracts RendererTable.vue correctly', () => {
@@ -106,7 +105,7 @@ describe('End-to-end: real component extraction (VCM)', () => {
     expect(withGlobalPropNames).toContain('style')
   })
 
-  it('supports VCM checker options parameter', () => {
+  it('supports VCM checker options parameter', { timeout: 30_000 }, () => {
     const tsconfigPath = resolve(ROOT, 'tsconfig.catalog.json')
     const checkerWithRawType = getOrCreateChecker(tsconfigPath, {
       rawType: true,

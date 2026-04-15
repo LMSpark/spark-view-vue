@@ -201,10 +201,10 @@ describe('useFieldContext attrs 集成传递', () => {
     expect(col.attributes('data-class-name')).toBe('demo-col-cell-right')
   })
 
-  it('kebab-case attrs (header-cell-class-name) 同样被识别', () => {
+  it('仅识别规范 camelCase attrs，kebab-case 不再生效', () => {
     const wrapper = mountFieldLike({ 'header-cell-class-name': 'demo-col-header-center' })
     const col = wrapper.find('.el-table-column-test-stub')
-    expect(col.attributes('data-label-class-name')).toBe('demo-col-header-center')
+    expect(col.attributes('data-label-class-name')).toBe('spark-col-header--left')
   })
 
   it('titleAlign + valueAlign 通过 attrs 传递', () => {

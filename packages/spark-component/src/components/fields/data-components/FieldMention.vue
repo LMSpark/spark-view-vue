@@ -29,9 +29,10 @@
  * @description 提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。
  */
 import { ref, computed, watch } from 'vue'
-import { DATA_ROW, useSparkConsume, useSparkPageComponent } from '../../internal'
+import { useSparkPageComponent } from '../../internal'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useFieldOptions } from '../options'
+import { useActiveFieldRow } from '../context/useActiveFieldRow'
 import type { RMentionProps } from './FieldMention.props'
 
 type MentionResolvedOption = NonNullable<RMentionProps['options']>[number]
@@ -42,8 +43,6 @@ type MentionRuntimeOption = MentionResolvedOption & {
 
 const props = withDefaults(defineProps<RMentionProps>(), {
   type: 'r-mention',
-  prefix: '@',
-  split: ' ',
   placement: 'bottom',
   showArrow: false,
   inputType: 'text',
@@ -56,8 +55,7 @@ const emit = defineEmits<FieldValueUpdateEmits<string> & {
 }>()
 
 const { isVisible, isDisabled } = useSparkPageComponent(props)
-const { sparkConsume } = useSparkConsume()
-const contextData = sparkConsume(DATA_ROW)
+const { activeRow } = useActiveFieldRow()
 const activePrefix = ref<string | null>(null)
 
 function normalizeTextValue(value: unknown): string {
@@ -65,18 +63,10 @@ function normalizeTextValue(value: unknown): string {
 }
 
 const mentionTriggers = computed<MentionTrigger[]>(() => {
-  if (props.mentionTriggers && props.mentionTriggers.length > 0) {
+  if (props.mentionTriggers !== undefined && props.mentionTriggers.length > 0) {
     return props.mentionTriggers
   }
-
-  const prefixes = Array.isArray(props.prefix) ? props.prefix : [props.prefix]
-  return prefixes.map(prefix => {
-    const trigger: MentionTrigger = {
-      prefix,
-      split: props.split,
-    }
-    return trigger
-  })
+  throw new Error('[r-mention] 必须提供 mentionTriggers，旧版 prefix/split 简写已移除。')
 })
 
 const resolvedPrefixes = computed(() => {
@@ -103,7 +93,15 @@ const resolvedSplit = computed(() => {
     throw new Error('[r-mention] el-mention 只支持一个全局 split；mentionTriggers 中如果声明 split，所有项必须一致。')
   }
 
-  const split = uniqueSplits[0] ?? props.split
+  if (uniqueSplits.length === 0) {
+    throw new Error('[r-mention] mentionTriggers.split 必须显式声明且为单个字符。')
+  }
+
+  const split = uniqueSplits[0]
+  if (split === undefined) {
+    throw new Error('[r-mention] mentionTriggers.split 必须显式声明且为单个字符。')
+  }
+
   if (split.length !== 1) {
     throw new Error('[r-mention] split 必须是单个字符，这与 el-mention 的底层约束一致。')
   }
@@ -178,8 +176,9 @@ watch(() => props.value, (v) => {
 function syncMainField(value: string): void {
   textValue.value = value
   emitFieldValueUpdate(emit, value)
-  if (contextData !== null && props.field) {
-    contextData[props.field] = value
+  const row = activeRow.value
+  if (row !== null && props.field) {
+    row[props.field] = value
   }
 }
 
@@ -190,8 +189,9 @@ function handleTextInput(value: string): void {
 function handleSelect(option: MentionRuntimeOption, prefix: string) {
   activePrefix.value = prefix
   const writebackField = activeTrigger.value.writebackField
-  if (contextData !== null && writebackField) {
-    contextData[writebackField] = option.persistedValue ?? option.value
+  const row = activeRow.value
+  if (row !== null && writebackField) {
+    row[writebackField] = option.persistedValue ?? option.value
   }
   emit('select', option, prefix)
 }

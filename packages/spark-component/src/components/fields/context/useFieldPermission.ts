@@ -5,10 +5,10 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { usePermission } from '../../../permission/index.js'
 import type { SparkFieldProps } from '../../shared-types.js'
-import { useSparkConsume, DATA_SOURCE, DATA_ROW } from '../../internal'
+import { useSparkConsume } from '../../internal'
 import { columnToFormRules } from '../columnFormRules'
 import type { FormItemRule } from '../columnFormRules'
-import { useResolvedFieldContext } from './useResolvedFieldContext'
+import { useActiveFieldRow } from './useActiveFieldRow'
 
 type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
@@ -32,10 +32,8 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
 
   const fieldName = computed(() => props.field ?? '')
   const displayLabel = computed(() => props.label ?? fieldName.value)
-  const context = useResolvedFieldContext()
-  const contextData = sparkConsume(DATA_ROW)
+  const { contextData, dataSource, activeRow } = useActiveFieldRow()
   const pageService = sparkConsume(PAGE_SERVICE)
-  const dataSource = sparkConsume(DATA_SOURCE)
   const perm = usePermission()
 
   const boundColumn = computed<DataColumn | null>(() => {
@@ -49,14 +47,13 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     return columnToFormRules(column)
   })
 
-  const currentRow = computed<IDataRow | null>(() => {
-    return contextData
-  })
+  const currentRow = computed<IDataRow | null>(() => activeRow.value)
 
   const sourceFieldValue = computed<TValue>(() => {
     if (props.value !== undefined) return props.value
-    if (contextData !== null && fieldName.value && fieldName.value in contextData) {
-      return contextData[fieldName.value] as TValue
+    const row = activeRow.value
+    if (row !== null && fieldName.value && fieldName.value in row) {
+      return row[fieldName.value] as TValue
     }
     return fallbackValue
   })
@@ -77,15 +74,14 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     return currentFieldState.value?.editable ?? false
   })
 
-  const shouldSuppressReadableValueInWritableForm = computed(() => {
-    if (context.value !== 'form') return false
+  const shouldSuppressReadableValueWhenWritable = computed(() => {
     const state = currentFieldState.value
     if (!state?.editable) return false
     return state.visibility !== FieldVisibility.Visible
   })
 
   const fieldValue = computed<TValue>(() => {
-    if (shouldSuppressReadableValueInWritableForm.value) return fallbackValue
+    if (shouldSuppressReadableValueWhenWritable.value) return fallbackValue
     return sourceFieldValue.value
   })
   const currentRawValue = computed(() => fieldValue.value)
@@ -94,8 +90,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const shouldRenderCurrentField = computed(() => {
     const state = currentFieldState.value
     if (!state) return true
-    if (context.value === 'form') return state.readable || state.editable
-    return state.readable
+    return state.readable || state.editable
   })
 
   function formatValue(value: unknown): string {
@@ -103,7 +98,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   }
 
   const currentDisplayValue = computed(() => {
-    if (shouldSuppressReadableValueInWritableForm.value) return ''
+    if (shouldSuppressReadableValueWhenWritable.value) return ''
     return perm.formatFieldValue(fieldName.value, sourceFieldValue.value, currentRow.value, formatValue)
   })
 
@@ -126,8 +121,9 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   }
 
   function syncValue(value: TValue): void {
-    if (contextData !== null && fieldName.value) {
-      contextData[fieldName.value] = value
+    const row = activeRow.value
+    if (row !== null && fieldName.value) {
+      row[fieldName.value] = value
     }
   }
 
@@ -135,7 +131,6 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     fieldName,
     displayLabel,
     boundColumn,
-    context,
     contextData,
     pageService,
     currentRow,

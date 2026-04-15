@@ -52,12 +52,8 @@ export function useFieldContext(
 ): ComputedRef<FieldContextProps> {
   const attrs = useAttrs()
 
-  function readAttr(...keys: string[]): unknown {
-    for (const key of keys) {
-      const value = attrs[key]
-      if (value !== undefined) return value
-    }
-    return undefined
+  function readAttr(key: string): unknown {
+    return attrs[key]
   }
 
   function readAlign(value: unknown): TextAlign | undefined {
@@ -75,12 +71,12 @@ export function useFieldContext(
   })
 
   return computed(() => {
-    const titleAlign = readAlign(readAttr('titleAlign', 'title-align'))
-    const valueAlign = readAlign(readAttr('valueAlign', 'value-align'))
-    const headerCellClassName = readText(readAttr('headerCellClassName', 'header-cell-class-name', 'labelClassName', 'label-class-name'))
-    const cellClassName = readText(readAttr('cellClassName', 'cell-class-name', 'className', 'class-name'))
-    const titleClassName = readText(readAttr('titleClassName', 'title-class-name'))
-    const valueClassName = readText(readAttr('valueClassName', 'value-class-name'))
+    const titleAlign = readAlign(readAttr('titleAlign'))
+    const valueAlign = readAlign(readAttr('valueAlign'))
+    const headerCellClassName = readText(readAttr('headerCellClassName'))
+    const cellClassName = readText(readAttr('cellClassName'))
+    const titleClassName = readText(readAttr('titleClassName'))
+    const valueClassName = readText(readAttr('valueClassName'))
 
     const result: FieldContextProps = {
       type: fieldProps.type,

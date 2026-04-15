@@ -122,14 +122,12 @@ export function consumeSparkCapability<T>(
   return implementation ?? null
 }
 
-/** 创建能力消费器：优先从 fallbackContext 开始查找，否则从 hostContext 开始。 */
+/** 创建能力消费器：从给定起点上下文开始查找。 */
 export function createSparkCapabilityConsumer(
-  hostContext: SparkCapabilityContext | null,
-  fallbackContext?: SparkCapabilityContext,
+  context: SparkCapabilityContext | null,
 ): SparkCapabilityConsumer {
   return ((name: string | symbol): unknown => {
-    const lookupContext = fallbackContext ?? hostContext
-    return consumeSparkCapability(lookupContext, name)
+    return consumeSparkCapability(context, name)
   }) as SparkCapabilityConsumer
 }
 

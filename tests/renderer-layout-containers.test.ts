@@ -184,10 +184,10 @@ describe('RendererAside (r-aside)', () => {
     expect(wrapper.find('.el-aside-stub').attributes('data-width')).toBe('300px')
   })
 
-  it('should accept custom asideWidth', () => {
+  it('should accept custom width', () => {
     const wrapper = mountWithSpark(RendererAside, {
       type: 'r-aside',
-      asideWidth: '200px',
+      width: '200px',
     } as SparkNode, { 'el-aside': ElAsideStub })
 
     expect(wrapper.find('.el-aside-stub').attributes('data-width')).toBe('200px')
@@ -215,10 +215,10 @@ describe('RendererLayoutHeader (r-layout-header)', () => {
     expect(wrapper.find('.el-header-stub').attributes('data-height')).toBe('60px')
   })
 
-  it('should accept custom headerHeight', () => {
+  it('should accept custom height', () => {
     const wrapper = mountWithSpark(RendererLayoutHeader, {
       type: 'r-layout-header',
-      headerHeight: '80px',
+      height: '80px',
     } as SparkNode, { 'el-header': ElHeaderStub })
 
     expect(wrapper.find('.el-header-stub').attributes('data-height')).toBe('80px')

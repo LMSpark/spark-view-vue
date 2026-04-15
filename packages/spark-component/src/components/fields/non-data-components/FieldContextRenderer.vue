@@ -135,12 +135,8 @@ interface Props extends SparkNodeProps {
   valueAlign?: TextAlign | undefined
   /** 表头 class（table） */
   headerCellClassName?: string | undefined
-  /** 兼容直接传入的列头 class */
-  labelClassName?: string | undefined
   /** 单元格 class（table） */
   cellClassName?: string | undefined
-  /** 兼容直接传入的列 class */
-  className?: string | undefined
   /** 标题 class（detail） */
   titleClassName?: string | undefined
   /** 值 class（detail/table value） */
@@ -165,13 +161,9 @@ const resolvedTitleAlign = computed(() => props.titleAlign ?? 'left')
 const resolvedHeaderAlign = computed(() => props.headerAlign ?? resolvedTitleAlign.value)
 const resolvedValueAlign = computed(() => props.align ?? props.valueAlign ?? 'left')
 
-const tableHeaderClassName = computed(() => (
-  props.headerCellClassName ?? props.labelClassName ?? `spark-col-header--${resolvedHeaderAlign.value}`
-))
+const tableHeaderClassName = computed(() => props.headerCellClassName ?? `spark-col-header--${resolvedHeaderAlign.value}`)
 
-const tableCellClassName = computed(() => (
-  props.cellClassName ?? props.className ?? `spark-col-cell--${resolvedValueAlign.value}`
-))
+const tableCellClassName = computed(() => props.cellClassName ?? `spark-col-cell--${resolvedValueAlign.value}`)
 
 const tableValueClassName = computed(() => (
   props.valueClassName ?? `field-table-value--${resolvedValueAlign.value}`

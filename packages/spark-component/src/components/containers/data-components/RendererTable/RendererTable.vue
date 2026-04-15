@@ -70,7 +70,7 @@
           :config="child"
         />
 
-        <!-- 模板驱动补充列：兼容直接手写 el-table-column -->
+        <!-- 模板驱动补充列：支持直接手写 el-table-column -->
         <slot />
 
         <!-- 行操作列（右） -->
@@ -117,7 +117,7 @@
  *
  * 结构约定：
  * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
- * - 到达此组件时，props.children 只保留表格内容列配置，不再做运行时二次分拣。
+ * - 到达此组件时，props.children 只保留表格内容列配置，不做运行时二次分拣。
  */
 import { computed, nextTick, ref, watch, useAttrs, useSlots } from 'vue'
 import {
@@ -145,11 +145,6 @@ import type { SparkComponentHost } from '../../../internal'
 
 // ── 基础工具 ─────────────────────────────────────────────────────────────
 
-/** 将 camelCase 属性名转换为 kebab-case，统一读取模板透传属性。 */
-function toKebabCase(name: string): string {
-  return name.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)
-}
-
 // ── Props / attrs / slots 输入 ───────────────────────────────────────────
 
 const props = withDefaults(defineProps<RTableProps>(), {
@@ -166,11 +161,9 @@ const slots = useSlots()
 
 const _attrs = attrs as Readonly<Record<string, unknown>>
 
-/** 优先读取原名，其次回退 kebab-case，兼容模板透传属性。 */
+/** 读取规范 camelCase 透传属性。 */
 function readAttr(name: string): unknown {
-  const directValue = _attrs[name]
-  if (directValue !== undefined) return directValue
-  return _attrs[toKebabCase(name)]
+  return _attrs[name]
 }
 
 /** 读取字符串属性；空字符串视为未配置。 */

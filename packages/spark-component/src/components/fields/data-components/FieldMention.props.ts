@@ -72,30 +72,6 @@ export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps 
     persistedValue?: string | number | boolean
   }>
 
-  /**
-    * @internal 旧版单触发器前缀简写。
-    *
-   * 触发前缀。
-   *
-   * 未提供 `mentionTriggers` 时，这个字段作为旧版单触发器简写继续生效。
-   *
-   * 它决定输入文本里哪些片段会进入 mention 解析流程，
-   * 属于提及语法规则，不直接承载最终业务值。
-   */
-  prefix?: string | string[]
-
-  /**
-    * @internal 旧版单触发器分隔符简写。
-    *
-   * 分隔符。
-   *
-   * 未提供 `mentionTriggers` 时，这个字段作为旧版单触发器简写继续生效。
-   *
-   * 用户选中候选项后，这个字符会被实际写回到输入文本中，
-   * 因而会影响最终持久化文本的编码结果；按你的口径，它属于“广义值”相关配置。
-   */
-  split?: string
-
   /** 候选浮层位置 */
   placement?: 'top' | 'bottom'
   /** 是否显示箭头 */

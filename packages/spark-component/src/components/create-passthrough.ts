@@ -15,9 +15,7 @@ import { getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNodeInpu
 
 /** 透传组件配置 */
 interface PassthroughOptions {
-  /** 属性重命名映射（包装层 prop → el-* prop），例如 `{ asideWidth: 'width' }` */
-  propAliases?: Record<string, string>
-  /** 属性默认值，key 为包装层 prop 名（alias 解析前），缺失时注入 */
+  /** 属性默认值，key 为透传给 el-* 的目标 prop 名。 */
   propDefaults?: Record<string, unknown>
 }
 
@@ -26,14 +24,13 @@ interface PassthroughOptions {
  *
  * @param elTag  - 目标 Element Plus 组件标签，如 `'el-row'`
  * @param type   - SPARK 注册类型名，如 `'r-row'`
- * @param options - 可选配置（属性别名等）
+ * @param options - 可选配置（默认属性注入）
  */
 export function createPassthrough(
   elTag: string,
   type: string,
   options?: PassthroughOptions,
 ): Component {
-  const aliases = options?.propAliases
   const defaults = options?.propDefaults
 
   return defineComponent({
@@ -50,22 +47,14 @@ export function createPassthrough(
       return () => {
         if (!isVisible.value) return null
 
-        // 构建传给 el-* 的 attrs：注入默认值 → 别名重命名 → 透传
+        // 构建传给 el-* 的 attrs：注入默认值（仅当 attrs 未显式声明）→ 原样透传
         let finalAttrs: Record<string, unknown> = attrs
-        if (aliases) {
-          const patched: Record<string, unknown> = {}
-          // 先注入别名键的默认值（仅在 attrs 中缺失时）
-          if (defaults) {
-            for (const [key, def] of Object.entries(defaults)) {
-              if (!(key in attrs)) {
-                const mapped = aliases[key]
-                patched[mapped ?? key] = def
-              }
+        if (defaults) {
+          const patched: Record<string, unknown> = { ...attrs }
+          for (const [key, def] of Object.entries(defaults)) {
+            if (!(key in patched)) {
+              patched[key] = def
             }
-          }
-          for (const [key, value] of Object.entries(attrs)) {
-            const mapped = aliases[key]
-            patched[mapped ?? key] = value
           }
           finalAttrs = patched
         }

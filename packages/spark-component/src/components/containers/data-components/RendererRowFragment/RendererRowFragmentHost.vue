@@ -34,7 +34,7 @@ import type { RendererRowFragmentProps as Props } from './RendererRowFragment.ty
 
 const props = defineProps<Props>()
 
-const { hostType } = useSparkHost<'r-table'>({ hostTypes: ['r-table'] as const, fallbackType: null })
+const { hostType } = useSparkHost<'r-table'>({ hostTypes: ['r-table'] as const })
 const isTableHost = computed(() => hostType.value === 'r-table')
 const resolvedChildren = computed<SparkNode[]>(() => props.children ?? [])
 const resolvedColumnLabel = computed(() => props.title ?? props.label ?? '')

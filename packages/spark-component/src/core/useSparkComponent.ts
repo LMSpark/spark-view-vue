@@ -323,7 +323,7 @@ export function useSparkComponent(
       context.host = nextHost
     },
   }
-  const consumeCapability = createSparkCapabilityConsumer(hostContext, context)
+  const consumeCapability = createSparkCapabilityConsumer(context)
 
   if (currentInstance !== null) {
     bindCapabilityContextOwner(currentInstance as object, context)

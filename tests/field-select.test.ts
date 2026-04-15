@@ -246,16 +246,16 @@ describe('FieldSelect 下拉组件', () => {
     })
   })
 
-  describe('modelValue 优先级', () => {
-    it('显式 modelValue 应优先于 contextData', () => {
+  describe('value 优先级', () => {
+    it('显式 value 应优先于 contextData', () => {
       const model = reactive({ department: '技术部' })
       const wrapper = mountFieldSelect(model, 'department', {
         options: departmentOptions,
-        modelValue: '产品部',
+        value: '产品部',
       })
 
       const select = wrapper.find('.el-select-stub')
-      // useFieldPermission 逻辑：props.modelValue !== undefined 时直接返回
+      // useFieldPermission 逻辑：props.value !== undefined 时直接返回
       expect(select.attributes('data-value')).toBe('产品部')
     })
   })

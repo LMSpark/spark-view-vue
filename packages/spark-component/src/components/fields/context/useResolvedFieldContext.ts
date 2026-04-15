@@ -1,16 +1,17 @@
 import { computed } from 'vue'
 import { useSparkConsume } from '../../internal'
 
+export type FieldRenderMode = string
+
 /**
  * 字段渲染模式 — 与容器 type 名解耦的语义标签。
  *
  * 约定值：'table' | 'form' | 'tree' | 'detail'。
- * 容器通过 `host.setHost({ fieldMode: '...' })` 声明，字段通过 `nearestHost().fieldMode` 读取。
- * 新容器只需一行 setHost，字段侧零改动。
+ * 容器通过 Host 声明 `fieldMode`，字段沿宿主链读取最近值。
  */
-export type FieldRenderMode = string
-
 export function useResolvedFieldContext() {
   const { host } = useSparkConsume()
-  return computed<FieldRenderMode>(() => host.nearestHost()?.fieldMode ?? 'detail')
+  return computed<FieldRenderMode>(() => {
+    return host.nearestHost()?.fieldMode ?? 'detail'
+  })
 }

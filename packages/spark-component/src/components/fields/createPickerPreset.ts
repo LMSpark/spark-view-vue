@@ -79,7 +79,7 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
   return defineComponent({
     name: `FieldEntityPicker[${defaults.entityName}]`,
     props: SHARED_PROPS,
-    emits: ['update:value', 'update:modelValue'],
+    emits: ['update:value'],
     setup(props, { emit }) {
       const attrs = useAttrs()
       const rawAttrs = attrs as Readonly<Record<string, unknown>>
