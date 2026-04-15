@@ -23,7 +23,6 @@ export type {
 
 // ── 递归渲染器 ──
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
-export { default as SparkTableColumns } from './support/SparkTableColumns.js'
 
 // ── 核心类型 ──
 export type {
@@ -41,12 +40,14 @@ export {
   DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
+  findNearestHost,
 } from '../core/index.js'
 export type {
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   ModuleContextCapability,
+  SparkComponentHost,
 } from '../core/index.js'
 
 // ── 事件控制 ──

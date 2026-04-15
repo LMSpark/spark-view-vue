@@ -23,15 +23,22 @@ import type { LoggerApi } from './logger.js'
 export type CapabilityName = string | symbol
 
 /**
- * 能力上下文 — 运行时核心结构
- * 一个上下文 = 一个组件/数据实例 的能力容器。
+ * 能力上下文 — SPARK 运行时核心结构
+ *
+ * 每个组件实例对应一个上下文节点，通过 parent 链形成组件树。
+ * 子组件沿 parent 链向上查找能力和宿主。
  */
 export interface ICapabilityContext {
   id: string
   type: string
   parent?: ICapabilityContext
-  /** 能力 Map：名称 → 实现 */
+  /** 能力 Map：数据域能力键 → 实现（用于组件层级与数据层级不一致的场景） */
   capabilities: Map<CapabilityName, unknown>
+  /**
+   * 宿主声明：容器组件设置此字段，告知子树"我是谁、我能做什么"。
+   * 子组件通过 findNearestHost() 沿 parent 链向上查找最近的宿主。
+   */
+  host?: unknown
 }
 
 /** 事件发射器协议 */

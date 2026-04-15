@@ -70,6 +70,7 @@ export {
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,
+  findNearestHost,
 } from './capabilities.js'
 
 export type {
@@ -78,4 +79,5 @@ export type {
   PageComponentRegistry,
   ModuleContextCapability,
   PageCssScopeCapability,
+  SparkComponentHost,
 } from './capabilities.js'

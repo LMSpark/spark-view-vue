@@ -28,8 +28,9 @@
 
 import { defineCapability, normalizeKey, sparkConsume as rawSparkConsume } from '@spark-view/spark-utils'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
-import type { CapabilityKey, CapabilityName, CapabilityTypeMap, IModuleContext, NavPermissionMode } from '@spark-view/spark-utils'
+import type { CapabilityKey, CapabilityName, CapabilityTypeMap, ICapabilityContext, IModuleContext, NavPermissionMode } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext } from './types.js'
+import type { SparkNode } from './types.js'
 
 /** 能力消费函数签名：统一返回 null，避免 undefined 向上游扩散。 */
 export type SparkCapabilityConsumer = {
@@ -207,5 +208,43 @@ export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('app:mod
  * 消费方：插件、嵌套渲染器、动态主题注入等。
  */
 export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
+
+// ── 统一宿主协议 ────────────────────────────────────────────────────────
+
+/**
+ * 组件宿主接口 — 容器向子树声明"我是谁、我能做什么"
+ *
+ * 容器组件在创建 context 后设置 `context.host`，
+ * 子组件通过 `findNearestHost()` 沿 parent 链向上查找最近的宿主。
+ *
+ * @spark-design host 是 context 上的一等公民字段，不是能力键。
+ *   数据域能力键（DATA_SOURCE / DATA_ROW）解决的是"组件层级 ≠ 数据层级"，
+ *   而 host 解决的是"子组件需要知道宿主的身份与能力"——这是组件树固有语义，
+ *   不应走能力键分散注册。
+ */
+export interface SparkComponentHost {
+  /** 宿主变体标识（如 'toolbar' | 'row-action'），子组件可据此调整自身行为 */
+  readonly variant?: string
+  /** 判断指定动作节点在当前宿主上下文中是否应禁用 */
+  isDisabled?(action: SparkNode): boolean
+  /** 执行指定动作节点 */
+  execute?(action: SparkNode): void
+}
+
+/**
+ * 沿 parent 链向上查找最近的宿主声明。
+ *
+ * 从 ctx.parent 开始查找（跳过自身），返回第一个设置了 host 的祖先上下文中的 host。
+ */
+export function findNearestHost(ctx: ICapabilityContext): SparkComponentHost | null {
+  let current: ICapabilityContext | undefined = ctx.parent
+  while (current) {
+    if (current.host !== undefined && current.host !== null) {
+      return current.host as SparkComponentHost
+    }
+    current = current.parent
+  }
+  return null
+}
 
 // PAGE_PERMISSION_MODE 已迁入 permission/page-permission-mode.ts（权限模块唯一维护）
