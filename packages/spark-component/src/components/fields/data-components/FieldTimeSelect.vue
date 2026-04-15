@@ -20,7 +20,7 @@
 <script setup lang="ts">
 /**
  * @skill r-time-select
- * @description 时间间隔选择字段，绑定时间字符串值，基于 el-time-select 提供固定间隔的时间列表选择。
+ * @description 时间间隔选择字段，绑定时间字符串值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -52,3 +52,4 @@ async function handleChange(value: string): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

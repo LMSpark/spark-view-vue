@@ -1,7 +1,7 @@
 import { shallowRef, watch, type ShallowRef } from 'vue'
 import type { ValueRef } from '../../shared-types.js'
 
-export function useControlledValue<T>(source: ValueRef<T>): ShallowRef<T> {
+export function useMirroredValue<T>(source: ValueRef<T>): ShallowRef<T> {
   const state = shallowRef<T>(source.value)
   watch(() => source.value, value => {
     state.value = value
@@ -10,13 +10,13 @@ export function useControlledValue<T>(source: ValueRef<T>): ShallowRef<T> {
 }
 
 export function useDefaultedSelection<TItem, TValue>(options: {
-  modelValue: ValueRef<TValue | undefined>
+  value: ValueRef<TValue | undefined>
   items: ValueRef<TItem[]>
   getValue: (item: TItem, index: number) => TValue
 }): ShallowRef<TValue | undefined> {
-  const state = shallowRef<TValue | undefined>(options.modelValue.value)
+  const state = shallowRef<TValue | undefined>(options.value.value)
 
-  watch(() => options.modelValue.value, value => {
+  watch(() => options.value.value, value => {
     state.value = value
   }, { immediate: true })
 

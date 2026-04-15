@@ -21,7 +21,7 @@
 <script setup lang="ts">
 /**
  * @skill r-collapse-item
- * @description 折叠面板项，基于 el-collapse-item 提供可折叠区块，面板体内以 24 列网格渲染子组件。
+ * @description 折叠面板项，面板体内以 24 列网格渲染子组件。
  * @category internal
  */
 import { computed } from 'vue'
@@ -86,3 +86,4 @@ const itemTitle = computed(() => {
 
 const itemDisabled = computed(() => props.disabled === true)
 </script>
+

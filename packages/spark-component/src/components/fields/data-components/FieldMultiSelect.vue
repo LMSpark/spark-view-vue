@@ -28,7 +28,7 @@
 <script setup lang="ts">
 /**
  * @skill r-multi-select
- * @description 多选下拉字段，绑定数组值，基于 el-select multiple 模式，支持标签折叠（collapseTags）显示。
+ * @description 多选下拉字段，绑定数组值，支持标签折叠（collapseTags）显示。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -64,3 +64,4 @@ async function handleChange(value: MultiValue): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

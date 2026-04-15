@@ -29,7 +29,7 @@
 <script setup lang="ts">
 /**
  * @skill r-field-scope
- * @description 字段作用域容器，基于 el-form 包装子字段组件，提供 DATA_ROW 上下文和 24 列网格布局。
+ * @description 字段作用域容器，提供 DATA_ROW 上下文和 24 列网格布局。
  * @category internal
  */
 import { computed } from 'vue'
@@ -117,3 +117,4 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   line-height: 28px;
 }
 </style>
+

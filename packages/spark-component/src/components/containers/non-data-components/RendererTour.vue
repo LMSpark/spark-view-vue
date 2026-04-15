@@ -13,7 +13,7 @@
       :type="tourType"
       :close-on-press-escape="closeOnPressEscape"
       :scroll-into-view-options="scrollIntoViewOptions"
-      v-bind="$attrs"
+      v-bind="hostProps"
       @close="handleClose"
       @finish="handleFinish"
       @change="handleChange"
@@ -35,7 +35,7 @@
 <script setup lang="ts">
 /**
  * @skill r-tour
- * @description 引导流程组件，基于 el-tour 定义多步骤引导目标和说明文字，管理引导打开/关闭状态。
+ * @description 引导流程组件，管理引导打开/关闭状态。
  */
 import { ref, watch, computed } from 'vue'
 import {
@@ -93,3 +93,5 @@ function handleChange(current: number) {
   display: contents;
 }
 </style>
+
+

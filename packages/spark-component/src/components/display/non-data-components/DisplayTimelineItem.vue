@@ -9,7 +9,7 @@
     :color="color"
     :size="itemSize"
     :hollow="hollow"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="resolvedChildren.length > 0">
       <SparkComponentRenderer
@@ -25,7 +25,7 @@
 <script setup lang="ts">
 /**
  * @skill r-timeline-item
- * @description 时间线项，基于 el-timeline-item 定义时间戳、内容和状态标记点。
+ * @description 时间线项。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -45,3 +45,5 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

@@ -12,7 +12,7 @@
     :enterable="enterable"
     :popper-class="popperClass"
     :raw-content="rawContent"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template #default>
       <SparkComponentRenderer
@@ -27,7 +27,7 @@
 <script setup lang="ts">
 /**
  * @skill r-tooltip
- * @description 文字提示组件，基于 el-tooltip 为子组件添加悬浮提示信息，支持位置和延迟配置。
+ * @description 文字提示组件，支持位置和延迟配置。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -48,3 +48,5 @@ const { isVisible, isDisabled } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

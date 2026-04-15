@@ -3,7 +3,7 @@
     v-if="isVisible"
     :checked="isChecked"
     :disabled="isDisabled"
-    v-bind="$attrs"
+    v-bind="hostProps"
     @change="handleChange"
   >
     <slot>{{ label }}</slot>
@@ -13,7 +13,7 @@
 <script setup lang="ts">
 /**
  * @skill r-check-tag
- * @description 标签选择字段，绑定 boolean 值，基于 el-check-tag 提供可切换的标签选中状态。
+ * @description 标签选择字段，绑定 boolean 值。
  */
 import { ref, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
@@ -43,3 +43,5 @@ function handleChange(val: boolean) {
   emit('change', val)
 }
 </script>
+
+

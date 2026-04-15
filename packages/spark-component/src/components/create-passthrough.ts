@@ -4,7 +4,7 @@
  * 每个 passthrough 组件的行为完全相同：
  *   1. `useSparkPageComponent(props)` 接入 SPARK 能力上下文
  *   2. `isVisible` 控制渲染
- *   3. 所有 attrs 透传到目标 el-* 组件
+ *   3. 所有 attrs 透传到目标渲染节点
  *   4. `children` 递归渲染
  *
  * @module create-passthrough
@@ -15,14 +15,14 @@ import { getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNodeInpu
 
 /** 透传组件配置 */
 interface PassthroughOptions {
-  /** 属性默认值，key 为透传给 el-* 的目标 prop 名。 */
+  /** 属性默认值，key 为透传给目标渲染节点的 prop 名。 */
   propDefaults?: Record<string, unknown>
 }
 
 /**
  * 创建一个透传渲染组件。
  *
- * @param elTag  - 目标 Element Plus 组件标签，如 `'el-row'`
+ * @param elTag  - 目标节点标签
  * @param type   - SPARK 注册类型名，如 `'r-row'`
  * @param options - 可选配置（默认属性注入）
  */

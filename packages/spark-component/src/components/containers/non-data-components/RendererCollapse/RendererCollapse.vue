@@ -10,8 +10,8 @@
 
     <div class="renderer-collapse-main">
       <el-collapse
-        v-bind="$attrs"
-        :model-value="currentModelValue"
+        v-bind="hostProps"
+        :model-value="currentValue"
         @update:model-value="handleModelUpdate"
         @change="handleChange"
       >
@@ -35,7 +35,7 @@
 <script setup lang="ts">
 /**
  * @skill r-collapse
- * @description 折叠面板容器，基于 el-collapse 管理子面板（r-collapse-item）的展开与折叠状态。
+ * @description 折叠面板容器。
  * @category container
  * @notes children 内放 r-collapse-item
  */
@@ -46,7 +46,7 @@ import { useContainerToolbar, type ToolbarPosition } from '../../layout/useConta
 import RendererCollapseItem from '../RendererCollapseItem.vue'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
-import { useControlledValue } from '../state'
+import { useMirroredValue } from '../state'
 import type { RCollapseProps, CollapseValue } from './RendererCollapse.props'
 
 const props = withDefaults(defineProps<RCollapseProps>(), {
@@ -54,7 +54,7 @@ const props = withDefaults(defineProps<RCollapseProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: CollapseValue]
+  'update:value': [value: CollapseValue]
 }>()
 
 const { registerApi } = useSparkPageComponent(props)
@@ -65,7 +65,7 @@ const contentChildren = computed(() => props.children ?? [])
 const itemConfigs = computed(() =>
   getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-collapse-item')
 )
-const currentModelValue = useControlledValue(computed(() => props.modelValue))
+const currentValue = useMirroredValue(computed(() => props.value))
 
 const {
   toolbarPositionValue,
@@ -91,7 +91,7 @@ const {
   handleChange: (value: CollapseValue) => void
 } = createRendererCollapseZeroCode({
   emit,
-  currentModelValue,
+  currentValue,
   itemConfigs,
   getItemName,
   onChange: props.onChange,
@@ -126,7 +126,7 @@ function getItemSlotScope(item: SparkNode, index: number) {
     item,
     itemIndex: index,
     itemName: getItemName(item, index),
-    activeNames: currentModelValue.value,
+    activeNames: currentValue.value,
   }
 }
 </script>
@@ -179,3 +179,5 @@ function getItemSlotScope(item: SparkNode, index: number) {
   min-width: 0;
 }
 </style>
+
+

@@ -13,14 +13,14 @@
     :show-text="showText"
     :stroke-linecap="strokeLinecap"
     :format="formatFn"
-    v-bind="$attrs"
+    v-bind="hostProps"
   />
 </template>
 
 <script setup lang="ts">
 /**
  * @skill r-progress
- * @description 进度条展示组件，基于 el-progress 以条形或圆形显示百分比进度值，支持动态颜色。
+ * @description 进度条展示组件，支持动态颜色。
  */
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
@@ -56,3 +56,5 @@ const formatFn = computed(() => {
   return undefined
 })
 </script>
+
+

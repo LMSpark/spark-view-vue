@@ -6,7 +6,7 @@
     :loading="loading"
     :animated="animated"
     :throttle="throttle"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="resolvedChildren.length" #default>
       <SparkComponentRenderer
@@ -21,7 +21,7 @@
 <script setup lang="ts">
 /**
  * @skill r-skeleton
- * @description 骨架屏加载占位组件，基于 el-skeleton 显示内容加载中的占位动画效果。
+ * @description 骨架屏加载占位组件。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -40,3 +40,5 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

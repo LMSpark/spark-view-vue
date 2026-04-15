@@ -4,7 +4,7 @@
     :title="title"
     :icon="icon"
     :content="content"
-    v-bind="$attrs"
+    v-bind="hostProps"
     @back="$emit('back')"
   >
     <template v-if="resolvedChildren.length" #default>
@@ -20,7 +20,7 @@
 <script setup lang="ts">
 /**
  * @skill r-page-header
- * @description 页面头部组件，基于 el-page-header 提供标题区、返回按钮和内容区域。
+ * @description 页面头部组件。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -41,3 +41,5 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

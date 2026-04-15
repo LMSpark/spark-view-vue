@@ -11,7 +11,7 @@
     :offset="offset"
     :badge-style="badgeStyle"
     :badge-class="badgeClass"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"
@@ -24,7 +24,7 @@
 <script setup lang="ts">
 /**
  * @skill r-badge
- * @description 徽章展示组件，基于 el-badge 在子内容上叠加数字或状态点标记。
+ * @description 徽章展示组件。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -53,3 +53,5 @@ const resolvedBadgeValue = computed(() => {
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

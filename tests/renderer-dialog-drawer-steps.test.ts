@@ -90,7 +90,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     const wrapper = mount(RendererDialog as any, {
       props: liftTestChildProps('r-dialog', {
         title: '编辑用户',
-        modelValue: true,
+        value: true,
         gridGap: 12,
         children: [
           { type: 'r-header', children: [{ type: 'dialog-header-action' }] },
@@ -121,11 +121,11 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     expect(wrapper.findAll('.renderer-dialog-grid-item')[0]?.attributes('style')).toContain('grid-column: span 8 / span 8;')
   })
 
-  it('should emit drawer model updates and render footer slot', () => {
+  it('should emit drawer value updates and render footer slot', () => {
     const wrapper = mount(RendererDrawer as any, {
       props: {
         title: '抽屉详情',
-        modelValue: true,
+        value: true,
       },
       slots: {
         footer: ({ visible }: Record<string, unknown>) => h('button', {
@@ -142,7 +142,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
     })
 
     wrapper.findComponent(ElDrawerStub).vm.$emit('update:modelValue', false)
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([false])
+    expect(wrapper.emitted('update:value')?.[0]).toEqual([false])
     expect(wrapper.find('.biz-drawer-footer').attributes('data-visible')).toBe('true')
   })
 
@@ -184,7 +184,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
 
     await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
     expect(onStepChange).toHaveBeenCalledWith('step2', expect.objectContaining({ type: 'r-step' }), 1)
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['step2'])
+    expect(wrapper.emitted('update:value')?.[0]).toEqual(['step2'])
   })
 
   it('should resolve step fields from props only', async () => {
@@ -223,7 +223,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
 
     await wrapper.findAll('.el-step-stub')[1]?.trigger('click')
     expect(onStepChange).toHaveBeenCalledWith('root-step-2', expect.objectContaining({ type: 'r-step' }), 1)
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['root-step-2'])
+    expect(wrapper.emitted('update:value')?.[0]).toEqual(['root-step-2'])
   })
 })
 
@@ -256,7 +256,7 @@ describe('Direct Vue children bridge (dialog / drawer)', () => {
 
   it('should propagate r-dialog parent context to direct Vue slot children', () => {
     const wrapper = mountWithSpark(RendererDialog, {
-      props: { title: '对话框', modelValue: true },
+      props: { title: '对话框', value: true },
       slots: {
         default: () => h(ContextProbe),
       },
@@ -267,7 +267,7 @@ describe('Direct Vue children bridge (dialog / drawer)', () => {
 
   it('should propagate r-drawer parent context to direct Vue slot children', () => {
     const wrapper = mountWithSpark(RendererDrawer, {
-      props: { title: '抽屉', modelValue: true },
+      props: { title: '抽屉', value: true },
       slots: {
         default: () => h(ContextProbe),
       },

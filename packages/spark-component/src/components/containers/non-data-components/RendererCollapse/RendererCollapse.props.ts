@@ -7,7 +7,7 @@ export interface RCollapseProps extends SparkNodeProps {
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
   /** 当前展开的面板 */
-  modelValue?: CollapseValue
+  value?: CollapseValue
   /** 展开/折叠切换回调 */
   onChange?: (value: CollapseValue) => void
 }

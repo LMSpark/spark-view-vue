@@ -21,4 +21,6 @@ export interface RFormProps
   toolbar?: ToolbarNode
   /** 表单标签宽度 */
   labelWidth?: string
+  /** 透传给 el-form 的显式属性 */
+  formProps?: Record<string, unknown>
 }

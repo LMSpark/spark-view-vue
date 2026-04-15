@@ -7,7 +7,7 @@
     :suffix="suffix"
     :title="title"
     :value-style="valueStyle"
-    v-bind="$attrs"
+    v-bind="hostProps"
     @finish="handleFinish"
     @change="handleChange"
   />
@@ -16,7 +16,7 @@
 <script setup lang="ts">
 /**
  * @skill display-countdown
- * @description 倒计时组件，基于 el-countdown 显示目标时间倒计时，支持自定义格式和结束事件。
+ * @description 倒计时组件，支持自定义格式和结束事件。
  */
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
@@ -47,3 +47,5 @@ function handleChange(value: number) {
   emit('change', value)
 }
 </script>
+
+

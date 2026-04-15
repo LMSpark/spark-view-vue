@@ -19,7 +19,7 @@
 <script setup lang="ts">
 /**
  * @skill r-radio
- * @description 单选按钮组字段，绑定 string/number 值，基于 el-radio-group，可切换按钮样式渲染。
+ * @description 单选按钮组字段，绑定 string/number 值，可切换按钮样式渲染。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -50,3 +50,4 @@ async function handleChange(value: string | number): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

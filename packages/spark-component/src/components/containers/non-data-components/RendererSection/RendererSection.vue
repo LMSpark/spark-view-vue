@@ -83,18 +83,18 @@
 <script setup lang="ts">
 /**
  * @skill r-section
- * @description 分区容器（别名 r-block），可选 el-card 包装，支持标题/描述/折叠/头部操作区。
+ * @description 分区容器（别名 r-block），支持可选卡片化包装以及标题/描述/折叠/头部操作区。
  * @category container
  * @notes dock='header' 声明头部操作区
  * @notes r-block 是此组件的别名，功能完全一致
  */
-import { computed, useAttrs, useSlots } from 'vue'
+import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
-import { useControlledValue } from '../state'
+import { useMirroredValue } from '../state'
 import type { RSectionProps } from './RendererSection.props'
 
 const props = withDefaults(defineProps<RSectionProps>(), {
@@ -116,20 +116,14 @@ const props = withDefaults(defineProps<RSectionProps>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
-const attrs = useAttrs()
 const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
 // 子节点类型已由绑定层从 children 提升为 props（header）
 const contentChildren = computed(() => props.children ?? [])
 
-function readStringAttr(name: string): string {
-  const value = attrs[name]
-  return typeof value === 'string' ? value : ''
-}
-
-const headerClassValue = computed(() => props.header?.props?.class ?? readStringAttr('headerClass'))
-const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
+const headerClassValue = computed(() => String(props.header?.props?.class ?? ''))
+const headerActionsClassValue = computed(() => '')
 
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
@@ -139,7 +133,7 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoRows: computed(() => props.gridAutoRows),
 })
 
-const collapsed = useControlledValue(computed(() => props.defaultCollapsed))
+const collapsed = useMirroredValue(computed(() => props.defaultCollapsed))
 const hasHeader = computed(() => Boolean(props.title || props.description))
 const hasHeaderRight = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined || props.collapsible)
 

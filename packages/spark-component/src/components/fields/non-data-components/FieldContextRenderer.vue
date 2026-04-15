@@ -103,7 +103,7 @@ interface Props extends SparkNodeProps {
   field?: string | undefined
   /** 列宽 */
   width?: string | number | undefined
-  /** Element Plus 表格列排序能力 */
+  /** 表格列排序能力 */
   sortable?: boolean | 'custom' | undefined
   /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */
   filterable?: boolean | undefined

@@ -9,7 +9,7 @@
     </div>
 
     <div class="renderer-detail-main">
-      <div class="renderer-detail" v-bind="$attrs" :style="detailAlignStyle">
+      <div class="renderer-detail" v-bind="detailPropsValue" :style="detailAlignStyle">
         <div class="renderer-detail-grid" :style="gridStyle">
           <div
             v-for="(child, index) in gridChildren"
@@ -29,7 +29,7 @@
 <script setup lang="ts">
 /**
  * @skill r-detail
- * @description 数据详情容器，基于 el-form 以只读模式展示 DataView.currentRow 字段值，与 r-form 结构一致但不可编辑。
+ * @description 数据详情容器，与 r-form 结构一致但不可编辑。
  * @category container
  * @binding datakey-driven
  * @provides DATA_SOURCE
@@ -57,6 +57,7 @@ const props = withDefaults(defineProps<RDetailProps>(), {
   titleAlign: 'left',
   valueAlign: 'left',
 })
+const detailPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.detailProps ?? {}) }))
 
 const detailAlignStyle = computed<StyleValue>(() => ({
   '--spark-detail-title-align': props.titleAlign,
@@ -140,3 +141,4 @@ registerApi(detailApi)
   min-width: 0;
 }
 </style>
+

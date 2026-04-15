@@ -66,17 +66,17 @@
           <JsonTreeEditor
             v-if="resolvedActiveFile === 'rule.json'"
             type="json-tree-editor"
-            :model-value="state.editFiles[resolvedActiveFile] ?? ''"
+            :value="state.editFiles[resolvedActiveFile] ?? ''"
             :policy="rulePolicy"
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:model-value="editor.updateText"
+            @update:value="editor.updateText"
           />
           <JsonTreeEditor
             v-else-if="resolvedActiveFile === 'pagedata.json'"
             type="json-tree-editor"
-            :model-value="state.editFiles[resolvedActiveFile] ?? ''"
+            :value="state.editFiles[resolvedActiveFile] ?? ''"
             :document-value="(state.pageDataDocument.value as JsonDocument | null)"
             :policy="pageDataPolicy"
             class="code-input code-input--json"
@@ -86,11 +86,11 @@
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
-            :model-value="state.editFiles[resolvedActiveFile] ?? ''"
+            :value="state.editFiles[resolvedActiveFile] ?? ''"
             :language="resolveCodeLanguage(resolvedActiveFile)"
             class="code-input code-input--code"
             height="100%"
-            @update:model-value="editor.updateText"
+            @update:value="editor.updateText"
           />
           <el-input
             v-else

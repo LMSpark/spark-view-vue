@@ -7,7 +7,7 @@
     :column="column"
     :direction="direction"
     :size="descriptionsSize"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"
@@ -20,7 +20,7 @@
 <script setup lang="ts">
 /**
  * @skill r-descriptions
- * @description 描述列表容器，基于 el-descriptions 以键值对布局展示结构化信息。
+ * @description 描述列表容器。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -38,3 +38,5 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

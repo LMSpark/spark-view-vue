@@ -16,8 +16,8 @@ export interface RDrawerProps
   footer?: FooterNode
   /** 抽屉标题 */
   title?: string
-  /** 控制显隐（v-model） */
-  modelValue?: boolean
+  /** 控制显隐 */
+  value?: boolean
   /** 内容区 CSS 类名 */
   bodyClass?: string
 }

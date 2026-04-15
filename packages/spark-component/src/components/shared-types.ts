@@ -63,6 +63,12 @@ export interface SparkNodeProps {
    * - 只接受结构节点的组件，必须在本地显式收窄，而不能在共享层提前写死为 `SparkNode[]`
    */
   children?: SparkNodeChildren
+  /**
+   * 底层宿主组件透传属性。
+   *
+   * 用于替代隐式属性透传，要求调用方显式声明并传入。
+   */
+  hostProps?: Record<string, unknown>
 }
 
 /**
@@ -169,6 +175,40 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
    * 当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。
    */
   placeholder?: string
+  /**
+   * 字段值变更回调。
+   *
+   * 统一由字段控制层透传给事件分发器，替代隐式监听提取。
+   */
+  onChange?: (...args: unknown[]) => void | Promise<void>
+  /**
+   * 表头/详情标题对齐方向。
+   * 用于表格表头及详情项标题的水平对齐控制。
+   */
+  titleAlign?: 'left' | 'center' | 'right'
+  /**
+   * 值区对齐方向。
+   * 用于表格单元格及详情项值区的水平对齐控制。
+   */
+  valueAlign?: 'left' | 'center' | 'right'
+  /**
+   * 表格表头单元格 CSS 类名。
+   * 直接映射到 `el-table-column` 的 `label-class-name`。
+   */
+  headerCellClassName?: string
+  /**
+   * 表格单元格 CSS 类名。
+   * 直接映射到 `el-table-column` 的 `class-name`。
+   */
+  cellClassName?: string
+  /**
+   * 详情/表单标题 CSS 类名。
+   */
+  titleClassName?: string
+  /**
+   * 详情/表格值区 CSS 类名。
+   */
+  valueClassName?: string
 }
 
 /**

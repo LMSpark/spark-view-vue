@@ -1,7 +1,7 @@
 <template>
   <el-button
     v-if="isVisible"
-    v-bind="$attrs"
+    v-bind="hostProps"
     :type="resolved.buttonType"
     :size="resolved.buttonSize"
     :plain="resolved.plain"
@@ -105,3 +105,4 @@ function handleClick() {
   nearestHost.execute?.(currentNode.value)
 }
 </script>
+

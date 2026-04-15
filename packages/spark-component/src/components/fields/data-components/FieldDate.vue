@@ -21,7 +21,7 @@
 <script setup lang="ts">
 /**
  * @skill r-date
- * @description 日期选择字段，绑定日期/字符串值，基于 el-date-picker 支持年/月/日/日期时间/范围等多种模式。
+ * @description 日期选择字段，绑定日期/字符串值。
  * @api type - 选择器类型（'date'|'datetime'|'daterange' 等）
  * @api format - 显示格式
  * @api valueFormat - 绑定值格式
@@ -77,3 +77,4 @@ async function handleChange(value: string | Date | Array<string | Date>): Promis
   await handleControlledChange(value)
 }
 </script>
+

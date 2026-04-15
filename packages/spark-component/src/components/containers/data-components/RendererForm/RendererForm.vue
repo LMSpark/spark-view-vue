@@ -9,7 +9,7 @@
     </RendererHostScope>
 
     <div class="renderer-form-main">
-      <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="$attrs">
+      <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
         <div class="renderer-form-grid" :style="gridStyle">
           <div
             v-for="(child, index) in gridChildren"
@@ -29,7 +29,7 @@
 <script setup lang="ts">
 /**
  * @skill r-form
- * @description 数据表单容器，基于 el-form 绑定 DataView.currentRow 实现字段双向编辑，通过 CONTEXT_DATA 能力向子组件暴露表单数据。
+ * @description 数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。
  * @category container
  * @binding datakey-driven
  * @provides DATA_SOURCE
@@ -41,7 +41,7 @@
 /**
  * RendererForm - 表单容器组件
  */
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
@@ -58,6 +58,8 @@ const props = withDefaults(defineProps<RFormProps>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
+
+const formPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.formProps ?? {}) }))
 
 const {
   registerApi,
@@ -157,3 +159,4 @@ const toolbarHost: SparkComponentHost = {
   min-width: 0;
 }
 </style>
+

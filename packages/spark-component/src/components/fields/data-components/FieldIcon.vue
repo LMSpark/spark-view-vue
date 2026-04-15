@@ -50,7 +50,7 @@
 <script setup lang="ts">
 /**
  * @skill r-icon
- * @description 图标选择字段，绑定图标名称字符串，基于 el-select 在下拉列表中提供可视化图标预览选择。
+ * @description 图标选择字段，绑定图标名称字符串。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -101,3 +101,4 @@ async function handleChange(value: string | number | boolean): Promise<void> {
   gap: 8px;
 }
 </style>
+

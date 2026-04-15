@@ -2,7 +2,7 @@ import type { SparkNode } from '../../../internal'
 import type { RendererStepsApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-type StepsEmit = (event: 'update:modelValue', value: string | number) => void
+type StepsEmit = (event: 'update:value', value: string | number) => void
 
 interface RendererStepsZeroCodeOptions {
   emit: StepsEmit
@@ -19,7 +19,7 @@ export function createRendererStepsZeroCode(options: RendererStepsZeroCodeOption
     if (!step) return
     const nextValue = options.getStepName(step, index)
     options.activeStepName.value = nextValue
-    options.emit('update:modelValue', nextValue)
+    options.emit('update:value', nextValue)
     options.onStepChange?.(nextValue, step, index)
   }
 

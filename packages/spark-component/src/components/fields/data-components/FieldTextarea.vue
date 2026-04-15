@@ -31,7 +31,7 @@
 <script setup lang="ts">
 /**
  * @skill r-textarea
- * @description 多行文本字段，绑定 string 值，基于 el-input textarea 模式，支持自动高度和字数限制。
+ * @description 多行文本字段，绑定 string 值，支持自动高度和字数限制。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -68,3 +68,4 @@ async function handleChange(value: string): Promise<void> {
   word-break: break-word;
 }
 </style>
+

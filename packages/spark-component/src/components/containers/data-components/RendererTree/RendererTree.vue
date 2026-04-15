@@ -15,7 +15,7 @@
           :data="treeData"
           :node-key="nodeKeyField"
           :props="elTreeFieldProps"
-          v-bind="$attrs"
+          v-bind="treePropsValue"
           @node-click="handleNodeClick"
           @node-expand="handleNodeExpand"
           @node-collapse="handleNodeCollapse"
@@ -58,13 +58,13 @@
 <script setup lang="ts">
 /**
  * @skill r-tree
- * @description 树形容器，基于 el-tree 绑定 DataView 渲染嵌套树结构，支持懒加载、节点操作和编辑器侧面板。
+ * @description 树形容器，支持懒加载、节点操作和编辑器侧面板。
  * @category container
  * @binding datakey-driven
  * @provides DATA_SOURCE
  * @provides CONTEXT_DATA
  * @consumes PAGE_DATASET
- * @notes 其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）
+ * @notes 树形原生属性需通过 props.treeProps 显式声明（如 defaultExpandAll、showCheckbox）
  */
 /**
  * RendererTree - 树形容器组件
@@ -101,6 +101,7 @@ import RendererDataScope from '../RendererRowFragment/RendererDataScope.vue'
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
 })
+const treePropsValue = computed<Record<string, unknown>>(() => ({ ...(props.treeProps ?? {}) }))
 const {
   effectiveDataKey,
   nodeContentChildren,
@@ -348,3 +349,4 @@ function getNodeActionConfigs(row: IDataRow): SparkNode[] {
   color: #303133;
 }
 </style>
+

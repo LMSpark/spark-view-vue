@@ -1,4 +1,3 @@
-import { useAttrs } from 'vue'
 import { useEventDefaults } from '../../../containers/support/index.js'
 import type { CancellableControl } from '../../../internal'
 
@@ -22,6 +21,7 @@ interface UseControlledFieldChangeOptions<TValue> {
   getValue: () => TValue
   emitUpdate: (value: TValue) => void
   syncValue: (value: TValue) => void
+  handlerSource?: Readonly<Record<string, unknown>>
 }
 
 /**
@@ -31,7 +31,6 @@ interface UseControlledFieldChangeOptions<TValue> {
  * 内部统一委托给 useEventDefaults，避免各字段组件重复拼装 change 分发逻辑。
  */
 export function useControlledFieldChange<TValue>(options: UseControlledFieldChangeOptions<TValue>) {
-  const attrs = useAttrs()
   const { dispatch } = useEventDefaults({
     change: {
       systemDefault: nextValue => {
@@ -39,7 +38,7 @@ export function useControlledFieldChange<TValue>(options: UseControlledFieldChan
         options.syncValue(nextValue as TValue)
       },
     },
-  }, attrs as Readonly<Record<string, unknown>>)
+  }, options.handlerSource ?? {})
 
   async function handleControlledChange(nextValue: TValue): Promise<void> {
     await dispatch('change', nextValue, options.getValue())

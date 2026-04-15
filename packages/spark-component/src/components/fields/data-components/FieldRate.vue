@@ -15,7 +15,7 @@
 <script setup lang="ts">
 /**
  * @skill r-rate
- * @description 评分字段，绑定 number 值，基于 el-rate 提供星级评分交互，支持半星模式。
+ * @description 评分字段，绑定 number 值，支持半星模式。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -44,3 +44,4 @@ async function handleChange(value: number): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

@@ -7,7 +7,7 @@
     :align="contentAlign"
     :label-class-name="labelClassName"
     :class-name="className"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="resolvedChildren.length > 0">
       <SparkComponentRenderer
@@ -23,7 +23,7 @@
 <script setup lang="ts">
 /**
  * @skill r-descriptions-item
- * @description 描述列表项，基于 el-descriptions-item 定义标签和内容值，支持字段绑定。
+ * @description 描述列表项，支持字段绑定。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -48,3 +48,5 @@ const resolvedContent = computed(() => {
   return ''
 })
 </script>
+
+

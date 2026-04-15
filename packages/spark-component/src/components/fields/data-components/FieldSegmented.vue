@@ -6,7 +6,7 @@
     :size="size"
     :block="block"
     :disabled="isDisabled || !isCurrentFieldEditable"
-    v-bind="$attrs"
+    v-bind="hostProps"
     @update:model-value="handleChange"
   />
 </template>
@@ -14,7 +14,7 @@
 <script setup lang="ts">
 /**
  * @skill r-segmented
- * @description 分段选择器字段，绑定 string/number 值，基于 el-segmented 提供紧凑的互斥选项切换。
+ * @description 分段选择器字段，绑定 string/number 值。
  */
 import { ref, computed, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
@@ -82,3 +82,5 @@ async function handleChange(val: string | number) {
   emit('change', val)
 }
 </script>
+
+

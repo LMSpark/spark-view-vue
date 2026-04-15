@@ -4,7 +4,7 @@
     :direction="direction"
     :border-style="borderStyle"
     :content-position="contentPosition"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="content">{{ content }}</template>
   </el-divider>
@@ -13,7 +13,7 @@
 <script setup lang="ts">
 /**
  * @skill r-divider
- * @description 分割线组件，基于 el-divider 在布局中插入水平或垂直分隔，支持文字内容定位。
+ * @description 分割线组件，支持文字内容定位。
  */
 import { useSparkPageComponent } from '../../internal'
 import type { RDividerProps } from './RendererDivider.props'
@@ -29,3 +29,5 @@ const props = withDefaults(defineProps<RDividerProps>(), {
 
 const { isVisible } = useSparkPageComponent(props)
 </script>
+
+

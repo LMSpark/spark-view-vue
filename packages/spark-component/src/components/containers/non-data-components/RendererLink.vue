@@ -6,7 +6,7 @@
     :disabled="isDisabled"
     :href="href"
     :target="target"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     {{ label }}
     <SparkComponentRenderer
@@ -20,7 +20,7 @@
 <script setup lang="ts">
 /**
  * @skill r-link
- * @description 链接组件，基于 el-link 提供带样式的超链接，可渲染子内容。
+ * @description 链接组件，可渲染子内容。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -39,3 +39,5 @@ const { isVisible, isDisabled } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

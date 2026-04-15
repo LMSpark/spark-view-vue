@@ -10,7 +10,7 @@
 
     <div class="renderer-tabs-main">
       <el-tabs
-        v-bind="$attrs"
+        v-bind="hostProps"
         :model-value="currentActiveName"
         @update:model-value="handleModelUpdate"
         @tab-click="handleTabClick"
@@ -36,7 +36,7 @@
 <script setup lang="ts">
 /**
  * @skill r-tabs
- * @description 标签页容器，基于 el-tabs 管理多标签切换和激活状态，支持工具栏。
+ * @description 标签页容器，支持工具栏。
  * @category container
  * @notes children 内放 r-tab-pane，每个 tab-pane 内可嵌套任意组件
  */
@@ -56,7 +56,7 @@ const props = withDefaults(defineProps<RTabsProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
+  'update:value': [value: string | number]
 }>()
 
 const { registerApi } = useSparkPageComponent(props)
@@ -68,7 +68,7 @@ const paneConfigs = computed(() =>
   getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-tab-pane')
 )
 const currentActiveName = useDefaultedSelection({
-  modelValue: computed(() => props.modelValue),
+  value: computed(() => props.value),
   items: paneConfigs,
   getValue: getPaneName,
 })
@@ -189,3 +189,5 @@ function getPaneSlotScope(pane: SparkNode, index: number) {
   min-width: 0;
 }
 </style>
+
+

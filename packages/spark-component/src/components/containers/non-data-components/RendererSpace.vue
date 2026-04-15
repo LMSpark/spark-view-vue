@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isVisible" :class="spaceClasses" :style="spaceStyle" v-bind="$attrs">
+  <div v-if="isVisible" :class="spaceClasses" :style="spaceStyle" v-bind="hostProps">
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"
       :key="nodeId(child) ?? `r-space-child-${index}`"
@@ -58,3 +58,4 @@ const spaceStyle = computed(() => ({
   flex: 1;
 }
 </style>
+

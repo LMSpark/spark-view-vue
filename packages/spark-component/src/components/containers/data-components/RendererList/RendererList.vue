@@ -9,7 +9,7 @@
     </div>
 
     <div class="renderer-list-main">
-      <div class="renderer-list" :style="listStyle" v-bind="$attrs">
+      <div class="renderer-list" :style="listStyle" v-bind="listPropsValue">
         <template v-if="showListItems">
           <div
             v-for="(row, index) in listRows"
@@ -84,7 +84,7 @@
  * @consumes PAGE_DATASET
  * @notes dock='toolbar' 声明工具栏节点；dock='actions' 声明列表项操作
  */
-import { computed, useAttrs, useSlots } from 'vue'
+import { computed, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
@@ -118,13 +118,8 @@ const props = withDefaults(defineProps<RListProps>(), {
   gridAutoRows: 'minmax(32px, auto)',
   itemRowSpan: 1,
 })
-const attrs = useAttrs()
+const listPropsValue = computed<Record<string, unknown>>(() => ({ ...(props.listProps ?? {}) }))
 const slots = useSlots()
-
-function readStringAttr(name: string): string | undefined {
-  const value = attrs[name]
-  return typeof value === 'string' && value.length > 0 ? value : undefined
-}
 
 // r-toolbar / r-actions 子节点已由绑定层提升为 props，
 // 此处 children 仅包含内容子节点。
@@ -180,7 +175,7 @@ const {
 } = useContainerActions<{ row: IDataRow, index: number }>({
   actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
   actionPosition: computed(() => props.actions?.props?.position ?? 'right'),
-  actionClass: computed(() => props.actions?.props?.class ?? readStringAttr('itemActionsClass') ?? ''),
+  actionClass: computed(() => String(props.actions?.props?.class ?? '')),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

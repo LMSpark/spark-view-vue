@@ -12,7 +12,7 @@
     :preview-teleported="previewTeleported"
     :close-on-press-escape="closeOnPressEscape"
     :style="imageStyle"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template #placeholder>
       <slot name="placeholder">
@@ -32,7 +32,7 @@
 <script setup lang="ts">
 /**
  * @skill display-image
- * @description 图片展示组件，基于 el-image 显示图片，支持懒加载、预览画廊和加载占位。
+ * @description 图片展示组件，支持懒加载、预览画廊和加载占位。
  */
 import { computed } from 'vue'
 import { Picture } from '@element-plus/icons-vue'
@@ -99,3 +99,5 @@ const imageStyle = computed(() => {
   font-size: 24px;
 }
 </style>
+
+

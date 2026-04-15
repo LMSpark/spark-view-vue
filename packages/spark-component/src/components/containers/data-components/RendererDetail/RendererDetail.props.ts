@@ -23,4 +23,6 @@ export interface RDetailProps
   titleAlign?: 'left' | 'center' | 'right'
   /** 值对齐 */
   valueAlign?: 'left' | 'center' | 'right'
+  /** 透传给详情根节点的显式属性 */
+  detailProps?: Record<string, unknown>
 }

@@ -29,7 +29,7 @@
 <script setup lang="ts">
 /**
  * @skill r-upload
- * @description 文件上传字段，绑定文件路径字符串，基于 el-upload 支持列表/图片/卡片等多种文件展示模式。
+ * @description 文件上传字段，绑定文件路径字符串。
  * @api autoUpload - 自动上传（默认 true）
  * @api showFileList - 显示文件列表（默认 true）
  * @api limit - 最大上传数量（默认 1）
@@ -140,3 +140,4 @@ const {
   font-size: 20px;
 }
 </style>
+

@@ -140,17 +140,24 @@ describe('FieldContextRenderer CSS class 传递', () => {
 })
 
 /**
- * 集成测试：验证 useFieldContext 通过 useAttrs() 从父组件 attrs 读取对齐参数，
+ * 集成测试：验证 useFieldContext 通过显式 props 读取对齐参数，
  * 并正确传递给 FieldContextRenderer。
  *
- * 链路：ParentWrapper[attrs] → FieldLikeComponent[useAttrs()] → useFieldContext → FieldContextRenderer → el-table-column
+ * 链路：ParentWrapper[props] → FieldLikeComponent[props] → useFieldContext → FieldContextRenderer → el-table-column
  */
 describe('useFieldContext attrs 集成传递', () => {
-  // 模拟字段组件：不声明 alignment props，通过 useAttrs 读取
+  // 模拟字段组件：显式声明 alignment props，通过 props 传递给 useFieldContext
   const FieldLikeStub = defineComponent({
     name: 'FieldLikeStub',
-    props: { field: String, label: String, width: Number },
-    inheritAttrs: false,
+    props: {
+      field: String, label: String, width: Number,
+      titleAlign: String as () => 'left' | 'center' | 'right' | undefined,
+      valueAlign: String as () => 'left' | 'center' | 'right' | undefined,
+      headerCellClassName: String,
+      cellClassName: String,
+      titleClassName: String,
+      valueClassName: String,
+    },
     setup(props) {
       const permission = {
         fieldName: computed(() => props.field ?? 'id'),
@@ -162,7 +169,16 @@ describe('useFieldContext attrs 集成传递', () => {
         getTableCellDisplayValue: (row: IDataRow) => String((row as Record<string, unknown>)['id'] ?? ''),
         validationRules: computed(() => [] as never[]),
       }
-      const fieldCtx = useFieldContext({ type: 'r-text', width: props.width }, permission)
+      const fieldCtx = useFieldContext({
+        type: 'r-text',
+        width: props.width,
+        ...(props.titleAlign !== undefined ? { titleAlign: props.titleAlign } : {}),
+        ...(props.valueAlign !== undefined ? { valueAlign: props.valueAlign } : {}),
+        ...(props.headerCellClassName !== undefined ? { headerCellClassName: props.headerCellClassName } : {}),
+        ...(props.cellClassName !== undefined ? { cellClassName: props.cellClassName } : {}),
+        ...(props.titleClassName !== undefined ? { titleClassName: props.titleClassName } : {}),
+        ...(props.valueClassName !== undefined ? { valueClassName: props.valueClassName } : {}),
+      }, permission)
       return () => h(FieldContextRenderer, fieldCtx.value)
     },
   })
@@ -189,32 +205,26 @@ describe('useFieldContext attrs 集成传递', () => {
     })
   }
 
-  it('headerCellClassName 通过 attrs → useFieldContext → FieldContextRenderer', () => {
+  it('headerCellClassName 通过 props → useFieldContext → FieldContextRenderer', () => {
     const wrapper = mountFieldLike({ headerCellClassName: 'demo-col-header-center' })
     const col = wrapper.find('.el-table-column-test-stub')
     expect(col.attributes('data-label-class-name')).toBe('demo-col-header-center')
   })
 
-  it('cellClassName 通过 attrs → useFieldContext → FieldContextRenderer', () => {
+  it('cellClassName 通过 props → useFieldContext → FieldContextRenderer', () => {
     const wrapper = mountFieldLike({ cellClassName: 'demo-col-cell-right' })
     const col = wrapper.find('.el-table-column-test-stub')
     expect(col.attributes('data-class-name')).toBe('demo-col-cell-right')
   })
 
-  it('仅识别规范 camelCase attrs，kebab-case 不再生效', () => {
-    const wrapper = mountFieldLike({ 'header-cell-class-name': 'demo-col-header-center' })
-    const col = wrapper.find('.el-table-column-test-stub')
-    expect(col.attributes('data-label-class-name')).toBe('spark-col-header--left')
-  })
-
-  it('titleAlign + valueAlign 通过 attrs 传递', () => {
+  it('titleAlign + valueAlign 通过 props 传递', () => {
     const wrapper = mountFieldLike({ titleAlign: 'center', valueAlign: 'right' })
     const col = wrapper.find('.el-table-column-test-stub')
     expect(col.attributes('data-header-align')).toBe('center')
     expect(col.attributes('data-align')).toBe('right')
   })
 
-  it('valueClassName 通过 attrs → span.field-table-value', () => {
+  it('valueClassName 通过 props → span.field-table-value', () => {
     const wrapper = mountFieldLike({ valueClassName: 'demo-value-center' })
     const span = wrapper.find('span.field-table-value')
     expect(span.exists()).toBe(true)

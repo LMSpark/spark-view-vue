@@ -1,5 +1,5 @@
 <template>
-  <FieldContextRenderer v-bind="{ ...fieldCtx, ...forwardedAttrs }">
+  <FieldContextRenderer v-bind="fieldCtx">
     <template #form>
       <div class="entity-picker-field">
         <el-input
@@ -19,15 +19,13 @@
  * @skill r-entity-picker
  * @description 通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。
  */
-import { computed, useAttrs } from 'vue'
+import { computed } from 'vue'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import { useSelectorFieldActions } from '../actions/useSelectorFieldActions'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useEntityPickerState } from './composables/useEntityPickerState'
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import type { REntityPickerProps, EntityPickerValue } from './FieldEntityPicker.props'
-
-defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<REntityPickerProps>(), {
   type: 'r-entity-picker',
@@ -42,8 +40,6 @@ const props = withDefaults(defineProps<REntityPickerProps>(), {
 })
 
 const emit = defineEmits<FieldValueUpdateEmits<EntityPickerValue>>()
-const attrs = useAttrs()
-const forwardedAttrs = computed<Record<string, unknown>>(() => ({ ...(attrs as Readonly<Record<string, unknown>>) }))
 
 const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<EntityPickerValue>({
   props,

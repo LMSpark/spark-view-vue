@@ -5,10 +5,9 @@ import type { ValueRef } from '../../../shared-types.js'
 
 interface RendererTableViewStateOptions {
   filterNode: ValueRef<FilterNode | undefined>
-  baseTableAttrs: ValueRef<Record<string, unknown>>
+  baseElTableProps: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
   filteredRows: ValueRef<IDataRow[] | undefined>
-  readStringAttr: (name: string) => string | undefined
 }
 
 interface TableTreeSeedNode extends Record<string, unknown> {
@@ -29,8 +28,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
   ))
 
   const tableRowKeyValue = computed(() =>
-    options.readStringAttr('rowKey')
-    ?? options.resolvedView.value?.primaryKey
+    options.resolvedView.value?.primaryKey
     ?? options.resolvedView.value?.treeConfig?.idField
   )
 
@@ -39,8 +37,8 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     return DEFAULT_TABLE_TREE_PROPS
   })
 
-  const tableAttrs = computed<Record<string, unknown>>(() => {
-    const result = { ...options.baseTableAttrs.value }
+  const elTableProps = computed<Record<string, unknown>>(() => {
+    const result = { ...options.baseElTableProps.value }
     if (!options.resolvedView.value?.treeConfig) return result
 
     if (result['rowKey'] === undefined && tableRowKeyValue.value) {
@@ -72,7 +70,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
 
   return {
     tableData,
-    tableAttrs,
+    elTableProps,
     filterCollapsibleValue,
     filterAutoFitMinWidthValue,
     filterItemSpanValue,

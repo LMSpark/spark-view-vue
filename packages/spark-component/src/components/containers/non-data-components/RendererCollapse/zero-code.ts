@@ -4,11 +4,11 @@ import type { ValueRef } from '../../../shared-types.js'
 
 type CollapseValue = string | number | Array<string | number>
 
-type CollapseEmit = (event: 'update:modelValue', value: CollapseValue) => void
+type CollapseEmit = (event: 'update:value', value: CollapseValue) => void
 
 interface RendererCollapseZeroCodeOptions {
   emit: CollapseEmit
-  currentModelValue: ValueRef<CollapseValue | undefined>
+  currentValue: ValueRef<CollapseValue | undefined>
   itemConfigs: ValueRef<SparkNode[]>
   getItemName: (item: SparkNode, index: number) => string | number
   onChange: ((value: CollapseValue) => void) | undefined
@@ -17,31 +17,31 @@ interface RendererCollapseZeroCodeOptions {
 export function createRendererCollapseZeroCode(options: RendererCollapseZeroCodeOptions) {
   const collapseApi: RendererCollapseApi = {
     getExpandedItems() {
-      return options.currentModelValue.value
+      return options.currentValue.value
     },
     setExpandedItems(value) {
-      options.currentModelValue.value = value
-      options.emit('update:modelValue', value)
+      options.currentValue.value = value
+      options.emit('update:value', value)
     },
     expandAll() {
       const allNames = options.itemConfigs.value.map((item, index) => options.getItemName(item, index))
-      options.currentModelValue.value = allNames
-      options.emit('update:modelValue', allNames)
+      options.currentValue.value = allNames
+      options.emit('update:value', allNames)
     },
     collapseAll() {
-      options.currentModelValue.value = []
-      options.emit('update:modelValue', [])
+      options.currentValue.value = []
+      options.emit('update:value', [])
     },
     toggleItem(name) {
-      const current = Array.isArray(options.currentModelValue.value) ? options.currentModelValue.value : []
+      const current = Array.isArray(options.currentValue.value) ? options.currentValue.value : []
       const next = current.includes(name)
         ? current.filter(item => item !== name)
         : [...current, name]
-      options.currentModelValue.value = next
-      options.emit('update:modelValue', next)
+      options.currentValue.value = next
+      options.emit('update:value', next)
     },
     isItemExpanded(name) {
-      const current = options.currentModelValue.value
+      const current = options.currentValue.value
       if (Array.isArray(current)) return current.includes(name)
       return current === name
     },
@@ -50,11 +50,11 @@ export function createRendererCollapseZeroCode(options: RendererCollapseZeroCode
   return {
     collapseApi,
     handleModelUpdate(value: CollapseValue) {
-      options.currentModelValue.value = value
-      options.emit('update:modelValue', value)
+      options.currentValue.value = value
+      options.emit('update:value', value)
     },
     handleChange(value: CollapseValue) {
-      options.currentModelValue.value = value
+      options.currentValue.value = value
       options.onChange?.(value)
     },
   }

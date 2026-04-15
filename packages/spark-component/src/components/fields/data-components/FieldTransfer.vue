@@ -18,7 +18,7 @@
 <script setup lang="ts">
 /**
  * @skill r-transfer
- * @description 穿梭框字段，绑定数组值，基于 el-transfer 提供双面板列表项转移选择，支持搜索过滤。
+ * @description 穿梭框字段，绑定数组值，支持搜索过滤。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -48,3 +48,4 @@ async function handleChange(value: TransferValue): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

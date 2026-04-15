@@ -48,4 +48,6 @@ export interface RListProps
   itemRowSpan?: number
   /** 列表项点击回调 */
   onItemClick?: RowClickHandler
+  /** 透传给列表根节点的显式属性 */
+  listProps?: Record<string, unknown>
 }

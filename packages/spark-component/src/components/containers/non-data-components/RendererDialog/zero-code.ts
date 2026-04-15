@@ -1,7 +1,7 @@
 import type { RendererDialogApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-type DialogEmit = (event: 'update:modelValue', value: boolean) => void
+type DialogEmit = (event: 'update:value', value: boolean) => void
 
 interface RendererDialogZeroCodeOptions {
   emit: DialogEmit
@@ -15,23 +15,23 @@ interface RendererDialogZeroCodeOptions {
 export function createRendererDialogZeroCode(options: RendererDialogZeroCodeOptions) {
   const dialogApi: RendererDialogApi = {
     open() {
-      options.emit('update:modelValue', true)
+      options.emit('update:value', true)
     },
     close() {
-      options.emit('update:modelValue', false)
+      options.emit('update:value', false)
     },
     isVisible() {
       return options.visibleValue.value
     },
     toggle() {
-      options.emit('update:modelValue', !options.visibleValue.value)
+      options.emit('update:value', !options.visibleValue.value)
     },
   }
 
   return {
     dialogApi,
     handleModelUpdate(value: boolean) {
-      options.emit('update:modelValue', value)
+      options.emit('update:value', value)
     },
     handleOpen() {
       options.onOpen?.()

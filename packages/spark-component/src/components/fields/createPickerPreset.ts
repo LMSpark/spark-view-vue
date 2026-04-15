@@ -7,7 +7,7 @@
  *
  * 每个变体组件仅覆盖 FieldEntityPicker 的若干默认 prop，其余完全透传。
  */
-import { computed, defineComponent, h, useAttrs } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 import type { PropType } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import type { SparkNodeChildren } from '../internal'
@@ -81,13 +81,6 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
     props: SHARED_PROPS,
     emits: ['update:value'],
     setup(props, { emit }) {
-      const attrs = useAttrs()
-      const rawAttrs = attrs as Readonly<Record<string, unknown>>
-
-      const passthroughAttrs = computed<Record<string, unknown>>(() => {
-        return { ...rawAttrs }
-      })
-
       const forwardedProps = computed<Record<string, unknown>>(() => {
         const result: Record<string, unknown> = {}
 
@@ -138,7 +131,6 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
 
       return () => h(FieldEntityPicker, {
         type: 'r-entity-picker',
-        ...passthroughAttrs.value,
         ...forwardedProps.value,
         'onUpdate:value': (value: EntityPickerValue) => emitFieldValueUpdate(emit, value),
       })

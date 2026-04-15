@@ -19,7 +19,7 @@
 <script setup lang="ts">
 /**
  * @skill r-checkbox-group
- * @description 复选框组字段，绑定数组值，基于 el-checkbox-group 支持多选，可切换按钮样式。
+ * @description 复选框组字段，绑定数组值，可切换按钮样式。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -52,3 +52,4 @@ async function handleChange(value: MultiValue): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

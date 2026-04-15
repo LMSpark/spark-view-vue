@@ -21,7 +21,7 @@
 <script setup lang="ts">
 /**
  * @skill r-time-picker
- * @description 时间选择字段，绑定时间字符串或 Date 值，基于 el-time-picker 支持时间范围选择。
+ * @description 时间选择字段，绑定时间字符串或 Date 值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -63,3 +63,4 @@ async function handleChange(value: string | Date): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

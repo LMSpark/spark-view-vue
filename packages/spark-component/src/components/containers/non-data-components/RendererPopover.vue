@@ -13,7 +13,7 @@
     :hide-after="hideAfter"
     :show-arrow="showArrow"
     :popper-class="popperClass"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template #reference>
       <SparkComponentRenderer
@@ -35,7 +35,7 @@
 <script setup lang="ts">
 /**
  * @skill r-popover
- * @description 弹出提示容器，基于 el-popover 为触发元素显示浮层内容，支持多种触发方式和位置。
+ * @description 弹出提示容器，支持多种触发方式和位置。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -57,3 +57,5 @@ const { isVisible, isDisabled } = useSparkPageComponent(props)
 const referenceChildren = computed(() => getSparkNodeChildren(props.children))
 const contentChildren = computed(() => getSparkNodeChildren(props.contentChildren))
 </script>
+
+

@@ -11,7 +11,7 @@
     :hide-icon="hideIcon"
     :hide-after="hideAfter"
     :width="width"
-    v-bind="$attrs"
+    v-bind="hostProps"
     @confirm="$emit('confirm')"
     @cancel="$emit('cancel')"
   >
@@ -28,7 +28,7 @@
 <script setup lang="ts">
 /**
  * @skill r-popconfirm
- * @description 确认气泡组件，基于 el-popconfirm 在目标元素上弹出确认/取消操作提示。
+ * @description 确认气泡组件。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -54,3 +54,5 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

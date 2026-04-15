@@ -25,7 +25,13 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-interface FieldControlProps extends OptionalWithUndefined<Pick<SparkFieldProps, 'type' | 'width' | 'children'>> {
+interface FieldControlProps extends OptionalWithUndefined<Pick<SparkFieldProps,
+  | 'type' | 'width' | 'children'
+  | 'onChange'
+  | 'titleAlign' | 'valueAlign'
+  | 'headerCellClassName' | 'cellClassName'
+  | 'titleClassName' | 'valueClassName'
+>> {
 }
 
 interface UseFieldControlStateOptions<TValue> {
@@ -40,12 +46,21 @@ export function useFieldControlState<TValue>(options: UseFieldControlStateOption
     type: options.props.type ?? options.fieldType,
     width: options.props.width,
     ...(options.props.children !== undefined ? { children: options.props.children } : {}),
+    ...(options.props.titleAlign !== undefined ? { titleAlign: options.props.titleAlign } : {}),
+    ...(options.props.valueAlign !== undefined ? { valueAlign: options.props.valueAlign } : {}),
+    ...(options.props.headerCellClassName !== undefined ? { headerCellClassName: options.props.headerCellClassName } : {}),
+    ...(options.props.cellClassName !== undefined ? { cellClassName: options.props.cellClassName } : {}),
+    ...(options.props.titleClassName !== undefined ? { titleClassName: options.props.titleClassName } : {}),
+    ...(options.props.valueClassName !== undefined ? { valueClassName: options.props.valueClassName } : {}),
   }, options.state)
 
   const { handleControlledChange } = useControlledFieldChange<TValue>({
     getValue: () => options.state.fieldValue.value,
     emitUpdate: value => options.emitUpdate(value),
     syncValue: options.state.syncValue,
+    handlerSource: {
+      ...(options.props.onChange !== undefined ? { onChange: options.props.onChange } : {}),
+    },
   })
 
   return {

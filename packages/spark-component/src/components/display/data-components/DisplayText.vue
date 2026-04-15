@@ -4,7 +4,7 @@
     v-if="isVisible"
     :class="['r-text-display', textClass]"
     :style="textStyle"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="prefix">{{ prefix }}</template>{{ formattedValue }}<template v-if="suffix">{{ suffix }}</template>
   </component>
@@ -58,3 +58,4 @@ const formattedValue = computed(() => {
   display: inline;
 }
 </style>
+

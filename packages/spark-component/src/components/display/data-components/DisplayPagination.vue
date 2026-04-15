@@ -11,7 +11,7 @@
     :small="small"
     :disabled="isDisabled"
     :hide-on-single-page="hideOnSinglePage"
-    v-bind="$attrs"
+    v-bind="hostProps"
     @update:current-page="handleCurrentChange"
     @update:page-size="handleSizeChange"
   />
@@ -20,7 +20,7 @@
 <script setup lang="ts">
 /**
  * @skill r-pagination
- * @description 分页控制组件，基于 el-pagination 从 DataView 同步分页状态，触发页码/页大小变更事件。
+ * @description 分页控制组件，触发页码/页大小变更事件。
  */
 import { computed } from 'vue'
 import { useSparkPageComponent, useSparkConsume, DATA_SOURCE } from '../../internal'
@@ -69,3 +69,5 @@ function handleSizeChange(size: number) {
   emit('update:pageSize', size)
 }
 </script>
+
+

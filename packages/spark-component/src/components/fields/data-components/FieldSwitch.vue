@@ -15,7 +15,7 @@
 <script setup lang="ts">
 /**
  * @skill r-switch
- * @description 开关字段，绑定 boolean 值，基于 el-switch 提供状态切换，支持自定义开/关文本说明。
+ * @description 开关字段，绑定 boolean 值，支持自定义开/关文本说明。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -55,3 +55,4 @@ async function handleChange(value: boolean): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

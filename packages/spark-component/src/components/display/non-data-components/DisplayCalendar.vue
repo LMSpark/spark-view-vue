@@ -3,7 +3,7 @@
     v-if="isVisible"
     v-model="modelDate"
     :range="range"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="$slots['date-cell']" #date-cell="scope">
       <slot name="date-cell" v-bind="scope" />
@@ -17,7 +17,7 @@
 <script setup lang="ts">
 /**
  * @skill display-calendar
- * @description 日历展示组件，基于 el-calendar 显示月历视图，支持日期范围和选中绑定。
+ * @description 日历展示组件，支持日期范围和选中绑定。
  */
 import { ref } from 'vue'
 import { useSparkPageComponent } from '../../internal'
@@ -29,5 +29,7 @@ const props = withDefaults(defineProps<RDisplayCalendarProps>(), {
 
 const { isVisible } = useSparkPageComponent(props)
 
-const modelDate = ref(props.modelValue ?? new Date())
+const modelDate = ref(props.value ?? new Date())
 </script>
+
+

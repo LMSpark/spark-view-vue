@@ -3,7 +3,7 @@
     v-if="isVisible"
     :href="href"
     :title="title"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="!$slots['default']">{{ title }}</template>
     <slot />
@@ -16,7 +16,7 @@
 <script setup lang="ts">
 /**
  * @skill r-anchor-link
- * @description 锚点链接项，基于 el-anchor-link 定义锚点 href 和显示标题，支持嵌套子链接。
+ * @description 锚点链接项，支持嵌套子链接。
  */
 import { useSparkPageComponent } from '../../internal'
 import type { RAnchorLinkProps } from './RendererAnchorLink.props'
@@ -29,3 +29,5 @@ const props = withDefaults(defineProps<RAnchorLinkProps>(), {
 
 const { isVisible } = useSparkPageComponent(props)
 </script>
+
+

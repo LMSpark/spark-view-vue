@@ -17,7 +17,7 @@
 <script setup lang="ts">
 /**
  * @skill r-slider
- * @description 滑块字段，绑定 number 值，基于 el-slider 支持最小/最大/步长控制及输入框辅助。
+ * @description 滑块字段，绑定 number 值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -48,3 +48,4 @@ async function handleChange(value: number): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

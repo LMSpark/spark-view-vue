@@ -3,7 +3,7 @@
     v-if="isVisible"
     :separator="separator"
     :separator-icon="separatorIcon"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"
@@ -16,7 +16,7 @@
 <script setup lang="ts">
 /**
  * @skill r-breadcrumb
- * @description 面包屑导航容器，基于 el-breadcrumb 渲染多级导航路径，支持自定义分隔符。
+ * @description 面包屑导航容器，支持自定义分隔符。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -31,3 +31,5 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

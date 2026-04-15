@@ -4,7 +4,7 @@
     :shadow="shadow"
     :body-style="bodyStyle"
     :body-class="bodyClass"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="header || $slots['header']" #header>
       <div class="r-card-header">
@@ -23,7 +23,7 @@
 <script setup lang="ts">
 /**
  * @skill r-card
- * @description 卡片容器，基于 el-card 提供带可选头部的容器，在卡片体内渲染子组件。
+ * @description 卡片容器，在卡片体内渲染子组件。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -40,3 +40,5 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

@@ -1,5 +1,5 @@
 <template>
-  <el-icon v-if="isVisible" :size="iconSize" :color="color" v-bind="$attrs">
+  <el-icon v-if="isVisible" :size="iconSize" :color="color" v-bind="hostProps">
     <component :is="resolvedIconComponent" v-if="resolvedIconComponent" />
   </el-icon>
 </template>
@@ -27,3 +27,4 @@ const resolvedIconComponent = computed((): Component | null => {
   return comp ? markRaw(comp) : null
 })
 </script>
+

@@ -16,7 +16,7 @@
     :type="inputType"
     :placeholder="placeholder"
     :rows="rows"
-    v-bind="$attrs"
+    v-bind="hostProps"
     @update:model-value="handleTextInput"
     @select="handleSelect"
     @search="handleSearch"
@@ -26,7 +26,7 @@
 <script setup lang="ts">
 /**
  * @skill r-mention
- * @description 提及输入字段，绑定 string 值，基于 el-mention 支持 @ 前缀触发用户或实体搜索选择。
+ * @description 提及输入字段，绑定 string 值。
  */
 import { ref, computed, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
@@ -201,3 +201,5 @@ function handleSearch(pattern: string, prefix: string) {
   emit('search', pattern, prefix)
 }
 </script>
+
+

@@ -38,4 +38,6 @@ export interface RTreeProps
   onNodeExpand?: TreeEventHandler
   /** 节点折叠回调 */
   onNodeCollapse?: TreeEventHandler
+  /** 透传给 el-tree 的显式属性 */
+  treeProps?: Record<string, unknown>
 }

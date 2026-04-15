@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    v-bind="$attrs"
+    v-bind="hostProps"
     :model-value="visibleValue"
     @update:model-value="handleModelUpdate"
     @open="handleOpen"
@@ -50,11 +50,11 @@
 <script setup lang="ts">
 /**
  * @skill r-dialog
- * @description 对话框容器，基于 el-dialog 弹出模态窗口，支持 header/footer dock 和网格主体布局。
+ * @description 对话框容器，支持 header/footer dock 和网格主体布局。
  * @category container
  * @notes dock='header' 声明头部动作区；dock='footer' 声明底部动作区
  */
-import { computed, useAttrs, useSlots } from 'vue'
+import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDialogProps } from './RendererDialog.props'
@@ -65,7 +65,7 @@ import { createRendererDialogZeroCode } from './zero-code'
 const props = withDefaults(defineProps<RDialogProps>(), {
   type: 'r-dialog',
   title: '',
-  modelValue: false,
+  value: false,
   bodyClass: '',
   gridColumns: 24,
   gridGap: 0,
@@ -73,24 +73,18 @@ const props = withDefaults(defineProps<RDialogProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
+  'update:value': [value: boolean]
 }>()
 
-const attrs = useAttrs()
 const slots = useSlots()
 const { registerApi } = useSparkPageComponent(props)
 
 // 子节点类型已由绑定层从 children 提升为 props（header / footer）
 const contentChildren = computed(() => props.children ?? [])
 
-function readStringAttr(name: string): string {
-  const value = attrs[name]
-  return typeof value === 'string' ? value : ''
-}
-
-const headerClassValue = computed(() => props.header?.props?.class ?? readStringAttr('headerClass'))
-const headerActionsClassValue = computed(() => readStringAttr('headerActionsClass'))
-const footerClassValue = computed(() => props.footer?.props?.class ?? readStringAttr('footerClass'))
+const headerClassValue = computed(() => String(props.header?.props?.class ?? ''))
+const headerActionsClassValue = computed(() => '')
+const footerClassValue = computed(() => String(props.footer?.props?.class ?? ''))
 
 const resolvedTitle = computed(() => props.title || '')
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))
@@ -102,13 +96,13 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoRows: computed(() => props.gridAutoRows),
 })
 
-const visibleValue = computed(() => props.modelValue ?? false)
+const visibleValue = computed(() => props.value ?? false)
 const hasHeaderActions = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined)
 const hasHeader = computed(() => resolvedTitle.value.length > 0 || hasHeaderActions.value)
 const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots['footer'] !== undefined)
 
 function closeDialog(): void {
-  emit('update:modelValue', false)
+  emit('update:value', false)
 }
 
 // ── r-dialog 包装 API ────────────────────────────────────────────────────
@@ -194,3 +188,5 @@ function getFooterSlotScope() {
   min-width: 0;
 }
 </style>
+
+

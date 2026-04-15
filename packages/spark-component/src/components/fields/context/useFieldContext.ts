@@ -1,19 +1,17 @@
-import { computed, useAttrs } from 'vue'
+import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../columnFormRules'
 import type { SparkFieldProps } from '../../shared-types.js'
 
-type TextAlign = 'left' | 'center' | 'right'
-
 export interface FieldContextProps {
   type: string
   displayLabel: string
   fieldName: string
   width: number | undefined
-  titleAlign?: TextAlign
-  valueAlign?: TextAlign
+  titleAlign?: 'left' | 'center' | 'right'
+  valueAlign?: 'left' | 'center' | 'right'
   headerCellClassName?: string
   cellClassName?: string
   titleClassName?: string
@@ -42,7 +40,12 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-type FieldContextInputProps = OptionalWithUndefined<Pick<SparkFieldProps, 'type' | 'width' | 'children'>> & {
+type FieldContextInputProps = OptionalWithUndefined<Pick<SparkFieldProps,
+  | 'type' | 'width' | 'children'
+  | 'titleAlign' | 'valueAlign'
+  | 'headerCellClassName' | 'cellClassName'
+  | 'titleClassName' | 'valueClassName'
+>> & {
   type: string
 }
 
@@ -50,45 +53,23 @@ export function useFieldContext(
   fieldProps: FieldContextInputProps,
   permission: FieldPermissionForContext,
 ): ComputedRef<FieldContextProps> {
-  const attrs = useAttrs()
-
-  function readAttr(key: string): unknown {
-    return attrs[key]
-  }
-
-  function readAlign(value: unknown): TextAlign | undefined {
-    if (value === 'left' || value === 'center' || value === 'right') return value
-    return undefined
-  }
-
-  function readText(value: unknown): string | undefined {
-    return typeof value === 'string' && value.length > 0 ? value : undefined
-  }
-
   const mergedChildren = computed(() => {
     const children = fieldProps.children
     return getSparkNodeChildren(children)
   })
 
   return computed(() => {
-    const titleAlign = readAlign(readAttr('titleAlign'))
-    const valueAlign = readAlign(readAttr('valueAlign'))
-    const headerCellClassName = readText(readAttr('headerCellClassName'))
-    const cellClassName = readText(readAttr('cellClassName'))
-    const titleClassName = readText(readAttr('titleClassName'))
-    const valueClassName = readText(readAttr('valueClassName'))
-
     const result: FieldContextProps = {
       type: fieldProps.type,
       displayLabel: permission.displayLabel.value,
       fieldName: permission.fieldName.value,
       width: fieldProps.width,
-      ...(titleAlign !== undefined && { titleAlign }),
-      ...(valueAlign !== undefined && { valueAlign }),
-      ...(headerCellClassName !== undefined && { headerCellClassName }),
-      ...(cellClassName !== undefined && { cellClassName }),
-      ...(titleClassName !== undefined && { titleClassName }),
-      ...(valueClassName !== undefined && { valueClassName }),
+      ...(fieldProps.titleAlign !== undefined && { titleAlign: fieldProps.titleAlign }),
+      ...(fieldProps.valueAlign !== undefined && { valueAlign: fieldProps.valueAlign }),
+      ...(fieldProps.headerCellClassName !== undefined && { headerCellClassName: fieldProps.headerCellClassName }),
+      ...(fieldProps.cellClassName !== undefined && { cellClassName: fieldProps.cellClassName }),
+      ...(fieldProps.titleClassName !== undefined && { titleClassName: fieldProps.titleClassName }),
+      ...(fieldProps.valueClassName !== undefined && { valueClassName: fieldProps.valueClassName }),
       mergedChildren: mergedChildren.value,
       isCurrentFieldHidden: permission.isCurrentFieldHidden.value,
       shouldRenderCurrentField: permission.shouldRenderCurrentField.value,

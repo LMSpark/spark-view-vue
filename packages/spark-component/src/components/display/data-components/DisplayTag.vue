@@ -1,7 +1,8 @@
 <template>
   <el-tag
     v-if="isVisible"
-    v-bind="mergedAttrs"
+    v-bind="hostProps"
+    :type="resolvedTagType"
     :closable="closable"
     :disable-transitions="disableTransitions"
     :hit="hit"
@@ -18,9 +19,9 @@
 <script setup lang="ts">
 /**
  * @skill r-tag
- * @description 标签展示组件，基于 el-tag 以彩色标签显示字段值，支持类型/尺寸/主题样式和可关闭功能。
+ * @description 标签展示组件，支持类型/尺寸/主题样式和可关闭功能。
  */
-import { computed, useAttrs } from 'vue'
+import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
 import type { RTagProps, TagType } from './DisplayTag.props'
@@ -48,7 +49,6 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const attrs = useAttrs()
 const { isVisible } = useSparkPageComponent(props)
 const { resolvedValue: dataValue } = useDisplayDataSource(props)
 
@@ -69,13 +69,8 @@ const resolvedTagType = computed<TagType | undefined>(() => {
   return normalizeTagType(props.dynamicType?.[String(sourceValue)])
 })
 
-const mergedAttrs = computed<Record<string, unknown>>(() => {
-  const nextAttrs = { ...attrs } as Record<string, unknown>
-  if (resolvedTagType.value !== undefined) nextAttrs['type'] = resolvedTagType.value
-  return nextAttrs
-})
-
 function handleClose() {
   emit('close')
 }
 </script>
+

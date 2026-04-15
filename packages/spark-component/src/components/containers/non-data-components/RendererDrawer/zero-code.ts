@@ -1,7 +1,7 @@
 import type { RendererDrawerApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-type DrawerEmit = (event: 'update:modelValue', value: boolean) => void
+type DrawerEmit = (event: 'update:value', value: boolean) => void
 
 interface RendererDrawerZeroCodeOptions {
   emit: DrawerEmit
@@ -15,23 +15,23 @@ interface RendererDrawerZeroCodeOptions {
 export function createRendererDrawerZeroCode(options: RendererDrawerZeroCodeOptions) {
   const drawerApi: RendererDrawerApi = {
     open() {
-      options.emit('update:modelValue', true)
+      options.emit('update:value', true)
     },
     close() {
-      options.emit('update:modelValue', false)
+      options.emit('update:value', false)
     },
     isVisible() {
       return options.visibleValue.value
     },
     toggle() {
-      options.emit('update:modelValue', !options.visibleValue.value)
+      options.emit('update:value', !options.visibleValue.value)
     },
   }
 
   return {
     drawerApi,
     handleModelUpdate(value: boolean) {
-      options.emit('update:modelValue', value)
+      options.emit('update:value', value)
     },
     handleOpen() {
       options.onOpen?.()

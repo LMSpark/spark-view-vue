@@ -1,5 +1,5 @@
 <template>
-  <el-timeline v-if="isVisible" v-bind="$attrs">
+  <el-timeline v-if="isVisible" v-bind="hostProps">
     <SparkComponentRenderer
       v-for="(child, index) in resolvedChildren"
       :key="nodeId(child) ?? `r-timeline-child-${index}`"
@@ -11,7 +11,7 @@
 <script setup lang="ts">
 /**
  * @skill r-timeline
- * @description 时间线容器，基于 el-timeline 以垂直时间轴渲染事件序列。
+ * @description 时间线容器。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -25,3 +25,5 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 </script>
+
+

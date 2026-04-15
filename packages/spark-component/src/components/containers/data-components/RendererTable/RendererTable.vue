@@ -34,7 +34,7 @@
       <el-table
         ref="nativeTableRef"
         :data="tableData"
-        v-bind="tableAttrs"
+        v-bind="elTableProps"
         @current-change="handleCurrentChange"
         @row-click="handleRowClick"
         @selection-change="handleSelectionChange"
@@ -97,14 +97,14 @@
 <script setup lang="ts">
 /**
  * @skill r-table
- * @description 数据表格容器，基于 el-table 绑定 DataView 渲染行数据，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
+ * @description 数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
  * @category container
  * @binding datakey-driven
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
  * @consumes PAGE_SERVICE
  * @consumes MODULE_CONTEXT
- * @notes children 仅放 r-* 字段组件做列，禁止 el-table-column
+ * @notes children 仅放 r-* 字段组件做列，禁止直接声明底层列节点
  * @notes dock='filter' 声明筛选区节点；dock='toolbar' 声明工具栏；dock='actions' 声明行操作
  * @notes highlightCurrentRow 必须显式声明才生效
  */
@@ -119,7 +119,7 @@
  * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
  * - 到达此组件时，props.children 只保留表格内容列配置，不做运行时二次分拣。
  */
-import { computed, nextTick, ref, watch, useAttrs, useSlots } from 'vue'
+import { computed, nextTick, ref, watch, useSlots } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
@@ -131,6 +131,7 @@ import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
 import RendererActionHost from '../../support/RendererActionHost.vue'
+import { mapNodeProps } from '../../support'
 import { useContainerActions, type LateralActionPosition } from '../../useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
@@ -139,13 +140,14 @@ import RendererFilter from '../../RendererFilter.vue'
 import { createRowActionSlotScope } from '../../slotScopeFactories'
 import { useModuleContext } from '../../context/useModuleContext'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
+import type { RendererToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
 import type { SparkComponentHost } from '../../../internal'
 
 // ── 基础工具 ─────────────────────────────────────────────────────────────
 
-// ── Props / attrs / slots 输入 ───────────────────────────────────────────
+// ── Props / slots 输入 ───────────────────────────────────────────────────
 
 const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
@@ -154,32 +156,16 @@ const props = withDefaults(defineProps<RTableProps>(), {
 // 共享 props.children 允许文本子节点；表格列区只接受结构节点，局部显式收窄。
 const contentChildNodes = computed(() => getSparkNodeChildren(props.children))
 
-const attrs = useAttrs()
 const slots = useSlots()
-
-// ── 属性读取工具（仅用于 el-table 透传属性） ──────────────────────────────
-
-const _attrs = attrs as Readonly<Record<string, unknown>>
-
-/** 读取规范 camelCase 透传属性。 */
-function readAttr(name: string): unknown {
-  return _attrs[name]
-}
-
-/** 读取字符串属性；空字符串视为未配置。 */
-function readStringAttr(name: string): string | undefined {
-  const value = readAttr(name)
-  return typeof value === 'string' && value.length > 0 ? value : undefined
-}
 
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
   return child?.props?.[name] as T | undefined
 }
 
-// ── 基础输入解析：DataKey 与传给 el-table 的基础 attrs ───────────────────
+// ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
 
-const baseTableAttrs = computed<Record<string, unknown>>(() => ({ ..._attrs }))
+const baseElTableProps = computed<Record<string, unknown>>(() => ({ ...(props.tableProps ?? {}) }))
 const effectiveDataKey = computed(() => props.dataKey)
 
 // ── SPARK 上下文与数据源：解析 DataKey → DataView，并向下游提供 DATA_SOURCE ──
@@ -221,15 +207,27 @@ const {
   dataSource: resolvedView,
 })
 
-/** 过滤掉结构元信息后，剩余 props 继续透传给 RendererToolbar。 */
-const toolbarComponentProps = computed<Record<string, unknown>>(() => {
-  const childMeta = props.toolbar?.props
-  if (!childMeta) return {}
-  const result: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(childMeta)) {
-    if (key !== 'position' && key !== 'class') result[key] = value
-  }
-  return result
+/**
+ * 工具栏属性逐项对接：
+ * 仅允许 RendererToolbar 已声明的 props 进入运行时，禁止结构化透传整包 childMeta。
+ */
+const toolbarComponentProps = computed<Partial<RendererToolbarProps>>(() => {
+  return mapNodeProps<RendererToolbarProps>({
+    source: props.toolbar?.props,
+    map: {
+      type: 'type',
+      children: 'children',
+      tail: 'tail',
+      gap: 'gap',
+      zoneGap: 'zoneGap',
+      align: 'align',
+      justify: 'justify',
+    },
+    ignoreSourceKeys: ['position', 'class'],
+    context: 'RendererTable.toolbar',
+    unknownPolicy: 'error',
+    logger,
+  })
 })
 
 // ── 筛选区：表单模型、字段配置、折叠状态与筛选后的数据视图 ───────────────
@@ -257,7 +255,7 @@ const {
 
 const {
   tableData,
-  tableAttrs,
+  elTableProps,
   filterCollapsibleValue,
   filterAutoFitMinWidthValue,
   filterItemSpanValue,
@@ -265,10 +263,9 @@ const {
   toggleFiltersCollapsed,
 } = useRendererTableViewState({
   filterNode: computed(() => props.filter),
-  baseTableAttrs,
+  baseElTableProps,
   resolvedView,
   filteredRows,
-  readStringAttr,
 })
 
 // ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
@@ -477,3 +474,4 @@ async function handleSelectionChange(selection: IDataRow[]) {
 }
 
 </style>
+

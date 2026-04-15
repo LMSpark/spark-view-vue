@@ -13,7 +13,7 @@
 <script setup lang="ts">
 /**
  * @skill r-text
- * @description 文本输入字段，绑定 string 值，基于 el-input 提供单行文本编辑能力。
+ * @description 文本输入字段，绑定 string 值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -39,3 +39,4 @@ async function handleChange(value: string): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

@@ -1,7 +1,7 @@
 /**
- * 列验证规则 → Element Plus FormItemRule 转换
+ * 列验证规则 → 渲染层表单规则转换
  *
- * 将 spark-data 的框架无关 ColumnValidationRule 转换为 el-form-item 可消费的 rules。
+ * 将 spark-data 的框架无关 ColumnValidationRule 转换为渲染层可消费的 rules。
  * 仅在渲染层使用，spark-data 不依赖任何 UI 框架。
  */
 
@@ -9,7 +9,7 @@ import type { ColumnValidationRule } from '@spark-view/spark-data'
 import type { DataColumn } from '@spark-view/spark-data'
 import { extractColumnRules } from '@spark-view/spark-data'
 
-/** Element Plus FormItemRule 最小子集（避免直接依赖 element-plus 类型） */
+/** 渲染层 FormItemRule 最小子集（避免引入具体实现类型依赖） */
 export interface FormItemRule {
   required?: boolean
   message?: string
@@ -22,10 +22,10 @@ export interface FormItemRule {
 }
 
 /**
- * 将框架无关的 ColumnValidationRule 数组转为 Element Plus FormItemRule 数组。
+ * 将框架无关的 ColumnValidationRule 数组转为渲染层 FormItemRule 数组。
  *
  * @param rules - 来自 extractColumnRules() 的描述符
- * @returns Element Plus 表单验证规则
+ * @returns 渲染层表单验证规则
  */
 export function toElFormRules(rules: ColumnValidationRule[]): FormItemRule[] {
   return rules.map(rule => convertRule(rule))

@@ -213,7 +213,7 @@ export interface ActionExecutionContext {
  */
 export type ActionExecutionControl = CancellableControl
 
-/** 最小化路由接口，避免直接依赖 vue-router */
+/** 最小化路由接口，避免绑定到具体路由实现 */
 export interface RouterLike {
   push(to: string | { path: string; query?: Record<string, string> }): unknown
 }

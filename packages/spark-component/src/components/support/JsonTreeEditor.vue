@@ -245,7 +245,7 @@ interface JsonTreeEditorProps {
   /** r-table 内列宽 */
   width?: number
   /** JSON 字符串内容 */
-  modelValue?: string
+  value?: string
   /** 已解析的 JSON 文档对象 */
   documentValue?: JsonDocument | null
   /** 编辑器高度 */
@@ -275,7 +275,7 @@ interface JsonTreeEditorProps {
 }
 
 const props = withDefaults(defineProps<JsonTreeEditorProps>(), {
-  modelValue: '',
+  value: '',
   documentValue: null,
   height: 420,
   readOnly: false,
@@ -285,7 +285,7 @@ const props = withDefaults(defineProps<JsonTreeEditorProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  'update:value': [value: string]
   'update:documentValue': [value: JsonDocument]
 }>()
 
@@ -295,7 +295,7 @@ const { permission, handleControlledChange } = useBasicFieldState<string>({
   props,
   fieldType: 'json-tree-editor',
   fallbackValue: '',
-  emitUpdate: value => emit('update:modelValue', value),
+  emitUpdate: value => emit('update:value', value),
 })
 
 const { fieldValue, isCurrentFieldEditable: _fieldEditable } = permission
@@ -316,7 +316,7 @@ const effectiveFieldInput = computed<string | JsonDocument>(() => {
     if (raw !== null && typeof raw === 'object') return raw as JsonDocument
     return typeof raw === 'string' ? raw : ''
   }
-  return props.modelValue
+  return props.value
 })
 // ── 合并 policy（平铺 props 优先） ──────────────────────────
 
@@ -343,7 +343,7 @@ const parseError = ref<string | null>(null)
 const treeModelRef = shallowRef<TreeModel>(buildTreeModel({}))
 const currentRowId = ref(rootOf(treeModelRef.value))
 let keywordTimer: ReturnType<typeof setTimeout> | undefined
-let lastEmittedModelValue: string | null = null
+let lastEmittedValue: string | null = null
 let tableStateInitialized = false
 let lastFilterActiveState = false
 let pendingExpandRowId: string | null = null
@@ -443,8 +443,8 @@ watch(() => props.documentValue, (value) => {
 watch(effectiveFieldInput, (value) => {
   if (props.documentValue !== null) return
   if (typeof value === 'string') {
-    if (lastEmittedModelValue !== null && value === lastEmittedModelValue) {
-      lastEmittedModelValue = null
+    if (lastEmittedValue !== null && value === lastEmittedValue) {
+      lastEmittedValue = null
       return
     }
     syncDocument(value)
@@ -503,8 +503,8 @@ function syncDocument(rawText: string): void {
 function syncDocumentValue(value: JsonDocument): void {
   const nextDocument = cloneDocument(value)
   const nextText = serializeJsonDocument(nextDocument)
-  if (lastEmittedModelValue !== null && nextText === lastEmittedModelValue) {
-    lastEmittedModelValue = null
+  if (lastEmittedValue !== null && nextText === lastEmittedValue) {
+    lastEmittedValue = null
     return
   }
   captureTreeState()
@@ -689,9 +689,9 @@ function mutateModel(
   const nextDocument = exportJsonDocument(model)
   const nextText = serializeJsonDocument(nextDocument)
   parseError.value = null
-  lastEmittedModelValue = nextText
+  lastEmittedValue = nextText
   emit('update:documentValue', cloneDocument(nextDocument))
-  emit('update:modelValue', nextText)
+  emit('update:value', nextText)
   // 字段模式：通过能力链回写 DATA_ROW[field]
   void handleControlledChange(nextText)
 }

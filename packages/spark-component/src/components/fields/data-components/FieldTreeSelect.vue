@@ -21,7 +21,7 @@
 <script setup lang="ts">
 /**
  * @skill r-tree-select
- * @description 树形选择字段，绑定单值或数组，基于 el-tree-select 支持树形层级结构选择、多选和懒加载。
+ * @description 树形选择字段，绑定单值或数组。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -54,3 +54,4 @@ async function handleChange(value: TreeSelectValue): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
+

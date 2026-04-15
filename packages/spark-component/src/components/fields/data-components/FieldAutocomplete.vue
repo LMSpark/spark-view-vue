@@ -20,7 +20,7 @@
 <script setup lang="ts">
 /**
  * @skill r-autocomplete
- * @description 自动补全输入字段，绑定 string 值，基于 el-autocomplete 提供输入建议和搜索匹配。
+ * @description 自动补全输入字段，绑定 string 值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -60,3 +60,4 @@ function handleSelect(item: SuggestionItem): void {
   emit('select', item)
 }
 </script>
+

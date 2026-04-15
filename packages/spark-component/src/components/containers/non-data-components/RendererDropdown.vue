@@ -11,7 +11,7 @@
     :split-button="splitButton"
     :popper-class="popperClass"
     :max-height="maxHeight"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template #default>
       <SparkComponentRenderer
@@ -40,7 +40,7 @@
 <script setup lang="ts">
 /**
  * @skill r-dropdown
- * @description 下拉菜单容器，基于 el-dropdown 渲染触发器和菜单项，支持分裂按钮模式和命令事件。
+ * @description 下拉菜单容器，支持分裂按钮模式和命令事件。
  */
 import { computed } from 'vue'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent } from '../../internal'
@@ -60,3 +60,5 @@ const { isVisible, isDisabled } = useSparkPageComponent(props)
 const triggerChildren = computed(() => getSparkNodeChildren(props.children))
 const items = computed(() => props.items ?? [])
 </script>
+
+

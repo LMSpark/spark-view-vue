@@ -36,14 +36,14 @@
 <script setup lang="ts">
 /**
  * @skill spark-component-renderer
- * @description 通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册的 Vue 组件，是 SPARK 渲染引擎的核心入口。
+ * @description 通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册组件，是 SPARK 渲染引擎的核心入口。
  * @category internal
  */
 /**
  * SparkComponentRenderer — SPARK 通用组件递归渲染引擎（无上下文版本）
  *
  * 职责：
- * 1. 从注册表解析 config.type → Vue 组件
+ * 1. 从注册表解析 config.type → 组件实现
  * 2. 递归渲染子组件树
  * 3. 未注册组件降级显示警告（不抛出异常）
  *
@@ -261,9 +261,10 @@ function warnRendererIssue(message: string, error?: unknown): void {
 // 判断目标组件是否显式声明某个 prop，用于 children prop / slot 协商。
 function declaresProp(component: unknown, propName: string): boolean {
   const declaredProps = readDeclaredProps(component)
-  if (declaredProps === null) return false
+  if (declaredProps === null || declaredProps === undefined) return false
   if (Array.isArray(declaredProps)) return declaredProps.includes(propName)
-  return propName in declaredProps
+  if (typeof declaredProps !== 'object' && typeof declaredProps !== 'function') return false
+  return Object.prototype.hasOwnProperty.call(declaredProps, propName)
 }
 
 // registry 元信息允许显式指定 children 协商模式；未指定时回退到自动探测。

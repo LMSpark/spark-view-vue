@@ -9,7 +9,7 @@
     </div>
 
     <div class="renderer-steps-main">
-      <el-steps v-bind="$attrs" :active="activeStepIndex">
+      <el-steps v-bind="hostProps" :active="activeStepIndex">
         <RendererStepItem
           v-for="(step, index) in stepConfigs"
           :key="getStepKey(step, index)"
@@ -37,7 +37,7 @@
 <script setup lang="ts">
 /**
  * @skill r-steps
- * @description 步骤条容器，基于 el-steps 管理多步骤流程的激活状态，支持工具栏和步骤内容切换。
+ * @description 步骤条容器，支持工具栏和步骤内容切换。
  * @category container
  * @notes children 内放 r-step
  */
@@ -56,7 +56,7 @@ const props = withDefaults(defineProps<RStepsProps>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
+  'update:value': [value: string | number]
 }>()
 
 const { registerApi } = useSparkPageComponent(props)
@@ -68,7 +68,7 @@ const stepConfigs = computed(() =>
   getSparkNodeChildren(contentChildren.value).filter(child => child.type === 'r-step')
 )
 const activeStepName = useDefaultedSelection({
-  modelValue: computed(() => props.modelValue),
+  value: computed(() => props.value),
   items: stepConfigs,
   getValue: getStepName,
 })
@@ -191,3 +191,5 @@ function getStepSlotScope(step: SparkNode, index: number) {
   min-width: 0;
 }
 </style>
+
+

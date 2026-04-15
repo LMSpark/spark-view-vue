@@ -8,7 +8,7 @@
     :src-set="srcSet"
     :alt="alt"
     :fit="fit"
-    v-bind="$attrs"
+    v-bind="hostProps"
   >
     <template v-if="text">{{ text }}</template>
   </el-avatar>
@@ -17,7 +17,7 @@
 <script setup lang="ts">
 /**
  * @skill r-avatar
- * @description 头像展示组件，基于 el-avatar 显示用户头像或文字缩写，支持图片/图标/文字多种模式和尺寸配置。
+ * @description 头像展示组件，支持图片/图标/文字多种模式和尺寸配置。
  */
 import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
@@ -48,3 +48,5 @@ const iconComponent = computed(() => {
   return undefined
 })
 </script>
+
+

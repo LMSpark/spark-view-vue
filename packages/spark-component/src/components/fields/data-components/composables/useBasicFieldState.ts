@@ -8,7 +8,12 @@ type OptionalWithUndefined<T> = {
 }
 
 interface BasicFieldProps<TValue>
-  extends FieldPermissionProps<TValue>, OptionalWithUndefined<Pick<SparkFieldProps, 'type' | 'width' | 'children'>> {
+  extends FieldPermissionProps<TValue>, OptionalWithUndefined<Pick<SparkFieldProps,
+    | 'type' | 'width' | 'children'
+    | 'titleAlign' | 'valueAlign'
+    | 'headerCellClassName' | 'cellClassName'
+    | 'titleClassName' | 'valueClassName'
+  >> {
 }
 
 interface UseBasicFieldStateOptions<TValue> {

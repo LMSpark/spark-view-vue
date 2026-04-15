@@ -5,7 +5,7 @@
     </div>
     <textarea
       v-if="initError"
-      :value="modelValue"
+      :value="value"
       class="spark-code-editor__fallback"
       :readonly="readOnly"
       spellcheck="false"
@@ -28,7 +28,7 @@ type SparkCodeLanguage = 'javascript' | 'css'
 
 interface Props {
   /** 编辑器内容 */
-  modelValue?: string
+  value?: string
   /** 语言模式 */
   language?: SparkCodeLanguage
   /** 是否只读 */
@@ -42,7 +42,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
+  value: '',
   language: 'javascript',
   readOnly: false,
   height: 360,
@@ -51,13 +51,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  'update:value': [value: string]
 }>()
 
 const containerRef = ref<HTMLDivElement | null>(null)
 const editorRef = shallowRef<EditorView | null>(null)
 const initError = ref<string | null>(null)
-const lastSyncedValue = ref(props.modelValue)
+const lastSyncedValue = ref(props.value)
 
 const rootStyle = computed(() => ({
   height: typeof props.height === 'number' ? `${props.height}px` : props.height,
@@ -168,8 +168,8 @@ async function mountEditor(): Promise<void> {
         if (!update.docChanged) return
         const nextValue = update.state.doc.toString()
         lastSyncedValue.value = nextValue
-        if (nextValue !== props.modelValue) {
-          emit('update:modelValue', nextValue)
+        if (nextValue !== props.value) {
+          emit('update:value', nextValue)
         }
       }),
     ]
@@ -180,13 +180,13 @@ async function mountEditor(): Promise<void> {
 
     editorRef.value = new EditorView({
       state: EditorState.create({
-        doc: props.modelValue,
+        doc: props.value,
         extensions,
       }),
       parent: host,
     })
 
-    lastSyncedValue.value = props.modelValue
+    lastSyncedValue.value = props.value
     initError.value = null
   } catch (error) {
     initError.value = error instanceof Error
@@ -198,10 +198,10 @@ async function mountEditor(): Promise<void> {
 function handleFallbackInput(event: Event): void {
   const target = event.target as HTMLTextAreaElement
   lastSyncedValue.value = target.value
-  emit('update:modelValue', target.value)
+  emit('update:value', target.value)
 }
 
-watch(() => props.modelValue, (value) => {
+watch(() => props.value, (value) => {
   if (value === lastSyncedValue.value) return
   lastSyncedValue.value = value
   const editor = editorRef.value
