@@ -3,11 +3,17 @@ import { SparkData, type DataView, type IDataRow } from '@spark-view/spark-data'
 import type { FilterNode } from '../../RendererFilter.types'
 import type { ValueRef } from '../../../shared-types.js'
 
+// ==============================
+// 类型定义
+// ==============================
+
 interface RendererTableViewStateOptions {
   filterNode: ValueRef<FilterNode | undefined>
   baseElTableProps: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
   filteredRows: ValueRef<IDataRow[] | undefined>
+  declaredElTablePropKeys?: ValueRef<ReadonlySet<string> | undefined>
+  warnUnknownTableProp?: (propName: string) => void
 }
 
 interface TableTreeSeedNode extends Record<string, unknown> {
@@ -16,29 +22,71 @@ interface TableTreeSeedNode extends Record<string, unknown> {
   parentId?: string | number | null
 }
 
+// ==============================
+// 常量
+// ==============================
+
 const DEFAULT_TABLE_TREE_PROPS: Readonly<Record<string, unknown>> = Object.freeze({
   children: 'children',
   hasChildren: 'hasChildren',
 })
 
+// 防止覆盖宿主组件内部实例字段，导致列父链解析异常。
+const FORBIDDEN_EL_TABLE_INTERNAL_KEYS = new Set(['tableId', 'columnId'])
+
+// ==============================
+// 主状态：RendererTable 视图态
+// ==============================
+
 export function useRendererTableViewState(options: RendererTableViewStateOptions) {
+  const warnedUnknownTableProps = new Set<string>()
+
+  // 表格数据：普通列表直接透传；树形配置下按需构造成嵌套 children
   const tableData = computed(() => buildTreeTableRows(
     options.resolvedView.value,
     options.filteredRows.value ?? options.resolvedView.value?.rows ?? [],
   ))
 
+  // rowKey 优先主键，缺失时回退到 tree id 字段
   const tableRowKeyValue = computed(() =>
     options.resolvedView.value?.primaryKey
     ?? options.resolvedView.value?.treeConfig?.idField
   )
 
+  // 仅树表时挂载 treeProps，避免普通表引入多余配置
   const tableTreePropsValue = computed<Record<string, unknown> | undefined>(() => {
     if (!options.resolvedView.value?.treeConfig) return undefined
     return DEFAULT_TABLE_TREE_PROPS
   })
 
+  // 组装传给 el-table 的最终 props，仅在未显式配置时注入默认值
   const elTableProps = computed<Record<string, unknown>>(() => {
-    const result = { ...options.baseElTableProps.value }
+    const sanitized: Record<string, unknown> = {}
+
+    // 显式 tableProps 出现未知原生属性时告警并过滤，避免误配静默失效或污染宿主实例。
+    const declaredKeys = options.declaredElTablePropKeys?.value
+
+    for (const [key, value] of Object.entries(options.baseElTableProps.value)) {
+      const isForbiddenInternalKey = FORBIDDEN_EL_TABLE_INTERNAL_KEYS.has(key)
+      const isUnknownDeclaredProp = !isForbiddenInternalKey
+        && declaredKeys
+        && declaredKeys.size > 0
+        && !key.startsWith('on')
+        && !declaredKeys.has(key)
+
+      if (isForbiddenInternalKey || isUnknownDeclaredProp) {
+        if (!warnedUnknownTableProps.has(key)) {
+          warnedUnknownTableProps.add(key)
+          options.warnUnknownTableProp?.(key)
+        }
+        continue
+      }
+
+      sanitized[key] = value
+    }
+
+    const result = sanitized
+
     if (!options.resolvedView.value?.treeConfig) return result
 
     if (result['rowKey'] === undefined && tableRowKeyValue.value) {
@@ -52,6 +100,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     return result
   })
 
+  // 过滤区展示态
   const filterCollapsibleValue = computed(() => options.filterNode.value?.props?.collapsible ?? false)
   const filterDefaultCollapsedValue = computed(() => options.filterNode.value?.props?.defaultCollapsed ?? false)
   const filterAutoFitMinWidthValue = computed(() => options.filterNode.value?.props?.autoFitMinWidth ?? '220px')
@@ -64,6 +113,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
   })
 
   function toggleFiltersCollapsed() {
+    // 未开启可折叠时直接 fail-fast 返回
     if (!filterCollapsibleValue.value) return
     filtersCollapsed.value = !filtersCollapsed.value
   }
@@ -79,8 +129,15 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
   }
 }
 
+// ==============================
+// 树形数据构建
+// ==============================
+
 function buildTreeTableRows(view: DataView | null | undefined, rows: IDataRow[]): IDataRow[] {
+  // 空数据或无视图时保持原样
   if (!view || rows.length === 0) return rows
+
+  // 已经是嵌套结构则不重复转换
   if (rows.some(row => Array.isArray((row as Record<string, unknown> | undefined)?.['children']))) {
     return rows
   }
@@ -97,6 +154,8 @@ function buildTreeTableRows(view: DataView | null | undefined, rows: IDataRow[])
 
   for (const row of rows) {
     const record = row as Record<string, unknown>
+
+    // 节点 id 非法时跳过，避免污染树结构
     const rawId = record[idField]
     if (typeof rawId !== 'string' && typeof rawId !== 'number') {
       continue
@@ -113,6 +172,7 @@ function buildTreeTableRows(view: DataView | null | undefined, rows: IDataRow[])
       hasParentLink = true
     }
 
+    // 统一成 TreeManager 可消费的种子节点
     seedNodes.push({
       ...record,
       id: rawId,
@@ -124,8 +184,10 @@ function buildTreeTableRows(view: DataView | null | undefined, rows: IDataRow[])
   }
 
   if (seedNodes.length === 0 || !hasParentLink) return rows
+  // 没有有效节点或不存在父子关系时保持平铺
 
   return SparkData.createTreeManager({
+  // 通过 SparkData 统一构建 nested tree，保持与 DataSet 体系一致
     idField,
     parentIdField,
     textField,

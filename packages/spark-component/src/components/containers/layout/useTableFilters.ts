@@ -54,6 +54,11 @@ function getNodeField(config: SparkNode): string | undefined {
   return typeof f === 'string' ? f : undefined
 }
 
+function assertFilterNodesArray(value: unknown): asserts value is SparkNode[] {
+  if (Array.isArray(value)) return
+  throw new Error('RendererTable: r-filter children 必须是数组节点配置')
+}
+
 function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
   const explicit = nodeInputProp(config, 'filterOp') ?? nodeInputProp(config, 'filterOperator')
   if (typeof explicit === 'string') return explicit as FilterOperator
@@ -192,7 +197,9 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   )
 
   const filterConfigs = computed(() => {
-    return options.filterChildren.value
+    const nodes = options.filterChildren.value
+    assertFilterNodesArray(nodes)
+    return nodes
   })
 
   watch(filterConfigs, (configs) => {

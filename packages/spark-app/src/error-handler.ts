@@ -20,6 +20,12 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
   const { onError, errorClassifier, onErrorByType, enableFallback } = options
   const cleanupFns: Array<() => void> = []
 
+  function getRawErrorKind(raw: unknown): string {
+    if (raw instanceof Error) return raw.name || 'Error'
+    if (raw === null) return 'null'
+    return typeof raw
+  }
+
   // Vue 错误处理
   app.config.errorHandler = (err: unknown, instance, info) => {
     const error = toError(err)
@@ -34,11 +40,17 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
       context.source = instance.$options.name
     }
 
+    if (instance?.$options.__file !== undefined) {
+      context.file = String(instance.$options.__file)
+    }
+
     errorLogger.error('[Global Error]', {
       type: errorType,
+      rawType: getRawErrorKind(err),
       message: error.message,
       context,
-      stack: error.stack
+      stack: error.stack,
+      rawError: err,
     })
 
     // 用户自定义错误处理

@@ -119,7 +119,7 @@
  * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
  * - 到达此组件时，props.children 只保留表格内容列配置，不做运行时二次分拣。
  */
-import { computed, nextTick, ref, watch, useSlots } from 'vue'
+import { computed, getCurrentInstance, nextTick, ref, watch, useSlots } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
@@ -141,6 +141,7 @@ import { createRowActionSlotScope } from '../../slotScopeFactories'
 import { useModuleContext } from '../../context/useModuleContext'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
 import type { RendererToolbarProps } from '../../non-data-components/RendererToolbar.types'
+import type { FilterNode } from '../../RendererFilter.types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
 import type { SparkComponentHost } from '../../../internal'
@@ -153,15 +154,61 @@ const props = withDefaults(defineProps<RTableProps>(), {
   type: 'r-table',
 })
 
+const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-filter', 'r-actions'])
+
 // 共享 props.children 允许文本子节点；表格列区只接受结构节点，局部显式收窄。
-const contentChildNodes = computed(() => getSparkNodeChildren(props.children))
+const allChildNodes = computed(() => getSparkNodeChildren(props.children))
+const contentChildNodes = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
 
 const slots = useSlots()
+const currentInstance = getCurrentInstance()
+
+function normalizePropNameVariants(name: string): string[] {
+  const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+  const camel = kebab.replace(/-([a-z])/g, (_, ch: string) => ch.toUpperCase())
+  return Array.from(new Set([name, kebab, camel]))
+}
+
+function collectDeclaredPropKeys(raw: unknown): ReadonlySet<string> | undefined {
+  if (!raw) return undefined
+  const normalized = new Set<string>()
+
+  if (Array.isArray(raw)) {
+    for (const key of raw) {
+      if (typeof key !== 'string') continue
+      for (const variant of normalizePropNameVariants(key)) normalized.add(variant)
+    }
+    return normalized
+  }
+
+  if (typeof raw !== 'object') return undefined
+
+  for (const key of Object.keys(raw as Record<string, unknown>)) {
+    for (const variant of normalizePropNameVariants(key)) normalized.add(variant)
+  }
+  return normalized
+}
+
+const declaredElTablePropKeys = computed<ReadonlySet<string> | undefined>(() => {
+  const components = currentInstance?.appContext.components
+  if (!components) return undefined
+  const elTableComponent = (components['ElTable'] ?? components['el-table']) as { props?: unknown } | undefined
+  return collectDeclaredPropKeys(elTableComponent?.props)
+})
 
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
   return child?.props?.[name] as T | undefined
 }
+
+const toolbarNode = computed(() => props.toolbar ?? allChildNodes.value.find(child => child.type === 'r-toolbar'))
+const filterNode = computed(() => props.filter ?? allChildNodes.value.find(child => child.type === 'r-filter'))
+const actionsNode = computed(() => props.actions ?? allChildNodes.value.find(child => child.type === 'r-actions'))
+const normalizedFilterNode = computed<FilterNode | undefined>(() => {
+  const node = filterNode.value
+  if (node?.type !== 'r-filter') return undefined
+  return node as FilterNode
+})
 
 // ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
 
@@ -200,9 +247,9 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  toolbar: computed(() => getSparkNodeChildren(props.toolbar?.children)),
-  toolbarPosition: computed(() => childProp<ToolbarPosition>(props.toolbar, 'position')),
-  toolbarClass: computed(() => childProp<string>(props.toolbar, 'class')),
+  toolbar: computed(() => getSparkNodeChildren(toolbarNode.value?.children)),
+  toolbarPosition: computed(() => childProp<ToolbarPosition>(toolbarNode.value, 'position')),
+  toolbarClass: computed(() => childProp<string>(toolbarNode.value, 'class')),
   modelPermission,
   dataSource: resolvedView,
 })
@@ -213,7 +260,7 @@ const {
  */
 const toolbarComponentProps = computed<Partial<RendererToolbarProps>>(() => {
   return mapNodeProps<RendererToolbarProps>({
-    source: props.toolbar?.props,
+    source: toolbarNode.value?.props,
     map: {
       type: 'type',
       children: 'children',
@@ -244,12 +291,12 @@ const {
   activeFilterCount,
   resetFilters,
 } = useTableFilters({
-  filterChildren: computed(() => getSparkNodeChildren(props.filter?.children)),
+  filterChildren: computed(() => getSparkNodeChildren(filterNode.value?.children)),
   dataView: resolvedView,
-  filterClass: computed(() => childProp<string>(props.filter, 'class') ?? ''),
-  filterGridColumns: computed(() => childProp<number>(props.filter, 'gridColumns') ?? 24),
-  filterGridGap: computed(() => childProp<number | string>(props.filter, 'gridGap') ?? 12),
-  filterGridAutoRows: computed(() => childProp<string>(props.filter, 'gridAutoRows') ?? 'minmax(32px, auto)'),
+  filterClass: computed(() => childProp<string>(filterNode.value, 'class') ?? ''),
+  filterGridColumns: computed(() => childProp<number>(filterNode.value, 'gridColumns') ?? 24),
+  filterGridGap: computed(() => childProp<number | string>(filterNode.value, 'gridGap') ?? 12),
+  filterGridAutoRows: computed(() => childProp<string>(filterNode.value, 'gridAutoRows') ?? 'minmax(32px, auto)'),
   logger,
 })
 
@@ -262,10 +309,14 @@ const {
   filtersCollapsed,
   toggleFiltersCollapsed,
 } = useRendererTableViewState({
-  filterNode: computed(() => props.filter),
+  filterNode: normalizedFilterNode,
   baseElTableProps,
   resolvedView,
   filteredRows,
+  declaredElTablePropKeys,
+  warnUnknownTableProp: (propName: string) => {
+    logger.warn(`[RendererTable] tableProps 包含 el-table 未声明属性: ${propName}`)
+  },
 })
 
 // ── 零代码 API：桥接原生 el-table 实例，并向页面脚本暴露表格能力 ─────────
@@ -321,9 +372,9 @@ const {
   showActionsRight: showRowActionsRight,
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
-  actionPosition: computed(() => childProp<LateralActionPosition>(props.actions, 'position') ?? 'right'),
-  actionClass: computed(() => childProp<string>(props.actions, 'class') ?? ''),
+  actionConfigs: computed(() => getSparkNodeChildren(actionsNode.value?.children)),
+  actionPosition: computed(() => childProp<LateralActionPosition>(actionsNode.value, 'position') ?? 'right'),
+  actionClass: computed(() => childProp<string>(actionsNode.value, 'class') ?? ''),
   modelPermission,
   dataSource: resolvedView,
   resolveScope: ({ row, index }) => ({
@@ -346,11 +397,11 @@ const {
 
 /** 行操作列统一属性（仅 child props + defaults） */
 const rowActionColumnAttrs = computed(() => {
-  const label = childProp<string>(props.actions, 'label') ?? '操作'
-  const width = childProp<number | string>(props.actions, 'width') ?? 160
-  const rawAlign = childProp<string>(props.actions, 'align')
+  const label = childProp<string>(actionsNode.value, 'label') ?? '操作'
+  const width = childProp<number | string>(actionsNode.value, 'width') ?? 160
+  const rawAlign = childProp<string>(actionsNode.value, 'align')
   const align = rawAlign === 'left' || rawAlign === 'center' || rawAlign === 'right' ? rawAlign : 'left'
-  const childFixed = childProp<boolean | 'left' | 'right'>(props.actions, 'fixed')
+  const childFixed = childProp<boolean | 'left' | 'right'>(actionsNode.value, 'fixed')
   const fixed: boolean | 'left' | 'right' = childFixed ?? rowActionsPositionValue.value
   return { label, width, align, fixed, className: rowActionsClassValue.value || undefined }
 })

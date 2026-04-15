@@ -24,25 +24,53 @@ export function useDataScope(options: UseDataScopeOptions): UseDataScopeReturn {
   const mirror = shallowReactive<IDataRow>({})
   sparkProvide(DATA_ROW, mirror)
 
+  let syncingFromSource = false
+  let syncingFromMirror = false
+
+  function syncRow(target: IDataRow, source: IDataRow): void {
+    const incomingKeys = new Set(Object.keys(source))
+
+    for (const key of Object.keys(target)) {
+      if (!incomingKeys.has(key)) {
+        target[key] = undefined
+      }
+    }
+
+    for (const key of incomingKeys) {
+      if (target[key] !== source[key]) {
+        target[key] = source[key]
+      }
+    }
+  }
+
   watch(
     () => toValue(data),
     (incoming) => {
-      const row: IDataRow = incoming
-      const incomingKeys = new Set(Object.keys(row))
-
-      for (const key of Object.keys(mirror)) {
-        if (!incomingKeys.has(key)) {
-          mirror[key] = undefined
-        }
-      }
-
-      for (const key of incomingKeys) {
-        if (mirror[key] !== row[key]) {
-          mirror[key] = row[key]
-        }
+      if (syncingFromMirror) return
+      syncingFromSource = true
+      try {
+        const row: IDataRow = incoming
+        syncRow(mirror, row)
+      } finally {
+        syncingFromSource = false
       }
     },
-    { immediate: true },
+    { immediate: true, deep: true },
+  )
+
+  watch(
+    mirror,
+    (incoming) => {
+      if (syncingFromSource) return
+      const row = toValue(data)
+      syncingFromMirror = true
+      try {
+        syncRow(row, incoming)
+      } finally {
+        syncingFromMirror = false
+      }
+    },
+    { deep: true },
   )
 
   const result: UseDataScopeReturn = { host, sparkProvide, sparkConsume, logger }

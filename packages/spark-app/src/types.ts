@@ -182,6 +182,8 @@ export interface ErrorHandlerOptions {
 export interface ErrorContext {
   /** 错误来源（组件名） */
   source?: string
+  /** 组件文件路径（Vue SFC __file） */
+  file?: string
   /** 错误信息 */
   info: string
   /** 时间戳 */

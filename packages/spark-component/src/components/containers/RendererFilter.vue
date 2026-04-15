@@ -23,19 +23,21 @@
 
     <div v-show="!resolvedCollapsed" class="renderer-table-filters__content">
       <div class="renderer-table-filters__body">
-        <RendererFieldScope
-          type="r-field-scope"
-          :model="resolvedFilterModel"
-          :configs="resolvedConfigs"
-          :grid-columns="resolvedGridColumns"
-          :grid-gap="resolvedGridGap"
-          :grid-auto-rows="resolvedGridAutoRows"
-          :auto-fit-min-width="resolvedAutoFitMinWidth"
-          :default-col-span="resolvedItemSpan"
-          label-position="left"
-          label-width="80px"
-          compact
-        />
+        <RendererHostScope :host="FILTER_PANEL_HOST">
+          <RendererFieldScope
+            type="r-field-scope"
+            :model="resolvedFilterModel"
+            :configs="resolvedConfigs"
+            :grid-columns="resolvedGridColumns"
+            :grid-gap="resolvedGridGap"
+            :grid-auto-rows="resolvedGridAutoRows"
+            :auto-fit-min-width="resolvedAutoFitMinWidth"
+            :default-col-span="resolvedItemSpan"
+            label-position="left"
+            label-width="80px"
+            compact
+          />
+        </RendererHostScope>
       </div>
       <div class="renderer-table-filters__actions">
         <el-button type="primary" size="small" @click="handleSearch">查询</el-button>
@@ -67,20 +69,39 @@
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../internal'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp } from '../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent } from '../internal'
+import { PAGE_PERMISSION_MODE } from '../../permission'
+import RendererHostScope from './support/RendererHostScope.vue'
 import RendererFieldScope from './data-components/RendererFieldScope.vue'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
+import type { SparkComponentHost } from '../internal'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-filter',
 })
 
+function isRecordObject(value: unknown): value is IDataRow {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function assertPanelModel(value: unknown): asserts value is IDataRow {
+  if (value === undefined || isRecordObject(value)) return
+  throw new Error('RendererFilter: panel 模式下 model 必须是对象')
+}
+
+function assertPanelConfigs(value: unknown): asserts value is SparkNode[] {
+  if (value === undefined || Array.isArray(value)) return
+  throw new Error('RendererFilter: panel 模式下 configs 必须是节点数组')
+}
+
+assertPanelModel(props.model)
+assertPanelConfigs(props.configs)
+
 const standaloneChildren = computed(() => getSparkNodeChildren(props.children))
 const resolvedConfigs = computed(() => props.configs ?? standaloneChildren.value)
 const isPanelMode = computed(() => props.model !== undefined && props.configs !== undefined)
 const resolvedModel = computed<IDataRow>(() => props.model ?? {})
-const resolvedFilterFields = computed(() => collectFilterFields(resolvedConfigs.value))
-const resolvedFilterModel = computed<IDataRow>(() => createFilterPermissionModel(resolvedModel.value))
+const resolvedFilterModel = computed<IDataRow>(() => resolvedModel.value)
 const resolvedActiveCount = computed(() => props.activeCount ?? 0)
 const resolvedCollapsed = computed(() => props.collapsed ?? false)
 const resolvedGridColumns = computed(() => props.gridColumns ?? 24)
@@ -89,77 +110,14 @@ const resolvedGridAutoRows = computed(() => props.gridAutoRows ?? 'minmax(32px, 
 const resolvedAutoFitMinWidth = computed(() => props.autoFitMinWidth ?? '220px')
 const resolvedItemSpan = computed(() => props.itemSpan ?? 1)
 
-const FILTER_MODEL_CACHE = new WeakMap<IDataRow, IDataRow>()
-
-function collectFilterFields(nodes: SparkNode[]): string[] {
-  const fields = new Set<string>()
-
-  const visit = (node: SparkNode) => {
-    const field = nodeInputProp(node, 'field')
-    if (typeof field === 'string' && field.length > 0) {
-      fields.add(field)
-    }
-
-    for (const child of getSparkNodeChildren(node.children)) {
-      visit(child)
-    }
-  }
-
-  for (const node of nodes) {
-    visit(node)
-  }
-
-  return Array.from(fields)
+const FILTER_PANEL_HOST: SparkComponentHost = {
+  variant: 'field',
+  fieldMode: 'form',
 }
 
-function createFilterPermissionModel(sourceModel: IDataRow): IDataRow {
-  const cachedModel = FILTER_MODEL_CACHE.get(sourceModel)
-  if (cachedModel) return cachedModel
-
-  const proxy = new Proxy(sourceModel, {
-    get(target, key, receiver) {
-      if (key === '_perm') {
-        const existingPerm = Reflect.get(target, key, receiver)
-        const basePerm = typeof existingPerm === 'object' && existingPerm !== null
-          ? existingPerm as Record<string, unknown>
-          : {}
-
-        return {
-          ...basePerm,
-          editableFields: resolvedFilterFields.value,
-          hiddenFields: [],
-          maskedFields: [],
-        }
-      }
-
-      return Reflect.get(target, key, receiver)
-    },
-    set(target, key, value, receiver) {
-      return Reflect.set(target, key, value, receiver)
-    },
-    has(target, key) {
-      return key === '_perm' || Reflect.has(target, key)
-    },
-    ownKeys(target) {
-      const keys = Reflect.ownKeys(target)
-      return keys.includes('_perm') ? keys : [...keys, '_perm']
-    },
-    getOwnPropertyDescriptor(target, key) {
-      if (key === '_perm') {
-        return {
-          configurable: true,
-          enumerable: true,
-          writable: true,
-          value: undefined,
-        }
-      }
-
-      return Reflect.getOwnPropertyDescriptor(target, key)
-    },
-  })
-
-  FILTER_MODEL_CACHE.set(sourceModel, proxy)
-  return proxy
+const { sparkProvide } = useSparkComponent({ type: props.type })
+if (isPanelMode.value) {
+  sparkProvide(PAGE_PERMISSION_MODE, 'none')
 }
 
 async function handleSearch(): Promise<void> {
