@@ -39,6 +39,20 @@
                         "name": "email",
                         "type": "string",
                         "label": "邮箱"
+                    },
+                    {
+                        "name": "ageBadgeType",
+                        "type": "string",
+                        "label": "年龄标记",
+                        "isComputed": true,
+                        "computeExpression": "age > 50 && status !== '休假' ? 'danger' : age > 50 ? 'warning' : 'info'"
+                    },
+                    {
+                        "name": "ageRiskText",
+                        "type": "string",
+                        "label": "年龄提示",
+                        "isComputed": true,
+                        "computeExpression": "age > 50 ? (status === '出差' ? '高龄出差' : status === '在职' ? '高龄在岗' : '高龄关注') : department"
                     }
                 ],
                 "autoSelectFirst": true,
@@ -84,7 +98,7 @@
                         "name": "钱七",
                         "department": "人事部",
                         "role": "HR经理",
-                        "age": 30,
+                        "age": 56,
                         "status": "出差",
                         "email": "qianqi@example.com"
                     }

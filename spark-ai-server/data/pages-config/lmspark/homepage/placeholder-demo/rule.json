@@ -69,11 +69,27 @@
                                 }
                             },
                             {
-                                "type": "r-text",
-                                "field": "age",
+                                "type": "r-row-fragment",
                                 "props": {
                                     "label": "年龄",
-                                    "width": 80
+                                    "width": 180,
+                                    "fields": [
+                                        {
+                                            "type": "r-tag",
+                                            "props": {
+                                                "content": "$[age] 岁",
+                                                "tagType": "$[ageBadgeType]"
+                                            }
+                                        },
+                                        {
+                                            "type": "r-tag",
+                                            "props": {
+                                                "content": "$[ageRiskText]",
+                                                "tagType": "info",
+                                                "effect": "plain"
+                                            }
+                                        }
+                                    ]
                                 }
                             },
                             {
@@ -134,10 +150,17 @@
                                         }
                                     },
                                     {
+                                        "type": "r-tag",
+                                        "props": {
+                                            "content": "年龄阈值：$[age] 岁",
+                                            "tagType": "$[ageBadgeType]"
+                                        }
+                                    },
+                                    {
                                         "type": "r-statistic",
                                         "props": {
                                             "field": "age",
-                                            "title": "$[name] 的年龄",
+                                            "title": "$[name] 的年龄（表格年龄列走 r-row-fragment 单元格模板）",
                                             "suffix": "岁"
                                         }
                                     },

@@ -1,1 +1,3 @@
-/* placeholder-demo: 无自定义样式 */
+[data-page="placeholder-demo"] .el-table .el-tag + .el-tag {
+	margin-left: 6px;
+}
