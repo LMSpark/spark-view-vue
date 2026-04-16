@@ -1,14 +1,14 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <RendererHostDataScope v-if="showToolbar" type="r-table-toolbar-scope" :host="toolbarHost">
+    <RendererHostRowScope v-if="showToolbar" type="r-table-toolbar-scope" :host="toolbarHost">
       <RendererToolbar
         type="r-toolbar"
         :class="['renderer-table-toolbar', toolbarClassValue]"
         v-bind="toolbarComponentProps"
         :children="visibleToolbarConfigs"
       />
-    </RendererHostDataScope>
+    </RendererHostRowScope>
 
     <!-- 过滤区 -->
     <RendererFilter
@@ -53,7 +53,7 @@
         >
           <template #default="scope">
             <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-              <RendererHostDataScope
+              <RendererHostRowScope
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
@@ -82,7 +82,7 @@
         >
           <template #default="scope">
             <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-              <RendererHostDataScope
+              <RendererHostRowScope
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
@@ -145,7 +145,7 @@ import { useModuleContext } from '../../context/useModuleContext'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
 import type { RendererToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
-import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
 import type { SparkComponentHost } from '../../../internal'
 

@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-detail-layout', `renderer-detail-layout--${toolbarPositionValue}`]">
-    <RendererHostDataScope v-if="showToolbar" type="r-detail-toolbar-scope" :host="toolbarHost">
+    <RendererHostRowScope v-if="showToolbar" type="r-detail-toolbar-scope" :host="toolbarHost">
       <div :class="['renderer-detail-toolbar', toolbarClassValue]">
         <SparkComponentRenderer
           v-for="(action, index) in visibleToolbarConfigs"
@@ -8,11 +8,11 @@
           :config="action"
         />
       </div>
-    </RendererHostDataScope>
+    </RendererHostRowScope>
 
     <div class="renderer-detail-main">
       <div class="renderer-detail" v-bind="detailPropsValue" :style="detailAlignStyle">
-        <RendererHostDataScope type="r-detail-field-scope" :host="fieldHost">
+        <RendererHostRowScope type="r-detail-field-scope" :host="fieldHost">
           <div class="renderer-detail-grid" :style="gridStyle">
             <div
               v-for="(child, index) in gridChildren"
@@ -24,7 +24,7 @@
             </div>
             <slot v-bind="getDefaultSlotScope()" />
           </div>
-        </RendererHostDataScope>
+        </RendererHostRowScope>
       </div>
     </div>
   </div>
@@ -50,7 +50,7 @@ import { computed, type StyleValue } from 'vue'
 import { nodeId } from '../../../internal'
 import type { RDetailProps } from './RendererDetail.props'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
-import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'
 import type { SparkComponentHost, SparkNode } from '../../../internal'

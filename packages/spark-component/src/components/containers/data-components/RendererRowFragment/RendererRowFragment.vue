@@ -9,7 +9,7 @@
     :class-name="props.class"
   >
     <template #default="scope">
-      <RendererHostDataScope
+      <RendererHostRowScope
         type="r-data-scope"
         :row="resolveSlotRow(scope)"
         :children="resolvedChildren"
@@ -17,7 +17,7 @@
     </template>
   </el-table-column>
 
-  <RendererHostDataScope
+  <RendererHostRowScope
     v-else
     type="r-data-scope"
     :row="resolvedData"
@@ -29,7 +29,7 @@
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import { getSparkNodeChildren, useSparkConsume, type SparkNode } from '../../../internal'
-import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
 import type { RendererRowFragmentProps as Props } from './RendererRowFragment.types.js'
 
 const props = withDefaults(defineProps<Props>(), {

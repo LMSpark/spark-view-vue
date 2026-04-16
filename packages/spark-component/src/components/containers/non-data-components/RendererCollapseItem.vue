@@ -4,7 +4,7 @@
     :title="itemTitle"
     :disabled="itemDisabled"
   >
-    <RendererHostDataScope type="r-collapse-item-field-scope" :host="collapseItemFieldHost">
+    <RendererHostRowScope type="r-collapse-item-field-scope" :host="collapseItemFieldHost">
       <div :class="['renderer-collapse-item-body', itemBodyClass]" :style="itemGridStyle">
         <div
           v-for="(child, index) in itemChildren"
@@ -16,7 +16,7 @@
         </div>
         <slot />
       </div>
-    </RendererHostDataScope>
+    </RendererHostRowScope>
   </el-collapse-item>
 </template>
 
@@ -29,7 +29,7 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
-import RendererHostDataScope from '../support/RendererHostDataScope.vue'
+import RendererHostRowScope from '../support/RendererHostRowScope.vue'
 import type { SparkComponentHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 

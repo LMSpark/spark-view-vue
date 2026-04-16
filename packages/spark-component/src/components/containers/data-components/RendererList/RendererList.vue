@@ -25,7 +25,7 @@
                 v-if="showItemActionsLeftValue"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <RendererHostDataScope
+                <RendererHostRowScope
                   type="r-list-item-action-scope"
                   :children="getScopedItemActions({ row, index })"
                   :row="row"
@@ -35,7 +35,7 @@
               </div>
 
               <div :class="itemClass" :style="itemStyle">
-                <RendererHostDataScope type="r-list-item" :row="row" :host="listFieldHost">
+                <RendererHostRowScope type="r-list-item" :row="row" :host="listFieldHost">
                   <component :is="itemBodyWrapperTag" v-bind="itemBodyWrapperAttrs">
                     <div class="renderer-list-item-body" :style="itemContentGridStyle">
                       <div
@@ -52,14 +52,14 @@
                       />
                     </div>
                   </component>
-                </RendererHostDataScope>
+                </RendererHostRowScope>
               </div>
 
               <div
                 v-if="showItemActionsRightValue"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <RendererHostDataScope
+                <RendererHostRowScope
                   type="r-list-item-action-scope"
                   :children="getScopedItemActions({ row, index })"
                   :row="row"
@@ -95,7 +95,7 @@ import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
-import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
 import type { SparkComponentHost } from '../../../internal'
 import { useContainerActions } from '../../useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'

@@ -1,6 +1,6 @@
 export { default } from './RendererRowFragment.vue'
 export { default as RendererRowFragment } from './RendererRowFragment.vue'
-export { default as RendererDataScope } from '../../support/RendererHostDataScope.vue'
+export { default as RendererDataScope } from '../../support/RendererHostRowScope.vue'
 export type {
   RowFragmentAlign,
   RendererRowFragmentConfigProps,

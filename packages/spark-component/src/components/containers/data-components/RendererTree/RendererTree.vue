@@ -1,12 +1,12 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostDataScope v-if="showToolbar" type="r-tree-toolbar-scope" :host="toolbarHost">
+    <RendererHostRowScope v-if="showToolbar" type="r-tree-toolbar-scope" :host="toolbarHost">
       <div :class="['renderer-tree-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
         </template>
       </div>
-    </RendererHostDataScope>
+    </RendererHostRowScope>
 
     <div :class="['renderer-tree-body', `renderer-tree-body--editor-${editorPositionValue}`]">
       <div class="renderer-tree-main">
@@ -23,14 +23,14 @@
         >
           <template #default="slotProps">
             <span class="custom-tree-node">
-              <RendererHostDataScope
+              <RendererHostRowScope
                 v-if="nodeContentChildren.length > 0"
                 type="r-data-scope"
                 :children="nodeContentChildren"
                 :row="(slotProps?.data as IDataRow) ?? {}"
                 :host="treeFieldHost"
               />
-              <RendererHostDataScope
+              <RendererHostRowScope
                 v-else
                 type="r-data-scope"
                 :row="(slotProps?.data as IDataRow) ?? {}"
@@ -39,12 +39,12 @@
                 <slot :node="slotProps?.node" :data="slotProps?.data">
                   <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
                 </slot>
-              </RendererHostDataScope>
+              </RendererHostRowScope>
               <span
                 v-if="hasNodeActions"
                 class="tree-node-actions"
               >
-                <RendererHostDataScope
+                <RendererHostRowScope
                   :children="getNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))"
                   type="r-tree-node-action-scope"
                   :row="((slotProps?.data as IDataRow) ?? {})"
@@ -100,7 +100,7 @@ import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useContainerActions } from '../../useContainerActions'
-import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
 import type { SparkComponentHost } from '../../../internal'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'

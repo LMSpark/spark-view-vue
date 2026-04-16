@@ -2,7 +2,7 @@
  * 内置声明式动作系统 — 执行处理器工厂
  *
  * 容器组件通过 createBuiltinActionHandler 构建绑定上下文后,
- * 将 handleToolbar / handleRow 交由 RendererHostDataScope 分发给子动作按钮。
+ * 将 handleToolbar / handleRow 交由 RendererHostRowScope 分发给子动作按钮。
  */
 
 import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'

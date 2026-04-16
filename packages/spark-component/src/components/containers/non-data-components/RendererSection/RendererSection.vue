@@ -27,7 +27,7 @@
       </div>
     </template>
 
-    <RendererHostDataScope type="r-section-field-scope" :host="sectionFieldHost">
+    <RendererHostRowScope type="r-section-field-scope" :host="sectionFieldHost">
       <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -39,7 +39,7 @@
         </div>
         <slot v-bind="getDefaultSlotScope()" />
       </div>
-    </RendererHostDataScope>
+    </RendererHostRowScope>
   </el-card>
 
   <div v-else :class="['renderer-section', { 'renderer-section--bordered': bordered }]">
@@ -68,7 +68,7 @@
       </div>
     </div>
 
-    <RendererHostDataScope type="r-section-field-scope" :host="sectionFieldHost">
+    <RendererHostRowScope type="r-section-field-scope" :host="sectionFieldHost">
       <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -80,7 +80,7 @@
         </div>
         <slot v-bind="getDefaultSlotScope()" />
       </div>
-    </RendererHostDataScope>
+    </RendererHostRowScope>
   </div>
 </template>
 
@@ -96,7 +96,7 @@ import { computed, useSlots } from 'vue'
 import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal'
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
 import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useMirroredValue } from '../state'

@@ -8,7 +8,7 @@
     @click="emit('activate', index)"
   />
 
-  <RendererHostDataScope v-else type="r-step-item-field-scope" :host="stepItemFieldHost">
+  <RendererHostRowScope v-else type="r-step-item-field-scope" :host="stepItemFieldHost">
     <div :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
       <div
         v-for="(child, index) in stepChildren"
@@ -20,7 +20,7 @@
       </div>
       <slot />
     </div>
-  </RendererHostDataScope>
+  </RendererHostRowScope>
 </template>
 
 <script setup lang="ts">
@@ -32,7 +32,7 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
-import RendererHostDataScope from '../support/RendererHostDataScope.vue'
+import RendererHostRowScope from '../support/RendererHostRowScope.vue'
 import type { SparkComponentHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 

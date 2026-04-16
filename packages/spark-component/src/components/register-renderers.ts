@@ -22,7 +22,7 @@ import {
 import {
   RendererFilter, RendererEditor, RendererHeader, RendererFooter, RendererTail,
 } from './containers/index.js'
-import RendererHostDataScope from './containers/support/RendererHostDataScope.vue'
+import RendererHostRowScope from './containers/support/RendererHostRowScope.vue'
 
 // ── 非数据容器 + 布局 + Passthrough ──
 import {
@@ -93,7 +93,7 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-list', RendererList],
   ['r-row-fragment', RendererRowFragment],
   // 区域子组件（meta.liftAs 声明提升后的 prop 名，绑定层据此将其提升为容器 props）
-  ['r-actions', RendererHostDataScope, { liftAs: 'actions' }],
+  ['r-actions', RendererHostRowScope, { liftAs: 'actions' }],
   ['r-filter', RendererFilter, { liftAs: 'filter' }],
   ['r-editor', RendererEditor, { liftAs: 'editor' }],
   ['r-header', RendererHeader, { liftAs: 'header' }],
