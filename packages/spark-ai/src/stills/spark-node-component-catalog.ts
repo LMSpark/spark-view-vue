@@ -121,7 +121,7 @@ export const SPARK_NODE_COMPONENT_ENTRIES: readonly SparkNodeComponentEntry[] = 
         dock类型: ['r-toolbar', 'r-actions', 'r-editor'],
         内容子节点: '字段组件用于自定义节点内容',
         children过滤: '无 — nodeContentChildren 由 dock 分离后直接用',
-        渲染方式: 'el-tree #default slot → RendererDataScope（注入节点行数据）→ v-for SparkComponentRenderer',
+        渲染方式: 'el-tree #default slot → RendererHostRowScope（注入节点行数据）→ v-for SparkComponentRenderer',
         provides: 'DATA_SOURCE (DataView)',
       },
       'r-list': {
@@ -130,7 +130,7 @@ export const SPARK_NODE_COMPONENT_ENTRIES: readonly SparkNodeComponentEntry[] = 
         dock类型: ['r-toolbar', 'r-actions'],
         内容子节点: '字段组件（每行卡片内）',
         children过滤: '无',
-        渲染方式: 'RendererListItemScope 迭代 + grid-item div 包装',
+        渲染方式: 'RendererHostRowScope 迭代 + grid-item div 包装',
         provides: 'DATA_SOURCE (DataView)',
       },
 

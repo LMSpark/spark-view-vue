@@ -65,12 +65,7 @@ export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
   '**/src/views/app/SkillCatalog.vue',
   '**/src/views/app/dev-system/DevPreviewTab.vue',
   '**/packages/spark-component/src/components/containers/support/**/*.vue',
-  '**/packages/spark-component/src/components/containers/data-components/RendererFieldScope.vue',
-  '**/packages/spark-component/src/components/containers/data-components/RendererListItemScope.vue',
   '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererRowFragment.vue',
-  '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererDataHost.vue',
-  '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererDataScope.vue',
-  '**/packages/spark-component/src/components/containers/data-components/RendererRowFragment/RendererRowFragmentHost.vue',
 ] as const
 
 /* ==========================================================================

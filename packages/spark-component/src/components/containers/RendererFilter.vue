@@ -72,7 +72,7 @@ import type { SparkNode } from '../internal'
 import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent } from '../internal'
 import { PAGE_PERMISSION_MODE } from '../../permission'
 import RendererHostRowScope from './support/RendererHostRowScope.vue'
-import RendererFieldScope from './data-components/RendererFieldScope.vue'
+import RendererFieldScope from './support/RendererFieldScope.vue'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
 import type { SparkComponentHost } from '../internal'
 

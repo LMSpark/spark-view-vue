@@ -7,20 +7,14 @@
 1. `RendererRowFragment.vue`
 公开语义壳，对外代表 `r-row-fragment`。
 
-2. `RendererRowFragmentHost.vue`
-宿主投影层，负责把行片段投影到具体宿主；当前已接 `r-table -> el-table-column`。
-
-3. `RendererDataScope.vue`
-数据作用域层，只负责提供 `DATA_ROW`，不解释宿主元属性。
-
-4. `RendererDataHost.vue`
-叶子递归层，只负责把子节点重新交回 `SparkComponentRenderer`。
+2. `RendererHostRowScope.vue`
+host + row 作用域层，负责注入宿主语义与 `DATA_ROW`，并透明递归子节点。
 
 补充：
 
 - `RendererRowFragment.types.ts` 是这条链的公共语义契约。
-- 如果后续接 `r-list` / `r-tree` / gantt，优先改 `RendererRowFragmentHost.vue`，不要回退去污染 `RendererDataScope.vue`。
-- `RendererDataScope.vue` 对齐的是 `RendererActions.vue` 的“薄壳”思路；`RendererDataHost.vue` 对齐的是 `RendererActionStrip.vue` 的“叶子递归”思路。
+- 如果后续接 `r-list` / `r-tree` / gantt，优先在 `RendererRowFragment.vue` 内扩展宿主投影逻辑，不要把宿主语义混入字段组件。
+- `RendererHostRowScope.vue` 保持“薄壳”职责：只处理 host 与 row 作用域，不解释业务元属性。
 
 ## 最简单用例
 
@@ -73,8 +67,8 @@
 
 这个例子的意义：
 
-- `RendererRowFragmentHost.vue` 负责把它投影成 table 列。
-- `RendererDataScope.vue` 负责给两个子字段提供同一个 `DATA_ROW`。
+- `RendererRowFragment.vue` 负责把它投影成 table 列。
+- `RendererHostRowScope.vue` 负责给两个子字段提供同一个 `DATA_ROW`。
 - `row-fragment-icon-probe` 只读 `row.icon`。
 - `row-fragment-link-probe` 只读 `row.href` 和 `row.label`。
 - 对外公开面优先看 `props.fields`；`children` 只是兼容回退入口，不再是推荐写法。
