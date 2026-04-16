@@ -2,7 +2,10 @@
   {
     "type": "div",
     "style": {
-      "marginBottom": "16px"
+      "marginBottom": "16px",
+      "display": "flex",
+      "justifyContent": "space-between",
+      "alignItems": "center"
     },
     "children": [
       {
@@ -11,62 +14,6 @@
           "title": "项目进度报告",
           "content": "各项目阶段完成情况跟踪"
         }
-      }
-    ]
-  },
-  {
-    "type": "div",
-    "style": {
-      "display": "flex",
-      "gap": "8px",
-      "marginBottom": "16px"
-    },
-    "children": [
-      {
-        "type": "el-select",
-        "name": "reportProject",
-        "props": {
-          "placeholder": "选择项目",
-          "style": "width:220px"
-        },
-        "children": [
-          {
-            "type": "el-option",
-            "props": {
-              "label": "全部项目",
-              "value": "all"
-            }
-          },
-          {
-            "type": "el-option",
-            "props": {
-              "label": "智慧园区综合管理平台",
-              "value": "p1"
-            }
-          },
-          {
-            "type": "el-option",
-            "props": {
-              "label": "ERP系统升级",
-              "value": "p2"
-            }
-          },
-          {
-            "type": "el-option",
-            "props": {
-              "label": "移动办公平台",
-              "value": "p3"
-            }
-          }
-        ]
-      },
-      {
-        "type": "el-date-picker",
-        "name": "reportMonth",
-        "props": {
-          "type": "month",
-          "placeholder": "选择月份"
-        }
       },
       {
         "type": "el-button",
@@ -74,17 +21,40 @@
           "type": "primary",
           "icon": "Printer"
         },
+        "children": ["导出报告"]
+      }
+    ]
+  },
+  {
+    "type": "el-card",
+    "props": { "header": "项目列表（点击选择项目）", "style": "margin-bottom:16px" },
+    "children": [
+      {
+        "type": "r-table",
+        "dataKey": "Projects@rows",
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true
+        },
         "children": [
-          "导出报告"
+          {
+            "type": "r-text",
+            "field": "name",
+            "props": { "label": "项目名称", "minWidth": 200 }
+          },
+          {
+            "type": "r-text",
+            "field": "status",
+            "props": { "label": "状态", "width": 100 }
+          }
         ]
       }
     ]
   },
   {
     "type": "el-card",
-    "props": {
-      "header": "周进度汇总"
-    },
+    "props": { "header": "周进度明细" },
     "children": [
       {
         "type": "r-table",
@@ -95,52 +65,29 @@
         },
         "children": [
           {
-            "type": "el-table-column",
-            "props": {
-              "prop": "week",
-              "label": "周次",
-              "width": 100
-            }
+            "type": "r-text",
+            "field": "week",
+            "props": { "label": "周次", "width": 100 }
           },
           {
-            "type": "el-table-column",
-            "props": {
-              "prop": "project",
-              "label": "项目",
-              "minWidth": 180
-            }
+            "type": "r-text",
+            "field": "planned",
+            "props": { "label": "计划完成", "minWidth": 180 }
           },
           {
-            "type": "el-table-column",
-            "props": {
-              "prop": "planned",
-              "label": "计划完成",
-              "width": 120
-            }
+            "type": "r-text",
+            "field": "actual",
+            "props": { "label": "实际完成", "width": 120 }
           },
           {
-            "type": "el-table-column",
-            "props": {
-              "prop": "actual",
-              "label": "实际完成",
-              "width": 120
-            }
+            "type": "r-text",
+            "field": "deviation",
+            "props": { "label": "偏差", "width": 100 }
           },
           {
-            "type": "el-table-column",
-            "props": {
-              "prop": "deviation",
-              "label": "偏差",
-              "width": 100
-            }
-          },
-          {
-            "type": "el-table-column",
-            "props": {
-              "prop": "risks",
-              "label": "风险备注",
-              "minWidth": 200
-            }
+            "type": "r-text",
+            "field": "risks",
+            "props": { "label": "风险备注", "minWidth": 200 }
           }
         ]
       }
