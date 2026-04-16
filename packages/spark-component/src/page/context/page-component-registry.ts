@@ -2,7 +2,7 @@ import type {
   PageComponentApiEntry,
   PageComponentInstanceEntry,
   PageComponentRegistry,
-} from '../../core/capabilities.js'
+} from '../../core/capability-keys.js'
 
 export function createPageComponentRegistry(): PageComponentRegistry {
   const instanceMap = new Map<string, PageComponentInstanceEntry>()

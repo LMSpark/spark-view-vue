@@ -35,7 +35,7 @@
               </div>
 
               <div :class="itemClass" :style="itemStyle">
-                <RendererHostScope type="r-list-item" :row="row" :host="listFieldHost">
+                <RendererHostScope type="r-list-item" :row="row" :field-mode="'detail'">
                   <component :is="itemBodyWrapperTag" v-bind="itemBodyWrapperAttrs">
                     <div class="renderer-list-item-body" :style="itemContentGridStyle">
                       <div
@@ -96,7 +96,6 @@ import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../../internal'
 import type { RendererListApi } from './types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import { createFieldHost } from '../../../internal'
 import { useContainerActions } from '../../composables/useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
@@ -153,8 +152,6 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererList',
 })
-
-const listFieldHost = createFieldHost('detail')
 
 const listRows = computed<IDataRow[]>(() => resolvedView.value?.rows ?? [])
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))

@@ -38,7 +38,7 @@
           </div>
         </div>
         <div class="hero-actions">
-          <router-link to="/tree-demo" class="btn btn--primary btn--lg">
+          <router-link to="/demo/custom-r-table" class="btn btn--primary btn--lg">
             查看三大 Demo
           </router-link>
           <router-link to="/login" class="btn btn--outline btn--lg" @click="setRegisterTab">
@@ -506,7 +506,7 @@
     <section class="cta">
       <h2>企业应用系统，不是写出来的，是 AI 配出来的</h2>
       <p>前提是 AI 只在受约束的配置空间里工作，而页面最终由稳定运行时解释执行。</p>
-      <router-link to="/tree-demo" class="btn btn--primary btn--lg">
+      <router-link to="/demo/custom-r-table" class="btn btn--primary btn--lg">
         直接看 Demo →
       </router-link>
     </section>
@@ -529,7 +529,7 @@ const year = new Date().getFullYear()
 
 const platformDemos = [
   {
-    path: '/tree-demo',
+    path: '/demo/custom-r-table',
     badge: 'tree-demo',
     title: '树形导航编辑器',
     description: '展示树容器、表单编辑、工具栏动作、当前节点联动和页面脚本，最适合体现“AI 配系统”的平台感。',
@@ -540,7 +540,7 @@ const platformDemos = [
     ],
   },
   {
-    path: '/master-detail',
+    path: '/demo/r-form-compare',
     badge: 'master-detail',
     title: '主从联动页面',
     description: '点击主表行自动切换子表数据，直接体现 DataView 驱动的零代码联动能力。',
@@ -551,7 +551,7 @@ const platformDemos = [
     ],
   },
   {
-    path: '/permission-render',
+    path: '/skill-catalog',
     badge: 'permission-render',
     title: '权限渲染页面',
     description: '用同一套页面结构演示不同权限快照下的渲染结果，突出改权限不改页面代码。',

@@ -1,7 +1,7 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <RendererHostScope v-if="showToolbar" type="r-table-toolbar-scope" :host="toolbarHost" :action-host="toolbarActionHost">
+    <RendererHostScope v-if="showToolbar" type="r-table-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
       <RendererToolbar
         type="r-toolbar"
         :class="['renderer-table-toolbar', toolbarClassValue]"
@@ -57,7 +57,7 @@
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
-                :host="getScopedRowActionHost(scope)"
+                :variant="'row-action'"
                 :action-host="getScopedRowActionCapability(scope)"
                 child-key-prefix="r-table-row-action"
               />
@@ -87,7 +87,7 @@
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
-                :host="getScopedRowActionHost(scope)"
+                :variant="'row-action'"
                 :action-host="getScopedRowActionCapability(scope)"
                 child-key-prefix="r-table-row-action"
               />
@@ -129,7 +129,7 @@ import { computed, nextTick, ref, watch, useAttrs, useSlots } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
-  PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT, PAGE_SERVICE,
+  PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT, PAGE_SERVICE, HOST_FIELD_MODE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
@@ -148,7 +148,7 @@ import type { RendererToolbarProps } from '../../non-data-components/RendererToo
 import type { FilterNode } from '../../RendererFilter.types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
-import { createActionCapability, createFieldHost, createToolbarHost, createRowActionHost } from '../../../internal'
+import { createActionCapability } from '../../../internal'
 
 // ── 基础工具 ─────────────────────────────────────────────────────────────
 
@@ -229,7 +229,7 @@ const effectiveDataKey = computed(() => props.dataKey)
 
 // ── SPARK 上下文与数据源：解析 DataKey → DataView，并向下游提供 DATA_SOURCE ──
 
-const { host: tableHost, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
@@ -249,7 +249,7 @@ useContainerDataSourceEffects({
   logPrefix: 'RendererTable',
 })
 
-tableHost.setHost(createFieldHost('table'))
+sparkProvide(HOST_FIELD_MODE, 'table')
 
 // ── 工具栏区：读取提升后的 props.toolbar，并向工具栏子树提供内置动作宿主能力 ──
 
@@ -361,7 +361,6 @@ watch(
   },
 )
 
-const toolbarHost = createToolbarHost()
 const toolbarActionHost = createActionCapability({
   isDisabled(action) {
     return isBuiltinActionDisabled(action)
@@ -467,10 +466,6 @@ function getScopedRowActionConfigs(scope: Record<string, unknown>): SparkNode[] 
 
 function getScopedRowActionRow(scope: Record<string, unknown>): IDataRow {
   return resolveRowActionScope(scope).row
-}
-
-function getScopedRowActionHost(_scope: Record<string, unknown>) {
-  return createRowActionHost()
 }
 
 function getScopedRowActionCapability(scope: Record<string, unknown>) {

@@ -190,8 +190,7 @@ describe('基础值字段组件', () => {
 
     const Provider = defineComponent({
       setup() {
-        const { sparkProvide, host } = useSparkComponent({ type: 'r-form' }, { hostContext: rootContext })
-        host.setHost({})
+        const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
         sparkProvide(HOST_FIELD_MODE, 'form')
         sparkProvide(DATA_SOURCE, { currentRow: model })
         return () => h(FieldText, { type: 'r-text', field: 'name' })
@@ -232,8 +231,7 @@ describe('基础值字段组件', () => {
 
     const Provider = defineComponent({
       setup() {
-        const { sparkProvide, host } = useSparkComponent({ type: 'r-form' }, { hostContext: rootContext })
-        host.setHost({})
+        const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
         sparkProvide(HOST_FIELD_MODE, 'form')
         sparkProvide(DATA_SOURCE, { currentRow: model })
         return () => h(FieldMention, {

@@ -27,7 +27,7 @@
       </div>
     </template>
 
-    <RendererHostScope type="r-section-field-scope" :host="sectionFieldHost">
+    <RendererHostScope type="r-section-field-scope" :field-mode="'detail'">
       <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -68,7 +68,7 @@
       </div>
     </div>
 
-    <RendererHostScope type="r-section-field-scope" :host="sectionFieldHost">
+    <RendererHostScope type="r-section-field-scope" :field-mode="'detail'">
       <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -101,7 +101,6 @@ import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useMirroredValue } from '../state'
 import type { RSectionProps } from './RendererSection.props'
-import { createFieldHost } from '../../../internal'
 
 const props = withDefaults(defineProps<RSectionProps>(), {
   type: 'r-section',
@@ -156,7 +155,6 @@ const { sectionApi, handleHeaderClick, toggleCollapsed }: {
 
 registerApi(sectionApi)
 
-const sectionFieldHost = createFieldHost('detail')
 
 function getHeaderSlotScope() {
   return {

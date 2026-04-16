@@ -22,7 +22,7 @@
       </div>
     </template>
 
-    <RendererHostScope type="r-dialog-field-scope" :host="dialogFieldHost">
+    <RendererHostScope type="r-dialog-field-scope" :field-mode="'detail'">
       <div :class="['renderer-dialog-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -62,7 +62,6 @@ import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDialogProps } from './RendererDialog.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import { createFieldHost } from '../../../internal'
 import type { RendererDialogApi } from './types'
 import { createRendererDialogZeroCode } from './zero-code'
 
@@ -136,7 +135,6 @@ const {
 
 registerApi(dialogApi)
 
-const dialogFieldHost = createFieldHost('detail')
 
 function getHeaderSlotScope() {
   return {

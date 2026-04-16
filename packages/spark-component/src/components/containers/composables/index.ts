@@ -15,7 +15,3 @@ export {
 export {
   useFormDetailContainer,
 } from './useFormDetailContainer.js'
-
-export {
-  useContainerHostBridge,
-} from './useContainerHostBridge.js'

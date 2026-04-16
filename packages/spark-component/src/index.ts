@@ -72,8 +72,8 @@ export {
 // ── 6. 数据 + Renderer 能力键 ──
 export {
   defineCapability,
-  normalizeKey,
   sparkProvide,
+  sparkRemove,
   sparkConsume,
   APP_SERVICES,
   LOGGER,
@@ -88,11 +88,11 @@ export {
   ACTION_CAPABILITY,
   HOST_FIELD_MODE,
   HOST_VARIANT,
-  findNearestHost,
+  DEFAULT_PROVIDER_KEYS,
+  findNearestCapabilityProvider,
+  findNearestCapabilityProviderByKeys,
+  consumeCapabilityFromProvider,
   createActionCapability,
-  createFieldHost,
-  createToolbarHost,
-  createRowActionHost,
 } from './core/index.js'
 export type {
   CapabilityKey,
@@ -119,7 +119,6 @@ export type {
   PageComponentApiEntry,
   ModuleContextCapability,
   PageCssScopeCapability,
-  SparkHostLink,
   SparkActionCapability,
   HostVariant,
 } from './core/index.js'

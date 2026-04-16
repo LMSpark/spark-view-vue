@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-16T16:00:22.248Z",
+  "buildTime": "2026-04-16T21:30:34.445Z",
   "componentCount": 107,
   "registry": {
     "containers": [
@@ -8453,7 +8453,7 @@
           "description": "被渲染的节点本体。\r\n\r\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\r\n目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级兼容合并。"
         },
         {
-          "name": "hostContext",
+          "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
           "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"
@@ -12379,7 +12379,7 @@
           "description": "被渲染的节点本体。\r\n\r\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\r\n目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级兼容合并。"
         },
         "prop_00538": {
-          "name": "hostContext",
+          "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
           "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"

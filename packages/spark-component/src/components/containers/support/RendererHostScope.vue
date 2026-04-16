@@ -22,19 +22,20 @@ import type { IDataRow } from '@spark-view/spark-data'
 import {
   ACTION_CAPABILITY,
   DATA_ROW,
+  HOST_FIELD_MODE,
+  HOST_VARIANT,
   SparkComponentRenderer,
   nodeId,
   useSparkComponent,
   type SparkActionCapability,
-  type SparkHostLink,
   type SparkNode,
 } from '../../internal'
-import { useContainerHostBridge } from '../composables/useContainerHostBridge'
 import { syncReactiveRow } from '../../support/row-mirror-sync'
 
 const props = withDefaults(defineProps<{
   type?: string
-  host?: SparkHostLink | undefined
+  fieldMode?: string | undefined
+  variant?: string | undefined
   actionHost?: SparkActionCapability | undefined
   row?: IDataRow | undefined
   children?: SparkNode[] | undefined
@@ -43,10 +44,31 @@ const props = withDefaults(defineProps<{
   type: 'r-host-data-scope',
 })
 
-const { host, sparkProvide } = useSparkComponent({ type: props.type })
+const { sparkProvide, sparkRemove } = useSparkComponent({ type: props.type })
 
-const currentHost = computed(() => props.host)
-useContainerHostBridge(host, currentHost)
+watch(
+  () => props.fieldMode,
+  (fieldMode) => {
+    if (fieldMode !== undefined) {
+      sparkProvide(HOST_FIELD_MODE, fieldMode)
+    } else {
+      sparkRemove(HOST_FIELD_MODE)
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  () => props.variant,
+  (variant) => {
+    if (variant !== undefined) {
+      sparkProvide(HOST_VARIANT, variant)
+    } else {
+      sparkRemove(HOST_VARIANT)
+    }
+  },
+  { immediate: true },
+)
 
 const currentActionHost = computed(() => props.actionHost)
 const actionHostProxy: SparkActionCapability = {
@@ -61,7 +83,11 @@ const actionHostProxy: SparkActionCapability = {
 watch(
   currentActionHost,
   (resolvedActionHost) => {
-    sparkProvide(ACTION_CAPABILITY, resolvedActionHost === undefined ? undefined : actionHostProxy)
+    if (resolvedActionHost === undefined) {
+      sparkRemove(ACTION_CAPABILITY)
+      return
+    }
+    sparkProvide(ACTION_CAPABILITY, actionHostProxy)
   },
   { immediate: true },
 )

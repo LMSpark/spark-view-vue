@@ -22,7 +22,7 @@
       </div>
     </template>
 
-    <RendererHostScope type="r-drawer-field-scope" :host="drawerFieldHost">
+    <RendererHostScope type="r-drawer-field-scope" :field-mode="'detail'">
       <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -62,7 +62,6 @@ import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDrawerProps } from './RendererDrawer.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import { createFieldHost } from '../../../internal'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
 
@@ -136,7 +135,6 @@ const {
 
 registerApi(drawerApi)
 
-const drawerFieldHost = createFieldHost('detail')
 
 function getHeaderSlotScope() {
   return {

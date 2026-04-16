@@ -4,7 +4,7 @@
     :title="itemTitle"
     :disabled="itemDisabled"
   >
-    <RendererHostScope type="r-collapse-item-field-scope" :host="collapseItemFieldHost">
+    <RendererHostScope type="r-collapse-item-field-scope" :field-mode="'detail'">
       <div :class="['renderer-collapse-item-body', itemBodyClass]" :style="itemGridStyle">
         <div
           v-for="(child, index) in itemChildren"
@@ -30,7 +30,6 @@ import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import RendererHostScope from '../support/RendererHostScope.vue'
-import { createFieldHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
@@ -89,7 +88,5 @@ const itemTitle = computed(() => {
 })
 
 const itemDisabled = computed(() => props.disabled === true)
-
-const collapseItemFieldHost = createFieldHost('detail')
 </script>
 

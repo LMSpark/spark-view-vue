@@ -12,7 +12,7 @@ Scope: move capability system ownership from `@spark-view/spark-utils` to `@spar
     - `packages/spark-component/src/components/internal.ts`
 - Host semantics capabilityized in renderer/component path:
   - `HOST_FIELD_MODE`, `HOST_VARIANT`, `ACTION_CAPABILITY`
-  - relation-only host link (`SparkHostLink`)
+  - relation-only host link (`HostLink`)
 - `spark-component` source/tests switched to consume capability APIs from `spark-component` exports (not `spark-utils` capability entry).
 - `spark-data` removed dependency on `IAppServicesCapability` and `IEventEmitter` from `spark-utils` capability layer:
   - local `DataSetAppServices`

@@ -51,8 +51,7 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
   const Provider = defineComponent({
     setup() {
       const hostType = options.hostType ?? 'r-form'
-      const { sparkProvide, host } = useSparkComponent({ type: hostType } as SparkNode, { hostContext: rootContext })
-      host.setHost({})
+      const { sparkProvide } = useSparkComponent({ type: hostType } as SparkNode, { parentContext: rootContext })
       sparkProvide(HOST_FIELD_MODE, resolveFieldModeByHostType(hostType))
       sparkProvide(DATA_ROW, options.model)
 

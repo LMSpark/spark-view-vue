@@ -8,7 +8,7 @@
     @click="emit('activate', index)"
   />
 
-  <RendererHostScope v-else type="r-step-item-field-scope" :host="stepItemFieldHost">
+  <RendererHostScope v-else type="r-step-item-field-scope" :field-mode="'detail'">
     <div :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
       <div
         v-for="(child, index) in stepChildren"
@@ -33,7 +33,6 @@ import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import RendererHostScope from '../support/RendererHostScope.vue'
-import { createFieldHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
@@ -110,5 +109,4 @@ const stepStatus = computed<string | undefined>(() => {
 
 const stepDisabled = computed(() => props.disabled === true)
 
-const stepItemFieldHost = createFieldHost('detail')
 </script>

@@ -11,7 +11,7 @@ import type { IPageRoute } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from './types'
-import type { PageComponentRegistry } from '../../core/capabilities'
+import type { PageComponentRegistry } from '../../core/capability-keys'
 import {
   isPermittedAction, resolveFieldPermissionState,
   canCreate, canImport, canExport,

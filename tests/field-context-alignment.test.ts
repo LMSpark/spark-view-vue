@@ -232,16 +232,16 @@ describe('useFieldContext attrs 集成传递', () => {
   })
 })
 
-describe('字段宿主解析会考虑中间层', () => {
-  const HostContextProbe = defineComponent({
-    name: 'HostContextProbe',
+describe('字段 provider 解析会考虑中间层', () => {
+  const ProviderContextProbe = defineComponent({
+    name: 'ProviderContextProbe',
     setup() {
       const resolvedContext = useResolvedFieldContext()
-      return () => h('div', { 'data-host-context': resolvedContext.value })
+      return () => h('div', { 'data-provider-context': resolvedContext.value })
     },
   })
 
-  function createIntermediateBridge(intermediateType: string, next: object = HostContextProbe) {
+  function createIntermediateBridge(intermediateType: string, next: object = ProviderContextProbe) {
     return defineComponent({
       name: `IntermediateBridge_${intermediateType}`,
       setup() {
@@ -251,7 +251,7 @@ describe('字段宿主解析会考虑中间层', () => {
     })
   }
 
-  it('会跳过结构层插入的中间节点，继承最近宿主 fieldMode', () => {
+  it('会跳过结构层插入的中间节点，继承最近 provider fieldMode', () => {
     const SlotBridge = createIntermediateBridge('r-slot')
 
     const wrapper = mountFieldInContext({
@@ -262,10 +262,10 @@ describe('字段宿主解析会考虑中间层', () => {
       hostType: 'r-table',
     })
 
-    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('table')
+    expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('table')
   })
 
-  it('中间作用域节点不改写宿主 fieldMode', () => {
+  it('中间作用域节点不改写 provider fieldMode', () => {
     const FieldScopeBridge = createIntermediateBridge('r-field-scope')
 
     const wrapper = mountFieldInContext({
@@ -276,10 +276,10 @@ describe('字段宿主解析会考虑中间层', () => {
       hostType: 'r-table',
     })
 
-    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('table')
+    expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('table')
   })
 
-  it('会跨越多层中间组件解析到最近宿主 fieldMode', () => {
+  it('会跨越多层中间组件解析到最近 provider fieldMode', () => {
     const DataScopeBridge = createIntermediateBridge('r-data-scope')
     const ListItemBridge = createIntermediateBridge('r-list-item', DataScopeBridge)
 
@@ -291,10 +291,10 @@ describe('字段宿主解析会考虑中间层', () => {
       hostType: 'r-list',
     })
 
-    expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('detail')
+    expect(wrapper.get('[data-provider-context]').attributes('data-provider-context')).toBe('detail')
   })
 
-  it('字段宿主解析不能污染页面注册表中的真实组件 type', () => {
+  it('字段 provider 解析不能污染页面注册表中的真实组件 type', () => {
     const registry = createPageComponentRegistry()
     const plugin = Spark.createPlugin({ registry: Spark.createRegistry() })
 
@@ -328,7 +328,7 @@ describe('字段宿主解析会考虑中间层', () => {
     expect(registry.getInstance('filter-scope')?.type).toBe('r-field-scope')
   })
 
-  it('原生 el-table 包装组件可通过 host scope 直接承载 r-text', () => {
+  it('原生 el-table 包装组件可通过 provider scope 直接承载 r-text', () => {
     const ElTableStub = defineComponent({
       name: 'ElTable',
       setup(_, { slots }) {
@@ -340,7 +340,6 @@ describe('字段宿主解析会考虑中间层', () => {
       name: 'NativeTableWrapper',
       setup() {
         const hostScope = useSparkHostScope('r-table')
-        hostScope.host.setHost({})
         hostScope.sparkProvide(HOST_FIELD_MODE, 'table')
         return () => h(ElTableStub, null, {
           default: () => h(FieldText as never, {

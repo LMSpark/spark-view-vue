@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :host="toolbarHost" :action-host="toolbarActionHost">
+    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
       <div :class="['renderer-tree-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
@@ -28,13 +28,13 @@
                 type="r-data-scope"
                 :children="nodeContentChildren"
                 :row="(slotProps?.data as IDataRow) ?? {}"
-                :host="treeFieldHost"
+                :field-mode="'tree'"
               />
               <RendererHostScope
                 v-else
                 type="r-data-scope"
                 :row="(slotProps?.data as IDataRow) ?? {}"
-                :host="treeFieldHost"
+                :field-mode="'tree'"
               >
                 <slot :node="slotProps?.node" :data="slotProps?.data">
                   <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
@@ -48,7 +48,7 @@
                   :children="getNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))"
                   type="r-tree-node-action-scope"
                   :row="((slotProps?.data as IDataRow) ?? {})"
-                  :host="getNodeActionHost(((slotProps?.data as IDataRow) ?? {}), 0)"
+                  :variant="'row-action'"
                   :action-host="getNodeActionCapability(((slotProps?.data as IDataRow) ?? {}), 0)"
                   child-key-prefix="r-tree-node-action"
                 />
@@ -100,7 +100,7 @@ import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 import { useContainerActions } from '../../composables/useContainerActions'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import { createActionCapability, createFieldHost, createToolbarHost, createRowActionHost } from '../../../internal'
+import { createActionCapability } from '../../../internal'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
@@ -142,8 +142,6 @@ useContainerDataSourceEffects({
   logger,
   logPrefix: 'RendererTree',
 })
-
-const treeFieldHost = createFieldHost('tree')
 
 const nodeKeyField = computed(() =>
   props.nodeKey ?? resolvedView.value?.primaryKey ?? resolvedView.value?.treeConfig?.idField ?? 'id'
@@ -239,7 +237,6 @@ const {
 
 registerApi(treeApi)
 
-const toolbarHost = createToolbarHost()
 const toolbarActionHost = createActionCapability({
   isDisabled(action) {
     return isBuiltinToolbarActionDisabled(action)
@@ -248,10 +245,6 @@ const toolbarActionHost = createActionCapability({
     handleBuiltinToolbarAction(action)
   },
 })
-
-function getNodeActionHost(_row: IDataRow, _index: number) {
-  return createRowActionHost()
-}
 
 function getNodeActionCapability(row: IDataRow, index: number) {
   return createActionCapability({

@@ -130,7 +130,7 @@ function mountWithSpark(
 
   const Provider = defineComponent({
     setup() {
-      useSparkComponent({ type: 'test-parent' } as SparkNode, { hostContext: rootContext })
+      useSparkComponent({ type: 'test-parent' } as SparkNode, { parentContext: rootContext })
       return () => h(component as never, config)
     },
   })

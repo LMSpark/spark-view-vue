@@ -7,8 +7,14 @@
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
-import { sparkProvide as rawSparkProvide, normalizeKey, APP_SERVICES } from './capability-system.js'
-import type { CapabilityKey, CapabilityTypeMap } from './capability-system.js'
+import {
+  sparkProvide as rawSparkProvide,
+  sparkRemove as rawSparkRemove,
+  APP_SERVICES,
+  createSparkCapabilityConsumer,
+  createSparkCapabilityContext,
+} from './capability-system.js'
+import type { CapabilityKey, SparkCapabilityConsumer } from './capability-system.js'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode } from './types.js'
 import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
@@ -16,12 +22,11 @@ import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapab
 import {
   DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
-  createSparkCapabilityConsumer,
-  createSparkCapabilityContext,
-  findNearestHost,
-  setHostIdentity,
+  findNearestCapabilityProvider,
+  findNearestCapabilityProviderByKeys,
 } from './capabilities.js'
-import type { PageComponentRegistry, SparkCapabilityConsumer, SparkHostLink } from './capabilities.js'
+import type { PageComponentRegistry } from './capabilities.js'
+import type { ICapabilityContext } from './capability-system.js'
 
 // ===== 类型与返回值约定 =====
 
@@ -31,26 +36,25 @@ type RuntimeInstance = ReturnType<typeof getCurrentInstance>
 /**
  * 组件上下文完整返回 — 容器 / 字段 / 页面组件的标准上下文入口。
  *
- * `host` 仅暴露 SparkHostLink 协议，遵循管理权与渲染职责分离：
- *   - `nearestHost()` — 子组件主动消费，查找最近的已声明宿主（支持链式调用访问更远层级）
- *   - `setHost(host)` — 容器被动声明，仅修改 context.host，不推动子级渲染
+ * `provider` — provider 查询接口：
+ *   - `nearestCapabilityProvider(key)` — 按能力键查最近 provider context
+ *   - `nearestCapabilityProviderByKeys(keys)` — 按能力键集合查最近 provider context
  *
- * 子级独立自决：收到 Host 能力后，自己决定何时消费、如何使用，保持渲染自主权。
- * 能力提供 / 消费通过 `sparkProvide` / `sparkConsume` 完成，与 host 协议分离。
+ * 容器通过 sparkProvide(HOST_FIELD_MODE / HOST_VARIANT, ...) 直接提供能力键。
+ * 子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。
  */
 export interface UseSparkComponentReturn {
-  host: {
-    nearestHost(): SparkHostLink | null
-    setHost(host: SparkHostLink | undefined): void
+  provider: {
+    nearestCapabilityProvider<T>(name: CapabilityKey<T>): ICapabilityContext | null
+    nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): ICapabilityContext | null
   }
   isVisible: { readonly value: boolean }
   isDisabled: { readonly value: boolean }
   resolvedProps: { readonly value: Record<string, unknown> }
   sparkProvide: {
-    <K extends keyof CapabilityTypeMap>(name: K, implementation: CapabilityTypeMap[K]): void
     <T>(name: CapabilityKey<T>, implementation: T): void
-    (name: string | symbol, implementation?: unknown): void
   }
+  sparkRemove: <T>(name: CapabilityKey<T>) => void
   sparkConsume: SparkCapabilityConsumer
   logger: LoggerApi
 }
@@ -60,18 +64,19 @@ export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
 }
 
 /**
- * 轻量消费返回 — 仅消费能力、查找宿主，不创建自身上下文。
+ * 轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。
  * 由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。
  */
 export interface UseSparkCapabilityReaderReturn {
-  host: {
-    nearestHost(): SparkHostLink | null
+  provider: {
+    nearestCapabilityProvider<T>(name: CapabilityKey<T>): ICapabilityContext | null
+    nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): ICapabilityContext | null
   }
   sparkConsume: SparkCapabilityConsumer
 }
 
 export interface UseSparkComponentOptions {
-  hostContext?: SparkCapabilityContext
+  parentContext?: SparkCapabilityContext
 }
 
 export type SparkNodeInput = {
@@ -149,9 +154,9 @@ function readConfigProp(instance: RuntimeInstance, fallbackConfig: SparkNodeInpu
 // 这样组件即使经过中间包装层，也仍然能沿 Spark 运行时树正确消费能力。
 function resolveParentContext(
   currentOwner: SparkRuntimeOwner | null,
-  overrideHostContext?: SparkCapabilityContext,
+  overrideParentContext?: SparkCapabilityContext,
 ): SparkCapabilityContext | null {
-  return resolveParentCapabilityContext(currentOwner, overrideHostContext)
+  return resolveParentCapabilityContext(currentOwner, overrideParentContext)
 }
 
 function registerPageComponentInstance(
@@ -263,7 +268,10 @@ export function useSparkConsume(): UseSparkCapabilityReaderReturn {
   const currentOwner = getCurrentInstance() as SparkRuntimeOwner | null
   const parentContext = resolveParentContext(currentOwner)
   return {
-    host: { nearestHost: () => findNearestHost(parentContext, { includeSelf: true }) },
+    provider: {
+      nearestCapabilityProvider: name => findNearestCapabilityProvider(parentContext, name, { includeSelf: true }),
+      nearestCapabilityProviderByKeys: keys => findNearestCapabilityProviderByKeys(parentContext, keys, { includeSelf: true }),
+    },
     sparkConsume: createSparkCapabilityConsumer(parentContext),
   }
 }
@@ -277,15 +285,17 @@ export function useSparkComponent(
   const currentOwner = currentInstance as SparkRuntimeOwner | null
   const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
   const contextId = nodeId(config) ?? `spark-${++_idCounter}`
-  const parentContext = resolveParentContext(currentOwner, options?.hostContext)
+  const parentContext = resolveParentContext(
+    currentOwner,
+    options?.parentContext,
+  )
   const context = createSparkCapabilityContext({ id: contextId, type: config.type }, parentContext)
-  const currentHost: UseSparkComponentReturn['host'] = {
-    nearestHost() {
-      return findNearestHost(context)
+  const currentProvider: UseSparkComponentReturn['provider'] = {
+    nearestCapabilityProvider(name) {
+      return findNearestCapabilityProvider(context, name)
     },
-    setHost(nextHost: SparkHostLink | undefined) {
-      // host 是容器对后代暴露的能力边界，写入当前 context 即可，不额外触发别的副作用。
-      setHostIdentity(context, nextHost)
+    nearestCapabilityProviderByKeys(keys) {
+      return findNearestCapabilityProviderByKeys(context, keys)
     },
   }
   const consumeCapability = createSparkCapabilityConsumer(context)
@@ -316,15 +326,24 @@ export function useSparkComponent(
 
   // ===== 当前组件暴露给后代的能力读写 =====
 
-  function sparkProvide(name: string | symbol, implementation?: unknown): void {
+  function sparkProvide<T>(name: CapabilityKey<T>, implementation: T): void {
+    if (implementation === undefined) {
+      throw new Error(`[spark] sparkProvide received undefined implementation: ${String(name)}. Use sparkRemove(name) to clear capability explicitly.`)
+    }
     rawSparkProvide(context, name, implementation)
-    const key = normalizeKey(name)
-    if (import.meta.env.DEV && key !== DATA_ROW) {
+    if (import.meta.env.DEV && name !== DATA_ROW) {
       logger.debug(`[spark] provided: ${String(name)}`)
     }
   }
 
-  function sparkConsume(name: string | symbol): unknown {
+  function sparkRemove<T>(name: CapabilityKey<T>): void {
+    rawSparkRemove(context, name)
+    if (import.meta.env.DEV) {
+      logger.debug(`[spark] removed: ${String(name)}`)
+    }
+  }
+
+  function sparkConsume<T>(name: CapabilityKey<T>): T | null {
     const impl = consumeCapability(name)
     if (impl !== null) return impl
     if (import.meta.env.DEV) {
@@ -361,11 +380,12 @@ export function useSparkComponent(
   onUnmounted(destroy)
 
   return {
-    host: currentHost,
+    provider: currentProvider,
     isVisible,
     isDisabled,
     resolvedProps,
     sparkProvide,
+    sparkRemove,
     sparkConsume,
     logger,
   }

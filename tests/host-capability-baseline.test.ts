@@ -1,90 +1,180 @@
 /**
- * Host 能力体系基线测试
+ * Provider / Capability 链路基线测试
  *
- * 重构前锚定以下核心行为，确保改造过程中不引入回归：
- * 1. findNearestHost 沿 ctx.parent 链找宿主，跳过无 host 的中间节点
- * 2. 宿主语义能力：fieldMode / variant 通过能力键读取
+ * 核心行为：
+ * 1. 默认键集合沿 ctx.parent 链找 provider，跳过无相关能力的中间节点
+ * 2. fieldMode / variant 通过能力键读取
  * 3. RendererHostScope 有 row prop 时注入 DATA_ROW，无 row 时不覆盖父层
- * 4. useContainerHostBridge：externalHost 变 undefined 后行为
- * 5. variant === 'row-action' 时通过 HOST_VARIANT 能力分支
+ * 4. variant === 'row-action' 时通过 HOST_VARIANT 分支
  */
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { computed, defineComponent, h, nextTick, ref, shallowRef } from 'vue'
+import { defineComponent, h } from 'vue'
 import {
   Spark,
   ACTION_CAPABILITY,
+  DEFAULT_PROVIDER_KEYS,
   HOST_FIELD_MODE,
   HOST_VARIANT,
-  normalizeKey,
   SPARK_REGISTRY_KEY,
   useSparkComponent,
   useSparkConsume,
   DATA_ROW,
 } from '@spark-view/spark-component'
-import type { SparkActionCapability, SparkNode, SparkHostLink } from '@spark-view/spark-component'
-import { consumeSparkCapability, createActionCapability, createSparkCapabilityContext, findNearestHost } from '../packages/spark-component/src/core/capabilities'
-import { useContainerHostBridge } from '../packages/spark-component/src/components/containers/composables/useContainerHostBridge'
+import type { SparkActionCapability, SparkNode } from '@spark-view/spark-component'
+import {
+  createActionCapability,
+  findNearestCapabilityProvider,
+  findNearestCapabilityProviderByKeys,
+  consumeCapabilityFromProvider,
+} from '../packages/spark-component/src/core/capabilities'
+import { consumeSparkCapability, createSparkCapabilityContext } from '../packages/spark-component/src/core/capability-system'
 
 // ═══════════════════════════════════════════════════════
-// 1. findNearestHost — 纯上下文层测试
+// 1. 默认键集合 provider 查询 — 纯上下文层测试
 // ═══════════════════════════════════════════════════════
 
-describe('findNearestHost — 上下文链逐层查找', () => {
+describe('findNearestCapabilityProviderByKeys(DEFAULT_PROVIDER_KEYS) — 上下文链逐层查找', () => {
   it('从 ctx.parent 开始查找，跳过自身', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    root.host = {}
-    root.capabilities.set(normalizeKey(HOST_FIELD_MODE), 'form')
+    root.capabilities.set(HOST_FIELD_MODE, 'form')
 
     const mid = createSparkCapabilityContext({ id: 'mid', type: 'section' }, root)
-    // mid 不声明 host
+    // mid 不声明相关能力键
 
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, mid)
-    leaf.host = {}
-    // leaf 自身有 host，但 findNearestHost 应跳过自身
+    leaf.capabilities.set(HOST_VARIANT, 'leaf-variant')
 
-    const found = findNearestHost(leaf)
-    // 应找到 root，而不是 leaf 自身（mid 无 host 被跳过）
+    const found = findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)
+    // 应找到 root，而不是 leaf 自身（mid 无相关键被跳过）
     expect(found).not.toBeNull()
-    expect(found!.host).toBeUndefined()
+    // root 没有更高层 provider
+    expect(findNearestCapabilityProviderByKeys(found!, DEFAULT_PROVIDER_KEYS)).toBeNull()
     expect(consumeSparkCapability<string>(leaf, HOST_FIELD_MODE)).toBe('form')
   })
 
-  it('中间节点有 host 时返回最近一层', () => {
+  it('中间节点有相关键时返回最近一层', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    root.host = {}
-    root.capabilities.set(normalizeKey(HOST_FIELD_MODE), 'form')
+    root.capabilities.set(HOST_FIELD_MODE, 'form')
 
     const mid = createSparkCapabilityContext({ id: 'mid', type: 'table' }, root)
-    mid.host = {}
-    mid.capabilities.set(normalizeKey(HOST_FIELD_MODE), 'table')
+    mid.capabilities.set(HOST_FIELD_MODE, 'table')
 
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, mid)
 
-    const found = findNearestHost(leaf)
-    // HOST = 父级；HOST.host = 爷爷级
-    expect(found!.host).not.toBeUndefined()
+    const found = findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)
+    // 返回 mid（最近），mid 的父层 root 也可作为 provider
+    expect(findNearestCapabilityProviderByKeys(found!, DEFAULT_PROVIDER_KEYS)).not.toBeNull()
     expect(consumeSparkCapability<string>(leaf, HOST_FIELD_MODE)).toBe('table')
   })
 
-  it('无宿主时返回 null', () => {
+  it('无 provider 时返回 null', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
     const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, root)
 
-    expect(findNearestHost(leaf)).toBeNull()
+    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)).toBeNull()
   })
 
   it('根节点无 parent 时返回 null', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
-    expect(findNearestHost(root)).toBeNull()
+    expect(findNearestCapabilityProviderByKeys(root, DEFAULT_PROVIDER_KEYS)).toBeNull()
+  })
+
+  it('DEFAULT_PROVIDER_KEYS 可作为默认 provider 查询集合工作', () => {
+    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
+    root.capabilities.set(HOST_FIELD_MODE, 'form')
+    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'field' }, root)
+
+    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)?.id).toBe('root')
+  })
+})
+
+describe('provider 查询三段式语义', () => {
+  it('默认键集合查询不把普通能力 provider 误判为目标 provider', () => {
+    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
+    root.capabilities.set(HOST_FIELD_MODE, 'page')
+
+    const actionOnly = createSparkCapabilityContext({ id: 'action-only', type: 'r-container' }, root)
+    actionOnly.capabilities.set(ACTION_CAPABILITY, createActionCapability({
+      isDisabled: () => false,
+      execute: () => undefined,
+    }))
+
+    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-button' }, actionOnly)
+
+    expect(findNearestCapabilityProvider(leaf, ACTION_CAPABILITY)?.id).toBe('action-only')
+    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)?.id).toBe('root')
+  })
+
+  it('通过能力键集合查最近 provider', () => {
+    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
+    const section = createSparkCapabilityContext({ id: 'section', type: 'r-section' }, root)
+    section.capabilities.set(HOST_VARIANT, 'field')
+    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-text' }, section)
+
+    expect(findNearestCapabilityProviderByKeys(leaf, [ACTION_CAPABILITY, HOST_VARIANT])?.id).toBe('section')
+  })
+
+  it('DEFAULT_PROVIDER_KEYS 可直接作为默认 provider 查询集合', () => {
+    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
+    const form = createSparkCapabilityContext({ id: 'form', type: 'r-form' }, root)
+    form.capabilities.set(HOST_FIELD_MODE, 'form')
+    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-input' }, form)
+
+    expect(findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)?.id).toBe('form')
+  })
+
+  it('通过能力键查询最近 provider context', () => {
+    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
+    const provider = createSparkCapabilityContext({ id: 'provider', type: 'r-form' }, root)
+    provider.capabilities.set(HOST_FIELD_MODE, 'form')
+    provider.capabilities.set(ACTION_CAPABILITY, createActionCapability({
+      isDisabled: () => false,
+      execute: () => undefined,
+    }))
+    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-input' }, provider)
+
+    expect(findNearestCapabilityProvider(leaf, HOST_FIELD_MODE)?.id).toBe('provider')
+    expect(findNearestCapabilityProvider(leaf, ACTION_CAPABILITY)?.id).toBe('provider')
+  })
+
+  it('通过单个能力键查 provider', () => {
+    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
+    root.capabilities.set(HOST_FIELD_MODE, 'page')
+    const table = createSparkCapabilityContext({ id: 'table', type: 'r-table' }, root)
+    table.capabilities.set(HOST_VARIANT, 'row-action')
+    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-button' }, table)
+
+    expect(findNearestCapabilityProvider(leaf, HOST_VARIANT)?.id).toBe('table')
+    expect(findNearestCapabilityProvider(leaf, HOST_FIELD_MODE)?.id).toBe('root')
+  })
+
+  it('基于 provider context 查能力（本地/链式）', () => {
+    const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
+    root.capabilities.set(HOST_FIELD_MODE, 'detail')
+    root.capabilities.set(ACTION_CAPABILITY, createActionCapability({
+      isDisabled: () => false,
+      execute: () => undefined,
+    }))
+
+    const section = createSparkCapabilityContext({ id: 'section', type: 'r-section' }, root)
+    section.capabilities.set(HOST_VARIANT, 'field')
+    const leaf = createSparkCapabilityContext({ id: 'leaf', type: 'r-input' }, section)
+
+    const provider = findNearestCapabilityProviderByKeys(leaf, DEFAULT_PROVIDER_KEYS)
+    expect(provider?.id).toBe('section')
+    expect(consumeCapabilityFromProvider(provider, HOST_VARIANT, { localOnly: true })).toBe('field')
+    expect(consumeCapabilityFromProvider(provider, ACTION_CAPABILITY, { localOnly: true })).toBeNull()
+    expect(consumeCapabilityFromProvider(provider, ACTION_CAPABILITY)).not.toBeNull()
+
   })
 })
 
 // ═══════════════════════════════════════════════════════
-// 2. Vue 组件内宿主链路 — nearestHost() 行为
+// 2. Vue 组件内能力链路 — provider 查询
 // ═══════════════════════════════════════════════════════
 
-describe('Vue 组件内 nearestHost 宿主链路', () => {
+describe('Vue 组件内 provider 能力链路', () => {
   function createSystem() {
     return Spark.createSystem()
   }
@@ -102,8 +192,7 @@ describe('Vue 组件内 nearestHost 宿主链路', () => {
 
     const Container = defineComponent({
       setup() {
-        const { host, sparkProvide } = useSparkComponent({ type: 'r-form' } as SparkNode)
-        host.setHost({})
+        const { sparkProvide } = useSparkComponent({ type: 'r-form' } as SparkNode)
         sparkProvide(HOST_FIELD_MODE, 'form')
         return () => h(Child)
       },
@@ -112,7 +201,7 @@ describe('Vue 组件内 nearestHost 宿主链路', () => {
     const { registry, rootContext } = createSystem()
     const Root = defineComponent({
       setup() {
-        useSparkComponent({ type: 'page' } as SparkNode, { hostContext: rootContext })
+        useSparkComponent({ type: 'page' } as SparkNode, { parentContext: rootContext })
         return () => h(Container)
       },
     })
@@ -124,7 +213,7 @@ describe('Vue 组件内 nearestHost 宿主链路', () => {
     expect(childFieldMode).toBe('form')
   })
 
-  it('中间层无 host 时跳过，子组件读到更远的宿主', () => {
+  it('中间层无 provider 能力时跳过，子组件读到更远的 provider', () => {
     let childFieldMode: string | undefined
 
     const Leaf = defineComponent({
@@ -135,27 +224,26 @@ describe('Vue 组件内 nearestHost 宿主链路', () => {
       },
     })
 
-    const MiddleNoHost = defineComponent({
+    const MiddleNoProvider = defineComponent({
       setup() {
         useSparkComponent({ type: 'r-section' } as SparkNode)
-        // 不调用 setHost，中间层透传
+        // 中间层不声明相关能力，链路继续向上解析
         return () => h(Leaf)
       },
     })
 
     const Container = defineComponent({
       setup() {
-        const { host, sparkProvide } = useSparkComponent({ type: 'r-table' } as SparkNode)
-        host.setHost({})
+        const { sparkProvide } = useSparkComponent({ type: 'r-table' } as SparkNode)
         sparkProvide(HOST_FIELD_MODE, 'table')
-        return () => h(MiddleNoHost)
+        return () => h(MiddleNoProvider)
       },
     })
 
     const { registry, rootContext } = createSystem()
     const Root = defineComponent({
       setup() {
-        useSparkComponent({ type: 'page' } as SparkNode, { hostContext: rootContext })
+        useSparkComponent({ type: 'page' } as SparkNode, { parentContext: rootContext })
         return () => h(Container)
       },
     })
@@ -167,7 +255,7 @@ describe('Vue 组件内 nearestHost 宿主链路', () => {
     expect(childFieldMode).toBe('table')
   })
 
-  it('useSparkConsume 也能通过 HOST_FIELD_MODE 读取最近宿主语义', () => {
+  it('useSparkConsume 也能通过 HOST_FIELD_MODE 读取最近 provider 语义', () => {
     let consumedFieldMode: string | undefined
 
     const Consumer = defineComponent({
@@ -180,8 +268,7 @@ describe('Vue 组件内 nearestHost 宿主链路', () => {
 
     const Container = defineComponent({
       setup() {
-        const { host, sparkProvide } = useSparkComponent({ type: 'r-detail' } as SparkNode)
-        host.setHost({})
+        const { sparkProvide } = useSparkComponent({ type: 'r-detail' } as SparkNode)
         sparkProvide(HOST_FIELD_MODE, 'detail')
         return () => h(Consumer)
       },
@@ -190,7 +277,7 @@ describe('Vue 组件内 nearestHost 宿主链路', () => {
     const { registry, rootContext } = createSystem()
     const Root = defineComponent({
       setup() {
-        useSparkComponent({ type: 'page' } as SparkNode, { hostContext: rootContext })
+        useSparkComponent({ type: 'page' } as SparkNode, { parentContext: rootContext })
         return () => h(Container)
       },
     })
@@ -224,16 +311,12 @@ describe('RendererHostScope DATA_ROW 注入', () => {
     })
 
     // 在组件中手动构建 RendererHostScope 等价行为
-    const HostScopeSimulator = defineComponent({
+    const ProviderScopeSimulator = defineComponent({
       props: {
         row: { type: Object, default: undefined },
-        hostDef: { type: Object, default: undefined },
       },
       setup(props) {
-        const { host, sparkProvide } = useSparkComponent({ type: 'r-host-data-scope' } as SparkNode)
-        if (props.hostDef) {
-          host.setHost(props.hostDef as SparkHostLink)
-        }
+        const { sparkProvide } = useSparkComponent({ type: 'r-host-data-scope' } as SparkNode)
         if (props.row !== undefined) {
           sparkProvide(DATA_ROW, props.row)
         }
@@ -244,10 +327,9 @@ describe('RendererHostScope DATA_ROW 注入', () => {
     const { registry, rootContext } = createSystem()
     const Root = defineComponent({
       setup() {
-        useSparkComponent({ type: 'page' } as SparkNode, { hostContext: rootContext })
-        return () => h(HostScopeSimulator, {
+        useSparkComponent({ type: 'page' } as SparkNode, { parentContext: rootContext })
+        return () => h(ProviderScopeSimulator, {
           row: { name: 'Alice', age: 30 },
-          hostDef: {},
         })
       },
     })
@@ -273,9 +355,8 @@ describe('RendererHostScope DATA_ROW 注入', () => {
 
     const InnerScope = defineComponent({
       setup() {
-        // 模拟无 row 的纯 host 作用域——不提供 DATA_ROW
-        const { host } = useSparkComponent({ type: 'r-host-data-scope' } as SparkNode)
-        host.setHost({})
+        // 模拟无 row 的纯 provider 作用域——不提供 DATA_ROW
+        useSparkComponent({ type: 'r-host-data-scope' } as SparkNode)
         return () => h(RowConsumer)
       },
     })
@@ -283,7 +364,7 @@ describe('RendererHostScope DATA_ROW 注入', () => {
     const { registry, rootContext } = createSystem()
     const Root = defineComponent({
       setup() {
-        const { sparkProvide } = useSparkComponent({ type: 'page' } as SparkNode, { hostContext: rootContext })
+        const { sparkProvide } = useSparkComponent({ type: 'page' } as SparkNode, { parentContext: rootContext })
         // 父层提供 DATA_ROW
         sparkProvide(DATA_ROW, { name: 'ParentRow' })
         return () => h(InnerScope)
@@ -301,75 +382,8 @@ describe('RendererHostScope DATA_ROW 注入', () => {
 })
 
 // ═══════════════════════════════════════════════════════
-// 4. useContainerHostBridge — 桥接行为
-// ═══════════════════════════════════════════════════════
-
-describe('useContainerHostBridge 桥接行为', () => {
-  it('externalHost 有值时 setHost 被调用', () => {
-    let lastHost: SparkHostLink | null = null
-    const localHost = {
-      setHost(host: SparkHostLink | undefined) {
-        lastHost = host ?? null
-      },
-    }
-    const externalRef = computed<SparkHostLink | undefined>(() => ({}))
-
-    // 在组件上下文中运行 watch 的 immediate
-    const Wrapper = defineComponent({
-      setup() {
-        useContainerHostBridge(localHost, externalRef)
-        return () => h('div')
-      },
-    })
-
-    mount(Wrapper)
-
-    expect(lastHost).not.toBeNull()
-    expect(lastHost!.host).toBeUndefined()
-  })
-
-  it('externalHost 变为 undefined 时会清理旧代理', async () => {
-    let setHostCallCount = 0
-    let lastHost: SparkHostLink | null = null
-    const localHost = {
-      setHost(host: SparkHostLink | undefined) {
-        setHostCallCount++
-        lastHost = host ?? null
-      },
-    }
-
-    const externalRef = ref<SparkHostLink | undefined>(undefined)
-    const externalComputed = computed(() => externalRef.value)
-
-    const Wrapper = defineComponent({
-      setup() {
-        useContainerHostBridge(localHost, externalComputed)
-        return () => h('div')
-      },
-    })
-
-    mount(Wrapper)
-
-    // initial 值为 undefined，应主动清理本地 host
-    expect(setHostCallCount).toBe(1)
-    expect(lastHost).toBeNull()
-
-    // 设置后应调用
-    externalRef.value = {}
-    await nextTick()
-    expect(setHostCallCount).toBe(2)
-    expect((lastHost as SparkHostLink | null)?.host).toBeUndefined()
-
-    // 重新设为 undefined，应再次清理旧代理
-    externalRef.value = undefined
-    await nextTick()
-    expect(setHostCallCount).toBe(3)
-    expect(lastHost).toBeNull()
-  })
-})
-
-// ═══════════════════════════════════════════════════════
 // 5. variant 字符串消费行为
+// 4. variant 字符串消费行为
 // ═══════════════════════════════════════════════════════
 
 describe('variant 消费行为', () => {
@@ -377,20 +391,18 @@ describe('variant 消费行为', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
 
     const table = createSparkCapabilityContext({ id: 'table', type: 'r-table' }, root)
-    table.host = {}
-    table.capabilities.set(normalizeKey(HOST_VARIANT), 'row-action')
+    table.capabilities.set(HOST_VARIANT, 'row-action')
 
     const button = createSparkCapabilityContext({ id: 'btn', type: 'r-button' }, table)
 
     expect(consumeSparkCapability(button, HOST_VARIANT)).toBe('row-action')
   })
 
-  it('宿主有 HOST_VARIANT 时可用于样式分支判断', () => {
+  it('provider 有 HOST_VARIANT 时可用于样式分支判断', () => {
     const root = createSparkCapabilityContext({ id: 'root', type: 'page' })
 
     const toolbar = createSparkCapabilityContext({ id: 'toolbar', type: 'r-toolbar' }, root)
-    toolbar.host = {}
-    toolbar.capabilities.set(normalizeKey(HOST_VARIANT), 'toolbar')
+    toolbar.capabilities.set(HOST_VARIANT, 'toolbar')
 
     const btn = createSparkCapabilityContext({ id: 'btn', type: 'r-button' }, toolbar)
 
@@ -404,19 +416,18 @@ describe('variant 消费行为', () => {
 
     let executed = false
     const container = createSparkCapabilityContext({ id: 'container', type: 'r-table' }, root)
-    container.host = {}
-    container.capabilities.set(normalizeKey(HOST_FIELD_MODE), 'table')
-    container.capabilities.set(normalizeKey(HOST_VARIANT), 'row-action')
-    container.capabilities.set(normalizeKey(ACTION_CAPABILITY), createActionCapability({
+    container.capabilities.set(HOST_FIELD_MODE, 'table')
+    container.capabilities.set(HOST_VARIANT, 'row-action')
+    container.capabilities.set(ACTION_CAPABILITY, createActionCapability({
       isDisabled: () => false,
       execute: () => { executed = true },
     }))
 
     const btn = createSparkCapabilityContext({ id: 'btn', type: 'r-button' }, container)
-    const actionHost = consumeSparkCapability<SparkActionCapability>(btn, ACTION_CAPABILITY)
+    const actionProvider = consumeSparkCapability<SparkActionCapability>(btn, ACTION_CAPABILITY)
 
-    expect(actionHost!.isDisabled({} as SparkNode)).toBe(false)
-    actionHost!.execute({} as SparkNode)
+    expect(actionProvider!.isDisabled({} as SparkNode)).toBe(false)
+    actionProvider!.execute({} as SparkNode)
     expect(executed).toBe(true)
   })
 })

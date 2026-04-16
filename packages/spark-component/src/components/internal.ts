@@ -42,13 +42,13 @@ export {
   ACTION_CAPABILITY,
   HOST_FIELD_MODE,
   HOST_VARIANT,
+  DEFAULT_PROVIDER_KEYS,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
-  findNearestHost,
+  findNearestCapabilityProvider,
+  findNearestCapabilityProviderByKeys,
+  consumeCapabilityFromProvider,
   createActionCapability,
-  createFieldHost,
-  createToolbarHost,
-  createRowActionHost,
 } from '../core/index.js'
 export type {
   IAppServicesCapability,
@@ -70,7 +70,6 @@ export type {
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   ModuleContextCapability,
-  SparkHostLink,
   SparkActionCapability,
   HostVariant,
 } from '../core/index.js'

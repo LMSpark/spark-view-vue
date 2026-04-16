@@ -9,18 +9,18 @@
 
 import type { LoggerApi } from '@spark-view/spark-utils'
 
-export type CapabilityName = string | symbol
+export type CapabilityKey<T> = symbol & { readonly __capabilityType?: T }
+export type CapabilityName = CapabilityKey<unknown>
+export type SparkCapabilityConsumer = <T>(name: CapabilityKey<T>) => T | null
 
 export interface ICapabilityContext {
   id: string
   type: string
   parent?: ICapabilityContext
   capabilities: Map<CapabilityName, unknown>
-  host?: unknown
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface IEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> {
+export interface IEventEmitter<TEventMap extends Record<string, unknown[]> = Record<string, unknown[]>> {
   on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
@@ -28,35 +28,70 @@ export interface IEventEmitter<TEventMap extends Record<string, any[]> = Record<
   listenerCount<K extends string & keyof TEventMap>(event?: K): number
 }
 
-export type CapabilityKey<T> = symbol & { readonly __capabilityType?: T }
-
 export function defineCapability<T>(name: string): CapabilityKey<T> {
   return Symbol.for(name) as CapabilityKey<T>
 }
 
-export function normalizeKey(name: CapabilityName): symbol | string {
-  return typeof name === 'string' ? Symbol.for(name) : name
+export function sparkProvide<T>(ctx: ICapabilityContext, name: CapabilityKey<T>, impl: T): void {
+  ctx.capabilities.set(name, impl)
 }
 
-export function sparkProvide<T>(ctx: ICapabilityContext, name: CapabilityName, impl: T): void {
-  ctx.capabilities.set(normalizeKey(name), impl)
+export function sparkRemove(ctx: ICapabilityContext, name: CapabilityKey<unknown>): void {
+  ctx.capabilities.delete(name)
 }
 
-export function sparkConsume<T = unknown>(ctx: ICapabilityContext, name: CapabilityName): T | undefined {
-  const key = normalizeKey(name)
+export function sparkConsume<T>(ctx: ICapabilityContext, name: CapabilityKey<T>): T | null {
   let current: ICapabilityContext | undefined = ctx
   while (current) {
-    const impl = current.capabilities.get(key)
+    const impl = current.capabilities.get(name)
     if (impl !== undefined) return impl as T
     current = current.parent
   }
-  return undefined
+  return null
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>>(): IEventEmitter<TEventMap> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const listeners = new Map<string, Set<(...args: any[]) => void>>()
+/** Create a minimal Spark capability context node. */
+export function createSparkCapabilityContext(
+  config: { id: string; type: string },
+  parent?: ICapabilityContext | null,
+): ICapabilityContext {
+  const context: ICapabilityContext = {
+    id: config.id,
+    type: config.type,
+    capabilities: new Map<CapabilityName, unknown>(),
+  }
+  if (parent !== undefined && parent !== null) {
+    context.parent = parent
+  }
+  return context
+}
+
+/** Consume capability from context chain; null when not found. */
+export function consumeSparkCapability<T>(
+  context: ICapabilityContext | null | undefined,
+  name: CapabilityKey<T>,
+): T | null {
+  if (!context) return null
+  return sparkConsume(context, name)
+}
+
+/** Create a typed capability consumer bound to a specific context. */
+export function createSparkCapabilityConsumer(
+  context: ICapabilityContext | null,
+): SparkCapabilityConsumer {
+  return <T>(name: CapabilityKey<T>): T | null => consumeSparkCapability(context, name)
+}
+
+/** Read local-only provider value without walking parent chain. */
+export function getSparkCapabilityProvider(
+  context: ICapabilityContext,
+  name: CapabilityKey<unknown>,
+): unknown {
+  return context.capabilities.get(name)
+}
+
+export function createEventEmitter<TEventMap extends Record<string, unknown[]> = Record<string, unknown[]>>(): IEventEmitter<TEventMap> {
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
     on(event, handler) {
       let handlers = listeners.get(event)
@@ -64,10 +99,10 @@ export function createEventEmitter<TEventMap extends Record<string, any[]> = Rec
         handlers = new Set()
         listeners.set(event, handlers)
       }
-      handlers.add(handler)
+      handlers.add(handler as (...args: unknown[]) => void)
     },
     off(event, handler) {
-      listeners.get(event)?.delete(handler)
+      listeners.get(event)?.delete(handler as (...args: unknown[]) => void)
     },
     emit(event, ...args) {
       const handlers = listeners.get(event)

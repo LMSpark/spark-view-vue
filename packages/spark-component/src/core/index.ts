@@ -61,8 +61,8 @@ export { SparkNodeTree } from './spark-node-tree.js'
 
 export {
   defineCapability,
-  normalizeKey,
   sparkProvide,
+  sparkRemove,
   sparkConsume,
   APP_SERVICES,
   LOGGER,
@@ -72,6 +72,7 @@ export {
 
 export type {
   CapabilityKey,
+  SparkCapabilityConsumer,
   CapabilityTypeMap,
   ICapabilityContext,
   IAppServicesCapability,
@@ -102,11 +103,14 @@ export {
   ACTION_CAPABILITY,
   HOST_FIELD_MODE,
   HOST_VARIANT,
-  findNearestHost,
+} from './capability-keys.js'
+
+export {
+  DEFAULT_PROVIDER_KEYS,
+  findNearestCapabilityProvider,
+  findNearestCapabilityProviderByKeys,
+  consumeCapabilityFromProvider,
   createActionCapability,
-  createFieldHost,
-  createToolbarHost,
-  createRowActionHost,
 } from './capabilities.js'
 
 export type {
@@ -115,7 +119,7 @@ export type {
   PageComponentRegistry,
   ModuleContextCapability,
   PageCssScopeCapability,
-  SparkHostLink,
   SparkActionCapability,
   HostVariant,
-} from './capabilities.js'
+  OpenHostVariant,
+} from './capability-keys.js'

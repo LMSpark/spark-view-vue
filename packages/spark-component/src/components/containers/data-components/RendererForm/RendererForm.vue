@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :host="toolbarHost" :action-host="toolbarActionHost">
+    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
       <div :class="['renderer-form-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
@@ -10,7 +10,7 @@
 
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
-        <RendererHostScope type="r-form-field-scope" :host="fieldHost" :row="formModel">
+        <RendererHostScope type="r-form-field-scope" :field-mode="'form'" :row="formModel">
           <div class="renderer-form-grid" :style="gridStyle">
             <div
               v-for="(child, index) in gridChildren"
@@ -51,7 +51,7 @@ import { useFormDetailContainer } from '../../composables/useFormDetailContainer
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
-import { createActionCapability, createFieldHost, createToolbarHost } from '../../../internal'
+import { createActionCapability } from '../../../internal'
 
 const props = withDefaults(defineProps<RFormProps>(), {
   type: 'r-form',
@@ -109,7 +109,6 @@ const {
 
 registerApi(formApi)
 
-const toolbarHost = createToolbarHost()
 const toolbarActionHost = createActionCapability({
   isDisabled(action) {
     return isBuiltinActionDisabled(action)
@@ -118,8 +117,6 @@ const toolbarActionHost = createActionCapability({
     handleBuiltinToolbarAction(action)
   },
 })
-
-const fieldHost = createFieldHost('form')
 </script>
 
 <style scoped>

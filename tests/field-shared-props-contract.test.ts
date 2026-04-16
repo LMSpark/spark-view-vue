@@ -112,8 +112,28 @@ type _EntityPickerPropsReuseActionTextContracts = AssertTrue<Extends<
   SparkPrimaryActionTextProps & SparkReadonlyActionTextProps
 >>
 
+type _FieldSharedContractAssertions = [
+  _FieldPermissionPropsTracksSharedFieldContract,
+  _DatePropsReuseTemporalAndRangeContracts,
+  _NumberPropsReuseNumericBoundsAndRangeContracts,
+  _SliderPropsReuseNumericBoundsContract,
+  _RatePropsReuseNumericMaxContract,
+  _CascaderPropsReuseHierarchicalSelectionContract,
+  _TreeSelectPropsReuseHierarchicalSelectionContract,
+  _RadioPropsReuseOptionButtonStyleContract,
+  _CheckboxGroupPropsReuseOptionButtonStyleContract,
+  _TextareaPropsReuseMultilineRowsContract,
+  _HtmlEditorPropsReuseMultilineRowsContract,
+  _MentionPropsReuseMultilineRowsContract,
+  _FilePathPropsReuseFilePickerContract,
+  _UploadPropsReuseFileContracts,
+  _EntityPickerPropsReuseActionTextContracts,
+]
+
 describe('field shared prop contracts', () => {
   it('keeps the shared contract assertions in typecheck scope', () => {
+    const _assertions: _FieldSharedContractAssertions | null = null
+    expect(_assertions).toBeNull()
     expect(true).toBe(true)
   })
 })

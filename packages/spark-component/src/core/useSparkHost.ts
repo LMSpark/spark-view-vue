@@ -8,7 +8,7 @@ interface SparkHostResolverOptions<T extends string = string> {
 
 interface ResolvedSparkHost<T extends string = string> {
   hostType: T | null
-  hostContext: SparkCapabilityContext | null
+  parentContext: SparkCapabilityContext | null
 }
 
 function normalizeHostType<T extends string>(
@@ -24,18 +24,18 @@ function normalizeHostType<T extends string>(
 
 export function resolveSparkHost<T extends string = string>(
   hostType: string | null,
-  hostContext: SparkCapabilityContext | null,
+  parentContext: SparkCapabilityContext | null,
   options: SparkHostResolverOptions<T> = {},
 ): ResolvedSparkHost<T> {
   let currentType = hostType
-  let currentContext = hostContext
+  let currentContext = parentContext
 
   while (currentType !== null) {
     const normalizedType = normalizeHostType(currentType, options)
     if (normalizedType !== null) {
       return {
         hostType: normalizedType,
-        hostContext: currentContext,
+        parentContext: currentContext,
       }
     }
 
@@ -45,7 +45,7 @@ export function resolveSparkHost<T extends string = string>(
 
   return {
     hostType: null,
-    hostContext: null,
+    parentContext: null,
   }
 }
 

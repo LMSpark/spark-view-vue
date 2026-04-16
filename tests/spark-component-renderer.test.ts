@@ -20,7 +20,7 @@ test('SparkComponentRenderer forwards config.on listeners to rendered components
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: { type: 'test-click-emitter', props: { on: { click: clickSpy } } } as unknown as Record<string, unknown>,
-      hostContext: rootContext
+      parentContext: rootContext
     },
     global: {
       provide: {
@@ -44,7 +44,7 @@ test('SparkComponentRenderer falls back to Vue global Render* components', () =>
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: { type: 'RenderSearchBar' },
-      hostContext: rootContext
+      parentContext: rootContext
     },
     global: {
       components: {
@@ -71,7 +71,7 @@ test('SparkComponentRenderer resolves kebab-case el-* type from globally registe
   const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
     props: {
       config: { type: 'el-button' },
-      hostContext: rootContext
+      parentContext: rootContext
     },
     global: {
       components: {
@@ -101,7 +101,7 @@ test('SparkComponentRenderer renders children for Vue global el-* components via
         type: 'el-button',
         children: ['提交'],
       },
-      hostContext: rootContext
+      parentContext: rootContext
     },
     global: {
       components: {
@@ -131,7 +131,7 @@ test('SparkComponentRenderer passes config props into Vue global Render* compone
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: { type: 'RenderRowAction', props: { row: { name: '王晓明' } } },
-      hostContext: rootContext
+      parentContext: rootContext
     },
     global: {
       components: {
@@ -168,7 +168,7 @@ test('SparkComponentRenderer applies onBeforeRender to Vue global third-party co
         },
         children: ['保存'],
       },
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       components: {
@@ -203,7 +203,7 @@ test('SparkComponentRenderer can hide Vue global third-party components through 
         },
         children: ['隐藏'],
       },
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       components: {
@@ -248,7 +248,7 @@ test('SparkComponentRenderer only forwards config.props to registered components
           gridGap: 18,
         },
       } as unknown as Record<string, unknown>,
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -281,7 +281,7 @@ test('SparkComponentRenderer does not forward empty children prop to registered 
       config: {
         type: 'registered-attr-reader',
       } as unknown as Record<string, unknown>,
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -317,7 +317,7 @@ test('SparkComponentRenderer auto mode forwards children prop to registered comp
         type: 'registered-prop-reader',
         children: ['prop-content'],
       },
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -347,7 +347,7 @@ test('SparkComponentRenderer renders registered components without children prop
         type: 'registered-slot-reader',
         children: ['slot-content'],
       },
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -384,7 +384,7 @@ test('SparkComponentRenderer allows registry meta.childrenMode to force slot ren
         type: 'registered-hybrid-reader',
         children: ['slot-forced-content'],
       },
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -426,7 +426,7 @@ test('SparkComponentRenderer ignores root-level non-struct fields for registered
         status: 'active',
         gridGap: 18,
       } as unknown as Record<string, unknown>,
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -449,7 +449,7 @@ test('SparkComponentRenderer renders unregistered native tags with recursive chi
         props: { class: 'native-wrapper' },
         children: ['hello']
       } as unknown as Record<string, unknown>,
-      hostContext: rootContext
+      parentContext: rootContext
     },
     global: {
       provide: {
@@ -471,7 +471,7 @@ test('SparkComponentRenderer preserves numeric literal children in unified slot 
         props: { class: 'native-wrapper-number' },
         children: [123],
       } as unknown as Record<string, unknown>,
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -496,7 +496,7 @@ test('SparkComponentRenderer does not forward $-prefixed scoped props to native 
         },
         children: ['action'],
       } as unknown as Record<string, unknown>,
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -524,7 +524,7 @@ test('SparkComponentRenderer does not forward scoped row props to native element
         },
         children: ['action'],
       } as unknown as Record<string, unknown>,
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -560,7 +560,7 @@ test('SparkComponentRenderer still forwards scoped row props to Vue global compo
           rowIndex: 5,
         },
       },
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       components: {
@@ -579,7 +579,7 @@ test('SparkComponentRenderer keeps warning fallback for unknown non-native compo
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: {
       config: { type: 'unknown-widget', children: [] },
-      hostContext: rootContext
+      parentContext: rootContext
     },
     global: {
       provide: {
@@ -603,7 +603,7 @@ test('SparkComponentRenderer fallback can expand node snapshot for unknown compo
         },
         children: [],
       },
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -621,7 +621,7 @@ test('SparkComponentRenderer fallback can expand node snapshot for unknown compo
   expect(panel.text()).toContain('unknown-node-1')
 })
 
-test('SparkComponentRenderer falls back when registry component hostTypes do not match current host chain', () => {
+test('SparkComponentRenderer falls back when registry component hostTypes do not match current parent chain', () => {
   const HostLockedCard = defineComponent({
     name: 'HostLockedCard',
     setup() {
@@ -634,7 +634,7 @@ test('SparkComponentRenderer falls back when registry component hostTypes do not
   const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
     props: {
       config: { type: 'host-locked-card' },
-      hostContext: rootContext,
+      parentContext: rootContext,
     },
     global: {
       provide: {
@@ -649,7 +649,7 @@ test('SparkComponentRenderer falls back when registry component hostTypes do not
   expect(wrapper.text()).toContain('r-table')
 })
 
-test('SparkComponentRenderer renders registry component when hostTypes match current host chain', () => {
+test('SparkComponentRenderer renders registry component when hostTypes match current parent chain', () => {
   const HostLockedCard = defineComponent({
     name: 'HostLockedCardMatched',
     setup() {
@@ -660,7 +660,7 @@ test('SparkComponentRenderer renders registry component when hostTypes match cur
   registry.register('host-locked-card-matched', HostLockedCard, { hostTypes: ['r-table'] })
 
   const tableContext = {
-    id: 'spark-table-host',
+    id: 'spark-table-provider',
     type: 'r-table',
     capabilities: new Map(),
     parent: rootContext,
@@ -669,7 +669,7 @@ test('SparkComponentRenderer renders registry component when hostTypes match cur
   const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
     props: {
       config: { type: 'host-locked-card-matched' },
-      hostContext: tableContext,
+      parentContext: tableContext,
     },
     global: {
       provide: {

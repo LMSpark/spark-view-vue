@@ -6,7 +6,7 @@
     :lazy="paneLazy"
     :closable="paneClosable"
   >
-    <RendererHostScope type="r-tab-pane-field-scope" :host="tabPaneFieldHost">
+    <RendererHostScope type="r-tab-pane-field-scope" :field-mode="'detail'">
       <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
         <div
           v-for="(child, index) in paneChildren"
@@ -32,7 +32,6 @@ import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import RendererHostScope from '../support/RendererHostScope.vue'
-import { createFieldHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
@@ -100,6 +99,5 @@ const paneDisabled = computed(() => props.disabled === true)
 const paneLazy = computed(() => props.lazy === true)
 const paneClosable = computed(() => props.closable === true)
 
-const tabPaneFieldHost = createFieldHost('detail')
 </script>
 

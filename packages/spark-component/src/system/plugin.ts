@@ -10,7 +10,7 @@
 import type { App, Plugin } from 'vue'
 import { shallowReactive } from 'vue'
 import type { ComponentRegistry } from '../core/types.js'
-import { createSparkCapabilityContext } from '../core/capabilities.js'
+import { createSparkCapabilityContext } from '../core/capability-system.js'
 import { bindAppRootCapabilityContext } from '../internal/capability-context.js'
 import { getGlobalRegistry } from './registry.js'
 import { SPARK_REGISTRY_KEY } from './keys.js'

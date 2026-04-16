@@ -23,7 +23,7 @@
 
     <div v-show="!resolvedCollapsed" class="renderer-table-filters__content">
       <div class="renderer-table-filters__body">
-        <RendererHostScope type="r-filter-panel-scope" :host="FILTER_PANEL_HOST">
+        <RendererHostScope type="r-filter-panel-scope" :field-mode="'form'" :variant="'field'">
           <RendererFieldScope
             type="r-field-scope"
             :model="resolvedFilterModel"
@@ -74,7 +74,6 @@ import { PAGE_PERMISSION_MODE } from '../../permission'
 import RendererHostScope from './support/RendererHostScope.vue'
 import RendererFieldScope from './support/RendererFieldScope.vue'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
-import { createFieldHost } from '../internal'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-filter',
@@ -109,8 +108,6 @@ const resolvedGridGap = computed(() => props.gridGap ?? 12)
 const resolvedGridAutoRows = computed(() => props.gridAutoRows ?? 'minmax(32px, auto)')
 const resolvedAutoFitMinWidth = computed(() => props.autoFitMinWidth ?? '220px')
 const resolvedItemSpan = computed(() => props.itemSpan ?? 1)
-
-const FILTER_PANEL_HOST = createFieldHost('form', 'field')
 
 const { sparkProvide } = useSparkComponent({ type: props.type })
 if (isPanelMode.value) {

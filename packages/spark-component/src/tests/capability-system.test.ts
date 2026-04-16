@@ -62,7 +62,7 @@ describe('Capability system integration', () => {
           const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
 
           // 核心状态
-          expect(result.host).toBeDefined()
+          expect(result.provider).toBeDefined()
           expect(result.isVisible).toBeDefined()
           expect(result.isDisabled).toBeDefined()
 

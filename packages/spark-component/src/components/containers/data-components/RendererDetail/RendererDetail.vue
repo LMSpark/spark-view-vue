@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-detail-layout', `renderer-detail-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-detail-toolbar-scope" :host="toolbarHost" :action-host="toolbarActionHost">
+    <RendererHostScope v-if="showToolbar" type="r-detail-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
       <div :class="['renderer-detail-toolbar', toolbarClassValue]">
         <SparkComponentRenderer
           v-for="(action, index) in visibleToolbarConfigs"
@@ -12,7 +12,7 @@
 
     <div class="renderer-detail-main">
       <div class="renderer-detail" v-bind="detailPropsValue" :style="detailAlignStyle">
-        <RendererHostScope type="r-detail-field-scope" :host="fieldHost" :row="detailData">
+        <RendererHostScope type="r-detail-field-scope" :field-mode="'detail'" :row="detailData">
           <div class="renderer-detail-grid" :style="gridStyle">
             <div
               v-for="(child, index) in gridChildren"
@@ -54,7 +54,7 @@ import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'
 import type { SparkNode } from '../../../internal'
-import { createActionCapability, createFieldHost, createToolbarHost } from '../../../internal'
+import { createActionCapability } from '../../../internal'
 
 const props = withDefaults(defineProps<RDetailProps>(), {
   type: 'r-detail',
@@ -117,7 +117,6 @@ const {
 
 registerApi(detailApi)
 
-const toolbarHost = createToolbarHost()
 const toolbarActionHost = createActionCapability({
   isDisabled(action) {
     return isBuiltinActionDisabled(action)
@@ -126,8 +125,6 @@ const toolbarActionHost = createActionCapability({
     handleBuiltinToolbarAction(action)
   },
 })
-
-const fieldHost = createFieldHost('detail')
 </script>
 
 <style scoped>
