@@ -8,17 +8,19 @@
     @click="emit('activate', index)"
   />
 
-  <div v-else :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
-    <div
-      v-for="(child, index) in stepChildren"
-      :key="nodeId(child) ?? `r-step-child-${index}`"
-      class="renderer-steps-content-grid-item"
-      :style="getStepChildGridStyle(child)"
-    >
-      <SparkComponentRenderer :config="child" />
+  <RendererHostDataScope v-else type="r-step-item-field-scope" :host="stepItemFieldHost">
+    <div :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
+      <div
+        v-for="(child, index) in stepChildren"
+        :key="nodeId(child) ?? `r-step-child-${index}`"
+        class="renderer-steps-content-grid-item"
+        :style="getStepChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
+      </div>
+      <slot />
     </div>
-    <slot />
-  </div>
+  </RendererHostDataScope>
 </template>
 
 <script setup lang="ts">
@@ -30,6 +32,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
+import RendererHostDataScope from '../support/RendererHostDataScope.vue'
+import type { SparkComponentHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
@@ -38,6 +42,10 @@ interface Props {
   props?: { [key: string]: unknown }
   children?: SparkNode['children']
   id?: string
+  /** 步骤唯一标识 */
+  name?: string | number
+  /** 步骤值（name 别名） */
+  value?: string | number
   /** 步骤标题 */
   title?: string
   /** 步骤标签（title 别名） */
@@ -101,4 +109,8 @@ const stepStatus = computed<string | undefined>(() => {
 })
 
 const stepDisabled = computed(() => props.disabled === true)
+
+const stepItemFieldHost: SparkComponentHost = {
+  fieldMode: 'detail',
+}
 </script>

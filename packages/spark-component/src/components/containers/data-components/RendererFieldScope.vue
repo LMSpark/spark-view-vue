@@ -32,12 +32,11 @@
  * @description 字段作用域容器，提供 DATA_ROW 上下文和 24 列网格布局。
  * @category internal
  */
-import { computed } from 'vue'
-import { SparkComponentRenderer } from '../../internal'
+import { shallowReactive, watch } from 'vue'
+import { DATA_ROW, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
-import { useDataScope } from '../context/useDataScope'
 
 interface RendererFieldScopeProps {
   type?: 'r-field-scope'
@@ -78,14 +77,60 @@ const props = withDefaults(defineProps<RendererFieldScopeProps>(), {
   inline: false,
   compact: false,
 })
-useDataScope({
+const { sparkProvide } = useSparkComponent({
   type: props.type,
-  nodeConfig: {
-    type: props.type,
-    ...(props.id !== undefined ? { id: props.id } : {}),
-  },
-  data: computed(() => props.model),
+  ...(props.id !== undefined ? { id: props.id } : {}),
 })
+
+const rowMirror = shallowReactive<IDataRow>({})
+sparkProvide(DATA_ROW, rowMirror)
+
+let syncingFromSource = false
+let syncingFromMirror = false
+
+function syncRow(target: IDataRow, source: IDataRow): void {
+  const incomingKeys = new Set(Object.keys(source))
+
+  for (const key of Object.keys(target)) {
+    if (!incomingKeys.has(key)) {
+      target[key] = undefined
+    }
+  }
+
+  for (const key of incomingKeys) {
+    if (target[key] !== source[key]) {
+      target[key] = source[key]
+    }
+  }
+}
+
+watch(
+  () => props.model,
+  (incoming) => {
+    if (syncingFromMirror) return
+    syncingFromSource = true
+    try {
+      syncRow(rowMirror, incoming)
+    } finally {
+      syncingFromSource = false
+    }
+  },
+  { immediate: true, deep: true },
+)
+
+watch(
+  rowMirror,
+  (incoming) => {
+    if (syncingFromSource) return
+    syncingFromMirror = true
+    try {
+      syncRow(props.model, incoming)
+    } finally {
+      syncingFromMirror = false
+    }
+  },
+  { deep: true },
+)
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: () => props.configs,

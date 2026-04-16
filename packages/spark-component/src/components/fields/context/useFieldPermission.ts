@@ -62,6 +62,8 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     perm.resolveFieldState(fieldName.value, currentRow.value)
   )
 
+  const permissionMode = computed(() => perm.permissionMode)
+
   const isCurrentFieldReadable = computed(() => {
     return currentFieldState.value?.readable ?? true
   })
@@ -128,6 +130,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   }
 
   return {
+    permissionMode,
     fieldName,
     displayLabel,
     boundColumn,

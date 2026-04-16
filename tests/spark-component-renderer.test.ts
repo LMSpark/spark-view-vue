@@ -621,7 +621,7 @@ test('SparkComponentRenderer fallback can expand node snapshot for unknown compo
   expect(panel.text()).toContain('unknown-node-1')
 })
 
-test('SparkComponentRenderer falls back when registry component parentTypes do not match current parent chain', () => {
+test('SparkComponentRenderer falls back when registry component hostTypes do not match current host chain', () => {
   const HostLockedCard = defineComponent({
     name: 'HostLockedCard',
     setup() {
@@ -629,7 +629,7 @@ test('SparkComponentRenderer falls back when registry component parentTypes do n
     }
   })
 
-  registry.register('host-locked-card', HostLockedCard, { parentTypes: ['r-table'] })
+  registry.register('host-locked-card', HostLockedCard, { hostTypes: ['r-table'] })
 
   const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
     props: {
@@ -645,11 +645,11 @@ test('SparkComponentRenderer falls back when registry component parentTypes do n
 
   expect(wrapper.find('.host-locked-card').exists()).toBe(false)
   expect(wrapper.find('.spark-component-unregistered').exists()).toBe(true)
-  expect(wrapper.text()).toContain('父组件类型不匹配')
+  expect(wrapper.text()).toContain('宿主类型不匹配')
   expect(wrapper.text()).toContain('r-table')
 })
 
-test('SparkComponentRenderer renders registry component when parentTypes match current parent chain', () => {
+test('SparkComponentRenderer renders registry component when hostTypes match current host chain', () => {
   const HostLockedCard = defineComponent({
     name: 'HostLockedCardMatched',
     setup() {
@@ -657,7 +657,7 @@ test('SparkComponentRenderer renders registry component when parentTypes match c
     }
   })
 
-  registry.register('host-locked-card-matched', HostLockedCard, { parentTypes: ['r-table'] })
+  registry.register('host-locked-card-matched', HostLockedCard, { hostTypes: ['r-table'] })
 
   const tableContext = {
     id: 'spark-table-host',

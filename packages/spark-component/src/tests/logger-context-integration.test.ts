@@ -32,10 +32,10 @@ describe('Logger Context Integration', () => {
 
     const TestComponent = defineComponent({
       setup() {
-        const { host, logger } = useSparkComponent({ type: 'test-comp' })
+        const { logger } = useSparkComponent({ type: 'test-comp' })
         logger.info('test message')
 
-        return () => h('div', { id: host.self().id }, 'test')
+        return () => h('div', {}, 'test')
       }
     })
 
@@ -61,12 +61,12 @@ describe('Logger Context Integration', () => {
 
     const ChildComponent = defineComponent({
       setup() {
-        const { host, logger } = useSparkComponent({ type: 'test-comp' })
+        const { logger } = useSparkComponent({ type: 'test-comp' })
         nextTick(() => {
           logger.info('custom message')
           logger.warn('warning message')
         })
-        return () => h('div', { id: host.self().id }, 'child')
+        return () => h('div', {}, 'child')
       }
     })
 
@@ -102,22 +102,22 @@ describe('Logger Context Integration', () => {
     const ChildComponent = defineComponent({
       name: 'ChildComponent',
       setup() {
-        const { host, logger } = useSparkComponent({ type: 'child-comp' })
+        const { logger } = useSparkComponent({ type: 'child-comp' })
 
         logger.info('child message')
 
-        return () => h('div', { id: host.self().id }, 'child')
+        return () => h('div', {}, 'child')
       }
     })
 
     const PageRoot = defineComponent({
       name: 'PageRoot',
       setup() {
-        const { host, logger, sparkProvide } = useSparkComponent({ type: 'parent-comp' })
+        const { logger, sparkProvide } = useSparkComponent({ type: 'parent-comp' })
         sparkProvide(APP_SERVICES, createAppServices(customLogger))
         logger.info('parent message')
 
-        return () => h('div', { id: host.self().id }, [
+        return () => h('div', {}, [
           h('span', 'parent'),
           h(ChildComponent)
         ])

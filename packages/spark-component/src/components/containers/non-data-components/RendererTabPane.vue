@@ -6,17 +6,19 @@
     :lazy="paneLazy"
     :closable="paneClosable"
   >
-    <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
-      <div
-        v-for="(child, index) in paneChildren"
-        :key="nodeId(child) ?? `r-tab-pane-child-${index}`"
-        class="renderer-tabs-pane-grid-item"
-        :style="getPaneChildGridStyle(child)"
-      >
-        <SparkComponentRenderer :config="child" />
+    <RendererHostDataScope type="r-tab-pane-field-scope" :host="tabPaneFieldHost">
+      <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
+        <div
+          v-for="(child, index) in paneChildren"
+          :key="nodeId(child) ?? `r-tab-pane-child-${index}`"
+          class="renderer-tabs-pane-grid-item"
+          :style="getPaneChildGridStyle(child)"
+        >
+          <SparkComponentRenderer :config="child" />
+        </div>
+        <slot />
       </div>
-      <slot />
-    </div>
+    </RendererHostDataScope>
   </el-tab-pane>
 </template>
 
@@ -29,6 +31,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
+import RendererHostDataScope from '../support/RendererHostDataScope.vue'
+import type { SparkComponentHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
@@ -95,5 +99,9 @@ const paneLabel = computed(() => {
 const paneDisabled = computed(() => props.disabled === true)
 const paneLazy = computed(() => props.lazy === true)
 const paneClosable = computed(() => props.closable === true)
+
+const tabPaneFieldHost: SparkComponentHost = {
+  fieldMode: 'detail',
+}
 </script>
 

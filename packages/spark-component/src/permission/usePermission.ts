@@ -24,7 +24,7 @@ import type { PermissionActionContext } from './PermissionResolver'
 import type { IFieldRenderConfig, IFieldRenderState } from './FieldRenderHelper'
 
 export interface UsePermissionReturn {
-  /** 当前页面权限模式（后端下发），undefined 表示未提供（等效 'masked'） */
+  /** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */
   readonly permissionMode: NavPermissionMode | undefined
 
   /** 判断动作是否被权限允许 */

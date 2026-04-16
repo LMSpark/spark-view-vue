@@ -22,17 +22,19 @@
       </div>
     </template>
 
-    <div :class="['renderer-dialog-body', bodyClass]" :style="gridStyle">
-      <div
-        v-for="(child, index) in gridChildren"
-        :key="nodeId(child) ?? `r-dialog-child-${index}`"
-        class="renderer-dialog-grid-item"
-        :style="getChildGridStyle(child)"
-      >
-        <SparkComponentRenderer :config="child" />
+    <RendererHostDataScope type="r-dialog-field-scope" :host="dialogFieldHost">
+      <div :class="['renderer-dialog-body', bodyClass]" :style="gridStyle">
+        <div
+          v-for="(child, index) in gridChildren"
+          :key="nodeId(child) ?? `r-dialog-child-${index}`"
+          class="renderer-dialog-grid-item"
+          :style="getChildGridStyle(child)"
+        >
+          <SparkComponentRenderer :config="child" />
+        </div>
+        <slot v-bind="getDefaultSlotScope()" />
       </div>
-      <slot v-bind="getDefaultSlotScope()" />
-    </div>
+    </RendererHostDataScope>
 
     <template v-if="showFooter" #footer>
       <div :class="['renderer-dialog-footer', footerClassValue]">
@@ -59,6 +61,8 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDialogProps } from './RendererDialog.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
+import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import type { SparkComponentHost } from '../../../internal'
 import type { RendererDialogApi } from './types'
 import { createRendererDialogZeroCode } from './zero-code'
 
@@ -131,6 +135,10 @@ const {
 })
 
 registerApi(dialogApi)
+
+const dialogFieldHost: SparkComponentHost = {
+  fieldMode: 'detail',
+}
 
 function getHeaderSlotScope() {
   return {

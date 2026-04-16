@@ -5,7 +5,7 @@
         :model-value="fieldValue"
         :active-text="activeText"
         :inactive-text="inactiveText"
-        :disabled="!isCurrentFieldEditable"
+        :disabled="isDisabled || (permissionMode !== 'none' && !isCurrentFieldEditable)"
         @update:model-value="handleChange"
       />
     </template>
@@ -17,6 +17,7 @@
  * @skill r-switch
  * @description 开关字段，绑定 boolean 值，支持自定义开/关文本说明。
  */
+import { useSparkPageComponent } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useSwitchNullValue } from './composables/useSwitchNullValue'
@@ -28,6 +29,8 @@ const props = withDefaults(defineProps<RSwitchProps>(), {
   activeText: '是',
   inactiveText: '否',
 })
+
+const { isDisabled } = useSparkPageComponent(props)
 
 const emit = defineEmits<FieldValueUpdateEmits<boolean | null>>()
 
@@ -43,7 +46,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<bool
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
-const { boundColumn, contextData, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
+const { permissionMode, boundColumn, contextData, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
 useSwitchNullValue({
   boundColumn,
   contextData,

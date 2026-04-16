@@ -89,4 +89,20 @@ describe('FieldSwitch 业务回调模式', () => {
 
     expect(model['hidden']).toBe(false)
   })
+
+  it('应尊重组件 disabled 配置', async () => {
+    const model = reactive<Record<string, unknown>>({ enabled: true })
+
+    const wrapper = mountFieldSwitch(
+      model,
+      'enabled',
+      { disabled: true },
+      [{ name: 'enabled', type: 'boolean', allowDBNull: false }],
+    )
+
+    await nextTick()
+
+    const switchComp = wrapper.findComponent(ElSwitchStub)
+    expect(switchComp.props('disabled')).toBe(true)
+  })
 })

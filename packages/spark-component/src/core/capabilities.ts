@@ -212,13 +212,18 @@ export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capabil
 /**
  * 组件宿主接口 — 容器向子树声明"我是谁、我能做什么"
  *
- * 容器组件在创建 context 后设置 `context.host`，
- * 子组件通过 `findNearestHost()` 沿 parent 链向上查找最近的宿主。
+ * **管理权 vs 渲染职责分离**：
+ * - **Host 管理权**：容器通过 `setHost()` 声明能力（fieldMode、variant、isDisabled、execute）
+ * - **子级渲染职责**：子组件通过 `nearestHost()` 消费能力后自己完成渲染，而非被动接收推动
+ * - Host 不直接推动子级渲染，setHost 仅修改 context.host，无反向控制副作用
+ * - 子级自决策能力消费时机、方式，保持独立的渲染自主权
  *
- * @spark-design host 是 context 上的一等公民字段，不是能力键。
- *   数据域能力键（DATA_SOURCE / DATA_ROW）解决的是"组件层级 ≠ 数据层级"，
- *   而 host 解决的是"子组件需要知道宿主的身份与能力"——这是组件树固有语义，
- *   不应走能力键分散注册。
+ * **逐层访问约束**：
+ * - 容器组件在自己的 context 上设置 `host` 字段声明宿主身份。
+ * - 子组件通过 `nearestHost()` 逐层往上查找，获取最近的已声明宿主（不跳层）。
+ * - 若想访问上上层宿主，必须链式调用 `nearestHost()?.nearestHost()`，而不是直接访问。
+ *
+ * @spark-design host 是 context 上的一等公民字段，不是能力键。\n *   数据域能力键（DATA_SOURCE / DATA_ROW）解决的是"组件层级 ≠ 数据层级"，\n *   而 host 解决的是"子组件需要知道宿主的身份与能力"——这是组件树固有语义，\n *   不应走能力键分散注册。\n *   强制逐层访问防止长链脆弱依赖，所有跨层级信息需求应转向 DataKey / 能力系统。
  */
 export interface SparkComponentHost {
   /** 字段渲染模式 — 容器对子树声明自身的字段展示语义。
@@ -234,9 +239,17 @@ export interface SparkComponentHost {
 }
 
 /**
- * 沿 parent 链向上查找最近的宿主声明。
+ * 逐层往上查找最近的已声明宿主。
  *
- * 从 ctx.parent 开始查找（跳过自身），返回第一个设置了 host 的祖先上下文中的 host。
+ * 从当前 context 的父开始，依次检查每个祖先上下文是否声明了 host，
+ * 返回遇到的第一个非空宿主。这强制了"逐层访问"的约束：
+ * 要访问更远的宿主，调用方必须链式调用 nearestHost()，而不是跳层访问。
+ *
+ * @spark-design 子组件应动态查询而非缓存结果：
+ *   - nearestHost() 返回的 Host 对象可能包含动态代理（如行级数据变化时）
+ *   - 若在 setup 时缓存 nearestHost，后续 Host 能力变化时不会更新
+ *   - 必须在 computed / 函数中动态调用 nearestHost()，确保 computed 依赖正确的响应性
+ *   - 如：computed(() => { const host = nearestHost(); return host?.isDisabled(...) })
  */
 export function findNearestHost(ctx: ICapabilityContext): SparkComponentHost | null {
   let current: ICapabilityContext | undefined = ctx.parent

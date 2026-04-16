@@ -52,7 +52,7 @@ function mountWithFieldContext(
   model: Record<string, unknown>,
   pageService?: IPageServiceCapability,
   componentProps?: Record<string, unknown>,
-  options?: { parentType?: string }
+  options?: { hostType?: string }
 ) {
   return mountFieldInContext({
     component,
@@ -60,7 +60,7 @@ function mountWithFieldContext(
     model,
     fieldName: 'content',
     pageService,
-    parentType: options?.parentType ?? 'r-form',
+    hostType: options?.hostType ?? 'r-form',
     ...(componentProps !== undefined ? { componentProps } : {}),
     global: {
       stubs: {
@@ -391,7 +391,7 @@ describe('advanced renderer fields', () => {
     const wrapper = mountWithFieldContext(FieldText, model, createPageService(), {
       label: '内容',
     }, {
-      parentType: 'r-detail',
+      hostType: 'r-detail',
     })
 
     expect(wrapper.find('.field-display').exists()).toBe(false)

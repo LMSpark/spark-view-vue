@@ -1,35 +1,58 @@
 <template>
-  <RendererRowFragmentHost v-bind="hostProps" />
+  <el-table-column
+    v-if="isTableHost"
+    :label="resolvedColumnLabel"
+    :width="width"
+    :min-width="minWidth"
+    :align="align"
+    :header-align="resolvedHeaderAlign"
+    :class-name="props.class"
+  >
+    <template #default="scope">
+      <RendererHostDataScope
+        type="r-data-scope"
+        :row="resolveSlotRow(scope)"
+        :children="resolvedChildren"
+      />
+    </template>
+  </el-table-column>
+
+  <RendererHostDataScope
+    v-else
+    type="r-data-scope"
+    :row="resolvedData"
+    :children="resolvedChildren"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getSparkNodeChildren, type SparkNode } from '../../../internal'
-import RendererRowFragmentHost from './RendererRowFragmentHost.vue'
+import type { IDataRow } from '@spark-view/spark-data'
+import { getSparkNodeChildren, useSparkConsume, type SparkNode } from '../../../internal'
+import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
 import type { RendererRowFragmentProps as Props } from './RendererRowFragment.types.js'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-row-fragment',
 })
 
-const renderChildren = computed<SparkNode[]>(() => {
+const { host } = useSparkConsume()
+const isTableHost = computed(() => host.nearestHost()?.fieldMode === 'table')
+
+const resolvedChildren = computed<SparkNode[]>(() => {
   const fieldNodes = getSparkNodeChildren(props.fields)
   if (fieldNodes.length > 0) return fieldNodes
   return getSparkNodeChildren(props.children)
 })
-const hostProps = computed<Props>(() => ({
-  type: props.type,
-  ...(props.id !== undefined ? { id: props.id } : {}),
-  ...(props.title !== undefined ? { title: props.title } : {}),
-  ...(props.label !== undefined ? { label: props.label } : {}),
-  ...(props.description !== undefined ? { description: props.description } : {}),
-  ...(props.width !== undefined ? { width: props.width } : {}),
-  ...(props.minWidth !== undefined ? { minWidth: props.minWidth } : {}),
-  ...(props.align !== undefined ? { align: props.align } : {}),
-  ...(props.headerAlign !== undefined ? { headerAlign: props.headerAlign } : {}),
-  ...(props.class !== undefined ? { class: props.class } : {}),
-  ...(props.data !== undefined ? { data: props.data } : {}),
-  ...(props.fields !== undefined ? { fields: props.fields } : {}),
-  children: renderChildren.value,
-}))
+const resolvedColumnLabel = computed(() => props.title ?? props.label ?? '')
+const resolvedHeaderAlign = computed(() => props.headerAlign ?? props.align)
+const EMPTY_DATA_ROW = Object.freeze({}) as IDataRow
+const resolvedData = computed(() => props.data ?? EMPTY_DATA_ROW)
+
+function resolveSlotRow(scope: Record<string, unknown>): IDataRow {
+  const row = scope['row']
+  return row !== null && row !== undefined && typeof row === 'object' && !Array.isArray(row)
+    ? row as IDataRow
+    : EMPTY_DATA_ROW
+}
 </script>

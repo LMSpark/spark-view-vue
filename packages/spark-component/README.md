@@ -71,11 +71,10 @@ const logger = sparkConsume('logger')
 只读祖先能力时，不再使用单独的 helper，统一使用同一个入口的轻量模式：
 
 ```ts
-const { sparkConsume, parentType } = useSparkComponent(undefined, {
-  mode: 'consume-only'
-})
+const { sparkConsume, host } = useSparkConsume()
 
 const dataSource = sparkConsume('dataSource')
+const hostType = host.type
 ```
 
 ## 核心概念

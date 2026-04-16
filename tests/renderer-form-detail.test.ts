@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import { RendererForm, RendererDetail, FieldText } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
-import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
+import { getMountedComponentApi, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
@@ -329,7 +329,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       getCurrentRow(): Record<string, unknown> | null
       getFormData(): Record<string, unknown>
       setCurrentRowById(id: number | null): boolean
@@ -339,7 +339,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       addRow(row: Record<string, unknown>): Promise<unknown>
       editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
       removeRow(id: number): Promise<unknown>
-    }
+    }>(wrapper, 'r-form')
 
     expect(api.getCurrentRow()?.['id']).toBe(1)
     expect(api.getFormData()['name']).toBe('Alice')
@@ -406,7 +406,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       getCurrentRow(): Record<string, unknown> | null
       getDetailData(): Record<string, unknown>
       setCurrentRowById(id: number | null): boolean
@@ -416,7 +416,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       addRow(row: Record<string, unknown>): Promise<unknown>
       editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
       removeRow(id: number): Promise<unknown>
-    }
+    }>(wrapper, 'r-detail')
 
     expect(api.getCurrentRow()?.['id']).toBe(10)
     expect(api.getDetailData()['title']).toBe('Alpha')
@@ -485,11 +485,11 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       addRow(row: Record<string, unknown>): Promise<Record<string, unknown>>
       editRowById(id: number, patch: Record<string, unknown>): Promise<Record<string, unknown>>
       removeRow(id: number): Promise<Record<string, unknown>>
-    }
+    }>(wrapper, 'r-form')
 
     await expect(api.addRow({ id: 2, name: 'Bob' })).resolves.toMatchObject({ success: false })
     await expect(api.editRowById(1, { name: 'Alice-2' })).resolves.toMatchObject({ success: false })

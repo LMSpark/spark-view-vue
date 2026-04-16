@@ -41,10 +41,10 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
-import { useNumberFieldState } from './composables/useNumberFieldState'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RNumberProps } from './FieldNumber.props'
+import { computed } from 'vue'
 
 const props = withDefaults(defineProps<RNumberProps>(), {
   type: 'r-number',
@@ -71,17 +71,25 @@ const { permission, fieldCtx } = useBasicFieldState<number | [number | undefined
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
 
-const {
-  rangeStart,
-  rangeEnd,
-  handleChange,
-  handleRangeStartChange,
-  handleRangeEndChange,
-} = useNumberFieldState({
-  fieldValue,
-  emitUpdate: value => emitFieldValueUpdate(emit, value),
-  syncValue,
-})
+const rangeStart = computed(() => Array.isArray(fieldValue.value) ? fieldValue.value[0] : undefined)
+const rangeEnd = computed(() => Array.isArray(fieldValue.value) ? fieldValue.value[1] : undefined)
+
+function updateValue(value: number | [number | undefined, number | undefined]): void {
+  emitFieldValueUpdate(emit, value)
+  syncValue(value)
+}
+
+function handleChange(value: number): void {
+  updateValue(value)
+}
+
+function handleRangeStartChange(value: number | undefined): void {
+  updateValue([value, rangeEnd.value])
+}
+
+function handleRangeEndChange(value: number | undefined): void {
+  updateValue([rangeStart.value, value])
+}
 </script>
 
 <style scoped>

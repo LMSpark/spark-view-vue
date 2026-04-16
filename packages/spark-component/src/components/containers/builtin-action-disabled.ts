@@ -36,7 +36,6 @@ function resolveBuiltinBeforeRenderAction(
     host: {
       type: null,
     },
-    parentType: null,
   }, (message, error) => {
     if (!import.meta.env.DEV) return
     console.warn(`[builtin-actions] ${message}`, error)

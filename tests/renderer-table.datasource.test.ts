@@ -4,7 +4,7 @@ import { RendererTable, RendererRowFragment, FieldText, DATA_ROW, PAGE_DATASET, 
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
-import { mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
+import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
@@ -50,6 +50,7 @@ const SparkActionStub = defineComponent({
     },
   },
   setup(props) {
+    const { host } = useSparkComponent({ type: 'spark-action-stub' } as SparkNode)
     return () => {
       const config = props.config as Record<string, unknown>
       const propsMap = readConfigProps(config)
@@ -66,7 +67,11 @@ const SparkActionStub = defineComponent({
         'data-node-id': String((propsMap['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
         disabled: propsMap['disabled'] === true || propsMap['buttonDisabled'] === true,
         onClick: () => {
-          if (typeof click === 'function') click('evt')
+          if (typeof click === 'function') {
+            click('evt')
+            return
+          }
+          host.nearestHost()?.execute?.(config as unknown as SparkNode)
         },
       }, readConfigActionText(config))
     }
@@ -307,6 +312,7 @@ const SparkColumnRendererStub = defineComponent({
     },
   },
   setup(props) {
+    const { host } = useSparkComponent({ type: 'spark-column-renderer-stub' } as SparkNode)
     return () => {
       const config = props.config as Record<string, unknown>
       const type = String(config['type'] ?? '')
@@ -338,7 +344,13 @@ const SparkColumnRendererStub = defineComponent({
         'data-row-index': String((propsMap['rowIndex'] as number | undefined) ?? ''),
         'data-node-id': String((propsMap['data'] as Record<string, unknown> | undefined)?.['id'] ?? ''),
         disabled: propsMap['disabled'] === true || propsMap['buttonDisabled'] === true,
-        onClick: () => { if (typeof click === 'function') click('evt') },
+        onClick: () => {
+          if (typeof click === 'function') {
+            click('evt')
+            return
+          }
+          host.nearestHost()?.execute?.(config as unknown as SparkNode)
+        },
       }, typeLabel)
     }
   }
@@ -927,10 +939,12 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const exposed = (wrapper.vm as { $?: { exposed?: { expandToNode?: (key: string | number) => Promise<void> } } }).$?.exposed
-    expect(exposed?.expandToNode).toBeTypeOf('function')
+    const api = getMountedComponentApi<{
+      expandToNode(key: string | number): Promise<void>
+    }>(wrapper, 'r-tree')
+    expect(api.expandToNode).toBeTypeOf('function')
 
-    await exposed!.expandToNode!('leaf')
+    await api.expandToNode('leaf')
     await flushPromises()
     await nextTick()
 
@@ -1161,7 +1175,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       getRows(): Array<Record<string, unknown>>
       getCurrentRow(): Record<string, unknown> | null
       getSelectedRows(): Array<Record<string, unknown>>
@@ -1174,7 +1188,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       addRow(row: Record<string, unknown>): Promise<unknown>
       editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
       removeRow(id: number): Promise<unknown>
-    }
+    }>(wrapper, 'r-table')
 
     expect(api.getRows().map(row => row['id'])).toEqual([1, 2])
     expect(api.getCurrentRow()).toBeNull()
@@ -1233,9 +1247,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       getCurrentRow(): Record<string, unknown> | null
-    }
+    }>(wrapper, 'r-table')
 
     expect(api.getCurrentRow()).toBeNull()
 
@@ -1311,12 +1325,12 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       addRow(row: Record<string, unknown>): Promise<Record<string, unknown>>
       editRowById(id: number, patch: Record<string, unknown>): Promise<Record<string, unknown>>
       removeRow(id: number): Promise<Record<string, unknown>>
       getRows(): Array<Record<string, unknown>>
-    }
+    }>(wrapper, 'r-table')
 
     await expect(api.addRow({ id: 2, name: 'Bob' })).resolves.toMatchObject({ success: false })
     await expect(api.editRowById(1, { name: 'Alice-2' })).resolves.toMatchObject({ success: false })
@@ -1381,14 +1395,14 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       loadTreeNested(rootId?: string | number | null, limit?: number, depthLimit?: number): Promise<unknown>
       loadTreeChildren(parentId: string | number | null, limit?: number): Promise<Array<Record<string, unknown>>>
       loadTreePath(id: string | number): Promise<{ pathIds: Array<string | number> } | null>
       expandToNode(key: string | number): Promise<void>
       moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<Record<string, unknown> | null>
       searchTreeNested(keyword: string, limit?: number): Promise<Array<Record<string, unknown>>>
-    }
+    }>(wrapper, 'r-table')
 
     await expect(api.loadTreeNested(null, 20, 3)).resolves.toEqual({
       success: true,
@@ -1464,12 +1478,12 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       getRows(): Array<Record<string, unknown>>
       addRow(row: Record<string, unknown>): Promise<unknown>
       editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
       removeRow(id: number): Promise<unknown>
-    }
+    }>(wrapper, 'r-table')
 
     await expect(api.addRow({ id: 2, name: 'Bob' })).resolves.toMatchObject({ success: true, data: { id: 2, name: 'Bob' } })
     expect(httpClient.post).toHaveBeenCalledOnce()
@@ -1494,7 +1508,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         dataKey: 'Users@rows',
         children: [
           { type: 'r-toolbar', props: { position: 'bottom' }, children: [{ type: 'toolbar-button' }] },
-          { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'row-button', on: { click: rowActionSpy } }] },
+          { type: 'r-actions', props: { position: 'left' }, children: [{ type: 'row-button', props: { on: { click: rowActionSpy } } }] },
         ],
       }),
       global: {
@@ -2043,7 +2057,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         data: [{ id: 'node-1', label: '节点 1' }],
         children: [
           { type: 'r-toolbar', props: { position: 'right' }, children: [{ type: 'tree-toolbar' }] },
-          { type: 'node-button', on: { click: nodeActionSpy } },
+          { type: 'node-button', props: { on: { click: nodeActionSpy } } },
         ],
       }),
       global: {
@@ -2856,9 +2870,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       query(): Promise<void>
-    }
+    }>(wrapper, 'r-table')
 
     await api.query()
 

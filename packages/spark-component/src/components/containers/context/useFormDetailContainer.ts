@@ -1,13 +1,13 @@
-import { computed } from 'vue'
+import { computed, shallowReactive, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { DATA_ROW } from '../../internal'
+import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../useContainerDataSource'
-import { useContainerContextData } from './useContainerContextData'
 import { useContainerToolbar } from '../layout/useContainerToolbar'
 import type { ToolbarNode } from '../non-data-components/RendererToolbar.types'
 import { createCurrentRowSlotScope } from '../slotScopeFactories'
@@ -41,7 +41,7 @@ export function useFormDetailContainer(
 
   const logPrefix = containerType === 'r-form' ? 'RendererForm' : 'RendererDetail'
 
-  const { host, sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
+  const { sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
   const pageDataSet = sparkConsume(PAGE_DATASET)
   const pageService = sparkConsume(PAGE_SERVICE)
 
@@ -60,7 +60,32 @@ export function useFormDetailContainer(
   })
 
   const resolvedSource = computed<IDataSource | null>(() => resolvedView.value as IDataSource | null)
-  const { contextData } = useContainerContextData({ source: resolvedSource })
+  const contextData = shallowReactive<IDataRow>({})
+  let prevRow: unknown = Symbol('initial')
+
+  watch(
+    () => resolvedSource.value?.currentRow,
+    (row) => {
+      if (row === prevRow) return
+      prevRow = row
+
+      const incoming: IDataRow = row ?? {}
+      const incomingKeys = new Set(Object.keys(incoming))
+
+      for (const key of Object.keys(contextData)) {
+        if (!incomingKeys.has(key)) {
+          contextData[key] = undefined
+        }
+      }
+
+      for (const key of incomingKeys) {
+        if (contextData[key] !== incoming[key]) {
+          contextData[key] = incoming[key]
+        }
+      }
+    },
+    { immediate: true },
+  )
 
   const {
     toolbarPositionValue,
@@ -76,7 +101,6 @@ export function useFormDetailContainer(
   })
 
   sparkProvide(DATA_ROW, contextData)
-  host.setHost({ fieldMode: containerType === 'r-form' ? 'form' : 'detail' })
 
   function getDefaultSlotScope() {
     return createCurrentRowSlotScope({
@@ -89,7 +113,6 @@ export function useFormDetailContainer(
 
   return {
     registerApi,
-    host,
     logger,
     pageService,
     resolvedView,

@@ -36,7 +36,8 @@ export interface ICapabilityContext {
   capabilities: Map<CapabilityName, unknown>
   /**
    * 宿主声明：容器组件设置此字段，告知子树"我是谁、我能做什么"。
-   * 子组件通过 findNearestHost() 沿 parent 链向上查找最近的宿主。
+   * 子组件通过 nearestHost() 逐层往上查找最近的已声明宿主。
+   * 宿主协议强制逐层访问（不支持跨层快捷方法），防止长链脆弱依赖。
    */
   host?: unknown
 }

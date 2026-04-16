@@ -7,7 +7,7 @@ import type {
 } from '../../../shared-types'
 import type { RowClickHandler } from '../../support'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
-import type { ActionsNode } from '../../support/RendererActionHost.types'
+import type { ActionsNode } from '../../support/RendererActions.types'
 
 /**
  * r-list 组件公开属性接口。

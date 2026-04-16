@@ -1,12 +1,12 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" :host="toolbarHost">
+    <RendererHostDataScope v-if="showToolbar" type="r-tree-toolbar-scope" :host="toolbarHost">
       <div :class="['renderer-tree-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
         </template>
       </div>
-    </RendererHostScope>
+    </RendererHostDataScope>
 
     <div :class="['renderer-tree-body', `renderer-tree-body--editor-${editorPositionValue}`]">
       <div class="renderer-tree-main">
@@ -23,24 +23,35 @@
         >
           <template #default="slotProps">
             <span class="custom-tree-node">
-              <RendererDataScope
+              <RendererHostDataScope
                 v-if="nodeContentChildren.length > 0"
                 type="r-data-scope"
                 :children="nodeContentChildren"
-                :data="(slotProps?.data as IDataRow) ?? {}"
+                :row="(slotProps?.data as IDataRow) ?? {}"
+                :host="treeFieldHost"
               />
-              <slot v-else :node="slotProps?.node" :data="slotProps?.data">
-                <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
-              </slot>
-              <RendererActionHost
+              <RendererHostDataScope
+                v-else
+                type="r-data-scope"
+                :row="(slotProps?.data as IDataRow) ?? {}"
+                :host="treeFieldHost"
+              >
+                <slot :node="slotProps?.node" :data="slotProps?.data">
+                  <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
+                </slot>
+              </RendererHostDataScope>
+              <span
                 v-if="hasNodeActions"
-                :actions="getNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))"
-                :row="((slotProps?.data as IDataRow) ?? {})"
-                :host="getNodeActionHost(((slotProps?.data as IDataRow) ?? {}), 0)"
-                action-key-prefix="r-tree-node-action"
-                wrapper-tag="span"
-                wrapper-class="tree-node-actions"
-              />
+                class="tree-node-actions"
+              >
+                <RendererHostDataScope
+                  :children="getNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))"
+                  type="r-tree-node-action-scope"
+                  :row="((slotProps?.data as IDataRow) ?? {})"
+                  :host="getNodeActionHost(((slotProps?.data as IDataRow) ?? {}), 0)"
+                  child-key-prefix="r-tree-node-action"
+                />
+              </span>
             </span>
           </template>
         </el-tree>
@@ -79,7 +90,6 @@ import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
-import RendererActionHost from '../../support/RendererActionHost.vue'
 import {
   createRendererTreeZeroCode,
   type TreeNode,
@@ -90,13 +100,12 @@ import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useContainerActions } from '../../useContainerActions'
-import RendererHostScope from '../../support/RendererHostScope.vue'
+import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
 import type { SparkComponentHost } from '../../../internal'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
-import RendererDataScope from '../RendererRowFragment/RendererDataScope.vue'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
@@ -114,7 +123,7 @@ const {
 } = useRendererTreeInput({ props })
 
 // 接入 SPARK 能力链
-const { host: treeHost, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
 
@@ -132,7 +141,9 @@ useContainerDataSourceEffects({
   logPrefix: 'RendererTree',
 })
 
-treeHost.setHost({ fieldMode: 'tree' })
+const treeFieldHost: SparkComponentHost = {
+  fieldMode: 'tree',
+}
 
 const nodeKeyField = computed(() =>
   props.nodeKey ?? resolvedView.value?.primaryKey ?? resolvedView.value?.treeConfig?.idField ?? 'id'

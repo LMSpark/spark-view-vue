@@ -21,49 +21,52 @@
               :class="['renderer-list-item-shell', `renderer-list-item-shell--${itemActionsPositionValue}`]"
               @click="handleItemClick(row, index, $event)"
             >
-              <RendererActionHost
+              <div
                 v-if="showItemActionsLeftValue"
-                :actions="getScopedItemActions({ row, index })"
-                action-key-prefix="r-list-item-action-left"
-                :slot-scope="getItemActionSlotScope(row, index)"
-                wrapper-tag="div"
-                :wrapper-class="['renderer-list-item-actions', itemActionsClassValue]"
+                :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <template #actions="scope">
-                  <slot name="item-actions" v-bind="scope" />
-                </template>
-              </RendererActionHost>
-
-              <RendererListItemScope
-                type="r-list-item"
-                :row="row"
-                :children="mergedChildren"
-                :item-class="itemClass"
-                :item-style="itemStyle"
-                :use-card="useCard"
-                :card-shadow="cardShadow"
-                :grid-columns="gridColumns"
-                :grid-gap="gridGap"
-                :grid-auto-rows="gridAutoRows"
-              >
-                <slot
-                  v-if="!mergedChildren.length"
-                  v-bind="getRowSlotScope(row, index)"
+                <RendererHostDataScope
+                  type="r-list-item-action-scope"
+                  :children="getScopedItemActions({ row, index })"
+                  :row="row"
+                  child-key-prefix="r-list-item-action-left"
                 />
-              </RendererListItemScope>
+                <slot name="item-actions" v-bind="getItemActionSlotScope(row, index)" />
+              </div>
 
-              <RendererActionHost
+              <div :class="itemClass" :style="itemStyle">
+                <RendererHostDataScope type="r-list-item" :row="row" :host="listFieldHost">
+                  <component :is="itemBodyWrapperTag" v-bind="itemBodyWrapperAttrs">
+                    <div class="renderer-list-item-body" :style="itemContentGridStyle">
+                      <div
+                        v-for="(child, childIndex) in itemContentChildren"
+                        :key="nodeId(child) ?? `r-list-item-child-${childIndex}`"
+                        class="renderer-list-grid-item"
+                        :style="getItemContentChildGridStyle(child)"
+                      >
+                        <SparkComponentRenderer :config="child" />
+                      </div>
+                      <slot
+                        v-if="!itemContentChildren.length"
+                        v-bind="getRowSlotScope(row, index)"
+                      />
+                    </div>
+                  </component>
+                </RendererHostDataScope>
+              </div>
+
+              <div
                 v-if="showItemActionsRightValue"
-                :actions="getScopedItemActions({ row, index })"
-                action-key-prefix="r-list-item-action-right"
-                :slot-scope="getItemActionSlotScope(row, index)"
-                wrapper-tag="div"
-                :wrapper-class="['renderer-list-item-actions', itemActionsClassValue]"
+                :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <template #actions="scope">
-                  <slot name="item-actions" v-bind="scope" />
-                </template>
-              </RendererActionHost>
+                <RendererHostDataScope
+                  type="r-list-item-action-scope"
+                  :children="getScopedItemActions({ row, index })"
+                  :row="row"
+                  child-key-prefix="r-list-item-action-right"
+                />
+                <slot name="item-actions" v-bind="getItemActionSlotScope(row, index)" />
+              </div>
             </div>
           </div>
         </template>
@@ -92,12 +95,13 @@ import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
 import type { RendererListApi } from './types'
-import RendererListItemScope from '../RendererListItemScope.vue'
-import RendererActionHost from '../../support/RendererActionHost.vue'
+import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import type { SparkComponentHost } from '../../../internal'
 import { useContainerActions } from '../../useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
 import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
+import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../slotScopeFactories'
 import { createRendererListZeroCode } from './zero-code'
@@ -131,7 +135,7 @@ const mergedChildren = computed<SparkNode[]>(() => {
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
-const { host: listHost, sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
+const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
@@ -148,7 +152,9 @@ useContainerDataSourceEffects({
   logPrefix: 'RendererList',
 })
 
-listHost.setHost({ fieldMode: 'detail' })
+const listFieldHost: SparkComponentHost = {
+  fieldMode: 'detail',
+}
 
 const listRows = computed<IDataRow[]>(() => resolvedView.value?.rows ?? [])
 const showListItems = computed(() => listRows.value.length > 0 && (mergedChildren.value.length > 0 || hasDefaultSlot.value))
@@ -194,6 +200,26 @@ const {
   actionPosition: itemActionsPositionValue,
   showActionsLeft: showItemActionsLeft,
   showActionsRight: showItemActionsRight,
+})
+
+const {
+  gridChildren: itemContentChildren,
+  gridStyle: itemContentGridStyle,
+  getChildGridStyle: getItemContentChildGridStyle,
+} = useContainerGrid({
+  children: () => mergedChildren.value,
+  columns: () => props.gridColumns,
+  gap: () => props.gridGap,
+  autoRows: () => props.gridAutoRows,
+})
+
+const itemBodyWrapperTag = computed(() => props.useCard ? 'el-card' : 'div')
+const itemBodyWrapperAttrs = computed<Record<string, unknown>>(() => {
+  if (!props.useCard) return {}
+  return {
+    shadow: props.cardShadow,
+    class: 'renderer-list-card',
+  }
 })
 
 // ── r-list 包装 API ──────────────────────────────────────────────────────
@@ -358,6 +384,18 @@ function getDefaultSlotScope() {
   justify-content: flex-start;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.renderer-list-card {
+  height: 100%;
+}
+
+.renderer-list-item-body {
+  width: 100%;
+}
+
+.renderer-list-grid-item {
+  min-width: 0;
 }
 
 .renderer-list-empty {

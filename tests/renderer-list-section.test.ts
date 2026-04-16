@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { RendererList, RendererSection, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { defineCapability } from '@spark-view/spark-utils'
 import { SparkData } from '@spark-view/spark-data'
-import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
+import { getMountedComponentApi, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { SparkNode } from '@spark-view/spark-component'
 
@@ -150,7 +151,7 @@ describe('RendererList and RendererSection container integration', () => {
       },
     })
 
-    const api = wrapper.vm.$.exposed as {
+    const api = getMountedComponentApi<{
       getRows(): Array<Record<string, unknown>>
       getCurrentRow(): Record<string, unknown> | null
       getItemCount(): number
@@ -161,7 +162,7 @@ describe('RendererList and RendererSection container integration', () => {
       addRow(row: Record<string, unknown>): Promise<unknown>
       editRowById(id: number, patch: Record<string, unknown>): Promise<unknown>
       removeRow(id: number): Promise<unknown>
-    }
+    }>(wrapper, 'r-list')
 
     expect(api.getItemCount()).toBe(2)
     expect(api.getCurrentRow()).toBeNull()
@@ -339,51 +340,59 @@ describe('RendererList and RendererSection container integration', () => {
   })
 })
 
+// 验证 RendererSection slot 子组件能沿 Spark 上下文链消费到祖先提供的能力
+const SECTION_BRIDGE_MARKER = defineCapability<string>('test:section-bridge-marker')
+
 describe('RendererSection direct Vue children bridge', () => {
+  // ContextProbe 消费外层提供的标记能力：能消费到 → 上下文链穿过 RendererSection slot 正常工作
   const ContextProbe = defineComponent({
     name: 'ContextProbe',
     setup() {
-      const { host } = useSparkComponent({ type: 'probe-field' })
+      const { sparkConsume } = useSparkComponent({ type: 'probe-field' })
+      const marker = sparkConsume(SECTION_BRIDGE_MARKER) as string | null
       return () => h('div', {
         class: 'context-probe',
-        'data-parent-type': host.type ?? '',
+        'data-connected': marker ?? 'none',
       }, 'probe')
     },
   })
 
   it('should propagate r-section parent context to direct Vue slot children', () => {
     const plugin = Spark.createPlugin()
-    const wrapper = mount(RendererSection as any, {
-      props: { title: '分区' },
-      slots: {
-        default: () => h(ContextProbe),
+    // OuterProvider 通过 sparkProvide 注入标记能力，验证 RendererSection slot 子组件能透过上下文链消费到
+    const OuterProvider = defineComponent({
+      setup() {
+        const { sparkProvide } = useSparkComponent({ type: 'outer-provider' })
+        sparkProvide(SECTION_BRIDGE_MARKER, 'connected')
+        return () => h(RendererSection as any, { title: '分区' }, { default: () => h(ContextProbe) })
       },
+    })
+    const wrapper = mount(OuterProvider, {
       global: {
         plugins: [plugin],
-        stubs: {
-          'el-card': ElCardStub,
-        },
+        stubs: { 'el-card': ElCardStub },
       },
     })
 
-    expect(wrapper.find('.context-probe').attributes('data-parent-type')).toBe('r-section')
+    expect(wrapper.find('.context-probe').attributes('data-connected')).toBe('connected')
   })
 
   it('should propagate r-section parent context in card mode', () => {
     const plugin = Spark.createPlugin()
-    const wrapper = mount(RendererSection as any, {
-      props: { title: '卡片分区', useCard: true },
-      slots: {
-        default: () => h(ContextProbe),
+    const OuterProvider = defineComponent({
+      setup() {
+        const { sparkProvide } = useSparkComponent({ type: 'outer-provider' })
+        sparkProvide(SECTION_BRIDGE_MARKER, 'connected')
+        return () => h(RendererSection as any, { title: '卡片分区', useCard: true }, { default: () => h(ContextProbe) })
       },
+    })
+    const wrapper = mount(OuterProvider, {
       global: {
         plugins: [plugin],
-        stubs: {
-          'el-card': ElCardStub,
-        },
+        stubs: { 'el-card': ElCardStub },
       },
     })
 
-    expect(wrapper.find('.context-probe').attributes('data-parent-type')).toBe('r-section')
+    expect(wrapper.find('.context-probe').attributes('data-connected')).toBe('connected')
   })
 })

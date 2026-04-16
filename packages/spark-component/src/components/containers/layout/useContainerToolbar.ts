@@ -44,7 +44,6 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
                 host: {
                   type: null,
                 },
-                parentType: null,
               }, (message, error) => {
                 if (!import.meta.env.DEV) return
                 console.warn(`[useContainerToolbar] ${message}`, error)

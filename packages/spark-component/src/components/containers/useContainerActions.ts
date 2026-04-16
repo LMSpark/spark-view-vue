@@ -68,7 +68,6 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
                 host: {
                   type: null,
                 },
-                parentType: null,
               }, (message, error) => {
                 if (!import.meta.env.DEV) return
                 console.warn(`[useContainerActions] ${message}`, error)

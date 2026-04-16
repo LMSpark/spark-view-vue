@@ -8,16 +8,12 @@
  */
 
 // ── Composable ──
-export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHost, useSparkHostScope, resolveSparkHost } from '../core/index.js'
+export { useSparkComponent, useSparkConsume, useSparkPageComponent, useSparkHostScope } from '../core/index.js'
 export type {
   UseSparkComponentReturn,
   UseSparkPageComponentReturn,
   UseSparkCapabilityReaderReturn,
   UseSparkComponentOptions,
-  SparkHostResolverOptions,
-  ResolvedSparkHost,
-  UseSparkHostReturn,
-  UseSparkHostScopeReturn,
   SparkNodeInput,
 } from '../core/index.js'
 

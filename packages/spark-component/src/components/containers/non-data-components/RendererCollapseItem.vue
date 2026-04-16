@@ -4,17 +4,19 @@
     :title="itemTitle"
     :disabled="itemDisabled"
   >
-    <div :class="['renderer-collapse-item-body', itemBodyClass]" :style="itemGridStyle">
-      <div
-        v-for="(child, index) in itemChildren"
-        :key="nodeId(child) ?? `r-collapse-item-child-${index}`"
-        class="renderer-collapse-item-grid-item"
-        :style="getItemChildGridStyle(child)"
-      >
-        <SparkComponentRenderer :config="child" />
+    <RendererHostDataScope type="r-collapse-item-field-scope" :host="collapseItemFieldHost">
+      <div :class="['renderer-collapse-item-body', itemBodyClass]" :style="itemGridStyle">
+        <div
+          v-for="(child, index) in itemChildren"
+          :key="nodeId(child) ?? `r-collapse-item-child-${index}`"
+          class="renderer-collapse-item-grid-item"
+          :style="getItemChildGridStyle(child)"
+        >
+          <SparkComponentRenderer :config="child" />
+        </div>
+        <slot />
       </div>
-      <slot />
-    </div>
+    </RendererHostDataScope>
   </el-collapse-item>
 </template>
 
@@ -27,6 +29,8 @@
 import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
+import RendererHostDataScope from '../support/RendererHostDataScope.vue'
+import type { SparkComponentHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
@@ -85,5 +89,9 @@ const itemTitle = computed(() => {
 })
 
 const itemDisabled = computed(() => props.disabled === true)
+
+const collapseItemFieldHost: SparkComponentHost = {
+  fieldMode: 'detail',
+}
 </script>
 

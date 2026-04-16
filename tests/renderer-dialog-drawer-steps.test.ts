@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { defineCapability } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-component'
 import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 
@@ -227,14 +228,19 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   })
 })
 
+// 验证 dialog/drawer slot 子组件能沿 Spark 上下文链消费到祖先提供的能力
+const DIALOG_BRIDGE_MARKER = defineCapability<string>('test:dialog-bridge-marker')
+
 describe('Direct Vue children bridge (dialog / drawer)', () => {
+  // ContextProbe 消费外层提供的标记能力：能消费到 → 上下文链穿过容器 slot 正常工作
   const ContextProbe = defineComponent({
     name: 'ContextProbe',
     setup() {
-      const { host } = useSparkComponent({ type: 'probe-field' })
+      const { sparkConsume } = useSparkComponent({ type: 'probe-field' })
+      const marker = sparkConsume(DIALOG_BRIDGE_MARKER) as string | null
       return () => h('div', {
         class: 'context-probe',
-        'data-parent-type': host.type ?? '',
+        'data-connected': marker ?? 'none',
       }, 'probe')
     },
   })
@@ -255,24 +261,29 @@ describe('Direct Vue children bridge (dialog / drawer)', () => {
   }
 
   it('should propagate r-dialog parent context to direct Vue slot children', () => {
-    const wrapper = mountWithSpark(RendererDialog, {
-      props: { title: '对话框', value: true },
-      slots: {
-        default: () => h(ContextProbe),
+    // OuterProvider 注入标记能力，验证 RendererDialog slot 子组件能透过上下文链消费到
+    const OuterProvider = defineComponent({
+      setup() {
+        const { sparkProvide } = useSparkComponent({ type: 'outer-provider' })
+        sparkProvide(DIALOG_BRIDGE_MARKER, 'connected')
+        return () => h(RendererDialog as any, { title: '对话框', value: true }, { default: () => h(ContextProbe) })
       },
     })
+    const wrapper = mountWithSpark(OuterProvider, {})
 
-    expect(wrapper.find('.context-probe').attributes('data-parent-type')).toBe('r-dialog')
+    expect(wrapper.find('.context-probe').attributes('data-connected')).toBe('connected')
   })
 
   it('should propagate r-drawer parent context to direct Vue slot children', () => {
-    const wrapper = mountWithSpark(RendererDrawer, {
-      props: { title: '抽屉', value: true },
-      slots: {
-        default: () => h(ContextProbe),
+    const OuterProvider = defineComponent({
+      setup() {
+        const { sparkProvide } = useSparkComponent({ type: 'outer-provider' })
+        sparkProvide(DIALOG_BRIDGE_MARKER, 'connected')
+        return () => h(RendererDrawer as any, { title: '抽屉', value: true }, { default: () => h(ContextProbe) })
       },
     })
+    const wrapper = mountWithSpark(OuterProvider, {})
 
-    expect(wrapper.find('.context-probe').attributes('data-parent-type')).toBe('r-drawer')
+    expect(wrapper.find('.context-probe').attributes('data-connected')).toBe('connected')
   })
 })

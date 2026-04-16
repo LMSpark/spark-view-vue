@@ -17,4 +17,3 @@ export type {
 	RowFragmentNode,
 } from './RendererRowFragment/index.js'
 export { default as RendererFieldScope } from './RendererFieldScope.vue'
-export { default as RendererListItemScope } from './RendererListItemScope.vue'

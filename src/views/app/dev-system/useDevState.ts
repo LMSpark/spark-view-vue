@@ -8,6 +8,7 @@
  */
 import { ref, reactive, computed, shallowRef } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
+import { refreshRoutes } from '@spark-view/spark-app'
 import type { DataSet } from '@spark-view/spark-data'
 import { demoNavRoot } from '@/layout/demo-nav'
 import { canonicalizePageDataJson, canonicalizePageDataValue } from './policies/pageDataJsonSchema'
@@ -1141,6 +1142,7 @@ export function useDevState() {
     const root: AppNavRoot = { title: '', childPlacement: 'header', children: treeData.value }
     try {
       await http.put(getNavApi(), root)
+      await refreshRoutes()
       navDirty.value = false
       addStatus('导航配置已保存', 'success')
     } catch (e) {
@@ -1166,6 +1168,7 @@ export function useDevState() {
     navSaving.value = true
     try {
       await http.put(`${getNavApi()}/nodes/${encodeURIComponent(node.id)}`, patch)
+      await refreshRoutes()
       navDirty.value = false
       addStatus(`节点 ${node.title} 已保存`, 'success')
     } catch (e) {

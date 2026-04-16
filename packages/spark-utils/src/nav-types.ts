@@ -115,8 +115,8 @@ export interface AppNavigation {
   /**
    * 权限模式
    *
-   * - `'none'`（默认）：不控制，任何已认证用户可见
-   * - `'masked'`：可见 + 脱敏，菜单可见但内容按权限脱敏
+   * - `'none'`：不控制，任何已认证用户可见
+   * - `'masked'`（默认）：可见 + 脱敏，菜单可见但内容按权限脱敏
    * - `'invisible'`：不可见，无权用户看不到该节点
    */
   permissionMode?: NavPermissionMode

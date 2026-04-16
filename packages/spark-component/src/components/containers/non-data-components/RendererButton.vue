@@ -53,9 +53,6 @@ const props = withDefaults(defineProps<RButtonProps>(), {
 
 const { isVisible, isDisabled, resolvedProps, host } = useSparkPageComponent(props)
 
-// @spark-design: 沿 parent 链查找最近宿主，子组件不需要知道宿主具体类型
-const nearestHost = host.nearestHost()
-
 const currentNode = computed<SparkNode>(() => ({
   type: props.type,
   props: resolvedProps.value,
@@ -64,11 +61,13 @@ const currentNode = computed<SparkNode>(() => ({
 
 const hasBuiltinAction = computed(() => isBuiltinAction(currentNode.value))
 
-const hostActionDisabled = computed(() =>
-  hasBuiltinAction.value && nearestHost !== null
-    ? nearestHost.isDisabled?.(currentNode.value) ?? false
-    : false,
-)
+// @spark-design: 动态查询最近宿主，确保响应 Host 能力变化（如行操作禁用状态更新）
+// nearestHost 在 Host 能力改变时需要重新查询，不能缓存
+const hostActionDisabled = computed(() => {
+  if (!hasBuiltinAction.value) return false
+  const nearestHost = host.nearestHost()
+  return nearestHost !== null ? nearestHost.isDisabled?.(currentNode.value) ?? false : false
+})
 
 const effectiveDisabled = computed(() => isDisabled.value || hostActionDisabled.value)
 
@@ -83,9 +82,13 @@ const resolved = computed(() => {
   if (props.circle !== undefined) explicit['circle'] = props.circle
   if (props.icon !== undefined) explicit['icon'] = props.icon
   if (props.label !== undefined) explicit['label'] = props.label
-  if (hasBuiltinAction.value && nearestHost?.variant === 'row-action') {
-    if (explicit['buttonSize'] === undefined) explicit['buttonSize'] = 'small'
-    if (explicit['text'] === undefined) explicit['text'] = true
+  // 动态查询最近宿主，确保响应 Host 变体变化
+  if (hasBuiltinAction.value) {
+    const nearestHost = host.nearestHost()
+    if (nearestHost?.variant === 'row-action') {
+      if (explicit['buttonSize'] === undefined) explicit['buttonSize'] = 'small'
+      if (explicit['text'] === undefined) explicit['text'] = true
+    }
   }
   return resolveButtonStyle(props.action, props.template, explicit)
 })
@@ -101,7 +104,10 @@ const resolvedIcon = computed((): Component | null => {
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 
 function handleClick() {
-  if (!hasBuiltinAction.value || nearestHost === null) return
+  if (!hasBuiltinAction.value) return
+  // 动态查询最近宿主，确保获取最新的能力
+  const nearestHost = host.nearestHost()
+  if (nearestHost === null) return
   nearestHost.execute?.(currentNode.value)
 }
 </script>

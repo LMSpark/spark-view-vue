@@ -1,26 +1,30 @@
 <template>
   <div :class="['renderer-detail-layout', `renderer-detail-layout--${toolbarPositionValue}`]">
-    <div v-if="showToolbar" :class="['renderer-detail-toolbar', toolbarClassValue]">
-      <SparkComponentRenderer
-        v-for="(action, index) in visibleToolbarConfigs"
-        :key="nodeId(action) ?? `r-detail-toolbar-${index}`"
-        :config="action"
-      />
-    </div>
+    <RendererHostDataScope v-if="showToolbar" type="r-detail-toolbar-scope" :host="toolbarHost">
+      <div :class="['renderer-detail-toolbar', toolbarClassValue]">
+        <SparkComponentRenderer
+          v-for="(action, index) in visibleToolbarConfigs"
+          :key="nodeId(action) ?? `r-detail-toolbar-${index}`"
+          :config="action"
+        />
+      </div>
+    </RendererHostDataScope>
 
     <div class="renderer-detail-main">
       <div class="renderer-detail" v-bind="detailPropsValue" :style="detailAlignStyle">
-        <div class="renderer-detail-grid" :style="gridStyle">
-          <div
-            v-for="(child, index) in gridChildren"
-            :key="nodeId(child) ?? `r-detail-child-${index}`"
-            class="renderer-detail-grid-item"
-            :style="getChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
+        <RendererHostDataScope type="r-detail-field-scope" :host="fieldHost">
+          <div class="renderer-detail-grid" :style="gridStyle">
+            <div
+              v-for="(child, index) in gridChildren"
+              :key="nodeId(child) ?? `r-detail-child-${index}`"
+              class="renderer-detail-grid-item"
+              :style="getChildGridStyle(child)"
+            >
+              <SparkComponentRenderer :config="child" />
+            </div>
+            <slot v-bind="getDefaultSlotScope()" />
           </div>
-          <slot v-bind="getDefaultSlotScope()" />
-        </div>
+        </RendererHostDataScope>
       </div>
     </div>
   </div>
@@ -46,8 +50,10 @@ import { computed, type StyleValue } from 'vue'
 import { nodeId } from '../../../internal'
 import type { RDetailProps } from './RendererDetail.props'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
+import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'
+import type { SparkComponentHost, SparkNode } from '../../../internal'
 
 const props = withDefaults(defineProps<RDetailProps>(), {
   type: 'r-detail',
@@ -66,6 +72,8 @@ const detailAlignStyle = computed<StyleValue>(() => ({
 
 const {
   registerApi,
+  logger,
+  pageService,
   resolvedView,
   gridChildren,
   gridStyle,
@@ -90,13 +98,36 @@ const {
 
 // ── r-detail 包装 API ────────────────────────────────────────────────────
 
-const { detailApi }: { detailApi: RendererDetailApi } = createRendererDetailZeroCode({
+const {
+  detailApi,
+  isBuiltinActionDisabled,
+  handleBuiltinToolbarAction,
+}: {
+  detailApi: RendererDetailApi
+  isBuiltinActionDisabled: (action: SparkNode) => boolean
+  handleBuiltinToolbarAction: (action: SparkNode) => void
+} = createRendererDetailZeroCode({
   props,
   resolvedView,
   detailData,
+  pageService,
+  logger,
 })
 
 registerApi(detailApi)
+
+const toolbarHost: SparkComponentHost = {
+  isDisabled(action) {
+    return isBuiltinActionDisabled(action)
+  },
+  execute(action) {
+    handleBuiltinToolbarAction(action)
+  },
+}
+
+const fieldHost: SparkComponentHost = {
+  fieldMode: 'detail',
+}
 </script>
 
 <style scoped>

@@ -1,14 +1,14 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <RendererHostScope v-if="showToolbar" :host="toolbarHost">
+    <RendererHostDataScope v-if="showToolbar" type="r-table-toolbar-scope" :host="toolbarHost">
       <RendererToolbar
         type="r-toolbar"
         :class="['renderer-table-toolbar', toolbarClassValue]"
         v-bind="toolbarComponentProps"
         :children="visibleToolbarConfigs"
       />
-    </RendererHostScope>
+    </RendererHostDataScope>
 
     <!-- 过滤区 -->
     <RendererFilter
@@ -47,21 +47,23 @@
           3. 行操作列（左右）
         -->
         <!-- 行操作列（左） -->
-        <RendererActionHost
+        <el-table-column
           v-if="showRowActionsLeftValue"
-          host-tag="el-table-column"
-          :host-attrs="rowActionColumnAttrs"
-          :resolve-actions="getScopedRowActionConfigs"
-          :resolve-row="getScopedRowActionRow"
-          :resolve-host="getScopedRowActionHost"
-          :resolve-slot-scope="getScopedRowActionSlotScope"
-          action-key-prefix="r-table-row-action"
-          :wrapper-class="['renderer-table-row-actions', rowActionsClassValue]"
+          v-bind="rowActionColumnAttrs"
         >
-          <template #actions="scope">
-            <slot name="row-actions" v-bind="scope" />
+          <template #default="scope">
+            <div :class="['renderer-table-row-actions', rowActionsClassValue]">
+              <RendererHostDataScope
+                type="r-table-row-action-scope"
+                :children="getScopedRowActionConfigs(scope)"
+                :row="getScopedRowActionRow(scope)"
+                :host="getScopedRowActionHost(scope)"
+                child-key-prefix="r-table-row-action"
+              />
+              <slot name="row-actions" v-bind="getScopedRowActionSlotScope(scope)" />
+            </div>
           </template>
-        </RendererActionHost>
+        </el-table-column>
 
         <!-- 主数据列：直接按绑定层整理后的 children 配置渲染 -->
         <SparkComponentRenderer
@@ -74,21 +76,23 @@
         <slot />
 
         <!-- 行操作列（右） -->
-        <RendererActionHost
+        <el-table-column
           v-if="showRowActionsRightValue"
-          host-tag="el-table-column"
-          :host-attrs="rowActionColumnAttrs"
-          :resolve-actions="getScopedRowActionConfigs"
-          :resolve-row="getScopedRowActionRow"
-          :resolve-host="getScopedRowActionHost"
-          :resolve-slot-scope="getScopedRowActionSlotScope"
-          action-key-prefix="r-table-row-action"
-          :wrapper-class="['renderer-table-row-actions', rowActionsClassValue]"
+          v-bind="rowActionColumnAttrs"
         >
-          <template #actions="scope">
-            <slot name="row-actions" v-bind="scope" />
+          <template #default="scope">
+            <div :class="['renderer-table-row-actions', rowActionsClassValue]">
+              <RendererHostDataScope
+                type="r-table-row-action-scope"
+                :children="getScopedRowActionConfigs(scope)"
+                :row="getScopedRowActionRow(scope)"
+                :host="getScopedRowActionHost(scope)"
+                child-key-prefix="r-table-row-action"
+              />
+              <slot name="row-actions" v-bind="getScopedRowActionSlotScope(scope)" />
+            </div>
           </template>
-        </RendererActionHost>
+        </el-table-column>
       </el-table>
     </div>
   </div>
@@ -130,7 +134,6 @@ import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
 import { useRendererTableViewState } from './view-state'
-import RendererActionHost from '../../support/RendererActionHost.vue'
 import { mapNodeProps } from '../../support'
 import { useContainerActions, type LateralActionPosition } from '../../useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
@@ -142,7 +145,7 @@ import { useModuleContext } from '../../context/useModuleContext'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
 import type { RendererToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
-import RendererHostScope from '../../support/RendererHostScope.vue'
+import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
 import type { SparkComponentHost } from '../../../internal'
 

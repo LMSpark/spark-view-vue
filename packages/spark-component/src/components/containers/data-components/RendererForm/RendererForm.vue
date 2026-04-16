@@ -1,26 +1,28 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" :host="toolbarHost">
+    <RendererHostDataScope v-if="showToolbar" type="r-form-toolbar-scope" :host="toolbarHost">
       <div :class="['renderer-form-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
         </template>
       </div>
-    </RendererHostScope>
+    </RendererHostDataScope>
 
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
-        <div class="renderer-form-grid" :style="gridStyle">
-          <div
-            v-for="(child, index) in gridChildren"
-            :key="nodeId(child) ?? `r-form-child-${index}`"
-            class="renderer-form-grid-item"
-            :style="getChildGridStyle(child)"
-          >
-            <SparkComponentRenderer :config="child" />
+        <RendererHostDataScope type="r-form-field-scope" :host="fieldHost">
+          <div class="renderer-form-grid" :style="gridStyle">
+            <div
+              v-for="(child, index) in gridChildren"
+              :key="nodeId(child) ?? `r-form-child-${index}`"
+              class="renderer-form-grid-item"
+              :style="getChildGridStyle(child)"
+            >
+              <SparkComponentRenderer :config="child" />
+            </div>
+            <slot v-bind="getDefaultSlotScope()" />
           </div>
-          <slot v-bind="getDefaultSlotScope()" />
-        </div>
+        </RendererHostDataScope>
       </el-form>
     </div>
   </div>
@@ -46,7 +48,7 @@ import { SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
 import { useFormDetailContainer } from '../../context/useFormDetailContainer'
-import RendererHostScope from '../../support/RendererHostScope.vue'
+import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
 import type { SparkComponentHost } from '../../../internal'
@@ -114,6 +116,10 @@ const toolbarHost: SparkComponentHost = {
   execute(action) {
     handleBuiltinToolbarAction(action)
   },
+}
+
+const fieldHost: SparkComponentHost = {
+  fieldMode: 'form',
 }
 </script>
 

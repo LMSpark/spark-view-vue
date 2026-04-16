@@ -16,7 +16,6 @@ export interface BeforeRenderContext {
   host?: {
     type: string | null
   } | undefined
-  parentType?: string | null | undefined
 }
 
 export interface BeforeRenderState {

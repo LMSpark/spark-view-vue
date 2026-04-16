@@ -22,17 +22,19 @@
       </div>
     </template>
 
-    <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
-      <div
-        v-for="(child, index) in gridChildren"
-        :key="nodeId(child) ?? `r-drawer-child-${index}`"
-        class="renderer-drawer-grid-item"
-        :style="getChildGridStyle(child)"
-      >
-        <SparkComponentRenderer :config="child" />
+    <RendererHostDataScope type="r-drawer-field-scope" :host="drawerFieldHost">
+      <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
+        <div
+          v-for="(child, index) in gridChildren"
+          :key="nodeId(child) ?? `r-drawer-child-${index}`"
+          class="renderer-drawer-grid-item"
+          :style="getChildGridStyle(child)"
+        >
+          <SparkComponentRenderer :config="child" />
+        </div>
+        <slot v-bind="getDefaultSlotScope()" />
       </div>
-      <slot v-bind="getDefaultSlotScope()" />
-    </div>
+    </RendererHostDataScope>
 
     <template v-if="showFooter" #footer>
       <div :class="['renderer-drawer-footer', footerClassValue]">
@@ -59,6 +61,8 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDrawerProps } from './RendererDrawer.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
+import RendererHostDataScope from '../../support/RendererHostDataScope.vue'
+import type { SparkComponentHost } from '../../../internal'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
 
@@ -131,6 +135,10 @@ const {
 })
 
 registerApi(drawerApi)
+
+const drawerFieldHost: SparkComponentHost = {
+  fieldMode: 'detail',
+}
 
 function getHeaderSlotScope() {
   return {

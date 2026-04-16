@@ -250,6 +250,7 @@ const { scopedCss, setScopedCss } = useCssScope({ enableScope: props.enableCssSc
 sparkProvide(CSS_SCOPE, { inject(css: string) { setScopedCss(currentPageId.value, css) } } satisfies PageCssScopeCapability)
 
 // ── 页面权限模式 ──
+// 与导航节点默认语义保持一致：未提供 permissionMode 时默认 'masked'。
 sparkProvide(PAGE_PERMISSION_MODE, (route.meta['permissionMode'] as NavPermissionMode | undefined) ?? 'masked')
 
 // ── DataSet ──

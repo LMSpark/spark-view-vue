@@ -1,0 +1,157 @@
+[
+  {
+    "type": "div",
+    "class": "form-card-test-page",
+    "children": [
+      {
+        "type": "h2",
+        "children": [
+          "Form + 卡片测试页"
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          "当前页面用于替代 formcreate-api，验证 r-form 与 r-card 基础能力。"
+        ]
+      },
+      {
+        "type": "r-row",
+        "props": {
+          "gutter": 16
+        },
+        "children": [
+          {
+            "type": "r-col",
+            "props": {
+              "span": 14,
+              "xs": 24
+            },
+            "children": [
+              {
+                "type": "r-card",
+                "props": {
+                  "header": "表单测试"
+                },
+                "children": [
+                  {
+                    "type": "r-form",
+                    "props": {
+                      "dataKey": "profile@currentRow",
+                      "labelWidth": "100px"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "name",
+                          "label": "姓名"
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "email",
+                          "label": "邮箱"
+                        }
+                      },
+                      {
+                        "type": "r-select",
+                        "props": {
+                          "field": "role",
+                          "label": "角色",
+                          "options": [
+                            {
+                              "label": "管理员",
+                              "value": "admin"
+                            },
+                            {
+                              "label": "编辑",
+                              "value": "editor"
+                            },
+                            {
+                              "label": "访客",
+                              "value": "guest"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "r-switch",
+                        "props": {
+                          "field": "active",
+                          "label": "启用"
+                        }
+                      },
+                      {
+                        "type": "r-textarea",
+                        "props": {
+                          "field": "note",
+                          "label": "备注",
+                          "rows": 3
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "r-col",
+            "props": {
+              "span": 10,
+              "xs": 24
+            },
+            "children": [
+              {
+                "type": "r-card",
+                "props": {
+                  "header": "卡片测试"
+                },
+                "children": [
+                  {
+                    "type": "r-detail",
+                    "props": {
+                      "dataKey": "profile@currentRow"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "name",
+                          "label": "姓名"
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "email",
+                          "label": "邮箱"
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "role",
+                          "label": "角色"
+                        }
+                      },
+                      {
+                        "type": "r-switch",
+                        "props": {
+                          "field": "active",
+                          "label": "启用"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

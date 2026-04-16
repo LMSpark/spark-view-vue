@@ -14,7 +14,7 @@ import { useFieldContext } from '../packages/spark-component/src/components/fiel
 import { useResolvedFieldContext } from '../packages/spark-component/src/components/fields/context/useResolvedFieldContext'
 import { useSparkComponent } from '../packages/spark-component/src/core/useSparkComponent'
 import type { SparkNode } from '../packages/spark-component/src/core/types'
-import { useDataScope } from '../packages/spark-component/src/components/containers/context/useDataScope'
+import { DATA_ROW } from '../packages/spark-component/src/components/internal'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import type { IDataRow } from '@spark-view/spark-data'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
@@ -60,7 +60,7 @@ function mountFCR(overrides: Record<string, unknown> = {}) {
     type: 'r-column-group',
     model: {},
     fieldName: 'id',
-    parentType: 'r-table',
+    hostType: 'r-table',
     componentProps: {
       displayLabel: 'ID',
       fieldName: 'id',
@@ -189,7 +189,7 @@ describe('useFieldContext attrs 集成传递', () => {
       type: 'r-text',
       model: {},
       fieldName: 'id',
-      parentType: 'r-table',
+      hostType: 'r-table',
       componentProps: {
         label: 'ID',
         width: 80,
@@ -259,7 +259,7 @@ describe('字段宿主解析会考虑中间层', () => {
       type: 'r-slot',
       model: {},
       fieldName: 'id',
-      parentType: 'r-table',
+      hostType: 'r-table',
     })
 
     expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('table')
@@ -273,7 +273,7 @@ describe('字段宿主解析会考虑中间层', () => {
       type: 'r-field-scope',
       model: {},
       fieldName: 'id',
-      parentType: 'r-table',
+      hostType: 'r-table',
     })
 
     expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('table')
@@ -288,7 +288,7 @@ describe('字段宿主解析会考虑中间层', () => {
       type: 'r-list-item',
       model: {},
       fieldName: 'id',
-      parentType: 'r-list',
+      hostType: 'r-list',
     })
 
     expect(wrapper.get('[data-host-context]').attributes('data-host-context')).toBe('detail')
@@ -303,14 +303,11 @@ describe('字段宿主解析会考虑中间层', () => {
         id: String,
       },
       setup(props) {
-        useDataScope({
+        const { sparkProvide } = useSparkComponent({
           type: 'r-field-scope',
-          nodeConfig: {
-            type: 'r-field-scope',
-            ...(props.id !== undefined ? { id: props.id } : {}),
-          },
-          data: computed(() => ({ id: 1 })),
+          ...(props.id !== undefined ? { id: props.id } : {}),
         })
+        sparkProvide(DATA_ROW, { id: 1 } as IDataRow)
 
         return () => h('div', { class: 'scope-comp' }, 'scope')
       },

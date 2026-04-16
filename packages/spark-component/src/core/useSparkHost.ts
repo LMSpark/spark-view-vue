@@ -1,26 +1,15 @@
-import { computed, type ComputedRef } from 'vue'
 import type { SparkCapabilityContext } from './types.js'
-import { useSparkComponent, useSparkConsume } from './useSparkComponent.js'
-import type { UseSparkCapabilityReaderReturn, UseSparkComponentOptions, UseSparkComponentReturn } from './useSparkComponent.js'
-import type { SparkCapabilityConsumer } from './capabilities.js'
+import { useSparkComponent } from './useSparkComponent.js'
+import type { UseSparkComponentOptions, UseSparkComponentReturn } from './useSparkComponent.js'
 
-export interface SparkHostResolverOptions<T extends string = string> {
+interface SparkHostResolverOptions<T extends string = string> {
   hostTypes?: readonly T[]
 }
 
-export interface ResolvedSparkHost<T extends string = string> {
+interface ResolvedSparkHost<T extends string = string> {
   hostType: T | null
   hostContext: SparkCapabilityContext | null
 }
-
-export interface UseSparkHostReturn<T extends string = string> {
-  host: ComputedRef<UseSparkCapabilityReaderReturn['host']>
-  hostType: ComputedRef<T | null>
-  hostContext: ComputedRef<SparkCapabilityContext | null>
-  sparkConsume: SparkCapabilityConsumer
-}
-
-export type UseSparkHostScopeReturn = UseSparkComponentReturn
 
 function normalizeHostType<T extends string>(
   type: string,
@@ -60,24 +49,9 @@ export function resolveSparkHost<T extends string = string>(
   }
 }
 
-export function useSparkHost<T extends string = string>(
-  options: SparkHostResolverOptions<T> = {},
-): UseSparkHostReturn<T> {
-  const { host, sparkConsume } = useSparkConsume()
-
-  const resolvedHost = computed(() => resolveSparkHost(host.type, host.context, options))
-
-  return {
-    host: computed(() => host),
-    hostType: computed(() => resolvedHost.value.hostType),
-    hostContext: computed(() => resolvedHost.value.hostContext),
-    sparkConsume,
-  }
-}
-
 export function useSparkHostScope(
   type: string,
   options?: UseSparkComponentOptions,
-): UseSparkHostScopeReturn {
+): UseSparkComponentReturn {
   return useSparkComponent({ type }, options)
 }

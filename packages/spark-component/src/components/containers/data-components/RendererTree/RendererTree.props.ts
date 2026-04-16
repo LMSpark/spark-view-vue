@@ -4,7 +4,7 @@ import type {
   SparkNodeProps,
 } from '../../../shared-types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
-import type { ActionsNode } from '../../support/RendererActionHost.types'
+import type { ActionsNode } from '../../support/RendererActions.types'
 import type { EditorNode } from '../../RendererEditor.types'
 import type { TreeEventHandler } from './zero-code'
 

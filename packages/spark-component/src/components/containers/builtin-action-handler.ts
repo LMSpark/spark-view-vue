@@ -2,7 +2,7 @@
  * 内置声明式动作系统 — 执行处理器工厂
  *
  * 容器组件通过 createBuiltinActionHandler 构建绑定上下文后,
- * 将 handleToolbar / handleRow 交由 RendererHostScope 分发给子动作按钮。
+ * 将 handleToolbar / handleRow 交由 RendererHostDataScope 分发给子动作按钮。
  */
 
 import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'
@@ -267,6 +267,268 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
     return await pageService.showConfirm(message, title, { type })
   }
 
+  async function executeDeleteAction(
+    view: DataView,
+    row: IDataRow,
+    propsMap: Record<string, unknown>,
+    idField: string,
+  ): Promise<void> {
+    const rowLabel = resolveRowLabel(row, idField)
+    const allowed = await confirmAction(propsMap, `确认删除 ${rowLabel} 吗？`, '删除确认')
+    if (!allowed) return
+
+    const id = resolveRowId(row, idField)
+    if (id === null) {
+      notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
+      return
+    }
+
+    const deleteResult = await view.removeRow(id)
+    if (isCrudSuccess(deleteResult)) {
+      notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已删除 ${rowLabel}`))
+      return
+    }
+
+    notifyAction(
+      propsMap,
+      'warning',
+      isCrudResult(deleteResult)
+        ? getCrudErrorMessage(deleteResult, resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除'))
+        : resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除')
+    )
+  }
+
+  function getScopeRowOrWarn(scope: BuiltinActionScope | undefined, propsMap: Record<string, unknown>): IDataRow | null {
+    const row = scope?.row
+    if (!row) {
+      notifyAction(propsMap, 'warning', '当前行不可用')
+      return null
+    }
+    return row
+  }
+
+  function getCurrentRowOrWarn(view: DataView, propsMap: Record<string, unknown>): IDataRow | null {
+    const row = view.currentRow
+    if (!row) {
+      notifyAction(propsMap, 'warning', '请先选择当前行')
+      return null
+    }
+    return row
+  }
+
+  function getSelectedRowsOrWarn(view: DataView, propsMap: Record<string, unknown>): IDataRow[] | null {
+    const selectedRows = getSelectedRows(view)
+    if (selectedRows.length === 0) {
+      notifyAction(propsMap, 'warning', '请先勾选记录')
+      return null
+    }
+    return selectedRows
+  }
+
+  async function executeSelectedRowsAction(
+    rows: readonly IDataRow[],
+    propsMap: Record<string, unknown>,
+    executeRow: (row: IDataRow) => Promise<boolean>,
+    successMessage: (count: number) => string,
+    failureMessage: string,
+  ): Promise<void> {
+    let affected = 0
+    for (const row of rows) {
+      if (await executeRow(row)) {
+        affected += 1
+      }
+    }
+    if (affected > 0) {
+      notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', successMessage(affected)))
+      return
+    }
+    notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', failureMessage))
+  }
+
+  async function executeSelectedRowsByIdAction(
+    view: DataView,
+    rows: readonly IDataRow[],
+    propsMap: Record<string, unknown>,
+    idField: string,
+    executeById: (id: string | number) => Promise<boolean>,
+    successMessage: (count: number) => string,
+    failureMessage: string,
+  ): Promise<void> {
+    await executeSelectedRowsAction(
+      rows,
+      propsMap,
+      async (row) => {
+        const id = resolveRowId(row, idField)
+        if (id === null) return false
+        return await executeById(id)
+      },
+      successMessage,
+      failureMessage,
+    )
+  }
+
+  async function executeAppendAction(
+    view: DataView,
+    payload: Record<string, unknown>,
+    propsMap: Record<string, unknown>,
+    idField: string,
+  ): Promise<void> {
+    if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
+      payload[idField] = inferNextRowId(view, idField)
+    }
+    const appendResult = await view.addRow(payload as IDataRow)
+    if (isCrudResult(appendResult) && !appendResult.success) {
+      notifyAction(propsMap, 'warning', getCrudErrorMessage(appendResult, resolveConfiguredText(propsMap, 'failureMessage', '新增失败')))
+      return
+    }
+    setCurrentRowAfterCreate(view, resolveCreatedRow(appendResult), idField, propsMap)
+    notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
+  }
+
+  async function executeMoveAction(
+    view: DataView,
+    row: IDataRow,
+    propsMap: Record<string, unknown>,
+    idField: string,
+  ): Promise<void> {
+    const moved = await executeTreeMove(view, row, propsMap, idField)
+    notifyAction(
+      propsMap,
+      moved ? 'success' : 'warning',
+      resolveConfiguredText(propsMap, moved ? 'successMessage' : 'failureMessage', moved ? '移动成功' : '移动失败')
+    )
+  }
+
+  async function executeUpdateByIdAction(
+    view: DataView,
+    id: string | number,
+    patch: Partial<IDataRow>,
+    propsMap: Record<string, unknown>,
+    successFallback: string,
+    failureFallback: string,
+  ): Promise<void> {
+    const updateResult = await view.editRowById(id, patch)
+    if (isCrudSuccess(updateResult)) {
+      notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', successFallback))
+      return
+    }
+
+    notifyAction(
+      propsMap,
+      'warning',
+      isCrudResult(updateResult)
+        ? getCrudErrorMessage(updateResult, resolveConfiguredText(propsMap, 'failureMessage', failureFallback))
+        : resolveConfiguredText(propsMap, 'failureMessage', failureFallback)
+    )
+  }
+
+  async function executePatchAction(
+    view: DataView,
+    row: IDataRow,
+    propsMap: Record<string, unknown>,
+    idField: string,
+  ): Promise<void> {
+    const id = resolveRowId(row, idField)
+    if (id === null) {
+      notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
+      return
+    }
+
+    const patch = resolvePatch(propsMap)
+    if (Object.keys(patch).length === 0) {
+      notifyAction(propsMap, 'warning', '缺少 patch/field 配置，无法更新')
+      return
+    }
+    await executeUpdateByIdAction(view, id, patch, propsMap, '更新成功', '更新失败：记录不存在或已删除')
+  }
+
+  function executeMessageAction(row: IDataRow, propsMap: Record<string, unknown>): void {
+    notifyAction(propsMap, readMessageType(propsMap['messageType']), formatRowMessage(row, propsMap))
+  }
+
+  function resolveRowIdOrWarn(
+    row: IDataRow,
+    propsMap: Record<string, unknown>,
+    idField: string,
+  ): string | number | null {
+    const id = resolveRowId(row, idField)
+    if (id === null) {
+      notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
+      return null
+    }
+    return id
+  }
+
+  function resolveEditRowAndIdOrWarn(
+    view: DataView,
+    scope: BuiltinActionScope | undefined,
+    propsMap: Record<string, unknown>,
+    idField: string,
+  ): { row: IDataRow; id: string | number } | null {
+    const row = resolveEditTargetRow(view, scope, propsMap)
+    if (!row) {
+      notifyAction(propsMap, 'warning', '请先选择当前行')
+      return null
+    }
+    const id = resolveRowIdOrWarn(row, propsMap, idField)
+    if (id === null) return null
+    return { row, id }
+  }
+
+  function resolveCurrentRowAndIdOrWarn(
+    view: DataView,
+    propsMap: Record<string, unknown>,
+    idField: string,
+  ): { row: IDataRow; id: string | number } | null {
+    const row = getCurrentRowOrWarn(view, propsMap)
+    if (!row) return null
+    const id = resolveRowIdOrWarn(row, propsMap, idField)
+    if (id === null) return null
+    return { row, id }
+  }
+
+  function resolvePromptFieldOrWarn(propsMap: Record<string, unknown>): string | null {
+    const field = readString(propsMap['field'])
+    if (!field) {
+      notifyAction(propsMap, 'warning', '缺少 field 配置')
+      return null
+    }
+    return field
+  }
+
+  function resolvePromptMessageAndTitle(
+    propsMap: Record<string, unknown>,
+    field: string,
+    fallbackTitle: string,
+  ): { message: string; title: string } {
+    const message = readString(propsMap['promptMessage']) ?? `请输入${readString(propsMap['label']) ?? field}`
+    const title = readString(propsMap['promptTitle']) ?? fallbackTitle
+    return { message, title }
+  }
+
+  function resolvePromptOptions(
+    propsMap: Record<string, unknown>,
+    options?: { defaultValue?: string; useConfiguredDefaultValue?: boolean },
+  ): { defaultValue?: string; placeholder?: string } {
+    const promptOptions: { defaultValue?: string; placeholder?: string } = {}
+
+    if (options?.defaultValue !== undefined) {
+      promptOptions.defaultValue = options.defaultValue
+    } else if (options?.useConfiguredDefaultValue === true) {
+      const configuredDefaultValue = readString(propsMap['defaultValue'])
+      if (configuredDefaultValue !== undefined) {
+        promptOptions.defaultValue = configuredDefaultValue
+      }
+    }
+
+    const placeholder = readString(propsMap['placeholder'])
+    if (placeholder !== undefined) {
+      promptOptions.placeholder = placeholder
+    }
+
+    return promptOptions
+  }
+
   async function execute(action: SparkNode, scope?: BuiltinActionScope): Promise<void> {
     const actionName = getBuiltinActionName(action)
     if (!actionName) return
@@ -284,88 +546,38 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
       switch (actionName) {
         case 'append-row': {
           const payload = applyScopeRowAppendPayload({ ...(asRecord(propsMap['appendPayload']) ?? {}) }, scope, propsMap)
-          if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
-            payload[idField] = inferNextRowId(view, idField)
-          }
-          const appendResult = await view.addRow(payload as IDataRow)
-          if (isCrudResult(appendResult) && !appendResult.success) {
-            notifyAction(propsMap, 'warning', getCrudErrorMessage(appendResult, resolveConfiguredText(propsMap, 'failureMessage', '新增失败')))
-            return
-          }
-          setCurrentRowAfterCreate(view, resolveCreatedRow(appendResult), idField, propsMap)
-          notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
+          await executeAppendAction(view, payload, propsMap, idField)
           return
         }
         case 'prompt-append': {
           const pageService = ctx.getPageService()
           if (!pageService) return
-          const field = readString(propsMap['field'])
-          if (!field) {
-            notifyAction(propsMap, 'warning', '缺少 field 配置')
-            return
-          }
-          const promptMsg = readString(propsMap['promptMessage']) ?? `请输入${readString(propsMap['label']) ?? field}`
-          const promptTitle = readString(propsMap['promptTitle']) ?? '新增'
-          const promptOpts: { defaultValue?: string; placeholder?: string } = {}
-          const dv = readString(propsMap['defaultValue'])
-          if (dv !== undefined) promptOpts.defaultValue = dv
-          const ph = readString(propsMap['placeholder'])
-          if (ph !== undefined) promptOpts.placeholder = ph
-          const result = await pageService.showPrompt(promptMsg, promptTitle, promptOpts)
+          const field = resolvePromptFieldOrWarn(propsMap)
+          if (!field) return
+          const prompt = resolvePromptMessageAndTitle(propsMap, field, '新增')
+          const promptOpts = resolvePromptOptions(propsMap, { useConfiguredDefaultValue: true })
+          const result = await pageService.showPrompt(prompt.message, prompt.title, promptOpts)
           if (result === null) return
           const appendPayload = applyScopeRowAppendPayload({ ...(asRecord(propsMap['appendPayload']) ?? {}) }, scope, propsMap)
           appendPayload[field] = result
-          if (!(idField in appendPayload) || appendPayload[idField] === undefined || appendPayload[idField] === null) {
-            appendPayload[idField] = inferNextRowId(view, idField)
-          }
-          const appendResult = await view.addRow(appendPayload as IDataRow)
-          if (isCrudResult(appendResult) && !appendResult.success) {
-            notifyAction(propsMap, 'warning', getCrudErrorMessage(appendResult, resolveConfiguredText(propsMap, 'failureMessage', '新增失败')))
-            return
-          }
-          setCurrentRowAfterCreate(view, resolveCreatedRow(appendResult), idField, propsMap)
-          notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '新增成功'))
+          await executeAppendAction(view, appendPayload, propsMap, idField)
           return
         }
         case 'prompt-edit': {
           const pageService = ctx.getPageService()
           if (!pageService) return
-          const row = resolveEditTargetRow(view, scope, propsMap)
-          if (!row) {
-            notifyAction(propsMap, 'warning', '请先选择当前行')
-            return
-          }
-          const field = readString(propsMap['field'])
-          if (!field) {
-            notifyAction(propsMap, 'warning', '缺少 field 配置')
-            return
-          }
-          const id = resolveRowId(row, idField)
-          if (id === null) {
-            notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
-            return
-          }
+          const target = resolveEditRowAndIdOrWarn(view, scope, propsMap, idField)
+          if (!target) return
+          const { row, id } = target
+          const field = resolvePromptFieldOrWarn(propsMap)
+          if (!field) return
           const currentVal = row[field]
           const defaultVal = typeof currentVal === 'string' ? currentVal : (typeof currentVal === 'number' ? String(currentVal) : '')
-          const editMsg = readString(propsMap['promptMessage']) ?? `请输入${readString(propsMap['label']) ?? field}`
-          const editTitle = readString(propsMap['promptTitle']) ?? '编辑'
-          const editOpts: { defaultValue?: string; placeholder?: string } = { defaultValue: defaultVal }
-          const editPh = readString(propsMap['placeholder'])
-          if (editPh !== undefined) editOpts.placeholder = editPh
-          const result = await pageService.showPrompt(editMsg, editTitle, editOpts)
+          const prompt = resolvePromptMessageAndTitle(propsMap, field, '编辑')
+          const editOpts = resolvePromptOptions(propsMap, { defaultValue: defaultVal })
+          const result = await pageService.showPrompt(prompt.message, prompt.title, editOpts)
           if (result === null) return
-          const updateResult = await view.editRowById(id, { [field]: result })
-          if (isCrudSuccess(updateResult)) {
-            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '更新成功'))
-            return
-          }
-          notifyAction(
-            propsMap,
-            'warning',
-            isCrudResult(updateResult)
-              ? getCrudErrorMessage(updateResult, resolveConfiguredText(propsMap, 'failureMessage', '更新失败'))
-              : resolveConfiguredText(propsMap, 'failureMessage', '更新失败')
-          )
+          await executeUpdateByIdAction(view, id, { [field]: result }, propsMap, '更新成功', '更新失败')
           return
         }
         case 'submit-current-form': {
@@ -374,16 +586,15 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             notifyAction(propsMap, 'warning', readString(propsMap['emptyMessage']) ?? '表单 API 未就绪')
             return
           }
-          const row = formApi.getCurrentRow() ?? view.currentRow
-          if (!row) {
-            notifyAction(propsMap, 'warning', '请先选择当前行')
-            return
-          }
-          const id = resolveRowId(row, idField)
-          if (id === null) {
-            notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
-            return
-          }
+          const formRow = formApi.getCurrentRow()
+          const target = formRow
+            ? (() => {
+                const formId = resolveRowIdOrWarn(formRow, propsMap, idField)
+                return formId === null ? null : { row: formRow, id: formId }
+              })()
+            : resolveCurrentRowAndIdOrWarn(view, propsMap, idField)
+          if (!target) return
+          const { id } = target
           if (typeof formApi.validate === 'function') {
             const valid = await formApi.validate()
             if (!valid) {
@@ -396,18 +607,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             notifyAction(propsMap, 'warning', '当前表单数据不可用')
             return
           }
-          const patchResult = await view.editRowById(id, draft)
-          if (isCrudSuccess(patchResult)) {
-            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '保存成功'))
-            return
-          }
-          notifyAction(
-            propsMap,
-            'warning',
-            isCrudResult(patchResult)
-              ? getCrudErrorMessage(patchResult, resolveConfiguredText(propsMap, 'failureMessage', '保存失败'))
-              : resolveConfiguredText(propsMap, 'failureMessage', '保存失败')
-          )
+          await executeUpdateByIdAction(view, id, draft, propsMap, '保存成功', '保存失败')
           return
         }
         case 'refresh': {
@@ -427,212 +627,92 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           return
         }
         case 'move-row': {
-          const row = scope?.row
-          if (!row) {
-            notifyAction(propsMap, 'warning', '当前行不可用')
-            return
-          }
-          const moved = await executeTreeMove(view, row, propsMap, idField)
-          notifyAction(
-            propsMap,
-            moved ? 'success' : 'warning',
-            resolveConfiguredText(propsMap, moved ? 'successMessage' : 'failureMessage', moved ? '移动成功' : '移动失败')
-          )
+          const row = getScopeRowOrWarn(scope, propsMap)
+          if (!row) return
+          await executeMoveAction(view, row, propsMap, idField)
           return
         }
         case 'move-current': {
-          const row = view.currentRow
-          if (!row) {
-            notifyAction(propsMap, 'warning', '请先选择当前行')
-            return
-          }
-          const moved = await executeTreeMove(view, row, propsMap, idField)
-          notifyAction(
-            propsMap,
-            moved ? 'success' : 'warning',
-            resolveConfiguredText(propsMap, moved ? 'successMessage' : 'failureMessage', moved ? '移动成功' : '移动失败')
-          )
+          const row = getCurrentRowOrWarn(view, propsMap)
+          if (!row) return
+          await executeMoveAction(view, row, propsMap, idField)
           return
         }
         case 'delete-row': {
-          const row = scope?.row
-          if (!row) {
-            notifyAction(propsMap, 'warning', '当前行不可用')
-            return
-          }
-          const rowLabel = resolveRowLabel(row, idField)
-          const allowed = await confirmAction(propsMap, `确认删除 ${rowLabel} 吗？`, '删除确认')
-          if (!allowed) return
-          const id = resolveRowId(row, idField)
-          if (id === null) {
-            notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
-            return
-          }
-          const deleteResult = await view.removeRow(id)
-          if (isCrudSuccess(deleteResult)) {
-            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已删除 ${rowLabel}`))
-            return
-          }
-          notifyAction(
-            propsMap,
-            'warning',
-            isCrudResult(deleteResult)
-              ? getCrudErrorMessage(deleteResult, resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除'))
-              : resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除')
-          )
+          const row = getScopeRowOrWarn(scope, propsMap)
+          if (!row) return
+          await executeDeleteAction(view, row, propsMap, idField)
           return
         }
         case 'delete-current': {
-          const row = view.currentRow
-          if (!row) {
-            notifyAction(propsMap, 'warning', '请先选择当前行')
-            return
-          }
-          const rowLabel = resolveRowLabel(row, idField)
-          const allowed = await confirmAction(propsMap, `确认删除 ${rowLabel} 吗？`, '删除确认')
-          if (!allowed) return
-          const id = resolveRowId(row, idField)
-          if (id === null) {
-            notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
-            return
-          }
-          const deleteResult = await view.removeRow(id)
-          if (isCrudSuccess(deleteResult)) {
-            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已删除 ${rowLabel}`))
-            return
-          }
-          notifyAction(
-            propsMap,
-            'warning',
-            isCrudResult(deleteResult)
-              ? getCrudErrorMessage(deleteResult, resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除'))
-              : resolveConfiguredText(propsMap, 'failureMessage', '删除失败：记录不存在或已删除')
-          )
+          const row = getCurrentRowOrWarn(view, propsMap)
+          if (!row) return
+          await executeDeleteAction(view, row, propsMap, idField)
           return
         }
         case 'delete-selected': {
-          const selectedRows = getSelectedRows(view)
-          if (selectedRows.length === 0) {
-            notifyAction(propsMap, 'warning', '请先勾选记录')
-            return
-          }
+          const selectedRows = getSelectedRowsOrWarn(view, propsMap)
+          if (!selectedRows) return
           const allowed = await confirmAction(propsMap, `确认删除已勾选的 ${selectedRows.length} 条记录吗？`, '批量删除确认')
           if (!allowed) return
-          let removed = 0
-          for (const row of [...selectedRows]) {
-            const id = resolveRowId(row, idField)
-            if (id === null) continue
-            const deleteResult = await view.removeRow(id)
-            if (isCrudSuccess(deleteResult)) removed++
-          }
-          if (removed > 0) {
-            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已删除 ${removed} 条记录`))
-            return
-          }
-          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', '未删除任何记录'))
+          await executeSelectedRowsByIdAction(
+            view,
+            selectedRows,
+            propsMap,
+            idField,
+            async (id) => {
+              const deleteResult = await view.removeRow(id)
+              return isCrudSuccess(deleteResult)
+            },
+            count => `已删除 ${count} 条记录`,
+            '未删除任何记录'
+          )
           return
         }
         case 'patch-row': {
-          const row = scope?.row
-          if (!row) {
-            notifyAction(propsMap, 'warning', '当前行不可用')
-            return
-          }
-          const id = resolveRowId(row, idField)
-          if (id === null) {
-            notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
-            return
-          }
-          const patch = resolvePatch(propsMap)
-          if (Object.keys(patch).length === 0) {
-            notifyAction(propsMap, 'warning', '缺少 patch/field 配置，无法更新')
-            return
-          }
-          const patchResult = await view.editRowById(id, patch)
-          if (isCrudSuccess(patchResult)) {
-            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '更新成功'))
-            return
-          }
-          notifyAction(
-            propsMap,
-            'warning',
-            isCrudResult(patchResult)
-              ? getCrudErrorMessage(patchResult, resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除'))
-              : resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除')
-          )
+          const row = getScopeRowOrWarn(scope, propsMap)
+          if (!row) return
+          await executePatchAction(view, row, propsMap, idField)
           return
         }
         case 'patch-current': {
-          const row = view.currentRow
-          if (!row) {
-            notifyAction(propsMap, 'warning', '请先选择当前行')
-            return
-          }
-          const id = resolveRowId(row, idField)
-          if (id === null) {
-            notifyAction(propsMap, 'error', `当前行缺少主键字段: ${idField}`)
-            return
-          }
-          const patch = resolvePatch(propsMap)
-          if (Object.keys(patch).length === 0) {
-            notifyAction(propsMap, 'warning', '缺少 patch/field 配置，无法更新')
-            return
-          }
-          const patchResult = await view.editRowById(id, patch)
-          if (isCrudSuccess(patchResult)) {
-            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '更新成功'))
-            return
-          }
-          notifyAction(
-            propsMap,
-            'warning',
-            isCrudResult(patchResult)
-              ? getCrudErrorMessage(patchResult, resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除'))
-              : resolveConfiguredText(propsMap, 'failureMessage', '更新失败：记录不存在或已删除')
-          )
+          const row = getCurrentRowOrWarn(view, propsMap)
+          if (!row) return
+          await executePatchAction(view, row, propsMap, idField)
           return
         }
         case 'patch-selected': {
-          const selectedRows = getSelectedRows(view)
-          if (selectedRows.length === 0) {
-            notifyAction(propsMap, 'warning', '请先勾选记录')
-            return
-          }
+          const selectedRows = getSelectedRowsOrWarn(view, propsMap)
+          if (!selectedRows) return
           const patch = resolvePatch(propsMap)
           if (Object.keys(patch).length === 0) {
             notifyAction(propsMap, 'warning', '缺少 patch/field 配置，无法更新')
             return
           }
-          let updated = 0
-          for (const row of selectedRows) {
-            const id = resolveRowId(row, idField)
-            if (id === null) continue
-            const patchResult = await view.editRowById(id, patch)
-            if (isCrudSuccess(patchResult)) updated++
-          }
-          if (updated > 0) {
-            notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', `已更新 ${updated} 条记录`))
-            return
-          }
-          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'failureMessage', '未更新任何记录'))
+          await executeSelectedRowsByIdAction(
+            view,
+            selectedRows,
+            propsMap,
+            idField,
+            async (id) => {
+              const patchResult = await view.editRowById(id, patch)
+              return isCrudSuccess(patchResult)
+            },
+            count => `已更新 ${count} 条记录`,
+            '未更新任何记录'
+          )
           return
         }
         case 'message-row': {
-          const row = scope?.row
-          if (!row) {
-            notifyAction(propsMap, 'warning', '当前行不可用')
-            return
-          }
-          notifyAction(propsMap, readMessageType(propsMap['messageType']), formatRowMessage(row, propsMap))
+          const row = getScopeRowOrWarn(scope, propsMap)
+          if (!row) return
+          executeMessageAction(row, propsMap)
           return
         }
         case 'message-current': {
-          const row = view.currentRow
-          if (!row) {
-            notifyAction(propsMap, 'warning', '请先选择当前行')
-            return
-          }
-          notifyAction(propsMap, readMessageType(propsMap['messageType']), formatRowMessage(row, propsMap))
+          const row = getCurrentRowOrWarn(view, propsMap)
+          if (!row) return
+          executeMessageAction(row, propsMap)
           return
         }
       }

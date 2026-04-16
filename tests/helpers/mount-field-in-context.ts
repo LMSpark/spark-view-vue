@@ -24,7 +24,7 @@ interface MountFieldInContextOptions {
   pageDataSet?: IDataSet | undefined
   dataSource?: unknown
   pageService?: IPageServiceCapability | undefined
-  parentType?: string | undefined
+  hostType?: string | undefined
 }
 
 interface SparkTestSystem {
@@ -32,7 +32,7 @@ interface SparkTestSystem {
   rootContext: SparkCapabilityContext
 }
 
-function resolveFieldModeByParentType(type: string): string {
+function resolveFieldModeByHostType(type: string): string {
   if (type === 'r-table') return 'table'
   if (type === 'r-form' || type === 'r-field-scope') return 'form'
   if (type === 'r-tree') return 'tree'
@@ -50,9 +50,9 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
 
   const Provider = defineComponent({
     setup() {
-      const parentType = options.parentType ?? 'r-form'
-      const { sparkProvide, host } = useSparkComponent({ type: parentType } as SparkNode, { hostContext: rootContext })
-      host.setHost({ fieldMode: resolveFieldModeByParentType(parentType) })
+      const hostType = options.hostType ?? 'r-form'
+      const { sparkProvide, host } = useSparkComponent({ type: hostType } as SparkNode, { hostContext: rootContext })
+      host.setHost({ fieldMode: resolveFieldModeByHostType(hostType) })
       sparkProvide(DATA_ROW, options.model)
 
       if (options.pageDataSet !== undefined) {

@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-15T21:56:32.331Z",
+  "buildTime": "2026-04-16T05:28:33.595Z",
   "componentCount": 107,
   "registry": {
     "containers": [
@@ -321,7 +321,7 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式"
@@ -806,7 +806,7 @@
         },
         {
           "name": "shadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"always\"",
           "description": "阴影显示策略"
@@ -1171,7 +1171,7 @@
         },
         {
           "name": "trigger",
-          "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
+          "type": "\"click\" | \"hover\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式"
@@ -1440,7 +1440,7 @@
         },
         {
           "name": "trigger",
-          "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
+          "type": "\"click\" | \"hover\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。"
@@ -1566,7 +1566,7 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
@@ -4440,6 +4440,13 @@
           "description": "展示标签"
         },
         {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段宽度"
+        },
+        {
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
@@ -4452,13 +4459,6 @@
           "required": false,
           "default": "undefined",
           "description": "组件名称"
-        },
-        {
-          "name": "width",
-          "type": "number | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段宽度"
         },
         {
           "name": "field",
@@ -5971,6 +5971,13 @@
           "description": "展示标签"
         },
         {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段宽度"
+        },
+        {
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
@@ -5983,13 +5990,6 @@
           "required": false,
           "default": "undefined",
           "description": "组件名称"
-        },
-        {
-          "name": "width",
-          "type": "number | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段宽度"
         },
         {
           "name": "field",
@@ -8045,6 +8045,13 @@
           "description": "展示标签"
         },
         {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段宽度"
+        },
+        {
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
@@ -8057,13 +8064,6 @@
           "required": false,
           "default": "undefined",
           "description": "组件名称"
-        },
-        {
-          "name": "width",
-          "type": "number | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段宽度"
         },
         {
           "name": "field",
@@ -9046,7 +9046,7 @@
         },
         "prop_00024": {
           "name": "cardShadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式"
@@ -9340,7 +9340,7 @@
         },
         "prop_00071": {
           "name": "shadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"always\"",
           "description": "阴影显示策略"
@@ -9528,7 +9528,7 @@
         },
         "prop_00101": {
           "name": "trigger",
-          "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
+          "type": "\"click\" | \"hover\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式"
@@ -9729,7 +9729,7 @@
         },
         "prop_00132": {
           "name": "trigger",
-          "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
+          "type": "\"click\" | \"hover\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。"
@@ -9791,7 +9791,7 @@
         },
         "prop_00141": {
           "name": "cardShadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
@@ -11437,25 +11437,25 @@
           "description": "展示标签"
         },
         "prop_00398": {
+          "name": "width",
+          "type": "number | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "字段宽度"
+        },
+        "prop_00399": {
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
           "description": "直接传入的值"
         },
-        "prop_00399": {
+        "prop_00400": {
           "name": "name",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "组件名称"
-        },
-        "prop_00400": {
-          "name": "width",
-          "type": "number | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "字段宽度"
         },
         "prop_00401": {
           "name": "field",

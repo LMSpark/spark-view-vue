@@ -484,7 +484,6 @@ return {
 | `index` | `number` | 行索引或作用域索引 |
 | `dataSource` | `IDataSource \| null` | 当前节点可见的数据源（DataView） |
 | `modelPermission` | `IModelPermission \| undefined` | `dataSource._modelPerm` |
-| `parentType` | `string \| null` | 父容器类型 |
 
 #### 6.4.5 返回值语义
 
