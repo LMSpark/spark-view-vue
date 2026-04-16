@@ -1,4 +1,4 @@
-import type { SparkNode } from '../internal'
+import type { SparkNode } from '../../../internal'
 
 type RuntimeActionConfig = SparkNode & { display?: boolean }
 

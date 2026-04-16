@@ -5,7 +5,7 @@
  */
 
 import type { IDataRow } from '@spark-view/spark-data'
-import type { SparkNode } from '../internal'
+import type { SparkNode } from '../../../internal'
 import { readString, getActionProps } from './builtin-action-helpers'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────

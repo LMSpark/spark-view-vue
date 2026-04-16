@@ -21,3 +21,10 @@ export type { HeaderNode, RendererHeaderConfigProps, RendererHeaderProps } from 
 export type { FooterNode, RendererFooterConfigProps, RendererFooterProps } from './RendererFooter.types.js'
 export type { TailNode, RendererTailConfigProps, RendererTailProps } from './RendererTail.types.js'
 export type { ToolbarPosition } from './layout/useContainerToolbar.js'
+
+export {
+	useContainerActions,
+	useContainerDataSource,
+	useContainerDataSourceEffects,
+} from './composables/index.js'
+export type { LateralActionPosition } from './composables/index.js'

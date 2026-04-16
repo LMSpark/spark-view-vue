@@ -99,11 +99,11 @@ import {
 import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { useContainerActions } from '../../useContainerActions'
+import { useContainerActions } from '../../composables/useContainerActions'
 import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
 import type { SparkComponentHost } from '../../../internal'
 
-import { useContainerDataSource, useContainerDataSourceEffects } from '../../useContainerDataSource'
+import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 

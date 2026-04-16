@@ -7,8 +7,8 @@
 
 import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'
 import type { PageMessageType, IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
-import type { SparkNode } from '../internal'
-import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from './support/crud-result-helpers.js'
+import type { SparkNode } from '../../../internal'
+import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../crud-result-helpers.js'
 import { getBuiltinActionName, getBuiltinActionLabel, type BuiltinActionScope } from './builtin-action-meta'
 import {
   readString,
@@ -346,7 +346,6 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
   }
 
   async function executeSelectedRowsByIdAction(
-    view: DataView,
     rows: readonly IDataRow[],
     propsMap: Record<string, unknown>,
     idField: string,
@@ -656,7 +655,6 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
           const allowed = await confirmAction(propsMap, `确认删除已勾选的 ${selectedRows.length} 条记录吗？`, '批量删除确认')
           if (!allowed) return
           await executeSelectedRowsByIdAction(
-            view,
             selectedRows,
             propsMap,
             idField,
@@ -690,7 +688,6 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
             return
           }
           await executeSelectedRowsByIdAction(
-            view,
             selectedRows,
             propsMap,
             idField,

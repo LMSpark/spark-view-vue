@@ -7,10 +7,10 @@ import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
 import { DATA_ROW } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
-import { useContainerDataSource, useContainerDataSourceEffects } from '../useContainerDataSource'
+import { useContainerDataSource, useContainerDataSourceEffects } from '../composables/useContainerDataSource'
 import { useContainerToolbar } from '../layout/useContainerToolbar'
 import type { ToolbarNode } from '../non-data-components/RendererToolbar.types'
-import { createCurrentRowSlotScope } from '../slotScopeFactories'
+import { createCurrentRowSlotScope } from '../support/slotScopeFactories'
 
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined

@@ -5,9 +5,9 @@
  */
 
 import type { DataView, IDataRow, IDataSource } from '@spark-view/spark-data'
-import type { SparkNode } from '../internal'
-import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../support/beforeRender.js'
-import { extractModelPermission } from '../../permission/index.js'
+import type { SparkNode } from '../../../internal'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../../support/beforeRender.js'
+import { extractModelPermission } from '../../../../permission/index.js'
 import { getBuiltinActionName, type BuiltinActionScope } from './builtin-action-meta'
 import {
   getActionProps,

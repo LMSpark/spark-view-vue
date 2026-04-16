@@ -7,7 +7,7 @@
 
 import type { PageMessageType } from '@spark-view/spark-utils'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import type { SparkNode } from '../internal'
+import type { SparkNode } from '../../../internal'
 
 // ── 值解析 ────────────────────────────────────────────────────────────────
 

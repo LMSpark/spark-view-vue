@@ -1,11 +1,11 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { SparkNode } from '../internal'
+import type { SparkNode } from '../../internal'
 import type { IDataRow, IDataSource, IModelPermission } from '@spark-view/spark-data'
-import { usePermission } from '../../permission/index.js'
-import { isActionDisplayed } from './action-visibility'
-import { isBuiltinAction } from './builtin-action-meta'
-import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../support/beforeRender.js'
+import { usePermission } from '../../../permission/index.js'
+import { isActionDisplayed } from '../support/actions/action-visibility'
+import { isBuiltinAction } from '../support/actions/builtin-action-meta'
+import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 
 export type LateralActionPosition = 'left' | 'right'
 type ListenerMap = Record<string, unknown>
