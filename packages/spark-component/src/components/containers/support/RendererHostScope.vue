@@ -44,6 +44,10 @@ let providedRowMirror = false
 watch(
   () => props.row,
   (newRow) => {
+    // 只有明确传入 row prop 时才提供 DATA_ROW；
+    // 无 row 的纯 host 作用域（如 r-detail 字段区）不应覆盖父级已提供的 DATA_ROW。
+    if (newRow === undefined) return
+
     if (!providedRowMirror) {
       sparkProvide(DATA_ROW, rowMirror)
       providedRowMirror = true

@@ -4,9 +4,9 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 import { DATA_ROW, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import type { IDataRow } from '@spark-view/spark-data'
-import RendererHostRowScope from '../packages/spark-component/src/components/containers/support/RendererHostRowScope.vue'
+import RendererHostScope from '../packages/spark-component/src/components/containers/support/RendererHostScope.vue'
 
-describe('RendererHostRowScope DATA_ROW reactivity', () => {
+describe('RendererHostScope DATA_ROW reactivity', () => {
   it('keeps cached DATA_ROW consumers in sync when row prop changes', async () => {
     const Probe = defineComponent({
       setup() {
@@ -29,7 +29,7 @@ describe('RendererHostRowScope DATA_ROW reactivity', () => {
     const Harness = defineComponent({
       setup() {
         useSparkComponent({ type: 'test-page-root' } as SparkNode)
-        return () => h(RendererHostRowScope, {
+        return () => h(RendererHostScope, {
           row: rowRef.value,
         }, {
           default: () => h(Probe),
