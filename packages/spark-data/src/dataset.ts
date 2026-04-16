@@ -8,9 +8,9 @@
 
 import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, TableRelation, ViewDependency, DependencyType, FilterExpression, IDataRow, DataColumn, ColumnType, ViewChangeHandlers } from './types'
 import { RequestState } from './types'
+import type { DataSetAppServices } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
-import type { IAppServicesCapability } from '@spark-view/spark-utils'
 import {
   commitDataSetSnapshot,
   getDataSetSnapshot,
@@ -285,7 +285,7 @@ export class DataSet implements IDataSet {
     _sharedHttpClient?: HttpClient | undefined
 
   /** @internal 应用能力上下文（用于 URL 模板 tenant/project 占位参数解析） */
-  _appServices?: IAppServicesCapability | undefined
+  _appServices?: DataSetAppServices | undefined
 
   /** @internal 页面路由快照（APP_SERVICES 缺失时的作用域兜底） */
   _pageRoute?: unknown
@@ -382,7 +382,7 @@ export class DataSet implements IDataSet {
     this._sharedHttpClient = client
   }
 
-  setAppServices(appServices: IAppServicesCapability): void {
+  setAppServices(appServices: DataSetAppServices): void {
     this._appServices = appServices
   }
 

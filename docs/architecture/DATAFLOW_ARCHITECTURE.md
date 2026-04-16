@@ -224,8 +224,8 @@ r-row 或 r-cell context
 
 | 键 | 定义包 | 类型 | 提供者 | 消费者 |
 |---|---|---|---|---|
-| `APP_SERVICES` | `spark-utils` | `IAppServicesCapability` | PageRenderer | 任意业务组件 |
-| `PAGE_SERVICE` | `spark-utils` | `IPageServiceCapability` | — | — |
+| `APP_SERVICES` | `spark-component` | `IAppServicesCapability` | PageRenderer | 任意业务组件 |
+| `PAGE_SERVICE` | `spark-component` | `IPageServiceCapability` | — | — |
 | `PAGE_DATASET` | `spark-component` | `IDataSet` | PageRenderer | 表容器 |
 | `DATA_SOURCE` | `spark-component` | `IDataSource` | 表容器 | 行/单元格 |
 
@@ -236,7 +236,7 @@ r-row 或 r-cell context
 ## 8. Logger 体系
 
 ```typescript
-import { APP_SERVICES } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
 
 // 应用层统一 logger（PageRenderer 已自动注入）
 sparkProvide(APP_SERVICES, { logger: appLogger, router })

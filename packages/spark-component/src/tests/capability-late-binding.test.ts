@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-component'
-import { sparkProvide, sparkConsume } from '@spark-view/spark-utils'
+import { Spark, sparkProvide, sparkConsume } from '@spark-view/spark-component'
 
 describe('Capability late-binding', () => {
   it('capability provided on parent should be discoverable from child via sparkConsume', () => {

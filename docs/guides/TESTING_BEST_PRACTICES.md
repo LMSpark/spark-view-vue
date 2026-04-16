@@ -62,12 +62,11 @@ describe('Component Registration', () => {
 
 ## 3. 能力系统测试
 
-使用 `sparkProvide()` / `sparkConsume()` 纯函数（来自 `@spark-view/spark-utils`）测试能力链。
+使用 `sparkProvide()` / `sparkConsume()` 纯函数（来自 `@spark-view/spark-component`）测试能力链。
 
 ```typescript
 import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-component'
-import { sparkProvide, sparkConsume, defineCapability, APP_SERVICES } from '@spark-view/spark-utils'
+import { Spark, sparkProvide, sparkConsume, defineCapability, APP_SERVICES } from '@spark-view/spark-component'
 
 describe('Capability System', () => {
   it('provides and consumes up the parent chain', () => {
@@ -171,7 +170,7 @@ const wrapper = mount(MyComponent, {
 ```typescript
 import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-component'
-import { sparkProvide, sparkConsume, defineCapability } from '@spark-view/spark-utils'
+import { sparkProvide, sparkConsume, defineCapability } from '@spark-view/spark-component'
 
 describe('Component Tree', () => {
   it('creates nested contexts with parent references', () => {

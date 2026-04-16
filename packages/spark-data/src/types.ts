@@ -6,7 +6,27 @@
 
 import type { DataTable } from './data-table'
 import type { DataView as SparkDataView } from './data-view'
-import type { IAppServicesCapability } from '@spark-view/spark-utils'
+import type { LoggerApi } from '@spark-view/spark-utils'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface IEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> {
+  on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
+  off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
+  emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
+  removeAllListeners<K extends string & keyof TEventMap>(event?: K): void
+  listenerCount<K extends string & keyof TEventMap>(event?: K): number
+}
+
+/**
+ * DataSet 用到的应用服务最小形状（避免依赖上层能力体系类型）。
+ */
+export interface DataSetAppServices {
+  router?: {
+    currentRoute: unknown
+  }
+  tenant?: { tenantId: string; tenantName?: string; [key: string]: unknown }
+  logger?: LoggerApi
+}
 
 // ===== 视图变更事件（独立事件模型） =====
 
@@ -1007,7 +1027,7 @@ export interface IDataSet {
   /** 获取数据视图（委托到 DataTable） */
   getView(tableName: string, viewId?: string): SparkDataView | undefined
   /** 注入 APP_SERVICES（用于 URL 模板 tenant/project 作用域解析） */
-  setAppServices(appServices: IAppServicesCapability): void
+  setAppServices(appServices: DataSetAppServices): void
   /** 注入页面路由快照（APP_SERVICES 缺失时用于 URL 模板 tenant/project 作用域解析） */
   setPageRoute(route: unknown): void
   /** 生成端点 URL 模板上下文参数 */

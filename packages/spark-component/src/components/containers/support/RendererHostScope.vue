@@ -19,13 +19,23 @@
  */
 import { computed, shallowReactive, watch } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
-import { DATA_ROW, SparkComponentRenderer, nodeId, useSparkComponent, type SparkComponentHost, type SparkNode } from '../../internal'
+import {
+  ACTION_CAPABILITY,
+  DATA_ROW,
+  SparkComponentRenderer,
+  nodeId,
+  useSparkComponent,
+  type SparkActionCapability,
+  type SparkHostLink,
+  type SparkNode,
+} from '../../internal'
 import { useContainerHostBridge } from '../composables/useContainerHostBridge'
 import { syncReactiveRow } from '../../support/row-mirror-sync'
 
 const props = withDefaults(defineProps<{
   type?: string
-  host?: SparkComponentHost | undefined
+  host?: SparkHostLink | undefined
+  actionHost?: SparkActionCapability | undefined
   row?: IDataRow | undefined
   children?: SparkNode[] | undefined
   childKeyPrefix?: string | undefined
@@ -37,6 +47,24 @@ const { host, sparkProvide } = useSparkComponent({ type: props.type })
 
 const currentHost = computed(() => props.host)
 useContainerHostBridge(host, currentHost)
+
+const currentActionHost = computed(() => props.actionHost)
+const actionHostProxy: SparkActionCapability = {
+  isDisabled(action) {
+    return currentActionHost.value?.isDisabled(action) ?? false
+  },
+  execute(action) {
+    currentActionHost.value?.execute(action)
+  },
+}
+
+watch(
+  currentActionHost,
+  (resolvedActionHost) => {
+    sparkProvide(ACTION_CAPABILITY, resolvedActionHost === undefined ? undefined : actionHostProxy)
+  },
+  { immediate: true },
+)
 
 const rowMirror = shallowReactive<IDataRow>({})
 let providedRowMirror = false

@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { PageSelectableValue } from '@spark-view/spark-utils'
+import type { PageSelectableValue } from '../../../internal'
 import type { FieldOption } from '../../options/index.js'
 import type {
   SparkFieldProps,

@@ -38,7 +38,15 @@
  */
 import { computed, markRaw, type Component } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNode } from '../../internal'
+import {
+  ACTION_CAPABILITY,
+  HOST_VARIANT,
+  SparkComponentRenderer,
+  getSparkNodeChildren,
+  nodeId,
+  useSparkPageComponent,
+  type SparkNode,
+} from '../../internal'
 import { isBuiltinAction } from '../support/actions/builtin-action-meta'
 import { resolveButtonStyle } from '../support/actions/button-templates'
 import type { RButtonProps } from './RendererButton.props'
@@ -51,7 +59,7 @@ const props = withDefaults(defineProps<RButtonProps>(), {
   dark: false,
 })
 
-const { isVisible, isDisabled, resolvedProps, host } = useSparkPageComponent(props)
+const { isVisible, isDisabled, resolvedProps, sparkConsume } = useSparkPageComponent(props)
 
 const currentNode = computed<SparkNode>(() => ({
   type: props.type,
@@ -65,8 +73,8 @@ const hasBuiltinAction = computed(() => isBuiltinAction(currentNode.value))
 // nearestHost 在 Host 能力改变时需要重新查询，不能缓存
 const hostActionDisabled = computed(() => {
   if (!hasBuiltinAction.value) return false
-  const nearestHost = host.nearestHost()
-  return nearestHost !== null ? nearestHost.isDisabled?.(currentNode.value) ?? false : false
+  const actionHost = sparkConsume(ACTION_CAPABILITY)
+  return actionHost !== null ? actionHost.isDisabled(currentNode.value) : false
 })
 
 const effectiveDisabled = computed(() => isDisabled.value || hostActionDisabled.value)
@@ -82,10 +90,9 @@ const resolved = computed(() => {
   if (props.circle !== undefined) explicit['circle'] = props.circle
   if (props.icon !== undefined) explicit['icon'] = props.icon
   if (props.label !== undefined) explicit['label'] = props.label
-  // 动态查询最近宿主，确保响应 Host 变体变化
+  // 动态读取宿主变体能力，确保响应上层语义变化
   if (hasBuiltinAction.value) {
-    const nearestHost = host.nearestHost()
-    if (nearestHost?.variant === 'row-action') {
+    if (sparkConsume(HOST_VARIANT) === 'row-action') {
       if (explicit['buttonSize'] === undefined) explicit['buttonSize'] = 'small'
       if (explicit['text'] === undefined) explicit['text'] = true
     }
@@ -105,10 +112,9 @@ const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 
 function handleClick() {
   if (!hasBuiltinAction.value) return
-  // 动态查询最近宿主，确保获取最新的能力
-  const nearestHost = host.nearestHost()
-  if (nearestHost === null) return
-  nearestHost.execute?.(currentNode.value)
+  const actionHost = sparkConsume(ACTION_CAPABILITY)
+  if (actionHost === null) return
+  actionHost.execute(currentNode.value)
 }
 </script>
 

@@ -7,8 +7,9 @@
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
-import { sparkProvide as rawSparkProvide, normalizeKey, APP_SERVICES } from '@spark-view/spark-utils'
-import type { CapabilityKey, CapabilityTypeMap, LoggerApi } from '@spark-view/spark-utils'
+import { sparkProvide as rawSparkProvide, normalizeKey, APP_SERVICES } from './capability-system.js'
+import type { CapabilityKey, CapabilityTypeMap } from './capability-system.js'
+import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext, SparkNode } from './types.js'
 import { nodeId, nodeInputProp, normalizeSparkNode } from './types.js'
 import { bindCapabilityContextOwner, resolveParentCapabilityContext, unbindCapabilityContextOwner, type SparkRuntimeOwner } from '../internal/capability-context.js'
@@ -18,16 +19,19 @@ import {
   createSparkCapabilityConsumer,
   createSparkCapabilityContext,
   findNearestHost,
+  setHostIdentity,
 } from './capabilities.js'
-import type { PageComponentRegistry, SparkCapabilityConsumer, SparkComponentHost } from './capabilities.js'
+import type { PageComponentRegistry, SparkCapabilityConsumer, SparkHostLink } from './capabilities.js'
 
-// 基础类型：约束当前文件内部的运行时实例。
+// ===== 类型与返回值约定 =====
+
+// 约束当前文件内部使用的 Vue 运行时实例类型，避免到处重复写 ReturnType。
 type RuntimeInstance = ReturnType<typeof getCurrentInstance>
 
 /**
  * 组件上下文完整返回 — 容器 / 字段 / 页面组件的标准上下文入口。
  *
- * `host` 仅暴露 SparkComponentHost 协议，遵循管理权与渲染职责分离：
+ * `host` 仅暴露 SparkHostLink 协议，遵循管理权与渲染职责分离：
  *   - `nearestHost()` — 子组件主动消费，查找最近的已声明宿主（支持链式调用访问更远层级）
  *   - `setHost(host)` — 容器被动声明，仅修改 context.host，不推动子级渲染
  *
@@ -36,8 +40,8 @@ type RuntimeInstance = ReturnType<typeof getCurrentInstance>
  */
 export interface UseSparkComponentReturn {
   host: {
-    nearestHost(): SparkComponentHost | null
-    setHost(host: SparkComponentHost): void
+    nearestHost(): SparkHostLink | null
+    setHost(host: SparkHostLink | undefined): void
   }
   isVisible: { readonly value: boolean }
   isDisabled: { readonly value: boolean }
@@ -61,7 +65,7 @@ export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
  */
 export interface UseSparkCapabilityReaderReturn {
   host: {
-    nearestHost(): SparkComponentHost | null
+    nearestHost(): SparkHostLink | null
   }
   sparkConsume: SparkCapabilityConsumer
 }
@@ -77,9 +81,12 @@ export type SparkNodeInput = {
   id?: string | undefined
 }
 
-// 运行时常量：本地组件 id 计数器与开发态日志兜底实现。
+// ===== 运行时局部状态 =====
+
+// 仅用于匿名 Spark 节点的本地 id 兜底，保证上下文树里每个节点都有稳定标识。
 let _idCounter = 0
 
+// 页面 logger 尚未就绪时，仅在开发环境打印到控制台，生产环境保持静默。
 const DEV_FALLBACK_LOGGER: LoggerApi = {
   debug: () => undefined,
   info: import.meta.env.DEV ? (...args: unknown[]) => console.info(...args) : () => undefined,
@@ -87,13 +94,14 @@ const DEV_FALLBACK_LOGGER: LoggerApi = {
   error: import.meta.env.DEV ? (...args: unknown[]) => console.error(...args) : () => undefined,
 }
 
-// ===== 配置归一化 =====
+// ===== Vue 运行时输入 -> SparkNode 归一化 =====
 
-// 配置读取：过滤 Vue vnode 的内部字段，只保留需要合入 SparkNode 的运行时属性。
+// Vue 事件监听属性不属于 SparkNode.props 的业务配置，归一化时需要剔除。
 function isVueListenerProp(key: string): boolean {
   return /^on[A-Z]/.test(key) || key === 'on'
 }
 
+// Vue vnode 内部字段只服务框架运行时，不能混入 Spark 的配置语义。
 function isVueInternalVNodeProp(key: string): boolean {
   return key === 'key'
     || key === 'ref'
@@ -106,6 +114,7 @@ function readRuntimeVNodeProps(instance: RuntimeInstance): Record<string, unknow
   const rawProps = instance?.vnode.props
   if (!rawProps || typeof rawProps !== 'object') return {}
 
+  // 只保留真实传入组件、且应该进入 SparkNode.props 的运行时字段。
   const runtimeProps: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(rawProps)) {
     if (isVueInternalVNodeProp(key) || isVueListenerProp(key)) continue
@@ -115,6 +124,7 @@ function readRuntimeVNodeProps(instance: RuntimeInstance): Record<string, unknow
 }
 
 function buildEffectiveConfig(instance: RuntimeInstance, fallbackConfig?: SparkNodeInput): SparkNode {
+  // fallbackConfig 提供静态配置骨架，vnode.props 负责补齐运行时传参，最终统一走 normalizeSparkNode。
   const runtimeProps = readRuntimeVNodeProps(instance)
   const base = fallbackConfig === undefined
     ? ({ type: 'unknown' } as SparkNode & Record<string, unknown>)
@@ -133,28 +143,15 @@ function readConfigProp(instance: RuntimeInstance, fallbackConfig: SparkNodeInpu
   return nodeInputProp(buildEffectiveConfig(instance, fallbackConfig), propName)
 }
 
-// ===== 上下文与能力辅助 =====
+// ===== Spark 上下文桥接与能力辅助 =====
 
-// 上下文解析：能力消费只依赖 Spark 自己的上下文树，不依赖 Vue provide/inject 传父链。
-// 返回父上下文引用，供 sparkConsume 和 host 协议使用。
+// 父上下文解析完全走 Spark 自己维护的 owner -> context 链，不依赖 Vue 的 provide/inject 父链。
+// 这样组件即使经过中间包装层，也仍然能沿 Spark 运行时树正确消费能力。
 function resolveParentContext(
   currentOwner: SparkRuntimeOwner | null,
   overrideHostContext?: SparkCapabilityContext,
 ): SparkCapabilityContext | null {
   return resolveParentCapabilityContext(currentOwner, overrideHostContext)
-}
-
-function makeNearestHostFn(startCtx: SparkCapabilityContext | null): () => SparkComponentHost | null {
-  return () => {
-    let current = startCtx
-    while (current !== null) {
-      if (current.host !== undefined && current.host !== null) {
-        return current.host as SparkComponentHost
-      }
-      current = current.parent ?? null
-    }
-    return null
-  }
 }
 
 function registerPageComponentInstance(
@@ -164,6 +161,7 @@ function registerPageComponentInstance(
 ): void {
   if (!registry) return
 
+  // 页面注册表以 id/type 为主键索引组件，props 仅在存在时附带，避免写入无意义空对象。
   const instanceEntry = props === undefined || Object.keys(props).length === 0
     ? { id: context.id, type: context.type }
     : { id: context.id, type: context.type, props }
@@ -171,7 +169,7 @@ function registerPageComponentInstance(
   registry.registerInstance(instanceEntry)
 }
 
-// ===== 日志辅助 =====
+// ===== 页面级日志桥接 =====
 
 function isLoggerApi(value: unknown): value is LoggerApi {
   if (typeof value !== 'object' || value === null) {
@@ -185,7 +183,7 @@ function isLoggerApi(value: unknown): value is LoggerApi {
     && typeof candidate.error === 'function'
 }
 
-// 日志解析：统一取页面层 APP_SERVICES.logger，缺失时回退到开发日志。
+// logger 始终从页面层 APP_SERVICES 取，避免局部子树私自覆盖后形成日志分叉。
 function createPageLoggerProxy(context: SparkCapabilityContext): LoggerApi {
   const consumeFromCurrent = createSparkCapabilityConsumer(context)
   const resolveLogger = (): LoggerApi => {
@@ -201,7 +199,7 @@ function createPageLoggerProxy(context: SparkCapabilityContext): LoggerApi {
   }
 }
 
-// ===== 占位符解析 =====
+// ===== DATA_ROW 占位符解析 =====
 
 const PLACEHOLDER_RE = /\$\[([^\]]+)\]/g
 const PURE_PLACEHOLDER_RE = /^\$\[([^\]]+)\]$/
@@ -219,6 +217,7 @@ function resolveValuePlaceholders(value: unknown, row: Record<string, unknown>):
   if (typeof value === 'string') {
     const pureMatch = PURE_PLACEHOLDER_RE.exec(value)
     const pureField = pureMatch?.[1]
+    // 纯占位符保持原始值类型；嵌入式占位符则退化为字符串拼接。
     if (pureField !== undefined) return row[pureField]
     if (!value.includes('$[')) return value
     return value.replace(PLACEHOLDER_RE, (_, fieldName: string) => {
@@ -246,6 +245,7 @@ export function resolvePlaceholderProps(
   props: Record<string, unknown>,
   row: Record<string, unknown> | null | undefined,
 ): Record<string, unknown> {
+  // 无 DATA_ROW 或 props 中根本没有占位符时直接复用原对象，避免无意义复制。
   if (!row || !hasPlaceholderString(props)) return props
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(props)) {
@@ -254,7 +254,7 @@ export function resolvePlaceholderProps(
   return result
 }
 
-// ===== 对外入口 =====
+// ===== 对外入口：只消费能力 =====
 
 /**
  * 轻量能力消费 — 仅沿 parent 链查找能力，不创建自身上下文。
@@ -263,7 +263,7 @@ export function useSparkConsume(): UseSparkCapabilityReaderReturn {
   const currentOwner = getCurrentInstance() as SparkRuntimeOwner | null
   const parentContext = resolveParentContext(currentOwner)
   return {
-    host: { nearestHost: makeNearestHostFn(parentContext) },
+    host: { nearestHost: () => findNearestHost(parentContext, { includeSelf: true }) },
     sparkConsume: createSparkCapabilityConsumer(parentContext),
   }
 }
@@ -272,7 +272,7 @@ export function useSparkComponent(
   fallbackConfig?: SparkNodeInput,
   options?: UseSparkComponentOptions
 ): UseSparkComponentReturn {
-  // 基础上下文：读取当前实例、配置和父上下文，组装当前 Spark 上下文。
+  // 先将 Vue 当前实例和 fallbackConfig 归一化为 SparkNode，再挂接到父能力上下文之下。
   const currentInstance = getCurrentInstance()
   const currentOwner = currentInstance as SparkRuntimeOwner | null
   const config: SparkNode = buildEffectiveConfig(currentInstance, fallbackConfig)
@@ -283,21 +283,23 @@ export function useSparkComponent(
     nearestHost() {
       return findNearestHost(context)
     },
-    setHost(nextHost: SparkComponentHost) {
-      context.host = nextHost
+    setHost(nextHost: SparkHostLink | undefined) {
+      // host 是容器对后代暴露的能力边界，写入当前 context 即可，不额外触发别的副作用。
+      setHostIdentity(context, nextHost)
     },
   }
   const consumeCapability = createSparkCapabilityConsumer(context)
 
   if (currentInstance !== null) {
+    // 绑定 owner 后，后代组件就能通过当前 Vue 实例回溯到这棵 SparkContext 子树。
     bindCapabilityContextOwner(currentInstance as object, context)
   }
 
-  // 页面注册：让页面级注册表可以按 id/type 找到当前组件实例。
+  // 页面注册表保存组件实例元信息，供页面级 API、调试和联动能力做反查。
   const pageComponentRegistry = consumeCapability(PAGE_COMPONENT_REGISTRY)
   registerPageComponentInstance(pageComponentRegistry, context, config.props)
 
-  // 可视状态：统一从归一化后的配置读取 visible 和 disabled。
+  // 统一从归一化配置读取可视/禁用状态，避免 props 来源分散导致语义不一致。
   const logger = createPageLoggerProxy(context)
   const readNormalizedConfigProp = (propName: string): unknown => {
     return readConfigProp(currentInstance, fallbackConfig, propName)
@@ -305,14 +307,15 @@ export function useSparkComponent(
   const isVisible = computed(() => readNormalizedConfigProp('visible') !== false)
   const isDisabled = computed(() => readNormalizedConfigProp('disabled') === true)
 
-  // 占位符解析：将 props 中的 $[fieldName] 替换为 DATA_ROW 对应字段值。
+  // props 中若引用了 DATA_ROW 占位符，在这里统一投影为最终给组件消费的运行时 props。
   const resolvedProps = computed(() => {
     const props = buildEffectiveConfig(currentInstance, fallbackConfig).props ?? {}
     const row = consumeCapability(DATA_ROW) as Record<string, unknown> | null
     return resolvePlaceholderProps(props, row)
   })
 
-  // 能力提供：向当前上下文写入能力。
+  // ===== 当前组件暴露给后代的能力读写 =====
+
   function sparkProvide(name: string | symbol, implementation?: unknown): void {
     rawSparkProvide(context, name, implementation)
     const key = normalizeKey(name)
@@ -330,7 +333,8 @@ export function useSparkComponent(
     return null
   }
 
-  // 生命周期：初始化时记录调试信息，销毁时统一回收事件、注册表和 owner 绑定。
+  // ===== 生命周期：初始化日志与上下文清理 =====
+
   let initialized = false
   const instanceUid = currentInstance?.uid
 
@@ -345,6 +349,7 @@ export function useSparkComponent(
 
   const destroy = () => {
     initialized = false
+    // 只清理当前 context 和注册表引用，不销毁 DataSet 之类外部共享对象。
     pageComponentRegistry?.unregisterInstance(context.id)
     context.capabilities.clear()
     if (currentInstance !== null) {
@@ -365,6 +370,8 @@ export function useSparkComponent(
     logger,
   }
 }
+
+// ===== 对外入口：页面级组件扩展 =====
 
 export function useSparkPageComponent(
   fallbackConfig?: SparkNodeInput,

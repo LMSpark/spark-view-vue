@@ -1,6 +1,7 @@
 import { nextTick } from 'vue'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
+import type { IPageServiceCapability } from '../../../internal'
+import type { LoggerApi } from '@spark-view/spark-utils'
 import {
   createCancellableControl,
   type CancellableControl,

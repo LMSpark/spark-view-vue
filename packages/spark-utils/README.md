@@ -1,6 +1,6 @@
 # @spark-view/spark-utils
 
-SPARK 的基础设施包，负责能力键、日志、请求层、文件加载器和通用类型，给上层包提供统一底座。
+SPARK 的基础设施包，负责日志、请求层、文件加载器和通用类型，给上层包提供统一底座。
 
 ## 适用定位
 
@@ -10,7 +10,6 @@ SPARK 的基础设施包，负责能力键、日志、请求层、文件加载�
 
 ## 主要模块
 
-- 能力系统：`defineCapability`、能力键定义、上下文查找底层实现
 - 日志系统：`Logger` 及相关日志接口
 - 请求层：统一请求实例、拦截器、错误处理
 - 文件加载：`FileLoader` 与缓存策略
@@ -18,21 +17,15 @@ SPARK 的基础设施包，负责能力键、日志、请求层、文件加载�
 
 ## 基本使用
 
-### 1. 定义能力键
-
-```typescript
-import { defineCapability } from '@spark-view/spark-utils'
-
-export const USER_SERVICE = defineCapability<{
-  getUser(id: string): { id: string; name: string }
-}>('app:user-service')
-```
-
-### 2. 在组件里提供和消费能力
+### 1. 在组件里提供和消费能力
 
 ```typescript
 import { useSparkComponent } from '@spark-view/spark-component'
-import { USER_SERVICE } from './capabilities'
+import { defineCapability } from '@spark-view/spark-component'
+
+const USER_SERVICE = defineCapability<{
+  getUser(id: string): { id: string; name: string }
+}>('app:user-service')
 
 const { sparkProvide, sparkConsume } = useSparkComponent({ type: 'user-panel' })
 
@@ -43,7 +36,7 @@ sparkProvide(USER_SERVICE, {
 const userService = sparkConsume(USER_SERVICE)
 ```
 
-### 3. 使用日志与请求层
+### 2. 使用日志与请求层
 
 ```typescript
 import { Logger, createRequest } from '@spark-view/spark-utils'
@@ -58,7 +51,7 @@ const users = await request.get('/users')
 ## 结构约束
 
 - 本包保持在基础层，避免依赖 `spark-data`、`spark-component`、`spark-app`。
-- 新增能力键或公共类型，优先放这里，再由上层包扩展。
+- 能力键和能力类型由 `@spark-view/spark-component` 维护。
 - 与 Vue、Element Plus、路由等框架绑定的逻辑不要落到本包。
 
 ## 开发命令

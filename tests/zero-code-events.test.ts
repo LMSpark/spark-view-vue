@@ -20,7 +20,7 @@ import { RendererTable } from '@spark-view/spark-component'
 import { normalizeRuleEvents, normalizeOnProps } from '../packages/spark-component/src/page/binding/bind-normalize'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import type { ActionExecutionContext, ActionDescriptor } from '../packages/spark-component/src/page/actions/action-descriptor'
-import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IPageServiceCapability } from '@spark-view/spark-component'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 
 // ── 工具函数 ───────────────────────────────────────────────────────────────

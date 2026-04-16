@@ -10,9 +10,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { Spark, useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-utils'
-import type { IAppServicesCapability, LoggerApi } from '@spark-view/spark-utils'
+import { Spark, useSparkComponent, APP_SERVICES, type IAppServicesCapability } from '@spark-view/spark-component'
+import type { LoggerApi } from '@spark-view/spark-utils'
 
 function createAppServices(logger: LoggerApi): IAppServicesCapability {
   return {

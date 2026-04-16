@@ -6,7 +6,8 @@
  */
 
 import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'
-import type { PageMessageType, IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
+import type { IPageServiceCapability, PageMessageType } from '../../../internal'
+import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
 import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../crud-result-helpers.js'
 import { getBuiltinActionName, getBuiltinActionLabel, type BuiltinActionScope } from './builtin-action-meta'

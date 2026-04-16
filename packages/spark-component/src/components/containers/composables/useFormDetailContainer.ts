@@ -2,9 +2,8 @@ import { computed, shallowReactive, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
-import { PAGE_SERVICE } from '@spark-view/spark-utils'
+import { PAGE_SERVICE } from '../../internal'
 import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../internal'
-import { DATA_ROW } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
 import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
@@ -89,8 +88,6 @@ export function useFormDetailContainer(
     modelPermission,
     dataSource: computed(() => resolvedView.value),
   })
-
-  sparkProvide(DATA_ROW, contextData)
 
   function getDefaultSlotScope() {
     return createCurrentRowSlotScope({

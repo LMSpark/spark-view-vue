@@ -26,11 +26,20 @@
  *     sparkConsume(DATA_ROW) ?? {}
  */
 
-import { defineCapability, normalizeKey, sparkConsume as rawSparkConsume } from '@spark-view/spark-utils'
+import { defineCapability, normalizeKey, sparkConsume as rawSparkConsume } from './capability-system.js'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
-import type { CapabilityKey, CapabilityName, CapabilityTypeMap, ICapabilityContext, IModuleContext, NavPermissionMode } from '@spark-view/spark-utils'
+import type {
+  CapabilityKey,
+  CapabilityName,
+  CapabilityTypeMap,
+  ICapabilityContext,
+  IModuleContext,
+} from './capability-system.js'
+import type { NavPermissionMode } from '@spark-view/spark-utils'
 import type { SparkCapabilityContext } from './types.js'
 import type { SparkNode } from './types.js'
+
+// ===== 基础类型与能力消费约定 =====
 
 /** 能力消费函数签名：统一返回 null，避免 undefined 向上游扩散。 */
 export type SparkCapabilityConsumer = {
@@ -39,21 +48,21 @@ export type SparkCapabilityConsumer = {
   (name: string | symbol): unknown
 }
 
-/** 页面内组件实例快照 */
+/** 页面内组件实例快照：记录当前页面上出现过的组件元信息。 */
 export interface PageComponentInstanceEntry {
   id: string
   type: string
   props?: Record<string, unknown>
 }
 
-/** 页面内组件 API 条目 */
+/** 页面内组件 API 条目：供脚本或页面级逻辑按 id/type 反查组件公开 API。 */
 export interface PageComponentApiEntry {
   id: string
   type: string
   api: unknown
 }
 
-/** 页面级组件注册中心（实例 + API） */
+/** 页面级组件注册中心：统一维护实例快照和 API 映射。 */
 export interface PageComponentRegistry {
   registerInstance(entry: PageComponentInstanceEntry): void
   unregisterInstance(id: string): void
@@ -78,19 +87,22 @@ export interface ModuleContextCapability {
 /**
  * 页面 CSS 作用域注入能力
  *
- * 由 SparkPageRenderer 在初始化 useCssScope 后 sparkProvide；
- * 插件、子渲染器或需要动态注入 CSS 的组件可 sparkConsume 后按需追加样式。
- * 注入的 CSS 会被 pageId scoping 自动处理（与静态 style.css 一致）。
+ * 由 SparkPageRenderer 在初始化 useCssScope 后提供。
+ * 消费方可在当前页面作用域内追加样式，而不需要直接操作 DOM 或全局 style 标签。
+ * 注入内容会自动带上 pageId 作用域，语义与静态 style.css 保持一致。
  */
 export interface PageCssScopeCapability {
   /** 注入/追加 CSS 到当前页面作用域 */
   inject(css: string): void
 }
 
+// ===== Spark 能力上下文读写 =====
+
 /**
  * 创建最小能力上下文。
  *
- * 这里只负责 Spark 能力系统最小壳体：id / type / parent / capabilities。
+ * 这里只构建 Spark 能力系统自己的最小壳体：id / type / parent / capabilities。
+ * 不附带额外运行时语义，宿主、注册表等能力都在后续按需挂接。
  */
 export function createSparkCapabilityContext(
   config: { id: string; type: string },
@@ -109,7 +121,7 @@ export function createSparkCapabilityContext(
   return context
 }
 
-/** 统一消费能力：未命中时返回 null，而不是 undefined。 */
+/** 统一消费能力：所有未命中场景都收敛为 null，避免 undefined 向上游扩散。 */
 export function consumeSparkCapability<T>(
   context: SparkCapabilityContext | null | undefined,
   name: string | symbol,
@@ -122,7 +134,7 @@ export function consumeSparkCapability<T>(
   return implementation ?? null
 }
 
-/** 创建能力消费器：从给定起点上下文开始查找。 */
+/** 创建能力消费器：封装固定起点上下文，供组件内部反复读取能力。 */
 export function createSparkCapabilityConsumer(
   context: SparkCapabilityContext | null,
 ): SparkCapabilityConsumer {
@@ -131,7 +143,7 @@ export function createSparkCapabilityConsumer(
   }) as SparkCapabilityConsumer
 }
 
-/** 直接读取当前上下文本地 provider，不沿 parent 链查找。 */
+/** 直接读取当前上下文本地 provider，不沿 parent 链查找，适合做本地 provider 诊断。 */
 export function getSparkCapabilityProvider(
   context: SparkCapabilityContext,
   name: string | symbol,
@@ -139,9 +151,11 @@ export function getSparkCapabilityProvider(
   return context.capabilities.get(normalizeKey(name))
 }
 
-// 将能力键合并到 CapabilityTypeMap，消费方按字符串名称即可得到精确类型，
-// 无需 import 能力符号对象。
-declare module '@spark-view/spark-utils' {
+// ===== CapabilityTypeMap 类型扩展 =====
+
+// 将 spark-component 层定义的能力键合并进公共 CapabilityTypeMap，
+// 这样消费方既可以传能力常量，也可以直接传字符串名称并获得精确类型。
+declare module './capability-system.js' {
   interface CapabilityTypeMap {
     /** 页面级 DataSet（PageRenderer sparkProvide） */
     'spark:capability:page-dataset': IDataSet
@@ -157,109 +171,271 @@ declare module '@spark-view/spark-utils' {
     'spark:capability:css-scope': PageCssScopeCapability
     /** 页面级权限模式（none=不控制 / masked=可见+脱敏 / invisible=后端控制） */
     'spark:capability:permission-mode': NavPermissionMode
+    /** 动作执行能力（独立于宿主身份的 DI 通道） */
+    'spark:capability:action-host': SparkActionCapability
+    /** 最近宿主声明的字段渲染语义（能力化，不走 host 字段） */
+    'spark:capability:host-field-mode': string
+    /** 最近宿主声明的变体语义（能力化，不走 host 字段） */
+    'spark:capability:host-variant': OpenHostVariant
   }
 }
+
+// ===== 标准能力键声明 =====
 
 /**
  * 页面级 DataSet 能力键
  *
- * 由 PageRenderer 在 initDataSet 后 sparkProvide，
- * 容器组件通过 sparkConsume 获取后解析 dataKey → DataView。
+ * 页面渲染器在 initDataSet 后提供，作为整页数据空间入口。
+ * 容器组件从这里取到 DataSet，再继续解析 dataKey 得到 DataView。
  */
 export const PAGE_DATASET = defineCapability<IDataSet>('spark:capability:page-dataset')
 
 /**
  * 组件级数据视图能力键（DataView / IDataSource）
  *
- * 由容器组件在解析完 DataView 后 sparkProvide，
- * 子组件通过 sparkConsume 获取行数据、选中状态等。
+ * 容器组件在解析出 DataView 后提供，下游组件统一通过它读取行集、当前项、选中态等数据语义。
  */
 export const DATA_SOURCE = defineCapability<IDataSource>('spark:capability:data-source')
 
 /**
  * 当前作用域行数据能力键
- * 容器组件 sparkProvide 当前作用域行数据，字段组件 sparkConsume 后读写字段值
+ * 容器组件提供当前作用域行数据，字段组件消费后直接读写字段值。
+ * 这是字段与宿主容器之间最轻量的行级数据桥梁。
  */
 export const DATA_ROW = defineCapability<IDataRow>('spark:capability:data-row')
 
 /**
  * 页面级组件注册中心能力键
  *
- * 由渲染器根节点 sparkProvide；所有组件可向其登记实例与 API，
- * 供脚本层按 id/type 查询与批量访问。
+ * 由页面渲染根节点提供。
+ * 所有组件都可以向其登记实例与 API，供脚本层或页面级联动逻辑按 id/type 检索与批量访问。
  */
 export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('app:page-component-registry')
 
 /**
  * 模块上下文能力键
  *
- * 由页面渲染器根节点 sparkProvide，下游组件可 sparkConsume 后读取当前上下文并订阅变化。
+ * 由页面渲染器根节点提供，下游组件读取当前模块上下文并订阅变化。
  */
 export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('app:module-context')
 
 /**
  * 页面 CSS 作用域能力键
  *
- * 四文件中 style.css 的能力链收口：
- *   style.css → parseCss → PageConfig.css → setScopedCss + sparkProvide(CSS_SCOPE)
+ * 四文件 style.css 的作用域注入链在这里收口：
+ * style.css → parseCss → PageConfig.css → setScopedCss + sparkProvide(CSS_SCOPE)
  *
- * 消费方：插件、嵌套渲染器、动态主题注入等。
+ * 典型消费方包括插件、嵌套渲染器和动态主题注入逻辑。
  */
 export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
 
-// ── 统一宿主协议 ────────────────────────────────────────────────────────
+// ===== 宿主协议与逐层查找规则 =====
+
+/**
+ * 宿主变体标识联合类型
+ *
+ * 约束宿主声明侧和消费侧使用的 variant 值范围，消除硬编码字符串。
+ * 开放 string 后缀以兼容自定义扩展，但标准值优先使用此联合类型。
+ */
+export type HostVariant = 'toolbar' | 'row-action' | 'field'
+export type OpenHostVariant = HostVariant | (string & {})
+
+/**
+ * 动作执行能力接口 — 与宿主身份解耦的独立能力
+ *
+ * 容器通过 sparkProvide(ACTION_CAPABILITY, impl) 提供动作执行能力，
+ * 子组件通过 sparkConsume(ACTION_CAPABILITY) 消费。
+ * 动作能力不属于宿主身份本身，必须通过独立能力键传递。
+ */
+export interface SparkActionCapability {
+  isDisabled(action: SparkNode): boolean
+  execute(action: SparkNode): void
+}
+
+/**
+ * 动作执行能力键（主语义名）
+ *
+ * 独立于 host 的动作能力 DI 通道。容器 sparkProvide，子组件 sparkConsume。
+ */
+export const ACTION_CAPABILITY = defineCapability<SparkActionCapability>('spark:capability:action-host')
+
+/** 宿主字段渲染语义能力键（由宿主作用域提供）。 */
+export const HOST_FIELD_MODE = defineCapability<string>('spark:capability:host-field-mode')
+
+/** 宿主变体语义能力键（由宿主作用域提供）。 */
+export const HOST_VARIANT = defineCapability<OpenHostVariant>('spark:capability:host-variant')
 
 /**
  * 组件宿主接口 — 容器向子树声明"我是谁、我能做什么"
  *
- * **管理权 vs 渲染职责分离**：
- * - **Host 管理权**：容器通过 `setHost()` 声明能力（fieldMode、variant、isDisabled、execute）
- * - **子级渲染职责**：子组件通过 `nearestHost()` 消费能力后自己完成渲染，而非被动接收推动
- * - Host 不直接推动子级渲染，setHost 仅修改 context.host，无反向控制副作用
- * - 子级自决策能力消费时机、方式，保持独立的渲染自主权
+ * 宿主 = 纯组件层级关系描述，描述当前节点在组件树中的角色和边界。
+ * 能力键 = 跨层消费的 DI 机制，用来快速跨组件层级消费祖先级提供的能力。
+ * 两者职责不同，不应混用。
  *
- * **逐层访问约束**：
- * - 容器组件在自己的 context 上设置 `host` 字段声明宿主身份。
- * - 子组件通过 `nearestHost()` 逐层往上查找，获取最近的已声明宿主（不跳层）。
- * - 若想访问上上层宿主，必须链式调用 `nearestHost()?.nearestHost()`，而不是直接访问。
+ * 访问规则保持严格逐层：
+ * 容器在自己的 context 上声明 host，子组件只能通过 nearestHost() 找到最近一层宿主。
+ * 若确实需要访问更远层级，必须链式调用，而不是跳层直达。
  *
- * @spark-design host 是 context 上的一等公民字段，不是能力键。\n *   数据域能力键（DATA_SOURCE / DATA_ROW）解决的是"组件层级 ≠ 数据层级"，\n *   而 host 解决的是"子组件需要知道宿主的身份与能力"——这是组件树固有语义，\n *   不应走能力键分散注册。\n *   强制逐层访问防止长链脆弱依赖，所有跨层级信息需求应转向 DataKey / 能力系统。
+ * Host 只表达层级关系（父级、爷爷级）。
+ * fieldMode / variant 均通过能力键传递：HOST_FIELD_MODE / HOST_VARIANT。
+ * 动作禁用 / 执行等行为能力通过 ACTION_CAPABILITY 传递。
  */
-export interface SparkComponentHost {
-  /** 字段渲染模式 — 容器对子树声明自身的字段展示语义。
-   *  约定值：'table' | 'form' | 'tree' | 'detail'；开放 string 支持自定义容器扩展。
-   *  字段组件通过 `nearestHost().fieldMode` 读取，无需感知容器精确类型名。 */
-  readonly fieldMode?: string | undefined
-  /** 宿主变体标识（如 'toolbar' | 'row-action'），子组件可据此调整自身行为 */
-  readonly variant?: string | undefined
-  /** 判断指定动作节点在当前宿主上下文中是否应禁用 */
-  isDisabled?(action: SparkNode): boolean
-  /** 执行指定动作节点 */
-  execute?(action: SparkNode): void
+export interface SparkHostLink {
+  /** 更高一层祖先宿主（即当前宿主的父级宿主）。 */
+  readonly host?: SparkHostLink | undefined
+}
+
+type HostSemantics = {
+  fieldMode?: string | undefined
+  variant?: OpenHostVariant | undefined
+}
+
+type SparkHostDescriptor = SparkHostLink & HostSemantics
+
+function createHostLink(host?: SparkHostLink): SparkHostLink {
+  return Object.freeze({
+    ...(host !== undefined ? { host } : {}),
+  })
+}
+
+function createHostDescriptor(
+  fieldMode?: string,
+  variant?: OpenHostVariant,
+  host?: SparkHostLink,
+): SparkHostDescriptor {
+  return Object.freeze({
+    ...(fieldMode !== undefined ? { fieldMode } : {}),
+    ...(variant !== undefined ? { variant } : {}),
+    ...(host !== undefined ? { host } : {}),
+  })
+}
+
+// ===== 宿主工厂函数 =====
+
+/**
+ * 创建字段模式宿主 — 仅声明 fieldMode 身份
+ *
+ * 适用于 r-form / r-detail / r-table / r-tree 以及
+ * Dialog / Drawer / Section 等非数据容器。
+ */
+export function createFieldHost(fieldMode: string, variant?: HostVariant): SparkHostLink {
+  return createHostDescriptor(fieldMode, variant)
+}
+
+/**
+ * 创建动作能力对象。
+ *
+ * 供 RendererHostScope 通过 ACTION_CAPABILITY 注入到当前子树，
+ * 与 SparkHostLink 的层级语义完全分离。
+ */
+export function createActionCapability(actions: SparkActionCapability): SparkActionCapability {
+  return Object.freeze(actions)
+}
+
+/**
+ * 创建工具栏宿主身份 — 仅声明 variant='toolbar'。
+ */
+export function createToolbarHost(): SparkHostLink {
+  return createHostDescriptor(undefined, 'toolbar')
+}
+
+/**
+ * 创建行操作宿主身份 — 仅声明 variant='row-action'。
+ */
+export function createRowActionHost(): SparkHostLink {
+  return createHostDescriptor(undefined, 'row-action')
+}
+
+/**
+ * 将任意输入净化为宿主描述：
+ * - Host 链只保留 host 关系字段
+ * - 语义字段 fieldMode/variant 仅作为能力输入源提取
+ *
+ * 目的：坐实 Host=组件父子关系；语义能力与关系链路解耦。
+ */
+function sanitizeHostDescriptor(candidate: unknown): SparkHostDescriptor | null {
+  if (candidate === null || candidate === undefined || typeof candidate !== 'object' || Array.isArray(candidate)) {
+    return null
+  }
+
+  const raw = candidate as Record<string, unknown>
+  const fieldMode = typeof raw['fieldMode'] === 'string' ? raw['fieldMode'] : undefined
+  const variant = typeof raw['variant'] === 'string' ? raw['variant'] : undefined
+  const parentDescriptor = sanitizeHostDescriptor(raw['host'])
+  return createHostDescriptor(fieldMode, variant, parentDescriptor ?? undefined)
+}
+
+function resolveHostSemantics(candidate: unknown): HostSemantics {
+  const descriptor = sanitizeHostDescriptor(candidate)
+  return {
+    fieldMode: descriptor?.fieldMode,
+    variant: descriptor?.variant,
+  }
+}
+
+function sanitizeHostLink(candidate: unknown): SparkHostLink | null {
+  const descriptor = sanitizeHostDescriptor(candidate)
+  if (descriptor === null) return null
+  return createHostLink(descriptor.host)
+}
+
+function setLocalCapability<T>(ctx: SparkCapabilityContext, key: string | symbol, value: T | undefined): void {
+  const normalized = normalizeKey(key)
+  if (value === undefined) {
+    ctx.capabilities.delete(normalized)
+    return
+  }
+  ctx.capabilities.set(normalized, value)
+}
+
+/**
+ * 以统一语义写入 context.host：只允许身份字段，杜绝行为字段混入。
+ */
+export function setHostIdentity(ctx: SparkCapabilityContext, host: SparkHostLink | undefined): void {
+  ctx.host = host === undefined ? undefined : (sanitizeHostLink(host) ?? undefined)
+
+  const semantics = resolveHostSemantics(host)
+  setLocalCapability(ctx, HOST_FIELD_MODE, semantics.fieldMode)
+  setLocalCapability(ctx, HOST_VARIANT, semantics.variant)
+}
+
+function buildHostLinkChain(start: ICapabilityContext | null | undefined): SparkHostLink | null {
+  const links: SparkHostLink[] = []
+  let current: ICapabilityContext | null | undefined = start
+
+  while (current) {
+    const link = sanitizeHostLink(current.host)
+    if (link !== null) links.push(link)
+    current = current.parent
+  }
+
+  if (links.length === 0) return null
+
+  let chain: SparkHostLink | null = null
+  for (let i = links.length; i > 0; i -= 1) {
+    chain = createHostLink(chain ?? undefined)
+  }
+
+  return chain
 }
 
 /**
  * 逐层往上查找最近的已声明宿主。
  *
- * 从当前 context 的父开始，依次检查每个祖先上下文是否声明了 host，
- * 返回遇到的第一个非空宿主。这强制了"逐层访问"的约束：
- * 要访问更远的宿主，调用方必须链式调用 nearestHost()，而不是跳层访问。
+ * 默认查找从当前 context.parent 开始，而不是从自己开始，
+ * 因为组件只应消费祖先宿主，不应把自己误识别为自己的宿主。
  *
- * @spark-design 子组件应动态查询而非缓存结果：
- *   - nearestHost() 返回的 Host 对象可能包含动态代理（如行级数据变化时）
- *   - 若在 setup 时缓存 nearestHost，后续 Host 能力变化时不会更新
- *   - 必须在 computed / 函数中动态调用 nearestHost()，确保 computed 依赖正确的响应性
- *   - 如：computed(() => { const host = nearestHost(); return host?.isDisabled(...) })
+ * 传入 options.includeSelf=true 时，会从当前 context 自身开始查找。
+ *
+ * 子组件应在 computed 或运行时函数里动态调用 nearestHost()，不要在 setup 阶段缓存结果。
+ * 否则宿主对象若带有行级代理或动态上下文，后续变化将无法反映出来。
  */
-export function findNearestHost(ctx: ICapabilityContext): SparkComponentHost | null {
-  let current: ICapabilityContext | undefined = ctx.parent
-  while (current) {
-    if (current.host !== undefined && current.host !== null) {
-      return current.host as SparkComponentHost
-    }
-    current = current.parent
-  }
-  return null
+export function findNearestHost(
+  ctx: ICapabilityContext | null | undefined,
+  options?: { includeSelf?: boolean },
+): SparkHostLink | null {
+  if (ctx === null || ctx === undefined) return null
+  return buildHostLinkChain(options?.includeSelf === true ? ctx : ctx.parent)
 }
 
 // PAGE_PERMISSION_MODE 已迁入 permission/page-permission-mode.ts（权限模块唯一维护）

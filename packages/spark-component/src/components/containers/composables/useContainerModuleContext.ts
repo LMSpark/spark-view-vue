@@ -1,6 +1,6 @@
 import { onUnmounted, ref } from 'vue'
 import type { Ref } from 'vue'
-import type { IModuleContext } from '@spark-view/spark-utils'
+import type { IModuleContext } from '../../internal'
 import type { ModuleContextCapability } from '../../internal'
 
 export function useContainerModuleContext(

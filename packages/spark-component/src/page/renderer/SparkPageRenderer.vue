@@ -62,7 +62,7 @@ import {
   ref, watch, nextTick, getCurrentInstance, shallowRef, defineComponent, markRaw, inject,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
-import { Logger, PAGE_SERVICE } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '@spark-view/spark-utils'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
@@ -70,6 +70,7 @@ import type { ConfigLoader, IPageRoute, PageConfig } from '@spark-view/spark-pag
 import { nodeId, type SparkNode } from '../../core/types'
 import { SparkNodeTree } from '../../core/spark-node-tree'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE, type ModuleContextCapability, type PageCssScopeCapability } from '../../core/capabilities'
+import { PAGE_SERVICE } from '../../core/capability-system'
 import { PAGE_PERMISSION_MODE } from '../../permission/page-permission-mode'
 import { useRendererSetup } from './useRendererSetup'
 import { useCssScope } from './useCssScope'

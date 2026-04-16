@@ -132,7 +132,7 @@ import { computed, defineAsyncComponent, onMounted, onUnmounted, provide, reacti
 import { useRoute, useRouter } from 'vue-router'
 import { appPageUiService, useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
-import { MODULE_CONTEXT, useSparkComponent, type ModuleContextCapability } from '@spark-view/spark-component'
+import { APP_SERVICES, MODULE_CONTEXT, useSparkComponent, type IModuleContext, type ModuleContextCapability } from '@spark-view/spark-component'
 import { getToken, getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
@@ -152,7 +152,6 @@ import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
 import { getPlatformPaths } from '@/config/vue-page-map'
-import { APP_SERVICES, type IModuleContext } from '@spark-view/spark-utils'
 
 const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
 

@@ -6,7 +6,7 @@ import type {
   IPageServiceCapability,
   IPageUploadFilesOptions,
   IPageUploadedFile,
-} from '@spark-view/spark-utils'
+} from '../../internal'
 import { useFieldActionMode } from './useFieldActionMode'
 
 interface UseFileFieldActionsOptions {

@@ -1,5 +1,6 @@
 import type { DataView } from '@spark-view/spark-data'
-import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
+import type { IPageServiceCapability } from '../../../internal'
+import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
 import { createBuiltinActionBridge } from '../../support/actions/builtin-action-bridge'
 import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'

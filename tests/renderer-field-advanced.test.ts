@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, reactive } from 'vue'
-import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IPageServiceCapability } from '@spark-view/spark-component'
 import {
   FieldText,
   FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,

@@ -52,7 +52,8 @@ spark-app            — 依赖 spark-component、spark-data、spark-utils
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { createAiLoop } from '@spark-view/spark-ai'
-import { APP_SERVICES, Logger } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
+import { Logger } from '@spark-view/spark-utils'
 ```
 
 ### 查看当前发布版本

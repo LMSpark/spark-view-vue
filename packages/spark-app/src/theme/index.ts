@@ -19,9 +19,15 @@
 
 import { useColorMode, type BasicColorMode } from '@vueuse/core'
 import { computed, inject, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
-import type { IThemeCapability, ThemeMode } from '@spark-view/spark-utils'
+export type ThemeMode = 'light' | 'dark' | 'auto'
 
-export type { ThemeMode }
+export interface IThemeCapability {
+  readonly current: 'light' | 'dark'
+  readonly mode: ThemeMode
+  setMode(mode: ThemeMode): void
+  readonly isDark: boolean
+  toggle(): void
+}
 
 /** Vue DI 注入键（仅供 App.vue / Settings.vue 等非 SPARK 组件使用） */
 export const THEME_INJECTION_KEY: InjectionKey<IThemeCapability> = Symbol('spark-theme')

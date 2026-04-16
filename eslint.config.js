@@ -54,6 +54,60 @@ export default [
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.vue'],
     rules: {
       'no-restricted-imports': ['error', {
+        paths: [
+          {
+            name: '@spark-view/spark-utils',
+            importNames: [
+              'defineCapability',
+              'normalizeKey',
+              'sparkProvide',
+              'sparkConsume',
+              'createEventEmitter',
+              'APP_SERVICES',
+              'LOGGER',
+              'PAGE_SERVICE',
+              'THEME',
+              'ACTION_CAPABILITY',
+              'HOST_FIELD_MODE',
+              'HOST_VARIANT',
+              'PAGE_DATASET',
+              'DATA_SOURCE',
+              'DATA_ROW',
+              'PAGE_COMPONENT_REGISTRY',
+              'MODULE_CONTEXT',
+              'CSS_SCOPE',
+            ],
+            message: '能力系统已迁移到 @spark-view/spark-component，请从 @spark-view/spark-component 导入对应符号。'
+          },
+          {
+            name: '@spark-view/spark-utils',
+            allowTypeImports: true,
+            importNames: [
+              'CapabilityKey',
+              'CapabilityTypeMap',
+              'CapabilityName',
+              'ICapabilityContext',
+              'IEventEmitter',
+              'IAppServicesCapability',
+              'IPageServiceCapability',
+              'IThemeCapability',
+              'ThemeMode',
+              'IModuleContext',
+              'IModuleContextItem',
+              'PageMessageType',
+              'PageDialogResult',
+              'IPageDialogOptions',
+              'IPageBrowseFilesOptions',
+              'IPageUploadFilesOptions',
+              'IPageSelectEntitiesOptions',
+              'PageSelectableValue',
+              'IPageSelectedEntity',
+              'IPageSelectedFile',
+              'IPageUploadedFile',
+            ],
+            message: '能力类型已迁移到 @spark-view/spark-component，请从 @spark-view/spark-component 导入对应类型。'
+          }
+        ],
         patterns: [
           {
             group: [

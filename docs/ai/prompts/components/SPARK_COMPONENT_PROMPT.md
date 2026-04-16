@@ -18,7 +18,7 @@
 - **包管理**：pnpm monorepo
 - **核心包**：
   - `@spark-view/spark-component`：组件系统入口
-  - `@spark-view/spark-utils`：能力键（`APP_SERVICES` 等）
+  - `@spark-view/spark-component`：能力键（`APP_SERVICES` 等）
   - `@spark-view/spark-data`：数据空间（`PAGE_DATASET`、`DATA_SOURCE`、`parseDataKey`）
 - **禁止**：跨包相对路径导入（`../../packages/spark-utils/...`），必须使用包名导入
 
@@ -196,9 +196,9 @@ const displayValue = computed(() => row.value?.[field.value])
 
 | 键 | 来源包 | 类型 | 典型提供方 |
 |---|---|---|---|
-| `APP_SERVICES` | spark-utils | `IAppServicesCapability` | PageRenderer |
-| `LOGGER` | spark-utils | `LoggerApi` | 自定义覆盖 |
-| `PAGE_SERVICE` | spark-utils | `IPageServiceCapability` | 应用层 |
+| `APP_SERVICES` | spark-component | `IAppServicesCapability` | PageRenderer |
+| `LOGGER` | spark-component | `LoggerApi` | 自定义覆盖 |
+| `PAGE_SERVICE` | spark-component | `IPageServiceCapability` | 应用层 |
 | `PAGE_DATASET` | spark-data | `IDataSet` | PageRenderer |
 | `DATA_SOURCE` | spark-data | `IDataSource` | 容器组件 |
 
@@ -213,7 +213,7 @@ sparkConsume(MY_CAP)  // { doSomething(): void } | null
 
 // 方式二：字符串键 + CapabilityTypeMap（推荐，可扩展）
 // 在项目自己的 capabilities.ts 或其他能力模块中
-declare module '@spark-view/spark-utils' {
+declare module '@spark-view/spark-component' {
   interface CapabilityTypeMap {
     'app:my-capability': { doSomething(): void }
   }
@@ -352,4 +352,4 @@ it('should provide DATA_SOURCE to children', async () => {
 - [ ] 测试使用 `flushPromises()` 等待异步组件
 - [ ] `pnpm run typecheck` 零错误
 - [ ] `pnpm run test` 全部通过
-- [ ] 自定义能力键优先用 `declare module '@spark-view/spark-utils' { interface CapabilityTypeMap {...} }` 扩展，而非直接修改包源文件
+- [ ] 自定义能力键优先用 `declare module '@spark-view/spark-component' { interface CapabilityTypeMap {...} }` 扩展，而非直接修改包源文件

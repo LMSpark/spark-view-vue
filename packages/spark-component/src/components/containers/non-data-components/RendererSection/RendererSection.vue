@@ -101,7 +101,7 @@ import type { RendererSectionApi } from './types'
 import { createRendererSectionZeroCode } from './zero-code'
 import { useMirroredValue } from '../state'
 import type { RSectionProps } from './RendererSection.props'
-import type { SparkComponentHost } from '../../../internal'
+import { createFieldHost } from '../../../internal'
 
 const props = withDefaults(defineProps<RSectionProps>(), {
   type: 'r-section',
@@ -156,9 +156,7 @@ const { sectionApi, handleHeaderClick, toggleCollapsed }: {
 
 registerApi(sectionApi)
 
-const sectionFieldHost: SparkComponentHost = {
-  fieldMode: 'detail',
-}
+const sectionFieldHost = createFieldHost('detail')
 
 function getHeaderSlotScope() {
   return {

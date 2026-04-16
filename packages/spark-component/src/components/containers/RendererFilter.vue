@@ -74,7 +74,7 @@ import { PAGE_PERMISSION_MODE } from '../../permission'
 import RendererHostScope from './support/RendererHostScope.vue'
 import RendererFieldScope from './support/RendererFieldScope.vue'
 import type { RendererFilterProps as Props } from './RendererFilter.types'
-import type { SparkComponentHost } from '../internal'
+import { createFieldHost } from '../internal'
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-filter',
@@ -110,10 +110,7 @@ const resolvedGridAutoRows = computed(() => props.gridAutoRows ?? 'minmax(32px, 
 const resolvedAutoFitMinWidth = computed(() => props.autoFitMinWidth ?? '220px')
 const resolvedItemSpan = computed(() => props.itemSpan ?? 1)
 
-const FILTER_PANEL_HOST: SparkComponentHost = {
-  variant: 'field',
-  fieldMode: 'form',
-}
+const FILTER_PANEL_HOST = createFieldHost('form', 'field')
 
 const { sparkProvide } = useSparkComponent({ type: props.type })
 if (isPanelMode.value) {

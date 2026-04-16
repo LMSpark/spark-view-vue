@@ -5,7 +5,7 @@ import { createBuiltinActionHandler } from '../packages/spark-component/src/comp
 import { isBuiltinActionDisabled } from '../packages/spark-component/src/components/containers/support/actions/builtin-action-disabled'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions/action-descriptor'
-import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IPageServiceCapability } from '@spark-view/spark-component'
 
 function createDataView() {
   const dataSet = SparkData.createDataSet({

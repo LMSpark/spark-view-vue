@@ -30,7 +30,7 @@ import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import RendererHostScope from '../support/RendererHostScope.vue'
-import type { SparkComponentHost } from '../../internal'
+import { createFieldHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
@@ -90,8 +90,6 @@ const itemTitle = computed(() => {
 
 const itemDisabled = computed(() => props.disabled === true)
 
-const collapseItemFieldHost: SparkComponentHost = {
-  fieldMode: 'detail',
-}
+const collapseItemFieldHost = createFieldHost('detail')
 </script>
 

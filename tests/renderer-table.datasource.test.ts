@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { RendererTable, RendererRowFragment, FieldText, DATA_ROW, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { ACTION_CAPABILITY, RendererTable, RendererRowFragment, FieldText, DATA_ROW, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow, DataView, IDataSet } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
@@ -50,7 +50,7 @@ const SparkActionStub = defineComponent({
     },
   },
   setup(props) {
-    const { host } = useSparkComponent({ type: 'spark-action-stub' } as SparkNode)
+    const { sparkConsume } = useSparkComponent({ type: 'spark-action-stub' } as SparkNode)
     return () => {
       const config = props.config as Record<string, unknown>
       const propsMap = readConfigProps(config)
@@ -71,7 +71,7 @@ const SparkActionStub = defineComponent({
             click('evt')
             return
           }
-          host.nearestHost()?.execute?.(config as unknown as SparkNode)
+          sparkConsume(ACTION_CAPABILITY)?.execute(config as unknown as SparkNode)
         },
       }, readConfigActionText(config))
     }
@@ -312,7 +312,7 @@ const SparkColumnRendererStub = defineComponent({
     },
   },
   setup(props) {
-    const { host } = useSparkComponent({ type: 'spark-column-renderer-stub' } as SparkNode)
+    const { sparkConsume } = useSparkComponent({ type: 'spark-column-renderer-stub' } as SparkNode)
     return () => {
       const config = props.config as Record<string, unknown>
       const type = String(config['type'] ?? '')
@@ -349,7 +349,7 @@ const SparkColumnRendererStub = defineComponent({
             click('evt')
             return
           }
-          host.nearestHost()?.execute?.(config as unknown as SparkNode)
+          sparkConsume(ACTION_CAPABILITY)?.execute(config as unknown as SparkNode)
         },
       }, typeLabel)
     }

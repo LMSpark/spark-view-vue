@@ -5,7 +5,8 @@
  */
 
 import type { Router } from 'vue-router'
-import type { LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
+import type { IAppServicesCapability } from '../../core/capability-system.js'
+import type { LoggerApi } from '@spark-view/spark-utils'
 
 /**
  * 根据 vue-router 实例和 Logger 构建 APP_SERVICES payload。

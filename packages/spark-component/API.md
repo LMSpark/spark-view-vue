@@ -169,7 +169,7 @@ const dataSource = sparkConsume(DATA_SOURCE)
 向当前组件的 `context.capabilities` 写入能力。**这是 SPARK 能力系统，不是 Vue 的 `provide/inject`。**
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-view/spark-component'
 
 const MY_CAP = defineCapability<{ doWork(): void }>('app:my-cap')
 sparkProvide(MY_CAP, { doWork() { console.log('working') } })
@@ -182,8 +182,8 @@ sparkProvide(MY_CAP, { doWork() { console.log('working') } })
 创建事件总线并注册为能力，`name` 默认 `'events'`。
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-utils'
-import type { IEventEmitter } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-view/spark-component'
+import type { IEventEmitter } from '@spark-view/spark-component'
 
 const MY_EVENTS = defineCapability<IEventEmitter>('app:my-events')
 const events = provideEvents(MY_EVENTS)
@@ -199,7 +199,7 @@ events.emit('rowClick', row)
 沿 `parent` 链向上查找能力（就近原则）。**找不到返回 `null` 是正常情况（late-binding），不应视为错误。**
 
 ```typescript
-import { APP_SERVICES } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
 
 const services = sparkConsume(APP_SERVICES)
 services?.router?.push('/home')
@@ -315,7 +315,7 @@ interface ComponentRegistry {
 ### 定义能力键
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-view/spark-component'
 
 export const MY_CAP = defineCapability<{ doWork(): void }>('app:my-cap')
 // MY_CAP 类型为 CapabilityKey<{ doWork(): void }>
@@ -334,7 +334,7 @@ const cap = sparkConsume(MY_CAP)   // 类型推断为 { doWork(): void } | null
 cap?.doWork()
 ```
 
-### 内置能力键（来自 `@spark-view/spark-utils`）
+### 内置能力键（来自 `@spark-view/spark-component`）
 
 | 键 | 类型 | 说明 |
 |---|---|---|

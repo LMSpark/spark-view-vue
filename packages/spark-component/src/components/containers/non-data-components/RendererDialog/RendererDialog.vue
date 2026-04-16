@@ -62,7 +62,7 @@ import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDialogProps } from './RendererDialog.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import type { SparkComponentHost } from '../../../internal'
+import { createFieldHost } from '../../../internal'
 import type { RendererDialogApi } from './types'
 import { createRendererDialogZeroCode } from './zero-code'
 
@@ -136,9 +136,7 @@ const {
 
 registerApi(dialogApi)
 
-const dialogFieldHost: SparkComponentHost = {
-  fieldMode: 'detail',
-}
+const dialogFieldHost = createFieldHost('detail')
 
 function getHeaderSlotScope() {
   return {

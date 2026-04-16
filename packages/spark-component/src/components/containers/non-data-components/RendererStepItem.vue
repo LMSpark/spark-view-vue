@@ -33,7 +33,7 @@ import { computed } from 'vue'
 import { SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import RendererHostScope from '../support/RendererHostScope.vue'
-import type { SparkComponentHost } from '../../internal'
+import { createFieldHost } from '../../internal'
 import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
@@ -110,7 +110,5 @@ const stepStatus = computed<string | undefined>(() => {
 
 const stepDisabled = computed(() => props.disabled === true)
 
-const stepItemFieldHost: SparkComponentHost = {
-  fieldMode: 'detail',
-}
+const stepItemFieldHost = createFieldHost('detail')
 </script>

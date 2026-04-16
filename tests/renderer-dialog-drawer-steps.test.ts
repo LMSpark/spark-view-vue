@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
-import { defineCapability } from '@spark-view/spark-utils'
+import { RendererDialog, RendererDrawer, RendererSteps, Spark, defineCapability, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { liftChildProps, type LiftAsLookup } from '../packages/spark-component/src/page/binding/build-page-children'
 

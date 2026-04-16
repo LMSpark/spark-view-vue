@@ -1,5 +1,5 @@
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
-import type { IModuleContext } from '@spark-view/spark-utils'
+import type { IModuleContext } from '../../internal'
 
 // ── 通用作用域结构 ───────────────────────────────────────────────────────────
 

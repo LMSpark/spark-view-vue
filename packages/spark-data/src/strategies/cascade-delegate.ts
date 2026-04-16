@@ -11,8 +11,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { IEventEmitter } from '@spark-view/spark-utils'
-import type { DataRelation, IDataSource } from '../types'
+import type { DataRelation, IDataSource, IEventEmitter } from '../types'
 import { getParentRows } from '../core/utils'
 import type { ICascadeHost, EmitClearedFn } from './types'
 

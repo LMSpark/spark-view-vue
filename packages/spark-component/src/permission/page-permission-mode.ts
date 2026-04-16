@@ -11,6 +11,6 @@
  * 渲染器提供方（SparkPageRenderer）从本文件导入以 sparkProvide。
  */
 import type { NavPermissionMode } from '@spark-view/spark-utils'
-import { defineCapability } from '@spark-view/spark-utils'
+import { defineCapability } from '../core/capability-system.js'
 
 export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode')

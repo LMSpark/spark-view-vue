@@ -62,7 +62,7 @@ import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDrawerProps } from './RendererDrawer.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import type { SparkComponentHost } from '../../../internal'
+import { createFieldHost } from '../../../internal'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'
 
@@ -136,9 +136,7 @@ const {
 
 registerApi(drawerApi)
 
-const drawerFieldHost: SparkComponentHost = {
-  fieldMode: 'detail',
-}
+const drawerFieldHost = createFieldHost('detail')
 
 function getHeaderSlotScope() {
   return {

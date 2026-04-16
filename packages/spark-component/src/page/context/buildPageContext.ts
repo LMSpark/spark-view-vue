@@ -6,7 +6,7 @@
  */
 
 import { h, type Ref } from 'vue'
-import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
+import type { IPageServiceCapability, IModuleContext } from '../../core/capability-system.js'
 import type { IPageRoute } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'

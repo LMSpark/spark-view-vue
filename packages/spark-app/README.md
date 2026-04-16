@@ -112,7 +112,7 @@ logger.debug('调试信息', { data: {...} })
 
 ```typescript
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
 import { useRouter } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
 
@@ -275,7 +275,7 @@ const logger = Logger('MyComponent')
 
 // 使用 SPARK 能力系统
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
 const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
 const services = sparkConsume(APP_SERVICES)
 

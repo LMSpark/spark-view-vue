@@ -4,7 +4,7 @@ import type {
   IPageSelectedEntity,
   IPageSelectEntitiesOptions,
   IPageServiceCapability,
-} from '@spark-view/spark-utils'
+} from '../../internal'
 import { useFieldActionMode } from './useFieldActionMode'
 
 interface UseSelectorFieldActionsOptions {

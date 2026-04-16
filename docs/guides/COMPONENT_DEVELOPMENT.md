@@ -163,9 +163,9 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 
 | 能力键 | 定义包 | 类型 | 典型提供者 |
 |---|---|---|---|
-| `APP_SERVICES` | `spark-utils` | `IAppServicesCapability` — router、logger、租户 | 应用层 |
-| `LOGGER` | `spark-utils` | `LoggerApi` — 自定义日志覆盖 | 任意祖先 |
-| `PAGE_SERVICE` | `spark-utils` | `IPageServiceCapability` — 弹框、导航、消息 | PageRenderer |
+| `APP_SERVICES` | `spark-component` | `IAppServicesCapability` — router、logger、租户 | 应用层 |
+| `LOGGER` | `spark-component` | `LoggerApi` — 自定义日志覆盖 | 任意祖先 |
+| `PAGE_SERVICE` | `spark-component` | `IPageServiceCapability` — 弹框、导航、消息 | PageRenderer |
 | `PAGE_DATASET` | `spark-component` | `IDataSet` — 页面级 DataSet | PageRenderer |
 | `DATA_SOURCE` | `spark-component` | `IDataSource` — 组件级数据视图 | 容器组件 |
 
@@ -173,8 +173,7 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 
 ```typescript
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES, PAGE_SERVICE } from '@spark-view/spark-utils'
-import { PAGE_DATASET } from '@spark-view/spark-component'
+import { APP_SERVICES, PAGE_SERVICE, PAGE_DATASET } from '@spark-view/spark-component'
 
 const { sparkConsume } = useSparkComponent(props.config)
 
@@ -192,7 +191,7 @@ const dataSet = sparkConsume(PAGE_DATASET)
 
 ```typescript
 // capability.ts
-import { defineCapability } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-view/spark-component'
 
 export interface IMySearchCapability {
   search(keyword: string): void
@@ -416,8 +415,8 @@ await ds?.batchDeleteRecords([1, 2, 3])
 ### 7.1 提供事件总线
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-utils'
-import type { IEventEmitter } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-view/spark-component'
+import type { IEventEmitter } from '@spark-view/spark-component'
 
 // 定义自定义事件能力键
 const MY_EVENTS = defineCapability<IEventEmitter>('app:my-events')
@@ -473,7 +472,7 @@ logger.error('请求失败', { error })
 ### 页面层 Logger（推荐）
 
 ```typescript
-import { APP_SERVICES } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
 
 // 由页面根节点统一提供，组件内只消费 logger，不再做子树级覆盖
 sparkProvide(APP_SERVICES, { router, logger: pageLogger })

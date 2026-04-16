@@ -127,7 +127,7 @@ const chartConfig = {
 
 ```typescript
 // 定义能力
-import { defineCapability } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-view/spark-component'
 
 export const GRID_SELECTION = defineCapability<SelectionApi>('grid-selection')
 
@@ -534,7 +534,7 @@ A: 使用动态导入进行代码分割，避免一次性加载所有组件。
 ```vue
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
 
 const { provide, consume, logger } = useSparkComponent({
   type: 'my-grid'
@@ -674,7 +674,7 @@ logger.error('出错了', error)
 
 ```typescript
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
 
 const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
 const services = sparkConsume(APP_SERVICES)
@@ -690,7 +690,7 @@ services?.auth?.isAuthenticated()
 <script setup lang="ts">
 import { createLogger } from '@spark-view/spark-app'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-utils'
+import { APP_SERVICES } from '@spark-view/spark-component'
 import { useRouter } from 'vue-router'
 
 const { sparkProvide } = useSparkComponent({ type: 'root' })

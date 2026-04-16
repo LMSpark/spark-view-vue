@@ -9,7 +9,7 @@
  */
 import { computed, defineComponent, h } from 'vue'
 import type { PropType } from 'vue'
-import type { PageSelectableValue } from '@spark-view/spark-utils'
+import type { PageSelectableValue } from '../internal'
 import type { SparkNodeChildren } from '../internal'
 import type { SparkOptionValueMode } from '../shared-types'
 import { emitFieldValueUpdate } from './data-components/composables/useControlledFieldChange'

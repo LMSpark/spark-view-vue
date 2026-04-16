@@ -60,13 +60,53 @@ export {
 export { SparkNodeTree } from './spark-node-tree.js'
 
 export {
+  defineCapability,
+  normalizeKey,
+  sparkProvide,
+  sparkConsume,
+  APP_SERVICES,
+  LOGGER,
+  PAGE_SERVICE,
+  THEME,
+} from './capability-system.js'
+
+export type {
+  CapabilityKey,
+  CapabilityTypeMap,
+  ICapabilityContext,
+  IAppServicesCapability,
+  IPageServiceCapability,
+  IThemeCapability,
+  ThemeMode,
+  IModuleContext,
+  PageMessageType,
+  PageDialogResult,
+  IPageDialogOptions,
+  IPageBrowseFilesOptions,
+  IPageUploadFilesOptions,
+  IPageSelectEntitiesOptions,
+  PageSelectableValue,
+  IPageSelectedEntity,
+  IPageSelectedFile,
+  IPageUploadedFile,
+  IEventEmitter,
+} from './capability-system.js'
+
+export {
   PAGE_DATASET,
   DATA_SOURCE,
   DATA_ROW,
   PAGE_COMPONENT_REGISTRY,
   MODULE_CONTEXT,
   CSS_SCOPE,
+  ACTION_CAPABILITY,
+  HOST_FIELD_MODE,
+  HOST_VARIANT,
   findNearestHost,
+  createActionCapability,
+  createFieldHost,
+  createToolbarHost,
+  createRowActionHost,
 } from './capabilities.js'
 
 export type {
@@ -75,5 +115,7 @@ export type {
   PageComponentRegistry,
   ModuleContextCapability,
   PageCssScopeCapability,
-  SparkComponentHost,
+  SparkHostLink,
+  SparkActionCapability,
+  HostVariant,
 } from './capabilities.js'

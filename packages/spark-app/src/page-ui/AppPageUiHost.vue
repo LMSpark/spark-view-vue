@@ -102,7 +102,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { IPageSelectedEntity } from '@spark-view/spark-utils'
+import type { IPageSelectedEntity } from '@spark-view/spark-component'
 import {
   appPageUiState,
   cancelAppDialog,

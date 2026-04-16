@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
 import { FieldText, FieldCheckbox, FieldSlider, FieldRate, FieldColor, FieldMention } from '@spark-view/spark-component'
-import { DATA_SOURCE, SPARK_REGISTRY_KEY, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { DATA_SOURCE, HOST_FIELD_MODE, SPARK_REGISTRY_KEY, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
 import { mount } from '@vue/test-utils'
 
@@ -191,7 +191,8 @@ describe('基础值字段组件', () => {
     const Provider = defineComponent({
       setup() {
         const { sparkProvide, host } = useSparkComponent({ type: 'r-form' }, { hostContext: rootContext })
-        host.setHost({ fieldMode: 'form' })
+        host.setHost({})
+        sparkProvide(HOST_FIELD_MODE, 'form')
         sparkProvide(DATA_SOURCE, { currentRow: model })
         return () => h(FieldText, { type: 'r-text', field: 'name' })
       },
@@ -232,7 +233,8 @@ describe('基础值字段组件', () => {
     const Provider = defineComponent({
       setup() {
         const { sparkProvide, host } = useSparkComponent({ type: 'r-form' }, { hostContext: rootContext })
-        host.setHost({ fieldMode: 'form' })
+        host.setHost({})
+        sparkProvide(HOST_FIELD_MODE, 'form')
         sparkProvide(DATA_SOURCE, { currentRow: model })
         return () => h(FieldMention, {
           type: 'r-mention',

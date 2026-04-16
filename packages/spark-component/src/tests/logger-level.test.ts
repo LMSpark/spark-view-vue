@@ -1,6 +1,6 @@
 ﻿import { describe, it, expect } from 'vitest'
-import { APP_SERVICES, type IAppServicesCapability, type LoggerApi } from '@spark-view/spark-utils'
-import type { SparkCapabilityContext } from '@spark-view/spark-component'
+import { APP_SERVICES, type IAppServicesCapability, type SparkCapabilityContext } from '@spark-view/spark-component'
+import type { LoggerApi } from '@spark-view/spark-utils'
 
 function createAppServices(logger: LoggerApi): IAppServicesCapability {
   return {

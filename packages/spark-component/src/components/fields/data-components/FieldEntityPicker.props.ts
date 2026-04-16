@@ -1,4 +1,4 @@
-import type { PageSelectableValue } from '@spark-view/spark-utils'
+import type { PageSelectableValue } from '../../internal'
 import type {
   SparkNodeProps,
   SparkOptionFieldProps,

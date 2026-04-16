@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useSparkConsume } from '../../internal'
+import { HOST_FIELD_MODE, useSparkConsume } from '../../internal'
 
 export type FieldRenderMode = string
 
@@ -10,8 +10,8 @@ export type FieldRenderMode = string
  * 容器通过 Host 声明 `fieldMode`，字段沿宿主链读取最近值。
  */
 export function useResolvedFieldContext() {
-  const { host } = useSparkConsume()
+  const { sparkConsume } = useSparkConsume()
   return computed<FieldRenderMode>(() => {
-    return host.nearestHost()?.fieldMode ?? 'detail'
+    return sparkConsume(HOST_FIELD_MODE) ?? 'detail'
   })
 }

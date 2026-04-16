@@ -1,5 +1,6 @@
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
+import type { IPageServiceCapability } from '../../../internal'
+import type { LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
 import { createBuiltinActionHandler } from './builtin-action-handler'
 import { isBuiltinActionDisabled } from './builtin-action-disabled'

@@ -11,7 +11,7 @@ import type {
   IPageUploadFilesOptions,
   IPageUploadedFile,
   PageDialogResult,
-} from '@spark-view/spark-utils'
+} from '@spark-view/spark-component'
 
 interface DialogState {
   visible: boolean

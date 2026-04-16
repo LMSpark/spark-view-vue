@@ -4,15 +4,15 @@ import { defineComponent, h } from 'vue'
 import {
   DATA_ROW,
   DATA_SOURCE,
+  HOST_FIELD_MODE,
+  PAGE_SERVICE,
   PAGE_DATASET,
   SPARK_REGISTRY_KEY,
   Spark,
   useSparkComponent,
 } from '@spark-view/spark-component'
-import type { SparkNode, SparkCapabilityContext, ComponentRegistry } from '@spark-view/spark-component'
+import type { SparkNode, SparkCapabilityContext, ComponentRegistry, IPageServiceCapability } from '@spark-view/spark-component'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
-import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import type { IPageServiceCapability } from '@spark-view/spark-utils'
 
 interface MountFieldInContextOptions {
   component: unknown
@@ -52,7 +52,8 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
     setup() {
       const hostType = options.hostType ?? 'r-form'
       const { sparkProvide, host } = useSparkComponent({ type: hostType } as SparkNode, { hostContext: rootContext })
-      host.setHost({ fieldMode: resolveFieldModeByHostType(hostType) })
+      host.setHost({})
+      sparkProvide(HOST_FIELD_MODE, resolveFieldModeByHostType(hostType))
       sparkProvide(DATA_ROW, options.model)
 
       if (options.pageDataSet !== undefined) {

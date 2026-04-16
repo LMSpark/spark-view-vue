@@ -1,36 +1,24 @@
 import { watch } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { SparkComponentHost } from '../../internal'
+import type { SparkHostLink } from '../../internal'
 
 interface LocalHostCapability {
-  setHost: (host: SparkComponentHost) => void
+  setHost: (host: SparkHostLink | undefined) => void
 }
 
 export function useContainerHostBridge(
   localHost: LocalHostCapability,
-  externalHost: ComputedRef<SparkComponentHost | undefined>,
+  externalHost: ComputedRef<SparkHostLink | undefined>,
 ): void {
-  const hostProxy: SparkComponentHost = {
-    get fieldMode(): string | undefined {
-      return externalHost.value?.fieldMode
-    },
-    get variant(): string | undefined {
-      return externalHost.value?.variant
-    },
-    isDisabled(action) {
-      return externalHost.value?.isDisabled?.(action) ?? false
-    },
-    execute(action) {
-      externalHost.value?.execute?.(action)
-    },
-  }
-
   watch(
     externalHost,
     (resolvedHost) => {
-      if (resolvedHost !== undefined) {
-        localHost.setHost(hostProxy)
+      if (resolvedHost === undefined) {
+        localHost.setHost(undefined)
+        return
       }
+
+      localHost.setHost(resolvedHost)
     },
     { immediate: true },
   )

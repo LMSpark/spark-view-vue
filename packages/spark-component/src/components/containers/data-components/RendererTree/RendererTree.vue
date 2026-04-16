@@ -1,6 +1,6 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :host="toolbarHost">
+    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :host="toolbarHost" :action-host="toolbarActionHost">
       <div :class="['renderer-tree-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
@@ -49,6 +49,7 @@
                   type="r-tree-node-action-scope"
                   :row="((slotProps?.data as IDataRow) ?? {})"
                   :host="getNodeActionHost(((slotProps?.data as IDataRow) ?? {}), 0)"
+                  :action-host="getNodeActionCapability(((slotProps?.data as IDataRow) ?? {}), 0)"
                   child-key-prefix="r-tree-node-action"
                 />
               </span>
@@ -88,7 +89,6 @@ import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../../internal'
-import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,
@@ -98,15 +98,15 @@ import {
 } from './zero-code'
 import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
-import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useContainerActions } from '../../composables/useContainerActions'
 import RendererHostScope from '../../support/RendererHostScope.vue'
-import type { SparkComponentHost } from '../../../internal'
+import { createActionCapability, createFieldHost, createToolbarHost, createRowActionHost } from '../../../internal'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
+import { PAGE_SERVICE } from '../../../internal'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
@@ -143,9 +143,7 @@ useContainerDataSourceEffects({
   logPrefix: 'RendererTree',
 })
 
-const treeFieldHost: SparkComponentHost = {
-  fieldMode: 'tree',
-}
+const treeFieldHost = createFieldHost('tree')
 
 const nodeKeyField = computed(() =>
   props.nodeKey ?? resolvedView.value?.primaryKey ?? resolvedView.value?.treeConfig?.idField ?? 'id'
@@ -184,8 +182,6 @@ const {
     },
   }),
 })
-
-sparkProvide(DATA_ROW, {} as IDataRow)
 
 // ── r-tree 包装 API ──────────────────────────────────────────────────────
 
@@ -243,26 +239,29 @@ const {
 
 registerApi(treeApi)
 
-const toolbarHost: SparkComponentHost = {
-  variant: 'toolbar',
+const toolbarHost = createToolbarHost()
+const toolbarActionHost = createActionCapability({
   isDisabled(action) {
     return isBuiltinToolbarActionDisabled(action)
   },
   execute(action) {
     handleBuiltinToolbarAction(action)
   },
+})
+
+function getNodeActionHost(_row: IDataRow, _index: number) {
+  return createRowActionHost()
 }
 
-function getNodeActionHost(row: IDataRow, index: number): SparkComponentHost {
-  return {
-    variant: 'row-action',
+function getNodeActionCapability(row: IDataRow, index: number) {
+  return createActionCapability({
     isDisabled(action) {
       return isBuiltinNodeActionDisabled(action, row, index)
     },
     execute(action) {
       handleBuiltinNodeAction(action, row, index)
     },
-  }
+  })
 }
 
 function getNodeActionConfigs(row: IDataRow): SparkNode[] {

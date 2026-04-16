@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { IPageSelectedFile, IPageUploadedFile } from '@spark-view/spark-utils'
+import type { IPageSelectedFile, IPageUploadedFile } from '../../../internal'
 import type {
   SparkFieldProps,
   SparkFileFieldProps,

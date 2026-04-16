@@ -28,7 +28,7 @@
  */
 
 import type { IDataSet } from '@spark-view/spark-data'
-import type { IPageServiceCapability, PageMessageType } from '@spark-view/spark-utils'
+import type { IPageServiceCapability, PageMessageType } from '../../core/capability-system.js'
 import type { CancellableControl } from '../../internal/cancellable-control'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────

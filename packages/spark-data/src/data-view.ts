@@ -14,6 +14,7 @@ import type {
   FlatTreeNode, TreePath, NestedTreeSearchResult, NestedTreeNode,
   TreeConfig, AggregateColumnConfig, CrudApi,
   CommitMode, RetrieveRecordOptions,
+  IEventEmitter,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -21,8 +22,8 @@ import type { DataTable } from './data-table'
 import type { DataSet } from './dataset'
 import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
-import { Logger, createEventEmitter, toErrorMessage, toError } from '@spark-view/spark-utils'
-import type { IEventEmitter } from '@spark-view/spark-utils'
+import { Logger, toErrorMessage, toError } from '@spark-view/spark-utils'
+import { createEventEmitter } from './core/event-emitter'
 import { getParentRows, assertNoSeparator } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
