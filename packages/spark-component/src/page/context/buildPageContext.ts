@@ -96,6 +96,12 @@ function createComponentAccess(getRegistry?: () => PageComponentRegistry | null)
     list(type?: string) {
       return getRegistry?.()?.listInstances(type) ?? []
     },
+    getApi<T = unknown>(id: string): T | null {
+      return getRegistry?.()?.getApi<T>(id) ?? null
+    },
+    getApisByType<T = unknown>(type: string): T[] {
+      return getRegistry?.()?.getApisByType<T>(type) ?? []
+    },
   }
 }
 

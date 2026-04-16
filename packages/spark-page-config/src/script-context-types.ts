@@ -283,6 +283,10 @@ export interface IPageComponentAccessInScript {
   get(id: string): IPageComponentInstanceInScript | null
   /** 列出页面组件实例（可按 type 过滤，只读元数据） */
   list(type?: string): IPageComponentInstanceInScript[]
+  /** 按组件 id 获取组件暴露 API（运行时实现可返回任意结构） */
+  getApi<T = unknown>(id: string): T | null
+  /** 按 type 获取同类组件 API 列表 */
+  getApisByType<T = unknown>(type: string): T[]
 }
 
 export type PageDialogResultInScript = 'confirm' | 'cancel' | 'close'

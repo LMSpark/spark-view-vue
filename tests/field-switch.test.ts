@@ -105,4 +105,20 @@ describe('FieldSwitch 业务回调模式', () => {
     const switchComp = wrapper.findComponent(ElSwitchStub)
     expect(switchComp.props('disabled')).toBe(true)
   })
+
+  it('无字段写权限时应保持禁用（默认只读）', async () => {
+    const model = reactive<Record<string, unknown>>({ enabled: false })
+
+    const wrapper = mountFieldSwitch(
+      model,
+      'enabled',
+      undefined,
+      [{ name: 'enabled', type: 'boolean', allowDBNull: false }],
+    )
+
+    await nextTick()
+
+    const switchComp = wrapper.findComponent(ElSwitchStub)
+    expect(switchComp.props('disabled')).toBe(true)
+  })
 })

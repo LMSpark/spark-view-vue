@@ -5,7 +5,7 @@
         :model-value="fieldValue"
         :active-text="activeText"
         :inactive-text="inactiveText"
-        :disabled="isDisabled || (permissionMode !== 'none' && !isCurrentFieldEditable)"
+        :disabled="isDisabled || !isCurrentFieldEditable"
         @update:model-value="handleChange"
       />
     </template>
@@ -46,7 +46,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<bool
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
-const { permissionMode, boundColumn, contextData, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
+const { boundColumn, contextData, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
 useSwitchNullValue({
   boundColumn,
   contextData,

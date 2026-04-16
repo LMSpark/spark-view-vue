@@ -23,6 +23,10 @@ export interface PageComponentAccessApi {
   get(id: string): PageComponentInstanceEntry | null
   /** 列出页面组件实例（可按 type 过滤，只读元数据） */
   list(type?: string): PageComponentInstanceEntry[]
+  /** 按组件 id 获取组件暴露 API（用于脚本调用组件能力） */
+  getApi<T = unknown>(id: string): T | null
+  /** 按 type 获取同类组件 API 列表 */
+  getApisByType<T = unknown>(type: string): T[]
 }
 
 /**
