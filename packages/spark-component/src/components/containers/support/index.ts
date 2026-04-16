@@ -29,6 +29,7 @@ export {
 } from './crud-result-helpers.js'
 
 export { createCrudEventDefaults } from './crud-event-defaults.js'
+export { createCrudDispatcher } from './crud-dispatcher.js'
 
 export type {
   BaseCrudContainerApi,

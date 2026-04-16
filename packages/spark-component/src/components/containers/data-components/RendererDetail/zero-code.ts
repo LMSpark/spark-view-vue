@@ -1,9 +1,8 @@
 import type { DataView } from '@spark-view/spark-data'
 import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
-import { createBuiltinActionHandler } from '../../support/actions/builtin-action-handler'
-import { isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
-import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
+import { createBuiltinActionBridge } from '../../support/actions/builtin-action-bridge'
+import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererDetailApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -16,7 +15,7 @@ interface RendererDetailZeroCodeOptions {
 }
 
 export function createRendererDetailZeroCode(options: RendererDetailZeroCodeOptions) {
-  const { dispatch } = useEventDefaults(createCrudEventDefaults(), options.props)
+  const { dispatch } = createCrudDispatcher(options.props)
 
   const baseMethods = createBaseCrudMethods(options.resolvedView, dispatch)
 
@@ -30,19 +29,18 @@ export function createRendererDetailZeroCode(options: RendererDetailZeroCodeOpti
     },
   }
 
-  const builtinHandler = createBuiltinActionHandler({
+  const builtinActions = createBuiltinActionBridge({
     getView: () => options.resolvedView.value,
     getPageService: () => options.pageService,
     getLogger: () => options.logger,
-    hasRemoteListApi: view => Boolean(view.dataTable?.api?.list),
   })
 
   function isBuiltinActionDisabled(action: SparkNode): boolean {
-    return _isBuiltinActionDisabled(action, options.resolvedView.value)
+    return builtinActions.isDisabled(action)
   }
 
   function handleBuiltinToolbarAction(action: SparkNode): void {
-    builtinHandler.handleToolbar(action)
+    builtinActions.handleToolbar(action)
   }
 
   return {

@@ -8,7 +8,8 @@
  * bindRules 阶段已将 dataKey 解析为具体数据注入 props。
  */
 import { computed, type ComputedRef } from 'vue'
-import { useSparkConsume, DATA_ROW } from '../internal'
+import { useSparkConsume, DATA_ROW, DATA_SOURCE } from '../internal'
+import { resolveCurrentRowPath } from '../support/row-selection-path'
 
 interface DisplayDataProps {
   field?: string | undefined
@@ -22,13 +23,15 @@ interface UseDisplayDataSourceReturn {
 export function useDisplayDataSource(props: DisplayDataProps): UseDisplayDataSourceReturn {
   const { sparkConsume } = useSparkConsume()
   const contextData = sparkConsume(DATA_ROW)
+  const dataSource = sparkConsume(DATA_SOURCE)
 
   const resolvedValue = computed(() => {
     // 静态值优先（直接传入 value 的场景）
     if (props.value !== undefined) return props.value
+    const activeRow = resolveCurrentRowPath(contextData, dataSource)
     // 从当前行数据读取字段
-    if (contextData !== null && props.field && props.field in contextData) {
-      return contextData[props.field]
+    if (activeRow !== null && props.field && props.field in activeRow) {
+      return activeRow[props.field]
     }
     return undefined
   })

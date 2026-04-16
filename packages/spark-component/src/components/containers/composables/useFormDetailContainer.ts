@@ -3,14 +3,16 @@ import { useSparkPageComponent } from '../../internal'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { PAGE_DATASET, DATA_SOURCE } from '../../internal'
+import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../internal'
 import { DATA_ROW } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../layout/useContainerGrid'
-import { useContainerDataSource, useContainerDataSourceEffects } from '../composables/useContainerDataSource'
+import { useContainerDataSource, useContainerDataSourceEffects } from './useContainerDataSource'
+import { useContainerModuleContext } from './useContainerModuleContext'
 import { useContainerToolbar } from '../layout/useContainerToolbar'
 import type { ToolbarNode } from '../non-data-components/RendererToolbar.types'
 import { createCurrentRowSlotScope } from '../support/slotScopeFactories'
+import { syncReactiveRow } from '../../support/row-mirror-sync'
 
 interface FormDetailContainerProps extends SparkNode {
   dataKey: string | undefined
@@ -44,6 +46,7 @@ export function useFormDetailContainer(
   const { sparkConsume, sparkProvide, logger, registerApi } = useSparkPageComponent(props)
   const pageDataSet = sparkConsume(PAGE_DATASET)
   const pageService = sparkConsume(PAGE_SERVICE)
+  const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
   const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
     externalDataSource: computed(() => props.dataSource),
@@ -69,20 +72,7 @@ export function useFormDetailContainer(
       if (row === prevRow) return
       prevRow = row
 
-      const incoming: IDataRow = row ?? {}
-      const incomingKeys = new Set(Object.keys(incoming))
-
-      for (const key of Object.keys(contextData)) {
-        if (!incomingKeys.has(key)) {
-          contextData[key] = undefined
-        }
-      }
-
-      for (const key of incomingKeys) {
-        if (contextData[key] !== incoming[key]) {
-          contextData[key] = incoming[key]
-        }
-      }
+      syncReactiveRow(contextData, row)
     },
     { immediate: true },
   )
@@ -106,6 +96,7 @@ export function useFormDetailContainer(
     return createCurrentRowSlotScope({
       dataSource: resolvedView.value,
       modelPermission: modelPermission.value,
+      moduleContext: moduleContext.value,
       row: contextData,
       model: contextData,
     })

@@ -17,7 +17,8 @@
  */
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
-import { DATA_ROW, useSparkComponent } from '../../internal'
+import { DATA_ROW, DATA_SOURCE, useSparkComponent } from '../../internal'
+import { resolveCurrentRowPath } from '../../support/row-selection-path'
 import type { RTreeNodeSummaryProps } from './TreeNodeSummary.props'
 
 const props = withDefaults(defineProps<RTreeNodeSummaryProps>(), {
@@ -38,7 +39,8 @@ const props = withDefaults(defineProps<RTreeNodeSummaryProps>(), {
 const { sparkConsume } = useSparkComponent(props)
 const contextData = computed<IDataRow>(() => {
   const raw = sparkConsume(DATA_ROW)
-  return raw ?? {}
+  const dataSource = sparkConsume(DATA_SOURCE)
+  return resolveCurrentRowPath(raw, dataSource) ?? {}
 })
 
 function readString(field: string): string {

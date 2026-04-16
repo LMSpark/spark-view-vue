@@ -7,9 +7,8 @@ import {
 } from '../../../internal'
 import type { SparkNode } from '../../../internal'
 import type { ValueRef } from '../../../shared-types.js'
-import { createBuiltinActionHandler } from '../../support/actions/builtin-action-handler'
-import { isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
-import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
+import { createBuiltinActionBridge } from '../../support/actions/builtin-action-bridge'
+import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererTreeApi } from './types'
 
 export interface TreeNode {
@@ -95,7 +94,7 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     tree?.setCurrentKey?.(key)
   }
 
-  const { dispatch } = useEventDefaults(createCrudEventDefaults(), options.props)
+  const { dispatch } = createCrudDispatcher(options.props)
 
   const baseCrudMethods = createBaseCrudMethods(options.resolvedView, dispatch)
   const { getDataSource, addRow, editRowById, removeRow } = baseCrudMethods
@@ -195,27 +194,26 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     },
   }
 
-  const builtinHandler = createBuiltinActionHandler({
+  const builtinActions = createBuiltinActionBridge({
     getView: () => options.resolvedView.value,
     getPageService: () => options.pageService,
     getLogger: () => options.logger,
-    hasRemoteListApi: view => Boolean(view.dataTable?.api?.list),
   })
 
   function isBuiltinNodeActionDisabled(action: SparkNode, row: IDataRow, index: number): boolean {
-    return _isBuiltinActionDisabled(action, options.resolvedView.value, { row, index })
+    return builtinActions.isDisabled(action, { row, index })
   }
 
   function isBuiltinToolbarActionDisabled(action: SparkNode): boolean {
-    return _isBuiltinActionDisabled(action, options.resolvedView.value)
+    return builtinActions.isDisabled(action)
   }
 
   function handleBuiltinToolbarAction(action: SparkNode): void {
-    builtinHandler.handleToolbar(action)
+    builtinActions.handleToolbar(action)
   }
 
   function handleBuiltinNodeAction(action: SparkNode, row: IDataRow, index: number): void {
-    builtinHandler.handleRow(action, row, index)
+    builtinActions.handleRow(action, row, index)
   }
 
   function createTreeEventControl(): TreeEventControl {

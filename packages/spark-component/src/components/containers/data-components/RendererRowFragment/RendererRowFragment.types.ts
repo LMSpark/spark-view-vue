@@ -11,7 +11,7 @@ export type RowFragmentAlign = 'left' | 'center' | 'right'
  * - table 可消费 title/label/width/minWidth/align/headerAlign
  * - list / tree / gantt 可消费 title/description/width/class
  *
- * 底层 `RendererHostRowScope` 本身保持透明，不直接解释这些属性。
+ * 底层 `RendererHostScope` 本身保持透明，不直接解释这些属性。
  */
 export interface RendererRowFragmentConfigProps {
   /** 标题位文本。 */

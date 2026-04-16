@@ -15,4 +15,4 @@
 3. `RendererDetail`
 4. `RendererTree`
 5. `RendererList`
-6. `RendererRowFragment/`（行片段链：`RendererRowFragment` + `RendererHostRowScope`）
+6. `RendererRowFragment/`（行片段链：`RendererRowFragment` + `RendererHostScope`）

@@ -8,6 +8,7 @@
 import type { PageMessageType } from '@spark-view/spark-utils'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../../../internal'
+import { resolveSelectedRowsPath } from '../../../support/row-selection-path'
 
 // ── 值解析 ────────────────────────────────────────────────────────────────
 
@@ -78,7 +79,11 @@ export function extractErrorMessage(error: unknown): string {
 // ── 行数据辅助 ────────────────────────────────────────────────────────────
 
 export function getSelectedRows(view: DataView): IDataRow[] {
-  return Array.isArray(view.selectedRows) ? view.selectedRows : []
+  return resolveSelectedRowsPath(view)
+}
+
+export function hasRemoteListApi(view: DataView | null | undefined): boolean {
+  return Boolean(view?.dataTable?.api?.list)
 }
 
 export function resolveEditTargetRow(

@@ -22,7 +22,7 @@
       </div>
     </template>
 
-    <RendererHostRowScope type="r-drawer-field-scope" :host="drawerFieldHost">
+    <RendererHostScope type="r-drawer-field-scope" :host="drawerFieldHost">
       <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -34,7 +34,7 @@
         </div>
         <slot v-bind="getDefaultSlotScope()" />
       </div>
-    </RendererHostRowScope>
+    </RendererHostScope>
 
     <template v-if="showFooter" #footer>
       <div :class="['renderer-drawer-footer', footerClassValue]">
@@ -61,7 +61,7 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDrawerProps } from './RendererDrawer.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { SparkComponentHost } from '../../../internal'
 import type { RendererDrawerApi } from './types'
 import { createRendererDrawerZeroCode } from './zero-code'

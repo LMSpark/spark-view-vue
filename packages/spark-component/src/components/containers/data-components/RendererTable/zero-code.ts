@@ -1,10 +1,9 @@
 import type { DataView, IDataRow } from '@spark-view/spark-data'
 import type { IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 import type { SparkNode } from '../../../internal'
-import { createBuiltinActionHandler } from '../../support/actions/builtin-action-handler'
-import { isBuiltinActionDisabled as _isBuiltinActionDisabled } from '../../support/actions/builtin-action-disabled'
+import { createBuiltinActionBridge } from '../../support/actions/builtin-action-bridge'
 import { getSelectedRows } from '../../support/actions/builtin-action-helpers'
-import { createBaseCrudMethods, createCrudEventDefaults, useEventDefaults } from '../../support/index.js'
+import { createBaseCrudMethods, createCrudDispatcher } from '../../support/index.js'
 import type { RendererTableApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -86,12 +85,8 @@ function sanitizeTreePayload<T>(value: T, view: DataView | null | undefined): T 
   return stripSyntheticTreeName(value, view?.treeConfig?.textField)
 }
 
-function hasRemoteListApi(view: DataView | null | undefined): boolean {
-  return Boolean(view?.dataTable?.api?.list)
-}
-
 export function createRendererTableZeroCode(options: RendererTableZeroCodeOptions) {
-  const { dispatch } = useEventDefaults(createCrudEventDefaults({
+  const { dispatch } = createCrudDispatcher(options.props, {
     'current-change': {
       systemDefault: (currentRow: unknown) => {
         options.resolvedView.value?.selection.setCurrentRow(
@@ -116,7 +111,7 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
         )
       },
     },
-  }), options.props)
+  })
 
   const baseMethods = createBaseCrudMethods(options.resolvedView, dispatch)
 
@@ -212,29 +207,27 @@ export function createRendererTableZeroCode(options: RendererTableZeroCodeOption
     },
   }
 
-  const builtinHandler = createBuiltinActionHandler({
+  const builtinActions = createBuiltinActionBridge({
     getView: () => options.resolvedView.value,
     getPageService: () => options.pageService,
     getLogger: () => options.logger,
-    hasRemoteListApi: view => hasRemoteListApi(view),
   })
 
   function isBuiltinActionDisabled(action: SparkNode, scope?: { row?: IDataRow; index?: number }): boolean {
-    return _isBuiltinActionDisabled(action, options.resolvedView.value, scope)
+    return builtinActions.isDisabled(action, scope)
   }
 
   function handleBuiltinToolbarAction(action: SparkNode): void {
-    builtinHandler.handleToolbar(action)
+    builtinActions.handleToolbar(action)
   }
 
   function handleBuiltinRowAction(action: SparkNode, row: IDataRow, index: number): void {
-    builtinHandler.handleRow(action, row, index)
+    builtinActions.handleRow(action, row, index)
   }
 
   return {
     dispatch,
     tableApi,
-    hasRemoteListApi,
     isBuiltinActionDisabled,
     handleBuiltinToolbarAction,
     handleBuiltinRowAction,

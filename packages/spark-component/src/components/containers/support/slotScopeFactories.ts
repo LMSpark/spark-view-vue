@@ -1,10 +1,12 @@
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
+import type { IModuleContext } from '@spark-view/spark-utils'
 
 // ── 通用作用域结构 ───────────────────────────────────────────────────────────
 
 export interface BaseSlotScope<TSource> {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
+  moduleContext?: IModuleContext | null | undefined
 }
 
 // ── 作用域构建辅助函数 ───────────────────────────────────────────────────────
@@ -32,6 +34,7 @@ export function createToolbarSlotScope<TSource>(
 export function createRowActionSlotScope<TSource>(params: {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
+  moduleContext?: IModuleContext | null | undefined
   row: IDataRow
   index: number
   extra?: Record<string, unknown>
@@ -46,6 +49,7 @@ export function createRowActionSlotScope<TSource>(params: {
 export function createCurrentRowSlotScope<TSource>(params: {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
+  moduleContext?: IModuleContext | null | undefined
   row: IDataRow
   model?: IDataRow
 }) {

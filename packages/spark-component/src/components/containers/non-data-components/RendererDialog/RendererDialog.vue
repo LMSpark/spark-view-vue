@@ -22,7 +22,7 @@
       </div>
     </template>
 
-    <RendererHostRowScope type="r-dialog-field-scope" :host="dialogFieldHost">
+    <RendererHostScope type="r-dialog-field-scope" :host="dialogFieldHost">
       <div :class="['renderer-dialog-body', bodyClass]" :style="gridStyle">
         <div
           v-for="(child, index) in gridChildren"
@@ -34,7 +34,7 @@
         </div>
         <slot v-bind="getDefaultSlotScope()" />
       </div>
-    </RendererHostRowScope>
+    </RendererHostScope>
 
     <template v-if="showFooter" #footer>
       <div :class="['renderer-dialog-footer', footerClassValue]">
@@ -61,7 +61,7 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDialogProps } from './RendererDialog.props'
 import { useContainerGrid } from '../../layout/useContainerGrid'
-import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { SparkComponentHost } from '../../../internal'
 import type { RendererDialogApi } from './types'
 import { createRendererDialogZeroCode } from './zero-code'

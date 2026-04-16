@@ -32,7 +32,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
 
   const fieldName = computed(() => props.field ?? '')
   const displayLabel = computed(() => props.label ?? fieldName.value)
-  const { contextData, dataSource, activeRow } = useActiveFieldRow()
+  const { contextData, dataSource, activeRow, activeSelectedRows } = useActiveFieldRow()
   const pageService = sparkConsume(PAGE_SERVICE)
   const perm = usePermission()
 
@@ -48,6 +48,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   })
 
   const currentRow = computed<IDataRow | null>(() => activeRow.value)
+  const selectedRows = computed<IDataRow[]>(() => activeSelectedRows.value)
 
   const sourceFieldValue = computed<TValue>(() => {
     if (props.value !== undefined) return props.value
@@ -137,6 +138,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     contextData,
     pageService,
     currentRow,
+    selectedRows,
     isCurrentFieldReadable,
     fieldValue,
     currentRawValue,

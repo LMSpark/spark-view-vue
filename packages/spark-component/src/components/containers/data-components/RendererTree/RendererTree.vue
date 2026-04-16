@@ -1,12 +1,12 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostRowScope v-if="showToolbar" type="r-tree-toolbar-scope" :host="toolbarHost">
+    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :host="toolbarHost">
       <div :class="['renderer-tree-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
         </template>
       </div>
-    </RendererHostRowScope>
+    </RendererHostScope>
 
     <div :class="['renderer-tree-body', `renderer-tree-body--editor-${editorPositionValue}`]">
       <div class="renderer-tree-main">
@@ -23,14 +23,14 @@
         >
           <template #default="slotProps">
             <span class="custom-tree-node">
-              <RendererHostRowScope
+              <RendererHostScope
                 v-if="nodeContentChildren.length > 0"
                 type="r-data-scope"
                 :children="nodeContentChildren"
                 :row="(slotProps?.data as IDataRow) ?? {}"
                 :host="treeFieldHost"
               />
-              <RendererHostRowScope
+              <RendererHostScope
                 v-else
                 type="r-data-scope"
                 :row="(slotProps?.data as IDataRow) ?? {}"
@@ -39,12 +39,12 @@
                 <slot :node="slotProps?.node" :data="slotProps?.data">
                   <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
                 </slot>
-              </RendererHostRowScope>
+              </RendererHostScope>
               <span
                 v-if="hasNodeActions"
                 class="tree-node-actions"
               >
-                <RendererHostRowScope
+                <RendererHostScope
                   :children="getNodeActionConfigs(((slotProps?.data as IDataRow) ?? {}))"
                   type="r-tree-node-action-scope"
                   :row="((slotProps?.data as IDataRow) ?? {})"
@@ -87,7 +87,7 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
+import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../../internal'
 import { DATA_ROW } from '../../../internal'
 import type { RendererTreeApi } from './types'
 import {
@@ -100,12 +100,13 @@ import { useRendererTreeInput } from './input'
 import { useRendererTreeViewState } from './view-state'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useContainerActions } from '../../composables/useContainerActions'
-import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { SparkComponentHost } from '../../../internal'
 
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
 import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
+import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
@@ -126,6 +127,7 @@ const {
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
+const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
@@ -178,6 +180,7 @@ const {
       row,
       rowIndex: index,
       data: row,
+      moduleContext: moduleContext.value,
     },
   }),
 })

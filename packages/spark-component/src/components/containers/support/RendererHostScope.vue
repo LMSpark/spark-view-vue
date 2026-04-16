@@ -14,12 +14,14 @@
  *
  * 命名约定：
  * - 组件层级语义统一使用 host
- * - 数据域语义统一使用 data / dataScope
- * - 合并承载两者时，文件名同时带上 host + data
+ * - 数据域语义继续保持 scope（DATA_ROW 作用域不变）
+ * - 载体组件命名保持 host 主语义，不在文件名重复数据域细节
  */
 import { computed, shallowReactive, watch } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import { DATA_ROW, SparkComponentRenderer, nodeId, useSparkComponent, type SparkComponentHost, type SparkNode } from '../../internal'
+import { useContainerHostBridge } from '../composables/useContainerHostBridge'
+import { syncReactiveRow } from '../../support/row-mirror-sync'
 
 const props = withDefaults(defineProps<{
   type?: string
@@ -34,71 +36,24 @@ const props = withDefaults(defineProps<{
 const { host, sparkProvide } = useSparkComponent({ type: props.type })
 
 const currentHost = computed(() => props.host)
-
-const hostProxy: SparkComponentHost = {
-  get fieldMode(): string | undefined {
-    return currentHost.value?.fieldMode
-  },
-  get variant(): string | undefined {
-    return currentHost.value?.variant
-  },
-  isDisabled(action) {
-    return currentHost.value?.isDisabled?.(action) ?? false
-  },
-  execute(action) {
-    currentHost.value?.execute?.(action)
-  },
-}
-
-watch(
-  currentHost,
-  (resolvedHost) => {
-    if (resolvedHost !== undefined) {
-      host.setHost(hostProxy)
-    }
-  },
-  { immediate: true },
-)
+useContainerHostBridge(host, currentHost)
 
 const rowMirror = shallowReactive<IDataRow>({})
 let providedRowMirror = false
 
-function syncRow(target: IDataRow, source: IDataRow): void {
-  const incomingKeys = new Set(Object.keys(source))
-
-  for (const key of Object.keys(target)) {
-    if (!incomingKeys.has(key)) {
-      target[key] = undefined
-    }
-  }
-
-  for (const key of incomingKeys) {
-    if (target[key] !== source[key]) {
-      target[key] = source[key]
-    }
-  }
-}
-
 watch(
   () => props.row,
   (newRow) => {
-    if (newRow === undefined) {
-      for (const key of Object.keys(rowMirror)) {
-        rowMirror[key] = undefined
-      }
-      return
-    }
-
     if (!providedRowMirror) {
       sparkProvide(DATA_ROW, rowMirror)
       providedRowMirror = true
     }
 
-    syncRow(rowMirror, newRow)
+    syncReactiveRow(rowMirror, newRow)
   },
   { immediate: true, deep: true },
 )
 
 const resolvedChildren = computed(() => props.children ?? [])
-const resolvedChildKeyPrefix = computed(() => props.childKeyPrefix ?? 'renderer-host-data-scope-child')
+const resolvedChildKeyPrefix = computed(() => props.childKeyPrefix ?? 'renderer-host-scope-child')
 </script>

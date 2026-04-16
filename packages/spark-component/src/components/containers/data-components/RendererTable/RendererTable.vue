@@ -1,14 +1,14 @@
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
     <!-- 工具栏 -->
-    <RendererHostRowScope v-if="showToolbar" type="r-table-toolbar-scope" :host="toolbarHost">
+    <RendererHostScope v-if="showToolbar" type="r-table-toolbar-scope" :host="toolbarHost">
       <RendererToolbar
         type="r-toolbar"
         :class="['renderer-table-toolbar', toolbarClassValue]"
         v-bind="toolbarComponentProps"
         :children="visibleToolbarConfigs"
       />
-    </RendererHostRowScope>
+    </RendererHostScope>
 
     <!-- 过滤区 -->
     <RendererFilter
@@ -53,7 +53,7 @@
         >
           <template #default="scope">
             <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-              <RendererHostRowScope
+              <RendererHostScope
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
@@ -82,7 +82,7 @@
         >
           <template #default="scope">
             <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-              <RendererHostRowScope
+              <RendererHostScope
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
                 :row="getScopedRowActionRow(scope)"
@@ -141,11 +141,11 @@ import { useContainerSlots } from '../../layout/useContainerSlots'
 import { useContainerToolbar, type ToolbarPosition } from '../../layout/useContainerToolbar'
 import RendererFilter from '../../RendererFilter.vue'
 import { createRowActionSlotScope } from '../../support/slotScopeFactories'
-import { useModuleContext } from '../../context/useModuleContext'
+import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
 import type { RendererToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
-import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
 import type { SparkComponentHost } from '../../../internal'
 
@@ -232,7 +232,7 @@ const { host: tableHost, sparkConsume, sparkProvide, registerApi, logger } = use
 
 const pageDataSet = sparkConsume(PAGE_DATASET)
 const pageService = sparkConsume(PAGE_SERVICE)
-const moduleContext = useModuleContext(sparkConsume(MODULE_CONTEXT))
+const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
@@ -446,11 +446,9 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
   return createRowActionSlotScope({
     dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
+    moduleContext: moduleContext.value,
     row,
     index,
-    extra: {
-      moduleContext: moduleContext.value,
-    },
   })
 }
 

@@ -43,17 +43,21 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<M
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
-const { options, fieldName, fieldValue, contextData, isCurrentFieldEditable } = optionResult
+const { options, fieldName, currentRow, fieldValue, isCurrentFieldEditable } = optionResult
 
 const displayValue = computed<MultiValue>(() => {
-  const explicitValue = props.value
-  if (Array.isArray(explicitValue)) {
-    return explicitValue as MultiValue
+  const boundField = fieldName.value
+  const rowValue = boundField ? currentRow.value?.[boundField] : undefined
+
+  if (rowValue !== undefined) {
+    return Array.isArray(rowValue) ? (rowValue as MultiValue) : []
   }
 
-  const boundField = fieldName.value
-  const rowValue = boundField ? contextData?.[boundField] : undefined
-  const rawValue = rowValue ?? fieldValue.value
+  if (!boundField && Array.isArray(props.value)) {
+    return props.value as MultiValue
+  }
+
+  const rawValue = fieldValue.value
   if (Array.isArray(rawValue)) {
     return rawValue as MultiValue
   }

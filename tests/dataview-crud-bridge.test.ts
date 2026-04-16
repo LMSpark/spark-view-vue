@@ -341,6 +341,8 @@ describe('DataView CRUD bridge', () => {
       showConfirm: vi.fn(async () => true),
     })
 
+    view.selection.setSelectedRows([view.rows[0]!])
+
     expect(view.rows).toHaveLength(1)
 
     const handler = createBuiltinActionHandler({
@@ -359,6 +361,8 @@ describe('DataView CRUD bridge', () => {
     await flushAsync()
 
     expect(view.rows).toHaveLength(0)
+    expect(view.currentRow).toBeNull()
+    expect(view.selectedRows).toHaveLength(0)
     expect(pageService.showConfirm).toHaveBeenCalledOnce()
   })
 

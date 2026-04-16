@@ -25,7 +25,7 @@
                 v-if="showItemActionsLeftValue"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <RendererHostRowScope
+                <RendererHostScope
                   type="r-list-item-action-scope"
                   :children="getScopedItemActions({ row, index })"
                   :row="row"
@@ -35,7 +35,7 @@
               </div>
 
               <div :class="itemClass" :style="itemStyle">
-                <RendererHostRowScope type="r-list-item" :row="row" :host="listFieldHost">
+                <RendererHostScope type="r-list-item" :row="row" :host="listFieldHost">
                   <component :is="itemBodyWrapperTag" v-bind="itemBodyWrapperAttrs">
                     <div class="renderer-list-item-body" :style="itemContentGridStyle">
                       <div
@@ -52,14 +52,14 @@
                       />
                     </div>
                   </component>
-                </RendererHostRowScope>
+                </RendererHostScope>
               </div>
 
               <div
                 v-if="showItemActionsRightValue"
                 :class="['renderer-list-item-actions', itemActionsClassValue]"
               >
-                <RendererHostRowScope
+                <RendererHostScope
                   type="r-list-item-action-scope"
                   :children="getScopedItemActions({ row, index })"
                   :row="row"
@@ -93,9 +93,9 @@ import { useSparkPageComponent, SparkComponentRenderer } from '../../../internal
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../../internal'
 import type { RListProps } from './RendererList.props'
 import type { DataView, IDataRow } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE } from '../../../internal'
+import { PAGE_DATASET, DATA_SOURCE, MODULE_CONTEXT } from '../../../internal'
 import type { RendererListApi } from './types'
-import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { SparkComponentHost } from '../../../internal'
 import { useContainerActions } from '../../composables/useContainerActions'
 import { useContainerDataSource, useContainerDataSourceEffects } from '../../composables/useContainerDataSource'
@@ -104,6 +104,7 @@ import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../support/slotScopeFactories'
+import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import { createRendererListZeroCode } from './zero-code'
 
 const props = withDefaults(defineProps<RListProps>(), {
@@ -137,6 +138,7 @@ const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { sparkConsume, sparkProvide, registerApi, logger } = useSparkPageComponent(props)
 const pageDataSet = sparkConsume(PAGE_DATASET)
+const moduleContext = useContainerModuleContext(sparkConsume(MODULE_CONTEXT))
 
 const { resolvedDataSource: resolvedView, modelPermission } = useContainerDataSource<DataView>({
   externalDataSource: computed(() => props.dataSource),
@@ -288,6 +290,7 @@ function getRowSlotScope(row: IDataRow, index: number) {
   return createRowActionSlotScope({
     dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
+    moduleContext: moduleContext.value,
     row,
     index,
   })
@@ -297,6 +300,7 @@ function getItemActionSlotScope(row: IDataRow, index: number) {
   return createRowActionSlotScope({
     dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
+    moduleContext: moduleContext.value,
     row,
     index,
   })
@@ -310,6 +314,7 @@ function getDefaultSlotScope() {
   return createToolbarSlotScope({
     dataSource: resolvedView.value,
     modelPermission: modelPermission.value,
+    moduleContext: moduleContext.value,
   }, {
     rows: listRows.value,
   })

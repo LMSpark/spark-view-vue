@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import type { ModuleContextCapability } from '../../internal'
 
-export function useModuleContext(
+export function useContainerModuleContext(
   capability: ModuleContextCapability | null,
 ): Ref<IModuleContext | null> {
   const moduleContext = ref<IModuleContext | null>(capability?.getCurrent() ?? null)

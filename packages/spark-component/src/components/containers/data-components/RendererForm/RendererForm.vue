@@ -1,16 +1,16 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
-    <RendererHostRowScope v-if="showToolbar" type="r-form-toolbar-scope" :host="toolbarHost">
+    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :host="toolbarHost">
       <div :class="['renderer-form-toolbar', toolbarClassValue]">
         <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
           <SparkComponentRenderer :config="action" />
         </template>
       </div>
-    </RendererHostRowScope>
+    </RendererHostScope>
 
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
-        <RendererHostRowScope type="r-form-field-scope" :host="fieldHost">
+        <RendererHostScope type="r-form-field-scope" :host="fieldHost">
           <div class="renderer-form-grid" :style="gridStyle">
             <div
               v-for="(child, index) in gridChildren"
@@ -22,7 +22,7 @@
             </div>
             <slot v-bind="getDefaultSlotScope()" />
           </div>
-        </RendererHostRowScope>
+        </RendererHostScope>
       </el-form>
     </div>
   </div>
@@ -47,8 +47,8 @@ import { computed, ref } from 'vue'
 import { SparkComponentRenderer } from '../../../internal'
 import { nodeId, type SparkNode } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
-import { useFormDetailContainer } from '../../context/useFormDetailContainer'
-import RendererHostRowScope from '../../support/RendererHostRowScope.vue'
+import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
+import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererFormApi } from './types'
 import { createRendererFormZeroCode } from './zero-code'
 import type { SparkComponentHost } from '../../../internal'

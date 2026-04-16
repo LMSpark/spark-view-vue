@@ -2,7 +2,7 @@
  * 内置声明式动作系统 — 执行处理器工厂
  *
  * 容器组件通过 createBuiltinActionHandler 构建绑定上下文后,
- * 将 handleToolbar / handleRow 交由 RendererHostRowScope 分发给子动作按钮。
+ * 将 handleToolbar / handleRow 交由 RendererHostScope 分发给子动作按钮。
  */
 
 import type { CrudResult, IDataRow, DataView } from '@spark-view/spark-data'
@@ -213,6 +213,13 @@ function formatRowMessage(row: IDataRow, propsMap: Record<string, unknown>): str
       .slice(0, 6)
   )
   return JSON.stringify(compact)
+}
+
+function clearViewAtTableLevel(view: DataView): void {
+  view.replaceRows([])
+  // 清空行后同步重置选择态，避免 UI/数据态残留。
+  view.selection.setCurrentRow(null)
+  view.selection.clearSelectedRows()
 }
 
 // ── 执行处理器工厂 ───────────────────────────────────────────────────────
@@ -621,7 +628,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
         case 'clear-rows': {
           const allowed = await confirmAction(propsMap, '确认清空当前列表吗？', '清空确认')
           if (!allowed) return
-          view.replaceRows([])
+          clearViewAtTableLevel(view)
           notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '已清空当前列表'))
           return
         }
