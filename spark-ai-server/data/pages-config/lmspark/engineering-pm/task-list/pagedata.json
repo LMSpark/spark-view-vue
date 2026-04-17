@@ -4,27 +4,141 @@
     "Tasks": {
       "tableName": "Tasks",
       "columns": [
-        { "name": "id", "type": "string" },
-        { "name": "projectId", "type": "string" },
-        { "name": "projectName", "type": "string" },
-        { "name": "title", "type": "string" },
-        { "name": "assigneeName", "type": "string" },
-        { "name": "priority", "type": "string" },
-        { "name": "status", "type": "string" },
-        { "name": "dueDate", "type": "string" },
-        { "name": "estimatedHours", "type": "number" },
-        { "name": "actualHours", "type": "number" },
-        { "name": "description", "type": "string" }
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "projectId",
+          "type": "string"
+        },
+        {
+          "name": "projectName",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "assigneeName",
+          "type": "string"
+        },
+        {
+          "name": "priority",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "dueDate",
+          "type": "string"
+        },
+        {
+          "name": "estimatedHours",
+          "type": "number"
+        },
+        {
+          "name": "actualHours",
+          "type": "number"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        }
       ],
-      "rows": [
-        { "id": "t1", "projectId": "p1", "projectName": "智慧园区项目", "title": "需求规格说明书编写", "assigneeName": "陈一", "priority": "高", "status": "进行中", "dueDate": "2026-03-20", "estimatedHours": 24, "actualHours": 16 },
-        { "id": "t2", "projectId": "p1", "projectName": "智慧园区项目", "title": "数据库表结构设计", "assigneeName": "刘二", "priority": "高", "status": "未开始", "dueDate": "2026-03-25", "estimatedHours": 16, "actualHours": 0 },
-        { "id": "t3", "projectId": "p1", "projectName": "智慧园区项目", "title": "前端框架搭建", "assigneeName": "周三", "priority": "中", "status": "已完成", "dueDate": "2026-03-15", "estimatedHours": 32, "actualHours": 28 },
-        { "id": "t4", "projectId": "p2", "projectName": "ERP升级项目", "title": "旧系统数据迁移方案", "assigneeName": "吴四", "priority": "紧急", "status": "进行中", "dueDate": "2026-03-18", "estimatedHours": 40, "actualHours": 35 },
-        { "id": "t5", "projectId": "p2", "projectName": "ERP升级项目", "title": "UI原型设计评审", "assigneeName": "郑五", "priority": "中", "status": "待审核", "dueDate": "2026-03-22", "estimatedHours": 8, "actualHours": 6 },
-        { "id": "t6", "projectId": "p3", "projectName": "移动办公平台", "title": "移动端技术选型报告", "assigneeName": "陈一", "priority": "中", "status": "已完成", "dueDate": "2026-03-10", "estimatedHours": 8, "actualHours": 10 },
-        { "id": "t7", "projectId": "p3", "projectName": "移动办公平台", "title": "推送服务集成", "assigneeName": "周三", "priority": "低", "status": "未开始", "dueDate": "2026-04-15", "estimatedHours": 24, "actualHours": 0 }
-      ]
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": "t1",
+              "projectId": "p1",
+              "projectName": "智慧园区项目",
+              "title": "需求规格说明书编写",
+              "assigneeName": "陈一",
+              "priority": "高",
+              "status": "进行中",
+              "dueDate": "2026-03-20",
+              "estimatedHours": 24,
+              "actualHours": 16
+            },
+            {
+              "id": "t2",
+              "projectId": "p1",
+              "projectName": "智慧园区项目",
+              "title": "数据库表结构设计",
+              "assigneeName": "刘二",
+              "priority": "高",
+              "status": "未开始",
+              "dueDate": "2026-03-25",
+              "estimatedHours": 16,
+              "actualHours": 0
+            },
+            {
+              "id": "t3",
+              "projectId": "p1",
+              "projectName": "智慧园区项目",
+              "title": "前端框架搭建",
+              "assigneeName": "周三",
+              "priority": "中",
+              "status": "已完成",
+              "dueDate": "2026-03-15",
+              "estimatedHours": 32,
+              "actualHours": 28
+            },
+            {
+              "id": "t4",
+              "projectId": "p2",
+              "projectName": "ERP升级项目",
+              "title": "旧系统数据迁移方案",
+              "assigneeName": "吴四",
+              "priority": "紧急",
+              "status": "进行中",
+              "dueDate": "2026-03-18",
+              "estimatedHours": 40,
+              "actualHours": 35
+            },
+            {
+              "id": "t5",
+              "projectId": "p2",
+              "projectName": "ERP升级项目",
+              "title": "UI原型设计评审",
+              "assigneeName": "郑五",
+              "priority": "中",
+              "status": "待审核",
+              "dueDate": "2026-03-22",
+              "estimatedHours": 8,
+              "actualHours": 6
+            },
+            {
+              "id": "t6",
+              "projectId": "p3",
+              "projectName": "移动办公平台",
+              "title": "移动端技术选型报告",
+              "assigneeName": "陈一",
+              "priority": "中",
+              "status": "已完成",
+              "dueDate": "2026-03-10",
+              "estimatedHours": 8,
+              "actualHours": 10
+            },
+            {
+              "id": "t7",
+              "projectId": "p3",
+              "projectName": "移动办公平台",
+              "title": "推送服务集成",
+              "assigneeName": "周三",
+              "priority": "低",
+              "status": "未开始",
+              "dueDate": "2026-04-15",
+              "estimatedHours": 24,
+              "actualHours": 0
+            }
+          ]
+        }
+      }
     }
   }
 }

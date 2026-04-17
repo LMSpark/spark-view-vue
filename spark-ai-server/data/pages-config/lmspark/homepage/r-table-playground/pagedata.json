@@ -1,424 +1,424 @@
 {
-    "dataSetName": "RTablePlaygroundDS",
-    "tables": {
-        "Orders": {
-            "tableName": "Orders",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "number",
-                    "label": "ID",
-                    "isPrimaryKey": true
-                },
-                {
-                    "name": "orderNo",
-                    "type": "string",
-                    "label": "订单号"
-                },
-                {
-                    "name": "customer",
-                    "type": "string",
-                    "label": "客户"
-                },
-                {
-                    "name": "status",
-                    "type": "string",
-                    "label": "状态"
-                },
-                {
-                    "name": "priority",
-                    "type": "string",
-                    "label": "优先级"
-                },
-                {
-                    "name": "owner",
-                    "type": "string",
-                    "label": "负责人"
-                },
-                {
-                    "name": "amount",
-                    "type": "number",
-                    "label": "订单金额"
-                },
-                {
-                    "name": "taxAmount",
-                    "type": "number",
-                    "label": "税额",
-                    "computeExpression": "amount * 0.13"
-                },
-                {
-                    "name": "totalAmount",
-                    "type": "number",
-                    "label": "含税总额",
-                    "computeExpression": "amount + taxAmount"
-                },
-                {
-                    "name": "orderDate",
-                    "type": "string",
-                    "label": "下单日期"
-                },
-                {
-                    "name": "region",
-                    "type": "string",
-                    "label": "区域"
-                }
-            ],
-            "views": {
-                "default": {
-                    "rows": [
-                        {
-                            "id": 2001,
-                            "orderNo": "SO-PLAY-001",
-                            "customer": "华东数科",
-                            "status": "pending",
-                            "priority": "high",
-                            "owner": "张三",
-                            "amount": 28000,
-                            "orderDate": "2026-03-02",
-                            "region": "east"
-                        },
-                        {
-                            "id": 2002,
-                            "orderNo": "SO-PLAY-002",
-                            "customer": "华南智造",
-                            "status": "draft",
-                            "priority": "medium",
-                            "owner": "李四",
-                            "amount": 15200,
-                            "orderDate": "2026-03-04",
-                            "region": "south"
-                        },
-                        {
-                            "id": 2003,
-                            "orderNo": "SO-PLAY-003",
-                            "customer": "北辰医疗",
-                            "status": "done",
-                            "priority": "low",
-                            "owner": "王五",
-                            "amount": 42000,
-                            "orderDate": "2026-03-06",
-                            "region": "north"
-                        },
-                        {
-                            "id": 2004,
-                            "orderNo": "SO-PLAY-004",
-                            "customer": "西南云谷",
-                            "status": "pending",
-                            "priority": "high",
-                            "owner": "赵六",
-                            "amount": 19800,
-                            "orderDate": "2026-03-07",
-                            "region": "west"
-                        },
-                        {
-                            "id": 2005,
-                            "orderNo": "SO-PLAY-005",
-                            "customer": "星河零售",
-                            "status": "cancelled",
-                            "priority": "low",
-                            "owner": "孙七",
-                            "amount": 9600,
-                            "orderDate": "2026-03-08",
-                            "region": "east"
-                        },
-                        {
-                            "id": 2006,
-                            "orderNo": "SO-PLAY-006",
-                            "customer": "天启物流",
-                            "status": "pending",
-                            "priority": "medium",
-                            "owner": "周八",
-                            "amount": 33500,
-                            "orderDate": "2026-03-10",
-                            "region": "south"
-                        }
-                    ],
-                    "autoCurrentFirst": true,
-                    "aggregates": {
-                        "orderCount": {
-                            "type": "count",
-                            "field": "id"
-                        },
-                        "amount": {
-                            "type": "sum"
-                        },
-                        "taxAmount": {
-                            "type": "sum"
-                        },
-                        "totalAmount": {
-                            "type": "sum"
-                        }
-                    }
-                }
-            }
-        },
-        "OrderItems": {
-            "tableName": "OrderItems",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "number",
-                    "label": "ID",
-                    "isPrimaryKey": true
-                },
-                {
-                    "name": "orderId",
-                    "type": "number",
-                    "label": "订单ID"
-                },
-                {
-                    "name": "sku",
-                    "type": "string",
-                    "label": "SKU"
-                },
-                {
-                    "name": "product",
-                    "type": "string",
-                    "label": "商品"
-                },
-                {
-                    "name": "qty",
-                    "type": "number",
-                    "label": "数量"
-                },
-                {
-                    "name": "unitPrice",
-                    "type": "number",
-                    "label": "单价"
-                },
-                {
-                    "name": "lineAmount",
-                    "type": "number",
-                    "label": "行金额",
-                    "computeExpression": "qty * unitPrice"
-                }
-            ],
-            "views": {
-                "default": {
-                    "rows": [
-                        {
-                            "id": 1,
-                            "orderId": 2001,
-                            "sku": "NB-14-PRO",
-                            "product": "轻薄笔记本",
-                            "qty": 2,
-                            "unitPrice": 9800
-                        },
-                        {
-                            "id": 2,
-                            "orderId": 2001,
-                            "sku": "MOUSE-WL-02",
-                            "product": "无线鼠标",
-                            "qty": 6,
-                            "unitPrice": 150
-                        },
-                        {
-                            "id": 3,
-                            "orderId": 2002,
-                            "sku": "ROUTER-AX3",
-                            "product": "企业路由器",
-                            "qty": 4,
-                            "unitPrice": 1200
-                        },
-                        {
-                            "id": 4,
-                            "orderId": 2002,
-                            "sku": "SSD-1T",
-                            "product": "固态硬盘",
-                            "qty": 5,
-                            "unitPrice": 860
-                        },
-                        {
-                            "id": 5,
-                            "orderId": 2003,
-                            "sku": "MON-27-4K",
-                            "product": "4K 显示器",
-                            "qty": 8,
-                            "unitPrice": 2200
-                        },
-                        {
-                            "id": 6,
-                            "orderId": 2004,
-                            "sku": "CHAIR-ERG",
-                            "product": "人体工学椅",
-                            "qty": 12,
-                            "unitPrice": 950
-                        },
-                        {
-                            "id": 7,
-                            "orderId": 2004,
-                            "sku": "DESK-LIFT",
-                            "product": "升降桌",
-                            "qty": 6,
-                            "unitPrice": 1400
-                        },
-                        {
-                            "id": 8,
-                            "orderId": 2005,
-                            "sku": "KB-MEC",
-                            "product": "机械键盘",
-                            "qty": 10,
-                            "unitPrice": 420
-                        },
-                        {
-                            "id": 9,
-                            "orderId": 2006,
-                            "sku": "SW-24G",
-                            "product": "24口交换机",
-                            "qty": 3,
-                            "unitPrice": 3600
-                        },
-                        {
-                            "id": 10,
-                            "orderId": 2006,
-                            "sku": "UPS-3KVA",
-                            "product": "UPS 电源",
-                            "qty": 2,
-                            "unitPrice": 5900
-                        }
-                    ]
-                }
-            }
-        },
-        "Customers": {
-            "tableName": "Customers",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "number",
-                    "label": "ID",
-                    "isPrimaryKey": true
-                },
-                {
-                    "name": "name",
-                    "type": "string",
-                    "label": "客户名称"
-                },
-                {
-                    "name": "tier",
-                    "type": "string",
-                    "label": "客户等级"
-                },
-                {
-                    "name": "city",
-                    "type": "string",
-                    "label": "城市"
-                },
-                {
-                    "name": "industry",
-                    "type": "string",
-                    "label": "行业"
-                },
-                {
-                    "name": "active",
-                    "type": "boolean",
-                    "label": "活跃"
-                },
-                {
-                    "name": "revenue",
-                    "type": "number",
-                    "label": "年营收"
-                },
-                {
-                    "name": "lastFollowDate",
-                    "type": "string",
-                    "label": "最近跟进"
-                }
-            ],
-            "views": {
-                "default": {
-                    "rows": [
-                        {
-                            "id": 1,
-                            "name": "华东数科",
-                            "tier": "A",
-                            "city": "上海",
-                            "industry": "软件",
-                            "active": true,
-                            "revenue": 8600000,
-                            "lastFollowDate": "2026-03-11"
-                        },
-                        {
-                            "id": 2,
-                            "name": "华南智造",
-                            "tier": "A",
-                            "city": "深圳",
-                            "industry": "制造",
-                            "active": true,
-                            "revenue": 9300000,
-                            "lastFollowDate": "2026-03-09"
-                        },
-                        {
-                            "id": 3,
-                            "name": "北辰医疗",
-                            "tier": "B",
-                            "city": "北京",
-                            "industry": "医疗",
-                            "active": true,
-                            "revenue": 5100000,
-                            "lastFollowDate": "2026-03-10"
-                        },
-                        {
-                            "id": 4,
-                            "name": "西南云谷",
-                            "tier": "B",
-                            "city": "成都",
-                            "industry": "互联网",
-                            "active": false,
-                            "revenue": 4700000,
-                            "lastFollowDate": "2026-02-28"
-                        },
-                        {
-                            "id": 5,
-                            "name": "星河零售",
-                            "tier": "C",
-                            "city": "杭州",
-                            "industry": "零售",
-                            "active": true,
-                            "revenue": 2300000,
-                            "lastFollowDate": "2026-03-02"
-                        },
-                        {
-                            "id": 6,
-                            "name": "天启物流",
-                            "tier": "B",
-                            "city": "广州",
-                            "industry": "物流",
-                            "active": true,
-                            "revenue": 6200000,
-                            "lastFollowDate": "2026-03-08"
-                        },
-                        {
-                            "id": 7,
-                            "name": "启明星教育",
-                            "tier": "C",
-                            "city": "武汉",
-                            "industry": "教育",
-                            "active": false,
-                            "revenue": 1800000,
-                            "lastFollowDate": "2026-02-20"
-                        },
-                        {
-                            "id": 8,
-                            "name": "金桥能源",
-                            "tier": "A",
-                            "city": "南京",
-                            "industry": "能源",
-                            "active": true,
-                            "revenue": 12000000,
-                            "lastFollowDate": "2026-03-12"
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    "tableRelations": [
+  "dataSetName": "RTablePlaygroundDS",
+  "tableRelations": [
+    {
+      "parentTable": "Orders",
+      "childTable": "OrderItems",
+      "parentField": "id",
+      "childField": "orderId"
+    }
+  ],
+  "tables": {
+    "Orders": {
+      "tableName": "Orders",
+      "columns": [
         {
-            "parentTable": "Orders",
-            "childTable": "OrderItems",
-            "parentField": "id",
-            "childField": "orderId"
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "orderNo",
+          "type": "string",
+          "label": "订单号"
+        },
+        {
+          "name": "customer",
+          "type": "string",
+          "label": "客户"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态"
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "label": "优先级"
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "label": "负责人"
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "label": "订单金额"
+        },
+        {
+          "name": "taxAmount",
+          "type": "number",
+          "label": "税额",
+          "computeExpression": "amount * 0.13"
+        },
+        {
+          "name": "totalAmount",
+          "type": "number",
+          "label": "含税总额",
+          "computeExpression": "amount + taxAmount"
+        },
+        {
+          "name": "orderDate",
+          "type": "string",
+          "label": "下单日期"
+        },
+        {
+          "name": "region",
+          "type": "string",
+          "label": "区域"
         }
-    ]
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": 2001,
+              "orderNo": "SO-PLAY-001",
+              "customer": "华东数科",
+              "status": "pending",
+              "priority": "high",
+              "owner": "张三",
+              "amount": 28000,
+              "orderDate": "2026-03-02",
+              "region": "east"
+            },
+            {
+              "id": 2002,
+              "orderNo": "SO-PLAY-002",
+              "customer": "华南智造",
+              "status": "draft",
+              "priority": "medium",
+              "owner": "李四",
+              "amount": 15200,
+              "orderDate": "2026-03-04",
+              "region": "south"
+            },
+            {
+              "id": 2003,
+              "orderNo": "SO-PLAY-003",
+              "customer": "北辰医疗",
+              "status": "done",
+              "priority": "low",
+              "owner": "王五",
+              "amount": 42000,
+              "orderDate": "2026-03-06",
+              "region": "north"
+            },
+            {
+              "id": 2004,
+              "orderNo": "SO-PLAY-004",
+              "customer": "西南云谷",
+              "status": "pending",
+              "priority": "high",
+              "owner": "赵六",
+              "amount": 19800,
+              "orderDate": "2026-03-07",
+              "region": "west"
+            },
+            {
+              "id": 2005,
+              "orderNo": "SO-PLAY-005",
+              "customer": "星河零售",
+              "status": "cancelled",
+              "priority": "low",
+              "owner": "孙七",
+              "amount": 9600,
+              "orderDate": "2026-03-08",
+              "region": "east"
+            },
+            {
+              "id": 2006,
+              "orderNo": "SO-PLAY-006",
+              "customer": "天启物流",
+              "status": "pending",
+              "priority": "medium",
+              "owner": "周八",
+              "amount": 33500,
+              "orderDate": "2026-03-10",
+              "region": "south"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "aggregates": {
+            "orderCount": {
+              "type": "count",
+              "field": "id"
+            },
+            "amount": {
+              "type": "sum"
+            },
+            "taxAmount": {
+              "type": "sum"
+            },
+            "totalAmount": {
+              "type": "sum"
+            }
+          }
+        }
+      }
+    },
+    "OrderItems": {
+      "tableName": "OrderItems",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "orderId",
+          "type": "number",
+          "label": "订单ID"
+        },
+        {
+          "name": "sku",
+          "type": "string",
+          "label": "SKU"
+        },
+        {
+          "name": "product",
+          "type": "string",
+          "label": "商品"
+        },
+        {
+          "name": "qty",
+          "type": "number",
+          "label": "数量"
+        },
+        {
+          "name": "unitPrice",
+          "type": "number",
+          "label": "单价"
+        },
+        {
+          "name": "lineAmount",
+          "type": "number",
+          "label": "行金额",
+          "computeExpression": "qty * unitPrice"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": 1,
+              "orderId": 2001,
+              "sku": "NB-14-PRO",
+              "product": "轻薄笔记本",
+              "qty": 2,
+              "unitPrice": 9800
+            },
+            {
+              "id": 2,
+              "orderId": 2001,
+              "sku": "MOUSE-WL-02",
+              "product": "无线鼠标",
+              "qty": 6,
+              "unitPrice": 150
+            },
+            {
+              "id": 3,
+              "orderId": 2002,
+              "sku": "ROUTER-AX3",
+              "product": "企业路由器",
+              "qty": 4,
+              "unitPrice": 1200
+            },
+            {
+              "id": 4,
+              "orderId": 2002,
+              "sku": "SSD-1T",
+              "product": "固态硬盘",
+              "qty": 5,
+              "unitPrice": 860
+            },
+            {
+              "id": 5,
+              "orderId": 2003,
+              "sku": "MON-27-4K",
+              "product": "4K 显示器",
+              "qty": 8,
+              "unitPrice": 2200
+            },
+            {
+              "id": 6,
+              "orderId": 2004,
+              "sku": "CHAIR-ERG",
+              "product": "人体工学椅",
+              "qty": 12,
+              "unitPrice": 950
+            },
+            {
+              "id": 7,
+              "orderId": 2004,
+              "sku": "DESK-LIFT",
+              "product": "升降桌",
+              "qty": 6,
+              "unitPrice": 1400
+            },
+            {
+              "id": 8,
+              "orderId": 2005,
+              "sku": "KB-MEC",
+              "product": "机械键盘",
+              "qty": 10,
+              "unitPrice": 420
+            },
+            {
+              "id": 9,
+              "orderId": 2006,
+              "sku": "SW-24G",
+              "product": "24口交换机",
+              "qty": 3,
+              "unitPrice": 3600
+            },
+            {
+              "id": 10,
+              "orderId": 2006,
+              "sku": "UPS-3KVA",
+              "product": "UPS 电源",
+              "qty": 2,
+              "unitPrice": 5900
+            }
+          ]
+        }
+      }
+    },
+    "Customers": {
+      "tableName": "Customers",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "客户名称"
+        },
+        {
+          "name": "tier",
+          "type": "string",
+          "label": "客户等级"
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "label": "城市"
+        },
+        {
+          "name": "industry",
+          "type": "string",
+          "label": "行业"
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "label": "活跃"
+        },
+        {
+          "name": "revenue",
+          "type": "number",
+          "label": "年营收"
+        },
+        {
+          "name": "lastFollowDate",
+          "type": "string",
+          "label": "最近跟进"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": 1,
+              "name": "华东数科",
+              "tier": "A",
+              "city": "上海",
+              "industry": "软件",
+              "active": true,
+              "revenue": 8600000,
+              "lastFollowDate": "2026-03-11"
+            },
+            {
+              "id": 2,
+              "name": "华南智造",
+              "tier": "A",
+              "city": "深圳",
+              "industry": "制造",
+              "active": true,
+              "revenue": 9300000,
+              "lastFollowDate": "2026-03-09"
+            },
+            {
+              "id": 3,
+              "name": "北辰医疗",
+              "tier": "B",
+              "city": "北京",
+              "industry": "医疗",
+              "active": true,
+              "revenue": 5100000,
+              "lastFollowDate": "2026-03-10"
+            },
+            {
+              "id": 4,
+              "name": "西南云谷",
+              "tier": "B",
+              "city": "成都",
+              "industry": "互联网",
+              "active": false,
+              "revenue": 4700000,
+              "lastFollowDate": "2026-02-28"
+            },
+            {
+              "id": 5,
+              "name": "星河零售",
+              "tier": "C",
+              "city": "杭州",
+              "industry": "零售",
+              "active": true,
+              "revenue": 2300000,
+              "lastFollowDate": "2026-03-02"
+            },
+            {
+              "id": 6,
+              "name": "天启物流",
+              "tier": "B",
+              "city": "广州",
+              "industry": "物流",
+              "active": true,
+              "revenue": 6200000,
+              "lastFollowDate": "2026-03-08"
+            },
+            {
+              "id": 7,
+              "name": "启明星教育",
+              "tier": "C",
+              "city": "武汉",
+              "industry": "教育",
+              "active": false,
+              "revenue": 1800000,
+              "lastFollowDate": "2026-02-20"
+            },
+            {
+              "id": 8,
+              "name": "金桥能源",
+              "tier": "A",
+              "city": "南京",
+              "industry": "能源",
+              "active": true,
+              "revenue": 12000000,
+              "lastFollowDate": "2026-03-12"
+            }
+          ]
+        }
+      }
+    }
+  }
 }

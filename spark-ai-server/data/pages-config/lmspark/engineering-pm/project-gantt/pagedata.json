@@ -1,16 +1,128 @@
 {
   "dataSetName": "GanttDS",
   "tables": {
-    "GanttData": { "tableName": "GanttData", "columns": [{"name":"id","type":"string"},{"name":"phase","type":"string"},{"name":"task","type":"string"},{"name":"startDate","type":"string"},{"name":"endDate","type":"string"},{"name":"duration","type":"number"},{"name":"progress","type":"string"},{"name":"dependencies","type":"string"}],
-    "rows": [
-      {"id":"g1","phase":"启动阶段","task":"项目立项与启动会","startDate":"2026-01-15","endDate":"2026-01-20","duration":5,"progress":"100%","dependencies":"-"},
-      {"id":"g2","phase":"需求阶段","task":"需求调研与分析","startDate":"2026-01-21","endDate":"2026-02-10","duration":20,"progress":"100%","dependencies":"g1"},
-      {"id":"g3","phase":"需求阶段","task":"需求评审与基线","startDate":"2026-02-11","endDate":"2026-02-15","duration":5,"progress":"100%","dependencies":"g2"},
-      {"id":"g4","phase":"设计阶段","task":"系统架构设计","startDate":"2026-02-16","endDate":"2026-03-01","duration":14,"progress":"100%","dependencies":"g3"},
-      {"id":"g5","phase":"开发阶段","task":"后端核心模块","startDate":"2026-03-02","endDate":"2026-04-15","duration":45,"progress":"75%","dependencies":"g4"},
-      {"id":"g6","phase":"开发阶段","task":"前端页面开发","startDate":"2026-03-10","endDate":"2026-04-30","duration":52,"progress":"60%","dependencies":"g4"},
-      {"id":"g7","phase":"测试阶段","task":"集成测试","startDate":"2026-05-01","endDate":"2026-05-31","duration":31,"progress":"0%","dependencies":"g5,g6"},
-      {"id":"g8","phase":"上线阶段","task":"部署与上线","startDate":"2026-06-01","endDate":"2026-06-30","duration":30,"progress":"0%","dependencies":"g7"}
-    ]}
+    "GanttData": {
+      "tableName": "GanttData",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "phase",
+          "type": "string"
+        },
+        {
+          "name": "task",
+          "type": "string"
+        },
+        {
+          "name": "startDate",
+          "type": "string"
+        },
+        {
+          "name": "endDate",
+          "type": "string"
+        },
+        {
+          "name": "duration",
+          "type": "number"
+        },
+        {
+          "name": "progress",
+          "type": "string"
+        },
+        {
+          "name": "dependencies",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": "g1",
+              "phase": "启动阶段",
+              "task": "项目立项与启动会",
+              "startDate": "2026-01-15",
+              "endDate": "2026-01-20",
+              "duration": 5,
+              "progress": "100%",
+              "dependencies": "-"
+            },
+            {
+              "id": "g2",
+              "phase": "需求阶段",
+              "task": "需求调研与分析",
+              "startDate": "2026-01-21",
+              "endDate": "2026-02-10",
+              "duration": 20,
+              "progress": "100%",
+              "dependencies": "g1"
+            },
+            {
+              "id": "g3",
+              "phase": "需求阶段",
+              "task": "需求评审与基线",
+              "startDate": "2026-02-11",
+              "endDate": "2026-02-15",
+              "duration": 5,
+              "progress": "100%",
+              "dependencies": "g2"
+            },
+            {
+              "id": "g4",
+              "phase": "设计阶段",
+              "task": "系统架构设计",
+              "startDate": "2026-02-16",
+              "endDate": "2026-03-01",
+              "duration": 14,
+              "progress": "100%",
+              "dependencies": "g3"
+            },
+            {
+              "id": "g5",
+              "phase": "开发阶段",
+              "task": "后端核心模块",
+              "startDate": "2026-03-02",
+              "endDate": "2026-04-15",
+              "duration": 45,
+              "progress": "75%",
+              "dependencies": "g4"
+            },
+            {
+              "id": "g6",
+              "phase": "开发阶段",
+              "task": "前端页面开发",
+              "startDate": "2026-03-10",
+              "endDate": "2026-04-30",
+              "duration": 52,
+              "progress": "60%",
+              "dependencies": "g4"
+            },
+            {
+              "id": "g7",
+              "phase": "测试阶段",
+              "task": "集成测试",
+              "startDate": "2026-05-01",
+              "endDate": "2026-05-31",
+              "duration": 31,
+              "progress": "0%",
+              "dependencies": "g5,g6"
+            },
+            {
+              "id": "g8",
+              "phase": "上线阶段",
+              "task": "部署与上线",
+              "startDate": "2026-06-01",
+              "endDate": "2026-06-30",
+              "duration": 30,
+              "progress": "0%",
+              "dependencies": "g7"
+            }
+          ]
+        }
+      }
+    }
   }
 }

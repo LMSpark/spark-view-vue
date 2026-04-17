@@ -17,13 +17,17 @@
           "type": "boolean"
         }
       ],
-      "rows": [
-        {
-          "siteName": "我的网站",
-          "siteUrl": "https://example.com",
-          "maintenance": false
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "siteName": "我的网站",
+              "siteUrl": "https://example.com",
+              "maintenance": false
+            }
+          ]
         }
-      ]
+      }
     }
   }
 }

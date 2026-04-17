@@ -1,175 +1,175 @@
 {
-  "dataset": {
-    "dataSetName": "ReportDS",
-    "tables": {
-      "Projects": {
-        "columns": [
-          {
-            "name": "id",
-            "type": "string",
-            "isPrimaryKey": true
-          },
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "type": "string"
-          }
-        ],
-        "views": {
-          "default": {
-            "rows": [
-              {
-                "id": "p1",
-                "name": "智慧园区综合管理平台",
-                "status": "进行中"
-              },
-              {
-                "id": "p2",
-                "name": "ERP系统升级",
-                "status": "进行中"
-              },
-              {
-                "id": "p3",
-                "name": "移动办公平台",
-                "status": "已完成"
-              },
-              {
-                "id": "p4",
-                "name": "数据中心迁移",
-                "status": "延迟"
-              },
-              {
-                "id": "p5",
-                "name": "供应链管理系统",
-                "status": "进行中"
-              }
-            ]
-          }
+  "dataSetName": "ReportDS",
+  "tableRelations": [
+    {
+      "parentTable": "Projects",
+      "childTable": "WeeklyProgress",
+      "parentField": "id",
+      "childField": "projectId",
+      "relationName": "ProjectWeeklyProgress",
+      "cascadeDelete": true
+    }
+  ],
+  "viewDependencies": [
+    {
+      "parentTable": "Projects",
+      "childTable": "WeeklyProgress",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    }
+  ],
+  "tables": {
+    "Projects": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": "p1",
+              "name": "智慧园区综合管理平台",
+              "status": "进行中"
+            },
+            {
+              "id": "p2",
+              "name": "ERP系统升级",
+              "status": "进行中"
+            },
+            {
+              "id": "p3",
+              "name": "移动办公平台",
+              "status": "已完成"
+            },
+            {
+              "id": "p4",
+              "name": "数据中心迁移",
+              "status": "延迟"
+            },
+            {
+              "id": "p5",
+              "name": "供应链管理系统",
+              "status": "进行中"
+            }
+          ]
         }
       },
-      "WeeklyProgress": {
-        "columns": [
-          {
-            "name": "id",
-            "type": "string",
-            "isPrimaryKey": true
-          },
-          {
-            "name": "projectId",
-            "type": "string"
-          },
-          {
-            "name": "week",
-            "type": "string"
-          },
-          {
-            "name": "planned",
-            "type": "string"
-          },
-          {
-            "name": "actual",
-            "type": "string"
-          },
-          {
-            "name": "deviation",
-            "type": "string"
-          },
-          {
-            "name": "risks",
-            "type": "string"
-          }
-        ],
-        "views": {
-          "default": {
-            "rows": [
-              {
-                "id": "w1",
-                "projectId": "p1",
-                "week": "第11周",
-                "planned": "完成用户管理模块",
-                "actual": "已完成",
-                "deviation": "0",
-                "risks": "-"
-              },
-              {
-                "id": "w2",
-                "projectId": "p2",
-                "week": "第11周",
-                "planned": "接口设计评审",
-                "actual": "延迟1天",
-                "deviation": "+1天",
-                "risks": "评审专家档期冲突"
-              },
-              {
-                "id": "w3",
-                "projectId": "p3",
-                "week": "第11周",
-                "planned": "原型设计完成",
-                "actual": "已完成",
-                "deviation": "0",
-                "risks": "-"
-              },
-              {
-                "id": "w4",
-                "projectId": "p1",
-                "week": "第12周",
-                "planned": "权限模块开发",
-                "actual": "进行中",
-                "deviation": "预计准时",
-                "risks": "-"
-              },
-              {
-                "id": "w5",
-                "projectId": "p2",
-                "week": "第12周",
-                "planned": "数据迁移脚本",
-                "actual": "进行中",
-                "deviation": "预计准时",
-                "risks": "源数据质量待确认"
-              },
-              {
-                "id": "w6",
-                "projectId": "p4",
-                "week": "第12周",
-                "planned": "网络架构设计",
-                "actual": "延迟",
-                "deviation": "+3天",
-                "risks": "供应商设备交付延迟"
-              },
-              {
-                "id": "w7",
-                "projectId": "p5",
-                "week": "第12周",
-                "planned": "核心流程开发",
-                "actual": "已完成",
-                "deviation": "-1天",
-                "risks": "提前完成"
-              }
-            ]
-          }
-        }
-      }
+      "tableName": "Projects"
     },
-    "tableRelations": [
-      {
-        "parentTable": "Projects",
-        "childTable": "WeeklyProgress",
-        "parentField": "id",
-        "childField": "projectId",
-        "relationName": "ProjectWeeklyProgress",
-        "cascadeDelete": true
-      }
-    ],
-    "viewDependencies": [
-      {
-        "parentTable": "Projects",
-        "childTable": "WeeklyProgress",
-        "dependencyType": "currentRow",
-        "autoLoad": true
-      }
-    ]
+    "WeeklyProgress": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "projectId",
+          "type": "string"
+        },
+        {
+          "name": "week",
+          "type": "string"
+        },
+        {
+          "name": "planned",
+          "type": "string"
+        },
+        {
+          "name": "actual",
+          "type": "string"
+        },
+        {
+          "name": "deviation",
+          "type": "string"
+        },
+        {
+          "name": "risks",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": "w1",
+              "projectId": "p1",
+              "week": "第11周",
+              "planned": "完成用户管理模块",
+              "actual": "已完成",
+              "deviation": "0",
+              "risks": "-"
+            },
+            {
+              "id": "w2",
+              "projectId": "p2",
+              "week": "第11周",
+              "planned": "接口设计评审",
+              "actual": "延迟1天",
+              "deviation": "+1天",
+              "risks": "评审专家档期冲突"
+            },
+            {
+              "id": "w3",
+              "projectId": "p3",
+              "week": "第11周",
+              "planned": "原型设计完成",
+              "actual": "已完成",
+              "deviation": "0",
+              "risks": "-"
+            },
+            {
+              "id": "w4",
+              "projectId": "p1",
+              "week": "第12周",
+              "planned": "权限模块开发",
+              "actual": "进行中",
+              "deviation": "预计准时",
+              "risks": "-"
+            },
+            {
+              "id": "w5",
+              "projectId": "p2",
+              "week": "第12周",
+              "planned": "数据迁移脚本",
+              "actual": "进行中",
+              "deviation": "预计准时",
+              "risks": "源数据质量待确认"
+            },
+            {
+              "id": "w6",
+              "projectId": "p4",
+              "week": "第12周",
+              "planned": "网络架构设计",
+              "actual": "延迟",
+              "deviation": "+3天",
+              "risks": "供应商设备交付延迟"
+            },
+            {
+              "id": "w7",
+              "projectId": "p5",
+              "week": "第12周",
+              "planned": "核心流程开发",
+              "actual": "已完成",
+              "deviation": "-1天",
+              "risks": "提前完成"
+            }
+          ]
+        }
+      },
+      "tableName": "WeeklyProgress"
+    }
   }
 }

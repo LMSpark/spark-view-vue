@@ -1,19 +1,114 @@
 {
   "dataSetName": "BoardDS",
   "tables": {
-    "TodoTasks": { "tableName": "TodoTasks", "columns": [{"name":"id","type":"string"},{"name":"title","type":"string"},{"name":"priority","type":"string"}], "rows": [
-      {"id":"t1","title":"数据中心迁移方案评审","priority":"高"},
-      {"id":"t2","title":"ERP接口文档编写","priority":"中"},
-      {"id":"t3","title":"移动端原型设计","priority":"高"}
-    ]},
-    "InProgressTasks": { "tableName": "InProgressTasks", "columns": [{"name":"id","type":"string"},{"name":"title","type":"string"},{"name":"assignee","type":"string"}], "rows": [
-      {"id":"t4","title":"用户权限模块开发","assignee":"陈一"},
-      {"id":"t5","title":"报表服务优化","assignee":"刘二"},
-      {"id":"t6","title":"UI主题定制","assignee":"郑五"}
-    ]},
-    "DoneTasks": { "tableName": "DoneTasks", "columns": [{"name":"id","type":"string"},{"name":"title","type":"string"},{"name":"completedDate","type":"string"}], "rows": [
-      {"id":"t7","title":"数据库索引优化","completedDate":"2026-03-14"},
-      {"id":"t8","title":"登录页面改版","completedDate":"2026-03-12"}
-    ]}
+    "TodoTasks": {
+      "tableName": "TodoTasks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "priority",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": "t1",
+              "title": "数据中心迁移方案评审",
+              "priority": "高"
+            },
+            {
+              "id": "t2",
+              "title": "ERP接口文档编写",
+              "priority": "中"
+            },
+            {
+              "id": "t3",
+              "title": "移动端原型设计",
+              "priority": "高"
+            }
+          ]
+        }
+      }
+    },
+    "InProgressTasks": {
+      "tableName": "InProgressTasks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "assignee",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": "t4",
+              "title": "用户权限模块开发",
+              "assignee": "陈一"
+            },
+            {
+              "id": "t5",
+              "title": "报表服务优化",
+              "assignee": "刘二"
+            },
+            {
+              "id": "t6",
+              "title": "UI主题定制",
+              "assignee": "郑五"
+            }
+          ]
+        }
+      }
+    },
+    "DoneTasks": {
+      "tableName": "DoneTasks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "completedDate",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": "t7",
+              "title": "数据库索引优化",
+              "completedDate": "2026-03-14"
+            },
+            {
+              "id": "t8",
+              "title": "登录页面改版",
+              "completedDate": "2026-03-12"
+            }
+          ]
+        }
+      }
+    }
   }
 }

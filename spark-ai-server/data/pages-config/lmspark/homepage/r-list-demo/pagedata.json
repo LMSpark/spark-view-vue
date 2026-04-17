@@ -1,299 +1,305 @@
 {
-    "dataSetName": "ListDemoDS",
-    "tables": {
-        "Products": {
-            "tableName": "Products",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "number"
-                },
-                {
-                    "name": "name",
-                    "type": "string"
-                },
-                {
-                    "name": "category",
-                    "type": "string"
-                },
-                {
-                    "name": "price",
-                    "type": "number"
-                },
-                {
-                    "name": "stock",
-                    "type": "number"
-                },
-                {
-                    "name": "status",
-                    "type": "string"
-                },
-                {
-                    "name": "image",
-                    "type": "string"
-                },
-                {
-                    "name": "rating",
-                    "type": "number"
-                },
-                {
-                    "name": "description",
-                    "type": "string"
-                },
-                {
-                    "name": "tags",
-                    "type": "string"
-                },
-                {
-                    "name": "total",
-                    "type": "number",
-                    "computeExpression": "price * stock"
-                }
-            ],
-            "rows": [
-                {
-                    "id": 1,
-                    "name": "MacBook Pro 16\"",
-                    "category": "电脑",
-                    "price": 19999,
-                    "stock": 45,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=mac",
-                    "rating": 4.8,
-                    "description": "M3 Pro 芯片，18GB 内存，512GB 固态",
-                    "tags": "热销,新品"
-                },
-                {
-                    "id": 2,
-                    "name": "iPhone 16 Pro",
-                    "category": "手机",
-                    "price": 8999,
-                    "stock": 120,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=iphone",
-                    "rating": 4.7,
-                    "description": "A18 Pro 芯片，钛金属设计，4800 万像素",
-                    "tags": "热销"
-                },
-                {
-                    "id": 3,
-                    "name": "AirPods Pro 2",
-                    "category": "配件",
-                    "price": 1899,
-                    "stock": 200,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=airpods",
-                    "rating": 4.6,
-                    "description": "主动降噪，自适应音频，USB-C 充电",
-                    "tags": "热销,推荐"
-                },
-                {
-                    "id": 4,
-                    "name": "iPad Air M2",
-                    "category": "平板",
-                    "price": 4799,
-                    "stock": 80,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=ipad",
-                    "rating": 4.5,
-                    "description": "M2 芯片，10.9 英寸 Liquid Retina 显示屏",
-                    "tags": "新品"
-                },
-                {
-                    "id": 5,
-                    "name": "Apple Watch Ultra 2",
-                    "category": "穿戴",
-                    "price": 6499,
-                    "stock": 35,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=watch",
-                    "rating": 4.4,
-                    "description": "49mm 钛金属表壳，双频 GPS，水下深度计",
-                    "tags": "新品,推荐"
-                },
-                {
-                    "id": 6,
-                    "name": "Studio Display",
-                    "category": "显示器",
-                    "price": 11499,
-                    "stock": 15,
-                    "status": "预售",
-                    "image": "/config/default-product.svg?seed=display",
-                    "rating": 4.3,
-                    "description": "27 英寸 5K Retina，600 尼特亮度，P3 色域",
-                    "tags": "专业"
-                },
-                {
-                    "id": 7,
-                    "name": "Magic Keyboard",
-                    "category": "配件",
-                    "price": 999,
-                    "stock": 0,
-                    "status": "缺货",
-                    "image": "/config/default-product.svg?seed=keyboard",
-                    "rating": 4.2,
-                    "description": "触控 ID，背光按键，USB-C 充电",
-                    "tags": ""
-                },
-                {
-                    "id": 8,
-                    "name": "Mac Mini M2",
-                    "category": "电脑",
-                    "price": 4499,
-                    "stock": 60,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=macmini",
-                    "rating": 4.6,
-                    "description": "M2 芯片，8GB 内存，256GB 固态",
-                    "tags": "推荐"
-                },
-                {
-                    "id": 9,
-                    "name": "HomePod 2",
-                    "category": "配件",
-                    "price": 2299,
-                    "stock": 40,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=homepod",
-                    "rating": 4.1,
-                    "description": "高保真音频，空间音频，智能家居中枢",
-                    "tags": ""
-                },
-                {
-                    "id": 10,
-                    "name": "Vision Pro",
-                    "category": "穿戴",
-                    "price": 29999,
-                    "stock": 5,
-                    "status": "预售",
-                    "image": "/config/default-product.svg?seed=vision",
-                    "rating": 4.9,
-                    "description": "空间计算设备，M2 + R1 双芯片，Micro-OLED",
-                    "tags": "新品,热销"
-                },
-                {
-                    "id": 11,
-                    "name": "MacBook Air 15\"",
-                    "category": "电脑",
-                    "price": 10999,
-                    "stock": 75,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=air15",
-                    "rating": 4.7,
-                    "description": "M3 芯片，15.3 英寸 Liquid Retina 显示屏",
-                    "tags": "推荐"
-                },
-                {
-                    "id": 12,
-                    "name": "AirTag 4 件装",
-                    "category": "配件",
-                    "price": 779,
-                    "stock": 150,
-                    "status": "在售",
-                    "image": "/config/default-product.svg?seed=airtag",
-                    "rating": 4.3,
-                    "description": "精确查找，内置扬声器，可更换电池",
-                    "tags": ""
-                }
-            ],
-            "views": {
-                "cards": {
-                    "viewId": "cards",
-                    "aggregates": {
-                        "price": {
-                            "type": "avg"
-                        },
-                        "stock": {
-                            "type": "sum"
-                        },
-                        "total": {
-                            "type": "sum"
-                        }
-                    }
-                },
-                "simple": {
-                    "viewId": "simple"
-                }
-            }
+  "dataSetName": "ListDemoDS",
+  "tables": {
+    "Products": {
+      "tableName": "Products",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number"
         },
-        "TeamMembers": {
-            "tableName": "TeamMembers",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "number"
-                },
-                {
-                    "name": "name",
-                    "type": "string"
-                },
-                {
-                    "name": "role",
-                    "type": "string"
-                },
-                {
-                    "name": "email",
-                    "type": "string"
-                },
-                {
-                    "name": "avatar",
-                    "type": "string"
-                },
-                {
-                    "name": "status",
-                    "type": "string"
-                }
-            ],
-            "rows": [
-                {
-                    "id": 1,
-                    "name": "张三",
-                    "role": "前端工程师",
-                    "email": "zhangsan@spark.dev",
-                    "avatar": "/config/default-avatar.svg?seed=zhangsan",
-                    "status": "在线"
-                },
-                {
-                    "id": 2,
-                    "name": "李四",
-                    "role": "后端工程师",
-                    "email": "lisi@spark.dev",
-                    "avatar": "/config/default-avatar.svg?seed=lisi",
-                    "status": "在线"
-                },
-                {
-                    "id": 3,
-                    "name": "王五",
-                    "role": "产品经理",
-                    "email": "wangwu@spark.dev",
-                    "avatar": "/config/default-avatar.svg?seed=wangwu",
-                    "status": "离线"
-                },
-                {
-                    "id": 4,
-                    "name": "赵六",
-                    "role": "UI 设计师",
-                    "email": "zhaoliu@spark.dev",
-                    "avatar": "/config/default-avatar.svg?seed=zhaoliu",
-                    "status": "忙碌"
-                },
-                {
-                    "id": 5,
-                    "name": "孙七",
-                    "role": "测试工程师",
-                    "email": "sunqi@spark.dev",
-                    "avatar": "/config/default-avatar.svg?seed=sunqi",
-                    "status": "在线"
-                },
-                {
-                    "id": 6,
-                    "name": "周八",
-                    "role": "DevOps 工程师",
-                    "email": "zhouba@spark.dev",
-                    "avatar": "/config/default-avatar.svg?seed=zhouba",
-                    "status": "在线"
-                }
-            ]
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "price",
+          "type": "number"
+        },
+        {
+          "name": "stock",
+          "type": "number"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "image",
+          "type": "string"
+        },
+        {
+          "name": "rating",
+          "type": "number"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "tags",
+          "type": "string"
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "computeExpression": "price * stock"
         }
+      ],
+      "views": {
+        "cards": {
+          "viewId": "cards",
+          "aggregates": {
+            "price": {
+              "type": "avg"
+            },
+            "stock": {
+              "type": "sum"
+            },
+            "total": {
+              "type": "sum"
+            }
+          }
+        },
+        "simple": {
+          "viewId": "simple"
+        },
+        "default": {
+          "rows": [
+            {
+              "id": 1,
+              "name": "MacBook Pro 16\"",
+              "category": "电脑",
+              "price": 19999,
+              "stock": 45,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=mac",
+              "rating": 4.8,
+              "description": "M3 Pro 芯片，18GB 内存，512GB 固态",
+              "tags": "热销,新品"
+            },
+            {
+              "id": 2,
+              "name": "iPhone 16 Pro",
+              "category": "手机",
+              "price": 8999,
+              "stock": 120,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=iphone",
+              "rating": 4.7,
+              "description": "A18 Pro 芯片，钛金属设计，4800 万像素",
+              "tags": "热销"
+            },
+            {
+              "id": 3,
+              "name": "AirPods Pro 2",
+              "category": "配件",
+              "price": 1899,
+              "stock": 200,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=airpods",
+              "rating": 4.6,
+              "description": "主动降噪，自适应音频，USB-C 充电",
+              "tags": "热销,推荐"
+            },
+            {
+              "id": 4,
+              "name": "iPad Air M2",
+              "category": "平板",
+              "price": 4799,
+              "stock": 80,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=ipad",
+              "rating": 4.5,
+              "description": "M2 芯片，10.9 英寸 Liquid Retina 显示屏",
+              "tags": "新品"
+            },
+            {
+              "id": 5,
+              "name": "Apple Watch Ultra 2",
+              "category": "穿戴",
+              "price": 6499,
+              "stock": 35,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=watch",
+              "rating": 4.4,
+              "description": "49mm 钛金属表壳，双频 GPS，水下深度计",
+              "tags": "新品,推荐"
+            },
+            {
+              "id": 6,
+              "name": "Studio Display",
+              "category": "显示器",
+              "price": 11499,
+              "stock": 15,
+              "status": "预售",
+              "image": "/config/default-product.svg?seed=display",
+              "rating": 4.3,
+              "description": "27 英寸 5K Retina，600 尼特亮度，P3 色域",
+              "tags": "专业"
+            },
+            {
+              "id": 7,
+              "name": "Magic Keyboard",
+              "category": "配件",
+              "price": 999,
+              "stock": 0,
+              "status": "缺货",
+              "image": "/config/default-product.svg?seed=keyboard",
+              "rating": 4.2,
+              "description": "触控 ID，背光按键，USB-C 充电",
+              "tags": ""
+            },
+            {
+              "id": 8,
+              "name": "Mac Mini M2",
+              "category": "电脑",
+              "price": 4499,
+              "stock": 60,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=macmini",
+              "rating": 4.6,
+              "description": "M2 芯片，8GB 内存，256GB 固态",
+              "tags": "推荐"
+            },
+            {
+              "id": 9,
+              "name": "HomePod 2",
+              "category": "配件",
+              "price": 2299,
+              "stock": 40,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=homepod",
+              "rating": 4.1,
+              "description": "高保真音频，空间音频，智能家居中枢",
+              "tags": ""
+            },
+            {
+              "id": 10,
+              "name": "Vision Pro",
+              "category": "穿戴",
+              "price": 29999,
+              "stock": 5,
+              "status": "预售",
+              "image": "/config/default-product.svg?seed=vision",
+              "rating": 4.9,
+              "description": "空间计算设备，M2 + R1 双芯片，Micro-OLED",
+              "tags": "新品,热销"
+            },
+            {
+              "id": 11,
+              "name": "MacBook Air 15\"",
+              "category": "电脑",
+              "price": 10999,
+              "stock": 75,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=air15",
+              "rating": 4.7,
+              "description": "M3 芯片，15.3 英寸 Liquid Retina 显示屏",
+              "tags": "推荐"
+            },
+            {
+              "id": 12,
+              "name": "AirTag 4 件装",
+              "category": "配件",
+              "price": 779,
+              "stock": 150,
+              "status": "在售",
+              "image": "/config/default-product.svg?seed=airtag",
+              "rating": 4.3,
+              "description": "精确查找，内置扬声器，可更换电池",
+              "tags": ""
+            }
+          ]
+        }
+      }
+    },
+    "TeamMembers": {
+      "tableName": "TeamMembers",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "role",
+          "type": "string"
+        },
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "avatar",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": 1,
+              "name": "张三",
+              "role": "前端工程师",
+              "email": "zhangsan@spark.dev",
+              "avatar": "/config/default-avatar.svg?seed=zhangsan",
+              "status": "在线"
+            },
+            {
+              "id": 2,
+              "name": "李四",
+              "role": "后端工程师",
+              "email": "lisi@spark.dev",
+              "avatar": "/config/default-avatar.svg?seed=lisi",
+              "status": "在线"
+            },
+            {
+              "id": 3,
+              "name": "王五",
+              "role": "产品经理",
+              "email": "wangwu@spark.dev",
+              "avatar": "/config/default-avatar.svg?seed=wangwu",
+              "status": "离线"
+            },
+            {
+              "id": 4,
+              "name": "赵六",
+              "role": "UI 设计师",
+              "email": "zhaoliu@spark.dev",
+              "avatar": "/config/default-avatar.svg?seed=zhaoliu",
+              "status": "忙碌"
+            },
+            {
+              "id": 5,
+              "name": "孙七",
+              "role": "测试工程师",
+              "email": "sunqi@spark.dev",
+              "avatar": "/config/default-avatar.svg?seed=sunqi",
+              "status": "在线"
+            },
+            {
+              "id": 6,
+              "name": "周八",
+              "role": "DevOps 工程师",
+              "email": "zhouba@spark.dev",
+              "avatar": "/config/default-avatar.svg?seed=zhouba",
+              "status": "在线"
+            }
+          ]
+        }
+      }
     }
+  }
 }

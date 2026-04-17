@@ -1,16 +1,140 @@
 {
   "dataSetName": "WorkloadDS",
   "tables": {
-    "WorkloadDetail": { "tableName": "WorkloadDetail", "columns": [{"name":"id","type":"string"},{"name":"name","type":"string"},{"name":"role","type":"string"},{"name":"projectCount","type":"number"},{"name":"taskCount","type":"number"},{"name":"completedTasks","type":"number"},{"name":"workDays","type":"number"},{"name":"overtime","type":"number"},{"name":"utilization","type":"string"}],
-    "rows": [
-      {"id":"w1","name":"张工","role":"项目经理","projectCount":2,"taskCount":6,"completedTasks":4,"workDays":22,"overtime":2,"utilization":"70%"},
-      {"id":"w2","name":"李工","role":"项目经理","projectCount":2,"taskCount":5,"completedTasks":3,"workDays":22,"overtime":1,"utilization":"100%"},
-      {"id":"w3","name":"陈一","role":"开发工程师","projectCount":2,"taskCount":4,"completedTasks":2,"workDays":22,"overtime":3,"utilization":"100%"},
-      {"id":"w4","name":"刘二","role":"开发工程师","projectCount":2,"taskCount":5,"completedTasks":3,"workDays":22,"overtime":2,"utilization":"80%"},
-      {"id":"w5","name":"周三","role":"开发工程师","projectCount":2,"taskCount":3,"completedTasks":1,"workDays":22,"overtime":1,"utilization":"80%"},
-      {"id":"w6","name":"吴四","role":"开发工程师","projectCount":3,"taskCount":4,"completedTasks":2,"workDays":22,"overtime":2,"utilization":"80%"},
-      {"id":"w7","name":"郑五","role":"设计师","projectCount":3,"taskCount":3,"completedTasks":2,"workDays":22,"overtime":1,"utilization":"80%"},
-      {"id":"w8","name":"赵工","role":"项目经理","projectCount":1,"taskCount":3,"completedTasks":1,"workDays":22,"overtime":0,"utilization":"60%"}
-    ]}
+    "WorkloadDetail": {
+      "tableName": "WorkloadDetail",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "role",
+          "type": "string"
+        },
+        {
+          "name": "projectCount",
+          "type": "number"
+        },
+        {
+          "name": "taskCount",
+          "type": "number"
+        },
+        {
+          "name": "completedTasks",
+          "type": "number"
+        },
+        {
+          "name": "workDays",
+          "type": "number"
+        },
+        {
+          "name": "overtime",
+          "type": "number"
+        },
+        {
+          "name": "utilization",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": "w1",
+              "name": "张工",
+              "role": "项目经理",
+              "projectCount": 2,
+              "taskCount": 6,
+              "completedTasks": 4,
+              "workDays": 22,
+              "overtime": 2,
+              "utilization": "70%"
+            },
+            {
+              "id": "w2",
+              "name": "李工",
+              "role": "项目经理",
+              "projectCount": 2,
+              "taskCount": 5,
+              "completedTasks": 3,
+              "workDays": 22,
+              "overtime": 1,
+              "utilization": "100%"
+            },
+            {
+              "id": "w3",
+              "name": "陈一",
+              "role": "开发工程师",
+              "projectCount": 2,
+              "taskCount": 4,
+              "completedTasks": 2,
+              "workDays": 22,
+              "overtime": 3,
+              "utilization": "100%"
+            },
+            {
+              "id": "w4",
+              "name": "刘二",
+              "role": "开发工程师",
+              "projectCount": 2,
+              "taskCount": 5,
+              "completedTasks": 3,
+              "workDays": 22,
+              "overtime": 2,
+              "utilization": "80%"
+            },
+            {
+              "id": "w5",
+              "name": "周三",
+              "role": "开发工程师",
+              "projectCount": 2,
+              "taskCount": 3,
+              "completedTasks": 1,
+              "workDays": 22,
+              "overtime": 1,
+              "utilization": "80%"
+            },
+            {
+              "id": "w6",
+              "name": "吴四",
+              "role": "开发工程师",
+              "projectCount": 3,
+              "taskCount": 4,
+              "completedTasks": 2,
+              "workDays": 22,
+              "overtime": 2,
+              "utilization": "80%"
+            },
+            {
+              "id": "w7",
+              "name": "郑五",
+              "role": "设计师",
+              "projectCount": 3,
+              "taskCount": 3,
+              "completedTasks": 2,
+              "workDays": 22,
+              "overtime": 1,
+              "utilization": "80%"
+            },
+            {
+              "id": "w8",
+              "name": "赵工",
+              "role": "项目经理",
+              "projectCount": 1,
+              "taskCount": 3,
+              "completedTasks": 1,
+              "workDays": 22,
+              "overtime": 0,
+              "utilization": "60%"
+            }
+          ]
+        }
+      }
+    }
   }
 }

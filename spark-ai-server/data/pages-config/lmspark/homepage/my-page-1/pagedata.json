@@ -1,105 +1,104 @@
 {
-    "dataset": {
-        "dataSetName": "StudentScoresDataSet",
-        "tables": {
-            "Scores": {
-                "columns": [
-                    {
-                        "name": "id",
-                        "type": "number",
-                        "isPrimaryKey": true,
-                        "label": "ID"
-                    },
-                    {
-                        "name": "studentId",
-                        "type": "string",
-                        "label": "学号"
-                    },
-                    {
-                        "name": "studentName",
-                        "type": "string",
-                        "label": "姓名"
-                    },
-                    {
-                        "name": "course",
-                        "type": "string",
-                        "label": "课程"
-                    },
-                    {
-                        "name": "score",
-                        "type": "number",
-                        "label": "成绩"
-                    },
-                    {
-                        "name": "grade",
-                        "type": "string",
-                        "label": "等级"
-                    },
-                    {
-                        "name": "examDate",
-                        "type": "string",
-                        "label": "考试日期"
-                    }
-                ],
-                "views": {
-                    "default": {
-                        "rows": [
-                            {
-                                "id": 1,
-                                "studentId": "2023001",
-                                "studentName": "张三",
-                                "course": "数学",
-                                "score": 95,
-                                "grade": "A",
-                                "examDate": "2023-06-15"
-                            },
-                            {
-                                "id": 2,
-                                "studentId": "2023002",
-                                "studentName": "李四",
-                                "course": "英语",
-                                "score": 88,
-                                "grade": "B",
-                                "examDate": "2023-06-16"
-                            },
-                            {
-                                "id": 3,
-                                "studentId": "2023003",
-                                "studentName": "王五",
-                                "course": "物理",
-                                "score": 92,
-                                "grade": "A",
-                                "examDate": "2023-06-17"
-                            },
-                            {
-                                "id": 4,
-                                "studentId": "2023004",
-                                "studentName": "赵六",
-                                "course": "化学",
-                                "score": 76,
-                                "grade": "C",
-                                "examDate": "2023-06-18"
-                            },
-                            {
-                                "id": 5,
-                                "studentId": "2023005",
-                                "studentName": "钱七",
-                                "course": "生物",
-                                "score": 85,
-                                "grade": "B",
-                                "examDate": "2023-06-19"
-                            }
-                        ],
-                        "autoCurrentFirst": true,
-                        "aggregates": {
-                            "score": {
-                                "type": "avg"
-                            }
-                        }
-                    }
-                }
-            }
+  "dataSetName": "StudentScoresDataSet",
+  "tableRelations": [],
+  "tables": {
+    "Scores": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "isPrimaryKey": true,
+          "label": "ID"
         },
-        "tableRelations": []
+        {
+          "name": "studentId",
+          "type": "string",
+          "label": "学号"
+        },
+        {
+          "name": "studentName",
+          "type": "string",
+          "label": "姓名"
+        },
+        {
+          "name": "course",
+          "type": "string",
+          "label": "课程"
+        },
+        {
+          "name": "score",
+          "type": "number",
+          "label": "成绩"
+        },
+        {
+          "name": "grade",
+          "type": "string",
+          "label": "等级"
+        },
+        {
+          "name": "examDate",
+          "type": "string",
+          "label": "考试日期"
+        }
+      ],
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": 1,
+              "studentId": "2023001",
+              "studentName": "张三",
+              "course": "数学",
+              "score": 95,
+              "grade": "A",
+              "examDate": "2023-06-15"
+            },
+            {
+              "id": 2,
+              "studentId": "2023002",
+              "studentName": "李四",
+              "course": "英语",
+              "score": 88,
+              "grade": "B",
+              "examDate": "2023-06-16"
+            },
+            {
+              "id": 3,
+              "studentId": "2023003",
+              "studentName": "王五",
+              "course": "物理",
+              "score": 92,
+              "grade": "A",
+              "examDate": "2023-06-17"
+            },
+            {
+              "id": 4,
+              "studentId": "2023004",
+              "studentName": "赵六",
+              "course": "化学",
+              "score": 76,
+              "grade": "C",
+              "examDate": "2023-06-18"
+            },
+            {
+              "id": 5,
+              "studentId": "2023005",
+              "studentName": "钱七",
+              "course": "生物",
+              "score": 85,
+              "grade": "B",
+              "examDate": "2023-06-19"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "aggregates": {
+            "score": {
+              "type": "avg"
+            }
+          }
+        }
+      },
+      "tableName": "Scores"
     }
+  }
 }

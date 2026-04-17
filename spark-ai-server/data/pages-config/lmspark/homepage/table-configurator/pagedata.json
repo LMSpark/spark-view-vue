@@ -1,95 +1,98 @@
 {
-    "dataset": {
-        "dataSetName": "TableConfiguratorDS",
-        "tables": {
-            "columns": {
-                "columns": [
-                    {
-                        "name": "id",
-                        "type": "number",
-                        "label": "ID",
-                        "isPrimaryKey": true
-                    },
-                    {
-                        "name": "field",
-                        "type": "string",
-                        "label": "字段名"
-                    },
-                    {
-                        "name": "label",
-                        "type": "string",
-                        "label": "标题"
-                    },
-                    {
-                        "name": "width",
-                        "type": "number",
-                        "label": "宽度"
-                    },
-                    {
-                        "name": "align",
-                        "type": "string",
-                        "label": "对齐"
-                    },
-                    {
-                        "name": "sortable",
-                        "type": "boolean",
-                        "label": "可排序"
-                    },
-                    {
-                        "name": "visible",
-                        "type": "boolean",
-                        "label": "可见"
-                    }
-                ],
-                "autoSelectFirst": true,
-                "rows": [
-                    {
-                        "id": 1,
-                        "field": "orderNo",
-                        "label": "订单号",
-                        "width": 160,
-                        "align": "left",
-                        "sortable": true,
-                        "visible": true
-                    },
-                    {
-                        "id": 2,
-                        "field": "customer",
-                        "label": "客户",
-                        "width": 140,
-                        "align": "left",
-                        "sortable": true,
-                        "visible": true
-                    },
-                    {
-                        "id": 3,
-                        "field": "status",
-                        "label": "状态",
-                        "width": 120,
-                        "align": "center",
-                        "sortable": true,
-                        "visible": true
-                    },
-                    {
-                        "id": 4,
-                        "field": "amount",
-                        "label": "金额",
-                        "width": 120,
-                        "align": "right",
-                        "sortable": true,
-                        "visible": true
-                    },
-                    {
-                        "id": 5,
-                        "field": "createdAt",
-                        "label": "创建时间",
-                        "width": 180,
-                        "align": "left",
-                        "sortable": false,
-                        "visible": true
-                    }
-                ]
-            }
+  "dataSetName": "TableConfiguratorDS",
+  "tables": {
+    "columns": {
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "label": "字段名"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "label": "标题"
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "label": "宽度"
+        },
+        {
+          "name": "align",
+          "type": "string",
+          "label": "对齐"
+        },
+        {
+          "name": "sortable",
+          "type": "boolean",
+          "label": "可排序"
+        },
+        {
+          "name": "visible",
+          "type": "boolean",
+          "label": "可见"
         }
+      ],
+      "tableName": "columns",
+      "views": {
+        "default": {
+          "rows": [
+            {
+              "id": 1,
+              "field": "orderNo",
+              "label": "订单号",
+              "width": 160,
+              "align": "left",
+              "sortable": true,
+              "visible": true
+            },
+            {
+              "id": 2,
+              "field": "customer",
+              "label": "客户",
+              "width": 140,
+              "align": "left",
+              "sortable": true,
+              "visible": true
+            },
+            {
+              "id": 3,
+              "field": "status",
+              "label": "状态",
+              "width": 120,
+              "align": "center",
+              "sortable": true,
+              "visible": true
+            },
+            {
+              "id": 4,
+              "field": "amount",
+              "label": "金额",
+              "width": 120,
+              "align": "right",
+              "sortable": true,
+              "visible": true
+            },
+            {
+              "id": 5,
+              "field": "createdAt",
+              "label": "创建时间",
+              "width": 180,
+              "align": "left",
+              "sortable": false,
+              "visible": true
+            }
+          ],
+          "autoSelectFirst": true
+        }
+      }
     }
+  }
 }
