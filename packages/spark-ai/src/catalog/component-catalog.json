@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-17T01:42:14.840Z",
+  "buildTime": "2026-04-17T06:01:30.084Z",
   "componentCount": 107,
   "registry": {
     "containers": [
@@ -94,14 +94,14 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
           "description": "标题对齐"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
           "description": "值对齐"
@@ -321,7 +321,7 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式"
@@ -806,7 +806,7 @@
         },
         {
           "name": "shadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"always\"",
           "description": "阴影显示策略"
@@ -1046,7 +1046,7 @@
         },
         {
           "name": "contentPosition",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "default": "\"center\"",
           "description": "文本位置（横向模式）"
@@ -1171,7 +1171,7 @@
         },
         {
           "name": "trigger",
-          "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
+          "type": "\"click\" | \"hover\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式"
@@ -1440,7 +1440,7 @@
         },
         {
           "name": "trigger",
-          "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
+          "type": "\"click\" | \"hover\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。"
@@ -1566,7 +1566,7 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
@@ -3275,13 +3275,13 @@
         },
         {
           "name": "labelAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "标签对齐方式"
         },
         {
           "name": "contentAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "内容对齐方式"
         },
@@ -3648,13 +3648,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -3799,13 +3799,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -3955,13 +3955,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4095,13 +4095,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4257,13 +4257,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4396,13 +4396,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4708,13 +4708,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4873,13 +4873,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5013,13 +5013,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5132,13 +5132,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5289,13 +5289,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5440,13 +5440,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5610,13 +5610,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5781,13 +5781,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5915,13 +5915,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6221,13 +6221,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6363,13 +6363,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6518,13 +6518,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6691,13 +6691,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6833,13 +6833,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6959,13 +6959,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7057,13 +7057,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7176,13 +7176,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7325,13 +7325,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7458,13 +7458,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7620,13 +7620,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7808,13 +7808,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7986,13 +7986,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -8912,14 +8912,14 @@
         },
         "prop_00002": {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
           "description": "标题对齐"
         },
         "prop_00003": {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
           "description": "值对齐"
@@ -9058,7 +9058,7 @@
         },
         "prop_00024": {
           "name": "cardShadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式"
@@ -9352,7 +9352,7 @@
         },
         "prop_00071": {
           "name": "shadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"always\"",
           "description": "阴影显示策略"
@@ -9514,7 +9514,7 @@
         },
         "prop_00097": {
           "name": "contentPosition",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "default": "\"center\"",
           "description": "文本位置（横向模式）"
@@ -9540,7 +9540,7 @@
         },
         "prop_00101": {
           "name": "trigger",
-          "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
+          "type": "\"click\" | \"hover\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式"
@@ -9741,7 +9741,7 @@
         },
         "prop_00132": {
           "name": "trigger",
-          "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
+          "type": "\"click\" | \"hover\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。"
@@ -9803,7 +9803,7 @@
         },
         "prop_00141": {
           "name": "cardShadow",
-          "type": "\"hover\" | \"always\" | \"never\" | undefined",
+          "type": "\"always\" | \"hover\" | \"never\" | undefined",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
@@ -10914,13 +10914,13 @@
         },
         "prop_00314": {
           "name": "labelAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "标签对齐方式"
         },
         "prop_00315": {
           "name": "contentAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "内容对齐方式"
         },
@@ -11183,13 +11183,13 @@
         },
         "prop_00356": {
           "name": "titleAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         "prop_00357": {
           "name": "valueAlign",
-          "type": "\"left\" | \"center\" | \"right\" | undefined",
+          "type": "\"center\" | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
