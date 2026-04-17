@@ -74,12 +74,10 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
   const filterDefaultCollapsedValue = computed(() => options.filterNode.value?.props?.defaultCollapsed ?? false)
   const filterAutoFitMinWidthValue = computed(() => options.filterNode.value?.props?.autoFitMinWidth ?? '220px')
   const filterItemSpanValue = computed(() => options.filterNode.value?.props?.itemSpan ?? 1)
+  const filterActionSpanValue = computed(() => options.filterNode.value?.props?.actionSpan ?? filterItemSpanValue.value)
 
-  const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
-
-  watch(filterDefaultCollapsedValue, (value) => {
-    filtersCollapsed.value = value
-  })
+  // 折叠状态：初始值跟随默认配置，后续可由用户交互改变
+  const filtersCollapsed = ref(false)
 
   function toggleFiltersCollapsed() {
     // 未开启可折叠时直接 fail-fast 返回
@@ -87,12 +85,21 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
     filtersCollapsed.value = !filtersCollapsed.value
   }
 
+  // 当折叠配置改变时，同步更新折叠状态（但不覆盖用户交互的改变）
+  watch(filterDefaultCollapsedValue, (newDefaultValue) => {
+    // 仅当配置明确要求关闭或首次加载时才强制更新
+    if (newDefaultValue === true) {
+      filtersCollapsed.value = true
+    }
+  }, { immediate: true })
+
   return {
     tableData,
     elTableProps,
     filterCollapsibleValue,
     filterAutoFitMinWidthValue,
     filterItemSpanValue,
+    filterActionSpanValue,
     filtersCollapsed,
     toggleFiltersCollapsed,
   }
