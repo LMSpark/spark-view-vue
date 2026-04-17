@@ -77,7 +77,7 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
   const filterActionSpanValue = computed(() => options.filterNode.value?.props?.actionSpan ?? filterItemSpanValue.value)
 
   // 折叠状态：初始值跟随默认配置，后续可由用户交互改变
-  const filtersCollapsed = ref(false)
+  const filtersCollapsed = ref(true)
 
   function toggleFiltersCollapsed() {
     // 未开启可折叠时直接 fail-fast 返回
