@@ -13,11 +13,12 @@
       <button
         type="button"
         class="renderer-table-filters__toggle"
+        :class="{ 'is-collapsed': resolvedCollapsed }"
         :aria-expanded="!resolvedCollapsed"
         @click="handleToggleCollapsed"
       >
-        <span class="renderer-table-filters__toggle-icon">{{ resolvedCollapsed ? '>' : 'v' }}</span>
-        <span>{{ resolvedCollapsed ? '展开筛选' : '收起筛选' }}</span>
+        <span class="renderer-table-filters__toggle-icon" aria-hidden="true">></span>
+        <span class="renderer-table-filters__toggle-text">{{ resolvedCollapsed ? '展开筛选' : '收起筛选' }}</span>
       </button>
     </div>
 
@@ -33,13 +34,14 @@
             :grid-auto-rows="resolvedGridAutoRows"
             :auto-fit-min-width="resolvedAutoFitMinWidth"
             :default-col-span="resolvedItemSpan"
+            :auto-fill-last-row="true"
             label-position="left"
             label-width="80px"
             compact
           />
         </RendererHostScope>
       </div>
-      <div class="renderer-table-filters__actions">
+      <div class="renderer-table-filters__actions" :style="resolvedActionsStyle">
         <el-button type="primary" size="small" @click="handleSearch">查询</el-button>
         <el-button size="small" @click="handleReset">重置</el-button>
         <el-tag
@@ -108,6 +110,31 @@ const resolvedGridGap = computed(() => props.gridGap ?? 12)
 const resolvedGridAutoRows = computed(() => props.gridAutoRows ?? 'minmax(32px, auto)')
 const resolvedAutoFitMinWidth = computed(() => props.autoFitMinWidth ?? '220px')
 const resolvedItemSpan = computed(() => props.itemSpan ?? 1)
+const resolvedActionSpan = computed(() => {
+  const fallback = resolvedItemSpan.value
+  const raw = props.actionSpan ?? fallback
+  const normalized = Number.isFinite(raw) ? Number(raw) : fallback
+  const min = Math.max(1, Math.floor(normalized))
+  return Math.min(min, Math.max(1, Math.floor(resolvedGridColumns.value)))
+})
+
+const resolvedActionsStyle = computed<Record<string, string>>(() => {
+  const minWidthRaw = resolvedAutoFitMinWidth.value.trim()
+  const gap = typeof resolvedGridGap.value === 'number' ? `${resolvedGridGap.value}px` : `${resolvedGridGap.value}`
+
+  if (minWidthRaw.length > 0) {
+    return {
+      '--renderer-filter-action-span': String(resolvedActionSpan.value),
+      '--renderer-filter-min-width': minWidthRaw,
+      '--renderer-filter-gap': gap,
+    }
+  }
+
+  const widthPercent = Math.max(0, Math.min(100, (resolvedActionSpan.value / Math.max(1, resolvedGridColumns.value)) * 100))
+  return {
+    width: `${widthPercent}%`,
+  }
+})
 
 const { sparkProvide } = useSparkComponent({ type: props.type })
 if (isPanelMode.value) {
@@ -162,20 +189,45 @@ function handleToggleCollapsed() {
 }
 
 .renderer-table-filters__toggle {
-  border: 0;
-  background: transparent;
-  color: var(--el-color-primary, #409eff);
+  border: 1px solid var(--el-border-color, #dcdfe6);
+  background: var(--el-bg-color, #ffffff);
+  color: var(--el-text-color-regular, #606266);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0;
-  line-height: 1.5;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  line-height: 1.3;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.renderer-table-filters__toggle:hover {
+  border-color: var(--el-color-primary-light-5, #79bbff);
+  color: var(--el-color-primary, #409eff);
+  background: var(--el-color-primary-light-9, #ecf5ff);
+}
+
+.renderer-table-filters__toggle:focus-visible {
+  outline: 2px solid var(--el-color-primary-light-5, #79bbff);
+  outline-offset: 1px;
 }
 
 .renderer-table-filters__toggle-icon {
   display: inline-block;
   width: 10px;
+  transform: rotate(90deg);
+  transform-origin: 50% 50%;
+  transition: transform 0.2s ease;
+}
+
+.renderer-table-filters__toggle.is-collapsed .renderer-table-filters__toggle-icon {
+  transform: rotate(0deg);
+}
+
+.renderer-table-filters__toggle-text {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .renderer-table-filters__body {
@@ -190,10 +242,18 @@ function handleToggleCollapsed() {
 .renderer-table-filters__actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
+  margin-left: auto;
   padding-top: 8px;
   border-top: 1px solid var(--el-border-color-extra-light, #f0f2f5);
+  inline-size: calc(
+    var(--renderer-filter-action-span, 1) * var(--renderer-filter-min-width, 220px)
+    + (var(--renderer-filter-action-span, 1) - 1) * var(--renderer-filter-gap, 12px)
+  );
+  max-inline-size: 100%;
 }
 
 .renderer-table-filters__count {

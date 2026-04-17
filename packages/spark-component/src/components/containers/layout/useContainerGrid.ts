@@ -38,6 +38,8 @@ interface UseContainerGridOptions {
   autoRows?: MaybeRefOrGetter<string>
   autoFitMinWidth?: MaybeRefOrGetter<string>
   defaultColSpan?: MaybeRefOrGetter<number>
+  /** 当最后一行不满时，自动拉宽以填满行宽 */
+  autoFillLastRow?: boolean
 }
 
 export function useContainerGrid(options: UseContainerGridOptions) {
@@ -51,12 +53,31 @@ export function useContainerGrid(options: UseContainerGridOptions) {
     alignItems: 'start',
   }))
 
-  function getChildGridStyle(child: SparkNode): CSSProperties {
+  function getChildGridStyle(child: SparkNode, index?: number): CSSProperties {
     const colSpan = getSpanValue(child, ['colSpan', 'gridColSpan', 'span'], toValue(options.defaultColSpan ?? DEFAULT_GRID_COLUMNS))
     const rowSpan = getSpanValue(child, ['rowSpan', 'gridRowSpan'], 1)
 
+    let finalColSpan = colSpan
+
+    // 当启用自动拉宽且提供了索引时，计算最后一行是否需要拉宽
+    if (options.autoFillLastRow && index !== undefined) {
+      const children = toValue(options.children)
+      const columns = toValue(options.columns ?? DEFAULT_GRID_COLUMNS)
+      const itemsPerRow = Math.max(1, Math.floor(columns / colSpan))
+      const lastRowStartIndex = Math.floor(children.length / itemsPerRow) * itemsPerRow
+
+      // 如果当前项在最后一行且最后一行不满
+      if (index >= lastRowStartIndex) {
+        const lastRowItemCount = children.length - lastRowStartIndex
+        if (lastRowItemCount > 0 && lastRowItemCount < itemsPerRow) {
+          // 拉宽使其均匀分布填满整行
+          finalColSpan = Math.ceil(columns / lastRowItemCount)
+        }
+      }
+    }
+
     return {
-      gridColumn: `span ${colSpan} / span ${colSpan}`,
+      gridColumn: `span ${finalColSpan} / span ${finalColSpan}`,
       gridRow: `span ${rowSpan} / span ${rowSpan}`,
       minWidth: 0,
     }

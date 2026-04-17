@@ -13,7 +13,7 @@
       v-for="(child, index) in gridChildren"
       :key="nodeId(child) ?? `renderer-row-fragment-${index}`"
       class="renderer-row-fragment-item"
-      :style="getChildGridStyle(child)"
+      :style="getChildGridStyle(child, index)"
     >
       <RendererHostScope
         type="r-data-scope"
@@ -48,6 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
   gridAutoRows: 'minmax(32px, auto)',
   autoFitMinWidth: '',
   defaultColSpan: 24,
+  autoFillLastRow: false,
   labelPosition: 'top',
   labelWidth: '',
   inline: true,
@@ -69,6 +70,7 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoRows: () => props.gridAutoRows,
   autoFitMinWidth: () => props.autoFitMinWidth,
   defaultColSpan: () => props.defaultColSpan,
+  autoFillLastRow: props.autoFillLastRow,
 })
 
 // ===== 行数据输入 =====

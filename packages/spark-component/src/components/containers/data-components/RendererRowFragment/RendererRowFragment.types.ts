@@ -100,6 +100,8 @@ export interface RendererRowFragmentProps {
   autoFitMinWidth?: string
   /** 默认跨列数。 */
   defaultColSpan?: number
+  /** 最后一行不满时自动拉宽。 */
+  autoFillLastRow?: boolean
   /** 标签位置。 */
   labelPosition?: 'top' | 'left' | 'right'
   /** 标签宽度。 */

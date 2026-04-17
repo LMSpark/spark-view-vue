@@ -11,7 +11,7 @@
         v-for="(child, index) in gridChildren"
         :key="nodeId(child) ?? `renderer-field-scope-${index}`"
         class="renderer-field-scope-item"
-        :style="getChildGridStyle(child)"
+        :style="getChildGridStyle(child, index)"
       >
         <SparkComponentRenderer :config="child" />
       </div>
@@ -59,6 +59,8 @@ interface RendererFieldScopeProps {
   autoFitMinWidth?: string
   /** 默认跨列数 */
   defaultColSpan?: number
+  /** 最后一行不满时自动拉宽 */
+  autoFillLastRow?: boolean
   /** 标签位置 */
   labelPosition?: 'top' | 'left' | 'right'
   /** 标签宽度 */
@@ -78,6 +80,7 @@ const props = withDefaults(defineProps<RendererFieldScopeProps>(), {
   gridAutoRows: 'minmax(32px, auto)',
   autoFitMinWidth: '',
   defaultColSpan: 24,
+  autoFillLastRow: false,
   labelPosition: 'top',
   labelWidth: '',
   inline: false,
@@ -138,6 +141,7 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   autoRows: () => props.gridAutoRows,
   autoFitMinWidth: () => props.autoFitMinWidth,
   defaultColSpan: () => props.defaultColSpan,
+  autoFillLastRow: props.autoFillLastRow,
 })
 </script>
 
