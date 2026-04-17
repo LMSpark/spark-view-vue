@@ -146,90 +146,116 @@
                                 ]
                             },
                             {
-                                "type": "r-table",
-                                "dataKey": "employees@rows",
-                                "props": {
-                                    "border": true,
-                                    "stripe": true,
-                                    "highlightCurrentRow": true
+                                "type": "div",
+                                "style": {
+                                    "flex": "1",
+                                    "overflow": "hidden",
+                                    "borderRadius": "16px",
+                                    "border": "1px solid rgba(226, 232, 240, 0.95)",
+                                    "background": "#ffffff",
+                                    "boxShadow": "inset 0 1px 0 rgba(255, 255, 255, 0.7)"
                                 },
                                 "children": [
                                     {
-                                        "type": "r-text",
-                                        "field": "id",
+                                        "type": "r-table",
+                                        "dataKey": "employees@rows",
                                         "props": {
-                                            "label": "ID",
-                                            "width": 60
-                                        }
-                                    },
-                                    {
-                                        "type": "r-text",
-                                        "field": "name",
-                                        "props": {
-                                            "label": "姓名",
-                                            "width": 100
-                                        }
-                                    },
-                                    {
-                                        "type": "r-text",
-                                        "field": "department",
-                                        "props": {
-                                            "label": "部门",
-                                            "width": 100
-                                        }
-                                    },
-                                    {
-                                        "type": "r-text",
-                                        "field": "role",
-                                        "props": {
-                                            "label": "职位"
-                                        }
-                                    },
-                                    {
-                                        "type": "r-row-fragment",
-                                        "props": {
-                                            "label": "年龄",
-                                            "width": 220
+                                            "border": true,
+                                            "stripe": true,
+                                            "highlightCurrentRow": true,
+                                            "size": "large"
                                         },
                                         "children": [
                                             {
-                                                "type": "div",
-                                                "style": {
-                                                    "display": "flex",
-                                                    "alignItems": "center",
-                                                    "gap": "8px",
-                                                    "flexWrap": "nowrap",
-                                                    "whiteSpace": "nowrap"
+                                                "type": "r-text",
+                                                "field": "id",
+                                                "props": {
+                                                    "label": "ID",
+                                                    "width": 72,
+                                                    "align": "center",
+                                                    "headerAlign": "center"
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text",
+                                                "field": "name",
+                                                "props": {
+                                                    "label": "姓名",
+                                                    "width": 120,
+                                                    "showOverflowTooltip": true
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text",
+                                                "field": "department",
+                                                "props": {
+                                                    "label": "部门",
+                                                    "width": 110,
+                                                    "showOverflowTooltip": true
+                                                }
+                                            },
+                                            {
+                                                "type": "r-text",
+                                                "field": "role",
+                                                "props": {
+                                                    "label": "职位",
+                                                    "minWidth": 150,
+                                                    "showOverflowTooltip": true
+                                                }
+                                            },
+                                            {
+                                                "type": "r-row-fragment",
+                                                "props": {
+                                                    "label": "年龄画像",
+                                                    "width": 220
                                                 },
                                                 "children": [
                                                     {
-                                                        "type": "r-tag",
-                                                        "props": {
-                                                            "content": "$[age] 岁",
-                                                            "tagType": "$[ageBadgeType]",
-                                                            "size": "small"
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "r-tag",
-                                                        "props": {
-                                                            "content": "$[ageRiskText]",
-                                                            "tagType": "info",
-                                                            "effect": "plain",
-                                                            "size": "small"
-                                                        }
+                                                        "type": "div",
+                                                        "style": {
+                                                            "display": "flex",
+                                                            "alignItems": "center",
+                                                            "gap": "8px",
+                                                            "flexWrap": "nowrap",
+                                                            "whiteSpace": "nowrap"
+                                                        },
+                                                        "children": [
+                                                            {
+                                                                "type": "r-tag",
+                                                                "props": {
+                                                                    "content": "$[age] 岁",
+                                                                    "tagType": "$[ageBadgeType]",
+                                                                    "size": "small"
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "r-tag",
+                                                                "props": {
+                                                                    "content": "$[ageRiskText]",
+                                                                    "tagType": "info",
+                                                                    "effect": "plain",
+                                                                    "size": "small"
+                                                                }
+                                                            }
+                                                        ]
                                                     }
                                                 ]
+                                            },
+                                            {
+                                                "type": "r-tag",
+                                                "props": {
+                                                    "field": "status",
+                                                    "label": "状态",
+                                                    "width": 96,
+                                                    "size": "small",
+                                                    "dynamicType": {
+                                                        "在职": "success",
+                                                        "休假": "warning",
+                                                        "出差": "info"
+                                                    }
+                                                }
                                             }
                                         ]
-                                    },
-                                    {
-                                        "type": "r-text",
-                                        "field": "status",
-                                        "props": {
-                                            "label": "状态",
-                                            "width": 80
-                                        }
                                     }
                                 ]
                             }
