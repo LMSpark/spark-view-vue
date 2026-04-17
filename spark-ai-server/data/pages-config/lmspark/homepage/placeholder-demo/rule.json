@@ -72,25 +72,25 @@
                                 "type": "r-row-fragment",
                                 "props": {
                                     "label": "年龄",
-                                    "width": 180,
-                                    "fields": [
-                                        {
-                                            "type": "r-tag",
-                                            "props": {
-                                                "content": "$[age] 岁",
-                                                "tagType": "$[ageBadgeType]"
-                                            }
-                                        },
-                                        {
-                                            "type": "r-tag",
-                                            "props": {
-                                                "content": "$[ageRiskText]",
-                                                "tagType": "info",
-                                                "effect": "plain"
-                                            }
+                                    "width": 180
+                                },
+                                "children": [
+                                    {
+                                        "type": "r-tag",
+                                        "props": {
+                                            "content": "$[age] 岁",
+                                            "tagType": "$[ageBadgeType]"
                                         }
-                                    ]
-                                }
+                                    },
+                                    {
+                                        "type": "r-tag",
+                                        "props": {
+                                            "content": "$[ageRiskText]",
+                                            "tagType": "info",
+                                            "effect": "plain"
+                                        }
+                                    }
+                                ]
                             },
                             {
                                 "type": "r-text",

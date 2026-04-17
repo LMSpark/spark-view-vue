@@ -2390,11 +2390,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
               props: {
                 title: '入口',
                 width: 220,
-                fields: [
-                  { type: 'row-fragment-icon-probe' },
-                  { type: 'row-fragment-link-probe' },
-                ],
               },
+              children: [
+                { type: 'row-fragment-icon-probe' },
+                { type: 'row-fragment-link-probe' },
+              ],
             },
           ],
         })
