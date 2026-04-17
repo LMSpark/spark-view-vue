@@ -2416,6 +2416,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const column = wrapper.find('.el-table-column-stub[data-label="入口"]')
     expect(column.exists()).toBe(true)
     expect(column.attributes('data-width')).toBe('220')
+    expect(wrapper.find('.renderer-row-fragment-grid').exists()).toBe(false)
     expect(column.find('.row-fragment-icon-probe').attributes('data-icon')).toBe('ri-user-line')
 
     const link = column.find('.row-fragment-link-probe')

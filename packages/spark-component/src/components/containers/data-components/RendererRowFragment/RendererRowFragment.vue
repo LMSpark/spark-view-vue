@@ -50,7 +50,7 @@ const props = withDefaults(defineProps<Props>(), {
   defaultColSpan: 24,
   labelPosition: 'top',
   labelWidth: '',
-  inline: false,
+  inline: true,
   compact: false,
 })
 
