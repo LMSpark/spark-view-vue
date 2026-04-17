@@ -31,7 +31,7 @@ export interface RendererRowFragmentConfigProps {
   /** 片段附加 class。 */
   class?: string
   /** 片段字段节点列表。 */
-  fields?: SparkNode[]
+  children?: SparkNode[]
 }
 
 /**
@@ -44,8 +44,6 @@ export interface RowFragmentNode extends SparkNode {
   type: 'r-row-fragment'
   /** 行片段结构化配置。 */
   props?: RendererRowFragmentConfigProps & Record<string, unknown>
-  /** 嵌套内容节点列表。 */
-  children?: SparkNode[]
 }
 
 /**
@@ -79,7 +77,5 @@ export interface RendererRowFragmentProps {
   /** 上游插槽作用域（运行时透传）。 */
   slotScope?: Record<string, unknown>
   /** 片段字段节点列表。 */
-  fields?: SparkNode[]
-  /** 嵌套内容节点列表。 */
   children?: SparkNode[]
 }

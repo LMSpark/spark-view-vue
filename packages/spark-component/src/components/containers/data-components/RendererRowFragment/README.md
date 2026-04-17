@@ -71,7 +71,7 @@ host + row 作用域层，负责注入宿主语义与 `DATA_ROW`，并透明递�
 - `RendererHostScope.vue` 负责给两个子字段提供同一个 `DATA_ROW`。
 - `row-fragment-icon-probe` 只读 `row.icon`。
 - `row-fragment-link-probe` 只读 `row.href` 和 `row.label`。
-- 对外公开面优先看 `props.fields`；`children` 只是兼容回退入口，不再是推荐写法。
+- `props.children` 作为片段包含的字段节点列表。
 
 对应的可执行回归测试在：
 

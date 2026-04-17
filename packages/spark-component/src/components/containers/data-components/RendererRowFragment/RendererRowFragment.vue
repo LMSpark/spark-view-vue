@@ -25,10 +25,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 // ===== 子节点解析 =====
 
-// fields 优先级高于 children：fields 作为显式"字段列表"语义；children 作为兜底通用子节点。
+// 直接使用 children 字段
 const resolvedChildren = computed<SparkNode[]>(() => {
-  const fieldNodes = getSparkNodeChildren(props.fields)
-  if (fieldNodes.length > 0) return fieldNodes
   return getSparkNodeChildren(props.children)
 })
 
