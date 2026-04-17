@@ -55,6 +55,10 @@ const startupLogger = createLogger('main')
 // AI 闭环：late-binding pageId（路由就绪后由 afterMount 注入）
 let _currentPageId: string | undefined
 
+function isRecordObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 // AI 闭环：浏览器会话级 ID（页面刷新后重新生成，用于追踪一次对话周期）
 const _sessionId = `s-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
@@ -222,17 +226,18 @@ async function startApp() {
     
     // 3. 动态加载插件（根据配置）
     startupLogger.info('🔌 正在加载 UI 插件...')
-    const pluginInstances = await PluginManager.loadPlugins(appConfig.plugins)
+    const pluginConfigs = isRecordObject(appConfig.plugins) ? appConfig.plugins : {}
+    const pluginInstances = await PluginManager.loadPlugins(pluginConfigs)
     const plugins = pluginInstances.map(p => p.plugin)
     
     // 加载插件样式
-    const epConfig = appConfig.plugins['element-plus']
+    const epConfig = pluginConfigs['element-plus']
     if (epConfig === true || (typeof epConfig === 'object' && epConfig.enabled === true)) {
       await import('element-plus/dist/index.css')
       // Element Plus 暗黑模式 CSS 变量（html.dark 时自动覆盖）
       await import('element-plus/theme-chalk/dark/css-vars.css')
     }
-    const vxeConfig = appConfig.plugins['vxe-table']
+    const vxeConfig = pluginConfigs['vxe-table']
     if (vxeConfig === true || (typeof vxeConfig === 'object' && vxeConfig.enabled === true)) {
       await import('vxe-table/lib/style.css')
     }

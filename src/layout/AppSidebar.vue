@@ -7,14 +7,14 @@
 
     <!-- 导航模型驱动 -->
     <el-menu
-      v-if="items.length"
+      v-if="safeItems.length"
       :default-active="activeIndex"
       :background-color="'transparent'"
       text-color="var(--spark-sidebar-text)"
       active-text-color="var(--el-color-primary)"
       :collapse="collapsed"
     >
-      <template v-for="item in items" :key="item.id">
+      <template v-for="item in safeItems" :key="item.id">
         <!-- 分组标题 -->
         <el-menu-item-group v-if="isDirectoryNode(item)" :title="collapsed ? '' : item.title">
           <template v-for="child in visibleChildren(item)" :key="child.id">
@@ -125,6 +125,7 @@ const props = withDefaults(defineProps<{
 const route = useRoute()
 const router = useRouter()
 const nav = useNav()
+const safeItems = computed<NavNode[]>(() => Array.isArray(props.items) ? props.items : [])
 
 /** 活动高亮索引 */
 const activeIndex = computed(() => route.path)
@@ -160,7 +161,7 @@ const isRoutesLoaded = ref(false)
 onMounted(() => { setTimeout(() => { isRoutesLoaded.value = true }, 100) })
 
 const fallbackRoutes = computed(() => {
-  if (props.items.length > 0) return []
+  if (safeItems.value.length > 0) return []
   if (!isRoutesLoaded.value) return []
   return router.getRoutes()
     .filter(r => r.meta?.['title'] && r.path !== '/')

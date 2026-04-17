@@ -141,14 +141,24 @@ export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['typ
  * - 空 type → fallbackType
  * - children 缺省 → []
  */
-export function normalizeSparkNode(node: SparkNode, fallbackType: string = node.type): SparkNode {
+export function normalizeSparkNode(node: SparkNode, fallbackType = 'unknown'): SparkNode {
+  const normalizedFallbackType = typeof fallbackType === 'string' && fallbackType.length > 0
+    ? fallbackType
+    : 'unknown'
+
   const normalizedType = typeof node.type === 'string' && node.type.length > 0
     ? node.type
-    : (fallbackType.length > 0 ? fallbackType : 'unknown')
+    : normalizedFallbackType
+
+  const rawProps = (node as { props?: unknown }).props
+  const hasObjectProps = rawProps !== undefined
+    && rawProps !== null
+    && typeof rawProps === 'object'
+    && !Array.isArray(rawProps)
 
   return {
     type: normalizedType,
-    ...(node.props !== undefined ? { props: node.props } : {}),
+    ...(hasObjectProps ? { props: rawProps as Record<string, unknown> } : {}),
     children: Array.isArray(node.children) ? node.children : [],
   }
 }

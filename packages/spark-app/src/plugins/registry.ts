@@ -89,7 +89,8 @@ export function createPluginRegistry(): IPluginRegistry {
       }
       loaders.set(id, { id, ...loader })
     },
-    registerAll(entries: Record<string, Omit<PluginLoader, 'id'>>): void {
+    registerAll(entries: Record<string, Omit<PluginLoader, 'id'>> | null | undefined): void {
+      if (entries === null || entries === undefined) return
       for (const [id, loader] of Object.entries(entries)) {
         this.register(id, loader)
       }
@@ -154,13 +155,14 @@ export class PluginManager {
    * @returns 插件实例数组（按优先级排序）
    */
   static async loadPlugins(
-    pluginConfigs: Record<string, PluginConfig>,
+    pluginConfigs: Record<string, PluginConfig> | null | undefined,
     registry: IPluginRegistry = getGlobalPluginRegistry()
   ): Promise<PluginInstance[]> {
     const plugins: PluginInstance[] = []
+    const safePluginConfigs = pluginConfigs ?? {}
     
     // 1. 标准化配置并按优先级排序
-    const normalizedConfigs = Object.entries(pluginConfigs)
+    const normalizedConfigs = Object.entries(safePluginConfigs)
       .map(([id, config]) => {
         const normalized = this.normalizeConfig(config)
         const loader = registry.get(id)

@@ -37,6 +37,7 @@ interface BreadcrumbItem {
 const route = useRoute()
 const router = useRouter()
 const nav = useNav()
+const safeActivePath = computed<NavNode[]>(() => Array.isArray(nav?.activePath.value) ? nav.activePath.value : [])
 
 function goHome() {
   nav?.navigateToPath(getNavHomePath())
@@ -44,8 +45,8 @@ function goHome() {
 
 const crumbs = computed<BreadcrumbItem[]>(() => {
   // 优先使用导航模型的 activePath
-  if (nav?.activePath.value.length) {
-    return nav.activePath.value.map((node: NavNode) => ({
+  if (safeActivePath.value.length > 0) {
+    return safeActivePath.value.map((node: NavNode) => ({
       id: node.id,
       path: node.path ?? '',
       title: node.title,
@@ -67,7 +68,7 @@ const crumbs = computed<BreadcrumbItem[]>(() => {
 function onCrumbClick(item: BreadcrumbItem) {
   // 优先使用导航模型的 navigateTo（处理重定向、首个叶子等）
   if (nav && item.id) {
-    const node = nav.activePath.value.find((n: NavNode) => n.id === item.id)
+    const node = safeActivePath.value.find((n: NavNode) => n.id === item.id)
     if (node) {
       nav.navigateTo(node)
       return

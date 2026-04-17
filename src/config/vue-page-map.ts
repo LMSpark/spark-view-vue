@@ -56,7 +56,7 @@ export const VUE_PAGE_MAP: Record<string, VuePageEntry> = {
   '/app-list':        { title: '应用列表',    icon: 'Grid',         scope: 'tenant',   source: 'src/views/tenant/AppList.vue',                  load: () => import('../views/tenant/AppList.vue') },
   // ── app: 应用级页面 ──
   '/dashboard':       { title: '仪表盘',      icon: 'DataBoard',    scope: 'app',      source: 'src/views/app/Dashboard.vue',                   load: () => import('../views/app/Dashboard.vue') },
-  '/capability-demo': { title: '能力体系演示', icon: 'SetUp',        scope: 'app',      source: 'src/views/app/CapabilityDemo.vue',              load: () => import('../views/app/CapabilityDemo.vue') },
+  '/capability-demo': { title: '能力管理演示', icon: 'SetUp',        scope: 'app',      source: 'src/views/app/CapabilityDemo.vue',              load: () => import('../views/app/CapabilityDemo.vue') },
   '/nav-manager':     { title: '导航管理',    icon: 'Compass',      scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue'), description: '开发系统（导航管理入口）' },
   '/site-manager':    { title: '站点管理',    icon: 'Globe',        scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue'), description: '开发系统（站点管理入口）' },
   '/page-manager':    { title: '页面管理',    icon: 'Document',     scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue'), description: '开发系统（页面管理入口）' },

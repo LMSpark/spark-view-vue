@@ -378,7 +378,11 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     if (state.config.paramName !== undefined && state.config.paramName !== '') {
       const paramName = state.config.paramName
       const newQuery: Record<string, string> = {}
-      for (const [k, v] of Object.entries(route.query)) {
+      const querySource: unknown = route.query
+      const queryEntries = querySource !== null && typeof querySource === 'object'
+        ? Object.entries(querySource as Record<string, unknown>)
+        : []
+      for (const [k, v] of queryEntries) {
         if (k === paramName) continue
         if (typeof v === 'string') newQuery[k] = v
       }

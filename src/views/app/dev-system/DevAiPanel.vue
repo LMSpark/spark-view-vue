@@ -50,8 +50,8 @@
             <span v-if="msg.streaming" class="cursor-blink" />
 
             <!-- Files -->
-            <details v-if="msg.files !== null && Object.keys(msg.files).length > 0" class="bubble__files">
-              <summary>📂 生成 {{ Object.keys(msg.files).length }} 个文件</summary>
+            <details v-if="getFileCount(msg.files) > 0" class="bubble__files">
+              <summary>📂 生成 {{ getFileCount(msg.files) }} 个文件</summary>
               <div v-for="(code, name) in msg.files" :key="name" class="file-block">
                 <div class="file-block__name">{{ name }}</div>
                 <pre class="file-block__code">{{ code }}</pre>
@@ -228,7 +228,7 @@ const panelStyle = computed(() => {
 // ── Computed ──
 
 const loop = computed(() => getAILoop())
-const hasFiles = computed(() => Object.keys(files.value).length > 0)
+const hasFiles = computed(() => getFileCount(files.value) > 0)
 const currentFormPageId = computed(() => props.state.editForm.path?.replace(/^\/+/, '') ?? '')
 const canSend = computed(() => Boolean(pageId.value.trim() && prompt.value.trim()))
 const errorCount = computed(() => logs.value.filter(l => l.level === 'error').length)
@@ -292,6 +292,11 @@ function makeStreamCallbacks(aiMsg: PanelMessage): StreamCallbacks {
   }
 }
 
+function getFileCount(value: unknown): number {
+  if (value === null || value === undefined || typeof value !== 'object') return 0
+  return Object.keys(value as Record<string, unknown>).length
+}
+
 function gatherContextFiles(): PageFiles {
   const result: Record<string, string> = {}
   for (const name of ['rule.json', 'pagedata.json', 'script.js', 'style.css']) {
@@ -324,15 +329,15 @@ async function handleSend() {
     let resp
     if (hasFiles.value) {
       const ctx = gatherContextFiles()
-      const hasCtx = Object.keys(ctx).length > 0
+      const hasCtx = getFileCount(ctx) > 0
       resp = await loop.value.iterateStream(
         pid, text, makeStreamCallbacks(aiMsg),
         hasCtx ? ctx : undefined,
       )
-      props.state.addStatus(`✅ 迭代完成，修改 ${Object.keys(resp.files).length} 个文件`, 'success')
+      props.state.addStatus(`✅ 迭代完成，修改 ${getFileCount(resp.files)} 个文件`, 'success')
     } else {
       resp = await loop.value.generateStream(pid, text, makeStreamCallbacks(aiMsg))
-      props.state.addStatus(`✅ 生成完成，写入 ${Object.keys(resp.files).length} 个文件`, 'success')
+      props.state.addStatus(`✅ 生成完成，写入 ${getFileCount(resp.files)} 个文件`, 'success')
     }
 
     files.value = resp.files
@@ -381,7 +386,7 @@ async function handleDebug() {
 
   try {
     const ctx = gatherContextFiles()
-    const hasCtx = Object.keys(ctx).length > 0
+    const hasCtx = getFileCount(ctx) > 0
     const resp = await loop.value.iterateStream(
       pid, debugFeedback, makeStreamCallbacks(aiMsg),
       hasCtx ? ctx : undefined,
@@ -555,7 +560,9 @@ async function refreshFiles() {
 watch(
   () => {
     const last = messages.value[messages.value.length - 1]
-    return last != null ? `${last.id}|${last.content.length}|${last.reasoning.length}` : ''
+    return last != null
+      ? `${last.id}|${typeof last.content === 'string' ? last.content.length : 0}|${typeof last.reasoning === 'string' ? last.reasoning.length : 0}`
+      : ''
   },
   () => scrollToBottom(),
 )

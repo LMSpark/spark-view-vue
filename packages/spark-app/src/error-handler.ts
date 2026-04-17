@@ -44,7 +44,9 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
       context.file = String(instance.$options.__file)
     }
 
-    errorLogger.error('[Global Error]', {
+    const summary = `[Global Error] ${errorType} ${error.message}`
+
+    errorLogger.error(summary, {
       type: errorType,
       rawType: getRawErrorKind(err),
       message: error.message,
@@ -52,6 +54,9 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
       stack: error.stack,
       rawError: err,
     })
+
+    // 追加一条摘要日志，避免控制台预览折叠成 "Object" 时丢失关键信息。
+    errorLogger.error(summary)
 
     // 用户自定义错误处理
     if (onError) {

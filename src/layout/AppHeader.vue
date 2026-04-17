@@ -53,16 +53,16 @@
             <span class="notification-panel__title">通知</span>
             <div class="notification-panel__actions">
               <button v-if="unreadCount > 0" class="notification-panel__action" @click="markAllRead">全部已读</button>
-              <button v-if="notifications.length > 0" class="notification-panel__action" @click="clearAll">清空</button>
+              <button v-if="safeNotifications.length > 0" class="notification-panel__action" @click="clearAll">清空</button>
             </div>
           </div>
           <div class="notification-panel__body">
-            <div v-if="notifications.length === 0" class="notification-panel__empty">
+            <div v-if="safeNotifications.length === 0" class="notification-panel__empty">
               <el-icon :size="40" style="color: var(--el-text-color-placeholder)"><Bell /></el-icon>
               <p>暂无通知</p>
             </div>
             <div
-              v-for="item in notifications"
+              v-for="item in safeNotifications"
               :key="item.id"
               class="notification-item"
               :class="{ 'notification-item--unread': !item.read }"
@@ -101,11 +101,11 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <template v-if="userMenuItems.length">
-              <template v-for="(item, idx) in userMenuItems" :key="item.id">
+            <template v-if="safeUserMenuItems.length">
+              <template v-for="(item, idx) in safeUserMenuItems" :key="item.id">
                 <el-dropdown-item
                   :command="item.path ?? item.redirect ?? item.id"
-                  :divided="idx > 0 && userMenuItems[idx - 1]?.dividerAfter === true"
+                  :divided="idx > 0 && safeUserMenuItems[idx - 1]?.dividerAfter === true"
                 >
                   <span v-if="item.icon" style="margin-right: 4px"><NavIcon :name="item.icon" /></span>{{ item.title }}
                 </el-dropdown-item>
@@ -171,11 +171,15 @@ const emit = defineEmits<{
   'user-command': [command: string]
 }>()
 
+const safeToolbarItems = computed<NavNode[]>(() => Array.isArray(props.toolbarItems) ? props.toolbarItems : [])
+const safeUserMenuItems = computed<NavNode[]>(() => Array.isArray(props.userMenuItems) ? props.userMenuItems : [])
+const safeNotifications = computed(() => Array.isArray(notifications) ? notifications : [])
+
 /** 检查导航配置中是否包含指定 action 的工具栏项 */
 function hasAction(action: string): boolean {
   // 无工具栏配置时默认全部显示（向后兼容）
-  if (!props.toolbarItems.length) return true
-  return props.toolbarItems.some(item => item.path === action)
+  if (safeToolbarItems.value.length === 0) return true
+  return safeToolbarItems.value.some(item => item.path === action)
 }
 /* 通知（SSE 实时驱动） */
 const { notifications, unreadCount, markRead, markAllRead, clearAll, removeItem } = useNotifications()
@@ -189,7 +193,10 @@ function formatTime(ts: number): string {
 }
 
 /* 用户头像文字（取用户名首字） */
-const avatarText = computed(() => props.username.charAt(0))
+const avatarText = computed(() => {
+  const username = typeof props.username === 'string' ? props.username : ''
+  return username.charAt(0)
+})
 
 /* 全屏切换 */
 const isFullscreen = ref(false)

@@ -1,6 +1,6 @@
 <template>
   <el-form
-    :model="model"
+    :model="formModel"
     :class="['renderer-field-scope', compact && 'renderer-field-scope--compact']"
     :label-position="labelPosition"
     :label-width="labelWidth"
@@ -32,7 +32,7 @@
  * @description 字段作用域容器，提供 DATA_ROW 上下文和 24 列网格布局。
  * @category internal
  */
-import { shallowReactive, watch } from 'vue'
+import { computed, shallowReactive, watch } from 'vue'
 import { DATA_ROW, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
 import type { IDataRow } from '@spark-view/spark-data'
@@ -43,9 +43,9 @@ interface RendererFieldScopeProps {
   type?: 'r-field-scope'
   id?: string
   /** 表单数据模型 */
-  model: IDataRow
+  model?: IDataRow
   /** 字段组件配置列表 */
-  configs: SparkNode[]
+  configs?: SparkNode[]
   /** CSS Grid 列数 */
   gridColumns?: number
   /** 栅格间距 */
@@ -68,6 +68,8 @@ interface RendererFieldScopeProps {
 
 const props = withDefaults(defineProps<RendererFieldScopeProps>(), {
   type: 'r-field-scope',
+  model: () => ({}),
+  configs: () => [],
   gridColumns: 24,
   gridGap: 12,
   gridAutoRows: 'minmax(32px, auto)',
@@ -85,6 +87,14 @@ const { sparkProvide } = useSparkComponent({
 
 const rowMirror = shallowReactive<IDataRow>({})
 sparkProvide(DATA_ROW, rowMirror)
+
+function isDataRow(value: unknown): value is IDataRow {
+  return value !== null && typeof value === 'object'
+}
+
+const formModel = computed<IDataRow>(() =>
+  isDataRow(props.model) ? props.model : rowMirror,
+)
 
 let syncingFromSource = false
 let syncingFromMirror = false
@@ -107,6 +117,7 @@ watch(
   rowMirror,
   (incoming) => {
     if (syncingFromSource) return
+    if (!isDataRow(props.model)) return
     syncingFromMirror = true
     try {
       syncReactiveRow(props.model, incoming)
@@ -118,7 +129,7 @@ watch(
 )
 
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: () => props.configs,
+  children: () => props.configs ?? [],
   columns: () => props.gridColumns,
   gap: () => props.gridGap,
   autoRows: () => props.gridAutoRows,

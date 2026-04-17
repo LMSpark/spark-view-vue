@@ -1,6 +1,6 @@
 <template>
   <nav class="nav-header-bar">
-    <template v-for="item in items" :key="item.id">
+    <template v-for="item in props.items" :key="item.id">
     <div
       class="nav-header-bar__item"
       :class="{
@@ -42,9 +42,11 @@ import type { NavNode } from '@spark-view/spark-app'
 import { useNav } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
-defineProps<{
-  items: NavNode[]
-}>()
+const props = withDefaults(defineProps<{
+  items?: NavNode[]
+}>(), {
+  items: () => [],
+})
 
 const nav = useNav()
 

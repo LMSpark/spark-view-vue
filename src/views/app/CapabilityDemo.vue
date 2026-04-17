@@ -269,11 +269,15 @@ const _mockDataSet = SparkData.createDataSet({
         { name: 'age', type: 'number' },
         { name: 'department', type: 'string' }
       ],
-      rows: [
-        { id: '1', name: '张三', age: 30, department: '技术部' },
-        { id: '2', name: '李四', age: 28, department: '产品部' },
-        { id: '3', name: '王五', age: 35, department: '设计部' }
-      ]
+      views: {
+        default: {
+          rows: [
+            { id: '1', name: '张三', age: 30, department: '技术部' },
+            { id: '2', name: '李四', age: 28, department: '产品部' },
+            { id: '3', name: '王五', age: 35, department: '设计部' }
+          ]
+        }
+      }
     }
   }
 })

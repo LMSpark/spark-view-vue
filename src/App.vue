@@ -309,19 +309,21 @@ const moduleContextListeners = new Set<ModuleContextChangeHandler>()
 
 function cloneModuleContext(value: IModuleContext | null | undefined): IModuleContext | null {
   if (!value) return null
+  const safeItems = Array.isArray(value.items) ? value.items : []
   return {
     nodeId: value.nodeId,
     selected: value.selected,
-    items: value.items.map(item => ({ id: item.id, title: item.title })),
+    items: safeItems.map(item => ({ id: item.id, title: item.title })),
   }
 }
 
 function moduleContextSignature(value: IModuleContext | null | undefined): string {
   if (!value) return ''
+  const safeItems = Array.isArray(value.items) ? value.items : []
   return JSON.stringify({
     nodeId: value.nodeId,
     selected: value.selected,
-    items: value.items.map(item => ({ id: item.id, title: item.title })),
+    items: safeItems.map(item => ({ id: item.id, title: item.title })),
   })
 }
 
@@ -385,10 +387,11 @@ const _stopPageRefresh = onPageRefresh(() => {
 
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
 function applyNavTree(navData: AppNavRoot | null): void {
-  if (navData && navData.children.length > 0) {
+  const safeChildren = Array.isArray(navData?.children) ? navData.children : []
+  if (navData && safeChildren.length > 0) {
     _navRoot.childPlacement = navData.childPlacement
-    _navRoot.children = navData.children
-    if (import.meta.env.DEV) console.log(`[Nav] ✅ 导航已同步 (${navData.children.length} 个节点)`)
+    _navRoot.children = safeChildren
+    if (import.meta.env.DEV) console.log(`[Nav] ✅ 导航已同步 (${safeChildren.length} 个节点)`)
   } else if (import.meta.env.DEV) {
     console.warn('[Nav] ⚠️ 导航树为空')  // DEV guard on outer branch
   }
