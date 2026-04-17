@@ -11,6 +11,37 @@ import { toError } from '@spark-view/spark-utils'
 
 const errorLogger = createLogger('error')
 
+const VUE_INTERNAL_FRAME_RE = /(runtime-core\.esm-bundler\.js|reactivity\.esm-bundler\.js|runtime-dom\.esm-bundler\.js|node_modules[\\/](vue|@vue)[\\/])/i
+
+function compactStackLikeText(raw: string | undefined, maxFrames = 12): string | undefined {
+  if (typeof raw !== 'string' || raw.trim().length === 0) return undefined
+
+  const lines = raw
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+
+  if (lines.length === 0) return undefined
+
+  const internal: string[] = []
+  const app: string[] = []
+
+  for (const line of lines) {
+    if (VUE_INTERNAL_FRAME_RE.test(line)) internal.push(line)
+    else app.push(line)
+  }
+
+  const preferred = app.length > 0 ? app : lines
+  const kept = preferred.slice(0, maxFrames)
+  const omitted = lines.length - kept.length
+
+  if (omitted > 0) {
+    kept.push(`... [省略 ${omitted} 条调用帧，其中 Vue/运行时内部帧 ${internal.length} 条]`)
+  }
+
+  return kept.join('\n')
+}
+
 /**
  * 设置全局错误处理
  *
@@ -51,7 +82,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
       rawType: getRawErrorKind(err),
       message: error.message,
       context,
-      stack: error.stack,
+      stack: compactStackLikeText(error.stack),
       rawError: err,
     })
 
@@ -71,7 +102,10 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
 
   // Vue 警告处理（模板警告、prop 验证失败等 → 进入 Logger → AI 迭代闭环可检测）
   app.config.warnHandler = (msg, _instance, trace) => {
-    errorLogger.warn('[Vue Warning]', { message: msg, trace })
+    errorLogger.warn('[Vue Warning]', {
+      message: msg,
+      trace: compactStackLikeText(trace, 10),
+    })
   }
 
   // Promise 未捕获错误
