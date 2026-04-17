@@ -181,8 +181,7 @@
                                                 "field": "name",
                                                 "props": {
                                                     "label": "姓名",
-                                                    "width": 120,
-                                                    "showOverflowTooltip": true
+                                                    "width": 120
                                                 }
                                             },
                                             {
@@ -190,8 +189,7 @@
                                                 "field": "department",
                                                 "props": {
                                                     "label": "部门",
-                                                    "width": 110,
-                                                    "showOverflowTooltip": true
+                                                    "width": 110
                                                 }
                                             },
                                             {
@@ -199,8 +197,7 @@
                                                 "field": "role",
                                                 "props": {
                                                     "label": "职位",
-                                                    "minWidth": 150,
-                                                    "showOverflowTooltip": true
+                                                    "minWidth": 150
                                                 }
                                             },
                                             {
