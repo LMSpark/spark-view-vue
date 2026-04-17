@@ -4,18 +4,17 @@
     :title="itemTitle"
     :disabled="itemDisabled"
   >
-    <RendererHostScope type="r-collapse-item-field-scope" :field-mode="'detail'">
-      <div :class="['renderer-collapse-item-body', itemBodyClass]" :style="itemGridStyle">
-        <div
-          v-for="(child, index) in itemChildren"
-          :key="nodeId(child) ?? `r-collapse-item-child-${index}`"
-          class="renderer-collapse-item-grid-item"
-          :style="getItemChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-        <slot />
-      </div>
+    <RendererHostScope
+      type="r-collapse-item-field-scope"
+      :field-mode="'detail'"
+      :body-class="['renderer-collapse-item-body', itemBodyClass]"
+      item-class="renderer-collapse-item-grid-item"
+      :children="itemChildren"
+      :grid-columns="gridColumns"
+      :grid-gap="gridGap"
+      :grid-auto-rows="gridAutoRows"
+    >
+      <slot />
     </RendererHostScope>
   </el-collapse-item>
 </template>
@@ -27,10 +26,9 @@
  * @category internal
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, useSparkComponent } from '../../internal'
-import { nodeId, type SparkNode } from '../../internal'
+import { useSparkComponent } from '../../internal'
+import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import RendererHostScope from '../support/RendererHostScope.vue'
-import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
   type?: string
@@ -64,18 +62,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 useSparkComponent(props)
 
-const {
-  contentChildren: itemChildren,
-  contentBodyClass: itemBodyClass,
-  contentGridStyle: itemGridStyle,
-  getContentChildGridStyle: getItemChildGridStyle,
-} = useCompositeItemGrid({
-  children: () => props.children,
-  bodyClass: () => props.bodyClass,
-  gridColumns: () => props.gridColumns,
-  gridAutoRows: () => props.gridAutoRows,
-  gridGap: () => props.gridGap,
-})
+const itemChildren = computed(() => getSparkNodeChildren(props.children))
+const itemBodyClass = computed(() => typeof props.bodyClass === 'string' ? props.bodyClass : '')
 
 const itemName = computed<string | number>(() => {
   const value = props.name ?? props.id

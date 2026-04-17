@@ -22,18 +22,17 @@
       </div>
     </template>
 
-    <RendererHostScope type="r-drawer-field-scope" :field-mode="'detail'">
-      <div :class="['renderer-drawer-body', bodyClass]" :style="gridStyle">
-        <div
-          v-for="(child, index) in gridChildren"
-          :key="nodeId(child) ?? `r-drawer-child-${index}`"
-          class="renderer-drawer-grid-item"
-          :style="getChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-        <slot v-bind="getDefaultSlotScope()" />
-      </div>
+    <RendererHostScope
+      type="r-drawer-field-scope"
+      :field-mode="'detail'"
+      :body-class="['renderer-drawer-body', bodyClass]"
+      item-class="renderer-drawer-grid-item"
+      :children="gridChildren"
+      :grid-columns="gridColumns"
+      :grid-gap="gridGap"
+      :grid-auto-rows="gridAutoRows"
+    >
+      <slot v-bind="getDefaultSlotScope()" />
     </RendererHostScope>
 
     <template v-if="showFooter" #footer>
@@ -92,7 +91,7 @@ const footerClassValue = computed(() => String(props.footer?.props?.class ?? '')
 const resolvedTitle = computed(() => props.title || '')
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))
 const footerActionConfigs = computed(() => getSparkNodeChildren(props.footer?.children))
-const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
+const { gridChildren } = useContainerGrid({
   children: computed(() => getSparkNodeChildren(contentChildren.value)),
   columns: computed(() => props.gridColumns),
   gap: computed(() => props.gridGap),

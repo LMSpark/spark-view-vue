@@ -6,18 +6,17 @@
     :lazy="paneLazy"
     :closable="paneClosable"
   >
-    <RendererHostScope type="r-tab-pane-field-scope" :field-mode="'detail'">
-      <div :class="['renderer-tabs-pane-body', paneBodyClass]" :style="paneGridStyle">
-        <div
-          v-for="(child, index) in paneChildren"
-          :key="nodeId(child) ?? `r-tab-pane-child-${index}`"
-          class="renderer-tabs-pane-grid-item"
-          :style="getPaneChildGridStyle(child)"
-        >
-          <SparkComponentRenderer :config="child" />
-        </div>
-        <slot />
-      </div>
+    <RendererHostScope
+      type="r-tab-pane-field-scope"
+      :field-mode="'detail'"
+      :body-class="['renderer-tabs-pane-body', paneBodyClass]"
+      item-class="renderer-tabs-pane-grid-item"
+      :children="paneChildren"
+      :grid-columns="gridColumns"
+      :grid-gap="gridGap"
+      :grid-auto-rows="gridAutoRows"
+    >
+      <slot />
     </RendererHostScope>
   </el-tab-pane>
 </template>
@@ -29,10 +28,9 @@
  * @category internal
  */
 import { computed } from 'vue'
-import { SparkComponentRenderer, useSparkComponent } from '../../internal'
-import { nodeId, type SparkNode } from '../../internal'
+import { useSparkComponent } from '../../internal'
+import { getSparkNodeChildren, type SparkNode } from '../../internal'
 import RendererHostScope from '../support/RendererHostScope.vue'
-import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
   type?: string
@@ -72,18 +70,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 useSparkComponent(props)
 
-const {
-  contentChildren: paneChildren,
-  contentBodyClass: paneBodyClass,
-  contentGridStyle: paneGridStyle,
-  getContentChildGridStyle: getPaneChildGridStyle,
-} = useCompositeItemGrid({
-  children: () => props.children,
-  bodyClass: () => props.bodyClass,
-  gridColumns: () => props.gridColumns,
-  gridAutoRows: () => props.gridAutoRows,
-  gridGap: () => props.gridGap,
-})
+const paneChildren = computed(() => getSparkNodeChildren(props.children))
+const paneBodyClass = computed(() => typeof props.bodyClass === 'string' ? props.bodyClass : '')
 
 const paneName = computed<string | number>(() => {
   const value = props.name ?? props.value ?? props.id
