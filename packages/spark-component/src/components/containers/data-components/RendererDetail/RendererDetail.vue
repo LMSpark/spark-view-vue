@@ -1,29 +1,29 @@
 <template>
   <div :class="['renderer-detail-layout', `renderer-detail-layout--${toolbarPositionValue}`]">
-    <RendererHostScope
-      v-if="showToolbar"
-      type="r-detail-toolbar-scope"
-      :variant="'toolbar'"
-      :action-host="toolbarActionHost"
-      :body-class="['renderer-detail-toolbar', toolbarClassValue]"
-      :children="visibleToolbarConfigs"
-    />
+    <RendererHostScope v-if="showToolbar" type="r-detail-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
+      <div :class="['renderer-detail-toolbar', toolbarClassValue]">
+        <SparkComponentRenderer
+          v-for="(action, index) in visibleToolbarConfigs"
+          :key="nodeId(action) ?? `r-detail-toolbar-${index}`"
+          :config="action"
+        />
+      </div>
+    </RendererHostScope>
 
     <div class="renderer-detail-main">
-      <div class="renderer-detail" v-bind="detailPropsValue">
-        <RendererHostScope
-          type="r-detail-field-scope"
-          :field-mode="'detail'"
-          :row="detailData"
-          body-class="renderer-detail-grid"
-          :body-style="detailAlignStyle"
-          item-class="renderer-detail-grid-item"
-          :children="gridChildren"
-          :grid-columns="gridColumns"
-          :grid-gap="gridGap"
-          :grid-auto-rows="gridAutoRows"
-        >
-          <slot v-bind="getDefaultSlotScope()" />
+      <div class="renderer-detail" v-bind="detailPropsValue" :style="detailAlignStyle">
+        <RendererHostScope type="r-detail-field-scope" :field-mode="'detail'" :row="detailData">
+          <div class="renderer-detail-grid" :style="gridStyle">
+            <div
+              v-for="(child, index) in gridChildren"
+              :key="nodeId(child) ?? `r-detail-child-${index}`"
+              class="renderer-detail-grid-item"
+              :style="getChildGridStyle(child)"
+            >
+              <SparkComponentRenderer :config="child" />
+            </div>
+            <slot v-bind="getDefaultSlotScope()" />
+          </div>
         </RendererHostScope>
       </div>
     </div>
@@ -45,13 +45,15 @@
 /**
  * RendererDetail - 详情展示容器组件
  */
+import { SparkComponentRenderer } from '../../../internal'
 import { computed, type StyleValue } from 'vue'
-import type { SparkNode } from '../../../internal'
+import { nodeId } from '../../../internal'
 import type { RDetailProps } from './RendererDetail.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import type { RendererDetailApi } from './types'
 import { createRendererDetailZeroCode } from './zero-code'
+import type { SparkNode } from '../../../internal'
 import { createActionCapability } from '../../../internal'
 
 const props = withDefaults(defineProps<RDetailProps>(), {
@@ -75,6 +77,8 @@ const {
   pageService,
   resolvedView,
   gridChildren,
+  gridStyle,
+  getChildGridStyle,
   toolbarPositionValue,
   toolbarClassValue,
   visibleToolbarConfigs,

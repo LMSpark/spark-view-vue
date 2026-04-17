@@ -8,16 +8,19 @@
     @click="emit('activate', index)"
   />
 
-    <RendererHostScope v-else type="r-step-item-field-scope" :field-mode="'detail'"
-      :body-class="['renderer-steps-content-body', stepBodyClass]"
-      item-class="renderer-steps-content-grid-item"
-      :children="stepChildren"
-      :grid-columns="gridColumns"
-      :grid-gap="gridGap"
-      :grid-auto-rows="gridAutoRows"
-    >
+  <RendererHostScope v-else type="r-step-item-field-scope" :field-mode="'detail'">
+    <div :class="['renderer-steps-content-body', stepBodyClass]" :style="stepGridStyle">
+      <div
+        v-for="(child, index) in stepChildren"
+        :key="nodeId(child) ?? `r-step-child-${index}`"
+        class="renderer-steps-content-grid-item"
+        :style="getStepChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
+      </div>
       <slot />
-    </RendererHostScope>
+    </div>
+  </RendererHostScope>
 </template>
 
 <script setup lang="ts">
@@ -27,9 +30,10 @@
  * @category internal
  */
 import { computed } from 'vue'
-import { useSparkComponent } from '../../internal'
-import { getSparkNodeChildren, type SparkNode } from '../../internal'
+import { SparkComponentRenderer, useSparkComponent } from '../../internal'
+import { nodeId, type SparkNode } from '../../internal'
 import RendererHostScope from '../support/RendererHostScope.vue'
+import { useCompositeItemGrid } from '../layout/useCompositeItemGrid'
 
 interface Props {
   type?: string
@@ -75,8 +79,18 @@ const emit = defineEmits<{
 
 useSparkComponent(props)
 
-const stepChildren = computed(() => getSparkNodeChildren(props.children))
-const stepBodyClass = computed(() => typeof props.bodyClass === 'string' ? props.bodyClass : '')
+const {
+  contentChildren: stepChildren,
+  contentBodyClass: stepBodyClass,
+  contentGridStyle: stepGridStyle,
+  getContentChildGridStyle: getStepChildGridStyle,
+} = useCompositeItemGrid({
+  children: () => props.children,
+  bodyClass: () => props.bodyClass,
+  gridColumns: () => props.gridColumns,
+  gridAutoRows: () => props.gridAutoRows,
+  gridGap: () => props.gridGap,
+})
 
 const stepTitle = computed(() => {
   const value = props.title ?? props.label

@@ -27,18 +27,18 @@
       </div>
     </template>
 
-    <RendererHostScope
-      type="r-section-field-scope"
-      :field-mode="'detail'"
-      :body-class="['renderer-section-body', bodyClass]"
-      :body-show="!collapsed"
-      item-class="renderer-section-grid-item"
-      :children="gridChildren"
-      :grid-columns="gridColumns"
-      :grid-gap="gridGap"
-      :grid-auto-rows="gridAutoRows"
-    >
-      <slot v-bind="getDefaultSlotScope()" />
+    <RendererHostScope type="r-section-field-scope" :field-mode="'detail'">
+      <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
+        <div
+          v-for="(child, index) in gridChildren"
+          :key="nodeId(child) ?? `r-section-child-${index}`"
+          class="renderer-section-grid-item"
+          :style="getChildGridStyle(child)"
+        >
+          <SparkComponentRenderer :config="child" />
+        </div>
+        <slot v-bind="getDefaultSlotScope()" />
+      </div>
     </RendererHostScope>
   </el-card>
 
@@ -68,18 +68,18 @@
       </div>
     </div>
 
-    <RendererHostScope
-      type="r-section-field-scope"
-      :field-mode="'detail'"
-      :body-class="['renderer-section-body', bodyClass]"
-      :body-show="!collapsed"
-      item-class="renderer-section-grid-item"
-      :children="gridChildren"
-      :grid-columns="gridColumns"
-      :grid-gap="gridGap"
-      :grid-auto-rows="gridAutoRows"
-    >
-      <slot v-bind="getDefaultSlotScope()" />
+    <RendererHostScope type="r-section-field-scope" :field-mode="'detail'">
+      <div v-show="!collapsed" :class="['renderer-section-body', bodyClass]" :style="gridStyle">
+        <div
+          v-for="(child, index) in gridChildren"
+          :key="nodeId(child) ?? `r-section-child-${index}`"
+          class="renderer-section-grid-item"
+          :style="getChildGridStyle(child)"
+        >
+          <SparkComponentRenderer :config="child" />
+        </div>
+        <slot v-bind="getDefaultSlotScope()" />
+      </div>
     </RendererHostScope>
   </div>
 </template>
@@ -131,7 +131,7 @@ const headerClassValue = computed(() => String(props.header?.props?.class ?? '')
 const headerActionsClassValue = computed(() => '')
 
 const headerActionConfigs = computed(() => getSparkNodeChildren(props.header?.children))
-const { gridChildren } = useContainerGrid({
+const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: computed(() => getSparkNodeChildren(contentChildren.value)),
   columns: computed(() => props.gridColumns),
   gap: computed(() => props.gridGap),

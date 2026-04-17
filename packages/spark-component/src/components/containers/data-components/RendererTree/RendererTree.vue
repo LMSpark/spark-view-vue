@@ -1,13 +1,12 @@
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <RendererHostScope
-      v-if="showToolbar"
-      type="r-tree-toolbar-scope"
-      :variant="'toolbar'"
-      :action-host="toolbarActionHost"
-      :body-class="['renderer-tree-toolbar', toolbarClassValue]"
-      :children="visibleToolbarConfigs"
-    />
+    <RendererHostScope v-if="showToolbar" type="r-tree-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
+      <div :class="['renderer-tree-toolbar', toolbarClassValue]">
+        <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-tree-toolbar-${index}`">
+          <SparkComponentRenderer :config="action" />
+        </template>
+      </div>
+    </RendererHostScope>
 
     <div :class="['renderer-tree-body', `renderer-tree-body--editor-${editorPositionValue}`]">
       <div class="renderer-tree-main">

@@ -1,28 +1,27 @@
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
-    <RendererHostScope
-      v-if="showToolbar"
-      type="r-form-toolbar-scope"
-      :variant="'toolbar'"
-      :action-host="toolbarActionHost"
-      :body-class="['renderer-form-toolbar', toolbarClassValue]"
-      :children="visibleToolbarConfigs"
-    />
+    <RendererHostScope v-if="showToolbar" type="r-form-toolbar-scope" :variant="'toolbar'" :action-host="toolbarActionHost">
+      <div :class="['renderer-form-toolbar', toolbarClassValue]">
+        <template v-for="(action, index) in visibleToolbarConfigs" :key="nodeId(action) ?? `r-form-toolbar-${index}`">
+          <SparkComponentRenderer :config="action" />
+        </template>
+      </div>
+    </RendererHostScope>
 
     <div class="renderer-form-main">
       <el-form ref="nativeFormRef" :model="formModel" :label-width="labelWidth" v-bind="formPropsValue">
-        <RendererHostScope
-          type="r-form-field-scope"
-          :field-mode="'form'"
-          :row="formModel"
-          body-class="renderer-form-grid"
-          item-class="renderer-form-grid-item"
-          :children="gridChildren"
-          :grid-columns="gridColumns"
-          :grid-gap="gridGap"
-          :grid-auto-rows="gridAutoRows"
-        >
-          <slot v-bind="getDefaultSlotScope()" />
+        <RendererHostScope type="r-form-field-scope" :field-mode="'form'" :row="formModel">
+          <div class="renderer-form-grid" :style="gridStyle">
+            <div
+              v-for="(child, index) in gridChildren"
+              :key="nodeId(child) ?? `r-form-child-${index}`"
+              class="renderer-form-grid-item"
+              :style="getChildGridStyle(child)"
+            >
+              <SparkComponentRenderer :config="child" />
+            </div>
+            <slot v-bind="getDefaultSlotScope()" />
+          </div>
         </RendererHostScope>
       </el-form>
     </div>
@@ -45,7 +44,8 @@
  * RendererForm - 表单容器组件
  */
 import { computed, ref } from 'vue'
-import type { SparkNode } from '../../../internal'
+import { SparkComponentRenderer } from '../../../internal'
+import { nodeId, type SparkNode } from '../../../internal'
 import type { RFormProps } from './RendererForm.props'
 import { useFormDetailContainer } from '../../composables/useFormDetailContainer'
 import RendererHostScope from '../../support/RendererHostScope.vue'
@@ -70,6 +70,8 @@ const {
   resolvedView,
   contextData: formModel,
   gridChildren,
+  gridStyle,
+  getChildGridStyle,
   toolbarPositionValue,
   toolbarClassValue,
   visibleToolbarConfigs,
