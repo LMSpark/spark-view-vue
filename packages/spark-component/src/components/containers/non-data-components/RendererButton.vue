@@ -110,11 +110,29 @@ const resolvedIcon = computed((): Component | null => {
 
 const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 
-function handleClick() {
-  if (!hasBuiltinAction.value) return
-  const actionHost = sparkConsume(ACTION_CAPABILITY)
-  if (actionHost === null) return
-  actionHost.execute(currentNode.value)
+const resolvedOnClick = computed<((...args: unknown[]) => unknown) | null>(() => {
+  const on = resolvedProps.value['on']
+  if (on !== null && typeof on === 'object' && !Array.isArray(on)) {
+    const click = (on as Record<string, unknown>)['click']
+    if (typeof click === 'function') return click as (...args: unknown[]) => unknown
+  }
+
+  const onClick = resolvedProps.value['onClick']
+  if (typeof onClick === 'function') return onClick as (...args: unknown[]) => unknown
+  return null
+})
+
+async function handleClick(event: MouseEvent): Promise<void> {
+  if (hasBuiltinAction.value) {
+    const actionHost = sparkConsume(ACTION_CAPABILITY)
+    if (actionHost === null) return
+    actionHost.execute(currentNode.value)
+    return
+  }
+
+  const onClick = resolvedOnClick.value
+  if (!onClick) return
+  await onClick(event)
 }
 </script>
 

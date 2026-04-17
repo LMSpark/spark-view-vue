@@ -82,37 +82,28 @@
                     }
                   },
                   {
-                    "type": "button",
+                    "type": "r-button",
                     "props": {
-                      "type": "button"
+                      "label": "脚本刷新(ID)"
                     },
-                    "children": [
-                      "脚本刷新(ID)"
-                    ],
                     "on": {
                       "click": "refreshOrders"
                     }
                   },
                   {
-                    "type": "button",
+                    "type": "r-button",
                     "props": {
-                      "type": "button"
+                      "label": "脚本选首行(ID)"
                     },
-                    "children": [
-                      "脚本选首行(ID)"
-                    ],
                     "on": {
                       "click": "selectFirstOrder"
                     }
                   },
                   {
-                    "type": "button",
+                    "type": "r-button",
                     "props": {
-                      "type": "button"
+                      "label": "脚本更新当前(ID)"
                     },
-                    "children": [
-                      "脚本更新当前(ID)"
-                    ],
                     "on": {
                       "click": "markCurrentOrderDone"
                     }
