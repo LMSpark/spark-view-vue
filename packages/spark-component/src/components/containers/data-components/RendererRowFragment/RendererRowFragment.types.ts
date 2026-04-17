@@ -30,6 +30,24 @@ export interface RendererRowFragmentConfigProps {
   headerAlign?: RowFragmentAlign
   /** 片段附加 class。 */
   class?: string
+  /** CSS Grid 列数。 */
+  gridColumns?: number
+  /** 栅格间距。 */
+  gridGap?: number | string
+  /** 栅格行高。 */
+  gridAutoRows?: string
+  /** 自适应最小宽度。 */
+  autoFitMinWidth?: string
+  /** 默认跨列数。 */
+  defaultColSpan?: number
+  /** 标签位置。 */
+  labelPosition?: 'top' | 'left' | 'right'
+  /** 标签宽度。 */
+  labelWidth?: string
+  /** 内联模式。 */
+  inline?: boolean
+  /** 紧凑模式。 */
+  compact?: boolean
   /** 片段字段节点列表。 */
   children?: SparkNode[]
 }
@@ -72,6 +90,24 @@ export interface RendererRowFragmentProps {
   headerAlign?: RowFragmentAlign
   /** 片段附加 class。 */
   class?: string
+  /** CSS Grid 列数。 */
+  gridColumns?: number
+  /** 栅格间距。 */
+  gridGap?: number | string
+  /** 栅格行高。 */
+  gridAutoRows?: string
+  /** 自适应最小宽度。 */
+  autoFitMinWidth?: string
+  /** 默认跨列数。 */
+  defaultColSpan?: number
+  /** 标签位置。 */
+  labelPosition?: 'top' | 'left' | 'right'
+  /** 标签宽度。 */
+  labelWidth?: string
+  /** 内联模式。 */
+  inline?: boolean
+  /** 紧凑模式。 */
+  compact?: boolean
   /** 当前数据行。 */
   data?: IDataRow
   /** 上游插槽作用域（运行时透传）。 */
