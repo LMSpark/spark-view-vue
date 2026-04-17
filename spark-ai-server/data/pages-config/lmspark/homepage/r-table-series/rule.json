@@ -34,8 +34,6 @@
               "border": true,
               "stripe": true,
               "highlightCurrentRow": true,
-              "filterCollapsible": true,
-              "filterDefaultCollapsed": false,
               "rowActionsLabel": "操作",
               "rowActionsWidth": 220
             },
@@ -286,6 +284,12 @@
               },
               {
                 "type": "r-filter",
+                "props": {
+                  "collapsible": true,
+                  "defaultCollapsed": true,
+                  "itemSpan": 1,
+                  "actionSpan": 2
+                },
                 "children": [
                   {
                     "type": "r-text",
