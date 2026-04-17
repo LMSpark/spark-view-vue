@@ -7,15 +7,19 @@
 
 <script setup lang="ts">
 /**
- * Host + data scope carrier.
+ * 通用 host 载体：在当前子树建立 host 层级语义并按需注入能力与数据域。
  *
- * 在当前子树建立 host 层级语义，并在需要时注入 DATA_ROW 数据域；
- * 如果直接传入 children，则由本组件统一负责作用域内子节点渲染。
+ * 与 el-form 的关系（三种模式）：
+ * - r-form：el-form 由 RendererForm 自身提供，本组件运行在 el-form 内部（field-mode='form'，传入 row）。
+ * - r-filter：el-form 由 RendererFieldScope 提供，本组件在 RendererFieldScope 外层作为 toolbar host。
+ * - r-section / r-drawer / r-collapse：无 el-form，本组件直接承载字段（field-mode='detail'，不传 row）。
+ * 本组件自身不含 el-form，DATA_ROW 仅在收到 row / slotScope 时才 provide。
  *
- * 命名约定：
- * - 组件层级语义统一使用 host
- * - 数据域语义继续保持 scope（DATA_ROW 作用域不变）
- * - 载体组件命名保持 host 主语义，不在文件名重复数据域细节
+ * 主要职责：
+ * 1. 按 fieldMode / variant 动态 provide HOST_FIELD_MODE / HOST_VARIANT。
+ * 2. 按 actionHost 动态 provide ACTION_CAPABILITY（代理模式，避免 provide 泄漏）。
+ * 3. 按 row / slotScope 有条件地 provide DATA_ROW（通过 rowMirror 同步，防止引用替换）。
+ * 4. 渲染 children 子节点（也可用 slot 替代）。
  */
 import { computed, shallowReactive, watch } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'

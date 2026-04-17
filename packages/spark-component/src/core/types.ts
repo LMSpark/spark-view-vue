@@ -138,8 +138,13 @@ export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['typ
  * 归一化 SparkNode 的结构语义。
  *
  * 统一处理：
- * - 空 type → fallbackType
- * - children 缺省 → []
+ * - 空 type → fallbackType（fallbackType 本身为空时兜底 `'unknown'`）
+ * - props 非纯对象（null / 数组 / 原始值）→ 省略 props 键
+ * - children 缺省或非数组 → `[]`
+ *
+ * @param node - 待归一化的 SparkNode
+ * @param fallbackType - type 为空时的回退类型，默认 `'unknown'`
+ * @returns 归一化后的 SparkNode，type / children 始终合法
  */
 export function normalizeSparkNode(node: SparkNode, fallbackType = 'unknown'): SparkNode {
   const normalizedFallbackType = typeof fallbackType === 'string' && fallbackType.length > 0
