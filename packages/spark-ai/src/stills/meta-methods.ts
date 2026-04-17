@@ -15,7 +15,7 @@ import type {
   ExecutionBlueprint,
   BlueprintExecutionMode,
 } from './types'
-import { noGuard } from './types'
+import { noGuard, readSessionBlueprint } from './types'
 import { getAllStills, getStill } from './dispatcher'
 import { getDataSetState } from './dataset-domain'
 import { getDomain } from './domain'
@@ -120,7 +120,7 @@ function inferNextStep(
   datasetState: DomainState,
   blueprintSummary: BlueprintSummary | null,
 ): string {
-  if (session.blueprint === null) {
+  if (readSessionBlueprint(session) === null) {
     return 'stills.capabilities → 了解可用动作，然后 blueprint.create → 创建蓝图'
   }
   if (datasetState.data === null) {
@@ -276,7 +276,7 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
   execute: (session: IStillSession): StillResult => {
     const datasetState = getDataSetState(session)
     const dataset = datasetState.data
-    const blueprintSummary = buildBlueprintSummary(session.blueprint)
+    const blueprintSummary = buildBlueprintSummary(readSessionBlueprint(session))
     const componentsDirectory = {
       ...projectFcDirectory(componentCatalog as ComponentCatalog),
       querySpecExample: 'stills.actionSpec {"action":"r-table"}',

@@ -166,7 +166,7 @@ export class PrimaryKeyDelegate {
    * 多列 PK：注册 `_pk = fields.map(f => String(row[f])).join('+')`。
    *
    * 幺等：字段列表不变时跳过。
-   * 与原 `ensureSyntheticPk` 逻辑一致。
+  * 与历史多列合成主键逻辑一致。
    */
   private _ensureCompositePkColumn(fields: string[]): void {
     if (this._syntheticPkFields?.join('\x01') === fields.join('\x01')) return
@@ -179,14 +179,7 @@ export class PrimaryKeyDelegate {
     this._pkColumnRegistered = true
   }
 
-  /**
-   * @deprecated 使用 `ensurePkColumn()` 替代。保留仅为兼容期过渡。
-   */
-  ensureSyntheticPk(fields: string[]): void {
-    this._ensureCompositePkColumn(fields)
-  }
-
-  /** 当前合成主键字段列表（用于 DataView 在 ensureSyntheticPk 后补计算） */
+  /** 当前合成主键字段列表（用于 DataView 在主键列更新后补计算） */
   get syntheticPkFields(): string[] | undefined {
     return this._syntheticPkFields
   }

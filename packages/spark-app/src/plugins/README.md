@@ -22,7 +22,7 @@
 ```
 plugins/
 ├── index.ts              # 统一导出
-├── registry.ts           # PluginRegistry + PluginManager
+├── registry.ts           # createPluginRegistry/getGlobalPluginRegistry + PluginManager
 └── presets.ts            # 内置插件预设
 ```
 
@@ -30,12 +30,19 @@ plugins/
 
 ```
 ┌─────────────────────────┐
-│   PluginRegistry        │  插件注册表
+│  IPluginRegistry        │  插件注册表实例
 ├─────────────────────────┤
 │ + register()            │  注册插件加载器
 │ + get()                 │  获取插件加载器
 │ + has()                 │  检查是否已注册
 │ + getAll()              │  获取所有插件
+└─────────────────────────┘
+            ▲
+            │ create/get
+            │
+┌─────────────────────────┐
+│ createPluginRegistry()  │  创建隔离注册表
+│ getGlobalPluginRegistry() │ 获取全局注册表
 └─────────────────────────┘
             │
             │ 使用
@@ -50,31 +57,23 @@ plugins/
 
 ## 🔧 核心 API
 
-### PluginRegistry
+### Registry APIs
 
 ```typescript
-class PluginRegistry {
-  // 注册单个插件
-  static register(id: string, loader: PluginLoader): void
-  
-  // 批量注册
-  static registerAll(loaders: Record<string, PluginLoader>): void
-  
-  // 获取插件加载器
-  static get(id: string): PluginLoader | undefined
-  
-  // 检查是否已注册
-  static has(id: string): boolean
-  
-  // 获取所有插件
-  static getAll(): PluginLoader[]
-  
-  // 注销插件
-  static unregister(id: string): boolean
-  
-  // 清除所有注册
-  static clear(): void
-}
+// 创建隔离注册表（测试/微前端）
+const registry = createPluginRegistry()
+
+// 获取全局注册表（应用默认）
+const globalRegistry = getGlobalPluginRegistry()
+
+// 常用能力
+registry.register(id, loader)
+registry.registerAll(loaders)
+registry.get(id)
+registry.has(id)
+registry.getAll()
+registry.unregister(id)
+registry.clear()
 ```
 
 ### PluginManager
@@ -155,9 +154,9 @@ plugins.forEach(({ plugin, options }) => {
 ### 2. 注册自定义插件
 
 ```typescript
-import { PluginRegistry } from '@spark-view/spark-app'
+import { getGlobalPluginRegistry } from '@spark-view/spark-app'
 
-PluginRegistry.register('pinia', {
+getGlobalPluginRegistry().register('pinia', {
   name: 'Pinia',
   module: 'pinia',
   loader: async () => {
@@ -218,7 +217,7 @@ async function startApp() {
 
 ```
 1. 注册插件加载器
-   PluginRegistry.register('my-plugin', loader)
+  getGlobalPluginRegistry().register('my-plugin', loader)
    
 2. 定义插件配置（JSON）
    { "my-plugin": { "enabled": true, "options": {...} } }
@@ -243,7 +242,7 @@ async function startApp() {
 
 ### 1. 关注点分离
 
-- **PluginRegistry**: 管理映射关系
+- **IPluginRegistry**: 管理映射关系
 - **PluginManager**: 管理加载流程
 - **Presets**: 提供预设插件
 
@@ -259,7 +258,7 @@ async function startApp() {
 
 支持注册自定义插件，不限于内置插件。
 
-### 5. 向后兼容
+### 5. 配置兼容
 
 支持简单布尔值和详细配置对象两种格式。
 
@@ -292,17 +291,18 @@ loader: () => import('element-plus')  // 懒加载
 ## 🧪 测试
 
 ```typescript
-import { PluginRegistry, PluginManager } from '@spark-view/spark-app'
+import { createPluginRegistry, PluginManager } from '@spark-view/spark-app'
 
-describe('PluginRegistry', () => {
+describe('registry', () => {
   it('should register plugin', () => {
-    PluginRegistry.register('test', {
+    const registry = createPluginRegistry()
+    registry.register('test', {
       name: 'Test',
       module: 'test',
       loader: () => import('./test')
     })
     
-    expect(PluginRegistry.has('test')).toBe(true)
+    expect(registry.has('test')).toBe(true)
   })
 })
 
@@ -337,7 +337,7 @@ describe('PluginManager', () => {
 ### 示例：插件依赖
 
 ```typescript
-PluginRegistry.register('my-plugin', {
+getGlobalPluginRegistry().register('my-plugin', {
   name: 'My Plugin',
   module: './my-plugin',
   loader: () => import('./my-plugin'),

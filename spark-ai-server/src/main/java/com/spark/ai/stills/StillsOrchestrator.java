@@ -187,9 +187,7 @@ public class StillsOrchestrator {
             String json = objectMapper.writeValueAsString(errorMap);
             return "@@error:" + action + "#" + id + "\n" + json + "\n@@end";
         } catch (JsonProcessingException e) {
-            // 最终兜底
-            return "@@error:" + action + "#" + id + "\n" +
-                    "{\"code\":\"SERIALIZATION_ERROR\",\"msg\":\"错误序列化失败\",\"fix\":\"联系管理员\"}\n@@end";
+            throw new IllegalStateException("错误序列化失败", e);
         }
     }
 }

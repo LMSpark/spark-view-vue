@@ -10,7 +10,6 @@
  *   └── loadRequiredPageFile(pageId, 'rule.json')
  *         ├── local  → fileLoader.load<T>(path)         → localResult<T>
  *         ├── remote → request('/pages-config/...')     → compileRule(text)
- *         └── hybrid → remote first, fallback to local
  * ```
  *
  * ## 缓存策略
@@ -38,7 +37,7 @@ import type { FileLoader, DerivedLoader, HttpClient, FileLoaderEventMap } from '
 // 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
 
-// re-export 编译函数，保持对外 API 兼容（消费方可继续从 './loader' 导入）
+// re-export 编译函数，允许消费方从 './loader' 直接导入
 export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '../compiler'
 
 const pageLogger = Logger('PageConfig')
@@ -55,7 +54,7 @@ type RemoteFileResponse = {
 
 /** 必填字段默认值（getHeaders 可选，不在此列） */
 const DEFAULT_OPTIONS = {
-  source: 'hybrid' as const,
+  source: 'remote' as const,
   apiBaseUrl: '/api',
   fileStorage: 'localStorage' as const,
   enableValidation: false,
@@ -103,7 +102,7 @@ export class PageConfigLoader implements ConfigLoader {
       baseUrl: this.pagesConfigBase,
       storage: this.opts.fileStorage,
       cachePrefix: 'spark_page_',
-      fallbackToCache: true,
+      fallbackToCache: false,
       timeout: this.opts.timeout,
       // 动态请求头（认证 / 租户上下文）
       ...(this.opts.getHeaders && { getHeaders: this.opts.getHeaders }),
@@ -231,7 +230,6 @@ export class PageConfigLoader implements ConfigLoader {
    * 加载必需页面文件（rule.json / pagedata.json）。
    * - local: 直接走 FileLoader + 编译缓存
    * - remote: 读取 /pages-config/{pageId}/{filename}，再编译
-   * - hybrid: 远程失败时降级本地
    */
   private async loadRequiredPageFile<T>(
     pageId: string,
@@ -244,21 +242,12 @@ export class PageConfigLoader implements ConfigLoader {
       return this.derivedResult(localLoader, localPath)
     }
 
-    const remoteResult = await this.remoteRequiredFileResult(pageId, filename, transform)
-    if (remoteResult.success || this.opts.source === 'remote') return remoteResult
-
-    pageLogger.debug('远程必需配置不可用，降级到本地', {
-      pageId,
-      filename,
-      reason: remoteResult.reason,
-      error: remoteResult.error,
-    })
-    return this.derivedResult(localLoader, localPath)
+    return this.remoteRequiredFileResult(pageId, filename, transform)
   }
 
   /**
    * 加载可选页面文件（script.js / style.css）。
-   * `not-found` 视为空内容；其他远程错误在 hybrid 下回退本地，在 remote 下显式返回失败。
+    * `not-found` 视为空内容；其他远程错误显式返回失败。
    */
   private async loadOptionalPageFile<T extends string>(
     pageId: string,
@@ -272,16 +261,7 @@ export class PageConfigLoader implements ConfigLoader {
       return this.localOptionalTextResult(pageId, assetLabel, localLoader, localPath)
     }
 
-    const remoteResult = await this.remoteOptionalFileResult(pageId, filename, transform)
-    if (remoteResult.success || this.opts.source === 'remote') return remoteResult
-
-    pageLogger.debug(`远程${assetLabel}不可用，降级到本地`, {
-      pageId,
-      filename,
-      reason: remoteResult.reason,
-      error: remoteResult.error,
-    })
-    return this.localOptionalTextResult(pageId, assetLabel, localLoader, localPath)
+    return this.remoteOptionalFileResult(pageId, filename, transform)
   }
 
   /**

@@ -194,7 +194,7 @@ async function startApp() {
     addGlobalTransport(collectorTransport)
 
     const auditRemoteLogsEnabled = import.meta.env['VITE_AUDIT_REMOTE_LOGS'] === 'true'
-    if (appConfig.logger.enableRemote === true && auditRemoteLogsEnabled) {
+    if (auditRemoteLogsEnabled) {
       const remoteTransport = configureRemoteLogger({
         endpoint: appConfig.logger.remoteEndpoint ?? '/api/logs',
         minLevel: appConfig.logger.minRemoteLevel ?? 'debug',
@@ -213,7 +213,6 @@ async function startApp() {
       })
     } else {
       startupLogger.info('📋 日志模式：本地诊断（远程审计未启用）', {
-        configEnableRemote: appConfig.logger.enableRemote === true,
         auditFlag: auditRemoteLogsEnabled,
       })
     }

@@ -48,8 +48,6 @@ export interface AppLoggerConfig {
   showTimestamp?: boolean
   /** 日志前缀 */
   prefix?: string
-  /** 是否启用远程日志上报 */
-  enableRemote?: boolean
   /** 远程日志端点 */
   remoteEndpoint?: string
   /** 远程上报的最小日志级别（默认 'debug'，即上报所有级别） */
@@ -235,14 +233,12 @@ export function createBatchHttpTransport(options: BatchTransportOptions): LogTra
  * import { configureRemoteLogger } from '@spark-view/spark-app'
  *
  * const appConfig = await loadAppConfig()
- * if (appConfig.logger.enableRemote) {
- *   configureRemoteLogger({
- *     endpoint: appConfig.logger.remoteEndpoint ?? '/api/logs',
- *     minLevel: appConfig.logger.minRemoteLevel,
- *     batchSize: appConfig.logger.batchSize,
- *     flushInterval: appConfig.logger.flushInterval,
- *   })
- * }
+ * configureRemoteLogger({
+ *   endpoint: appConfig.logger.remoteEndpoint ?? '/api/logs',
+ *   minLevel: appConfig.logger.minRemoteLevel,
+ *   batchSize: appConfig.logger.batchSize,
+ *   flushInterval: appConfig.logger.flushInterval,
+ * })
  * ```
  */
 export function configureRemoteLogger(options: BatchTransportOptions): LogTransport {
@@ -257,7 +253,7 @@ export function configureRemoteLogger(options: BatchTransportOptions): LogTransp
  * 应用层 Logger 实现
  */
 class AppLogger {
-  private config: Required<Pick<AppLoggerConfig, 'level' | 'enableColors' | 'showTimestamp' | 'prefix' | 'enableRemote' | 'remoteEndpoint'>>
+  private config: Required<Pick<AppLoggerConfig, 'level' | 'enableColors' | 'showTimestamp' | 'prefix'>>
   private transports: LogTransport[] = []
 
   constructor(config: AppLoggerConfig = {}) {
@@ -266,13 +262,6 @@ class AppLogger {
       enableColors: config.enableColors ?? true,
       showTimestamp: config.showTimestamp ?? false,
       prefix: config.prefix ?? '',
-      enableRemote: config.enableRemote ?? false,
-      remoteEndpoint: config.remoteEndpoint ?? '/api/logs'
-    }
-
-    // 实例级远程传输（向后兼容：当 AppLogger 直接配置 enableRemote 时）
-    if (this.config.enableRemote) {
-      this.addTransport(createHttpTransport(this.config.remoteEndpoint))
     }
   }
 
@@ -396,33 +385,6 @@ class AppLogger {
     const args = meta ? [formattedMessage, meta] : [formattedMessage]
     console.info(...args)
     this.sendToTransports('info', message, meta)
-  }
-}
-
-/**
- * HTTP 传输器（单条发送，向后兼容）
- *
- * 推荐使用 `createBatchHttpTransport` 或 `configureRemoteLogger` 替代。
- */
-export function createHttpTransport(endpoint: string, options?: { minLevel?: LogLevel }): LogTransport {
-  const minLevelPriority = LOG_LEVELS[options?.minLevel ?? 'warn']
-  const httpClient = createFetchClient()
-  return {
-    async send(level: LogLevel, message: string, meta?: Record<string, unknown>) {
-      if (LOG_LEVELS[level] < minLevelPriority) return
-
-      try {
-        await httpClient.post(endpoint, {
-          level,
-          message,
-          meta,
-          timestamp: Date.now(),
-          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined
-        })
-      } catch {
-        // 静默失败，不影响应用
-      }
-    }
   }
 }
 

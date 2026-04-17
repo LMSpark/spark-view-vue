@@ -150,16 +150,10 @@ export const ExternalLinkFramePage = defineComponent({
     }
 
     const sourceUrl = computed(() => {
-      const metaUrl = route.meta['externalUrl']
+      const metaUrl = route.meta['linkUrl']
       if (typeof metaUrl === 'string' && metaUrl.trim() !== '') {
         return resolveRouteTemplate(metaUrl.trim())
       }
-
-      const queryUrl = route.query['url']
-      if (typeof queryUrl === 'string' && queryUrl.trim() !== '') {
-        return resolveRouteTemplate(queryUrl.trim())
-      }
-
       return ''
     })
 

@@ -14,7 +14,7 @@
 
 import type { SparkNode } from '@spark-view/spark-component'
 import type { DomainState, IStillSession, StillGuard } from './types'
-import { getDomainState } from './types'
+import { getDomainState, readSessionBlueprint } from './types'
 
 // ═══════════════════════════════════════════════════════════
 // 域状态
@@ -82,7 +82,7 @@ interface PcGuardOptions {
  */
 export function pcGuard(checks: PcGuardOptions = {}): StillGuard {
   return (session: IStillSession): { code: string; msg: string } | null => {
-    if (checks.requireBlueprint === true && session.blueprint === null) {
+    if (checks.requireBlueprint === true && readSessionBlueprint(session) === null) {
       return { code: 'NO_BLUEPRINT', msg: 'Blueprint 尚未创建，请先执行 blueprint.create' }
     }
     const state = getPageConfigState(session)

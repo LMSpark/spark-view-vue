@@ -7,7 +7,7 @@
  * 设计原则：
  * - 蓝图是"编译器"：把用户需求编译成可执行的 checkpoint 序列；
  * - 验证下沉到 still：脚本层只做轻量编排，覆盖度/自检由本域 still 驱动；
- * - session.blueprint 通过 getter/setter 代理到 domains['blueprint'].data，向后兼容。
+ * - 蓝图状态统一存放在 session.domains['blueprint'].data。
  */
 
 import type {

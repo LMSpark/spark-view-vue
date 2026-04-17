@@ -3,7 +3,7 @@
  *
  * 从 spark-app 迁移至 spark-utils 基础层，
  * 解除 spark-ai ↔ spark-app 循环依赖。
- * spark-app 保持 re-export 向后兼容。
+ * spark-app 通过包入口 re-export 这些类型。
  * ══════════════════════════════════════════════════════════ */
 
 /** 子项存放位置 */

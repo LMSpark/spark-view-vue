@@ -335,10 +335,10 @@ export class DynamicRouter {
           routerLogger.debug(`路由已注册，跳过: ${routePath}`)
         }
       } else if (isIframeNode || isCrossProjectRefNode) {
-        const externalUrl = isIframeNode
+        const linkUrl = isIframeNode
           ? nodePath
           : crossProjectRefUrl
-        if (externalUrl === null) {
+        if (linkUrl === null) {
           if (node.children?.length) {
             this.registerRoutesFromNav(node.children, skipTenantPrefix)
           }
@@ -371,7 +371,7 @@ export class DynamicRouter {
                 pageId,
                 title: node.title,
                 ...(node.description !== undefined && { description: node.description }),
-                externalUrl,
+                linkUrl,
                 ...(node.icon !== undefined && { icon: node.icon }),
                 ...(node.permissionMode !== undefined && { permissionMode: node.permissionMode }),
               },

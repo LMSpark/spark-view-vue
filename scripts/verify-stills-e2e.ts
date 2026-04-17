@@ -12,6 +12,7 @@ import {
   createSession,
   executeStill,
   getDataSetState,
+  getBlueprintState,
   type IStillSession,
   type StillResult,
 } from '../packages/spark-ai/src/index.js'
@@ -630,7 +631,7 @@ ok(exec(session, 'blueprint.advance', { completedCheckpointId: 'cp-validate' }),
 
 // 蓝图完成验证
 assert(
-  session.blueprint!.checkpoints.every(cp => cp.status === 'done'),
+  getBlueprintState(session).data!.checkpoints.every(cp => cp.status === 'done'),
   '所有 checkpoint 应为 done',
 )
 
@@ -1009,7 +1010,7 @@ console.log(`    Tables:     ${Object.keys(ds.data!.tables).length}`)
 console.log(`    Relations:  ${ds.data!.tableRelations!.length}`)
 console.log(`    Views:      ${ds.data!.viewDependencies!.length} dependencies`)
 console.log(`    Schema:     ${ds.locked ? 'LOCKED 🔒' : 'UNLOCKED 🔓'}`)
-console.log(`    Blueprint:  ${session.blueprint!.checkpoints.filter(cp => cp.status === 'done').length}/${session.blueprint!.checkpoints.length} checkpoints ✅`)
+console.log(`    Blueprint:  ${getBlueprintState(session).data!.checkpoints.filter(cp => cp.status === 'done').length}/${getBlueprintState(session).data!.checkpoints.length} checkpoints ✅`)
 
 const totalCols = Object.values(ds.data!.tables).reduce(
   (sum, t) => sum + ((t as { columns?: unknown[] }).columns?.length ?? 0), 0,

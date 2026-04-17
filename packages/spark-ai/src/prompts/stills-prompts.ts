@@ -237,8 +237,4 @@ export const STILLS_BLUEPRINT_PROMPT = `你通过 Function Calling 与 Stills �
   守卫机制：引擎对每个动作有状态守卫，前置条件不满足时返回 ok=false + fix。
   不需要背诵守卫规则 —— stills_capabilities 已标注 guard，执行时引擎自动校验。`
 
-/**
- * 向后兼容别名。
- * @deprecated 使用 STILLS_RUNTIME_PROMPT 代替。
- */
-export const STILLS_SYSTEM_PROMPT = STILLS_RUNTIME_PROMPT
+

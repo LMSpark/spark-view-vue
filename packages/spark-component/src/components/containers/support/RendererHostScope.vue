@@ -30,7 +30,10 @@ import {
   type SparkActionCapability,
   type SparkNode,
 } from '../../internal'
+import { resolveSlotScopeRow } from './rowScopeResolver.js'
 import { syncReactiveRow } from '../../support/row-mirror-sync'
+
+const EMPTY_DATA_ROW = Object.freeze({}) as IDataRow
 
 const props = withDefaults(defineProps<{
   type?: string
@@ -38,6 +41,7 @@ const props = withDefaults(defineProps<{
   variant?: string | undefined
   actionHost?: SparkActionCapability | undefined
   row?: IDataRow | undefined
+  slotScope?: Record<string, unknown> | undefined
   children?: SparkNode[] | undefined
   childKeyPrefix?: string | undefined
 }>(), {
@@ -95,10 +99,16 @@ watch(
 const rowMirror = shallowReactive<IDataRow>({})
 let providedRowMirror = false
 
+const resolvedInputRow = computed<IDataRow | undefined>(() => {
+  if (props.row !== undefined) return props.row
+  if (props.slotScope === undefined) return undefined
+  return resolveSlotScopeRow(props.slotScope, EMPTY_DATA_ROW)
+})
+
 watch(
-  () => props.row,
+  resolvedInputRow,
   (newRow) => {
-    // 只有明确传入 row prop 时才提供 DATA_ROW；
+    // 只有明确传入 row / slotScope 时才提供 DATA_ROW；
     // 无 row 的纯 host 作用域（如 r-detail 字段区）不应覆盖父级已提供的 DATA_ROW。
     if (newRow === undefined) return
 

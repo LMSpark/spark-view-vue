@@ -125,7 +125,12 @@ public class StillsController {
         }
         int windowSize = request.get("windowSize") instanceof Number n ? n.intValue() : 30;
 
-        String sessionId = stillsSessionService.createSession(systemPrompt, userPrompt, windowSize);
+        String sessionId = stillsSessionService.createSession(
+            systemPrompt,
+            userPrompt,
+            windowSize,
+            null,
+            "stills");
         return ResponseEntity.ok(Map.of("sessionId", sessionId));
     }
 
@@ -185,7 +190,7 @@ public class StillsController {
             role = "user";
         }
 
-        boolean ok = stillsSessionService.appendMessage(sessionId, role, content);
+        boolean ok = stillsSessionService.appendMessage(sessionId, role, content, null, null);
         if (!ok) {
             return ResponseEntity.status(404).body(Map.of("error", "会话不存在"));
         }
@@ -207,8 +212,8 @@ public class StillsController {
             return badRequest("sessionId 不能为空");
         }
 
-        List<Map<String, String>> conversation =
-                stillsSessionService.getConversation(sessionId);
+        List<Map<String, Object>> conversation =
+            stillsSessionService.getConversationFull(sessionId);
         return ResponseEntity.ok(Map.of("conversation", conversation));
     }
 

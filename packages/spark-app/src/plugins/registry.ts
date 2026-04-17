@@ -128,53 +128,6 @@ export function getGlobalPluginRegistry(): IPluginRegistry {
 }
 
 /**
- * 插件注册表（静态门面 — 向后兼容）
- *
- * 内部委托给全局 {@link IPluginRegistry} 实例。
- * 新代码建议直接使用 `createPluginRegistry()` 或 `getGlobalPluginRegistry()`。
- *
- * @deprecated 优先使用 `getGlobalPluginRegistry()` 或 `createPluginRegistry()`
- */
-export class PluginRegistry {
-  /** @deprecated 使用 getGlobalPluginRegistry().register() */
-  static register(id: string, loader: Omit<PluginLoader, 'id'>): void {
-    getGlobalPluginRegistry().register(id, loader)
-  }
-  /** @deprecated 使用 getGlobalPluginRegistry().registerAll() */
-  static registerAll(loaders: Record<string, Omit<PluginLoader, 'id'>>): void {
-    getGlobalPluginRegistry().registerAll(loaders)
-  }
-  /** @deprecated 使用 getGlobalPluginRegistry().get() */
-  static get(id: string): PluginLoader | undefined {
-    return getGlobalPluginRegistry().get(id)
-  }
-  /** @deprecated 使用 getGlobalPluginRegistry().has() */
-  static has(id: string): boolean {
-    return getGlobalPluginRegistry().has(id)
-  }
-  /** @deprecated 使用 getGlobalPluginRegistry().getAll() */
-  static getAll(): PluginLoader[] {
-    return getGlobalPluginRegistry().getAll()
-  }
-  /** @deprecated 使用 getGlobalPluginRegistry().getAllIds() */
-  static getAllIds(): string[] {
-    return getGlobalPluginRegistry().getAllIds()
-  }
-  /** @deprecated 使用 getGlobalPluginRegistry().unregister() */
-  static unregister(id: string): boolean {
-    return getGlobalPluginRegistry().unregister(id)
-  }
-  /** @deprecated 使用 getGlobalPluginRegistry().clear() */
-  static clear(): void {
-    getGlobalPluginRegistry().clear()
-  }
-  /** @deprecated 使用 getGlobalPluginRegistry().getStats() */
-  static getStats() {
-    return getGlobalPluginRegistry().getStats()
-  }
-}
-
-/**
  * 插件管理器 - 负责加载和管理插件生命周期
  */
 export class PluginManager {

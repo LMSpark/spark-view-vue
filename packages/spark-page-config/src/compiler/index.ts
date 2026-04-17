@@ -16,7 +16,107 @@ import type {
   PageScriptConfig,
   PageCssConfig
 } from '../types'
-import { DataSet } from '@spark-view/spark-data'
+import { DataSet, SparkData } from '@spark-view/spark-data'
+
+type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
+
+function hasOwn(obj: Record<string, unknown>, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, key)
+}
+
+function resolveCanonicalFactory(): ObjectFactory {
+  const sparkDataObj = SparkData as unknown as Record<string, unknown>
+  const dataSetCtor = DataSet as unknown as Record<string, unknown>
+
+  const fromJSON =
+    (typeof sparkDataObj['fromJSON'] === 'function' ? sparkDataObj['fromJSON'] : undefined)
+    ?? (typeof dataSetCtor['fromJSON'] === 'function' ? dataSetCtor['fromJSON'] : undefined)
+  if (fromJSON) {
+    return (input) => (fromJSON as (raw: string) => PageDataConfig)(JSON.stringify(input))
+  }
+
+  const fromJson =
+    (typeof sparkDataObj['fromJson'] === 'function' ? sparkDataObj['fromJson'] : undefined)
+    ?? (typeof dataSetCtor['fromJson'] === 'function' ? dataSetCtor['fromJson'] : undefined)
+  if (fromJson) {
+    return (input) => (fromJson as (raw: Record<string, unknown>) => PageDataConfig)(input)
+  }
+
+  {
+    throw new Error('spark-data 未导出可用的 canonical 数据集工厂（fromJSON/fromJson）')
+  }
+}
+
+function resolvePageDataFactory(): ObjectFactory {
+  const sparkDataObj = SparkData as unknown as Record<string, unknown>
+  if (typeof sparkDataObj['fromPageData'] === 'function') {
+    return (input) => (sparkDataObj['fromPageData'] as (raw: Record<string, unknown>) => PageDataConfig)(input)
+  }
+
+  // 未提供专用 pagedata 工厂时，退回 canonical 工厂
+  return resolveCanonicalFactory()
+}
+
+function isCanonicalDataSetShape(obj: Record<string, unknown>): boolean {
+  return hasOwn(obj, 'tables') || hasOwn(obj, 'dataSetName') || hasOwn(obj, 'version') || hasOwn(obj, 'pageId')
+}
+
+function normalizeCanonicalDataSetInput(input: Record<string, unknown>): Record<string, unknown> {
+  const normalized: Record<string, unknown> = { ...input }
+  const rawTables = normalized['tables']
+  if (rawTables === undefined || rawTables === null || typeof rawTables !== 'object' || Array.isArray(rawTables)) {
+    normalized['tables'] = {}
+    return normalized
+  }
+
+  const tableMap = rawTables as Record<string, unknown>
+  const normalizedTables: Record<string, unknown> = {}
+  for (const [tableName, tableMeta] of Object.entries(tableMap)) {
+    if (tableMeta === null || tableMeta === undefined || typeof tableMeta !== 'object' || Array.isArray(tableMeta)) {
+      normalizedTables[tableName] = {
+        tableName,
+        columns: [],
+        rows: [],
+        views: { default: {} },
+      }
+      continue
+    }
+
+    const table = { ...(tableMeta as Record<string, unknown>) }
+    table['tableName'] = typeof table['tableName'] === 'string' && table['tableName'].trim() !== ''
+      ? table['tableName']
+      : tableName
+    const rawViews = table['views']
+    if (rawViews === undefined || rawViews === null || typeof rawViews !== 'object' || Array.isArray(rawViews)) {
+      table['views'] = { default: {} }
+    } else {
+      const views = { ...(rawViews as Record<string, unknown>) }
+      if (!hasOwn(views, 'default') || views['default'] === null || views['default'] === undefined || typeof views['default'] !== 'object') {
+        views['default'] = {}
+      }
+      table['views'] = views
+    }
+
+    normalizedTables[tableName] = table
+  }
+
+  normalized['tables'] = normalizedTables
+  return normalized
+}
+
+function createDefaultDataSet(): PageDataConfig {
+  return canonicalFactory({ dataSetName: 'PageDataSet', tables: {} })
+}
+
+const canonicalFactory = resolveCanonicalFactory()
+const pageDataFactory = resolvePageDataFactory()
+
+function createDataSetFromInput(input: Record<string, unknown>): PageDataConfig {
+  if (isCanonicalDataSetShape(input)) {
+    return canonicalFactory(normalizeCanonicalDataSetInput(input))
+  }
+  return pageDataFactory(input)
+}
 
 // ── Rule 编译 ────────────────────────────────────────────────────────
 
@@ -58,7 +158,7 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
 /**
  * pagedata.json 原始字符串 → DataSet 实例
  *
- * 调用 DataSet.fromJson() 构建完整实例：分配对象、建各表的 DataTable/DataView，
+ * 调用 SparkData/DataSet 暴露的标准工厂构建完整实例：分配对象、建各表的 DataTable/DataView，
  * 建立 DataSet → DataTable → DataView 引用链。
  * 统一以实体规范化逻辑为准，根级 `tables` 与 `dataset.tables` 都走同一条 canonical 化路径。
  * 实例缓存在内存派生缓存中，timestamp 不变时直接复用，
@@ -67,13 +167,13 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
 export function parsePageData(raw: string): PageDataConfig {
   const parsed: unknown = JSON.parse(raw)
   if (parsed === null || parsed === undefined) {
-    return DataSet.fromJson({ dataSetName: 'PageDataSet', tables: {} })
+    return createDefaultDataSet()
   }
   if (typeof parsed !== 'object') {
-    return DataSet.fromJson({ value: parsed })
+    return createDataSetFromInput({ value: parsed })
   }
   const obj = parsed as Record<string, unknown>
-  return DataSet.fromJson(obj)
+  return createDataSetFromInput(obj)
 }
 
 // ── Script / CSS 编译 ────────────────────────────────────────────────

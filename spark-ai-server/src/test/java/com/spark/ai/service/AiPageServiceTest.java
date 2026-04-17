@@ -197,15 +197,15 @@ class AiPageServiceTest {
     }
 
     @Test
-    void parseResponse_fallbackOnInvalidContent() throws Exception {
+    void parseResponse_throwsOnInvalidContent() throws Exception {
         AiPageService service = new TestableAiPageService(null);
         var method = AiPageService.class.getDeclaredMethod("parseResponse", String.class);
         method.setAccessible(true);
 
-        AiResponse resp = (AiResponse) method.invoke(service, "This is not JSON at all");
-        assertNotNull(resp);
-        assertTrue(resp.getFiles().containsKey("rule.json"));
-        assertTrue(resp.getFiles().get("rule.json").contains("生成失败"));
+        var ex = assertThrows(java.lang.reflect.InvocationTargetException.class,
+                () -> method.invoke(service, "This is not JSON at all"));
+        assertInstanceOf(IllegalArgumentException.class, ex.getCause());
+        assertTrue(ex.getCause().getMessage().contains("LLM 未返回标准 JSON"));
     }
 
     // ── buildPhase1Message 通过反射测试 ──────────────────────────────────────
@@ -375,25 +375,5 @@ class AiPageServiceTest {
         assertTrue(prompt.contains("## Skill Index"));
         assertTrue(prompt.contains("### `r-tree`"));
         assertFalse(prompt.contains("### `r-form`"));
-    }
-
-    @Test
-    void buildSystemPrompt_fallsBackToRequestSkillCatalogWithoutMetadata() throws Exception {
-        ComponentMetadataService metadataService = new StubComponentMetadataService(
-                false,
-                null,
-                null,
-                Map.of()
-        );
-        AiPageService service = new TestableAiPageService(null, metadataService);
-        var method = AiPageService.class.getDeclaredMethod("buildSystemPrompt", AiChatRequest.class);
-        method.setAccessible(true);
-
-        AiChatRequest req = new AiChatRequest();
-        req.setPrompt("生成一个页面");
-        req.setSkillCatalog("## Frontend Skill Catalog\n- el-table");
-
-        String prompt = (String) method.invoke(service, req);
-        assertTrue(prompt.contains("## Frontend Skill Catalog"));
     }
 }

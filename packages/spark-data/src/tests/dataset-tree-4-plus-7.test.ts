@@ -81,9 +81,6 @@ function createScopedRelativeTreeDataSet(mockHttpClient: unknown): DataSet {
   dataSet.setSharedHttpClient(mockHttpClient as never)
   dataSet.setAppServices({
     router: {
-      push: async () => undefined,
-      replace: async () => undefined,
-      back: () => undefined,
       currentRoute: {
         params: { tenantId: 'tenant-test', projectId: 'homepage' },
         query: {},

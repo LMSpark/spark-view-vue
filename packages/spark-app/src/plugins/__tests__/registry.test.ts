@@ -14,7 +14,6 @@ import {
   createPluginRegistry,
   getGlobalPluginRegistry,
   PluginManager,
-  PluginRegistry,
 } from '../registry'
 import type { PluginLoader, IPluginRegistry } from '../registry'
 
@@ -106,11 +105,6 @@ describe('getGlobalPluginRegistry', () => {
     expect(a).toBe(b)
   })
 
-  it('PluginRegistry 静态门面委托到全局实例', () => {
-    PluginRegistry.register('test', fakeLoader('Test'))
-    expect(getGlobalPluginRegistry().has('test')).toBe(true)
-    PluginRegistry.clear()
-  })
 })
 
 // ─────────────────────────────────────────────

@@ -79,8 +79,7 @@ export function configureAILoopHttp(options: {
 /** 获取当前 Page API 基础路径（带租户作用域） */
 function getPageApiUrl(): string {
   if (_getPageApiUrl) return _getPageApiUrl()
-  // 兜底：使用扁平兼容路由（依赖 X-Tenant-Id / X-Project-Id 请求头）
-  return '/api/pages-config'
+  throw new Error('AI Loop 未配置 getPageApiUrl，无法解析租户作用域 pages-config API')
 }
 
 // ─── 信号订阅（框架无关） ────────────────────────────────────────────────────
@@ -332,8 +331,6 @@ export interface AIPageLoopOptions {
   onError?: (error: Error) => void
   /** 日志收集等待时间 ms（文件写入后等待页面渲染产生日志，默认 3000） */
   logCollectDelay?: number
-  /** Skill Catalog Markdown（由 buildSkillPrompt 生成，附加到系统提示词） */
-  skillCatalog?: string | undefined
   /** 是否将全局 error/warn 合并进页面诊断样本（默认 true） */
   includeGlobalDiagnostics?: boolean
   /** 生成页面后自动注册导航节点（默认 true，需先配置 getNavApiUrl） */
@@ -690,7 +687,6 @@ interface ResolvedLoopOptions {
   onFilesUpdated: (pageId: string, files: string[]) => void
   onError: (error: Error) => void
   logCollectDelay: number
-  skillCatalog: string | undefined
   includeGlobalDiagnostics: boolean
   autoRegisterNav: boolean
   onNavigationRegistered: ((pageId: string, result: NavRegistrationResult) => void) | undefined
@@ -715,7 +711,6 @@ export class AIPageLoop {
       onFilesUpdated: options.onFilesUpdated ?? (() => {}),
       onError: options.onError ?? ((e) => { if (import.meta.env.DEV) console.error('[AIPageLoop]', e) }),
       logCollectDelay: options.logCollectDelay ?? 3000,
-      skillCatalog: options.skillCatalog ?? undefined,
       includeGlobalDiagnostics: options.includeGlobalDiagnostics ?? true,
       autoRegisterNav: options.autoRegisterNav ?? true,
       onNavigationRegistered: options.onNavigationRegistered,
@@ -851,10 +846,6 @@ export class AIPageLoop {
    */
   private async _callAI(pageId: string, payload: Record<string, unknown>): Promise<AIResponse> {
     try {
-      // 注入 Skill Catalog 到每个请求
-      if (this.options.skillCatalog !== undefined) {
-        payload['skillCatalog'] = this.options.skillCatalog
-      }
       const aiResp = await http.post<AIResponse>(this.options.aiEndpoint, payload)
       return this._postProcess(
         pageId, aiResp,
@@ -878,10 +869,6 @@ export class AIPageLoop {
     callbacks?: StreamCallbacks,
   ): Promise<AIResponse> {
     try {
-      if (this.options.skillCatalog !== undefined) {
-        payload['skillCatalog'] = this.options.skillCatalog
-      }
-
       // 构建请求头（复用 configureAILoopHttp 注入的 headers）
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       // 获取动态 headers（auth token 等）通过拦截器机制

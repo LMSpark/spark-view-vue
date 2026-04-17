@@ -3,7 +3,6 @@
  *
  * 数据模型、权限、过滤/排序、关系、树 的唯一类型源
  */
-
 import type { DataTable } from './data-table'
 import type { DataView as SparkDataView } from './data-view'
 import type { LoggerApi } from '@spark-view/spark-utils'
@@ -160,9 +159,9 @@ export interface ICurrentRowSource extends IRowDataSource {
 }
 
 /**
- * 完整数据源——向后兼容的全量接口，包含分页、聚合、权限、值序列化。
+ * 完整数据源全量接口，包含分页、聚合、权限、值序列化。
  *
- * DataView 实现此接口。所有已有消费者无需改动。
+ * DataView 实现此接口。
  */
 export interface IDataSource extends ICurrentRowSource {
   _modelPerm?: IModelPermission
@@ -563,11 +562,6 @@ export interface IViewMetadata {
    * - `'staged'`：仅修改内存并标记脏状态，调用 `saveChanges()` 批量提交
    */
   commitMode?: CommitMode
-  /**
-   * @deprecated 使用 `commitMode` 代替。`true` 等价于 `'immediate'`，`false` 等价于 `'staged'`。
-   * 保留仅供旧配置向后兼容。当 `commitMode` 显式设置时，`autoCommit` 被忽略。
-   */
-  autoCommit?: boolean
   /**
    * 视图级聚合配置——输出名 → 聚合列配置。
    *
@@ -1005,8 +999,6 @@ export interface IDataSet {
     parentField?: string
     childField?: string
   }): void
-  /** 删除表关系（向后兼容的 pair 形式） */
-  removeRelation(parentTable: string, childTable: string): void
   /** 添加视图依赖 */
   addDependency(params: {
     parentTable: string

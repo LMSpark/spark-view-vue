@@ -229,17 +229,6 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
       regions[placement] = filterVisible(node.children)
     }
 
-    // 刷新兜底：仅当路径完全未命中（activePath 为空）时，用首个有子项的 sidebar 分组填充
-    // 当 activePath 已命中（用户确实在某个无子项的页面上），sidebar 应为空
-    if (regions.sidebar.length === 0 && _activePath.value.length === 0) {
-      const fallbackGroup = normalRoots.find(
-        (node) => (node.children?.length ?? 0) > 0 && resolveChildPlacement(node) === 'sidebar'
-      )
-      if (fallbackGroup?.children !== undefined && fallbackGroup.children.length > 0) {
-        regions.sidebar = filterVisible(fallbackGroup.children)
-      }
-    }
-
     return regions
   })
 

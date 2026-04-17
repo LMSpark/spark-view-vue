@@ -3,8 +3,7 @@
 // 原始来源：AiPageService.java L931-1095
 // 迁移原因：提示词前端化（Phase 0），前端直接拼接完整系统提示词
 //
-// 当前阶段（Phase 0）此模块仅作为 SSoT 存在，不改变 ai-loop 调用链。
-// Phase 1+ 将替换 ai-loop 中 payload.skillCatalog 为本地拼接结果。
+// 当前模块作为提示词拼接的单一入口（SSoT）。
 
 import { PAGE_SYSTEM_PROMPT } from './page-system-prompt'
 import { STILLS_RUNTIME_PROMPT, STILLS_BLUEPRINT_PROMPT } from './stills-prompts'
@@ -41,8 +40,6 @@ export interface BuildPagePromptOptions {
   context?: PromptBuildContext
   /** 组件元数据服务（可选，提供 skill catalog） */
   metadataProvider?: ISkillMetadataProvider
-  /** fallback：前端传入的原始 skillCatalog 字符串 */
-  skillCatalog?: string
 }
 
 /** 提示词模式 */
@@ -139,7 +136,6 @@ function appendSection(base: string, section: string): string {
  *
  * 1. metadataProvider.getSkillPromptIndex() + detectRelevantSkillTypes → getSkillPromptForTypes
  * 2. metadataProvider.getSkillPromptCompact()
- * 3. fallback skillCatalog 原始字符串
  */
 export function buildPageSystemPrompt(options?: BuildPagePromptOptions): string {
   let prompt = PAGE_SYSTEM_PROMPT
@@ -163,11 +159,6 @@ export function buildPageSystemPrompt(options?: BuildPagePromptOptions): string 
     if (compactPrompt) {
       return appendSection(prompt, compactPrompt)
     }
-  }
-
-  // 优先级 3（Fallback）：原始 skillCatalog 字符串
-  if (options?.skillCatalog) {
-    return appendSection(prompt, options.skillCatalog)
   }
 
   return prompt

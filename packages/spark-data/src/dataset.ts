@@ -41,55 +41,17 @@ function inferColumnsFromRecord(obj: Record<string, unknown>): DataColumn[] {
   return Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n }))
 }
 
-const LEGACY_DEFAULT_VIEW_KEYS = [
-  'rows',
-  'filterExpression',
-  'sortExpression',
-  'autoCurrentFirst',
-  'autoSelectFirst',
-  'page',
-  'pageSize',
-  'treeConfig',
-  'valueField',
-  'labelField',
-  'selectionDelimiter',
-  'autoLoad',
-  'autoRefresh',
-  'commitMode',
-  'autoCommit',
-  'aggregates',
-] as const
-
 function normalizePageDataTableMetadata(
   tableName: string,
   table: Omit<ITableMetadata, 'tableName'> & { tableName?: string },
 ): Omit<ITableMetadata, 'tableName'> & { tableName?: string } {
   const rawTable = table as Record<string, unknown>
-  const rawViews = asRecord(rawTable['views'])
-  let nextTable: Record<string, unknown> = { ...rawTable }
-  const defaultView = asRecord(rawViews?.['default'])
-    ? { ...(rawViews?.['default'] as Record<string, unknown>) }
-    : {}
-
-  for (const key of LEGACY_DEFAULT_VIEW_KEYS) {
-    if (!(key in nextTable)) continue
-    defaultView[key] = nextTable[key]
-    const { [key]: _removed, ...rest } = nextTable
-    nextTable = rest
-  }
-
-  const normalizedViews: Record<string, unknown> = rawViews
-    ? { ...rawViews, default: defaultView }
-    : { default: defaultView }
-
-  const normalizedTable = nextTable as Omit<ITableMetadata, 'tableName'>
 
   return {
-    ...normalizedTable,
-    tableName: typeof nextTable['tableName'] === 'string' && nextTable['tableName'].trim() !== ''
-      ? nextTable['tableName']
+    ...(rawTable as Omit<ITableMetadata, 'tableName'>),
+    tableName: typeof rawTable['tableName'] === 'string' && rawTable['tableName'].trim() !== ''
+      ? rawTable['tableName']
       : tableName,
-    views: normalizedViews as ITableMetadata['views'],
   }
 }
 
@@ -830,27 +792,6 @@ export class DataSet implements IDataSet {
     return match.index
   }
 
-  private _normalizeRelationSelector(
-    selectorOrParentTable: string | {
-      parentTable: string
-      childTable: string
-      parentField?: string
-      childField?: string
-    },
-    childTable?: string,
-  ): {
-    parentTable: string
-    childTable: string
-    parentField?: string
-    childField?: string
-  } {
-    if (typeof selectorOrParentTable === 'string') {
-      if (!childTable) throw new Error('childTable is required when removeRelation uses pair signature')
-      return { parentTable: selectorOrParentTable, childTable }
-    }
-    return selectorOrParentTable
-  }
-
   private _resolveDependencyIndex(parentTable: string, childTable: string): number {
     this.viewDependencies ??= []
     const idx = this.viewDependencies.findIndex(
@@ -993,19 +934,13 @@ export class DataSet implements IDataSet {
     parentField?: string
     childField?: string
   }): void
-  removeRelation(parentTable: string, childTable: string): void
-  removeRelation(
-    selectorOrParentTable: string | {
-      parentTable: string
-      childTable: string
-      parentField?: string
-      childField?: string
-    },
-    childTable?: string,
-  ): void {
+  removeRelation(selector: {
+    parentTable: string
+    childTable: string
+    parentField?: string
+    childField?: string
+  }): void {
     this.tableRelations ??= []
-
-    const selector = this._normalizeRelationSelector(selectorOrParentTable, childTable)
 
     const idx = this._resolveRelationIndex(selector)
     const relation = this.tableRelations[idx]
@@ -1219,10 +1154,10 @@ export class DataSet implements IDataSet {
    *
    * 支持：
    * 1. canonical DataSet 元数据对象
-   * 2. pagedata.json 原始对象（含 dataset 包裹或任意 key-value）
+    * 2. pagedata.json 原始对象（任意 key-value）
    * 3. 上述两种结构的 JSON 字符串
    *
-   * @param json 数据集元数据对象、pagedata 原始对象或 JSON 字符串
+    * @param json 数据集元数据对象、pagedata 原始对象或 JSON 字符串
    * @returns 数据集实例
    */
   static fromJson(json: IDataSetMetadata | Record<string, unknown> | string): DataSet {
@@ -1244,12 +1179,14 @@ export class DataSet implements IDataSet {
     const rawJson = json as Record<string, unknown>
 
     const wrappedDataSetCandidate = asRecord(rawJson['dataset'])
-    const directDataSetCandidate = 'tables' in rawJson ? rawJson : null
-    const canonicalCandidate = wrappedDataSetCandidate && 'tables' in wrappedDataSetCandidate
-      ? wrappedDataSetCandidate
-      : directDataSetCandidate
+    if (wrappedDataSetCandidate && 'tables' in wrappedDataSetCandidate) {
+      throw new Error('DataSet.fromJson: 不再支持 dataset 包裹结构，请将 tables/dataSetName 提升到根级')
+    }
 
-    // 情形 1：直接根级 DataSet，或 rawJson.dataset.tables 存在 → 规范化后透传
+    const directDataSetCandidate = 'tables' in rawJson ? rawJson : null
+    const canonicalCandidate = directDataSetCandidate
+
+    // 情形 1：直接根级 DataSet → 规范化后透传
     if (canonicalCandidate) {
       const rd = canonicalCandidate as {
         dataSetName?: string
@@ -1285,8 +1222,6 @@ export class DataSet implements IDataSet {
     const tables: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName: string }> = {}
 
     for (const [key, val] of Object.entries(rawPageData)) {
-      if (key === 'dataset') continue
-
       // 数组 → 表格行
       if (Array.isArray(val)) {
         const rows: IDataRow[] = []

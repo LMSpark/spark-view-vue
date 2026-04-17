@@ -19,7 +19,7 @@ const mockFileLoader = {
   on: vi.fn(() => vi.fn()),
   clearCache: vi.fn(),
   hasCache: vi.fn(),
-  getCachedTimestamp: vi.fn(),
+  getTimestamp: vi.fn(),
   store: vi.fn(),
   retrieve: vi.fn(),
   /**
@@ -302,42 +302,6 @@ describe('PageConfigLoader', () => {
       const r = await loader.loadCss('my-page')
       expect(r.success).toBe(true)
       expect(r.data).toBe('.app { color: blue }')
-    })
-  })
-
-  // ─────────────────────────────────────────────────────────────────
-  // source: 'hybrid'
-  // ─────────────────────────────────────────────────────────────────
-
-  describe("source: 'hybrid'", () => {
-    let loader: PageConfigLoader
-
-    beforeEach(() => {
-      loader = new PageConfigLoader({ source: 'hybrid', apiBaseUrl: '/api' })
-    })
-
-    it('hybrid loadScript: 远程失败 → 降级本地', async () => {
-      mockRequestClient.request.mockRejectedValue(new Error('no script remote'))
-      mockFileLoader.load.mockImplementation((path: string) => {
-        if (path === '/some-page/script.js') return Promise.resolve(fileOk('// local script'))
-        return Promise.resolve(fileFail(`unexpected path: ${path}`))
-      })
-
-      const r = await loader.loadScript('some-page')
-      expect(r.success).toBe(true)
-      expect(r.data).toBe('// local script')
-    })
-
-    it('hybrid loadCss: 远程失败 → 降级本地', async () => {
-      mockRequestClient.request.mockRejectedValue(new Error('no css remote'))
-      mockFileLoader.load.mockImplementation((path: string) => {
-        if (path === '/some-page/style.css') return Promise.resolve(fileOk('.root{}'))
-        return Promise.resolve(fileFail(`unexpected path: ${path}`))
-      })
-
-      const r = await loader.loadCss('some-page')
-      expect(r.success).toBe(true)
-      expect(r.data).toBe('.root{}')
     })
   })
 

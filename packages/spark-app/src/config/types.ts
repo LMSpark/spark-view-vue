@@ -13,7 +13,7 @@ import type { PluginConfig } from '../plugins'
  */
 export interface ConfigSourceOptions {
   /** 配置源类型 */
-  type: 'local' | 'remote' | 'hybrid'
+  type: 'local' | 'remote'
 
   /** API 端点配置（远程加载） */
   api?: {
@@ -29,11 +29,6 @@ export interface ConfigSourceOptions {
     tenantConfigTemplate: string
   }
 
-  /** 降级策略 */
-  fallback?: {
-    enabled: boolean
-    useLocal: boolean
-  }
 }
 
 /**
@@ -77,7 +72,7 @@ export interface AppFullConfig {
 
   /** 页面配置系统 */
   pageConfig: {
-    source: 'local' | 'remote' | 'hybrid'
+    source: 'local' | 'remote'
     apiBaseUrl: string
     timeout?: number
     homePath: string

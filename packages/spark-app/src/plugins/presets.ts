@@ -56,7 +56,7 @@ export function registerAllPresetPlugins(): void {
  * // 安装依赖后取消注释
  * // pnpm add pinia
  * export function registerStatePlugins(): void {
- *   PluginRegistry.register('pinia', {
+ *   getGlobalPluginRegistry().register('pinia', {
  *     name: 'Pinia',
  *     module: 'pinia',
  *     loader: async () => {
@@ -76,7 +76,7 @@ export function registerAllPresetPlugins(): void {
  * // 安装依赖后取消注释
  * // pnpm add vue-i18n
  * export function registerI18nPlugins(): void {
- *   PluginRegistry.register('vue-i18n', {
+ *   getGlobalPluginRegistry().register('vue-i18n', {
  *     name: 'Vue I18n',
  *     module: 'vue-i18n',
  *     loader: async () => {

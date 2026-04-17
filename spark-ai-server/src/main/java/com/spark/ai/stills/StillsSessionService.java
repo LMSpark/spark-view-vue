@@ -93,11 +93,6 @@ public class StillsSessionService {
         return sessionId;
     }
 
-    /** 兼容旧 API（无 tools/mode） */
-    public String createSession(String systemPrompt, String userPrompt, int windowSize) {
-        return createSession(systemPrompt, userPrompt, windowSize, null, null);
-    }
-
     /**
      * 执行一轮对话（非流式），支持 Function Calling。
      */
@@ -175,11 +170,6 @@ public class StillsSessionService {
         return true;
     }
 
-    /** 兼容旧 API（简单文本消息） */
-    public boolean appendMessage(String sessionId, String role, String content) {
-        return appendMessage(sessionId, role, content, null, null);
-    }
-
     /**
      * 获取完整对话记录（包含 FC 字段）。
      */
@@ -190,19 +180,6 @@ public class StillsSessionService {
         List<Map<String, Object>> result = new ArrayList<>();
         for (Message msg : session.conversation) {
             result.add(msg.toMap());
-        }
-        return result;
-    }
-
-    /** 兼容旧 API（简单格式） */
-    public List<Map<String, String>> getConversation(String sessionId) {
-        Session session = sessions.get(sessionId);
-        if (session == null) return List.of();
-
-        List<Map<String, String>> result = new ArrayList<>();
-        for (Message msg : session.conversation) {
-            result.add(Map.of("role", msg.role, "content",
-                    msg.content != null ? msg.content : ""));
         }
         return result;
     }

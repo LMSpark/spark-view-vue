@@ -21,7 +21,7 @@ import type {
   ViewDependency,
   PostValidationWarning,
 } from './types'
-import { getDomainState } from './types'
+import { getDomainState, readSessionBlueprint, writeSessionBlueprint } from './types'
 import type { DataColumn, CrudApi, IDataRow, AggregateColumnConfig, TreeConfig, IViewMetadata, DataTable, DataView, TableRelation } from '@spark-view/spark-data'
 import { DataSet, INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
 
@@ -773,7 +773,7 @@ interface DsGuardOptions {
  */
 function dsGuard(checks: DsGuardOptions = {}): StillGuard {
   return (session: IStillSession): { code: string; msg: string } | null => {
-    if (checks.requireBlueprint === true && session.blueprint === null) {
+    if (checks.requireBlueprint === true && readSessionBlueprint(session) === null) {
       return { code: 'NO_BLUEPRINT', msg: 'Blueprint 尚未创建，请先执行 blueprint.create' }
     }
     const state = getDataSetState(session)
@@ -1034,7 +1034,7 @@ const datasetReset: StillDefinition<Record<string, never>, unknown> = {
   execute: (session): StillResult => {
     const state = getDataSetState(session)
     Object.assign(state, createDataSetState())
-    session.blueprint = null
+    writeSessionBlueprint(session, null)
     session.patchLog = []
     return {
       ok: true,
@@ -1419,7 +1419,7 @@ const relationRemove: StillDefinition<RelationRemoveParams, unknown> = {
   },
   execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
       try {
-        DS.removeRelation(params.parentTable, params.childTable)
+        DS.removeRelation({ parentTable: params.parentTable, childTable: params.childTable })
       } catch (error) {
         throw mapRelationRemoveError(error, params.parentTable, params.childTable)
       }

@@ -70,7 +70,7 @@ export interface SparkOptions {
  */
 export interface PageConfigOptions {
   /** 配置来源 */
-  source: 'local' | 'remote' | 'hybrid'
+  source: 'local' | 'remote'
   /** API 基础路径 */
   apiBaseUrl: string
   /** 请求超时时间 */
@@ -143,9 +143,6 @@ export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
   
   /** 启动失败钩子（如果提供，将完全接管错误处理） */
   onStartError?: (error: Error) => void | Promise<void>
-  
-  /** 错误降级组件（用于默认错误处理） */
-  fallbackComponent?: Component
 }
 
 /**
@@ -183,7 +180,6 @@ export async function start(options: StartOptions): Promise<void> {
     theme,
     onBeforeStart,
     onStartError,
-    fallbackComponent,
     ...bootstrapOptions
   } = options
 
@@ -273,7 +269,7 @@ export async function start(options: StartOptions): Promise<void> {
             if (stats !== null) {
               startLogger.info(`自动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
               if (stats.total === 0) {
-                startLogger.info('编译时注册返回 0 个组件（可能为 classic fallback）；请确认应用侧执行了 classic 注册流程')
+                startLogger.info('编译时注册返回 0 个组件；请确认应用侧执行了 classic 注册流程')
               }
             } else {
               startLogger.warn('virtual:spark-components.registerComponents 返回值无效，无法确认编译时注册统计')
@@ -355,15 +351,7 @@ export async function start(options: StartOptions): Promise<void> {
     // 启动失败钩子
     if (onStartError) {
       await onStartError(err)
-    } else if (fallbackComponent) {
-      // 使用用户提供的降级组件
-      startLogger.warn('使用自定义降级组件...')
-      const fallbackApp = createApp(fallbackComponent, { error: err })
-      fallbackApp.mount(mountTarget)
     }
-    // 注意：如果既不提供 onStartError 也不提供 fallbackComponent
-    // 则应用启动失败后会抛出错误，不会有任何 UI 提示
-    // 建议：至少提供 fallbackComponent
 
     throw error
   }

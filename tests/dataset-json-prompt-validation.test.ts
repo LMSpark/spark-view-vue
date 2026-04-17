@@ -25,8 +25,7 @@ const f = (row: IDataRow | undefined | null, field: string): unknown => row?.[fi
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * 从完整 pagedata.json 结构（含 dataset 顶层包装）实例化 DataSet。
- * 这是提示词最终输出的 JSON 的正确消费方式。
+ * 从提示词 fixture 实例化 DataSet。
  */
 function fromPromptJson(json: Record<string, unknown>): DataSet {
   return DataSet.fromJson(json)
@@ -37,7 +36,6 @@ function fromPromptJson(json: Record<string, unknown>): DataSet {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CASE_A_JSON = {
-  dataset: {
     dataSetName: 'LibraryDataSet',
     tables: {
       Readers: {
@@ -89,7 +87,6 @@ const CASE_A_JSON = {
         cascadeDelete:  true,
       },
     ],
-  },
 }
 
 describe('PROMPT 验证 — 案例 A: 图书馆管理', () => {
@@ -163,7 +160,6 @@ describe('PROMPT 验证 — 案例 A: 图书馆管理', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CASE_B_JSON = {
-  dataset: {
     dataSetName: 'EcommerceOrderDataSet',
     tables: {
       Orders: {
@@ -224,7 +220,6 @@ const CASE_B_JSON = {
         cascadeDelete:  true,
       },
     ],
-  },
 }
 
 describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
@@ -309,7 +304,6 @@ describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const EXAMPLE_9_JSON = {
-  dataset: {
     dataSetName: 'StudentGradeDataSet',
     tables: {
       Students: {
@@ -365,7 +359,6 @@ const EXAMPLE_9_JSON = {
         childField:     'studentId',
       },
     ],
-  },
 }
 
 describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
@@ -437,7 +430,6 @@ describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CASE_C_JSON = {
-  dataset: {
     dataSetName: 'HRDataSet',
     tables: {
       Departments: {
@@ -499,7 +491,6 @@ const CASE_C_JSON = {
         childField:     'deptId',
       },
     ],
-  },
 }
 
 describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
@@ -571,7 +562,6 @@ describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CASE_G_JSON = {
-  dataset: {
     dataSetName: 'WarehouseInventoryDataSet',
     tables: {
       Warehouses: {
@@ -637,7 +627,6 @@ const CASE_G_JSON = {
         childField:     'warehouseId',
       },
     ],
-  },
 }
 
 describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', () => {
@@ -756,7 +745,6 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
 // 覆盖：number/string/date 类型、多分支 computeExpression、aggregates 直接键名
 // ─────────────────────────────────────────────────────────────────────────────
 const CASE_H_JSON = {
-  dataset: {
     dataSetName: 'WarehouseStockDataSet',
     tables: {
       Warehouses: {
@@ -842,7 +830,6 @@ const CASE_H_JSON = {
         childField:     'warehouseId',
       },
     ],
-  },
 }
 
 describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', () => {
@@ -942,7 +929,6 @@ describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', 
 // 覆盖：三级 ID 编号、多层 $count/$sum/$join、多分支 computeExpression、aggregates
 // ─────────────────────────────────────────────────────────────────────────────
 const CASE_I_JSON = {
-  dataset: {
     dataSetName: 'PropertyManagementDataSet',
     tables: {
       Communities: {
@@ -1033,7 +1019,6 @@ const CASE_I_JSON = {
         childField:     'buildingId',
       },
     ],
-  },
 }
 
 describe('Case I：标准提示词模板自测 - 物业管理系统（三级层次）', () => {

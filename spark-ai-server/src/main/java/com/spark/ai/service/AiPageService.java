@@ -488,7 +488,6 @@ public class AiPageService {
         req.setFeedback("AI 自检发现以下问题需要修正：\n" + aiExplanation);
         req.setCurrentFiles(currentFiles);
         req.setLogs(original.getLogs());
-        req.setSkillCatalog(original.getSkillCatalog());
         return req;
     }
 
@@ -750,9 +749,9 @@ public class AiPageService {
             if (response != null) return response;
         }
 
-        // 3. fallback：把整个内容放入 explanation
-        log.warn("[SPARK-AI] 响应解析失败，内容片段：{}", content.substring(0, Math.min(200, content.length())));
-        return buildErrorResponse(null, "响应解析失败，LLM 未返回标准 JSON");
+        String snippet = content.substring(0, Math.min(200, content.length()));
+        log.warn("[SPARK-AI] 响应解析失败，内容片段：{}", snippet);
+        throw new IllegalArgumentException("响应解析失败，LLM 未返回标准 JSON: " + snippet);
     }
 
     @SuppressWarnings("unchecked")
@@ -922,8 +921,7 @@ public class AiPageService {
      *
      * 优先级：
     * 1. 服务端存储的组件元数据（由构建时上传的 component-catalog.json 提供）
-     * 2. 请求体中的 skillCatalog（前端运行时传入，作为 fallback）
-     * 3. 无 Skill 信息时仅使用基础模板
+    * 2. 无 Skill 信息时仅使用基础模板
      */
     private String buildSystemPrompt(AiChatRequest request) {
         StringBuilder prompt = new StringBuilder(BASE_SYSTEM_PROMPT);
@@ -951,13 +949,6 @@ public class AiPageService {
             log.debug("[SPARK-AI] 使用服务端存储的 Compact Skill Prompt (buildTime={})",
                     metadataService.getBuildTime());
             return prompt.toString();
-        }
-
-        // Fallback: 使用请求体传入的 skillCatalog
-        String requestSkillCatalog = request != null ? request.getSkillCatalog() : null;
-        if (requestSkillCatalog != null && !requestSkillCatalog.isBlank()) {
-            appendPromptSection(prompt, requestSkillCatalog);
-            log.debug("[SPARK-AI] 使用请求体传入的 Skill Catalog");
         }
 
         return prompt.toString();

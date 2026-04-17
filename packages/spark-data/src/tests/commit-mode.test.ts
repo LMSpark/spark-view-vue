@@ -98,7 +98,8 @@ describe('commitMode: basic field semantics', () => {
     expect(view.commitMode).toBe('staged')
   })
 
-  it('backward compat: autoCommit=true → immediate', () => {
+  it('unknown field autoCommit is ignored, commitMode defaults to immediate', () => {
+    // autoCommit 字段已移除，传入时不影响 commitMode（使用 commitMode 显式配置）
     const ds = SparkData.createDataSet({
       dataSetName: 'LegacyDS',
       tables: {
@@ -106,7 +107,7 @@ describe('commitMode: basic field semantics', () => {
           tableName: 'T',
           columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
           views: {
-            default: { rows: [], autoCommit: true },
+            default: { rows: [] },
           },
         },
       },
@@ -114,31 +115,15 @@ describe('commitMode: basic field semantics', () => {
     expect(ds.getView('T', 'default')!.commitMode).toBe('immediate')
   })
 
-  it('backward compat: autoCommit=false → staged', () => {
+  it('commitMode: staged is respected via explicit config', () => {
     const ds = SparkData.createDataSet({
-      dataSetName: 'LegacyDS',
+      dataSetName: 'StagedDS',
       tables: {
         T: {
           tableName: 'T',
           columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
           views: {
-            default: { rows: [], autoCommit: false },
-          },
-        },
-      },
-    })
-    expect(ds.getView('T', 'default')!.commitMode).toBe('staged')
-  })
-
-  it('commitMode takes precedence over autoCommit', () => {
-    const ds = SparkData.createDataSet({
-      dataSetName: 'PrecedenceDS',
-      tables: {
-        T: {
-          tableName: 'T',
-          columns: [{ name: 'id', type: 'number', isPrimaryKey: true }],
-          views: {
-            default: { rows: [], commitMode: 'staged', autoCommit: true }, // should be ignored
+            default: { rows: [], commitMode: 'staged' },
           },
         },
       },
@@ -150,7 +135,6 @@ describe('commitMode: basic field semantics', () => {
     const { view } = createImmediateView()
     const data = view.toJson()
     expect(data.commitMode).toBeUndefined()
-    expect(data.autoCommit).toBeUndefined()
 
     const { view: stagedView } = createStagedView()
     const stagedData = stagedView.toJson()

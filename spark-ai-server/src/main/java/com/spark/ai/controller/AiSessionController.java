@@ -154,16 +154,7 @@ public class AiSessionController {
                 ? (List<Map<String, Object>>) list : null;
 
         if (messages == null || messages.isEmpty()) {
-            // 兼容单条消息格式
-            String role = request.get("role") instanceof String s ? s : "user";
-            String content = request.get("content") instanceof String s ? s : null;
-            if (content == null || content.isBlank()) {
-                return badRequest("content 不能为空");
-            }
-            boolean ok = sessionService.appendMessage(sessionId, role, content,
-                    null, null);
-            if (!ok) return ResponseEntity.status(404).body(Map.of("error", "会话不存在"));
-            return ResponseEntity.ok(Map.of("ok", true));
+            return badRequest("messages 不能为空");
         }
 
         for (Map<String, Object> msg : messages) {

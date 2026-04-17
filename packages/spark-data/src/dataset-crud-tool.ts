@@ -195,8 +195,6 @@ type DataSetCrudToolUpdateRelationParams = {
   updates: Partial<TableRelation>
 }
 
-  type DataSetCrudToolDeleteRelationParams = { selector: RelationSelector }
-
 /**
  * 创建视图依赖所需参数。
  */
@@ -941,32 +939,12 @@ export class DataSetCrudTool {
 
   /**
    * 删除一条表关系。
-   * 支持字段级 selector 和兼容的 parentTable + childTable 两种签名。
    *
-   * @param selectorOrParentTable 关系选择器，或 parentTable。
-   * @param childTable 当第一个参数为 parentTable 时，需要补充 childTable。
-   * @throws 当关系不存在，或按父子表定位但存在多条关系时抛错。
+   * @param selector 关系选择器。
+   * @throws 当关系不存在，或定位到多条关系时抛错。
    */
-  deleteRelation(selectorOrParams: RelationSelector | DataSetCrudToolDeleteRelationParams): void
-  deleteRelation(parentTable: string, childTable: string): void
-  deleteRelation(
-    selectorOrParentTable: string | RelationSelector | DataSetCrudToolDeleteRelationParams,
-    childTable?: string,
-  ): void {
-    if (typeof selectorOrParentTable === 'string') {
-      this.dataSet.removeRelation(
-        this.requireNonEmptyString(selectorOrParentTable, 'deleteRelation.parentTable'),
-        this.requireNonEmptyString(childTable, 'deleteRelation.childTable'),
-      )
-      this._afterWrite()
-      return
-    }
-    if ('selector' in selectorOrParentTable) {
-      this.dataSet.removeRelation(selectorOrParentTable.selector)
-      this._afterWrite()
-      return
-    }
-    this.dataSet.removeRelation(selectorOrParentTable)
+  deleteRelation(selector: RelationSelector): void {
+    this.dataSet.removeRelation(selector)
     this._afterWrite()
   }
 

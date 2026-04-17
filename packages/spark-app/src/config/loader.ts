@@ -6,7 +6,7 @@
  * 2. 根据租户 ID 加载租户特定配置
  * 3. 合并配置（深度合并）
  * 4. 支持环境变量覆盖
- * 5. 支持远程 API 和本地文件的混合模式
+ * 5. 支持远程 API 或本地文件两种模式
  */
 
 import type { AppFullConfig, TenantConfig, ConfigSourceOptions } from './types'
@@ -73,8 +73,8 @@ export class ConfigLoader {
 
       let config: AppFullConfig | null = null
 
-      // 尝试从 API 加载
-      if (this.configSource?.type === 'remote' || this.configSource?.type === 'hybrid') {
+      // 远程模式：从 API 加载
+      if (this.configSource?.type === 'remote') {
         try {
           const apiEndpoint = this.configSource.api?.defaultConfigEndpoint
           const timeout = this.configSource.api?.timeout ?? 5000
@@ -86,16 +86,12 @@ export class ConfigLoader {
           }
         } catch (error) {
           configLogger.warn('Failed to load default config from API', { error: String(error) })
-
-          // 如果是 remote 模式且没有降级，抛出错误
-          if (this.configSource.type === 'remote' && !this.configSource.fallback?.enabled) {
-            throw error
-          }
+          throw error
         }
       }
 
-      // 降级到本地文件
-      if (!config && this.configSource?.fallback?.useLocal) {
+      // 本地模式：从本地文件加载
+      if (!config && this.configSource?.type === 'local') {
         const localPath = this.configSource.local?.defaultConfigPath ?? '/config/default.json'
         configLogger.info(`Loading default config from local: ${localPath}`)
         config = await this.fetchFromLocal(localPath) as AppFullConfig
@@ -124,8 +120,8 @@ export class ConfigLoader {
     try {
       let config: TenantConfig | null = null
 
-      // 尝试从 API 加载
-      if (this.configSource?.type === 'remote' || this.configSource?.type === 'hybrid') {
+      // 远程模式：从 API 加载
+      if (this.configSource?.type === 'remote') {
         try {
           const apiEndpoint = this.configSource.api?.tenantConfigEndpoint.replace('{tenantId}', tenantId)
           const timeout = this.configSource.api?.timeout ?? 5000
@@ -137,16 +133,12 @@ export class ConfigLoader {
           }
         } catch (error) {
           configLogger.warn(`Failed to load tenant config from API for ${tenantId}`, { error: String(error) })
-
-          // 如果是 remote 模式且没有降级，返回 null
-          if (this.configSource.type === 'remote' && !this.configSource.fallback?.enabled) {
-            return null
-          }
+          return null
         }
       }
 
-      // 降级到本地文件
-      if (!config && this.configSource?.fallback?.useLocal === true) {
+      // 本地模式：从本地文件加载
+      if (!config && this.configSource?.type === 'local') {
         const template = this.configSource.local?.tenantConfigTemplate
         const localPath = template !== undefined
           ? template.replace('{tenantId}', tenantId)
@@ -246,16 +238,17 @@ export class ConfigLoader {
     if (env['PROD']) {
       config.logger.level = config.logger.level ?? 'info'
       config.logger.showTimestamp = false
-      config.logger.enableRemote = auditRemoteLogsEnabled
       // 演示项目：不覆盖 enableMock（允许生产环境使用 Mock 数据）
       config.config.logLevel = 'info'
     } else {
       config.logger.level = config.logger.level ?? 'debug'
       config.logger.showTimestamp = true
-      config.logger.enableRemote = auditRemoteLogsEnabled
       config.config.enableMock = config.config.enableMock ?? true
       config.config.logLevel = 'debug'
     }
+
+    // 保留读取，便于上层按环境显式调用 configureRemoteLogger。
+    void auditRemoteLogsEnabled
 
     // 支持环境变量覆盖 API 地址
     if (typeof env['VITE_API_BASE_URL'] === 'string' && env['VITE_API_BASE_URL'] !== '') {
@@ -298,7 +291,6 @@ export class ConfigLoader {
         level: import.meta.env['PROD'] ? 'info' : 'debug',
         enableColors: true,
         showTimestamp: !import.meta.env['PROD'],
-        enableRemote: false,
         remoteEndpoint: '/api/logs'
       }
     }

@@ -8,6 +8,7 @@
  */
 import { registerAllStills, createSession, executeStill } from '../packages/spark-ai/src/index.js'
 import { getDataSetState } from '../packages/spark-ai/src/stills/dataset-domain.js'
+import { getBlueprintState } from '../packages/spark-ai/src/stills/blueprint-domain.js'
 import * as fs from 'fs'
 
 registerAllStills()
@@ -192,7 +193,7 @@ const stillsPipeline = {
   sessionDescribe: sessionDescribe.data,
 
   // 2. 蓝图（完整 ExecutionBlueprint）
-  blueprint: session.blueprint,
+  blueprint: getBlueprintState(session).data,
 
   // 3. 蓝图描述（blueprint.describe 返回值）
   blueprintDescribe: blueprintDescribe.data,
@@ -227,6 +228,6 @@ const stillsJson = JSON.stringify(stillsPipeline, null, 2)
 fs.writeFileSync(stillsPath, stillsJson, 'utf-8')
 console.log(`✅ stills.json    → ${stillsPath} (${stillsJson.length} chars)`)
 console.log(`   patchLog 条数: ${session.patchLog.length}`)
-console.log(`   blueprint checkpoints: ${session.blueprint?.checkpoints.length ?? 0}`)
+console.log(`   blueprint checkpoints: ${getBlueprintState(session).data?.checkpoints.length ?? 0}`)
 console.log(`   locked: ${datasetState.locked}`)
 console.log(`   phase: ${datasetState.phase}`)

@@ -8,14 +8,14 @@
  * - error() 方法处理 Error 对象 vs 普通对象
  * - success() 使用 console.info
  * - createScopedLogger 前缀设置
- * - createHttpTransport 仅发送 error/warn
+ * - createBatchHttpTransport 批量发送与级别过滤
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   createAppLogger,
   createScopedLogger,
-  createHttpTransport,
+  createBatchHttpTransport,
 } from '../index'
 import type { LogTransport } from '../index'
 
@@ -207,34 +207,35 @@ describe('AppLogger', () => {
     })
   })
 
-  // ── createHttpTransport ──
+  // ── createBatchHttpTransport ──
 
-  describe('createHttpTransport', () => {
+  describe('createBatchHttpTransport', () => {
     beforeEach(() => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response())
     })
 
-    it('仅发送 error 和 warn', async () => {
-      const transport = createHttpTransport('/api/logs')
+    it('按 minLevel 过滤并在达到 batchSize 后发送', () => {
+      const transport = createBatchHttpTransport({ endpoint: '/api/logs', minLevel: 'warn', batchSize: 2, flushInterval: 60_000 })
 
-      await transport.send('debug', 'debug msg')
-      await transport.send('info', 'info msg')
-      await transport.send('warn', 'warn msg')
-      await transport.send('error', 'error msg')
+      transport.send('debug', 'debug msg')
+      transport.send('info', 'info msg')
+      transport.send('warn', 'warn msg')
+      transport.send('error', 'error msg')
 
-      expect(globalThis.fetch).toHaveBeenCalledTimes(2)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+      transport.destroy?.()
     })
 
-    it('发送 JSON body 包含 level + message + timestamp', async () => {
-      const transport = createHttpTransport('/api/logs')
-      await transport.send('error', 'boom', { code: 500 })
+    it('发送 JSON body 包含 logs 批次', () => {
+      const transport = createBatchHttpTransport({ endpoint: '/api/logs', batchSize: 1, flushInterval: 60_000 })
+      transport.send('error', 'boom', { code: 500 })
 
       expect(globalThis.fetch).toHaveBeenCalledWith(
         '/api/logs',
         expect.objectContaining({
           method: 'POST',
-           
-          body: expect.stringContaining('"level":"error"'),
+          keepalive: true,
+          body: expect.stringContaining('"logs"'),
         }),
       )
 
@@ -242,16 +243,22 @@ describe('AppLogger', () => {
       const fetchSpy = vi.mocked(globalThis.fetch)
       const sentBody = String((fetchSpy.mock.calls[0]?.[1] as Record<string, unknown> | undefined)?.['body'] ?? '{}')
       const body = JSON.parse(sentBody) as Record<string, unknown>
-      expect(body['message']).toBe('boom')
-      expect(body['meta']).toEqual({ code: 500 })
-      expect(body['timestamp']).toBeTypeOf('number')
+      const logs = body['logs'] as Array<Record<string, unknown>>
+      expect(Array.isArray(logs)).toBe(true)
+      expect(logs).toHaveLength(1)
+      expect(logs[0]?.['level']).toBe('error')
+      expect(logs[0]?.['message']).toBe('boom')
+      expect(logs[0]?.['meta']).toEqual({ code: 500 })
+      expect(logs[0]?.['timestamp']).toBeTypeOf('number')
+      transport.destroy?.()
     })
 
-    it('fetch 失败静默（不抛错）', async () => {
+    it('fetch 失败静默（不抛错）', () => {
       vi.mocked(globalThis.fetch).mockRejectedValue(new Error('network'))
-      const transport = createHttpTransport('/api/logs')
+      const transport = createBatchHttpTransport({ endpoint: '/api/logs', batchSize: 1, flushInterval: 60_000 })
 
-      await expect(transport.send('error', 'msg')).resolves.toBeUndefined()
+      expect(() => transport.send('error', 'msg')).not.toThrow()
+      transport.destroy?.()
     })
   })
 })

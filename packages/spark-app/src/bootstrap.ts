@@ -227,9 +227,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     setupRouterGuards(router, {}, appContext)
 
     // 设置全局错误处理
-    setupErrorHandler(app, {
-      enableFallback: true
-    })
+    setupErrorHandler(app)
 
     // =========================================================================
     // 阶段 6: 挂载前钩子

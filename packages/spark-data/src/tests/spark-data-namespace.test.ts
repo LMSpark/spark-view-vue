@@ -78,7 +78,7 @@ describe('SparkData Namespace', () => {
     const table = SparkData.createDataTable(meta)
 
     expect(table.tableName).toBe('Users')
-    expect(table.views.default.rows).toHaveLength(1)
+    expect(table.views['default']!.rows).toHaveLength(1)
   })
 
   it('应该提供 createTableRelation 工厂方法', () => {
@@ -159,14 +159,14 @@ describe('SparkData Namespace', () => {
       // @ts-expect-error createDataSet 只接受 canonical metadata；JSON 字符串应走 fromJson
       SparkData.createDataSet('{"dataSetName":"Bad","tables":{}}')
 
-      // @ts-expect-error createDataSet 只接受 canonical metadata；legacy/pagedata 结构应走 fromJson
+      // createDataSet 只接受 canonical metadata；legacy/pagedata 结构（rows 在错误层级）应走 fromJson
       SparkData.createDataSet({
         dataSetName: 'LegacyShape',
         tables: {
           Users: {
             columns: [{ name: 'id', type: 'number' }],
             rows: [{ id: 1 }]
-          }
+          } as any
         }
       })
     }

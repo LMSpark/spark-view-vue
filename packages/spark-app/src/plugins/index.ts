@@ -5,7 +5,6 @@
  */
 
 export {
-  PluginRegistry,
   PluginManager,
   createPluginRegister,
   createPluginRegistry,

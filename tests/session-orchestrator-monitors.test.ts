@@ -350,31 +350,57 @@ describe('blueprint-orchestration-monitor', () => {
 
 describe('terminal-actions-monitor', () => {
   function sessionWithBlueprint(allDone: boolean): IStillSession {
+    const blueprintState = session.domains['blueprint']
+    if (!blueprintState) {
+      throw new Error('blueprint domain state is missing in test session')
+    }
+
     return {
       ...session,
-      blueprint: {
-        version: 1,
-        userGoal: 'test',
-        currentCheckpointId: 'cp1',
-        currentPlanItemId: 'pi1',
-        openQuestions: [],
-        checkpoints: [
-          {
-            id: 'cp1',
-            title: 'Setup',
-            plannedActions: ['dataset.init'],
-            planItems: [],
-            validation: 'ok',
-            status: allDone ? 'done' : 'pending',
+      domains: {
+        ...session.domains,
+        blueprint: {
+          ...blueprintState,
+          data: {
+            version: 1,
+            userGoal: 'test',
+            currentCheckpointId: 'cp1',
+            currentPlanItemId: 'pi1',
+            openQuestions: [],
+            checkpoints: [
+              {
+                id: 'cp1',
+                title: 'Setup',
+                plannedActions: ['dataset.init'],
+                planItems: [],
+                validation: 'ok',
+                status: allDone ? 'done' : 'pending',
+              },
+            ],
           },
-        ],
+        },
       },
     }
   }
 
   it('does not nudge when no blueprint exists', () => {
     const monitor = createTerminalActionsMonitor()
-    const ctx = makeCtx({ session: { ...session, blueprint: null } })
+    const blueprintState = session.domains['blueprint']
+    if (!blueprintState) {
+      throw new Error('blueprint domain state is missing in test session')
+    }
+    const ctx = makeCtx({
+      session: {
+        ...session,
+        domains: {
+          ...session.domains,
+          blueprint: {
+            ...blueprintState,
+            data: null,
+          },
+        },
+      },
+    })
     expect(monitor.afterStillExecution(ctx)).toEqual([])
   })
 

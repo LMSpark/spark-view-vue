@@ -113,9 +113,6 @@ describe('M5: CrudService shared HTTP client', () => {
     ds.setSharedHttpClient(mockClient as any)
     ds.setAppServices({
       router: {
-        push: async () => undefined,
-        replace: async () => undefined,
-        back: () => undefined,
         currentRoute: {
           params: { tenantId: 'tenant-a', projectId: 'proj-1' },
           query: {},
@@ -158,9 +155,6 @@ describe('M5: CrudService shared HTTP client', () => {
     ds.setSharedHttpClient(mockClient as any)
     ds.setAppServices({
       router: {
-        push: async () => undefined,
-        replace: async () => undefined,
-        back: () => undefined,
         currentRoute: {
           params: { tenantId: 'tenant-a', projectId: 'proj-1' },
           query: {},

@@ -103,35 +103,6 @@ describe('ITableMetadata canonical structure', () => {
     expect(gridView.page).toBe(2)
   })
 
-  it('DataSet.fromJson() should move legacy default-view fields into views.default', () => {
-    const ds = DataSet.fromJson({
-      dataset: {
-        dataSetName: 'LegacyDS',
-        tables: {
-          Users: {
-            columns: [{ name: 'id', type: 'number', label: 'ID' }],
-            rows: [{ id: 1 }],
-            autoCurrentFirst: true,
-            autoSelectFirst: true,
-            page: 2,
-            pageSize: 50,
-          },
-        },
-      },
-    })
-
-    const data = ds.toJson()
-    const table = data.tables['Users']
-    expect(table?.views.default.rows).toEqual([{ id: 1 }])
-    expect(table?.views.default.autoCurrentFirst).toBe(true)
-    expect(table?.views.default.autoSelectFirst).toBe(true)
-    expect(table?.views.default.page).toBe(2)
-    expect(table?.views.default.pageSize).toBe(50)
-    expect((table as unknown as Record<string, unknown>)['rows']).toBeUndefined()
-    expect((table as unknown as Record<string, unknown>)['autoCurrentFirst']).toBeUndefined()
-    expect((table as unknown as Record<string, unknown>)['autoSelectFirst']).toBeUndefined()
-  })
-
   it('DataSet.fromJson() should accept direct root canonical dataset documents', () => {
     const ds = DataSet.fromJson({
       dataSetName: 'RootDS',
@@ -150,6 +121,20 @@ describe('ITableMetadata canonical structure', () => {
     expect(ds.dataSetName).toBe('RootDS')
     expect(ds.getTable('Users')?.getView('default')?.rows).toEqual([{ id: 1, _pk: 1 }])
     expect(ds.toJson().tables['Users']?.views.default.rows).toEqual([{ id: 1 }])
+  })
+
+  it('DataSet.fromJson() should reject legacy dataset wrapper shape', () => {
+    expect(() => DataSet.fromJson({
+      dataset: {
+        dataSetName: 'LegacyDS',
+        tables: {
+          Users: {
+            columns: [{ name: 'id', type: 'number', label: 'ID' }],
+            views: { default: { rows: [{ id: 1 }] } },
+          },
+        },
+      },
+    })).toThrow('不再支持 dataset 包裹结构')
   })
 })
 
@@ -203,13 +188,11 @@ describe('L4: schemaVersion in IDataSetMetadata', () => {
   })
 
   it('fromJson() should default schemaVersion to 2 when missing', () => {
-    const raw: IDataSetMetadata = {
+    const raw = {
       dataSetName: 'Old',
       tables: {},
-      version: undefined,
-      pageId: undefined,
-      // schemaVersion 未指定 — 默认按 canonical v2 处理
-    }
+      // version/pageId 未指定 — schemaVersion 默认按 canonical v2 处理
+    } satisfies Partial<IDataSetMetadata>
     const ds = DataSet.fromJson(raw)
     expect(ds.schemaVersion).toBe(2)
   })

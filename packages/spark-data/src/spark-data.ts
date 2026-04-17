@@ -25,7 +25,7 @@ export namespace SparkData {
   /**
    * 创建数据集实例。
    * 该入口只接受 canonical `IDataSetMetadata`，用于强约束建模与 fail-fast 类型校验。
-   * 原始 pagedata 对象、legacy 结构或 JSON 字符串统一走 `fromJson()`。
+    * 原始 pagedata 对象或 JSON 字符串统一走 `fromJson()`。
    * @param meta DataSet 元数据对象
    * @returns 数据集实例
    */

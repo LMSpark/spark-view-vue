@@ -18,9 +18,7 @@ export { bootstrap } from './bootstrap'
 export type { BootstrapOptions } from './types'
 
 // 插件管理系统
-/** @deprecated 使用 `createPluginRegistry()` 或 `getGlobalPluginRegistry()` 替代直接使用 PluginRegistry 类 */
 export {
-  PluginRegistry,
   PluginManager,
   createPluginRegister,
   createPluginRegistry,
@@ -61,7 +59,6 @@ export {
   createScopedLogger,
   createScopedLogger as createLogger, // Alias for convenience
   appLogger,
-  createHttpTransport,
   createBatchHttpTransport,
   configureRemoteLogger,
   addGlobalTransport,

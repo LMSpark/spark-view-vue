@@ -894,15 +894,8 @@ public class ProjectNavigationTreeService {
             node.put("context", raw.get("context"));
         }
 
-        // linkTarget: 读取新字段，兼容旧 pageType 字段
+        // linkTarget: 只读取新字段
         String linkTarget = asTrimmedString(raw.get("linkTarget"));
-        if (linkTarget.isBlank()) {
-            // 兼容: 旧数据可能仍用 pageType 存储 iframe/new-tab
-            String legacyPageType = asTrimmedString(raw.get("pageType"));
-            if ("iframe".equals(legacyPageType) || "new-tab".equals(legacyPageType)) {
-                linkTarget = legacyPageType;
-            }
-        }
 
         String childPlacement = asTrimmedString(raw.get("childPlacement"));
 
@@ -933,22 +926,12 @@ public class ProjectNavigationTreeService {
                 }
             }
             case "link" -> {
-                // 新模型: path 存外部 URL，linkTarget 区分 iframe/new-tab
-                // 兼容旧模型: externalUrl → 迁移到 path
+                // path 存外部 URL，linkTarget 区分 iframe/new-tab
                 String linkPath = asTrimmedString(raw.get("path"));
-                String legacyUrl = asTrimmedString(raw.get("externalUrl"));
-                String effectivePath = !linkPath.isBlank() ? linkPath : legacyUrl;
-                putIfNotBlank(node, "path", effectivePath);
-
-                // linkTarget 已在上方从 raw 读取（含旧 pageType 兼容）
-                // 兼容旧 linkRenderMode: 若无 linkTarget 但有旧字段，推断
-                if (linkTarget.isBlank() && !effectivePath.isBlank()) {
-                    String legacyMode = asTrimmedString(raw.get("linkRenderMode"));
-                    linkTarget = "new-tab".equals(legacyMode) ? "new-tab" : "iframe";
-                }
+                putIfNotBlank(node, "path", linkPath);
                 if (!linkTarget.isBlank()) {
                     node.put("linkTarget", linkTarget);
-                } else if (!effectivePath.isBlank()) {
+                } else if (!linkPath.isBlank()) {
                     node.put("linkTarget", "iframe");
                 }
 
@@ -965,10 +948,6 @@ public class ProjectNavigationTreeService {
                     // action 标识符不加 '/' 前缀，保持原样
                     String spPath = asTrimmedString(raw.get("path"));
                     putIfNotBlank(node, "path", spPath);
-                    // 兼容旧数据：legacy action 合并到 path（action 字段已移除）
-                    if (!node.containsKey("path")) {
-                        putIfNotBlank(node, "path", asTrimmedString(raw.get("action")));
-                    }
                 } else if ("system-action".equals(kind)) {
                     // system-action: path 是动作标识符（如 'ai-chat'），规范化为无 '/' 前缀
                     String actionPath = asTrimmedString(raw.get("path")).replaceAll("^/+", "");
@@ -1000,12 +979,9 @@ public class ProjectNavigationTreeService {
             kind = inferNodeKind(raw, id);
         }
 
-        String externalUrl = asTrimmedString(raw.get("externalUrl"));
+        String linkPath = asTrimmedString(raw.get("path"));
         String rawLinkTarget = asTrimmedString(raw.get("linkTarget"));
-        String rawPageType = asTrimmedString(raw.get("pageType"));
-        boolean isLinkByField = !rawLinkTarget.isBlank()
-                || "iframe".equals(rawPageType) || "new-tab".equals(rawPageType);
-        if ("page".equals(kind) && (!externalUrl.isBlank() || isLinkByField)) {
+        if ("page".equals(kind) && (!linkPath.isBlank() || !rawLinkTarget.isBlank())) {
             kind = "link";
         }
 
@@ -1017,10 +993,6 @@ public class ProjectNavigationTreeService {
         if ("toolbar".equals(placement) || "user-menu".equals(placement)) return "system-directory";
         String linkTarget = asTrimmedString(raw.get("linkTarget"));
         if (!linkTarget.isBlank()) return "link";
-        String pageType = asTrimmedString(raw.get("pageType"));
-        if ("iframe".equals(pageType) || "new-tab".equals(pageType)) return "link";
-        if (!asTrimmedString(raw.get("externalUrl")).isBlank()) return "link";
-        if (!asTrimmedString(raw.get("action")).isBlank()) return "system-page";
         String type = asTrimmedString(raw.get("type"));
         if ("group".equals(type)) return "module";
         return "page";
@@ -1337,39 +1309,14 @@ public class ProjectNavigationTreeService {
         node.put("refNodeKind", targetKind);
     }
 
-    /**
-     * 查找首页路径。优先 DFS 找 id="home" 的节点（向后兼容），
-     * 找不到则回退到第一个有路径的 page/system-page 节点。
-     */
+    /** 查找首页路径：取第一个有路径的 page/system-page 节点。 */
     private String findHomePath(List<Map<String, Object>> nodes) {
-        String byId = findPathByNodeId(nodes, "home");
-        if (!byId.isBlank()) return byId;
         return findFirstRoutablePath(nodes);
-    }
-
-    /** 全树 DFS 查找指定 id 的节点路径 */
-    @SuppressWarnings("unchecked")
-    private String findPathByNodeId(List<Map<String, Object>> nodes, String targetId) {
-        for (Map<String, Object> node : nodes) {
-            String nodeId = asTrimmedString(node.get("id"));
-            String path = normalizePath(asTrimmedString(node.get("path")));
-            if (targetId.equals(nodeId) && !path.isBlank()) {
-                return path;
-            }
-            Object childValue = node.get("children");
-            if (childValue instanceof List<?> childList) {
-                String childPath = findPathByNodeId((List<Map<String, Object>>) childList, targetId);
-                if (!childPath.isBlank()) {
-                    return childPath;
-                }
-            }
-        }
-        return "";
     }
 
     /**
      * 递归查找第一个可路由的页面节点路径（page 或 system-page，有非空 path）。
-     * 用于 homePath 回退，当没有 id="home" 节点时自动取首个页面。
+    * 用于 homePath 推断，自动取首个可路由页面。
      */
     @SuppressWarnings("unchecked")
     private String findFirstRoutablePath(List<Map<String, Object>> nodes) {

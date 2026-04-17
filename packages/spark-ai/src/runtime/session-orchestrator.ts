@@ -21,7 +21,8 @@
  *           → 域 stills（业务逻辑 + postValidate）
  */
 
-import type { IStillSession, StillResult, PostValidationWarning } from '../stills/types'
+import type { IStillSession, StillResult, PostValidationWarning, ExecutionBlueprint } from '../stills/types'
+import { readSessionBlueprint } from '../stills/types'
 import type { ToolCall, FcDispatchResult, ToolDefinition } from '../tool-calling'
 import { dispatchToolCall, generateToolDefinitions } from '../tool-calling'
 
@@ -153,7 +154,7 @@ export interface OrchestratorResult {
 // ═══════════════════════════════════════════════════════════
 
 /** 蓝图是否有未完成的 checkpoint */
-function hasPendingBlueprintWork(blueprint: IStillSession['blueprint']): boolean {
+function hasPendingBlueprintWork(blueprint: ExecutionBlueprint | null): boolean {
   if (blueprint === null) return false
   return blueprint.checkpoints.some(cp => cp.status !== 'done')
 }
@@ -357,7 +358,7 @@ export async function runStillsLoop(
       }
 
       // ── Step 5: 终止条件 ──
-      if (exportCompleted && !hasPendingBlueprintWork(session.blueprint)) {
+      if (exportCompleted && !hasPendingBlueprintWork(readSessionBlueprint(session))) {
         break
       }
     }

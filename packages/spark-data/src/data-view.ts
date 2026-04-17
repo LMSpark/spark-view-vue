@@ -562,7 +562,7 @@ export class DataView implements IDataSource {
 
   /** 计算列委托（立即初始化，因 dataTable setter 可能在第一次懒访问之前触发） */
   private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate(this)
-  /** 主键委托（立即初始化，因 dataTable setter 在首次懒访问前就可能调用 ensureSyntheticPk） */
+  /** 主键委托（立即初始化，因 dataTable setter 在首次懒访问前就可能触发主键列更新） */
   private _primaryKeyDelegate: PrimaryKeyDelegate = new PrimaryKeyDelegate(
     () => this._dataTable?.columns ?? [],
     () => this._columnMap,
@@ -1351,12 +1351,7 @@ export class DataView implements IDataSource {
     if (vc.treeConfig !== undefined) this.treeConfig = vc.treeConfig
     if (vc.autoLoad !== undefined) this.autoLoad = vc.autoLoad
     if (vc.autoRefresh !== undefined) this.autoRefresh = vc.autoRefresh
-    // commitMode 优先；回退到旧 autoCommit 向后兼容
-    if (vc.commitMode !== undefined) {
-      this.commitMode = vc.commitMode
-    } else if (vc.autoCommit !== undefined) {
-      this.commitMode = vc.autoCommit ? 'immediate' : 'staged'
-    }
+    if (vc.commitMode !== undefined) this.commitMode = vc.commitMode
     if (vc.valueField !== undefined) this.valueField = vc.valueField
     if (vc.labelField !== undefined) this.labelField = vc.labelField
     if (vc.selectionDelimiter !== undefined) this.selectionDelimiter = vc.selectionDelimiter

@@ -21,9 +21,6 @@ public class AiChatRequest {
     private String sessionId;
     private String feedback;
 
-    /** 前端 buildSkillPrompt() 生成的 Skill 目录（可选，追加到系统提示词） */
-    private String skillCatalog;
-
     @JsonProperty("currentFiles")
     private Map<String, String> currentFiles;
 
@@ -51,9 +48,6 @@ public class AiChatRequest {
 
     public List<LogSnapshot> getLogs() { return logs; }
     public void setLogs(List<LogSnapshot> logs) { this.logs = logs; }
-
-    public String getSkillCatalog() { return skillCatalog; }
-    public void setSkillCatalog(String skillCatalog) { this.skillCatalog = skillCatalog; }
 
     // ── 嵌套类：运行时日志快照 ───────────────────────────────────────────────
 

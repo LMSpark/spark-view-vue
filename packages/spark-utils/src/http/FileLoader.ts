@@ -387,11 +387,6 @@ export class FileLoader {
     return this.readEntry(key)?.sourceTimestamp ?? null
   }
 
-  /** @deprecated 请使用 getTimestamp() */
-  getCachedTimestamp(key: string): string | null {
-    return this.getTimestamp(key)
-  }
-
   // ==================== 内部实现 ====================
 
   /** 将已知 timestamp 包装为 params 对象，缺失时返回空对象 */

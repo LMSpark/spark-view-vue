@@ -80,11 +80,10 @@ export interface PageConfig extends PageConfigFiles {
 export interface ConfigLoaderOptions {
   /**
    * 配置源类型
-  * - 'local': 从本地 pages-config 静态目录加载（兼容 / 开发模式）
+  * - 'local': 从本地 pages-config 静态目录加载
   * - 'remote': 从服务器 pages-config API 加载
-   * - 'hybrid': 优先 remote，失败降级到 local
    */
-  source: 'local' | 'remote' | 'hybrid'
+  source: 'local' | 'remote'
   
   /**
    * 远程 API 基础路径

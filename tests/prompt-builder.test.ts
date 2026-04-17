@@ -130,7 +130,7 @@ describe('buildPageSystemPrompt', () => {
     expect(provider.getSkillPromptForTypes).not.toHaveBeenCalled()
   })
 
-  it('优先级 3：provider 无数据时使用 fallback skillCatalog', () => {
+  it('provider 无数据时回落到基础 PAGE_SYSTEM_PROMPT', () => {
     const provider: ISkillMetadataProvider = {
       getSkillPromptIndex: vi.fn().mockReturnValue(null),
       getSkillPromptForTypes: vi.fn(),
@@ -138,17 +138,14 @@ describe('buildPageSystemPrompt', () => {
     }
     const result = buildPageSystemPrompt({
       metadataProvider: provider,
-      skillCatalog: '## Fallback Catalog',
     })
 
-    expect(result).toContain(PAGE_SYSTEM_PROMPT)
-    expect(result).toContain('## Fallback Catalog')
+    expect(result).toBe(PAGE_SYSTEM_PROMPT)
   })
 
-  it('无 provider 时直接使用 fallback skillCatalog', () => {
-    const result = buildPageSystemPrompt({ skillCatalog: '## My Catalog' })
-    expect(result).toContain(PAGE_SYSTEM_PROMPT)
-    expect(result).toContain('## My Catalog')
+  it('无 provider 时返回基础 PAGE_SYSTEM_PROMPT', () => {
+    const result = buildPageSystemPrompt()
+    expect(result).toBe(PAGE_SYSTEM_PROMPT)
   })
 
   it('index 有值但 forTypes 返回空时仅追加 index', () => {

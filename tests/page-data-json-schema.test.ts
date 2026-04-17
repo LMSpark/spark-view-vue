@@ -8,31 +8,30 @@ import {
 } from '../src/views/app/dev-system/policies/pageDataJsonSchema'
 
 describe('pageDataJsonSchema', () => {
-  it('should canonicalize wrapped dataset text into root dataset metadata text', () => {
-    const result = canonicalizePageDataJson(JSON.stringify({
+  it('should reject wrapped dataset text (legacy shape)', () => {
+    expect(() => canonicalizePageDataJson(JSON.stringify({
       dataset: {
         dataSetName: 'DemoDS',
         tables: {
           Users: {
             columns: [{ name: 'id', type: 'number' }],
-            rows: [{ id: 1 }],
-            autoSelectFirst: true,
+            views: {
+              default: {
+                rows: [{ id: 1 }],
+                autoSelectFirst: true,
+              },
+            },
           },
         },
       },
-    }))
+    }))).toThrow('不再支持 dataset 包裹结构')
 
-    expect(result.value['dataSetName']).toBe('DemoDS')
-    expect(result.value['dataset']).toBeUndefined()
-    expect((result.value['tables'] as Record<string, unknown>)['Users']).toBeDefined()
-
-    const users = (result.value['tables'] as Record<string, Record<string, unknown>>)['Users']
-    if (!users) {
-      throw new Error('Users table missing in canonicalized page data')
-    }
-    expect(users['rows']).toBeUndefined()
-    expect((users['views'] as Record<string, Record<string, unknown>>)['default']?.['rows']).toEqual([{ id: 1 }])
-    expect((users['views'] as Record<string, Record<string, unknown>>)['default']?.['autoSelectFirst']).toBe(true)
+    expect(canUseStructuredPageDataEditor(JSON.stringify({
+      dataset: {
+        dataSetName: 'DemoDS',
+        tables: {},
+      },
+    }))).toBe(false)
   })
 
   it('should allow structured editor when pagedata can be canonicalized', () => {
@@ -57,7 +56,11 @@ describe('pageDataJsonSchema', () => {
       tables: {
         Users: {
           columns: [{ name: 'id', type: 'number' }],
-          rows: [{ id: 1 }],
+          views: {
+            default: {
+              rows: [{ id: 1 }],
+            },
+          },
         },
       },
     })

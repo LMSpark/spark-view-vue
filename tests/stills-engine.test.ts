@@ -17,6 +17,7 @@ import {
   createSession,
   getAllStills,
   getDataSetState,
+  getBlueprintState,
 } from '../packages/spark-ai/src/stills'
 import type { IStillSession, StillResult, DataSetDomainState } from '../packages/spark-ai/src/stills'
 
@@ -174,7 +175,7 @@ describe('blueprint stills (P1)', () => {
       ],
     })
     expectOk(r)
-    expect(session.blueprint).not.toBeNull()
+    expect(getBlueprintState(session).data).not.toBeNull()
   })
 
   it('blueprint.create rejects aggregate placeholder actions', () => {
@@ -204,7 +205,7 @@ describe('blueprint stills (P1)', () => {
     })
 
     expectOk(r)
-    const checkpoint = expectDefined(session.blueprint?.checkpoints[0])
+    const checkpoint = expectDefined(getBlueprintState(session).data?.checkpoints[0])
     expect(checkpoint.planItems[1]?.dependsOn).toEqual(['cp1.item1'])
   })
 
@@ -226,7 +227,7 @@ describe('blueprint stills (P1)', () => {
     })
 
     expectOk(r)
-    const checkpoint = expectDefined(session.blueprint?.checkpoints[0])
+    const checkpoint = expectDefined(getBlueprintState(session).data?.checkpoints[0])
     expect(checkpoint.plannedActions).toEqual(['stills.capabilities', 'blueprint.describe'])
   })
 
@@ -296,7 +297,7 @@ describe('blueprint stills (P1)', () => {
     exec('blueprint.item.advance', { completedPlanItemId: 'cp1.item1', note: '已完成 cp1.item1' })
     const r = exec('blueprint.advance', { completedCheckpointId: 'cp1' })
     expectOk(r)
-    const blueprint = expectDefined(session.blueprint)
+    const blueprint = expectDefined(getBlueprintState(session).data)
     const checkpoint = expectDefined(blueprint.checkpoints[0])
     const nextCheckpoint = expectDefined(blueprint.checkpoints[1])
     expect(checkpoint.status).toBe('done')
@@ -325,7 +326,7 @@ describe('blueprint stills (P1)', () => {
     exec('dataset.init', { dataSetName: 'TestDS' })
     const r = exec('blueprint.item.advance', { completedPlanItemId: 'cp1.item1', note: '初始化完成' })
     expectOk(r)
-    const blueprint = expectDefined(session.blueprint)
+    const blueprint = expectDefined(getBlueprintState(session).data)
     expect(blueprint.currentCheckpointId).toBe('cp1')
     expect(blueprint.currentPlanItemId).toBe('cp1.item2')
     expect(blueprint.checkpoints[0]?.planItems[0]?.status).toBe('done')
@@ -479,7 +480,7 @@ describe('blueprint stills (P1)', () => {
     })
 
     expectOk(r)
-    const checkpoint = expectDefined(session.blueprint?.checkpoints.find((item) => item.id === 'cp2'))
+    const checkpoint = expectDefined(getBlueprintState(session).data?.checkpoints.find((item) => item.id === 'cp2'))
     expect(checkpoint.plannedActions).toEqual(['datatable.create', 'relation.add', 'schema.lock'])
     expect(checkpoint.validation).toBe('核心表、关系与 schema.lock 全部完成')
     expect(checkpoint.planItems.map((planItem) => planItem.action)).toEqual([
@@ -1231,7 +1232,7 @@ describe('dataset.export & reset', () => {
     const r = exec('dataset.reset')
     expectOk(r)
     expect(datasetState().data).toBeNull()
-    expect(session.blueprint).toBeNull()
+    expect(getBlueprintState(session).data).toBeNull()
     expect(datasetState().phase).toBe('discover')
     // dataset.reset clears patchLog THEN dispatcher writes the reset entry
     // So patchLog has exactly 1 entry (the reset itself)
@@ -1468,7 +1469,7 @@ describe('full leave-system scenario (E2E)', () => {
     exec('blueprint.advance', { completedCheckpointId: 'cp6' })
 
     // Verify all checkpoints done
-    expect(session.blueprint!.checkpoints.every((cp) => cp.status === 'done')).toBe(true)
+    expect(getBlueprintState(session).data!.checkpoints.every((cp) => cp.status === 'done')).toBe(true)
 
     // Verify patchLog has entries
     expect(session.patchLog.length).toBeGreaterThan(10)

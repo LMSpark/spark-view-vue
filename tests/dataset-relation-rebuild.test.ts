@@ -5,36 +5,34 @@ import { DataSet } from '@spark-view/spark-data'
 describe('DataSet relation rebuild', () => {
   it('fromJson 在关系图就绪后补挂级联订阅', () => {
     const ds = DataSet.fromJson({
-      dataset: {
-        dataSetName: 'PageDataSet',
-        tables: {
-          Departments: {
-            columns: [{ name: 'id', type: 'number' }],
-            views: {
-              default: {
-                rows: [{ id: 1 }, { id: 2 }],
-              },
-            },
-          },
-          Employees: {
-            columns: [
-              { name: 'id', type: 'number' },
-              { name: 'deptId', type: 'number' },
-            ],
-            views: {
-              default: {
-                rows: [
-                  { id: 101, deptId: 1 },
-                  { id: 102, deptId: 2 },
-                ],
-              },
+      dataSetName: 'PageDataSet',
+      tables: {
+        Departments: {
+          columns: [{ name: 'id', type: 'number' }],
+          views: {
+            default: {
+              rows: [{ id: 1 }, { id: 2 }],
             },
           },
         },
-        tableRelations: [
-          { parentTable: 'Departments', childTable: 'Employees', childField: 'deptId' },
-        ],
+        Employees: {
+          columns: [
+            { name: 'id', type: 'number' },
+            { name: 'deptId', type: 'number' },
+          ],
+          views: {
+            default: {
+              rows: [
+                { id: 101, deptId: 1 },
+                { id: 102, deptId: 2 },
+              ],
+            },
+          },
+        },
       },
+      tableRelations: [
+        { parentTable: 'Departments', childTable: 'Employees', childField: 'deptId' },
+      ],
     })
 
     const parent = ds.getView('Departments', 'default')

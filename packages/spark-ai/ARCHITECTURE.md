@@ -237,7 +237,7 @@ src/stills/dispatcher.ts 中，executeStill(action, params, session, requestId) 
 src/stills/domain.ts 做两件事：
 
 1. registerDomain()：把 domain 写入 domain registry，并把动作批量注册到 dispatcher。
-2. createSession()：为每个已注册 domain 初始化 state，并对 session.blueprint 做兼容代理。
+2. createSession()：为每个已注册 domain 初始化 state；蓝图统一存放在 domains.blueprint.data。
 
 ### 4.3 当前动作基线
 

@@ -10,6 +10,7 @@
  */
 
 import type { MonitorContext, SessionMonitor } from '../session-orchestrator'
+import { readSessionBlueprint } from '../../stills/types'
 
 const TERMINAL_ACTIONS = new Set([
   'dataset.validate',
@@ -33,7 +34,7 @@ export function createTerminalActionsMonitor(): SessionMonitor {
       }
 
       // ── 蓝图全部完成，但未执行终局动作 → 推动 ──
-      const blueprint = ctx.session.blueprint
+      const blueprint = readSessionBlueprint(ctx.session)
       if (blueprint === null) return [] // 无蓝图，不推动
 
       const allDone = blueprint.checkpoints.every(cp => cp.status === 'done')

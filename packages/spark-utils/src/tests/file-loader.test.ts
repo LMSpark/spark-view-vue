@@ -136,7 +136,7 @@ describe('FileLoader', () => {
       
       // 检查缓存
       expect(loader.hasCache('cache-test.json')).toBe(true)
-      expect(loader.getCachedTimestamp('cache-test.json')).toBe('2024-02-11T10:00:00Z')
+      expect(loader.getTimestamp('cache-test.json')).toBe('2024-02-11T10:00:00Z')
     })
     
     it('应该在文件未修改时使用缓存（notModified 标志）', async () => {
@@ -381,8 +381,8 @@ describe('FileLoader', () => {
       // 验证缓存存在
       expect(loader.hasCache('stats1.json')).toBe(true)
       expect(loader.hasCache('stats2.json')).toBe(true)
-      expect(loader.getCachedTimestamp('stats1.json')).toBe('2024-02-11T10:00:00Z')
-      expect(loader.getCachedTimestamp('stats2.json')).toBe('2024-02-11T10:00:00Z')
+      expect(loader.getTimestamp('stats1.json')).toBe('2024-02-11T10:00:00Z')
+      expect(loader.getTimestamp('stats2.json')).toBe('2024-02-11T10:00:00Z')
     })
   })
   

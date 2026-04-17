@@ -51,6 +51,17 @@ export function canonicalizePageDataValue(rawValue: Record<string, unknown>): {
   value: Record<string, unknown>
   dataSet: DataSet
 } {
+  const wrappedDataSetCandidate = rawValue['dataset']
+  if (
+    wrappedDataSetCandidate !== null
+    && wrappedDataSetCandidate !== undefined
+    && typeof wrappedDataSetCandidate === 'object'
+    && !Array.isArray(wrappedDataSetCandidate)
+    && 'tables' in (wrappedDataSetCandidate as Record<string, unknown>)
+  ) {
+    throw new Error('pagedata.json 不再支持 dataset 包裹结构，请将 tables/dataSetName 提升到根级')
+  }
+
   const dataSet = DataSet.fromJson(rawValue)
   const value = dataSet.toJson() as unknown as Record<string, unknown>
 

@@ -131,7 +131,6 @@ export {
   STILLS_DATASET_DOMAIN,
   STILLS_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
-  STILLS_SYSTEM_PROMPT,
 } from './prompts/stills-prompts'
 export {
   buildPageSystemPrompt,

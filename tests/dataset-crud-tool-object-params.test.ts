@@ -92,7 +92,7 @@ describe('DataSetCrudTool object params', () => {
     tool.deleteDependency({ parentTable: 'Orders', childTable: 'Items' })
     expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })).toBeUndefined()
 
-    tool.deleteRelation({ selector: { parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' } })
+    tool.deleteRelation({ parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' })
     expect(tool.getRelation({ parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' })).toBeUndefined()
   })
 
