@@ -34,6 +34,7 @@
             "props": {
               "label": "姓名",
               "width": 100,
+              "filterable": true,
               "sortable": false
             }
           },
@@ -43,6 +44,7 @@
             "props": {
               "label": "部门",
               "width": 120,
+              "filterable": true,
               "sortable": true,
               "options": [
                 {
@@ -70,6 +72,7 @@
             "props": {
               "label": "职位",
               "width": 130,
+              "filterable": true,
               "sortable": true
             }
           },
@@ -79,6 +82,7 @@
             "props": {
               "label": "薪资",
               "width": 100,
+              "filterable": true,
               "sortable": true,
               "filterMode": "range"
             }
@@ -89,6 +93,7 @@
             "props": {
               "label": "状态",
               "width": 100,
+              "filterable": true,
               "sortable": true,
               "options": [
                 {
@@ -108,6 +113,7 @@
             "props": {
               "label": "入职日期",
               "width": 130,
+              "filterable": true,
               "sortable": true
             }
           },

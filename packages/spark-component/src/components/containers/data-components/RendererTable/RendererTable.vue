@@ -226,6 +226,16 @@ function childCompatProp<T>(child: SparkNode | undefined, name: string): T | und
   return raw?.[name] as T | undefined
 }
 
+function isAutoFilterCandidate(node: SparkNode): boolean {
+  if (isRowFragmentNode(node)) return false
+
+  const field = childCompatProp<unknown>(node, 'field')
+  if (typeof field !== 'string' || field.trim().length === 0) return false
+
+  const filterable = childCompatProp<unknown>(node, 'filterable')
+  return filterable === true
+}
+
 // ── row-fragment 宿主投影：将语义节点投影为 el-table-column ───────────────
 
 function isRowFragmentNode(node: SparkNode): boolean {
@@ -290,6 +300,13 @@ function createScopedRowFragmentConfig(node: SparkNode, scope: Record<string, un
 const toolbarNode = computed(() => props.toolbar ?? allChildNodes.value.find(child => child.type === 'r-toolbar'))
 const filterNode = computed(() => props.filter ?? allChildNodes.value.find(child => child.type === 'r-filter'))
 const actionsNode = computed(() => props.actions ?? allChildNodes.value.find(child => child.type === 'r-actions'))
+const explicitFilterChildren = computed(() => getSparkNodeChildren(filterNode.value?.children))
+const autoFilterChildren = computed(() => contentChildNodes.value.filter(isAutoFilterCandidate))
+const effectiveFilterChildren = computed(() =>
+  explicitFilterChildren.value.length > 0
+    ? explicitFilterChildren.value
+    : autoFilterChildren.value
+)
 const normalizedFilterNode = computed<FilterNode | undefined>(() => {
   const node = filterNode.value
   if (node?.type !== 'r-filter') return undefined
@@ -404,7 +421,7 @@ const {
   activeFilterCount,
   resetFilters,
 } = useTableFilters({
-  filterChildren: computed(() => getSparkNodeChildren(filterNode.value?.children)),
+  filterChildren: effectiveFilterChildren,
   dataView: resolvedView,
   filterClass: computed(() => childProp<string>(filterNode.value, 'class') ?? ''),
   filterGridColumns: computed(() => childProp<number>(filterNode.value, 'gridColumns') ?? 24),

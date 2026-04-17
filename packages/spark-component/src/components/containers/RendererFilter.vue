@@ -236,6 +236,9 @@ function handleToggleCollapsed() {
 }
 
 .renderer-table-filters__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   min-width: 0;
 }
 
