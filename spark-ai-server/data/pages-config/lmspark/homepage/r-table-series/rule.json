@@ -43,7 +43,8 @@
               {
                 "type": "r-toolbar",
                 "props": {
-                  "position": "top"
+                  "position": "top",
+                  "class": "orders-toolbar orders-toolbar--soft"
                 },
                 "children": [
                   {
@@ -84,7 +85,8 @@
                   {
                     "type": "r-button",
                     "props": {
-                      "label": "脚本刷新(ID)"
+                      "label": "脚本刷新(ID)",
+                      "template": "toolbar-info"
                     },
                     "on": {
                       "click": "refreshOrders"
@@ -93,7 +95,8 @@
                   {
                     "type": "r-button",
                     "props": {
-                      "label": "脚本选首行(ID)"
+                      "label": "脚本选首行(ID)",
+                      "template": "toolbar-warning"
                     },
                     "on": {
                       "click": "selectFirstOrder"
@@ -102,7 +105,8 @@
                   {
                     "type": "r-button",
                     "props": {
-                      "label": "脚本更新当前(ID)"
+                      "label": "脚本更新当前(ID)",
+                      "template": "toolbar-success"
                     },
                     "on": {
                       "click": "markCurrentOrderDone"
