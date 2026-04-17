@@ -441,6 +441,11 @@ const {
   toggleFiltersCollapsed,
 } = useRendererTableViewState({
   filterNode: normalizedFilterNode,
+  tableFilterCollapsible: computed(() => props.filterCollapsible),
+  tableFilterDefaultCollapsed: computed(() => props.filterDefaultCollapsed),
+  tableFilterAutoFitMinWidth: computed(() => props.filterAutoFitMinWidth),
+  tableFilterItemSpan: computed(() => props.filterItemSpan),
+  tableFilterActionSpan: computed(() => props.filterActionSpan),
   baseElTableProps,
   resolvedView,
   filteredRows,

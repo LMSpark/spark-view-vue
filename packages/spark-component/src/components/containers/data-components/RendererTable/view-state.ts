@@ -9,6 +9,11 @@ import type { ValueRef } from '../../../shared-types.js'
 
 interface RendererTableViewStateOptions {
   filterNode: ValueRef<FilterNode | undefined>
+  tableFilterCollapsible: ValueRef<boolean | undefined>
+  tableFilterDefaultCollapsed: ValueRef<boolean | undefined>
+  tableFilterAutoFitMinWidth: ValueRef<string | undefined>
+  tableFilterItemSpan: ValueRef<number | undefined>
+  tableFilterActionSpan: ValueRef<number | undefined>
   baseElTableProps: ValueRef<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null | undefined>
   filteredRows: ValueRef<IDataRow[] | undefined>
@@ -70,11 +75,31 @@ export function useRendererTableViewState(options: RendererTableViewStateOptions
   })
 
   // 过滤区展示态
-  const filterCollapsibleValue = computed(() => options.filterNode.value?.props?.collapsible ?? false)
-  const filterDefaultCollapsedValue = computed(() => options.filterNode.value?.props?.defaultCollapsed ?? false)
-  const filterAutoFitMinWidthValue = computed(() => options.filterNode.value?.props?.autoFitMinWidth ?? '220px')
-  const filterItemSpanValue = computed(() => options.filterNode.value?.props?.itemSpan ?? 1)
-  const filterActionSpanValue = computed(() => options.filterNode.value?.props?.actionSpan ?? filterItemSpanValue.value)
+  const filterCollapsibleValue = computed(() =>
+    options.filterNode.value?.props?.collapsible
+    ?? options.tableFilterCollapsible.value
+    ?? false,
+  )
+  const filterDefaultCollapsedValue = computed(() =>
+    options.filterNode.value?.props?.defaultCollapsed
+    ?? options.tableFilterDefaultCollapsed.value
+    ?? false,
+  )
+  const filterAutoFitMinWidthValue = computed(() =>
+    options.filterNode.value?.props?.autoFitMinWidth
+    ?? options.tableFilterAutoFitMinWidth.value
+    ?? '220px',
+  )
+  const filterItemSpanValue = computed(() =>
+    options.filterNode.value?.props?.itemSpan
+    ?? options.tableFilterItemSpan.value
+    ?? 1,
+  )
+  const filterActionSpanValue = computed(() =>
+    options.filterNode.value?.props?.actionSpan
+    ?? options.tableFilterActionSpan.value
+    ?? filterItemSpanValue.value,
+  )
 
   // 折叠状态：初始值跟随默认配置，后续可由用户交互改变
   const filtersCollapsed = ref(false)

@@ -71,7 +71,7 @@
 import { computed } from 'vue'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { SparkNode } from '../internal'
-import { SparkComponentRenderer, getSparkNodeChildren, nodeId, useSparkComponent } from '../internal'
+import { SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, useSparkComponent } from '../internal'
 import { PAGE_PERMISSION_MODE } from '../../permission'
 import RendererHostScope from './support/RendererHostScope.vue'
 import RendererFieldScope from './support/RendererFieldScope.vue'
@@ -108,7 +108,24 @@ const resolvedCollapsed = computed(() => props.collapsed ?? false)
 const resolvedGridColumns = computed(() => props.gridColumns ?? 24)
 const resolvedGridGap = computed(() => props.gridGap ?? 12)
 const resolvedGridAutoRows = computed(() => props.gridAutoRows ?? 'minmax(32px, auto)')
-const resolvedAutoFitMinWidth = computed(() => props.autoFitMinWidth ?? '220px')
+function isWideFilterConfig(config: SparkNode): boolean {
+  const filterMode = nodeInputProp(config, 'filterMode')
+  if (filterMode === 'range') return true
+  return config.type === 'r-multi-select' || config.type === 'r-date'
+}
+
+function getSmartAutoFitMinWidth(configs: SparkNode[]): string {
+  const count = configs.length
+  const hasWideField = configs.some(isWideFilterConfig)
+
+  if (count <= 1) return hasWideField ? '360px' : '320px'
+  if (count === 2) return hasWideField ? '300px' : '260px'
+  if (count === 3) return hasWideField ? '240px' : '220px'
+  if (count === 4) return hasWideField ? '220px' : '200px'
+  return hasWideField ? '210px' : '190px'
+}
+
+const resolvedAutoFitMinWidth = computed(() => props.autoFitMinWidth ?? getSmartAutoFitMinWidth(resolvedConfigs.value))
 const resolvedItemSpan = computed(() => props.itemSpan ?? 1)
 const resolvedActionSpan = computed(() => {
   const fallback = resolvedItemSpan.value
