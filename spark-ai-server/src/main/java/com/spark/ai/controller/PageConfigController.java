@@ -14,11 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 页面配置文件 REST 端点 — 按 (tenantId, projectId) 隔离。
- * SSE 事件流保持全局（/api/events）。
- *
- * <h3>文件级版本管理</h3>
- * 版本操作路径：{pageId}/{filename}/__versions/...
+ * 椤甸潰閰嶇疆鏂囦欢 REST 绔偣 鈥?鎸?(tenantId, projectId) 闅旂銆? * SSE 浜嬩欢娴佷繚鎸佸叏灞€锛?api/events锛夈€? *
+ * <h3>鏂囦欢绾х増鏈鐞?/h3>
+ * 鐗堟湰鎿嶄綔璺緞锛歿pageId}/{filename}/__versions/...
  */
 @RestController
 @RequestMapping("/api")
@@ -32,14 +30,14 @@ public class PageConfigController {
         this.sseService = sseService;
     }
 
-    // ── SSE：统一事件流（全局） ──────────────────────────────────────────────
+    // 鈹€鈹€ SSE锛氱粺涓€浜嬩欢娴侊紙鍏ㄥ眬锛?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter unifiedEvents() {
         return sseService.subscribe();
     }
 
-    // ── 页面列表 ─────────────────────────────────────────────────────────────
+    // 鈹€鈹€ 椤甸潰鍒楄〃 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/__list")
     public ResponseEntity<?> listPages(@PathVariable String tenantId,
@@ -54,7 +52,7 @@ public class PageConfigController {
         return ResponseEntity.ok(pageConfigService.checkPagesHealth(tenantId, projectId));
     }
 
-    // ── 创建页面 ─────────────────────────────────────────────────────────────
+    // 鈹€鈹€ 鍒涘缓椤甸潰 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/__create")
     public ResponseEntity<?> createPage(@PathVariable String tenantId,
@@ -70,11 +68,11 @@ public class PageConfigController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", "文件系统错误: " + e.getMessage()));
+            return ResponseEntity.internalServerError().body(Map.of("error", "鏂囦欢绯荤粺閿欒: " + e.getMessage()));
         }
     }
 
-    // ── 删除页面 ─────────────────────────────────────────────────────────────
+    // 鈹€鈹€ 鍒犻櫎椤甸潰 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @DeleteMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}")
     public ResponseEntity<?> deletePage(@PathVariable String tenantId,
@@ -87,11 +85,11 @@ public class PageConfigController {
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", "文件系统错误: " + e.getMessage()));
+            return ResponseEntity.internalServerError().body(Map.of("error", "鏂囦欢绯荤粺閿欒: " + e.getMessage()));
         }
     }
 
-    // ── 静态路由同步 ─────────────────────────────────────────────────────────
+    // 鈹€鈹€ 闈欐€佽矾鐢卞悓姝?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/__sync-routes")
     public ResponseEntity<?> syncRoutes(@PathVariable String tenantId,
@@ -106,7 +104,7 @@ public class PageConfigController {
         }
     }
 
-    // ── 读取根级配置文件（routes.json）─────────────────────────────────────────
+    // 鈹€鈹€ 璇诲彇鏍圭骇閰嶇疆鏂囦欢锛坮outes.json锛夆攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/routes.json")
     public ResponseEntity<?> getRoutes(@PathVariable String tenantId,
@@ -123,7 +121,7 @@ public class PageConfigController {
         }
     }
 
-    // ── 读取配置文件 ──────────────────────────────────────────────────────────
+    // 鈹€鈹€ 璇诲彇閰嶇疆鏂囦欢 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}")
     public ResponseEntity<?> getFile(
@@ -145,7 +143,7 @@ public class PageConfigController {
         }
     }
 
-    // ── 写入单个文件（只写磁盘，不自动升版）──────────────────────────────────
+    // 鈹€鈹€ 鍐欏叆鍗曚釜鏂囦欢锛堝彧鍐欑鐩橈紝涓嶈嚜鍔ㄥ崌鐗堬級鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @PutMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}")
     public ResponseEntity<?> putFile(
@@ -165,11 +163,10 @@ public class PageConfigController {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // 文件级版本管理
-    // ══════════════════════════════════════════════════════════════════════════
+    // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
+    // 鏂囦欢绾х増鏈鐞?    // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 
-    /** 创建文件版本快照（手动升版） */
+    /** 鍒涘缓鏂囦欢鐗堟湰蹇収锛堟墜鍔ㄥ崌鐗堬級 */
     @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions")
     public ResponseEntity<?> createFileVersion(
             @PathVariable String tenantId,
@@ -191,7 +188,7 @@ public class PageConfigController {
         }
     }
 
-    /** 查询某文件的版本列表 */
+    /** 鏌ヨ鏌愭枃浠剁殑鐗堟湰鍒楄〃 */
     @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions")
     public ResponseEntity<?> listFileVersions(
             @PathVariable String tenantId,
@@ -206,7 +203,7 @@ public class PageConfigController {
         }
     }
 
-    /** 查询某页面全部文件的版本列表 */
+    /** 鏌ヨ鏌愰〉闈㈠叏閮ㄦ枃浠剁殑鐗堟湰鍒楄〃 */
     @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__versions")
     public ResponseEntity<?> listPageFileVersions(
             @PathVariable String tenantId,
@@ -220,7 +217,7 @@ public class PageConfigController {
         }
     }
 
-    /** 读取指定版本的文件内容 */
+    /** 璇诲彇鎸囧畾鐗堟湰鐨勬枃浠跺唴瀹?*/
     @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}")
     public ResponseEntity<?> getFileVersionContent(
             @PathVariable String tenantId,
@@ -240,7 +237,7 @@ public class PageConfigController {
         }
     }
 
-    /** 恢复指定版本（覆盖工作文件） */
+    /** 鎭㈠鎸囧畾鐗堟湰锛堣鐩栧伐浣滄枃浠讹級 */
     @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}/__restore")
     public ResponseEntity<?> restoreFileVersion(
             @PathVariable String tenantId,
@@ -260,7 +257,7 @@ public class PageConfigController {
         }
     }
 
-    /** 删除指定版本 */
+    /** 鍒犻櫎鎸囧畾鐗堟湰 */
     @DeleteMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/{version}")
     public ResponseEntity<?> deleteFileVersion(
             @PathVariable String tenantId,
@@ -281,7 +278,7 @@ public class PageConfigController {
         }
     }
 
-    /** 修剪旧版本 */
+    /** 淇壀鏃х増鏈?*/
     @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}/__versions/__prune")
     public ResponseEntity<?> pruneFileVersions(
             @PathVariable String tenantId,
@@ -302,4 +299,154 @@ public class PageConfigController {
         }
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // 扁平兼容路由（/api/pages-config/**）
+    // 前端 PageConfigLoader 使用这些路由，租户 / 项目从请求头推断
+    // ══════════════════════════════════════════════════════════════════════════
+
+    private static final ResponseEntity<?> MISSING_CONTEXT = ResponseEntity.badRequest().body(
+        Map.of("error", "MISSING_CONTEXT",
+               "message", "请求头缺失 X-Tenant-Id 或 X-Project-Id，请先登录"));
+
+    private String[] resolveContext(HttpServletRequest request) {
+        String tenant = request.getHeader("X-Tenant-Id");
+        String project = request.getHeader("X-Project-Id");
+        if (tenant == null || tenant.isBlank() || project == null || project.isBlank()) {
+            return null;
+        }
+        return new String[] { tenant, project };
+    }
+
+    @PostMapping("/pages-config/__sync-routes")
+    public ResponseEntity<?> syncRoutesFlat(HttpServletRequest request,
+                                             @RequestBody List<Map<String, String>> routes) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return syncRoutes(ctx[0], ctx[1], routes);
+    }
+
+    @GetMapping("/pages-config/routes.json")
+    public ResponseEntity<?> getRoutesFlat(HttpServletRequest request,
+                                            @RequestParam(required = false) String timestamp) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return getRoutes(ctx[0], ctx[1], timestamp);
+    }
+
+    @GetMapping("/pages-config/{pageId}/{filename}")
+    public ResponseEntity<?> getFileFlat(HttpServletRequest request,
+                                          @PathVariable String pageId,
+                                          @PathVariable String filename,
+                                          @RequestParam(required = false) String timestamp) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return getFile(ctx[0], ctx[1], pageId, filename, timestamp);
+    }
+
+    @PutMapping("/pages-config/{pageId}/{filename}")
+    public ResponseEntity<?> putFileFlat(HttpServletRequest request,
+                                          @PathVariable String pageId,
+                                          @PathVariable String filename,
+                                          @RequestBody String content) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return putFile(ctx[0], ctx[1], pageId, filename, content);
+    }
+
+    @PostMapping("/pages-config/{pageId}/{filename}/__versions")
+    public ResponseEntity<?> createFileVersionFlat(HttpServletRequest request,
+                                                    @PathVariable String pageId,
+                                                    @PathVariable String filename,
+                                                    @RequestBody(required = false) Map<String, String> body) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return createFileVersion(ctx[0], ctx[1], pageId, filename, body);
+    }
+
+    @GetMapping("/pages-config/{pageId}/{filename}/__versions")
+    public ResponseEntity<?> listFileVersionsFlat(HttpServletRequest request,
+                                                   @PathVariable String pageId,
+                                                   @PathVariable String filename) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return listFileVersions(ctx[0], ctx[1], pageId, filename);
+    }
+
+    @GetMapping("/pages-config/{pageId}/__versions")
+    public ResponseEntity<?> listPageFileVersionsFlat(HttpServletRequest request,
+                                                       @PathVariable String pageId) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return listPageFileVersions(ctx[0], ctx[1], pageId);
+    }
+
+    @GetMapping("/pages-config/{pageId}/{filename}/__versions/{version}")
+    public ResponseEntity<?> getFileVersionContentFlat(HttpServletRequest request,
+                                                        @PathVariable String pageId,
+                                                        @PathVariable String filename,
+                                                        @PathVariable int version) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return getFileVersionContent(ctx[0], ctx[1], pageId, filename, version);
+    }
+
+    @PostMapping("/pages-config/{pageId}/{filename}/__versions/{version}/__restore")
+    public ResponseEntity<?> restoreFileVersionFlat(HttpServletRequest request,
+                                                     @PathVariable String pageId,
+                                                     @PathVariable String filename,
+                                                     @PathVariable int version) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return restoreFileVersion(ctx[0], ctx[1], pageId, filename, version);
+    }
+
+    @DeleteMapping("/pages-config/{pageId}/{filename}/__versions/{version}")
+    public ResponseEntity<?> deleteFileVersionFlat(HttpServletRequest request,
+                                                    @PathVariable String pageId,
+                                                    @PathVariable String filename,
+                                                    @PathVariable int version) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return deleteFileVersion(ctx[0], ctx[1], pageId, filename, version);
+    }
+
+    @PostMapping("/pages-config/{pageId}/{filename}/__versions/__prune")
+    public ResponseEntity<?> pruneFileVersionsFlat(HttpServletRequest request,
+                                                    @PathVariable String pageId,
+                                                    @PathVariable String filename,
+                                                    @RequestBody Map<String, Object> body) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return pruneFileVersions(ctx[0], ctx[1], pageId, filename, body);
+    }
+
+    @GetMapping("/pages-config/__list")
+    public ResponseEntity<?> listPagesFlat(HttpServletRequest request) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return listPages(ctx[0], ctx[1]);
+    }
+
+    @GetMapping("/pages-config/__health")
+    public ResponseEntity<?> checkPagesHealthFlat(HttpServletRequest request) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return checkPagesHealth(ctx[0], ctx[1]);
+    }
+
+    @PostMapping("/pages-config/__create")
+    public ResponseEntity<?> createPageFlat(HttpServletRequest request,
+                                             @RequestBody Map<String, String> body) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return createPage(ctx[0], ctx[1], body);
+    }
+
+    @DeleteMapping("/pages-config/{pageId}")
+    public ResponseEntity<?> deletePageFlat(HttpServletRequest request,
+                                             @PathVariable String pageId) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return deletePage(ctx[0], ctx[1], pageId);
+    }
 }

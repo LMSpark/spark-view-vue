@@ -20,6 +20,8 @@ export interface RendererFilterConfigProps extends Record<string, unknown> {
   autoFitMinWidth?: string
   /** 每个筛选项占据的栅格列数。 */
   itemSpan?: number
+  /** 操作区占据的栅格列数，默认跟随 itemSpan。 */
+  actionSpan?: number
   /** CSS Grid 列数。 */
   gridColumns?: number
   /** 栅格间距。 */
@@ -72,6 +74,8 @@ export interface RendererFilterProps {
   autoFitMinWidth?: string
   /** 每个筛选项占据的栅格列数 */
   itemSpan?: number
+  /** 操作区占据的栅格列数，默认跟随 itemSpan */
+  actionSpan?: number
   /** CSS Grid 列数 */
   gridColumns?: number
   /** 栅格间距 */

@@ -24,7 +24,7 @@
       v-else
       :label="resolvedDisplayLabel"
       :prop="resolvedFieldName"
-      :sortable="sortable"
+      :sortable="resolvedSortable"
       :width="width"
       :min-width="minWidth"
       :fixed="fixed"
@@ -157,9 +157,9 @@ const resolvedShouldRenderCurrentField = computed(() => props.shouldRenderCurren
 const resolvedCurrentDisplayValue = computed(() => props.currentDisplayValue ?? '')
 const resolvedValidationRules = computed<FormItemRule[]>(() => props.validationRules ?? [])
 
-const resolvedTitleAlign = computed(() => props.titleAlign ?? 'left')
-const resolvedHeaderAlign = computed(() => props.headerAlign ?? resolvedTitleAlign.value)
+const resolvedHeaderAlign = computed(() => props.headerAlign ?? 'center')
 const resolvedValueAlign = computed(() => props.align ?? props.valueAlign ?? 'left')
+const resolvedSortable = computed<boolean | 'custom'>(() => props.sortable ?? true)
 
 const tableHeaderClassName = computed(() => props.headerCellClassName ?? `spark-col-header--${resolvedHeaderAlign.value}`)
 

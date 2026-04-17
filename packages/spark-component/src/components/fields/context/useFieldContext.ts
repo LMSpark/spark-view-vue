@@ -16,6 +16,7 @@ export interface FieldContextProps {
   cellClassName?: string
   titleClassName?: string
   valueClassName?: string
+  sortable: boolean | 'custom'
   mergedChildren: SparkNode[]
   isCurrentFieldHidden: boolean
   shouldRenderCurrentField: boolean
@@ -45,6 +46,7 @@ type FieldContextInputProps = OptionalWithUndefined<Pick<SparkFieldProps,
   | 'titleAlign' | 'valueAlign'
   | 'headerCellClassName' | 'cellClassName'
   | 'titleClassName' | 'valueClassName'
+  | 'sortable'
 >> & {
   type: string
 }
@@ -70,6 +72,7 @@ export function useFieldContext(
       ...(fieldProps.cellClassName !== undefined && { cellClassName: fieldProps.cellClassName }),
       ...(fieldProps.titleClassName !== undefined && { titleClassName: fieldProps.titleClassName }),
       ...(fieldProps.valueClassName !== undefined && { valueClassName: fieldProps.valueClassName }),
+      sortable: fieldProps.sortable ?? true,
       mergedChildren: mergedChildren.value,
       isCurrentFieldHidden: permission.isCurrentFieldHidden.value,
       shouldRenderCurrentField: permission.shouldRenderCurrentField.value,

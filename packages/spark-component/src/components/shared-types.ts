@@ -209,6 +209,13 @@ export interface SparkFieldSemanticProps<TValue = unknown> {
    * 详情/表格值区 CSS 类名。
    */
   valueClassName?: string
+  /**
+   * 是否允许排序。
+   * - true: 前端排序
+   * - 'custom': 服务端排序
+   * - false: 禁用排序
+   */
+  sortable?: boolean | 'custom'
 }
 
 /**

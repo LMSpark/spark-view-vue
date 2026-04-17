@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-17T06:51:11.459Z",
+  "buildTime": "2026-04-17T11:51:35.476Z",
   "componentCount": 107,
   "registry": {
     "containers": [
@@ -94,14 +94,14 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
           "description": "标题对齐"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
           "description": "值对齐"
@@ -321,7 +321,7 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\" | undefined",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式"
@@ -806,7 +806,7 @@
         },
         {
           "name": "shadow",
-          "type": "\"always\" | \"hover\" | \"never\" | undefined",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"always\"",
           "description": "阴影显示策略"
@@ -1046,7 +1046,7 @@
         },
         {
           "name": "contentPosition",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"center\"",
           "description": "文本位置（横向模式）"
@@ -1171,7 +1171,7 @@
         },
         {
           "name": "trigger",
-          "type": "\"click\" | \"hover\" | \"contextmenu\" | undefined",
+          "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式"
@@ -1440,7 +1440,7 @@
         },
         {
           "name": "trigger",
-          "type": "\"click\" | \"hover\" | \"contextmenu\" | \"focus\" | undefined",
+          "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。"
@@ -1566,7 +1566,7 @@
         },
         {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\" | undefined",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
@@ -2210,6 +2210,12 @@
           "type": "number | undefined",
           "required": false,
           "description": "每个筛选项占据的栅格列数"
+        },
+        {
+          "name": "actionSpan",
+          "type": "number | undefined",
+          "required": false,
+          "description": "操作区占据的栅格列数，默认跟随 itemSpan"
         },
         {
           "name": "gridColumns",
@@ -3275,13 +3281,13 @@
         },
         {
           "name": "labelAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "标签对齐方式"
         },
         {
           "name": "contentAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "内容对齐方式"
         },
@@ -3648,13 +3654,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -3799,13 +3805,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -3955,13 +3961,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4095,13 +4101,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4257,13 +4263,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4396,13 +4402,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4708,13 +4714,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -4873,13 +4879,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5013,13 +5019,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5132,13 +5138,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5289,13 +5295,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5440,13 +5446,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5610,13 +5616,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5781,13 +5787,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -5915,13 +5921,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6221,13 +6227,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6363,13 +6369,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6518,13 +6524,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6691,13 +6697,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6833,13 +6839,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -6959,13 +6965,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7057,13 +7063,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7176,13 +7182,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7325,13 +7331,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7458,13 +7464,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7620,13 +7626,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7808,13 +7814,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -7986,13 +7992,13 @@
         },
         {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
         {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
@@ -8912,14 +8918,14 @@
         },
         "prop_00002": {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
           "description": "标题对齐"
         },
         "prop_00003": {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
           "description": "值对齐"
@@ -9058,7 +9064,7 @@
         },
         "prop_00024": {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\" | undefined",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "卡片阴影模式"
@@ -9352,7 +9358,7 @@
         },
         "prop_00071": {
           "name": "shadow",
-          "type": "\"always\" | \"hover\" | \"never\" | undefined",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"always\"",
           "description": "阴影显示策略"
@@ -9514,7 +9520,7 @@
         },
         "prop_00097": {
           "name": "contentPosition",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"center\"",
           "description": "文本位置（横向模式）"
@@ -9540,7 +9546,7 @@
         },
         "prop_00101": {
           "name": "trigger",
-          "type": "\"click\" | \"hover\" | \"contextmenu\" | undefined",
+          "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
           "description": "触发方式"
@@ -9741,7 +9747,7 @@
         },
         "prop_00132": {
           "name": "trigger",
-          "type": "\"click\" | \"hover\" | \"contextmenu\" | \"focus\" | undefined",
+          "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
           "description": "浮层触发方式。"
@@ -9803,7 +9809,7 @@
         },
         "prop_00141": {
           "name": "cardShadow",
-          "type": "\"always\" | \"hover\" | \"never\" | undefined",
+          "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"never\"",
           "description": "卡片阴影模式"
@@ -10175,2443 +10181,2449 @@
           "description": "每个筛选项占据的栅格列数"
         },
         "prop_00200": {
+          "name": "actionSpan",
+          "type": "number | undefined",
+          "required": false,
+          "description": "操作区占据的栅格列数，默认跟随 itemSpan"
+        },
+        "prop_00201": {
           "name": "gridColumns",
           "type": "number | undefined",
           "required": false,
           "description": "CSS Grid 列数"
         },
-        "prop_00201": {
+        "prop_00202": {
           "name": "searchAction",
           "type": "(() => void | Promise<void>) | undefined",
           "required": false,
           "description": "搜索动作回调"
         },
-        "prop_00202": {
+        "prop_00203": {
           "name": "resetAction",
           "type": "(() => void | Promise<void>) | undefined",
           "required": false,
           "description": "重置动作回调"
         },
-        "prop_00203": {
+        "prop_00204": {
           "name": "toggleCollapsedAction",
           "type": "(() => void) | undefined",
           "required": false,
           "description": "折叠切换动作回调"
         },
-        "prop_00204": {
+        "prop_00205": {
           "name": "width",
           "type": "string | number | undefined",
           "required": false,
           "description": "页脚宽度"
         },
-        "prop_00205": {
+        "prop_00206": {
           "name": "width",
           "type": "string | number | undefined",
           "required": false,
           "description": "页头宽度"
         },
-        "prop_00206": {
+        "prop_00207": {
           "name": "width",
           "type": "string | number | undefined",
           "required": false,
           "description": "尾部区域宽度"
         },
-        "prop_00207": {
+        "prop_00208": {
           "name": "avatarSize",
           "type": "number | \"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸"
         },
-        "prop_00208": {
+        "prop_00209": {
           "name": "shape",
           "type": "\"circle\" | \"square\" | undefined",
           "required": false,
           "default": "\"circle\"",
           "description": "头像形状"
         },
-        "prop_00209": {
+        "prop_00210": {
           "name": "src",
           "type": "string | undefined",
           "required": false,
           "description": "图片地址"
         },
-        "prop_00210": {
+        "prop_00211": {
           "name": "srcSet",
           "type": "string | undefined",
           "required": false,
           "description": "响应式图像集合"
         },
-        "prop_00211": {
+        "prop_00212": {
           "name": "alt",
           "type": "string | undefined",
           "required": false,
           "description": "图片替代文本"
         },
-        "prop_00212": {
+        "prop_00213": {
           "name": "fit",
           "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" | undefined",
           "required": false,
           "default": "\"cover\"",
           "description": "图片填充方式"
         },
-        "prop_00213": {
+        "prop_00214": {
           "name": "text",
           "type": "string | undefined",
           "required": false,
           "description": "文本头像内容"
         },
-        "prop_00214": {
+        "prop_00215": {
           "name": "value",
           "type": "string | undefined",
           "required": false,
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
-        "prop_00215": {
+        "prop_00216": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "description": "数据字段绑定键。\n\n常见语义是从当前上下文数据中读取 `currentRow[field]`，\n用于详情展示、只读文本渲染或行内展示等场景。"
         },
-        "prop_00216": {
+        "prop_00217": {
           "name": "badgeValue",
           "type": "string | number | undefined",
           "required": false,
           "description": "徽标显示值（优先使用该字段渲染角标）。"
         },
-        "prop_00217": {
+        "prop_00218": {
           "name": "max",
           "type": "number | undefined",
           "required": false,
           "default": "99",
           "description": "徽标的最大显示阈值；超出后按 `99+` 这类形式展示。"
         },
-        "prop_00218": {
+        "prop_00219": {
           "name": "isDot",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否仅显示小红点。"
         },
-        "prop_00219": {
+        "prop_00220": {
           "name": "hiddenBadge",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否隐藏徽标。"
         },
-        "prop_00220": {
+        "prop_00221": {
           "name": "badgeType",
           "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。"
         },
-        "prop_00221": {
+        "prop_00222": {
           "name": "showZero",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "值为 0 时是否仍显示徽标。"
         },
-        "prop_00222": {
+        "prop_00223": {
           "name": "color",
           "type": "string | undefined",
           "required": false,
           "description": "自定义徽标颜色。"
         },
-        "prop_00223": {
+        "prop_00224": {
           "name": "offset",
           "type": "[number, number] | undefined",
           "required": false,
           "description": "徽标偏移量 [x, y]。"
         },
-        "prop_00224": {
+        "prop_00225": {
           "name": "badgeStyle",
           "type": "object | undefined",
           "required": false,
           "description": "徽标内联样式对象。"
         },
-        "prop_00225": {
+        "prop_00226": {
           "name": "badgeClass",
           "type": "string | undefined",
           "required": false,
           "description": "徽标附加 class。"
         },
-        "prop_00226": {
+        "prop_00227": {
           "name": "value",
           "type": "string | number | undefined",
           "required": false,
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
-        "prop_00227": {
+        "prop_00228": {
           "name": "src",
           "type": "string | undefined",
           "required": false,
           "description": "图片 URL（静态传入）。"
         },
-        "prop_00228": {
+        "prop_00229": {
           "name": "fit",
           "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" | undefined",
           "required": false,
           "default": "\"cover\"",
           "description": "图片适应模式"
         },
-        "prop_00229": {
+        "prop_00230": {
           "name": "alt",
           "type": "string | undefined",
           "required": false,
           "description": "替代文本"
         },
-        "prop_00230": {
+        "prop_00231": {
           "name": "lazy",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否懒加载"
         },
-        "prop_00231": {
+        "prop_00232": {
           "name": "previewSrcList",
           "type": "string[] | undefined",
           "required": false,
           "description": "预览图列表（静态传入）"
         },
-        "prop_00232": {
+        "prop_00233": {
           "name": "previewField",
           "type": "string | undefined",
           "required": false,
           "description": "预览图字段名（从当前行读取数组）"
         },
-        "prop_00233": {
+        "prop_00234": {
           "name": "initialIndex",
           "type": "number | undefined",
           "required": false,
           "default": "0",
           "description": "初始预览索引"
         },
-        "prop_00234": {
+        "prop_00235": {
           "name": "zIndex",
           "type": "number | undefined",
           "required": false,
           "description": "预览层级"
         },
-        "prop_00235": {
+        "prop_00236": {
           "name": "hideOnClickModal",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "点击蒙层关闭预览"
         },
-        "prop_00236": {
+        "prop_00237": {
           "name": "previewTeleported",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "预览传送至 body"
         },
-        "prop_00237": {
+        "prop_00238": {
           "name": "closeOnPressEscape",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "ESC 关闭预览"
         },
-        "prop_00238": {
+        "prop_00239": {
           "name": "width",
           "type": "string | number | undefined",
           "required": false,
           "description": "图片宽度"
         },
-        "prop_00239": {
+        "prop_00240": {
           "name": "height",
           "type": "string | number | undefined",
           "required": false,
           "description": "图片高度"
         },
-        "prop_00240": {
+        "prop_00241": {
           "name": "total",
           "type": "number | undefined",
           "required": false,
           "description": "总条数"
         },
-        "prop_00241": {
+        "prop_00242": {
           "name": "pageSize",
           "type": "number | undefined",
           "required": false,
           "default": "10",
           "description": "每页条数"
         },
-        "prop_00242": {
+        "prop_00243": {
           "name": "currentPage",
           "type": "number | undefined",
           "required": false,
           "default": "1",
           "description": "当前页"
         },
-        "prop_00243": {
+        "prop_00244": {
           "name": "pageSizes",
           "type": "number[] | undefined",
           "required": false,
           "default": "[10, 20, 50, 100]",
           "description": "每页条数选项"
         },
-        "prop_00244": {
+        "prop_00245": {
           "name": "pagerCount",
           "type": "number | undefined",
           "required": false,
           "default": "7",
           "description": "页码按钮数量"
         },
-        "prop_00245": {
+        "prop_00246": {
           "name": "layout",
           "type": "string | undefined",
           "required": false,
           "default": "\"total, sizes, prev, pager, next, jumper\"",
           "description": "布局模板"
         },
-        "prop_00246": {
+        "prop_00247": {
           "name": "background",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示背景"
         },
-        "prop_00247": {
+        "prop_00248": {
           "name": "small",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否小尺寸"
         },
-        "prop_00248": {
+        "prop_00249": {
           "name": "hideOnSinglePage",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "单页时是否隐藏"
         },
-        "prop_00249": {
+        "prop_00250": {
           "name": "percentage",
           "type": "number | undefined",
           "required": false,
           "description": "百分比值（优先级高于 value/field）"
         },
-        "prop_00250": {
+        "prop_00251": {
           "name": "progressType",
           "type": "\"circle\" | \"line\" | \"dashboard\" | undefined",
           "required": false,
           "default": "\"line\"",
           "description": "进度条类型"
         },
-        "prop_00251": {
+        "prop_00252": {
           "name": "strokeWidth",
           "type": "number | undefined",
           "required": false,
           "default": "6",
           "description": "线宽"
         },
-        "prop_00252": {
+        "prop_00253": {
           "name": "textInside",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "线形时文本是否内嵌"
         },
-        "prop_00253": {
+        "prop_00254": {
           "name": "status",
           "type": "\"success\" | \"warning\" | \"exception\" | undefined",
           "required": false,
           "description": "状态"
         },
-        "prop_00254": {
+        "prop_00255": {
           "name": "indeterminate",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否不确定进度"
         },
-        "prop_00255": {
+        "prop_00256": {
           "name": "duration",
           "type": "number | undefined",
           "required": false,
           "default": "3",
           "description": "动画时长（毫秒）"
         },
-        "prop_00256": {
+        "prop_00257": {
           "name": "color",
           "type": "ProgressColor | undefined",
           "required": false,
           "description": "进度色"
         },
-        "prop_00257": {
+        "prop_00258": {
           "name": "circleWidth",
           "type": "number | undefined",
           "required": false,
           "description": "圆形进度宽度"
         },
-        "prop_00258": {
+        "prop_00259": {
           "name": "showText",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示文本"
         },
-        "prop_00259": {
+        "prop_00260": {
           "name": "strokeLinecap",
           "type": "\"round\" | \"square\" | \"butt\" | undefined",
           "required": false,
           "default": "\"round\"",
           "description": "线帽样式"
         },
-        "prop_00260": {
+        "prop_00261": {
           "name": "formatText",
           "type": "string | undefined",
           "required": false,
           "description": "文本模板"
         },
-        "prop_00261": {
+        "prop_00262": {
           "name": "value",
           "type": "number | undefined",
           "required": false,
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
-        "prop_00262": {
+        "prop_00263": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "description": "统计标题"
         },
-        "prop_00263": {
+        "prop_00264": {
           "name": "dataKey",
           "type": "string | undefined",
           "required": false,
           "description": "数据绑定键（值级绑定）"
         },
-        "prop_00264": {
+        "prop_00265": {
           "name": "precision",
           "type": "number | undefined",
           "required": false,
           "default": "0",
           "description": "小数精度"
         },
-        "prop_00265": {
+        "prop_00266": {
           "name": "decimalSeparator",
           "type": "string | undefined",
           "required": false,
           "default": "\".\"",
           "description": "小数分隔符"
         },
-        "prop_00266": {
+        "prop_00267": {
           "name": "groupSeparator",
           "type": "string | undefined",
           "required": false,
           "default": "\",\"",
           "description": "千分位分隔符"
         },
-        "prop_00267": {
+        "prop_00268": {
           "name": "prefix",
           "type": "string | undefined",
           "required": false,
           "description": "前缀"
         },
-        "prop_00268": {
+        "prop_00269": {
           "name": "suffix",
           "type": "string | undefined",
           "required": false,
           "description": "后缀"
         },
-        "prop_00269": {
+        "prop_00270": {
           "name": "valueStyle",
           "type": "string | Record<string, unknown> | undefined",
           "required": false,
           "description": "数值样式"
         },
-        "prop_00270": {
+        "prop_00271": {
           "name": "content",
           "type": "string | undefined",
           "required": false,
           "description": "显式内容，优先级高于 value/field"
         },
-        "prop_00271": {
+        "prop_00272": {
           "name": "tagType",
           "type": "\"\" | TagType | undefined",
           "required": false,
           "description": "标签类型"
         },
-        "prop_00272": {
+        "prop_00273": {
           "name": "dynamicType",
           "type": "Record<string, \"\" | TagType> | undefined",
           "required": false,
           "description": "动态类型映射（按值命中）"
         },
-        "prop_00273": {
+        "prop_00274": {
           "name": "closable",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否可关闭"
         },
-        "prop_00274": {
+        "prop_00275": {
           "name": "disableTransitions",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否禁用过渡动画"
         },
-        "prop_00275": {
+        "prop_00276": {
           "name": "hit",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否描边"
         },
-        "prop_00276": {
+        "prop_00277": {
           "name": "round",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否圆角"
         },
-        "prop_00277": {
+        "prop_00278": {
           "name": "size",
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸"
         },
-        "prop_00278": {
+        "prop_00279": {
           "name": "effect",
           "type": "\"plain\" | \"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
           "description": "视觉效果"
         },
-        "prop_00279": {
+        "prop_00280": {
           "name": "tag",
           "type": "string | undefined",
           "required": false,
           "default": "\"span\"",
           "description": "包裹标签名，如 span/div"
         },
-        "prop_00280": {
+        "prop_00281": {
           "name": "format",
           "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
           "required": false,
           "description": "格式化方式"
         },
-        "prop_00281": {
+        "prop_00282": {
           "name": "precision",
           "type": "number | undefined",
           "required": false,
           "default": "2",
           "description": "小数精度"
         },
-        "prop_00282": {
+        "prop_00283": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"-\"",
           "description": "空值占位文本"
         },
-        "prop_00283": {
+        "prop_00284": {
           "name": "textClass",
           "type": "string | undefined",
           "required": false,
           "description": "文本 class"
         },
-        "prop_00284": {
+        "prop_00285": {
           "name": "textStyle",
           "type": "string | Record<string, unknown> | undefined",
           "required": false,
           "description": "文本样式"
         },
-        "prop_00285": {
+        "prop_00286": {
           "name": "value",
           "type": "unknown",
           "required": false,
           "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
         },
-        "prop_00286": {
+        "prop_00287": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "description": "标题"
         },
-        "prop_00287": {
+        "prop_00288": {
           "name": "description",
           "type": "string | undefined",
           "required": false,
           "description": "描述文本"
         },
-        "prop_00288": {
+        "prop_00289": {
           "name": "alertType",
           "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "提示类型"
         },
-        "prop_00289": {
+        "prop_00290": {
           "name": "closable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否可关闭"
         },
-        "prop_00290": {
+        "prop_00291": {
           "name": "closeText",
           "type": "string | undefined",
           "required": false,
           "description": "关闭按钮文本"
         },
-        "prop_00291": {
+        "prop_00292": {
           "name": "center",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否居中"
         },
-        "prop_00292": {
+        "prop_00293": {
           "name": "showIcon",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否显示图标"
         },
-        "prop_00293": {
+        "prop_00294": {
           "name": "effect",
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
           "description": "主题效果"
         },
-        "prop_00294": {
+        "prop_00295": {
           "name": "separator",
           "type": "string | undefined",
           "required": false,
           "default": "\"/\"",
           "description": "分隔符文本，例如 `/` 或 `>`"
         },
-        "prop_00295": {
+        "prop_00296": {
           "name": "separatorIcon",
           "type": "string | undefined",
           "required": false,
           "description": "分隔符图标名，优先级高于 separator 文本"
         },
-        "prop_00296": {
+        "prop_00297": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "description": "面包屑文本"
         },
-        "prop_00297": {
+        "prop_00298": {
           "name": "to",
           "type": "string | object | undefined",
           "required": false,
           "description": "跳转目标（路径或路由对象）"
         },
-        "prop_00298": {
+        "prop_00299": {
           "name": "replace",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否替换当前历史记录"
         },
-        "prop_00299": {
+        "prop_00300": {
           "name": "value",
           "type": "Date | undefined",
           "required": false,
           "description": "当前日期"
         },
-        "prop_00300": {
+        "prop_00301": {
           "name": "range",
           "type": "[Date, Date] | undefined",
           "required": false,
           "description": "日期范围 [start, end]"
         },
-        "prop_00301": {
+        "prop_00302": {
           "name": "value",
           "type": "number | Date | undefined",
           "required": false,
           "description": "目标时间（时间戳或 Date）"
         },
-        "prop_00302": {
+        "prop_00303": {
           "name": "format",
           "type": "string | undefined",
           "required": false,
           "default": "\"HH:mm:ss\"",
           "description": "格式化字符串，如 HH:mm:ss"
         },
-        "prop_00303": {
+        "prop_00304": {
           "name": "prefix",
           "type": "string | undefined",
           "required": false,
           "description": "前缀文本"
         },
-        "prop_00304": {
+        "prop_00305": {
           "name": "suffix",
           "type": "string | undefined",
           "required": false,
           "description": "后缀文本"
         },
-        "prop_00305": {
+        "prop_00306": {
           "name": "valueStyle",
           "type": "CSSProperties | undefined",
           "required": false,
           "description": "值样式"
         },
-        "prop_00306": {
+        "prop_00307": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "description": "描述列表标题"
         },
-        "prop_00307": {
+        "prop_00308": {
           "name": "extra",
           "type": "string | undefined",
           "required": false,
           "description": "操作区附加内容"
         },
-        "prop_00308": {
+        "prop_00309": {
           "name": "border",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否显示边框"
         },
-        "prop_00309": {
+        "prop_00310": {
           "name": "column",
           "type": "number | undefined",
           "required": false,
           "default": "3",
           "description": "每行展示的描述列数"
         },
-        "prop_00310": {
+        "prop_00311": {
           "name": "direction",
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"horizontal\"",
           "description": "排列方向"
         },
-        "prop_00311": {
+        "prop_00312": {
           "name": "descriptionsSize",
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸"
         },
-        "prop_00312": {
+        "prop_00313": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "description": "描述项标签文本"
         },
-        "prop_00313": {
+        "prop_00314": {
           "name": "span",
           "type": "number | undefined",
           "required": false,
           "default": "1",
           "description": "该项占据的列数"
         },
-        "prop_00314": {
+        "prop_00315": {
           "name": "labelAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "标签对齐方式"
         },
-        "prop_00315": {
+        "prop_00316": {
           "name": "contentAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "内容对齐方式"
         },
-        "prop_00316": {
+        "prop_00317": {
           "name": "labelClassName",
           "type": "string | undefined",
           "required": false,
           "description": "标签自定义 class"
         },
-        "prop_00317": {
+        "prop_00318": {
           "name": "className",
           "type": "string | undefined",
           "required": false,
           "description": "内容自定义 class"
         },
-        "prop_00318": {
+        "prop_00319": {
           "name": "content",
           "type": "string | undefined",
           "required": false,
           "description": "显式内容文本"
         },
-        "prop_00319": {
+        "prop_00320": {
           "name": "value",
           "type": "unknown",
           "required": false,
           "description": "显式展示值"
         },
-        "prop_00320": {
+        "prop_00321": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "description": "数据字段绑定键"
         },
-        "prop_00321": {
+        "prop_00322": {
           "name": "image",
           "type": "string | undefined",
           "required": false,
           "description": "空状态图片地址"
         },
-        "prop_00322": {
+        "prop_00323": {
           "name": "imageSize",
           "type": "number | undefined",
           "required": false,
           "description": "图片尺寸（像素）"
         },
-        "prop_00323": {
+        "prop_00324": {
           "name": "description",
           "type": "string | undefined",
           "required": false,
           "description": "空状态描述文案"
         },
-        "prop_00324": {
+        "prop_00325": {
           "name": "icon",
           "type": "string | undefined",
           "required": false,
           "description": "图标名称（由项目图标注册表解析）"
         },
-        "prop_00325": {
+        "prop_00326": {
           "name": "iconSize",
           "type": "string | number | undefined",
           "required": false,
           "description": "图标大小"
         },
-        "prop_00326": {
+        "prop_00327": {
           "name": "color",
           "type": "string | undefined",
           "required": false,
           "description": "图标颜色"
         },
-        "prop_00327": {
+        "prop_00328": {
           "name": "icon",
           "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型"
         },
-        "prop_00328": {
+        "prop_00329": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "description": "结果标题"
         },
-        "prop_00329": {
+        "prop_00330": {
           "name": "subTitle",
           "type": "string | undefined",
           "required": false,
           "description": "结果副标题"
         },
-        "prop_00330": {
+        "prop_00331": {
           "name": "rows",
           "type": "number | undefined",
           "required": false,
           "default": "3",
           "description": "骨架屏段落行数"
         },
-        "prop_00331": {
+        "prop_00332": {
           "name": "count",
           "type": "number | undefined",
           "required": false,
           "default": "1",
           "description": "渲染骨架屏的重复次数"
         },
-        "prop_00332": {
+        "prop_00333": {
           "name": "loading",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否处于加载状态"
         },
-        "prop_00333": {
+        "prop_00334": {
           "name": "animated",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否启用动画效果"
         },
-        "prop_00334": {
+        "prop_00335": {
           "name": "throttle",
           "type": "number | undefined",
           "required": false,
           "default": "0",
           "description": "节流延迟（毫秒），低于该时长不显示骨架屏"
         },
-        "prop_00335": {
+        "prop_00336": {
           "name": "timestamp",
           "type": "string | undefined",
           "required": false,
           "description": "时间戳文本"
         },
-        "prop_00336": {
+        "prop_00337": {
           "name": "hideTimestamp",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否隐藏时间戳"
         },
-        "prop_00337": {
+        "prop_00338": {
           "name": "center",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否垂直居中"
         },
-        "prop_00338": {
+        "prop_00339": {
           "name": "placement",
           "type": "\"bottom\" | \"top\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "时间戳位置"
         },
-        "prop_00339": {
+        "prop_00340": {
           "name": "itemType",
           "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型"
         },
-        "prop_00340": {
+        "prop_00341": {
           "name": "color",
           "type": "string | undefined",
           "required": false,
           "description": "节点颜色"
         },
-        "prop_00341": {
+        "prop_00342": {
           "name": "itemSize",
           "type": "\"large\" | \"normal\" | undefined",
           "required": false,
           "default": "\"normal\"",
           "description": "节点尺寸"
         },
-        "prop_00342": {
+        "prop_00343": {
           "name": "hollow",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否空心节点"
         },
-        "prop_00343": {
+        "prop_00344": {
           "name": "content",
           "type": "string | undefined",
           "required": false,
           "description": "内容文本"
         },
-        "prop_00344": {
+        "prop_00345": {
           "name": "fetchSuggestions",
           "type": "((queryString: string, cb: FetchSuggestionsCallback) => void) | undefined",
           "required": false,
           "description": "弹出建议面板前是否先基于当前焦点触发一次拉取。"
         },
-        "prop_00345": {
+        "prop_00346": {
           "name": "triggerOnFocus",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "获得焦点时是否立即触发建议查询。"
         },
-        "prop_00346": {
+        "prop_00347": {
           "name": "highlightFirstItem",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否默认高亮第一条候选项。"
         },
-        "prop_00347": {
+        "prop_00348": {
           "name": "valueKey",
           "type": "string | undefined",
           "required": false,
           "default": "\"value\"",
           "description": "建议项中作为展示值的字段名。"
         },
-        "prop_00348": {
+        "prop_00349": {
           "name": "width",
           "type": "number | undefined",
           "required": false,
           "description": "字段宽度。\n\n主要用于输入类、选择类、文件类字段的控件宽度控制。\n这里统一约定为数值宽度，由具体组件决定如何映射到样式层。"
         },
-        "prop_00349": {
+        "prop_00350": {
           "name": "clearable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
-        "prop_00350": {
+        "prop_00351": {
           "name": "value",
           "type": "string | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00351": {
+        "prop_00352": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "description": "字段绑定名。\n\n常见语义是从当前上下文数据中读取 `currentRow[field]`，\n也可作为表单写回、明细展示、列渲染时的字段定位键。"
         },
-        "prop_00352": {
+        "prop_00353": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "description": "展示标签。\n常用于表单项标题、详情项名称、字段说明等“人类可读”的字段名展示。"
         },
-        "prop_00353": {
+        "prop_00354": {
           "name": "readonly",
           "type": "boolean | undefined",
           "required": false,
           "description": "只读状态。\n\n表示组件仍可见、通常仍参与布局，但不允许用户修改值；\n它与完全禁用或隐藏是不同层级的语义。"
         },
-        "prop_00354": {
+        "prop_00355": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u8BF7\\u8F93\\u5165\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00355": {
+        "prop_00356": {
           "name": "onChange",
           "type": "((...args: unknown[]) => void | Promise<void>) | undefined",
           "required": false,
           "description": "字段值变更回调。\n\n统一由字段控制层透传给事件分发器，替代隐式监听提取。"
         },
-        "prop_00356": {
+        "prop_00357": {
           "name": "titleAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
         },
-        "prop_00357": {
+        "prop_00358": {
           "name": "valueAlign",
-          "type": "\"center\" | \"left\" | \"right\" | undefined",
+          "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
         },
-        "prop_00358": {
+        "prop_00359": {
           "name": "headerCellClassName",
           "type": "string | undefined",
           "required": false,
           "description": "表格表头单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `label-class-name`。"
         },
-        "prop_00359": {
+        "prop_00360": {
           "name": "cellClassName",
           "type": "string | undefined",
           "required": false,
           "description": "表格单元格 CSS 类名。\n直接映射到 `el-table-column` 的 `class-name`。"
         },
-        "prop_00360": {
+        "prop_00361": {
           "name": "titleClassName",
           "type": "string | undefined",
           "required": false,
           "description": "详情/表单标题 CSS 类名。"
         },
-        "prop_00361": {
+        "prop_00362": {
           "name": "valueClassName",
           "type": "string | undefined",
           "required": false,
           "description": "详情/表格值区 CSS 类名。"
         },
-        "prop_00362": {
+        "prop_00363": {
           "name": "emitPath",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "选中结果是否保留完整路径。"
         },
-        "prop_00363": {
+        "prop_00364": {
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
           "description": "选项绑定键。\n\n通常指向某个 DataView 的行集，例如 `Categories@rows`，\n组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。"
         },
-        "prop_00364": {
+        "prop_00365": {
           "name": "valueSeparator",
           "type": "string | undefined",
           "required": false,
           "description": "值分隔符。\n\n当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，\n使用该分隔符把多个候选值序列化到主字段中。\n\n示例：\n- 当前选中值为 `[101, 102]`\n- `valueSeparator` 为 `,`\n- 最终写入 `field` 为 `101,102`"
         },
-        "prop_00365": {
+        "prop_00366": {
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
         },
-        "prop_00366": {
+        "prop_00367": {
           "name": "textSeparator",
           "type": "string | undefined",
           "required": false,
           "description": "文本分隔符。\n\n当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，\n使用该分隔符拼接展示文本。"
         },
-        "prop_00367": {
+        "prop_00368": {
           "name": "textStorageField",
           "type": "string | undefined",
           "required": false,
           "description": "文本储存字段。\n\n主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，\n例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。"
         },
-        "prop_00368": {
+        "prop_00369": {
           "name": "filterable",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否允许在候选项中搜索。\n一般用于候选集较大、需要关键字过滤的组件。"
         },
-        "prop_00369": {
+        "prop_00370": {
           "name": "multiple",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否启用多选模式。\n开启后，组件的值语义通常从单值切换为数组值。"
         },
-        "prop_00370": {
+        "prop_00371": {
           "name": "value",
           "type": "CascaderValue | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00371": {
+        "prop_00372": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u8BF7\\u9009\\u62E9\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00372": {
+        "prop_00373": {
           "name": "options",
           "type": "unknown[] | undefined",
           "required": false,
           "description": "可选项数组。\n通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。"
         },
-        "prop_00373": {
+        "prop_00374": {
           "name": "optionLabelField",
           "type": "string | undefined",
           "required": false,
           "description": "选项显示字段。\n指定从选项对象的哪个字段读取展示文本。"
         },
-        "prop_00374": {
+        "prop_00375": {
           "name": "optionValueField",
           "type": "string | undefined",
           "required": false,
           "description": "选项值字段。\n 指定从选项对象的哪个字段读取最终写入字段主值的值。"
         },
-        "prop_00375": {
+        "prop_00376": {
           "name": "optionDisabledField",
           "type": "string | undefined",
           "required": false,
           "description": "选项禁用字段。\n指定从选项对象的哪个字段读取“当前候选项是否不可选”的布尔状态。"
         },
-        "prop_00376": {
+        "prop_00377": {
           "name": "optionChildrenField",
           "type": "string | undefined",
           "required": false,
           "description": "子级字段名。\n用于树形选择、级联选择等嵌套选项结构，指定子节点数组所在字段。"
         },
-        "prop_00377": {
+        "prop_00378": {
           "name": "checkStrictly",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否启用严格选择。\n\n开启后，父子节点通常不再自动联动，\n组件会把每个节点视作独立可选项。"
         },
-        "prop_00378": {
+        "prop_00379": {
           "name": "checkedText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u662F\"",
           "description": "选中状态下展示的文本。"
         },
-        "prop_00379": {
+        "prop_00380": {
           "name": "uncheckedText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u5426\"",
           "description": "未选中状态下展示的文本。"
         },
-        "prop_00380": {
+        "prop_00381": {
           "name": "checkboxText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "复选框旁边的标签文本。"
         },
-        "prop_00381": {
+        "prop_00382": {
           "name": "clearable",
           "type": "boolean | undefined",
           "required": false,
           "description": "是否允许清空当前值。\n\n适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n具体组件可按自身能力决定是否真正消费该配置。"
         },
-        "prop_00382": {
+        "prop_00383": {
           "name": "value",
           "type": "boolean | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00383": {
+        "prop_00384": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00384": {
+        "prop_00385": {
           "name": "filterable",
           "type": "boolean | undefined",
           "required": false,
           "description": "是否允许在候选项中搜索。\n一般用于候选集较大、需要关键字过滤的组件。"
         },
-        "prop_00385": {
+        "prop_00386": {
           "name": "multiple",
           "type": "boolean | undefined",
           "required": false,
           "description": "是否启用多选模式。\n开启后，组件的值语义通常从单值切换为数组值。"
         },
-        "prop_00386": {
+        "prop_00387": {
           "name": "value",
           "type": "CheckboxGroupMultiValue | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00387": {
+        "prop_00388": {
           "name": "buttonStyle",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否启用按钮样式。\n\n例如把 radio 渲染成 `el-radio-button`，\n或把 checkbox-group 渲染成 `el-checkbox-button`。"
         },
-        "prop_00388": {
+        "prop_00389": {
           "name": "checked",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否选中"
         },
-        "prop_00389": {
+        "prop_00390": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "description": "标签文本"
         },
-        "prop_00390": {
+        "prop_00391": {
           "name": "dateType",
           "type": "DatePickerType | undefined",
           "required": false,
           "description": "日期选择器模式。"
         },
-        "prop_00391": {
+        "prop_00392": {
           "name": "valueFormat",
           "type": "string | undefined",
           "required": false,
           "description": "提交值时使用的格式化模板。"
         },
-        "prop_00392": {
+        "prop_00393": {
           "name": "format",
           "type": "string | undefined",
           "required": false,
           "description": "显示格式。\n\n只影响控件展示层，不直接决定底层实际写回值的格式。"
         },
-        "prop_00393": {
+        "prop_00394": {
           "name": "startPlaceholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u5F00\\u59CB\\u65E5\\u671F\"",
           "description": "范围起点占位文案。"
         },
-        "prop_00394": {
+        "prop_00395": {
           "name": "endPlaceholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u7ED3\\u675F\\u65E5\\u671F\"",
           "description": "范围终点占位文案。"
         },
-        "prop_00395": {
+        "prop_00396": {
           "name": "rangeSeparator",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u81F3\"",
           "description": "范围值中间的展示分隔文案。"
         },
-        "prop_00396": {
+        "prop_00397": {
           "name": "value",
           "type": "string | Date | (string | Date)[] | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00397": {
+        "prop_00398": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u9009\\u62E9\\u65E5\\u671F\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00398": {
+        "prop_00399": {
           "name": "filterMode",
           "type": "\"range\" | undefined",
           "required": false,
           "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。"
         },
-        "prop_00399": {
+        "prop_00400": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "展示标签"
         },
-        "prop_00400": {
+        "prop_00401": {
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
           "description": "直接传入的值"
         },
-        "prop_00401": {
+        "prop_00402": {
           "name": "name",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "组件名称"
         },
-        "prop_00402": {
+        "prop_00403": {
           "name": "width",
           "type": "number | undefined",
           "required": false,
           "default": "undefined",
           "description": "字段宽度"
         },
-        "prop_00403": {
+        "prop_00404": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "字段绑定名"
         },
-        "prop_00404": {
+        "prop_00405": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "占位文案"
         },
-        "prop_00405": {
+        "prop_00406": {
           "name": "clearable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否允许清空"
         },
-        "prop_00406": {
+        "prop_00407": {
           "name": "optionKey",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "选项绑定键"
         },
-        "prop_00407": {
+        "prop_00408": {
           "name": "valueSeparator",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "值分隔符"
         },
-        "prop_00408": {
+        "prop_00409": {
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "default": "'auto'",
           "description": "主值持久化模式"
         },
-        "prop_00409": {
+        "prop_00410": {
           "name": "textSeparator",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "文本分隔符"
         },
-        "prop_00410": {
+        "prop_00411": {
           "name": "textStorageField",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "文本储存字段"
         },
-        "prop_00411": {
+        "prop_00412": {
           "name": "multiple",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否启用多选"
         },
-        "prop_00412": {
+        "prop_00413": {
           "name": "options",
           "type": "unknown[] | undefined",
           "required": false,
           "default": "undefined",
           "description": "可选项数组"
         },
-        "prop_00413": {
+        "prop_00414": {
           "name": "optionLabelField",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "选项显示字段"
         },
-        "prop_00414": {
+        "prop_00415": {
           "name": "optionValueField",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "选项值字段"
         },
-        "prop_00415": {
+        "prop_00416": {
           "name": "buttonText",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "主动作按钮文案"
         },
-        "prop_00416": {
+        "prop_00417": {
           "name": "readonlyButtonText",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "只读模式按钮文案"
         },
-        "prop_00417": {
+        "prop_00418": {
           "name": "searchable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否支持搜索"
         },
-        "prop_00418": {
+        "prop_00419": {
           "name": "entityName",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "实体名称"
         },
-        "prop_00419": {
+        "prop_00420": {
           "name": "searchable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否允许对实体候选项执行搜索。"
         },
-        "prop_00420": {
+        "prop_00421": {
           "name": "entityName",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u9879\\u76EE\"",
           "description": "实体类型名称，用于驱动选择器语义或远端查询。"
         },
-        "prop_00421": {
+        "prop_00422": {
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "default": "\"auto\"",
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
         },
-        "prop_00422": {
+        "prop_00423": {
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00423": {
+        "prop_00424": {
           "name": "buttonText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u9009\\u62E9\"",
           "description": "主动作按钮文案。"
         },
-        "prop_00424": {
+        "prop_00425": {
           "name": "readonlyButtonText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u67E5\\u770B\"",
           "description": "只读或查看模式下的主动作按钮文案。"
         },
-        "prop_00425": {
+        "prop_00426": {
           "name": "multiple",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否允许一次选择多个文件。"
         },
-        "prop_00426": {
+        "prop_00427": {
           "name": "accept",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "文件类型过滤条件。\n\n一般透传给文件浏览/上传能力，例如 `image/*`、`.pdf,.docx`。"
         },
-        "prop_00427": {
+        "prop_00428": {
           "name": "separator",
           "type": "string | undefined",
           "required": false,
           "default": "\", \"",
           "description": "多文件字符串分隔符。\n\n当一个字段以单个字符串承载多个文件值时，用它拼接文件名或路径。"
         },
-        "prop_00428": {
+        "prop_00429": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00429": {
+        "prop_00430": {
           "name": "buttonText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u6D4F\\u89C8\"",
           "description": "主动作按钮文案。"
         },
-        "prop_00430": {
+        "prop_00431": {
           "name": "action",
           "type": "string | undefined",
           "required": false,
           "description": "上传目标地址。\n\n当值为空或 `#` 时，字段通常会退化为纯浏览模式。"
         },
-        "prop_00431": {
+        "prop_00432": {
           "name": "readonlyButtonText",
           "type": "string | undefined",
           "required": false,
           "description": "只读或查看模式下的主动作按钮文案。"
         },
-        "prop_00432": {
+        "prop_00433": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\\u8DEF\\u5F84\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00433": {
+        "prop_00434": {
           "name": "buttonText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u4E0A\\u4F20\"",
           "description": "主动作按钮文案。"
         },
-        "prop_00434": {
+        "prop_00435": {
           "name": "action",
           "type": "string | undefined",
           "required": false,
           "default": "\"#\"",
           "description": "上传目标地址。\n\n当值为空或 `#` 时，字段通常会退化为纯浏览模式。"
         },
-        "prop_00435": {
+        "prop_00436": {
           "name": "readonlyButtonText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u6D4F\\u89C8\"",
           "description": "只读或查看模式下的主动作按钮文案。"
         },
-        "prop_00436": {
+        "prop_00437": {
           "name": "rows",
           "type": "number | undefined",
           "required": false,
           "default": "10",
           "description": "多行输入的可见行数。\n\n该值通常直接映射到底层 textarea 类组件的 `rows` 属性。"
         },
-        "prop_00437": {
+        "prop_00438": {
           "name": "classPrefix",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "图标名称解析时使用的 class 前缀。"
         },
-        "prop_00438": {
+        "prop_00439": {
           "name": "filterable",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否允许在候选项中搜索。\n一般用于候选集较大、需要关键字过滤的组件。"
         },
-        "prop_00439": {
+        "prop_00440": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u8BF7\\u9009\\u62E9\\u56FE\\u6807\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00440": {
+        "prop_00441": {
           "name": "accept",
           "type": "string | undefined",
           "required": false,
           "default": "\"image/*\"",
           "description": "文件类型过滤条件。\n\n一般透传给文件浏览/上传能力，例如 `image/*`、`.pdf,.docx`。"
         },
-        "prop_00441": {
+        "prop_00442": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u8BF7\\u9009\\u62E9\\u56FE\\u7247\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00442": {
+        "prop_00443": {
           "name": "buttonText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u4E0A\\u4F20\\u56FE\\u7247\"",
           "description": "主动作按钮文案。"
         },
-        "prop_00443": {
+        "prop_00444": {
           "name": "mentionTriggers",
           "type": "{ prefix: string; split?: string; writebackField?: string; searchable?: boolean; options?: { dataKey?: string; valueField?: string; labelField?: string; disabledField?: string; }; }[] | undefined",
           "required": false,
           "description": "完整的提及触发规则列表。\r\n\r\n每一项描述一个前缀触发器的完整结构：\r\n- `prefix`：触发字符\r\n- `split`：选中后写回文本的分隔符\r\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\r\n- `options.dataKey`：候选项数据源\r\n - `options.valueField / labelField / disabledField`：候选项字段映射\r\n- `searchable`：是否启用本地候选项过滤\r\n\r\n主输入文本本身走继承自 `SparkFieldProps` 的 `value/field` 语义：\r\n- `value` 表示当前 Mention 输入框中的文本值\r\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\r\n\r\n注意：底层 el-mention 只支持一个全局 `split`；\r\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。"
         },
-        "prop_00444": {
+        "prop_00445": {
           "name": "placement",
           "type": "\"bottom\" | \"top\" | undefined",
           "required": false,
           "default": "\"bottom\"",
           "description": "候选浮层位置"
         },
-        "prop_00445": {
+        "prop_00446": {
           "name": "showArrow",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否显示箭头"
         },
-        "prop_00446": {
+        "prop_00447": {
           "name": "offset",
           "type": "number | undefined",
           "required": false,
           "description": "浮层偏移"
         },
-        "prop_00447": {
+        "prop_00448": {
           "name": "whole",
           "type": "boolean | undefined",
           "required": false,
           "description": "是否整词匹配"
         },
-        "prop_00448": {
+        "prop_00449": {
           "name": "checkIsWhole",
           "type": "((pattern: string, prefix: string) => boolean) | undefined",
           "required": false,
           "description": "自定义整词判断"
         },
-        "prop_00449": {
+        "prop_00450": {
           "name": "loading",
           "type": "boolean | undefined",
           "required": false,
           "description": "是否加载态"
         },
-        "prop_00450": {
+        "prop_00451": {
           "name": "inputType",
           "type": "\"text\" | \"textarea\" | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "输入框类型"
         },
-        "prop_00451": {
+        "prop_00452": {
           "name": "rows",
           "type": "number | undefined",
           "required": false,
           "default": "3",
           "description": "多行输入的可见行数。\n\n该值通常直接映射到底层 textarea 类组件的 `rows` 属性。"
         },
-        "prop_00452": {
+        "prop_00453": {
           "name": "collapseTags",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "选中项较多时是否折叠标签。"
         },
-        "prop_00453": {
+        "prop_00454": {
           "name": "collapseTagsTooltip",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "折叠标签时是否在悬停中展示完整内容。"
         },
-        "prop_00454": {
+        "prop_00455": {
           "name": "maxCollapseTags",
           "type": "number | undefined",
           "required": false,
           "default": "1",
           "description": "折叠后最多显示的标签数量。"
         },
-        "prop_00455": {
+        "prop_00456": {
           "name": "value",
           "type": "MultiValue | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00456": {
+        "prop_00457": {
           "name": "precision",
           "type": "number | undefined",
           "required": false,
           "description": "数值展示与写回时使用的小数精度。"
         },
-        "prop_00457": {
+        "prop_00458": {
           "name": "value",
           "type": "number | [number | undefined, number | undefined] | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00458": {
+        "prop_00459": {
           "name": "min",
           "type": "number | undefined",
           "required": false,
           "description": "最小值。"
         },
-        "prop_00459": {
+        "prop_00460": {
           "name": "max",
           "type": "number | undefined",
           "required": false,
           "description": "最大值。"
         },
-        "prop_00460": {
+        "prop_00461": {
           "name": "value",
           "type": "string | number | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00461": {
+        "prop_00462": {
           "name": "allowHalf",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否允许选择半星。"
         },
-        "prop_00462": {
+        "prop_00463": {
           "name": "value",
           "type": "number | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00463": {
+        "prop_00464": {
           "name": "max",
           "type": "number | undefined",
           "required": false,
           "default": "5",
           "description": "最大值。"
         },
-        "prop_00464": {
+        "prop_00465": {
           "name": "block",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否占满容器宽度"
         },
-        "prop_00465": {
+        "prop_00466": {
           "name": "options",
           "type": "SegmentedOption[] | undefined",
           "required": false,
           "description": "可选项数组。\n通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。"
         },
-        "prop_00466": {
+        "prop_00467": {
           "name": "step",
           "type": "number | undefined",
           "required": false,
           "default": "1",
           "description": "滑块步进值。"
         },
-        "prop_00467": {
+        "prop_00468": {
           "name": "showInput",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否显示数值输入框。"
         },
-        "prop_00468": {
+        "prop_00469": {
           "name": "min",
           "type": "number | undefined",
           "required": false,
           "default": "0",
           "description": "最小值。"
         },
-        "prop_00469": {
+        "prop_00470": {
           "name": "max",
           "type": "number | undefined",
           "required": false,
           "default": "100",
           "description": "最大值。"
         },
-        "prop_00470": {
+        "prop_00471": {
           "name": "activeText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u662F\"",
           "description": "打开状态下展示的文本。"
         },
-        "prop_00471": {
+        "prop_00472": {
           "name": "inactiveText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u5426\"",
           "description": "关闭状态下展示的文本。"
         },
-        "prop_00472": {
+        "prop_00473": {
           "name": "value",
           "type": "boolean | null | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00473": {
+        "prop_00474": {
           "name": "autosize",
           "type": "boolean | { minRows?: number; maxRows?: number; } | undefined",
           "required": false,
           "default": "false",
           "description": "是否根据内容自动伸缩高度。"
         },
-        "prop_00474": {
+        "prop_00475": {
           "name": "maxlength",
           "type": "number | undefined",
           "required": false,
           "description": "最大输入长度。"
         },
-        "prop_00475": {
+        "prop_00476": {
           "name": "showWordLimit",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否显示字数统计。"
         },
-        "prop_00476": {
+        "prop_00477": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u8BF7\\u8F93\\u5165\\u5185\\u5BB9\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00477": {
+        "prop_00478": {
           "name": "rows",
           "type": "number | undefined",
           "required": false,
           "default": "4",
           "description": "多行输入的可见行数。\n\n该值通常直接映射到底层 textarea 类组件的 `rows` 属性。"
         },
-        "prop_00478": {
+        "prop_00479": {
           "name": "isRange",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否启用时间范围选择。"
         },
-        "prop_00479": {
+        "prop_00480": {
           "name": "arrowControl",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否使用箭头调整时间。"
         },
-        "prop_00480": {
+        "prop_00481": {
           "name": "format",
           "type": "string | undefined",
           "required": false,
           "default": "\"HH:mm:ss\"",
           "description": "显示格式。\n\n只影响控件展示层，不直接决定底层实际写回值的格式。"
         },
-        "prop_00481": {
+        "prop_00482": {
           "name": "startPlaceholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u5F00\\u59CB\\u65F6\\u95F4\"",
           "description": "范围起点占位文案。"
         },
-        "prop_00482": {
+        "prop_00483": {
           "name": "endPlaceholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u7ED3\\u675F\\u65F6\\u95F4\"",
           "description": "范围终点占位文案。"
         },
-        "prop_00483": {
+        "prop_00484": {
           "name": "value",
           "type": "string | Date | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00484": {
+        "prop_00485": {
           "name": "placeholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u9009\\u62E9\\u65F6\\u95F4\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
-        "prop_00485": {
+        "prop_00486": {
           "name": "start",
           "type": "string | undefined",
           "required": false,
           "default": "\"08:30\"",
           "description": "可选时间段的起始时间。"
         },
-        "prop_00486": {
+        "prop_00487": {
           "name": "end",
           "type": "string | undefined",
           "required": false,
           "default": "\"18:30\"",
           "description": "可选时间段的结束时间。"
         },
-        "prop_00487": {
+        "prop_00488": {
           "name": "step",
           "type": "string | undefined",
           "required": false,
           "default": "\"00:15\"",
           "description": "相邻时间选项之间的步长。"
         },
-        "prop_00488": {
+        "prop_00489": {
           "name": "minTime",
           "type": "string | undefined",
           "required": false,
           "description": "可选择的最小时间。"
         },
-        "prop_00489": {
+        "prop_00490": {
           "name": "maxTime",
           "type": "string | undefined",
           "required": false,
           "description": "可选择的最大时间。"
         },
-        "prop_00490": {
+        "prop_00491": {
           "name": "titles",
           "type": "[string, string] | undefined",
           "required": false,
           "default": "[\"\\u5F85\\u9009\", \"\\u5DF2\\u9009\"] as [\n    string,\n    string\n]",
           "description": "左右面板标题。"
         },
-        "prop_00491": {
+        "prop_00492": {
           "name": "filterPlaceholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u8BF7\\u8F93\\u5165\\u5173\\u952E\\u8BCD\"",
           "description": "候选项过滤输入框占位文案。"
         },
-        "prop_00492": {
+        "prop_00493": {
           "name": "targetOrder",
           "type": "\"push\" | \"unshift\" | \"original\" | undefined",
           "required": false,
           "default": "\"original\"",
           "description": "目标面板排序策略。"
         },
-        "prop_00493": {
+        "prop_00494": {
           "name": "value",
           "type": "TransferValue | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00494": {
+        "prop_00495": {
           "name": "defaultExpandAll",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "初次渲染时是否默认展开全部节点。"
         },
-        "prop_00495": {
+        "prop_00496": {
           "name": "renderAfterExpand",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否在节点展开后再渲染其子节点。"
         },
-        "prop_00496": {
+        "prop_00497": {
           "name": "value",
           "type": "TreeSelectValue | undefined",
           "required": false,
           "description": "直接传入的值。\n\n适用于：\n- display 组件直接渲染显式值\n- field 组件在不依赖 `field/currentRow` 的情况下进行受控展示"
         },
-        "prop_00497": {
+        "prop_00498": {
           "name": "autoUpload",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "选择文件后是否立即开始上传。"
         },
-        "prop_00498": {
+        "prop_00499": {
           "name": "showFileList",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示已选择文件列表。"
         },
-        "prop_00499": {
+        "prop_00500": {
           "name": "limit",
           "type": "number | undefined",
           "required": false,
           "default": "1",
           "description": "允许上传的文件数量上限。"
         },
-        "prop_00500": {
+        "prop_00501": {
           "name": "listType",
           "type": "\"text\" | \"picture\" | \"picture-card\" | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "上传列表展示样式。"
         },
-        "prop_00501": {
+        "prop_00502": {
           "name": "buttonText",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u70B9\\u51FB\\u4E0A\\u4F20\"",
           "description": "主动作按钮文案。"
         },
-        "prop_00502": {
+        "prop_00503": {
           "name": "displayLabel",
           "type": "string | undefined",
           "required": false,
           "description": "显示标签"
         },
-        "prop_00503": {
+        "prop_00504": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "description": "直接传入的标签（供 r-column-group 直连使用）"
         },
-        "prop_00504": {
+        "prop_00505": {
           "name": "fieldName",
           "type": "string | undefined",
           "required": false,
           "description": "字段绑定名"
         },
-        "prop_00505": {
+        "prop_00506": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "description": "直接传入的字段名（供裸列节点使用）"
         },
-        "prop_00506": {
+        "prop_00507": {
           "name": "width",
           "type": "string | number | undefined",
           "required": false,
           "description": "列宽"
         },
-        "prop_00507": {
+        "prop_00508": {
           "name": "sortable",
           "type": "boolean | \"custom\" | undefined",
           "required": false,
           "description": "表格列排序能力"
         },
-        "prop_00508": {
+        "prop_00509": {
           "name": "filterable",
           "type": "boolean | undefined",
           "required": false,
           "description": "表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning"
         },
-        "prop_00509": {
+        "prop_00510": {
           "name": "minWidth",
           "type": "string | number | undefined",
           "required": false,
           "description": "最小列宽"
         },
-        "prop_00510": {
+        "prop_00511": {
           "name": "fixed",
           "type": "boolean | \"left\" | \"right\" | undefined",
           "required": false,
           "description": "固定列方向"
         },
-        "prop_00511": {
+        "prop_00512": {
           "name": "align",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "列对齐"
         },
-        "prop_00512": {
+        "prop_00513": {
           "name": "headerAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "表头对齐"
         },
-        "prop_00513": {
+        "prop_00514": {
           "name": "mergedChildren",
           "type": "SparkNode[] | undefined",
           "required": false,
           "description": "合并后的子组件配置"
         },
-        "prop_00514": {
+        "prop_00515": {
           "name": "isCurrentFieldHidden",
           "type": "boolean | undefined",
           "required": false,
           "description": "当前字段是否隐藏"
         },
-        "prop_00515": {
+        "prop_00516": {
           "name": "shouldRenderCurrentField",
           "type": "boolean | undefined",
           "required": false,
           "description": "当前宿主下字段是否应渲染"
         },
-        "prop_00516": {
+        "prop_00517": {
           "name": "currentDisplayValue",
           "type": "string | undefined",
           "required": false,
           "description": "当前显示值"
         },
-        "prop_00517": {
+        "prop_00518": {
           "name": "isTableCellHidden",
           "type": "((row: IDataRow) => boolean) | undefined",
           "required": false,
           "description": "表格行级隐藏判断"
         },
-        "prop_00518": {
+        "prop_00519": {
           "name": "getTableCellDisplayValue",
           "type": "((row: IDataRow) => string) | undefined",
           "required": false,
           "description": "表格行级显示值获取"
         },
-        "prop_00519": {
+        "prop_00520": {
           "name": "validationRules",
           "type": "FormItemRule[] | undefined",
           "required": false,
           "description": "表单验证规则"
         },
-        "prop_00520": {
+        "prop_00521": {
           "name": "titleAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "标题对齐（table/detail）"
         },
-        "prop_00521": {
+        "prop_00522": {
           "name": "valueAlign",
           "type": "TextAlign | undefined",
           "required": false,
           "description": "值对齐（table/detail）"
         },
-        "prop_00522": {
+        "prop_00523": {
           "name": "headerCellClassName",
           "type": "string | undefined",
           "required": false,
           "description": "表头 class（table）"
         },
-        "prop_00523": {
+        "prop_00524": {
           "name": "cellClassName",
           "type": "string | undefined",
           "required": false,
           "description": "单元格 class（table）"
         },
-        "prop_00524": {
+        "prop_00525": {
           "name": "titleClassName",
           "type": "string | undefined",
           "required": false,
           "description": "标题 class（detail）"
         },
-        "prop_00525": {
+        "prop_00526": {
           "name": "valueClassName",
           "type": "string | undefined",
           "required": false,
           "description": "值 class（detail/table value）"
         },
-        "prop_00526": {
+        "prop_00527": {
           "name": "nameField",
           "type": "string | undefined",
           "required": false,
           "default": "\"name\"",
           "description": "名称字段名"
         },
-        "prop_00527": {
+        "prop_00528": {
           "name": "typeField",
           "type": "string | undefined",
           "required": false,
           "default": "\"type\"",
           "description": "类型字段名"
         },
-        "prop_00528": {
+        "prop_00529": {
           "name": "statusField",
           "type": "string | undefined",
           "required": false,
           "default": "\"status\"",
           "description": "状态字段名"
         },
-        "prop_00529": {
+        "prop_00530": {
           "name": "ownerField",
           "type": "string | undefined",
           "required": false,
           "default": "\"owner\"",
           "description": "负责人字段名"
         },
-        "prop_00530": {
+        "prop_00531": {
           "name": "metaField",
           "type": "string | undefined",
           "required": false,
           "default": "\"route\"",
           "description": "元信息字段名"
         },
-        "prop_00531": {
+        "prop_00532": {
           "name": "extraField",
           "type": "string | undefined",
           "required": false,
           "default": "\"childPlacement\"",
           "description": "扩展字段名"
         },
-        "prop_00532": {
+        "prop_00533": {
           "name": "showType",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示类型"
         },
-        "prop_00533": {
+        "prop_00534": {
           "name": "showStatus",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示状态"
         },
-        "prop_00534": {
+        "prop_00535": {
           "name": "showOwner",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否展示负责人"
         },
-        "prop_00535": {
+        "prop_00536": {
           "name": "showMeta",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否展示元信息"
         },
-        "prop_00536": {
+        "prop_00537": {
           "name": "showExtra",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否展示扩展信息"
         },
-        "prop_00537": {
+        "prop_00538": {
           "name": "config",
           "type": "SparkNode",
           "required": true,
           "description": "被渲染的节点本体。\r\n\r\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\r\n目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级兼容合并。"
         },
-        "prop_00538": {
+        "prop_00539": {
           "name": "parentContext",
           "type": "ICapabilityContext | undefined",
           "required": false,
           "description": "显式父上下文（可选）。\r\n\r\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\r\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"
         },
-        "prop_00539": {
+        "prop_00540": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "description": "字段绑定名，映射到 DataView 行字段"
         },
-        "prop_00540": {
+        "prop_00541": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "description": "显示标签"
         },
-        "prop_00541": {
+        "prop_00542": {
           "name": "width",
           "type": "number | undefined",
           "required": false,
           "description": "r-table 内列宽"
         },
-        "prop_00542": {
+        "prop_00543": {
           "name": "value",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "JSON 字符串内容"
         },
-        "prop_00543": {
+        "prop_00544": {
           "name": "documentValue",
           "type": "JsonDocument | null | undefined",
           "required": false,
           "default": "null",
           "description": "已解析的 JSON 文档对象"
         },
-        "prop_00544": {
+        "prop_00545": {
           "name": "height",
           "type": "string | number | undefined",
           "required": false,
           "default": "420",
           "description": "编辑器高度"
         },
-        "prop_00545": {
+        "prop_00546": {
           "name": "readOnly",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否只读"
         },
-        "prop_00546": {
+        "prop_00547": {
           "name": "schema",
           "type": "{ [key: string]: unknown; } | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 校验规则"
         },
-        "prop_00547": {
+        "prop_00548": {
           "name": "filterPlaceholder",
           "type": "string | undefined",
           "required": false,
           "default": "\"\\u7B5B\\u9009\\u8DEF\\u5F84 / \\u952E\\u540D / \\u503C\"",
           "description": "筛选框占位文本"
         },
-        "prop_00548": {
+        "prop_00549": {
           "name": "policy",
           "type": "JsonTreePolicy | undefined",
           "required": false,
           "description": "策略聚合对象（复杂场景一次传入）"
         },
-        "prop_00549": {
+        "prop_00550": {
           "name": "rootLabel",
           "type": "string | undefined",
           "required": false,
           "description": "根节点标签"
         },
-        "prop_00550": {
+        "prop_00551": {
           "name": "isProtected",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否受保护"
         },
-        "prop_00551": {
+        "prop_00552": {
           "name": "canEditKey",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否可编辑键名"
         },
-        "prop_00552": {
+        "prop_00553": {
           "name": "canEditType",
           "type": "((path: JsonPath) => boolean) | undefined",
           "required": false,
           "description": "判断路径是否可编辑类型"
         },
-        "prop_00553": {
+        "prop_00554": {
           "name": "suggestChildKey",
           "type": "((target: JsonObject, parentPath: JsonPath) => string) | undefined",
           "required": false,
           "description": "推荐子节点键名"
         },
-        "prop_00554": {
+        "prop_00555": {
           "name": "createDefaultArrayItem",
           "type": "((parentPath: JsonPath) => JsonValue) | undefined",
           "required": false,
           "description": "创建数组默认子项"
         },
-        "prop_00555": {
+        "prop_00556": {
           "name": "createDefaultObjectValue",
           "type": "((parentPath: JsonPath, key: string) => JsonValue) | undefined",
           "required": false,
           "description": "创建对象默认子值"
         },
-        "prop_00556": {
+        "prop_00557": {
           "name": "value",
           "type": "string | undefined",
           "required": false,
           "default": "\"\"",
           "description": "编辑器内容"
         },
-        "prop_00557": {
+        "prop_00558": {
           "name": "language",
           "type": "SparkCodeLanguage | undefined",
           "required": false,
           "default": "\"javascript\"",
           "description": "语言模式"
         },
-        "prop_00558": {
+        "prop_00559": {
           "name": "height",
           "type": "string | number | undefined",
           "required": false,
           "default": "360",
           "description": "编辑器高度"
         },
-        "prop_00559": {
+        "prop_00560": {
           "name": "tabSize",
           "type": "number | undefined",
           "required": false,
           "default": "2",
           "description": "Tab 缩进空格数"
         },
-        "prop_00560": {
+        "prop_00561": {
           "name": "lineWrapping",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否自动换行"
         },
-        "prop_00561": {
+        "prop_00562": {
           "name": "mode",
           "type": "SparkJsonEditorMode | undefined",
           "required": false,
           "default": "\"text\"",
           "description": "编辑模式"
         },
-        "prop_00562": {
+        "prop_00563": {
           "name": "indentation",
           "type": "string | number | undefined",
           "required": false,
           "default": "2",
           "description": "缩进空格数"
         },
-        "prop_00563": {
+        "prop_00564": {
           "name": "mainMenuBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示主菜单栏"
         },
-        "prop_00564": {
+        "prop_00565": {
           "name": "navigationBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示导航栏"
         },
-        "prop_00565": {
+        "prop_00566": {
           "name": "statusBar",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否显示状态栏"
         },
-        "prop_00566": {
+        "prop_00567": {
           "name": "askToFormat",
           "type": "boolean | undefined",
           "required": false,
           "default": "false",
           "description": "是否提示格式化"
         },
-        "prop_00567": {
+        "prop_00568": {
           "name": "schema",
           "type": "SparkJsonSchema | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 校验规则"
         },
-        "prop_00568": {
+        "prop_00569": {
           "name": "schemaDefinitions",
           "type": "SparkJsonSchema | null | undefined",
           "required": false,
           "default": "null",
           "description": "JSON Schema 定义引用"
         },
-        "prop_00569": {
+        "prop_00570": {
           "name": "enableSchemaValidation",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否启用 Schema 校验"
         },
-        "prop_00570": {
+        "prop_00571": {
           "name": "enableSchemaEnumRenderer",
           "type": "boolean | undefined",
           "required": false,
           "default": "true",
           "description": "是否启用 Schema 枚举渲染"
         },
-        "prop_00571": {
+        "prop_00572": {
           "name": "title",
           "type": "string | undefined",
           "required": false,
           "default": "'未注册的组件类型'",
           "description": "提示标题"
         },
-        "prop_00572": {
+        "prop_00573": {
           "name": "description",
           "type": "string | undefined",
           "required": false,
           "default": "''",
           "description": "说明文本"
         },
-        "prop_00573": {
+        "prop_00574": {
           "name": "node",
           "type": "SparkNode",
           "required": true,
@@ -13357,11 +13369,12 @@
           "prop_00198",
           "prop_00199",
           "prop_00200",
+          "prop_00201",
           "prop_00084",
           "prop_00083",
-          "prop_00201",
           "prop_00202",
-          "prop_00203"
+          "prop_00203",
+          "prop_00204"
         ],
         "emitRefs": []
       },
@@ -13371,7 +13384,7 @@
         "description": "底部组件，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。",
         "filePath": "packages/spark-component/src/components/containers/RendererFooter.vue",
         "propRefs": [
-          "prop_00204"
+          "prop_00205"
         ],
         "emitRefs": []
       },
@@ -13381,7 +13394,7 @@
         "description": "头部组件，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。",
         "filePath": "packages/spark-component/src/components/containers/RendererHeader.vue",
         "propRefs": [
-          "prop_00205"
+          "prop_00206"
         ],
         "emitRefs": []
       },
@@ -13391,7 +13404,7 @@
         "description": "尾部组件，在 r-toolbar 中作为工具栏末尾区域提取渲染。",
         "filePath": "packages/spark-component/src/components/containers/RendererTail.vue",
         "propRefs": [
-          "prop_00206"
+          "prop_00207"
         ],
         "emitRefs": []
       },
@@ -13401,17 +13414,17 @@
         "description": "头像展示组件，支持图片/图标/文字多种模式和尺寸配置。",
         "filePath": "packages/spark-component/src/components/display/data-components/DisplayAvatar.vue",
         "propRefs": [
-          "prop_00207",
           "prop_00208",
           "prop_00209",
           "prop_00210",
           "prop_00211",
           "prop_00212",
           "prop_00213",
+          "prop_00214",
           "prop_00066",
           "prop_00005",
-          "prop_00214",
-          "prop_00215"
+          "prop_00215",
+          "prop_00216"
         ],
         "emitRefs": []
       },
@@ -13421,7 +13434,6 @@
         "description": "徽章展示组件。",
         "filePath": "packages/spark-component/src/components/display/data-components/DisplayBadge.vue",
         "propRefs": [
-          "prop_00216",
           "prop_00217",
           "prop_00218",
           "prop_00219",
@@ -13431,9 +13443,10 @@
           "prop_00223",
           "prop_00224",
           "prop_00225",
-          "prop_00005",
           "prop_00226",
-          "prop_00215"
+          "prop_00005",
+          "prop_00227",
+          "prop_00216"
         ],
         "emitRefs": []
       },
@@ -13443,7 +13456,6 @@
         "description": "图片展示组件，支持懒加载、预览画廊和加载占位。",
         "filePath": "packages/spark-component/src/components/display/data-components/DisplayImage.vue",
         "propRefs": [
-          "prop_00227",
           "prop_00228",
           "prop_00229",
           "prop_00230",
@@ -13456,9 +13468,10 @@
           "prop_00237",
           "prop_00238",
           "prop_00239",
+          "prop_00240",
           "prop_00005",
-          "prop_00214",
-          "prop_00215"
+          "prop_00215",
+          "prop_00216"
         ],
         "emitRefs": []
       },
@@ -13468,7 +13481,6 @@
         "description": "分页控制组件，触发页码/页大小变更事件。",
         "filePath": "packages/spark-component/src/components/display/data-components/DisplayPagination.vue",
         "propRefs": [
-          "prop_00240",
           "prop_00241",
           "prop_00242",
           "prop_00243",
@@ -13477,6 +13489,7 @@
           "prop_00246",
           "prop_00247",
           "prop_00248",
+          "prop_00249",
           "prop_00005"
         ],
         "emitRefs": [
@@ -13490,7 +13503,6 @@
         "description": "进度条展示组件，支持动态颜色。",
         "filePath": "packages/spark-component/src/components/display/data-components/DisplayProgress.vue",
         "propRefs": [
-          "prop_00249",
           "prop_00250",
           "prop_00251",
           "prop_00252",
@@ -13502,9 +13514,10 @@
           "prop_00258",
           "prop_00259",
           "prop_00260",
-          "prop_00005",
           "prop_00261",
-          "prop_00215"
+          "prop_00005",
+          "prop_00262",
+          "prop_00216"
         ],
         "emitRefs": []
       },
@@ -13514,7 +13527,6 @@
         "description": "统计数值展示组件，支持精度、前后缀和千分位分隔。",
         "filePath": "packages/spark-component/src/components/display/data-components/DisplayStatistic.vue",
         "propRefs": [
-          "prop_00262",
           "prop_00263",
           "prop_00264",
           "prop_00265",
@@ -13522,9 +13534,10 @@
           "prop_00267",
           "prop_00268",
           "prop_00269",
+          "prop_00270",
           "prop_00005",
-          "prop_00226",
-          "prop_00215"
+          "prop_00227",
+          "prop_00216"
         ],
         "emitRefs": []
       },
@@ -13534,19 +13547,19 @@
         "description": "标签展示组件，支持类型/尺寸/主题样式和可关闭功能。",
         "filePath": "packages/spark-component/src/components/display/data-components/DisplayTag.vue",
         "propRefs": [
-          "prop_00270",
           "prop_00271",
           "prop_00272",
           "prop_00273",
           "prop_00274",
           "prop_00275",
           "prop_00276",
-          "prop_00068",
           "prop_00277",
+          "prop_00068",
           "prop_00278",
+          "prop_00279",
           "prop_00005",
-          "prop_00214",
-          "prop_00215"
+          "prop_00215",
+          "prop_00216"
         ],
         "emitRefs": [
           "emit_00016"
@@ -13558,17 +13571,17 @@
         "description": "文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。",
         "filePath": "packages/spark-component/src/components/display/data-components/DisplayText.vue",
         "propRefs": [
-          "prop_00279",
-          "prop_00267",
-          "prop_00268",
           "prop_00280",
+          "prop_00268",
+          "prop_00269",
           "prop_00281",
           "prop_00282",
           "prop_00283",
           "prop_00284",
-          "prop_00005",
           "prop_00285",
-          "prop_00215"
+          "prop_00005",
+          "prop_00286",
+          "prop_00216"
         ],
         "emitRefs": []
       },
@@ -13578,7 +13591,6 @@
         "description": "警告提示组件，支持 success/warning/info/error 四种类型。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayAlert.vue",
         "propRefs": [
-          "prop_00286",
           "prop_00287",
           "prop_00288",
           "prop_00289",
@@ -13586,6 +13598,7 @@
           "prop_00291",
           "prop_00292",
           "prop_00293",
+          "prop_00294",
           "prop_00005"
         ],
         "emitRefs": [
@@ -13598,8 +13611,8 @@
         "description": "面包屑导航容器，支持自定义分隔符。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.vue",
         "propRefs": [
-          "prop_00294",
           "prop_00295",
+          "prop_00296",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13610,9 +13623,9 @@
         "description": "面包屑导航项，支持链接跳转。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumbItem.vue",
         "propRefs": [
-          "prop_00296",
           "prop_00297",
           "prop_00298",
+          "prop_00299",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13623,8 +13636,8 @@
         "description": "日历展示组件，支持日期范围和选中绑定。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayCalendar.vue",
         "propRefs": [
-          "prop_00299",
           "prop_00300",
+          "prop_00301",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13635,12 +13648,12 @@
         "description": "倒计时组件，支持自定义格式和结束事件。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayCountdown.vue",
         "propRefs": [
-          "prop_00301",
           "prop_00302",
           "prop_00303",
           "prop_00304",
-          "prop_00286",
           "prop_00305",
+          "prop_00287",
+          "prop_00306",
           "prop_00005"
         ],
         "emitRefs": [
@@ -13654,12 +13667,12 @@
         "description": "描述列表容器。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayDescriptions.vue",
         "propRefs": [
-          "prop_00306",
           "prop_00307",
           "prop_00308",
           "prop_00309",
           "prop_00310",
           "prop_00311",
+          "prop_00312",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13670,7 +13683,6 @@
         "description": "描述列表项，支持字段绑定。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayDescriptionsItem.vue",
         "propRefs": [
-          "prop_00312",
           "prop_00313",
           "prop_00314",
           "prop_00315",
@@ -13679,6 +13691,7 @@
           "prop_00318",
           "prop_00319",
           "prop_00320",
+          "prop_00321",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13689,9 +13702,9 @@
         "description": "空状态占位组件。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayEmpty.vue",
         "propRefs": [
-          "prop_00321",
           "prop_00322",
           "prop_00323",
+          "prop_00324",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13702,9 +13715,9 @@
         "description": "图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayIcon.vue",
         "propRefs": [
-          "prop_00324",
           "prop_00325",
           "prop_00326",
+          "prop_00327",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13715,9 +13728,9 @@
         "description": "结果页组件，含标题、副标题和按钮区。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayResult.vue",
         "propRefs": [
-          "prop_00327",
           "prop_00328",
           "prop_00329",
+          "prop_00330",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13728,11 +13741,11 @@
         "description": "骨架屏加载占位组件。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplaySkeleton.vue",
         "propRefs": [
-          "prop_00330",
           "prop_00331",
           "prop_00332",
           "prop_00333",
           "prop_00334",
+          "prop_00335",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13753,7 +13766,6 @@
         "description": "时间线项。",
         "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayTimelineItem.vue",
         "propRefs": [
-          "prop_00335",
           "prop_00336",
           "prop_00337",
           "prop_00338",
@@ -13762,6 +13774,7 @@
           "prop_00341",
           "prop_00342",
           "prop_00343",
+          "prop_00344",
           "prop_00005"
         ],
         "emitRefs": []
@@ -13772,12 +13785,11 @@
         "description": "自动补全输入字段，绑定 string 值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldAutocomplete.vue",
         "propRefs": [
-          "prop_00344",
           "prop_00345",
           "prop_00346",
           "prop_00347",
-          "prop_00005",
           "prop_00348",
+          "prop_00005",
           "prop_00349",
           "prop_00350",
           "prop_00351",
@@ -13790,7 +13802,8 @@
           "prop_00358",
           "prop_00359",
           "prop_00360",
-          "prop_00361"
+          "prop_00361",
+          "prop_00362"
         ],
         "emitRefs": [
           "emit_00018",
@@ -13803,35 +13816,35 @@
         "description": "级联选择字段，绑定路径数组值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldCascader.vue",
         "propRefs": [
-          "prop_00362",
-          "prop_00005",
           "prop_00363",
+          "prop_00005",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
           "prop_00368",
           "prop_00369",
-          "prop_00348",
-          "prop_00349",
           "prop_00370",
-          "prop_00351",
+          "prop_00349",
+          "prop_00350",
+          "prop_00371",
           "prop_00352",
           "prop_00353",
-          "prop_00371",
-          "prop_00355",
+          "prop_00354",
+          "prop_00372",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
           "prop_00376",
-          "prop_00377"
+          "prop_00377",
+          "prop_00378"
         ],
         "emitRefs": [
           "emit_00020"
@@ -13843,24 +13856,24 @@
         "description": "单个复选框字段，绑定 boolean 值，支持自定义选中/未选中显示文本。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckbox.vue",
         "propRefs": [
-          "prop_00378",
           "prop_00379",
           "prop_00380",
-          "prop_00005",
-          "prop_00348",
           "prop_00381",
+          "prop_00005",
+          "prop_00349",
           "prop_00382",
-          "prop_00351",
+          "prop_00383",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
-          "prop_00361"
+          "prop_00361",
+          "prop_00362"
         ],
         "emitRefs": [
           "emit_00004"
@@ -13873,33 +13886,33 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckboxGroup.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00363",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
-          "prop_00384",
+          "prop_00368",
           "prop_00385",
-          "prop_00348",
-          "prop_00381",
           "prop_00386",
-          "prop_00351",
+          "prop_00349",
+          "prop_00382",
+          "prop_00387",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
           "prop_00376",
-          "prop_00387"
+          "prop_00377",
+          "prop_00388"
         ],
         "emitRefs": [
           "emit_00021"
@@ -13911,8 +13924,8 @@
         "description": "标签选择字段，绑定 boolean 值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckTag.vue",
         "propRefs": [
-          "prop_00388",
           "prop_00389",
+          "prop_00390",
           "prop_00005"
         ],
         "emitRefs": [
@@ -13927,20 +13940,20 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldColor.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00348",
-          "prop_00381",
-          "prop_00350",
+          "prop_00349",
+          "prop_00382",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
-          "prop_00361"
+          "prop_00361",
+          "prop_00362"
         ],
         "emitRefs": [
           "emit_00018"
@@ -13952,28 +13965,28 @@
         "description": "日期选择字段，绑定日期/字符串值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldDate.vue",
         "propRefs": [
-          "prop_00390",
           "prop_00391",
-          "prop_00005",
           "prop_00392",
+          "prop_00005",
           "prop_00393",
           "prop_00394",
           "prop_00395",
-          "prop_00348",
-          "prop_00349",
           "prop_00396",
-          "prop_00351",
+          "prop_00349",
+          "prop_00350",
+          "prop_00397",
           "prop_00352",
           "prop_00353",
-          "prop_00397",
-          "prop_00355",
+          "prop_00354",
+          "prop_00398",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00398"
+          "prop_00362",
+          "prop_00399"
         ],
         "emitRefs": [
           "emit_00024"
@@ -13985,7 +13998,6 @@
         "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldDeptPicker.vue",
         "propRefs": [
-          "prop_00399",
           "prop_00400",
           "prop_00401",
           "prop_00402",
@@ -14004,7 +14016,8 @@
           "prop_00415",
           "prop_00416",
           "prop_00417",
-          "prop_00418"
+          "prop_00418",
+          "prop_00419"
         ],
         "emitRefs": [
           "emit_00025"
@@ -14016,37 +14029,37 @@
         "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldEntityPicker.vue",
         "propRefs": [
-          "prop_00419",
           "prop_00420",
-          "prop_00005",
-          "prop_00363",
-          "prop_00364",
           "prop_00421",
-          "prop_00366",
-          "prop_00367",
-          "prop_00384",
-          "prop_00369",
-          "prop_00348",
-          "prop_00349",
+          "prop_00005",
+          "prop_00364",
+          "prop_00365",
           "prop_00422",
-          "prop_00351",
+          "prop_00367",
+          "prop_00368",
+          "prop_00385",
+          "prop_00370",
+          "prop_00349",
+          "prop_00350",
+          "prop_00423",
           "prop_00352",
           "prop_00353",
-          "prop_00371",
-          "prop_00355",
+          "prop_00354",
+          "prop_00372",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
           "prop_00376",
-          "prop_00423",
-          "prop_00424"
+          "prop_00377",
+          "prop_00424",
+          "prop_00425"
         ],
         "emitRefs": [
           "emit_00026"
@@ -14059,26 +14072,26 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldFileBrowser.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00425",
           "prop_00426",
           "prop_00427",
-          "prop_00348",
+          "prop_00428",
           "prop_00349",
           "prop_00350",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00428",
-          "prop_00355",
+          "prop_00354",
+          "prop_00429",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00429",
+          "prop_00362",
           "prop_00430",
-          "prop_00431"
+          "prop_00431",
+          "prop_00432"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14091,26 +14104,26 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldFilePath.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00425",
           "prop_00426",
           "prop_00427",
-          "prop_00348",
+          "prop_00428",
           "prop_00349",
           "prop_00350",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00432",
-          "prop_00355",
+          "prop_00354",
+          "prop_00433",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00433",
+          "prop_00362",
           "prop_00434",
-          "prop_00435"
+          "prop_00435",
+          "prop_00436"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14123,21 +14136,21 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldHtmlEditor.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00348",
-          "prop_00381",
-          "prop_00350",
+          "prop_00349",
+          "prop_00382",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00436"
+          "prop_00362",
+          "prop_00437"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14149,34 +14162,34 @@
         "description": "图标选择字段，绑定图标名称字符串。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldIcon.vue",
         "propRefs": [
-          "prop_00437",
+          "prop_00438",
           "prop_00005",
-          "prop_00363",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
-          "prop_00438",
-          "prop_00385",
-          "prop_00348",
+          "prop_00368",
+          "prop_00439",
+          "prop_00386",
           "prop_00349",
           "prop_00350",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00439",
-          "prop_00355",
+          "prop_00354",
+          "prop_00440",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
-          "prop_00376"
+          "prop_00376",
+          "prop_00377"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14189,26 +14202,26 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldImage.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00425",
-          "prop_00440",
-          "prop_00427",
-          "prop_00348",
+          "prop_00426",
+          "prop_00441",
+          "prop_00428",
           "prop_00349",
           "prop_00350",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00441",
-          "prop_00355",
+          "prop_00354",
+          "prop_00442",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00442",
-          "prop_00434",
-          "prop_00435"
+          "prop_00362",
+          "prop_00443",
+          "prop_00435",
+          "prop_00436"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14220,7 +14233,6 @@
         "description": "提及输入字段，绑定 string 值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldMention.vue",
         "propRefs": [
-          "prop_00443",
           "prop_00444",
           "prop_00445",
           "prop_00446",
@@ -14228,22 +14240,23 @@
           "prop_00448",
           "prop_00449",
           "prop_00450",
+          "prop_00451",
           "prop_00005",
-          "prop_00348",
-          "prop_00381",
-          "prop_00350",
+          "prop_00349",
+          "prop_00382",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00451"
+          "prop_00362",
+          "prop_00452"
         ],
         "emitRefs": [
           "emit_00018",
@@ -14257,36 +14270,36 @@
         "description": "多选下拉字段，绑定数组值，支持标签折叠（collapseTags）显示。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldMultiSelect.vue",
         "propRefs": [
-          "prop_00452",
           "prop_00453",
           "prop_00454",
+          "prop_00455",
           "prop_00005",
-          "prop_00363",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
           "prop_00368",
-          "prop_00385",
-          "prop_00348",
+          "prop_00369",
+          "prop_00386",
           "prop_00349",
-          "prop_00455",
-          "prop_00351",
+          "prop_00350",
+          "prop_00456",
           "prop_00352",
           "prop_00353",
-          "prop_00371",
-          "prop_00355",
+          "prop_00354",
+          "prop_00372",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
-          "prop_00376"
+          "prop_00376",
+          "prop_00377"
         ],
         "emitRefs": [
           "emit_00021"
@@ -14298,25 +14311,25 @@
         "description": "数字输入字段，绑定 number 值，筛选模式下支持范围（最小-最大）双输入。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldNumber.vue",
         "propRefs": [
-          "prop_00456",
-          "prop_00005",
-          "prop_00348",
-          "prop_00381",
           "prop_00457",
-          "prop_00351",
+          "prop_00005",
+          "prop_00349",
+          "prop_00382",
+          "prop_00458",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00458",
+          "prop_00362",
           "prop_00459",
-          "prop_00398"
+          "prop_00460",
+          "prop_00399"
         ],
         "emitRefs": [
           "emit_00029"
@@ -14328,7 +14341,6 @@
         "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldProductPicker.vue",
         "propRefs": [
-          "prop_00399",
           "prop_00400",
           "prop_00401",
           "prop_00402",
@@ -14347,7 +14359,8 @@
           "prop_00415",
           "prop_00416",
           "prop_00417",
-          "prop_00418"
+          "prop_00418",
+          "prop_00419"
         ],
         "emitRefs": [
           "emit_00025"
@@ -14360,33 +14373,33 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldRadio.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00363",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
-          "prop_00384",
+          "prop_00368",
           "prop_00385",
-          "prop_00348",
-          "prop_00381",
-          "prop_00460",
-          "prop_00351",
+          "prop_00386",
+          "prop_00349",
+          "prop_00382",
+          "prop_00461",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
           "prop_00376",
-          "prop_00387"
+          "prop_00377",
+          "prop_00388"
         ],
         "emitRefs": [
           "emit_00009"
@@ -14398,23 +14411,23 @@
         "description": "评分字段，绑定 number 值，支持半星模式。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldRate.vue",
         "propRefs": [
-          "prop_00461",
-          "prop_00005",
-          "prop_00348",
-          "prop_00381",
           "prop_00462",
-          "prop_00351",
+          "prop_00005",
+          "prop_00349",
+          "prop_00382",
+          "prop_00463",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00463"
+          "prop_00362",
+          "prop_00464"
         ],
         "emitRefs": [
           "emit_00030"
@@ -14426,34 +14439,34 @@
         "description": "分段选择器字段，绑定 string/number 值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldSegmented.vue",
         "propRefs": [
-          "prop_00277",
-          "prop_00464",
+          "prop_00278",
+          "prop_00465",
           "prop_00005",
-          "prop_00363",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
-          "prop_00384",
+          "prop_00368",
           "prop_00385",
-          "prop_00348",
-          "prop_00381",
-          "prop_00460",
-          "prop_00351",
+          "prop_00386",
+          "prop_00349",
+          "prop_00382",
+          "prop_00461",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00356",
+          "prop_00354",
+          "prop_00384",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00465",
-          "prop_00373",
+          "prop_00362",
+          "prop_00466",
           "prop_00374",
           "prop_00375",
-          "prop_00376"
+          "prop_00376",
+          "prop_00377"
         ],
         "emitRefs": [
           "emit_00031",
@@ -14467,32 +14480,32 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldSelect.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00363",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
           "prop_00368",
-          "prop_00385",
-          "prop_00348",
+          "prop_00369",
+          "prop_00386",
           "prop_00349",
-          "prop_00460",
-          "prop_00351",
+          "prop_00350",
+          "prop_00461",
           "prop_00352",
           "prop_00353",
-          "prop_00371",
-          "prop_00355",
+          "prop_00354",
+          "prop_00372",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
-          "prop_00376"
+          "prop_00376",
+          "prop_00377"
         ],
         "emitRefs": [
           "emit_00009"
@@ -14504,25 +14517,25 @@
         "description": "滑块字段，绑定 number 值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldSlider.vue",
         "propRefs": [
-          "prop_00466",
           "prop_00467",
+          "prop_00468",
           "prop_00005",
-          "prop_00348",
-          "prop_00381",
-          "prop_00462",
-          "prop_00351",
+          "prop_00349",
+          "prop_00382",
+          "prop_00463",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00468",
-          "prop_00469"
+          "prop_00362",
+          "prop_00469",
+          "prop_00470"
         ],
         "emitRefs": [
           "emit_00030"
@@ -14534,23 +14547,23 @@
         "description": "开关字段，绑定 boolean 值，支持自定义开/关文本说明。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldSwitch.vue",
         "propRefs": [
-          "prop_00470",
           "prop_00471",
-          "prop_00005",
-          "prop_00348",
-          "prop_00381",
           "prop_00472",
-          "prop_00351",
+          "prop_00005",
+          "prop_00349",
+          "prop_00382",
+          "prop_00473",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
-          "prop_00361"
+          "prop_00361",
+          "prop_00362"
         ],
         "emitRefs": [
           "emit_00032"
@@ -14563,20 +14576,20 @@
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldText.vue",
         "propRefs": [
           "prop_00005",
-          "prop_00348",
-          "prop_00381",
-          "prop_00350",
+          "prop_00349",
+          "prop_00382",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
-          "prop_00361"
+          "prop_00361",
+          "prop_00362"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14588,25 +14601,25 @@
         "description": "多行文本字段，绑定 string 值，支持自动高度和字数限制。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldTextarea.vue",
         "propRefs": [
-          "prop_00473",
           "prop_00474",
           "prop_00475",
+          "prop_00476",
           "prop_00005",
-          "prop_00348",
-          "prop_00381",
-          "prop_00350",
+          "prop_00349",
+          "prop_00382",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00476",
-          "prop_00355",
+          "prop_00354",
+          "prop_00477",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00477"
+          "prop_00362",
+          "prop_00478"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14618,27 +14631,27 @@
         "description": "时间选择字段，绑定时间字符串或 Date 值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldTimePicker.vue",
         "propRefs": [
-          "prop_00478",
           "prop_00479",
-          "prop_00005",
           "prop_00480",
+          "prop_00005",
           "prop_00481",
           "prop_00482",
-          "prop_00395",
-          "prop_00348",
-          "prop_00349",
           "prop_00483",
-          "prop_00351",
+          "prop_00396",
+          "prop_00349",
+          "prop_00350",
+          "prop_00484",
           "prop_00352",
           "prop_00353",
-          "prop_00484",
-          "prop_00355",
+          "prop_00354",
+          "prop_00485",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
-          "prop_00361"
+          "prop_00361",
+          "prop_00362"
         ],
         "emitRefs": [
           "emit_00033"
@@ -14650,26 +14663,26 @@
         "description": "时间间隔选择字段，绑定时间字符串值。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldTimeSelect.vue",
         "propRefs": [
-          "prop_00485",
           "prop_00486",
           "prop_00487",
           "prop_00488",
           "prop_00489",
+          "prop_00490",
           "prop_00005",
-          "prop_00348",
           "prop_00349",
           "prop_00350",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00484",
-          "prop_00355",
+          "prop_00354",
+          "prop_00485",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
-          "prop_00361"
+          "prop_00361",
+          "prop_00362"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14681,36 +14694,36 @@
         "description": "穿梭框字段，绑定数组值，支持搜索过滤。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldTransfer.vue",
         "propRefs": [
-          "prop_00490",
           "prop_00491",
           "prop_00492",
+          "prop_00493",
           "prop_00005",
-          "prop_00363",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
           "prop_00368",
-          "prop_00385",
-          "prop_00348",
-          "prop_00381",
-          "prop_00493",
-          "prop_00351",
+          "prop_00369",
+          "prop_00386",
+          "prop_00349",
+          "prop_00382",
+          "prop_00494",
           "prop_00352",
           "prop_00353",
-          "prop_00383",
-          "prop_00355",
+          "prop_00354",
+          "prop_00384",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
-          "prop_00376"
+          "prop_00376",
+          "prop_00377"
         ],
         "emitRefs": [
           "emit_00034"
@@ -14722,36 +14735,36 @@
         "description": "树形选择字段，绑定单值或数组。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldTreeSelect.vue",
         "propRefs": [
-          "prop_00494",
           "prop_00495",
+          "prop_00496",
           "prop_00005",
-          "prop_00363",
           "prop_00364",
           "prop_00365",
           "prop_00366",
           "prop_00367",
           "prop_00368",
           "prop_00369",
-          "prop_00348",
+          "prop_00370",
           "prop_00349",
-          "prop_00496",
-          "prop_00351",
+          "prop_00350",
+          "prop_00497",
           "prop_00352",
           "prop_00353",
-          "prop_00371",
-          "prop_00355",
+          "prop_00354",
+          "prop_00372",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00372",
+          "prop_00362",
           "prop_00373",
           "prop_00374",
           "prop_00375",
           "prop_00376",
-          "prop_00377"
+          "prop_00377",
+          "prop_00378"
         ],
         "emitRefs": [
           "emit_00035"
@@ -14763,30 +14776,30 @@
         "description": "文件上传字段，绑定文件路径字符串。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldUpload.vue",
         "propRefs": [
-          "prop_00497",
           "prop_00498",
           "prop_00499",
           "prop_00500",
+          "prop_00501",
           "prop_00005",
-          "prop_00426",
           "prop_00427",
-          "prop_00348",
-          "prop_00381",
-          "prop_00350",
+          "prop_00428",
+          "prop_00349",
+          "prop_00382",
           "prop_00351",
           "prop_00352",
           "prop_00353",
-          "prop_00428",
-          "prop_00355",
+          "prop_00354",
+          "prop_00429",
           "prop_00356",
           "prop_00357",
           "prop_00358",
           "prop_00359",
           "prop_00360",
           "prop_00361",
-          "prop_00501",
-          "prop_00434",
-          "prop_00435"
+          "prop_00362",
+          "prop_00502",
+          "prop_00435",
+          "prop_00436"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14798,7 +14811,6 @@
         "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
         "filePath": "packages/spark-component/src/components/fields/data-components/FieldUserPicker.vue",
         "propRefs": [
-          "prop_00399",
           "prop_00400",
           "prop_00401",
           "prop_00402",
@@ -14817,7 +14829,8 @@
           "prop_00415",
           "prop_00416",
           "prop_00417",
-          "prop_00418"
+          "prop_00418",
+          "prop_00419"
         ],
         "emitRefs": [
           "emit_00025"
@@ -14829,7 +14842,6 @@
         "description": "语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。",
         "filePath": "packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue",
         "propRefs": [
-          "prop_00502",
           "prop_00503",
           "prop_00504",
           "prop_00505",
@@ -14853,6 +14865,7 @@
           "prop_00523",
           "prop_00524",
           "prop_00525",
+          "prop_00526",
           "prop_00005"
         ],
         "emitRefs": []
@@ -14863,7 +14876,6 @@
         "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。",
         "filePath": "packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.vue",
         "propRefs": [
-          "prop_00526",
           "prop_00527",
           "prop_00528",
           "prop_00529",
@@ -14874,6 +14886,7 @@
           "prop_00534",
           "prop_00535",
           "prop_00536",
+          "prop_00537",
           "prop_00005"
         ],
         "emitRefs": []
@@ -14884,8 +14897,8 @@
         "description": "通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册组件，是 SPARK 渲染引擎的核心入口。",
         "filePath": "packages/spark-component/src/components/SparkComponentRenderer.vue",
         "propRefs": [
-          "prop_00537",
-          "prop_00538"
+          "prop_00538",
+          "prop_00539"
         ],
         "emitRefs": []
       },
@@ -14895,7 +14908,6 @@
         "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。",
         "filePath": "packages/spark-component/src/components/support/JsonTreeEditor.vue",
         "propRefs": [
-          "prop_00539",
           "prop_00540",
           "prop_00541",
           "prop_00542",
@@ -14911,7 +14923,8 @@
           "prop_00552",
           "prop_00553",
           "prop_00554",
-          "prop_00555"
+          "prop_00555",
+          "prop_00556"
         ],
         "emitRefs": [
           "emit_00018",
@@ -14924,12 +14937,12 @@
         "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。",
         "filePath": "packages/spark-component/src/components/support/SparkCodeEditor.vue",
         "propRefs": [
-          "prop_00556",
           "prop_00557",
-          "prop_00545",
           "prop_00558",
+          "prop_00546",
           "prop_00559",
-          "prop_00560"
+          "prop_00560",
+          "prop_00561"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14941,20 +14954,20 @@
         "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。",
         "filePath": "packages/spark-component/src/components/support/SparkJsonEditor.vue",
         "propRefs": [
-          "prop_00542",
-          "prop_00545",
-          "prop_00558",
-          "prop_00561",
-          "prop_00562",
+          "prop_00543",
+          "prop_00546",
           "prop_00559",
+          "prop_00562",
           "prop_00563",
+          "prop_00560",
           "prop_00564",
           "prop_00565",
           "prop_00566",
           "prop_00567",
           "prop_00568",
           "prop_00569",
-          "prop_00570"
+          "prop_00570",
+          "prop_00571"
         ],
         "emitRefs": [
           "emit_00018"
@@ -14966,9 +14979,9 @@
         "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。",
         "filePath": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
         "propRefs": [
-          "prop_00571",
           "prop_00572",
-          "prop_00573"
+          "prop_00573",
+          "prop_00574"
         ],
         "emitRefs": []
       },

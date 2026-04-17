@@ -24,6 +24,7 @@
       :grid-auto-rows="filterGridAutoRowsValue"
       :auto-fit-min-width="filterAutoFitMinWidthValue"
       :item-span="filterItemSpanValue"
+      :action-span="filterActionSpanValue"
       :search-action="handleFilterSearch"
       :reset-action="handleFilterReset"
       :toggle-collapsed-action="toggleFiltersCollapsed"
@@ -39,6 +40,7 @@
         @current-change="handleCurrentChange"
         @row-click="handleRowClick"
         @selection-change="handleSelectionChange"
+        @sort-change="handleSortChange"
       >
         <!--
           列区必须在编译后直接成为 el-table 的子级。
@@ -212,6 +214,18 @@ function childProp<T>(child: SparkNode | undefined, name: string): T | undefined
   return child?.props?.[name] as T | undefined
 }
 
+/**
+ * 兼容读取结构节点属性：优先 props.xx，缺失时回退到历史根级字段。
+ * 说明：旧配置里 r-actions 可能直接写 width/label 到节点根级，导致宽度回退到默认值。
+ */
+function childCompatProp<T>(child: SparkNode | undefined, name: string): T | undefined {
+  const propValue = child?.props?.[name]
+  if (propValue !== undefined) return propValue as T
+
+  const raw = child as unknown as Record<string, unknown> | undefined
+  return raw?.[name] as T | undefined
+}
+
 // ── row-fragment 宿主投影：将语义节点投影为 el-table-column ───────────────
 
 function isRowFragmentNode(node: SparkNode): boolean {
@@ -285,12 +299,18 @@ const normalizedFilterNode = computed<FilterNode | undefined>(() => {
 // ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
 
 const legacyRowActionsWidth = computed<string | number | undefined>(() => {
+  if (typeof props.rowActionsWidth === 'string' || typeof props.rowActionsWidth === 'number') {
+    return props.rowActionsWidth
+  }
   const value = props.tableProps?.['rowActionsWidth']
   if (typeof value === 'string' || typeof value === 'number') return value
   return readLegacyNumberLikeAttr('rowActionsWidth')
 })
 
 const legacyRowActionsLabel = computed<string | undefined>(() => {
+  if (typeof props.rowActionsLabel === 'string' && props.rowActionsLabel.length > 0) {
+    return props.rowActionsLabel
+  }
   const value = props.tableProps?.['rowActionsLabel']
   if (typeof value === 'string' && value.length > 0) return value
   return readLegacyStringAttr('rowActionsLabel')
@@ -399,6 +419,7 @@ const {
   filterCollapsibleValue,
   filterAutoFitMinWidthValue,
   filterItemSpanValue,
+  filterActionSpanValue,
   filtersCollapsed,
   toggleFiltersCollapsed,
 } = useRendererTableViewState({
@@ -482,12 +503,12 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
-/** 行操作列统一属性（仅保留宽度） */
+/** 行操作列统一属性（标题 + 宽度） */
 const rowActionColumnAttrs = computed(() => {
-  const label = childProp<string>(actionsNode.value, 'label')
+  const label = childCompatProp<string>(actionsNode.value, 'label')
     ?? legacyRowActionsLabel.value
     ?? '操作'
-  const width = childProp<number | string>(actionsNode.value, 'width')
+  const width = childCompatProp<number | string>(actionsNode.value, 'width')
     ?? legacyRowActionsWidth.value
     ?? 160
   return {
@@ -575,6 +596,21 @@ async function handleSelectionChange(selection: IDataRow[]) {
   await dispatch('selection-change', Array.isArray(selection) ? selection : [])
 }
 
+/** 处理排序变化（服务端排序） */
+async function handleSortChange({ prop, order }: { prop: string | null, order: 'ascending' | 'descending' | null }) {
+  if (!resolvedView.value) return
+  if (!prop || !order) {
+    // 取消排序
+    await resolvedView.value.setSort(undefined)
+  } else {
+    // 设置排序
+    await resolvedView.value.setSort([{
+      field: prop,
+      direction: order === 'ascending' ? 'asc' : 'desc',
+    }])
+  }
+}
+
 </script>
 
 <style scoped>
@@ -610,6 +646,40 @@ async function handleSelectionChange(selection: IDataRow[]) {
   flex: 1;
 }
 
+/* 表头视觉强化：提升层次感与可读性。 */
+.renderer-table-main :deep(.el-table) {
+  --spark-table-header-bg: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+  --spark-table-header-bg-hover: linear-gradient(180deg, #f2f8ff 0%, #e6efff 100%);
+  --spark-table-header-text: #1f2d3d;
+  --spark-table-header-border: #dbe6f6;
+  --spark-table-sort-active: #2f6feb;
+}
+
+.renderer-table-main :deep(.el-table__header-wrapper th.el-table__cell) {
+  background: var(--spark-table-header-bg);
+  color: var(--spark-table-header-text);
+  border-bottom: 1px solid var(--spark-table-header-border);
+  height: 44px;
+  font-weight: 600;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.renderer-table-main :deep(.el-table__header-wrapper th.el-table__cell .cell) {
+  letter-spacing: 0.02em;
+}
+
+.renderer-table-main :deep(.el-table__header-wrapper th.el-table__cell.is-sortable:hover) {
+  background: var(--spark-table-header-bg-hover);
+}
+
+.renderer-table-main :deep(.el-table__header-wrapper th.el-table__cell:first-child) {
+  border-top-left-radius: 10px;
+}
+
+.renderer-table-main :deep(.el-table__header-wrapper th.el-table__cell:last-child) {
+  border-top-right-radius: 10px;
+}
+
 /* 左右侧工具栏布局时，工具栏内部也改为纵向堆叠。 */
 .renderer-table-layout--left .renderer-table-toolbar :deep(.renderer-toolbar-lane),
 .renderer-table-layout--right .renderer-table-toolbar :deep(.renderer-toolbar-lane) {
@@ -617,7 +687,14 @@ async function handleSelectionChange(selection: IDataRow[]) {
   grid-auto-rows: max-content;
 }
 
-
+/* 行操作列内容左对齐，避免按钮全部挤在列中间。 */
+.renderer-table-row-actions {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 </style>
 

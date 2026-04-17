@@ -31,6 +31,7 @@ interface FieldControlProps extends OptionalWithUndefined<Pick<SparkFieldProps,
   | 'titleAlign' | 'valueAlign'
   | 'headerCellClassName' | 'cellClassName'
   | 'titleClassName' | 'valueClassName'
+  | 'sortable'
 >> {
 }
 
@@ -52,6 +53,7 @@ export function useFieldControlState<TValue>(options: UseFieldControlStateOption
     ...(options.props.cellClassName !== undefined ? { cellClassName: options.props.cellClassName } : {}),
     ...(options.props.titleClassName !== undefined ? { titleClassName: options.props.titleClassName } : {}),
     ...(options.props.valueClassName !== undefined ? { valueClassName: options.props.valueClassName } : {}),
+    ...(options.props.sortable !== undefined ? { sortable: options.props.sortable } : {}),
   }, options.state)
 
   const { handleControlledChange } = useControlledFieldChange<TValue>({

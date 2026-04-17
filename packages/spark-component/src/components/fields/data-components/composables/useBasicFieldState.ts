@@ -13,6 +13,7 @@ interface BasicFieldProps<TValue>
     | 'titleAlign' | 'valueAlign'
     | 'headerCellClassName' | 'cellClassName'
     | 'titleClassName' | 'valueClassName'
+    | 'sortable'
   >> {
 }
 

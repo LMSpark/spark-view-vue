@@ -24,7 +24,8 @@
           "border": true,
           "stripe": true,
           "highlightCurrentRow": true,
-          "filterCollapsible": true
+          "filterCollapsible": true,
+          "sortable": true
         },
         "children": [
           {
@@ -32,7 +33,8 @@
             "field": "name",
             "props": {
               "label": "姓名",
-              "width": 100
+              "width": 100,
+              "sortable": false
             }
           },
           {
@@ -41,6 +43,7 @@
             "props": {
               "label": "部门",
               "width": 120,
+              "sortable": true,
               "options": [
                 {
                   "label": "技术部",
@@ -66,7 +69,8 @@
             "field": "position",
             "props": {
               "label": "职位",
-              "width": 130
+              "width": 130,
+              "sortable": true
             }
           },
           {
@@ -75,6 +79,7 @@
             "props": {
               "label": "薪资",
               "width": 100,
+              "sortable": true,
               "filterMode": "range"
             }
           },
@@ -84,6 +89,7 @@
             "props": {
               "label": "状态",
               "width": 100,
+              "sortable": true,
               "options": [
                 {
                   "label": "在职",
@@ -101,7 +107,8 @@
             "field": "hireDate",
             "props": {
               "label": "入职日期",
-              "width": 130
+              "width": 130,
+              "sortable": true
             }
           },
           {
