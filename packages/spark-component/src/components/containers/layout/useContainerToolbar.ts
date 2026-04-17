@@ -27,7 +27,7 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
     options.toolbarPosition.value ?? 'top'
   )
   const toolbarClassValue = computed(() =>
-    options.toolbarClass.value ?? ''
+    options.toolbarClass.value ?? 'renderer-toolbar-default'
   )
 
   const visibleToolbarConfigs = computed(() =>

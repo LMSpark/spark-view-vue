@@ -5,7 +5,7 @@
         :model-value="fieldValue"
         :active-text="activeText"
         :inactive-text="inactiveText"
-        :disabled="isDisabled || !isCurrentFieldEditable"
+        :disabled="isDisabled || !isSwitchEditable"
         @update:model-value="handleChange"
       />
     </template>
@@ -17,6 +17,7 @@
  * @skill r-switch
  * @description 开关字段，绑定 boolean 值，支持自定义开/关文本说明。
  */
+import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
@@ -46,7 +47,15 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<bool
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
-const { boundColumn, contextData, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
+const { boundColumn, contextData, currentRow, fieldName, fieldValue, isCurrentFieldEditable, syncValue } = permission
+
+const isSwitchEditable = computed(() => {
+  // 字段级开关在无行上下文或未绑定字段时默认可编辑；
+  // 若已解析到权限快照，则仍遵循字段级 editable 约束。
+  if (currentRow.value === null || fieldName.value === '') return true
+  return isCurrentFieldEditable.value
+})
+
 useSwitchNullValue({
   boundColumn,
   contextData,

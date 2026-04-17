@@ -34,6 +34,7 @@
       <el-table
         ref="nativeTableRef"
         :data="tableData"
+        
         v-bind="elTableProps"
         @current-change="handleCurrentChange"
         @row-click="handleRowClick"
@@ -52,7 +53,7 @@
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
-            <div :class="['renderer-table-row-actions', rowActionsClassValue]">
+            <div class="renderer-table-row-actions">
               <RendererHostScope
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
@@ -84,6 +85,7 @@
             :align="resolveRowFragmentAlign(child)"
             :header-align="resolveRowFragmentHeaderAlign(child)"
             :class-name="resolveRowFragmentClass(child)"
+            resizable
           >
             <template #default="scope">
               <!--
@@ -109,7 +111,7 @@
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
-            <div :class="['renderer-table-row-actions', rowActionsClassValue]">
+            <div class="renderer-table-row-actions">
               <RendererHostScope
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
@@ -152,7 +154,7 @@
  * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
  * - 到达此组件时，props.children 只保留表格内容列配置，不做运行时二次分拣。
  */
-import { computed, nextTick, ref, watch, useSlots } from 'vue'
+import { computed, nextTick, ref, watch, useAttrs, useSlots } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
@@ -192,6 +194,18 @@ const allChildNodes = computed(() => getSparkNodeChildren(props.children))
 const contentChildNodes = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
 
 const slots = useSlots()
+const attrs = useAttrs()
+
+function readLegacyStringAttr(name: string): string | undefined {
+  const value = attrs[name]
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+function readLegacyNumberLikeAttr(name: string): string | number | undefined {
+  const value = attrs[name]
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
 
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
 function childProp<T>(child: SparkNode | undefined, name: string): T | undefined {
@@ -270,9 +284,28 @@ const normalizedFilterNode = computed<FilterNode | undefined>(() => {
 
 // ── 基础输入解析：DataKey 与传给 el-table 的显式 tableProps ───────────────
 
-const baseElTableProps = computed<Record<string, unknown>>(() => ({
-  ...(props.tableProps ?? {}),
-}))
+const legacyRowActionsWidth = computed<string | number | undefined>(() => {
+  const value = props.tableProps?.['rowActionsWidth']
+  if (typeof value === 'string' || typeof value === 'number') return value
+  return readLegacyNumberLikeAttr('rowActionsWidth')
+})
+
+const legacyRowActionsLabel = computed<string | undefined>(() => {
+  const value = props.tableProps?.['rowActionsLabel']
+  if (typeof value === 'string' && value.length > 0) return value
+  return readLegacyStringAttr('rowActionsLabel')
+})
+
+const baseElTableProps = computed<Record<string, unknown>>(() => {
+  const raw = props.tableProps ?? {}
+  const { rowActionsWidth: _rowActionsWidth, ...tableProps } = raw
+
+  return {
+    border: true,
+    resizable: true,
+    ...tableProps,
+  }
+})
 const effectiveDataKey = computed(() => props.dataKey)
 
 // ── SPARK 上下文与数据源：解析 DataKey → DataView，并向下游提供 DATA_SOURCE ──
@@ -422,7 +455,6 @@ const toolbarActionHost = createActionCapability({
 
 const {
   actionPositionValue: rowActionsPositionValue,
-  actionClassValue: rowActionsClassValue,
   showActionsLeft: showRowActionsLeft,
   showActionsRight: showRowActionsRight,
   getScopedActionConfigs: getScopedRowActions,
@@ -450,23 +482,18 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
-/** 行操作列统一属性（仅 child props + defaults） */
+/** 行操作列统一属性（仅保留宽度） */
 const rowActionColumnAttrs = computed(() => {
-  const label = childProp<string>(actionsNode.value, 'label') ?? '操作'
+  const label = childProp<string>(actionsNode.value, 'label')
+    ?? legacyRowActionsLabel.value
+    ?? '操作'
   const width = childProp<number | string>(actionsNode.value, 'width')
+    ?? legacyRowActionsWidth.value
     ?? 160
-  const rawAlign = childProp<string>(actionsNode.value, 'align')
-  const align = rawAlign === 'left' || rawAlign === 'center' || rawAlign === 'right' ? rawAlign : 'left'
-  const childFixed = childProp<boolean | 'left' | 'right'>(actionsNode.value, 'fixed')
-  const fixed: boolean | 'left' | 'right' = childFixed ?? rowActionsPositionValue.value
   return {
     label,
     width,
-    minWidth: width,
-    align,
-    fixed,
     resizable: true,
-    className: rowActionsClassValue.value || undefined,
   }
 })
 
