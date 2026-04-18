@@ -62,6 +62,16 @@
       </el-tabs>
 
       <div class="editor-body" v-loading="!editor.isReady.value">
+        <!-- AI 辅助工具栏 -->
+        <DevEditorAiBar
+          :page-id="state.activePageId.value ?? ''"
+          :file-name="resolvedActiveFile"
+          :file-content="state.editFiles[resolvedActiveFile] ?? ''"
+          :enabled="Boolean(state.activePageId.value)"
+          @apply="handleAiApply"
+          @status="handleAiStatus"
+        />
+        
         <div class="editor-area">
           <JsonTreeEditor
             v-if="resolvedActiveFile === 'rule.json'"
@@ -143,6 +153,7 @@ import { PAGE_DATA_JSON_SCHEMA } from './policies/pageDataJsonSchema'
 import { PAGE_FILE_NAMES } from './useDevState'
 import type { BackendPageVersionSummary, DevState, PageFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
+import DevEditorAiBar from './DevEditorAiBar.vue'
 
 const props = defineProps<{
   state: DevState
@@ -197,6 +208,16 @@ function saveFile() {
 
 function refreshFile() {
   void editor.refresh()
+}
+
+// ── AI 辅助处理 ──
+
+function handleAiApply(content: string) {
+  editor.updateText(content)
+}
+
+function handleAiStatus(message: string, type: 'success' | 'warning' | 'error') {
+  props.state.addStatus(message, type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'error')
 }
 
 async function loadVersions() {

@@ -61,6 +61,58 @@
         </div>
       </div>
 
+      <!-- ═══ Blueprint bar ═══ -->
+      <div v-if="stillsBlueprint" class="ai-float__blueprint">
+        <div class="blueprint__header" @click="blueprintExpanded = !blueprintExpanded">
+          <span>📋 执行计划 ({{ blueprintProgress }})</span>
+          <span class="blueprint__toggle">{{ blueprintExpanded ? '▲' : '▼' }}</span>
+        </div>
+        <div v-show="blueprintExpanded" class="blueprint__items">
+          <div
+            v-for="(item, idx) in stillsBlueprint.items"
+            :key="idx"
+            class="bp-item"
+            :class="{ 'bp-item--done': item.status === 'done', 'bp-item--running': item.status === 'running' }"
+          >
+            <span class="bp-item__icon">
+              {{ item.status === 'done' ? '✅' : item.status === 'running' ? '⏳' : '⬜' }}
+            </span>
+            <span class="bp-item__text">{{ item.description || item.action }}</span>
+            <button
+              v-if="item.status === 'pending' && stillsInteractive"
+              class="bp-item__skip"
+              @click="skipBlueprintItem(idx)"
+            >跳过</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Blueprint bar ═══ -->
+      <div v-if="stillsBlueprint" class="ai-float__blueprint">
+        <div class="blueprint__header" @click="blueprintExpanded = !blueprintExpanded">
+          <span>📋 执行计划 ({{ blueprintProgress }})</span>
+          <span class="blueprint__toggle">{{ blueprintExpanded ? '▲' : '▼' }}</span>
+        </div>
+        <div v-show="blueprintExpanded" class="blueprint__items">
+          <div
+            v-for="(item, idx) in stillsBlueprint.items"
+            :key="idx"
+            class="bp-item"
+            :class="{ 'bp-item--done': item.status === 'done', 'bp-item--running': item.status === 'running' }"
+          >
+            <span class="bp-item__icon">
+              {{ item.status === 'done' ? '✅' : item.status === 'running' ? '⏳' : '⬜' }}
+            </span>
+            <span class="bp-item__text">{{ item.description || item.action }}</span>
+            <button
+              v-if="item.status === 'pending' && stillsInteractive"
+              class="bp-item__skip"
+              @click="skipBlueprintItem(idx)"
+            >跳过</button>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══ Log bar ═══ -->
       <div class="ai-float__logbar" @click="logExpanded = !logExpanded">
         <span>📋 {{ logs.length }} 条日志 ({{ errorCount }} 错误)</span>
@@ -95,9 +147,28 @@
         <div class="input-actions">
           <button class="act-btn act-btn--icon" title="清空对话" @click="clearMessages">🗑️</button>
           <button class="act-btn act-btn--debug" :disabled="loading" title="收集错误日志，发送给 AI 自动修复" @click="handleDebug">🔧 调试</button>
-          <button class="act-btn act-btn--send" :disabled="loading || !canSend" @click="handleSend">
-            {{ loading ? '⏳' : '📤' }} 发送
-          </button>
+          <div class="send-dropdown" :class="{ 'send-dropdown--open': sendMenuOpen }">
+            <button
+              class="act-btn act-btn--send"
+              :disabled="loading || !canSend"
+              @click="handleSend"
+            >
+              {{ loading ? '⏳' : '📤' }} {{ sendMode === 'stills' ? 'Stills' : '生成' }}
+            </button>
+            <button
+              class="act-btn act-btn--dropdown"
+              :disabled="loading"
+              @click.stop="sendMenuOpen = !sendMenuOpen"
+            >▼</button>
+            <div v-show="sendMenuOpen" class="send-dropdown__menu">
+              <div class="send-dropdown__item" :class="{ active: sendMode === 'generate' }" @click="selectSendMode('generate')">
+                📤 生成页面
+              </div>
+              <div class="send-dropdown__item" :class="{ active: sendMode === 'stills' }" @click="selectSendMode('stills')">
+                ⚡ Stills 执行
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -114,11 +185,33 @@ import {
   type PageFiles,
   type LogSnapshot,
   type StreamCallbacks,
+  // Stills 相关
+  runStillsLoop,
+  SessionBackendImpl,
+  createSession,
+  registerAllStills,
+  STILLS_RUNTIME_PROMPT,
+  type IStillSession,
+  type DialogueTurn,
 } from '@spark-view/spark-ai'
 import { onPageConfigChange, onServerEvent, type FileChangeEvent } from '@spark-view/spark-utils'
 import type { DevState } from './useDevState'
 
 // ── Types ──
+
+type SendMode = 'generate' | 'stills'
+
+interface BlueprintItem {
+  action: string
+  description?: string
+  status: 'pending' | 'running' | 'done' | 'skipped'
+}
+
+interface BlueprintState {
+  goal: string
+  items: BlueprintItem[]
+  currentIndex: number
+}
 
 interface PanelMessage {
   id: number
@@ -175,6 +268,15 @@ const logExpanded = ref(false)
 const messages = ref<PanelMessage[]>([])
 const messagesRef = ref<HTMLDivElement | null>(null)
 const promptRef = ref<HTMLTextAreaElement | null>(null)
+
+// Stills 模式状态
+const sendMode = ref<SendMode>('generate')
+const sendMenuOpen = ref(false)
+const stillsBlueprint = ref<BlueprintState | null>(null)
+const blueprintExpanded = ref(true)
+const stillsInteractive = ref(true)
+const stillsSession = ref<IStillSession | null>(null)
+const stillsBackend = ref<SessionBackendImpl | null>(null)
 
 let nextMsgId = 1
 
@@ -233,6 +335,13 @@ const currentFormPageId = computed(() => props.state.editForm.path?.replace(/^\/
 const canSend = computed(() => Boolean(pageId.value.trim() && prompt.value.trim()))
 const errorCount = computed(() => logs.value.filter(l => l.level === 'error').length)
 
+// Stills 蓝图进度
+const blueprintProgress = computed(() => {
+  if (!stillsBlueprint.value) return '0/0'
+  const done = stillsBlueprint.value.items.filter(i => i.status === 'done' || i.status === 'skipped').length
+  return `${done}/${stillsBlueprint.value.items.length}`
+})
+
 // ── Sync pageId from DevState ──
 
 watch(() => props.state.editForm.path, (val) => {
@@ -281,6 +390,25 @@ function clearMessages() {
   messages.value = []
   files.value = {}
   logs.value = []
+  // Stills: 清空时销毁会话
+  if (stillsSession.value) {
+    stillsSession.value = null
+  }
+  stillsBlueprint.value = null
+}
+
+// ── Send mode dropdown ──
+
+function selectSendMode(mode: SendMode) {
+  sendMode.value = mode
+  sendMenuOpen.value = false
+}
+
+function skipBlueprintItem(idx: number) {
+  if (!stillsBlueprint.value) return
+  if (stillsBlueprint.value.items[idx]) {
+    stillsBlueprint.value.items[idx].status = 'skipped'
+  }
 }
 
 function makeStreamCallbacks(aiMsg: PanelMessage): StreamCallbacks {
@@ -311,6 +439,14 @@ function gatherContextFiles(): PageFiles {
 // ── Handlers ──
 
 async function handleSend() {
+  if (sendMode.value === 'stills') {
+    await handleStillsSend()
+    return
+  }
+  await handleGenerateSend()
+}
+
+async function handleGenerateSend() {
   const pid = pageId.value.trim()
   const text = prompt.value.trim()
   if (!pid || !text || loading.value) return
@@ -351,6 +487,93 @@ async function handleSend() {
   } catch (err) {
     aiMsg.content = `❌ ${err instanceof Error ? err.message : String(err)}`
     props.state.addStatus(`❌ 失败: ${err instanceof Error ? err.message : String(err)}`, 'error')
+  } finally {
+    aiMsg.streaming = false
+    loading.value = false
+    scrollToBottom()
+  }
+}
+
+async function handleStillsSend() {
+  const pid = pageId.value.trim()
+  const text = prompt.value.trim()
+  if (!pid || !text || loading.value) return
+
+  prompt.value = ''
+  resetPromptHeight()
+  addUserMessage(`[Stills] ${text}`)
+  const aiMsg = createAssistantMessage()
+  loading.value = true
+
+  try {
+    // 确保 Stills 注册
+    registerAllStills()
+
+    // 初始化后端
+    if (!stillsBackend.value) {
+      const aiLoop = loop.value
+      if (!aiLoop) throw new Error('AI Loop 未初始化')
+      stillsBackend.value = new SessionBackendImpl((aiLoop as unknown as { baseUrl: string }).baseUrl)
+    }
+
+    // 创建本地 session
+    const session = createSession()
+    stillsSession.value = session
+
+    // 初始化蓝图显示
+    stillsBlueprint.value = {
+      goal: text,
+      items: [],
+      currentIndex: 0,
+    }
+
+    // 运行 Stills Loop
+    const result = await runStillsLoop(text, session, stillsBackend.value, {
+      maxRounds: 20,
+      slidingWindow: 10,
+      systemPrompt: STILLS_RUNTIME_PROMPT,
+      onRoundStart(round: number) {
+        aiMsg.content = `⏳ 执行中... (轮次 ${round})`
+        scrollToBottom()
+      },
+      onRoundComplete(turn: DialogueTurn) {
+        // 更新蓝图状态
+        if (turn.toolBlock) {
+          const idx = stillsBlueprint.value?.items.findIndex(
+            i => i.action === turn.toolBlock?.action && i.status !== 'done',
+          ) ?? -1
+          if (idx >= 0 && stillsBlueprint.value) {
+            const item = stillsBlueprint.value.items[idx]
+            if (item) item.status = turn.stillsResult?.ok ? 'done' : 'running'
+          }
+        }
+        // 更新消息内容
+        if (turn.stillsResult) {
+          const status = turn.stillsResult.ok ? '✓' : '✗'
+          aiMsg.content += `\n${status} ${turn.toolBlock?.action ?? 'unknown'}: ${turn.stillsResult.summary ?? (turn.stillsResult.ok ? '成功' : turn.stillsResult.msg)}`
+        }
+        scrollToBottom()
+      },
+    })
+
+    // 完成
+    if (result.exportCompleted) {
+      aiMsg.content += `\n\n✅ Stills 执行完成 (${result.rounds} 轮)`
+      props.state.addStatus(`✅ Stills 执行完成`, 'success')
+    } else if (result.aborted) {
+      aiMsg.content += `\n\n⚠️ Stills 中止: ${result.abortReason}`
+      props.state.addStatus(`⚠️ Stills 中止: ${result.abortReason}`, 'warning')
+    } else {
+      aiMsg.content += `\n\n📊 Stills 已完成 ${result.rounds} 轮`
+    }
+
+    if (currentFormPageId.value === pid) {
+      props.state.requestAllPageFileReload()
+    }
+    void props.state.loadPages()
+  } catch (err) {
+    aiMsg.content = `❌ Stills 执行失败: ${err instanceof Error ? err.message : String(err)}`
+    props.state.addStatus(`❌ Stills 失败: ${err instanceof Error ? err.message : String(err)}`, 'error')
   } finally {
     aiMsg.streaming = false
     loading.value = false
@@ -950,6 +1173,89 @@ watch(
   background: #7c3aed;
   color: #fff;
   font-weight: 500;
+  border-radius: 8px 0 0 8px;
 }
 .act-btn--send:hover:not(:disabled) { background: #6d28d9; }
+.act-btn--dropdown {
+  background: #6d28d9;
+  color: #fff;
+  padding: 6px 8px;
+  font-size: 10px;
+  border-radius: 0 8px 8px 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+.act-btn--dropdown:hover:not(:disabled) { background: #5b21b6; }
+
+/* ═══ Send dropdown menu ═══ */
+.send-dropdown {
+  position: relative;
+  display: inline-flex;
+}
+.send-dropdown__menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  min-width: 140px;
+  z-index: 10;
+  overflow: hidden;
+}
+.send-dropdown__item {
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.send-dropdown__item:hover { background: #f3f4f6; }
+.send-dropdown__item.active { background: #f0e7ff; color: #7c3aed; font-weight: 500; }
+
+/* ═══ Blueprint bar ═══ */
+.ai-float__blueprint {
+  border-top: 1px solid #e5e7eb;
+  background: #fef9e7;
+  flex-shrink: 0;
+}
+.blueprint__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: #92400e;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+}
+.blueprint__header:hover { background: rgba(0, 0, 0, 0.03); }
+.blueprint__toggle { font-size: 10px; }
+.blueprint__items {
+  padding: 4px 16px 8px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.bp-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 12px;
+  color: #4b5563;
+}
+.bp-item--done { color: #059669; }
+.bp-item--running { color: #7c3aed; font-weight: 500; }
+.bp-item__icon { flex-shrink: 0; }
+.bp-item__text { flex: 1; }
+.bp-item__skip {
+  background: #fee2e2;
+  border: none;
+  color: #dc2626;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.bp-item__skip:hover { background: #fecaca; }
 </style>

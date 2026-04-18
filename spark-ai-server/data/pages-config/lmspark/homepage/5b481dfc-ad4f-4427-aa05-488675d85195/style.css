@@ -1,0 +1,13 @@
+[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .order-system-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .el-button {
+  margin-right: 8px;
+}
+
+[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .r-section {
+  margin-bottom: 20px;
+}

@@ -209,6 +209,12 @@ export type {
   OrchestratorResult,
 } from './runtime/session-orchestrator'
 
+// ── Session Backend（会话后端 HTTP 客户端）────────────────────────────────────
+export {
+  SessionBackendImpl,
+  configureSessionBackend,
+} from './runtime/session-backend-impl'
+
 // ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
 export {
   actionToFunctionName,

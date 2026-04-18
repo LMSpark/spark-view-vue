@@ -34,6 +34,33 @@ interface RuleNodeSnapshot {
   path: string
 }
 
+interface RuleValidationContext {
+  issues: ConfigValidationIssue[]
+  scriptFunctions: Set<string>
+  tableNames: Set<string>
+  tableDataKeys: Map<string, string>
+  tablesWithHighlight: Set<string>
+  tablesUsingCurrentRow: Set<string>
+}
+
+type JsonInputSpec = {
+  fileName: 'rule.json' | 'pagedata.json'
+  category: ConfigValidationCategory
+  severity: ConfigValidationSeverity
+  message: string
+  suggestion: string
+}
+
+type JsonInputFileName = JsonInputSpec['fileName']
+type ParsedJsonMap = Partial<Record<JsonInputFileName, unknown>>
+
+type ValidationInputs = {
+  ruleJson: unknown
+  pageDataJson: unknown
+  scriptFunctions: Set<string>
+  tableNames: Set<string>
+}
+
 type RenderContext = 'table' | 'form' | 'detail' | 'list' | 'tree'
 
 import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES, CONTAINER_CONTEXT_MAP, NON_FIELD_R_TYPES } from './shared-constants'
@@ -50,6 +77,28 @@ const EMPTY_SUMMARY: ConfigValidationSummary = {
   },
 }
 
+const TOP_LEVEL_PROP_RULES: ReadonlyArray<{ propName: 'style' | 'class'; suggestion: string }> = [
+  { propName: 'style', suggestion: '请将 style 移入 props: { style: {...} }。' },
+  { propName: 'class', suggestion: '请将 class 移入 props: { class: "..." }。' },
+]
+
+const JSON_INPUT_SPECS: readonly JsonInputSpec[] = [
+  {
+    fileName: 'rule.json',
+    category: 'component',
+    severity: 'error',
+    message: 'rule.json 不是有效 JSON，无法执行结构校验',
+    suggestion: '请先修复 rule.json 语法再重试。',
+  },
+  {
+    fileName: 'pagedata.json',
+    category: 'dataKey',
+    severity: 'warning',
+    message: 'pagedata.json 不是有效 JSON，跳过表引用校验',
+    suggestion: '请修复 pagedata.json 语法以启用表引用校验。',
+  },
+]
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
     return value as Record<string, unknown>
@@ -57,10 +106,15 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return null
 }
 
+function asNonEmptyString(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed === '' ? null : trimmed
+}
+
 function parseJson(content: string | undefined): unknown {
-  if (content === undefined) return null
-  const trimmed = content.trim()
-  if (trimmed === '') return null
+  const trimmed = content?.trim()
+  if (trimmed === undefined || trimmed === '') return null
   try {
     return JSON.parse(trimmed) as unknown
   } catch {
@@ -68,16 +122,28 @@ function parseJson(content: string | undefined): unknown {
   }
 }
 
+function pushInvalidJsonIssue(
+  issues: ConfigValidationIssue[],
+  fileName: 'rule.json' | 'pagedata.json',
+  category: ConfigValidationCategory,
+  severity: ConfigValidationSeverity,
+  message: string,
+  suggestion: string,
+): void {
+  pushIssue(issues, category, severity, message, fileName, suggestion)
+}
+
 function extractScriptFunctions(script: string | undefined): Set<string> {
   const names = new Set<string>()
-  if (script === undefined || script.trim() === '') return names
+  const scriptText = asNonEmptyString(script)
+  if (scriptText === null) return names
 
   const declarationPattern = /\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gu
   const arrowPattern = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>/gu
   const functionExprPattern = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?function\b/gu
 
   for (const pattern of [declarationPattern, arrowPattern, functionExprPattern]) {
-    for (const match of script.matchAll(pattern)) {
+    for (const match of scriptText.matchAll(pattern)) {
       const name = match[1]
       if (name !== undefined) names.add(name)
     }
@@ -108,16 +174,18 @@ function isLikelyComponentType(typeName: string): boolean {
   return /^[a-z][a-z0-9-]*$/u.test(typeName) && typeName.includes('-')
 }
 
-function parseDataKeyTable(dataKey: string): { tableName: string | null; crossPage: boolean } {
-  if (!DATAKEY_RE.test(dataKey)) {
-    return { tableName: null, crossPage: false }
-  }
+function parseDataKeyTable(dataKey: string): { tableName: string | null; crossPage: boolean } | null {
+  if (!DATAKEY_RE.test(dataKey)) return null
   const parts = dataKey.split('@')
-  if (parts.length === 0) return { tableName: null, crossPage: false }
   if (parts[0]?.startsWith('#')) {
     return { tableName: parts[1] ?? null, crossPage: true }
   }
   return { tableName: parts[0] ?? null, crossPage: false }
+}
+
+function addIfNonEmpty(target: Set<string>, value: unknown): void {
+  const text = asNonEmptyString(value)
+  if (text !== null) target.add(text)
 }
 
 function extractTableNames(pageData: unknown): Set<string> {
@@ -129,10 +197,7 @@ function extractTableNames(pageData: unknown): Set<string> {
   if (Array.isArray(tables)) {
     for (const item of tables) {
       const record = asRecord(item)
-      const tableName = record?.['tableName']
-      if (typeof tableName === 'string' && tableName.trim() !== '') {
-        names.add(tableName)
-      }
+      addIfNonEmpty(names, record?.['tableName'])
     }
     return names
   }
@@ -140,7 +205,7 @@ function extractTableNames(pageData: unknown): Set<string> {
   const tableMap = asRecord(tables)
   if (tableMap !== null) {
     for (const key of Object.keys(tableMap)) {
-      if (key.trim() !== '') names.add(key)
+      addIfNonEmpty(names, key)
     }
   }
 
@@ -148,14 +213,30 @@ function extractTableNames(pageData: unknown): Set<string> {
 }
 
 function extractFieldName(node: Record<string, unknown>): string | null {
-  if (typeof node['field'] === 'string' && node['field'].trim() !== '') {
-    return node['field']
-  }
-  return null
+  return asNonEmptyString(node['field'])
 }
 
 function isSparkFieldType(typeName: string): boolean {
   return typeName.startsWith('r-') && !NON_FIELD_R_TYPES.has(typeName)
+}
+
+function isTableContainerType(typeName: string): boolean {
+  return typeName === 'r-table' || typeName === 'el-table'
+}
+
+function pushMissingScriptFunctionIssue(
+  issues: ConfigValidationIssue[],
+  category: Extract<ConfigValidationCategory, 'render' | 'handler'>,
+  functionName: string,
+  path: string,
+): void {
+  const message = category === 'render'
+    ? `渲染函数「${functionName}」未在 script.js 中定义`
+    : `事件处理函数「${functionName}」未在 script.js 中定义`
+  const suggestion = category === 'render'
+    ? `请在 script.js 中添加 function ${functionName}() { ... }。`
+    : `请在 script.js 中补充 ${functionName} 函数实现。`
+  pushIssue(issues, category, 'error', message, path, suggestion)
 }
 
 function validateContextAwareStructure(
@@ -283,7 +364,8 @@ function validateAggregatesConfig(
         const aggDef = asRecord(aggValue)
         if (aggDef === null) {
           pushIssue(issues, 'dataKey', 'warning',
-            `聚合配置「${loc}.${field}」应为对象 { type: "sum"|"avg"|... }`, loc,
+            `聚合配置「${loc}.${field}」应为对象 { type: "sum"|"avg"|... }`,
+            loc,
             '聚合定义格式：{ type: "sum" } 或 { type: "join", field: "name" }')
           continue
         }
@@ -299,193 +381,240 @@ function validateAggregatesConfig(
   }
 }
 
-export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValidationReport {
-  const issues: ConfigValidationIssue[] = []
+function validateNodeTypeAndContainer(
+  node: Record<string, unknown>,
+  path: string,
+  context: RuleValidationContext,
+): void {
+  const typeName = node['type']
+  if (typeof typeName !== 'string') return
 
-  const ruleJson = parseJson(files['rule.json'])
-  const pageDataJson = parseJson(files['pagedata.json'])
-  const scriptFunctions = extractScriptFunctions(files['script.js'])
-  const tableNames = extractTableNames(pageDataJson)
-
-  if (files['rule.json'] !== undefined && ruleJson === null) {
+  if (!isLikelyComponentType(typeName)) {
     pushIssue(
-      issues,
+      context.issues,
       'component',
-      'error',
-      'rule.json 不是有效 JSON，无法执行结构校验',
-      'rule.json',
-      '请先修复 rule.json 语法再重试。',
-    )
-  }
-
-  if (files['pagedata.json'] !== undefined && pageDataJson === null) {
-    pushIssue(
-      issues,
-      'dataKey',
       'warning',
-      'pagedata.json 不是有效 JSON，跳过表引用校验',
-      'pagedata.json',
-      '请修复 pagedata.json 语法以启用表引用校验。',
+      `组件类型「${typeName}」可能未注册`,
+      `${path}.type`,
+      '优先使用 r-*/el-*/Render* 或已注册的 kebab-case 组件。',
     )
   }
 
-  const nodes: RuleNodeSnapshot[] = []
-  if (ruleJson !== null) {
-    collectRuleNodes(ruleJson, 'rules', nodes)
-    validateContextAwareStructure(ruleJson, 'rules', issues, null)
+  if (typeName.startsWith('Render') && !context.scriptFunctions.has(typeName)) {
+    pushMissingScriptFunctionIssue(context.issues, 'render', typeName, `${path}.type`)
   }
 
-  // 收集所有 dataKey 用于 highlightCurrentRow 交叉检查
-  const tableDataKeys = new Map<string, string>() // tableName → path（最后一个 r-table 的路径）
-  const tablesWithHighlight = new Set<string>()    // 有 highlightCurrentRow 的表名
-  const tablesUsingCurrentRow = new Set<string>()  // 使用 @currentRow 的表名
+  if (typeName.startsWith('r-') && typeof node['name'] === 'string' && node['field'] === undefined) {
+    pushIssue(
+      context.issues,
+      'component',
+      'warning',
+      `「${typeName}」使用了 name 属性「${node['name']}」，请改用 field`,
+      `${path}.name`,
+      '字段绑定请使用 field 声明。',
+    )
+  }
 
+  if (!isTableContainerType(typeName)) return
+
+  const dataKey = node['dataKey']
+  if (typeof dataKey !== 'string') return
+
+  const parsed = parseDataKeyTable(dataKey)
+  const tableName = parsed?.tableName
+  if (tableName === null || tableName === undefined) return
+
+  context.tableDataKeys.set(tableName, path)
+  const props = asRecord(node['props'])
+  if (props?.['highlightCurrentRow'] === true) {
+    context.tablesWithHighlight.add(tableName)
+  }
+}
+
+function validateNodeDataKey(
+  node: Record<string, unknown>,
+  path: string,
+  context: RuleValidationContext,
+): void {
+  const dataKey = node['dataKey']
+  if (typeof dataKey !== 'string') return
+
+  const parsed = parseDataKeyTable(dataKey)
+  if (!parsed) {
+    pushIssue(
+      context.issues,
+      'dataKey',
+      'error',
+      `DataKey「${dataKey}」格式不正确`,
+      `${path}.dataKey`,
+      '格式应为 table@field 或 table@viewId@field（支持 #scope 前缀）。',
+    )
+    return
+  }
+
+  if (!parsed.crossPage && parsed.tableName !== null && context.tableNames.size > 0 && !context.tableNames.has(parsed.tableName)) {
+    pushIssue(
+      context.issues,
+      'dataKey',
+      'error',
+      `DataKey 引用的表「${parsed.tableName}」在 pagedata.json 中不存在`,
+      `${path}.dataKey`,
+      '请校对 dataKey 表名与 pagedata.json tables 定义。',
+    )
+  }
+
+  if (parsed.tableName !== null && dataKey.includes('@currentRow')) {
+    context.tablesUsingCurrentRow.add(parsed.tableName)
+  }
+}
+
+function validateNodeHandlers(
+  node: Record<string, unknown>,
+  path: string,
+  context: RuleValidationContext,
+): void {
+  const events = asRecord(node['on'])
+  if (events === null) return
+
+  for (const [eventName, handler] of Object.entries(events)) {
+    const trimmed = asNonEmptyString(handler)
+    if (trimmed === null) continue
+    if (!context.scriptFunctions.has(trimmed)) {
+      pushMissingScriptFunctionIssue(context.issues, 'handler', trimmed, `${path}.on.${eventName}`)
+    }
+  }
+}
+
+function validateRuleNode(
+  node: Record<string, unknown>,
+  path: string,
+  context: RuleValidationContext,
+): void {
+  for (const validator of RULE_NODE_VALIDATORS) {
+    validator(node, path, context)
+  }
+}
+
+const RULE_NODE_VALIDATORS: ReadonlyArray<(
+  node: Record<string, unknown>,
+  path: string,
+  context: RuleValidationContext,
+) => void> = [
+  validateNodeTypeAndContainer,
+  validateNodeDataKey,
+  validateNodeHandlers,
+]
+
+function validateCurrentRowHighlightConsistency(context: RuleValidationContext): void {
+  for (const tableName of context.tablesUsingCurrentRow) {
+    if (!context.tableDataKeys.has(tableName) || context.tablesWithHighlight.has(tableName)) continue
+    pushIssue(
+      context.issues,
+      'component',
+      'warning',
+      `表「${tableName}」被 @currentRow 引用，但对应 r-table 未声明 highlightCurrentRow`,
+      context.tableDataKeys.get(tableName) ?? 'rules',
+      '请在该 r-table 的 props 中添加 "highlightCurrentRow": true，否则当前行无高亮效果。',
+    )
+  }
+}
+
+function validateTopLevelPropPlacement(nodes: RuleNodeSnapshot[], issues: ConfigValidationIssue[]): void {
   for (const { node, path } of nodes) {
     const typeName = node['type']
-    if (typeof typeName === 'string') {
-      if (!isLikelyComponentType(typeName)) {
-        pushIssue(
-          issues,
-          'component',
-          'warning',
-          `组件类型「${typeName}」可能未注册`,
-          `${path}.type`,
-          '优先使用 r-*/el-*/Render* 或已注册的 kebab-case 组件。',
-        )
-      }
+    if (typeof typeName !== 'string') continue
 
-      if (typeName.startsWith('Render') && !scriptFunctions.has(typeName)) {
-        pushIssue(
-          issues,
-          'render',
-          'error',
-          `渲染函数「${typeName}」未在 script.js 中定义`,
-          `${path}.type`,
-          `请在 script.js 中添加 function ${typeName}() { ... }。`,
-        )
-      }
-
-      // 检测 name 属性（应使用 field）
-      if (typeName.startsWith('r-') && typeof node['name'] === 'string' && node['field'] === undefined) {
-        pushIssue(
-          issues,
-          'component',
-          'warning',
-          `「${typeName}」使用了 name 属性「${node['name']}」，请改用 field`,
-          `${path}.name`,
-          '字段绑定请使用 field 声明。',
-        )
-      }
-
-      // 收集 r-table 的 highlightCurrentRow 信息
-      if (typeName === 'r-table' || typeName === 'el-table') {
-        const dk = node['dataKey']
-        if (typeof dk === 'string') {
-          const tbl = parseDataKeyTable(dk)
-          if (tbl.tableName !== null) {
-            tableDataKeys.set(tbl.tableName, path)
-            const props = asRecord(node['props'])
-            if (props?.['highlightCurrentRow'] === true) {
-              tablesWithHighlight.add(tbl.tableName)
-            }
-          }
-        }
-      }
-    }
-
-    const dataKey = node['dataKey']
-    if (typeof dataKey === 'string') {
-      if (!DATAKEY_RE.test(dataKey)) {
-        pushIssue(
-          issues,
-          'dataKey',
-          'error',
-          `DataKey「${dataKey}」格式不正确`,
-          `${path}.dataKey`,
-          '格式应为 table@field 或 table@viewId@field（支持 #scope 前缀）。',
-        )
-      } else {
-        const parsed = parseDataKeyTable(dataKey)
-        if (!parsed.crossPage && parsed.tableName !== null && tableNames.size > 0 && !tableNames.has(parsed.tableName)) {
-          pushIssue(
-            issues,
-            'dataKey',
-            'error',
-            `DataKey 引用的表「${parsed.tableName}」在 pagedata.json 中不存在`,
-            `${path}.dataKey`,
-            '请校对 dataKey 表名与 pagedata.json tables 定义。',
-          )
-        }
-        // 记录使用 @currentRow 的表名
-        if (parsed.tableName !== null && dataKey.includes('@currentRow')) {
-          tablesUsingCurrentRow.add(parsed.tableName)
-        }
-      }
-    }
-
-    const events = asRecord(node['on'])
-    if (events !== null) {
-      for (const [eventName, handler] of Object.entries(events)) {
-        if (typeof handler !== 'string') continue
-        const trimmed = handler.trim()
-        if (trimmed === '') continue
-        if (!scriptFunctions.has(trimmed)) {
-          pushIssue(
-            issues,
-            'handler',
-            'error',
-            `事件处理函数「${trimmed}」未在 script.js 中定义`,
-            `${path}.on.${eventName}`,
-            `请在 script.js 中补充 ${trimmed} 函数实现。`,
-          )
-        }
-      }
-    }
-  }
-
-  // 交叉检查：使用 @currentRow 的表是否有对应的 highlightCurrentRow
-  for (const tableName of tablesUsingCurrentRow) {
-    if (tableDataKeys.has(tableName) && !tablesWithHighlight.has(tableName)) {
+    const props = asRecord(node['props'])
+    for (const { propName, suggestion } of TOP_LEVEL_PROP_RULES) {
+      if (node[propName] === undefined || props?.[propName] !== undefined) continue
       pushIssue(
         issues,
         'component',
         'warning',
-        `表「${tableName}」被 @currentRow 引用，但对应 r-table 未声明 highlightCurrentRow`,
-        tableDataKeys.get(tableName) ?? 'rules',
-        '请在该 r-table 的 props 中添加 "highlightCurrentRow": true，否则当前行无高亮效果。',
+        `节点「${typeName}」的 ${propName} 写在顶层，应移入 props 内`,
+        `${path}.${propName}`,
+        suggestion,
       )
     }
   }
+}
 
-  // 交叉检查：style / class 放在节点顶层而非 props 内
-  for (const { node, path } of nodes) {
-    if (node['style'] !== undefined && typeof node['type'] === 'string') {
-      const props = asRecord(node['props'])
-      if (props?.['style'] === undefined) {
-        pushIssue(
-          issues,
-          'component',
-          'warning',
-          `节点「${node['type']}」的 style 写在顶层，应移入 props 内`,
-          `${path}.style`,
-          '请将 style 移入 props: { style: {...} }。',
-        )
-      }
-    }
-    if (node['class'] !== undefined && typeof node['type'] === 'string') {
-      const props = asRecord(node['props'])
-      if (props?.['class'] === undefined) {
-        pushIssue(
-          issues,
-          'component',
-          'warning',
-          `节点「${node['type']}」的 class 写在顶层，应移入 props 内`,
-          `${path}.class`,
-          '请将 class 移入 props: { class: "..." }。',
-        )
-      }
-    }
+function reportInvalidJsonInputs(
+  files: GeneratedPageFiles,
+  parsedJson: ParsedJsonMap,
+  issues: ConfigValidationIssue[],
+): void {
+  for (const spec of JSON_INPUT_SPECS) {
+    if (files[spec.fileName] === undefined || parsedJson[spec.fileName] !== null) continue
+    pushInvalidJsonIssue(
+      issues,
+      spec.fileName,
+      spec.category,
+      spec.severity,
+      spec.message,
+      spec.suggestion,
+    )
   }
+}
+
+function createRuleValidationContext(
+  issues: ConfigValidationIssue[],
+  scriptFunctions: Set<string>,
+  tableNames: Set<string>,
+): RuleValidationContext {
+  return {
+    issues,
+    scriptFunctions,
+    tableNames,
+    tableDataKeys: new Map<string, string>(),
+    tablesWithHighlight: new Set<string>(),
+    tablesUsingCurrentRow: new Set<string>(),
+  }
+}
+
+function prepareValidationInputs(files: GeneratedPageFiles): ValidationInputs {
+  const ruleJson = parseJson(files['rule.json'])
+  const pageDataJson = parseJson(files['pagedata.json'])
+  return {
+    ruleJson,
+    pageDataJson,
+    scriptFunctions: extractScriptFunctions(files['script.js']),
+    tableNames: extractTableNames(pageDataJson),
+  }
+}
+
+function collectRuleNodesFromJson(
+  ruleJson: unknown,
+  issues: ConfigValidationIssue[],
+): RuleNodeSnapshot[] {
+  const nodes: RuleNodeSnapshot[] = []
+  if (ruleJson === null) return nodes
+  collectRuleNodes(ruleJson, 'rules', nodes)
+  validateContextAwareStructure(ruleJson, 'rules', issues, null)
+  return nodes
+}
+
+export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValidationReport {
+  const issues: ConfigValidationIssue[] = []
+
+  const { ruleJson, pageDataJson, scriptFunctions, tableNames } = prepareValidationInputs(files)
+
+  reportInvalidJsonInputs(files, {
+    'rule.json': ruleJson,
+    'pagedata.json': pageDataJson,
+  }, issues)
+
+  const nodes = collectRuleNodesFromJson(ruleJson, issues)
+
+  // 收集所有 dataKey 用于 highlightCurrentRow 交叉检查
+  const context = createRuleValidationContext(issues, scriptFunctions, tableNames)
+
+  for (const { node, path } of nodes) {
+    validateRuleNode(node, path, context)
+  }
+
+  validateCurrentRowHighlightConsistency(context)
+  validateTopLevelPropPlacement(nodes, issues)
 
   // 交叉检查：aggregates 配置的合法性
   validateAggregatesConfig(pageDataJson, issues)

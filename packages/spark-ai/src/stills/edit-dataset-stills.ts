@@ -17,6 +17,31 @@ type DispatchFn = (...args: unknown[]) => unknown
 
 const dsGuard = editGuard({ requireDatasetEdit: true })
 
+function resolveDispatchArgs(action: string, params: unknown): unknown[] {
+  const candidate = (params ?? {}) as Record<string, unknown>
+
+  if (action === 'datasetTool.export' || action === 'datasetTool.undo' || action === 'datasetTool.redo' || action === 'datasetTool.clearHistory') {
+    return []
+  }
+
+  if (action === 'datasetTool.deleteRelation') {
+    if (typeof candidate['selector'] === 'object' && candidate['selector'] !== null) {
+      return [candidate['selector']]
+    }
+  }
+
+  return [candidate]
+}
+
+function sanitizeExportData(action: string, data: unknown): unknown {
+  if (action !== 'datasetTool.export') return data
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) return data
+
+  const record = data as Record<string, unknown>
+  const { layout: _layout, ...withoutLayout } = record
+  return withoutLayout
+}
+
 export function createDatasetStills(): StillDefinition[] {
   return DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.map((row) => ({
     action: row.action,
@@ -35,9 +60,11 @@ export function createDatasetStills(): StillDefinition[] {
       const tool = getEditState(session).datasetEdit
       if (!tool) return { ok: false, code: 'NO_DATASET_EDIT', msg: 'datasetEdit 未初始化', fix: '请先执行 edit.init 初始化编辑会话' }
       try {
-        const fn = (tool as unknown as Record<string, DispatchFn>)[row.crudToolMethod]
-        if (!fn) throw new Error(`Method ${row.crudToolMethod} not found on DataSetCrudTool`)
-        const data = fn.call(tool, params ?? {})
+        const member = (tool as unknown as Record<string, unknown>)[row.crudToolMethod]
+        const rawData = typeof member === 'function'
+          ? (member as DispatchFn).call(tool, ...resolveDispatchArgs(row.action, params))
+          : member
+        const data = sanitizeExportData(row.action, rawData)
         return { ok: true, data, summary: `${row.action} 完成` }
       } catch (err) {
         return {

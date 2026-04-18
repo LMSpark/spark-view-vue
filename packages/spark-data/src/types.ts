@@ -627,6 +627,18 @@ export interface IDataSetMetadata {
   /** 业务数据版本号（乐观锁），与 schemaVersion 含义不同 */
   version?: number
   pageId?: string
+  /** 可选的设计器布局信息（如画布坐标）。 */
+  layout?: IDataSetLayoutMetadata
+}
+
+/**
+ * DataSet 级布局元数据。
+ *
+ * 该结构不参与运行时数据计算，仅用于设计器/编辑器恢复画布布局。
+ */
+export interface IDataSetLayoutMetadata {
+  /** 表名 -> 画布位置。 */
+  tablePositions?: Record<string, { x: number; y: number }>
 }
 
 // ===== 过滤和排序类型 =====

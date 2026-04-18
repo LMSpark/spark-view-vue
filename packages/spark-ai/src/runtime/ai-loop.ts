@@ -35,6 +35,7 @@ import { validateGeneratedConfig } from '../validation/config-validator'
 import type { ConfigValidationReport } from '../validation/config-validator'
 import { configureNavRegister, registerPageNavigation } from './nav-register'
 import type { NavRegistrationResult } from './nav-register'
+import { configureSessionBackend } from './session-backend-impl'
 import type { StreamCallbacks } from '../protocol'
 
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
@@ -73,6 +74,10 @@ export function configureAILoopHttp(options: {
       getNavApiUrl: options.getNavApiUrl,
       ...(options.getHeaders ? { getHeaders: options.getHeaders } : {}),
     })
+  }
+  // 同步配置 SessionBackend（供 Stills 编排器使用）
+  if (options.getHeaders) {
+    configureSessionBackend({ getHeaders: options.getHeaders })
   }
 }
 

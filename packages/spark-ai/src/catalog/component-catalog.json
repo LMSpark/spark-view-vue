@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-18T02:44:08.773Z",
-  "componentCount": 107,
+  "buildTime": "2026-04-18T10:20:33.785Z",
+  "componentCount": 109,
   "registry": {
     "containers": [
       "r-anchor",
@@ -1093,7 +1093,7 @@
         },
         {
           "name": "borderStyle",
-          "type": "\"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\" | undefined",
+          "type": "\"none\" | \"solid\" | \"dashed\" | \"dotted\" | \"double\" | undefined",
           "required": false,
           "default": "\"solid\"",
           "description": "边框样式"
@@ -1328,7 +1328,7 @@
         },
         {
           "name": "linkType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"default\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "链接类型"
@@ -1420,14 +1420,14 @@
         },
         {
           "name": "confirmButtonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"default\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型"
         },
         {
           "name": "cancelButtonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"default\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型"
@@ -2463,7 +2463,7 @@
         },
         {
           "name": "badgeType",
-          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。"
@@ -3076,7 +3076,7 @@
         },
         {
           "name": "alertType",
-          "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
+          "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "提示类型"
@@ -3455,7 +3455,7 @@
       "props": [
         {
           "name": "icon",
-          "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
+          "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型"
@@ -3578,7 +3578,7 @@
         },
         {
           "name": "itemType",
-          "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型"
@@ -4541,6 +4541,13 @@
       "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。",
       "props": [
         {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "占位文案"
+        },
+        {
           "name": "label",
           "type": "string | undefined",
           "required": false,
@@ -4574,13 +4581,6 @@
           "required": false,
           "default": "undefined",
           "description": "字段绑定名"
-        },
-        {
-          "name": "placeholder",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -6126,6 +6126,13 @@
       "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。",
       "props": [
         {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "占位文案"
+        },
+        {
           "name": "label",
           "type": "string | undefined",
           "required": false,
@@ -6159,13 +6166,6 @@
           "required": false,
           "default": "undefined",
           "description": "字段绑定名"
-        },
-        {
-          "name": "placeholder",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -8278,6 +8278,13 @@
       "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。",
       "props": [
         {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "占位文案"
+        },
+        {
           "name": "label",
           "type": "string | undefined",
           "required": false,
@@ -8311,13 +8318,6 @@
           "required": false,
           "default": "undefined",
           "description": "字段绑定名"
-        },
-        {
-          "name": "placeholder",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -9015,6 +9015,48 @@
       "category": "feature",
       "description": "管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口。",
       "props": []
+    },
+    "dev-data-set-designer": {
+      "type": "dev-data-set-designer",
+      "filePath": "src/views/app/dev-system/DevDataSetDesigner.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-data-set-designer\" 引用。",
+      "props": [
+        {
+          "name": "state",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoadState: { \"rule.json\": PageFileLoadState; \"pagedata.json\": PageFileLoadState; \"script.js\": PageFileLoadState; \"style.css\": PageFileLoadState; }; fileReloadToken: { \"rule.json\": number; \"pagedata.json\": number; \"script.js\": number; \"style.css\": number; }; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\", \"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; requestPageFileReload: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => void; requestAllPageFileReload: () => void; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+          "required": true
+        }
+      ]
+    },
+    "dev-editor-ai-bar": {
+      "type": "dev-editor-ai-bar",
+      "filePath": "src/views/app/dev-system/DevEditorAiBar.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-editor-ai-bar\" 引用。",
+      "props": [
+        {
+          "name": "pageId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "fileName",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "fileContent",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "true"
+        }
+      ]
     },
     "dev-system": {
       "type": "dev-system",
@@ -9789,7 +9831,7 @@
         },
         "prop_00105": {
           "name": "borderStyle",
-          "type": "\"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\" | undefined",
+          "type": "\"none\" | \"solid\" | \"dashed\" | \"dotted\" | \"double\" | undefined",
           "required": false,
           "default": "\"solid\"",
           "description": "边框样式"
@@ -9911,7 +9953,7 @@
         },
         "prop_00124": {
           "name": "linkType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"default\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"default\"",
           "description": "链接类型"
@@ -9969,14 +10011,14 @@
         },
         "prop_00133": {
           "name": "confirmButtonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"default\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型"
         },
         "prop_00134": {
           "name": "cancelButtonType",
-          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"default\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型"
@@ -10590,7 +10632,7 @@
         },
         "prop_00230": {
           "name": "badgeType",
-          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"\" | \"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。"
@@ -11033,7 +11075,7 @@
         },
         "prop_00298": {
           "name": "alertType",
-          "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
+          "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "提示类型"
@@ -11280,7 +11322,7 @@
         },
         "prop_00337": {
           "name": "icon",
-          "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
+          "type": "\"error\" | \"success\" | \"warning\" | \"info\" | undefined",
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型"
@@ -11361,7 +11403,7 @@
         },
         "prop_00349": {
           "name": "itemType",
-          "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
+          "type": "\"success\" | \"warning\" | \"info\" | \"primary\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型"
@@ -11748,46 +11790,46 @@
           "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。"
         },
         "prop_00410": {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": false,
+          "default": "undefined",
+          "description": "占位文案"
+        },
+        "prop_00411": {
           "name": "label",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "展示标签"
         },
-        "prop_00411": {
+        "prop_00412": {
           "name": "value",
           "type": "EntityPickerValue | undefined",
           "required": false,
           "default": "undefined",
           "description": "直接传入的值"
         },
-        "prop_00412": {
+        "prop_00413": {
           "name": "name",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "组件名称"
         },
-        "prop_00413": {
+        "prop_00414": {
           "name": "width",
           "type": "number | undefined",
           "required": false,
           "default": "undefined",
           "description": "字段宽度"
         },
-        "prop_00414": {
+        "prop_00415": {
           "name": "field",
           "type": "string | undefined",
           "required": false,
           "default": "undefined",
           "description": "字段绑定名"
-        },
-        "prop_00415": {
-          "name": "placeholder",
-          "type": "string | undefined",
-          "required": false,
-          "default": "undefined",
-          "description": "占位文案"
         },
         "prop_00416": {
           "name": "clearable",
@@ -12910,6 +12952,32 @@
           "type": "SparkNode",
           "required": true,
           "description": "未注册的源节点"
+        },
+        "prop_00585": {
+          "name": "state",
+          "type": "{ treeData: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[], NavNode[] | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; }[]>; navLoading: Ref<boolean, boolean>; navSaving: Ref<boolean, boolean>; navDirty: Ref<boolean, boolean>; selectedNode: Ref<{ id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null, NavNode | { id: string; path?: string; linkTarget?: LinkTarget; redirect?: string; parentPageId?: string; refId?: string; refPath?: string; refProjectId?: string; refNodeKind?: NavNodeKind; refBroken?: boolean; title: string; description?: string; version?: string; children?: any[]; icon?: string; nodeKind?: NavNodeKind; childPlacement?: ChildPlacement; context?: string | { id: string | number; title: string; }[] | { source: string | { id: string | number; title: string; }[]; placeholder?: string; defaultValue?: string | number; paramName?: string; }; order?: number; hidden?: boolean; disabled?: boolean; dividerAfter?: boolean; permissionMode?: NavPermissionMode; } | null>; editForm: { id: string; title: string; icon: string; nodeKind: NavNodeKind; dividerAfter: boolean; description: string; path: string; redirect: string; linkTarget: LinkTarget; parentPageId: string; childPlacement: string; order: number; hidden: boolean; disabled: boolean; refId: string; permissionMode: \"masked\" | \"none\" | \"invisible\"; }; hasContext: Ref<boolean, boolean>; contextItems: Ref<{ id: string; title: string; }[], { id: string; title: string; }[] | { id: string; title: string; }[]>; contextConfig: { placeholder: string; defaultValue: string; paramName: string; }; navEmpty: Ref<boolean, boolean>; activePageId: Ref<string, string>; editFiles: Record<string, string>; fileDirty: Record<string, boolean>; fileSaving: Ref<boolean, boolean>; fileLoadState: { \"rule.json\": PageFileLoadState; \"pagedata.json\": PageFileLoadState; \"script.js\": PageFileLoadState; \"style.css\": PageFileLoadState; }; fileReloadToken: { \"rule.json\": number; \"pagedata.json\": number; \"script.js\": number; \"style.css\": number; }; pageDataDocument: ShallowRef<Record<string, unknown> | null, Record<string, unknown> | null>; pageDataSetError: Ref<string | null, string | null>; pageList: Ref<Record<string, unknown>[], Record<string, unknown>[]>; statusMessages: Ref<{ text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[], StatusMessage[] | { text: string; type: \"error\" | \"success\" | \"warning\" | \"info\"; time: string; }[]>; linkProbeLoading: Ref<boolean, boolean>; linkProbeInfo: Ref<{ embeddable: boolean; reason: string; } | null, { embeddable: boolean; reason: string; } | { embeddable: boolean; reason: string; } | null>; aiPanelVisible: Ref<boolean, boolean>; autoSaveStatus: Ref<\"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\", \"idle\" | \"pending\" | \"saving\" | \"saved\" | \"error\">; hasAnyFileDirty: ComputedRef<boolean>; hasAnyDirty: ComputedRef<boolean>; getFileSnapshotCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; getFileHistoryCount: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => number; canFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; canFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; addStatus: (text: string, type?: \"error\" | \"success\" | \"warning\" | \"info\") => void; loadNavConfig: (options?: { preserveSelectedNodeId?: string | null; } | undefined) => Promise<void>; loadPages: () => Promise<void>; loadPageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: { forceReload?: boolean; } | undefined) => Promise<void>; requestPageFileReload: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => void; requestAllPageFileReload: () => void; clearFiles: () => void; listRemotePageVersions: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<BackendPageVersionSummary[]>; restoreRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; createRemotePageVersion: (filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; deleteRemotePageVersion: (version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<boolean>; updatePageDataDocument: (nextValue: Record<string, unknown>) => void; undoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; redoFileSnapshot: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryBack: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; goFileHistoryForward: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => boolean; updatePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", value: string) => void; savePageFile: (name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\") => Promise<void>; onLinkUrlChanged: () => void; probeLinkTarget: () => Promise<void>; selectPage: (pageId: string) => void; loadNodeToForm: (node: NavNode) => void; markNavDirty: () => void; saveNavConfig: () => Promise<void>; saveNodeChanges: () => Promise<void>; saveAll: () => Promise<void>; selectNode: (node: NavNode) => void; handlePathChange: (val: string) => void; handleNodeKindChange: (kind: NavNodeKind) => void; addRootNode: () => void; hasReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => boolean; isSystemRootDirectory: (node: NavNode | null | undefined) => boolean; restoreReservedRootGroup: (placement: \"toolbar\" | \"user-menu\") => Promise<void>; canUseModuleNodeKind: (node: NavNode | null | undefined) => boolean; addChildNode: (parent: NavNode) => void; removeNodeFromTree: (node: { parent: { data: NavNode; }; }, data: NavNode) => void; resetToDemo: () => void; toggleContext: (val: boolean) => void; addContextItem: () => void; removeContextItem: (idx: number) => void; fillDemoContext: () => void; initialize: () => Promise<void>; }",
+          "required": true
+        },
+        "prop_00586": {
+          "name": "pageId",
+          "type": "string",
+          "required": true
+        },
+        "prop_00587": {
+          "name": "fileName",
+          "type": "string",
+          "required": true
+        },
+        "prop_00588": {
+          "name": "fileContent",
+          "type": "string",
+          "required": true
+        },
+        "prop_00589": {
+          "name": "enabled",
+          "type": "boolean | undefined",
+          "required": false,
+          "default": "true"
         }
       },
       "emits": {
@@ -13056,6 +13124,14 @@
         "emit_00036": {
           "name": "update:documentValue",
           "type": "[value: JsonDocument]"
+        },
+        "emit_00037": {
+          "name": "status",
+          "type": "[message: string, type: \"error\" | \"success\" | \"warning\"]"
+        },
+        "emit_00038": {
+          "name": "apply",
+          "type": "[content: string]"
         }
       }
     },
@@ -15335,6 +15411,32 @@
         "filePath": "src/views/app/Dashboard.vue",
         "propRefs": [],
         "emitRefs": []
+      },
+      "dev-data-set-designer": {
+        "type": "dev-data-set-designer",
+        "category": "feature",
+        "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-data-set-designer\" 引用。",
+        "filePath": "src/views/app/dev-system/DevDataSetDesigner.vue",
+        "propRefs": [
+          "prop_00585"
+        ],
+        "emitRefs": []
+      },
+      "dev-editor-ai-bar": {
+        "type": "dev-editor-ai-bar",
+        "category": "feature",
+        "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-editor-ai-bar\" 引用。",
+        "filePath": "src/views/app/dev-system/DevEditorAiBar.vue",
+        "propRefs": [
+          "prop_00586",
+          "prop_00587",
+          "prop_00588",
+          "prop_00589"
+        ],
+        "emitRefs": [
+          "emit_00037",
+          "emit_00038"
+        ]
       },
       "dev-system": {
         "type": "dev-system",

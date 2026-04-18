@@ -49,6 +49,20 @@ export function normalizeDataSetMetadata(input: IDataSetMetadata): IDataSetMetad
     normalizedTables[tableName] = normalizeTableMetadata(rawTable, tableName)
   }
 
+  const normalizedLayout = (() => {
+    if (input.layout === undefined) return undefined
+    const raw = input.layout.tablePositions
+    if (raw === undefined) return {}
+
+    const tablePositions = Object.fromEntries(
+      Object.entries(raw)
+        .filter(([, value]) => Number.isFinite(value.x) && Number.isFinite(value.y))
+        .map(([tableName, value]) => [tableName, { x: value.x, y: value.y }]),
+    ) as Record<string, { x: number; y: number }>
+
+    return { tablePositions }
+  })()
+
   return {
     schemaVersion: input.schemaVersion ?? 2,
     dataSetName: input.dataSetName,
@@ -57,5 +71,6 @@ export function normalizeDataSetMetadata(input: IDataSetMetadata): IDataSetMetad
     ...(input.viewDependencies !== undefined ? { viewDependencies: input.viewDependencies } : {}),
     ...(input.version !== undefined ? { version: input.version } : {}),
     ...(input.pageId !== undefined ? { pageId: input.pageId } : {}),
+    ...(normalizedLayout !== undefined ? { layout: normalizedLayout } : {}),
   }
 }

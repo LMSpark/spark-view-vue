@@ -58,7 +58,7 @@ export interface BackendPageVersionSummary {
 
 export const PAGE_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
 export type PageFileName = typeof PAGE_FILE_NAMES[number]
-export type DevWorkspaceTab = 'props' | 'preview' | PageFileName
+export type DevWorkspaceTab = 'props' | 'preview' | 'dataset' | PageFileName
 
 import { getPageApi, getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'

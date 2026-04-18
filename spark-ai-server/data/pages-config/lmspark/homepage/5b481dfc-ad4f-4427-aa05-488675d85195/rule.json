@@ -1,0 +1,164 @@
+[
+  {
+    "type": "div",
+    "props": {
+      "class": "order-system-page",
+      "style": {
+        "padding": "20px"
+      }
+    },
+    "children": [
+      {
+        "type": "r-section",
+        "props": {
+          "title": "订单列表",
+          "headerActions": [
+            {
+              "type": "RenderToolbar"
+            }
+          ]
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "props": {
+              "dataKey": "Orders@rows",
+              "rowActions": [
+                {
+                  "type": "RenderRowActions"
+                }
+              ],
+              "toolbar": {
+                "type": "RenderTableToolbar"
+              },
+              "tableProps": {
+                "highlightCurrentRow": true,
+                "border": true
+              }
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "props": {
+                  "field": "orderNo",
+                  "label": "订单号",
+                  "width": 150
+                }
+              },
+              {
+                "type": "r-date",
+                "props": {
+                  "field": "orderDate",
+                  "label": "下单日期",
+                  "width": 120
+                }
+              },
+              {
+                "type": "r-select",
+                "props": {
+                  "field": "customerId",
+                  "label": "客户",
+                  "optionKey": "Customers@rows",
+                  "optionLabelField": "name",
+                  "optionValueField": "id",
+                  "width": 120
+                }
+              },
+              {
+                "type": "r-select",
+                "props": {
+                  "field": "status",
+                  "label": "状态",
+                  "optionKey": "OrderStatusOptions@rows",
+                  "optionLabelField": "label",
+                  "optionValueField": "value",
+                  "width": 100
+                }
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "field": "totalAmount",
+                  "label": "总金额",
+                  "width": 120
+                }
+              },
+              {
+                "type": "r-text",
+                "props": {
+                  "field": "remark",
+                  "label": "备注",
+                  "width": 150
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-section",
+        "props": {
+          "title": "订单明细",
+          "headerActions": [
+            {
+              "type": "RenderOrderItemToolbar"
+            }
+          ]
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "props": {
+              "dataKey": "OrderItems@rows",
+              "rowActions": [
+                {
+                  "type": "RenderOrderItemActions"
+                }
+              ],
+              "tableProps": {
+                "border": true
+              }
+            },
+            "children": [
+              {
+                "type": "r-select",
+                "props": {
+                  "field": "productId",
+                  "label": "产品",
+                  "optionKey": "Products@rows",
+                  "optionLabelField": "name",
+                  "optionValueField": "id",
+                  "width": 150
+                }
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "field": "quantity",
+                  "label": "数量",
+                  "width": 100
+                }
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "field": "unitPrice",
+                  "label": "单价",
+                  "width": 120
+                }
+              },
+              {
+                "type": "r-number",
+                "props": {
+                  "field": "subtotal",
+                  "label": "小计",
+                  "width": 120
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

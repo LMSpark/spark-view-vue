@@ -123,6 +123,31 @@ describe('ITableMetadata canonical structure', () => {
     expect(ds.toJson().tables['Users']?.views.default.rows).toEqual([{ id: 1 }])
   })
 
+  it('DataSet.fromJson()/toJson() should preserve dataset layout metadata', () => {
+    const ds = DataSet.fromJson({
+      dataSetName: 'LayoutDS',
+      tables: {
+        Users: {
+          columns: [{ name: 'id', type: 'number', label: 'ID' }],
+          views: {
+            default: { rows: [{ id: 1 }] },
+          },
+        },
+      },
+      layout: {
+        tablePositions: {
+          Users: { x: 120, y: 240 },
+        },
+      },
+    })
+
+    const json = ds.toJson()
+    expect(json.layout?.tablePositions?.['Users']).toEqual({ x: 120, y: 240 })
+
+    const ds2 = DataSet.fromJson(json)
+    expect(ds2.toJson().layout?.tablePositions?.['Users']).toEqual({ x: 120, y: 240 })
+  })
+
   it('DataSet.fromJson() should reject legacy dataset wrapper shape', () => {
     expect(() => DataSet.fromJson({
       dataset: {

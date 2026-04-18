@@ -65,6 +65,8 @@ export interface DatasetCrudToolStillParameterRow {
   resultSchema: Record<string, unknown>
   /** 最小可用示例，优先服务后续 LLM 调用。 */
   example: Record<string, unknown>
+  /** 该动作的参数校验规则（内联在 row 上，避免额外映射表漂移）。 */
+  validation?: DatasetCrudToolStillValidationRule
   /** 使用约束 / 关键规则。 */
   usageRules: string[]
   /** 常见失败模式及修复建议。 */
@@ -357,41 +359,6 @@ type DatasetCrudToolStillValidationRule = {
   oneOfRequiredKeyGroups?: ReadonlyArray<readonly string[]>
 }
 
-const DATASET_CRUD_TOOL_STILL_VALIDATION_RULES: Record<string, DatasetCrudToolStillValidationRule> = {
-  'datasetTool.getTable': { requiredKeys: ['tableName'] },
-  'datasetTool.listColumns': { requiredKeys: ['tableName'] },
-  'datasetTool.getColumn': { requiredKeys: ['tableName', 'columnName'] },
-  'datasetTool.createColumn': { requiredKeys: ['tableName', 'column'] },
-  'datasetTool.updateColumn': { requiredKeys: ['tableName', 'columnName', 'updates'] },
-  'datasetTool.deleteColumn': { requiredKeys: ['tableName', 'columnName'] },
-  'datasetTool.createTable': { requiredKeys: ['tableName', 'columns'] },
-  'datasetTool.updateTable': { requiredKeys: ['tableName'] },
-  'datasetTool.deleteTable': { requiredKeys: ['tableName'] },
-  'datasetTool.listViews': { requiredKeys: ['tableName'] },
-  'datasetTool.getView': { requiredKeys: ['tableName'] },
-  'datasetTool.createView': { requiredKeys: ['tableName', 'viewId'] },
-  'datasetTool.updateView': { requiredKeys: ['tableName', 'updates'] },
-  'datasetTool.deleteView': { requiredKeys: ['tableName', 'viewId'] },
-  'datasetTool.listRows': { requiredKeys: ['tableName'] },
-  'datasetTool.getRow': { requiredKeys: ['tableName', 'id'] },
-  'datasetTool.createRow': { requiredKeys: ['tableName', 'data'] },
-  'datasetTool.updateRow': { requiredKeys: ['tableName', 'id', 'data'] },
-  'datasetTool.deleteRow': { requiredKeys: ['tableName', 'id'] },
-  'datasetTool.getRelation': { requiredKeys: ['parentTable', 'childTable'] },
-  'datasetTool.createRelation': { requiredKeys: ['parentTable', 'childTable', 'parentField', 'childField'] },
-  'datasetTool.updateRelation': { requiredKeys: ['selector', 'updates'] },
-  'datasetTool.deleteRelation': {
-    oneOfRequiredKeyGroups: [
-      ['selector'],
-      ['parentTable', 'childTable'],
-    ],
-  },
-  'datasetTool.getDependency': { requiredKeys: ['parentTable', 'childTable'] },
-  'datasetTool.createDependency': { requiredKeys: ['parentTable', 'childTable'] },
-  'datasetTool.updateDependency': { requiredKeys: ['parentTable', 'childTable', 'updates'] },
-  'datasetTool.deleteDependency': { requiredKeys: ['parentTable', 'childTable'] },
-}
-
 /** 为 describe 型动作补齐固定 type，减少表项样板。 */
 function defineDescribeRow(
   row: Omit<DatasetCrudToolStillParameterRow, 'type'>,
@@ -447,15 +414,124 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     description: '导出当前 DataSet 元数据快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
-      dataSet: 'IDataSetMetadata — 完整数据集元数据快照',
+      dataSet: 'IDataSetMetadata（不含 layout）— 面向 AI 的数据集元数据快照',
     },
     example: {},
     usageRules: [
       '返回值应作为只读快照消费，不应直接修改后假定自动回写运行时。',
+      'AI 侧不处理布局字段；layout 由设计器内部维护。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [],
     currentStillAction: 'dataset.export',
+  }),
+  defineDescribeRow({
+    action: 'datasetTool.canUndo',
+    target: 'dataset',
+    crudToolMethod: 'canUndo',
+    description: '读取当前历史栈是否可撤销',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      canUndo: 'boolean — true 表示可执行 datasetTool.undo',
+    },
+    example: {},
+    usageRules: [
+      '建议在调用 datasetTool.undo 前先检查该值，避免无效操作。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [],
+  }),
+  defineDescribeRow({
+    action: 'datasetTool.canRedo',
+    target: 'dataset',
+    crudToolMethod: 'canRedo',
+    description: '读取当前历史栈是否可重做',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      canRedo: 'boolean — true 表示可执行 datasetTool.redo',
+    },
+    example: {},
+    usageRules: [
+      '建议在调用 datasetTool.redo 前先检查该值，避免无效操作。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [],
+  }),
+  defineDescribeRow({
+    action: 'datasetTool.historyCursor',
+    target: 'dataset',
+    crudToolMethod: 'historyCursor',
+    description: '读取当前历史游标位置',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      cursor: 'number — 当前快照游标索引（从 0 开始）',
+    },
+    example: {},
+    usageRules: [
+      '该值用于调试与可观测性，不建议作为业务分支唯一依据。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.undo',
+    target: 'dataset',
+    crudToolMethod: 'undo',
+    description: '撤销最近一次写操作快照',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      dataSet: 'IDataSetMetadata — 撤销后的数据集快照',
+    },
+    example: {},
+    usageRules: [
+      '当 canUndo 为 false 时返回 false，不抛错；调用方应按返回值判断。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNDO_NOT_AVAILABLE',
+        when: '没有可撤销历史快照',
+        fix: '检查返回值；若为 false，先执行至少一次写操作，或跳过 undo。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.redo',
+    target: 'dataset',
+    crudToolMethod: 'redo',
+    description: '重做最近一次被撤销的写操作快照',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      dataSet: 'IDataSetMetadata — 重做后的数据集快照',
+    },
+    example: {},
+    usageRules: [
+      '当 canRedo 为 false 时返回 false，不抛错；调用方应按返回值判断。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'REDO_NOT_AVAILABLE',
+        when: '没有可重做历史快照',
+        fix: '检查返回值；若为 false，先执行 undo 产生可重做快照，或跳过 redo。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.clearHistory',
+    target: 'dataset',
+    crudToolMethod: 'clearHistory',
+    description: '清空历史栈并以当前状态重建基线快照',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      cleared: 'boolean — 历史重置完成后视为 true',
+    },
+    example: {},
+    usageRules: [
+      '清空后 undo/redo 都会回到不可用状态。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [],
   }),
   defineDescribeRow({
     action: 'datasetTool.listTables',
@@ -487,6 +563,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     example: {
       tableName: 'Users',
     },
+    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '不存在时返回 undefined，而不是抛错。',
       CATALOG_ONLY_RULE,
@@ -508,6 +585,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     example: {
       tableName: 'Users',
     },
+    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '表不存在时抛错。',
       CATALOG_ONLY_RULE,
@@ -537,6 +615,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       tableName: 'Users',
       columnName: 'name',
     },
+    validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '表不存在时抛错；列不存在时返回 undefined。',
       CATALOG_ONLY_RULE,
@@ -566,6 +645,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       tableName: 'Users',
       column: { name: 'email', type: 'string' },
     },
+    validation: { requiredKeys: ['tableName', 'column'] },
     usageRules: [
       JSON_OBJECT_RULE,
       '底层统一走 DataTable.addColumns，保证 validator 和 DataView 列缓存同步刷新。',
@@ -603,6 +683,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       columnName: 'name',
       updates: { label: 'User Name' },
     },
+    validation: { requiredKeys: ['tableName', 'columnName', 'updates'] },
     usageRules: [
       JSON_OBJECT_RULE,
       '列更新会触发 DataTable 内部运行时刷新链。',
@@ -633,6 +714,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       tableName: 'Users',
       columnName: 'email',
     },
+    validation: { requiredKeys: ['tableName', 'columnName'] },
     usageRules: [
       '删除后会同步刷新 DataView 列缓存。',
       CATALOG_ONLY_RULE,
@@ -674,6 +756,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       resourceId: 'crm.users',
       businessCategory: 'master',
     },
+    validation: { requiredKeys: ['tableName', 'columns'] },
     usageRules: [
       JSON_OBJECT_RULE,
       STATIC_ROWS_ONLY_RULE,
@@ -727,6 +810,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       resourceId: null,
       businessCategory: 'reference',
     },
+    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       JSON_OBJECT_RULE,
       '结构变更优先于 api/crudConfig/defaultRows 更新执行。',
@@ -761,6 +845,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     example: {
       tableName: 'LegacyUsers',
     },
+    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '当表仍被 relation 或 dependency 引用时，底层会 fail-fast 拒绝删除。',
       CATALOG_ONLY_RULE,
@@ -787,6 +872,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     example: {
       tableName: 'Users',
     },
+    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       '返回值包含 default 视图。',
       CATALOG_ONLY_RULE,
@@ -816,6 +902,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       tableName: 'Users',
       viewId: 'grid',
     },
+    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       '不存在时返回 undefined，而不是抛错。',
@@ -842,6 +929,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       viewId: 'grid',
       config: { pageSize: 50 },
     },
+    validation: { requiredKeys: ['tableName', 'viewId'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_LIFECYCLE_RULE,
@@ -875,6 +963,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       viewId: 'grid',
       updates: { page: 3, pageSize: 50 },
     },
+    validation: { requiredKeys: ['tableName', 'updates'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
@@ -907,6 +996,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       tableName: 'Users',
       viewId: 'grid',
     },
+    validation: { requiredKeys: ['tableName', 'viewId'] },
     usageRules: [
       DEFAULT_VIEW_LIFECYCLE_RULE,
       CATALOG_ONLY_RULE,
@@ -935,6 +1025,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       tableName: 'Users',
       viewId: 'default',
     },
+    validation: { requiredKeys: ['tableName'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       '读取的是当前视图行集，不一定等于 DataTable.rows 全量源数据。',
@@ -966,6 +1057,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       id: 1,
       viewId: 'default',
     },
+    validation: { requiredKeys: ['tableName', 'id'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       '树形 children 会递归扫描，不需要调用方区分平铺表和树表。',
@@ -990,6 +1082,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       tableName: 'Users',
       data: { id: 2, name: 'Bob' },
     },
+    validation: { requiredKeys: ['tableName', 'data'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
@@ -1002,6 +1095,42 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         code: 'ROW_CREATE_FAILED',
         when: '本地校验失败或远端创建失败',
         fix: '检查 data 是否满足列定义与主键约束。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.createRows',
+    target: 'row',
+    crudToolMethod: 'createRows',
+    description: '批量创建多条行数据',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      items: ROW_ARRAY_SCHEMA,
+      viewId: VIEW_ID_PARAM,
+    },
+    resultSchema: {
+      result: 'CrudResult<BatchResult> — 批量创建结果（含 successCount/failureCount）',
+    },
+    example: {
+      tableName: 'Users',
+      items: [
+        { id: 3, name: 'Alice' },
+        { id: 4, name: 'Carol' },
+      ],
+    },
+    validation: { requiredKeys: ['tableName', 'items'] },
+    usageRules: [
+      JSON_OBJECT_RULE,
+      DEFAULT_VIEW_RULE,
+      'immediate + API 模式优先走远端 batchCreate；其余模式逐条本地 addRow 并汇总结果。',
+      '只有 default view 且无 api 时，才会同步回 DataTable.rows。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'BATCH_CREATE_FAILED',
+        when: '批量创建存在失败项',
+        fix: '检查 result.data.results 明细，定位失败记录并重试。',
       },
     ],
   }),
@@ -1024,6 +1153,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       id: 2,
       data: { name: 'Bobby' },
     },
+    validation: { requiredKeys: ['tableName', 'id', 'data'] },
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
@@ -1036,6 +1166,52 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         code: 'ROW_UPDATE_FAILED',
         when: '目标行不存在或远端更新失败',
         fix: '先执行 datasetTool.getRow 确认目标主键可命中。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.updateRows',
+    target: 'row',
+    crudToolMethod: 'updateRows',
+    description: '批量更新多条行数据',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      items: {
+        kind: 'array',
+        items: {
+          kind: 'object',
+          required: ['id', 'data'],
+          properties: {
+            id: ROW_ID_PARAM,
+            data: ROW_DATA_SCHEMA,
+          },
+        },
+      },
+      viewId: VIEW_ID_PARAM,
+    },
+    resultSchema: {
+      result: 'CrudResult<BatchResult> — 批量更新结果（含 successCount/failureCount）',
+    },
+    example: {
+      tableName: 'Users',
+      items: [
+        { id: 3, data: { name: 'Alice Zhang' } },
+        { id: 4, data: { name: 'Carol Wang' } },
+      ],
+    },
+    validation: { requiredKeys: ['tableName', 'items'] },
+    usageRules: [
+      JSON_OBJECT_RULE,
+      DEFAULT_VIEW_RULE,
+      'immediate + API 模式优先走远端 batchUpdate；其余模式逐条本地 editRowById 并汇总结果。',
+      '只有 default view 且无 api 时，才会同步回 DataTable.rows。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'BATCH_UPDATE_FAILED',
+        when: '批量更新存在失败项',
+        fix: '检查 result.data.results 明细，先确认每条 id 均可命中。',
       },
     ],
   }),
@@ -1056,6 +1232,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       tableName: 'Users',
       id: 1,
     },
+    validation: { requiredKeys: ['tableName', 'id'] },
     usageRules: [
       DEFAULT_VIEW_RULE,
       REMOTE_ROW_RESULT_RULE,
@@ -1067,6 +1244,38 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         code: 'ROW_DELETE_FAILED',
         when: '目标行不存在或远端删除失败',
         fix: '先执行 datasetTool.getRow 确认目标主键可命中。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.deleteRows',
+    target: 'row',
+    crudToolMethod: 'deleteRows',
+    description: '批量删除多条行数据',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      ids: 'Array<string | number> — 需要删除的主键数组',
+      viewId: VIEW_ID_PARAM,
+    },
+    resultSchema: {
+      result: 'CrudResult<BatchResult> — 批量删除结果（含 successCount/failureCount）',
+    },
+    example: {
+      tableName: 'Users',
+      ids: [3, 4],
+    },
+    validation: { requiredKeys: ['tableName', 'ids'] },
+    usageRules: [
+      DEFAULT_VIEW_RULE,
+      'immediate + API 模式优先走远端 batchDelete；其余模式逐条本地 removeRow 并汇总结果。',
+      '只有 default view 且无 api 时，才会同步回 DataTable.rows。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'BATCH_DELETE_FAILED',
+        when: '批量删除存在失败项',
+        fix: '检查 result.data.results 明细，定位不存在或删除失败的 id。',
       },
     ],
   }),
@@ -1112,6 +1321,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       parentField: 'id',
       childField: 'orderId',
     },
+    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       RELATION_AMBIGUITY_RULE,
       CATALOG_ONLY_RULE,
@@ -1146,6 +1356,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       parentField: 'id',
       childField: 'orderId',
     },
+    validation: { requiredKeys: ['parentTable', 'childTable', 'parentField', 'childField'] },
     usageRules: [
       '父表、子表和字段都必须已经存在。',
       CATALOG_ONLY_RULE,
@@ -1175,6 +1386,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       selector: { parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' },
       updates: { relationName: 'order-items' },
     },
+    validation: { requiredKeys: ['selector', 'updates'] },
     usageRules: [
       JSON_OBJECT_RULE,
       RELATION_AMBIGUITY_RULE,
@@ -1203,6 +1415,12 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     },
     example: {
       selector: { parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' },
+    },
+    validation: {
+      oneOfRequiredKeyGroups: [
+        ['selector'],
+        ['parentTable', 'childTable'],
+      ],
     },
     usageRules: [
       JSON_OBJECT_RULE,
@@ -1256,6 +1474,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       parentTable: 'Orders',
       childTable: 'Items',
     },
+    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '不存在时返回 undefined。',
       CATALOG_ONLY_RULE,
@@ -1282,6 +1501,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       dependencyType: 'currentRow',
       autoLoad: true,
     },
+    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '底层 relation 必须已经存在，否则依赖创建会失败。',
       CATALOG_ONLY_RULE,
@@ -1313,6 +1533,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       childTable: 'Items',
       updates: { dependencyType: 'selectedRows', autoLoad: false },
     },
+    validation: { requiredKeys: ['parentTable', 'childTable', 'updates'] },
     usageRules: [
       JSON_OBJECT_RULE,
       '只更新现有依赖，不会隐式创建新依赖。',
@@ -1342,6 +1563,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       parentTable: 'Orders',
       childTable: 'Items',
     },
+    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       '依赖不存在时底层会抛错。',
       CATALOG_ONLY_RULE,
@@ -1386,7 +1608,7 @@ export function validateDataSetCrudToolStillParams(action: string, params: unkno
     return `未知 datasetTool 动作: ${action}`
   }
 
-  const validationRule = DATASET_CRUD_TOOL_STILL_VALIDATION_RULES[action]
+  const validationRule = row.validation
   const result = validateLlmDeserializedParams(params, row.paramsSchema, {
     ...(validationRule?.requiredKeys ? { requiredKeys: validationRule.requiredKeys } : {}),
     ...(validationRule?.oneOfRequiredKeyGroups

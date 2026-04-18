@@ -107,11 +107,12 @@ public class StillsController {
      * 创建 Stills 会话 — 设置 system prompt 和初始用户需求。
      *
      * <p>请求体：
-     * <pre>{"systemPrompt":"...", "userPrompt":"...", "windowSize":30}</pre>
+     * <pre>{"systemPrompt":"...", "userPrompt":"...", "windowSize":30, "tools":[...]}</pre>
      *
      * <p>响应体：
      * <pre>{"sessionId":"uuid"}</pre>
      */
+    @SuppressWarnings("unchecked")
     @PostMapping("/session")
     public ResponseEntity<Map<String, Object>> createStillsSession(
             @RequestBody Map<String, Object> request) {
@@ -125,11 +126,18 @@ public class StillsController {
         }
         int windowSize = request.get("windowSize") instanceof Number n ? n.intValue() : 30;
 
+        // 读取 tools 定义（可选）
+        List<Map<String, Object>> tools = null;
+        Object rawTools = request.get("tools");
+        if (rawTools instanceof List<?> list && !list.isEmpty()) {
+            tools = (List<Map<String, Object>>) list;
+        }
+
         String sessionId = stillsSessionService.createSession(
             systemPrompt,
             userPrompt,
             windowSize,
-            null,
+            tools,
             "stills");
         return ResponseEntity.ok(Map.of("sessionId", sessionId));
     }
@@ -195,6 +203,52 @@ public class StillsController {
             return ResponseEntity.status(404).body(Map.of("error", "会话不存在"));
         }
         return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    /**
+     * POST /api/stills/append-batch
+     * 向会话批量追加消息（支持 FC 模式的 assistant + tool results）。
+     *
+     * <p>请求体：
+     * <pre>{"sessionId":"uuid", "messages":[{"role":"assistant","content":"...","tool_calls":[...]}, {"role":"tool","content":"...","tool_call_id":"..."}]}</pre>
+     */
+    @SuppressWarnings("unchecked")
+    @PostMapping("/append-batch")
+    public ResponseEntity<Map<String, Object>> appendStillsMessages(
+            @RequestBody Map<String, Object> request) {
+        String sessionId = (String) request.get("sessionId");
+        if (sessionId == null || sessionId.isBlank()) {
+            return badRequest("sessionId 不能为空");
+        }
+
+        Object rawMessages = request.get("messages");
+        if (!(rawMessages instanceof List<?> list) || list.isEmpty()) {
+            return badRequest("messages 不能为空");
+        }
+
+        List<Map<String, Object>> messages = (List<Map<String, Object>>) list;
+        int appended = 0;
+        for (Map<String, Object> msg : messages) {
+            String role = (String) msg.get("role");
+            String content = (String) msg.get("content");
+            String toolCallId = (String) msg.get("tool_call_id");
+            List<Map<String, Object>> toolCalls = (List<Map<String, Object>>) msg.get("tool_calls");
+
+            if (role == null || role.isBlank()) {
+                role = "user";
+            }
+            if (content == null) {
+                content = "";
+            }
+
+            boolean ok = stillsSessionService.appendMessage(sessionId, role, content, toolCallId, toolCalls);
+            if (!ok) {
+                return ResponseEntity.status(404).body(Map.of("error", "会话不存在", "appended", appended));
+            }
+            appended++;
+        }
+
+        return ResponseEntity.ok(Map.of("ok", true, "appended", appended));
     }
 
     /**

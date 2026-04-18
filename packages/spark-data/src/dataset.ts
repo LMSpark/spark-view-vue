@@ -239,6 +239,9 @@ export class DataSet implements IDataSet {
   /** 页面ID */
   pageId: string | undefined
 
+  /** 设计器布局信息（不参与运行时数据逻辑）。 */
+  layout: IDataSetMetadata['layout'] | undefined
+
   /**
     * M5: 共享 HTTP 客户端——所有 DataTable 的 CrudService 复用同一 HttpClient 实例。
    * 由外部通过 `setSharedHttpClient(client)` 注入。未设置时各 CrudService 各自 createRequest()。
@@ -301,6 +304,7 @@ export class DataSet implements IDataSet {
     viewDependencies?: ViewDependency[] | undefined
     version?: number | undefined
     pageId?: string | undefined
+    layout?: IDataSetMetadata['layout'] | undefined
   }) {
     assertNoSeparator(config.dataSetName, 'dataSetName')
     this.dataSetName = config.dataSetName
@@ -312,6 +316,7 @@ export class DataSet implements IDataSet {
       ...(config.viewDependencies !== undefined ? { viewDependencies: config.viewDependencies } : {}),
       ...(config.version !== undefined ? { version: config.version } : {}),
       ...(config.pageId !== undefined ? { pageId: config.pageId } : {}),
+      ...(config.layout !== undefined ? { layout: config.layout } : {}),
     })
   }
 
@@ -644,6 +649,7 @@ export class DataSet implements IDataSet {
     this.viewDependencies = normalized.viewDependencies
     this.version = normalized.version
     this.pageId = normalized.pageId
+    this.layout = normalized.layout
     this._buildTableRelationIndex()
     this._createTablesFromMetadata(normalized.tables)
     this._rebuildRelations(true)
@@ -1143,7 +1149,8 @@ export class DataSet implements IDataSet {
       tableRelations: this.tableRelations,
       viewDependencies: this.viewDependencies,
       version: this.version,
-      pageId: this.pageId
+      pageId: this.pageId,
+      ...(this.layout !== undefined ? { layout: this.layout } : {}),
     } as IDataSetMetadata
   }
 
@@ -1196,6 +1203,7 @@ export class DataSet implements IDataSet {
         schemaVersion?: number
         version?: number
         pageId?: string
+        layout?: IDataSetMetadata['layout']
       }
 
       const normalizedTables = Object.fromEntries(
@@ -1213,6 +1221,7 @@ export class DataSet implements IDataSet {
         ...(rd.schemaVersion !== undefined ? { schemaVersion: rd.schemaVersion } : {}),
         ...(rd.version !== undefined ? { version: rd.version } : {}),
         ...(rd.pageId !== undefined ? { pageId: rd.pageId } : {}),
+        ...(rd.layout !== undefined ? { layout: rd.layout } : {}),
       })
     }
 

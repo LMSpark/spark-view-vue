@@ -63,6 +63,13 @@
             </template>
             <DevPreviewTab v-if="workTab === 'preview'" :state="state" :refresh-token="previewRefreshToken" />
           </el-tab-pane>
+          <!-- 📊 DataSet 设计器 -->
+          <el-tab-pane name="dataset" :disabled="!state.activePageId.value">
+            <template #label>
+              <span><NavIcon name="Coin" :size="13" /> DataSet 设计</span>
+            </template>
+            <DevDataSetDesigner v-if="workTab === 'dataset'" :state="state" />
+          </el-tab-pane>
         </el-tabs>
         <div class="workspace-footer">
           <div class="workspace-footer__left">
@@ -130,6 +137,7 @@ import DevNodeProps from './DevNodeProps.vue'
 import DevAiPanel from './DevAiPanel.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
+import DevDataSetDesigner from './DevDataSetDesigner.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
 const { router, tenantPath } = useTenantRouter()

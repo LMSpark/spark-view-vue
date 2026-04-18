@@ -1,122 +1,299 @@
 [
   {
     "type": "div",
-    "style": "padding: 20px;",
+    "props": {
+      "class": "renderer-demo-page",
+      "style": {
+        "padding": "20px"
+      }
+    },
     "children": [
       {
-        "type": "h2",
-        "children": [
-          "表格渲染示例",
-          {
-            "type": "div"
-          }
-        ]
-      },
-      {
-        "type": "r-table",
-        "dataKey": "users@rows",
+        "type": "r-section",
         "props": {
-          "border": true,
-          "stripe": true,
-          "highlightCurrentRow": true
+          "title": "订单系统演示",
+          "description": "展示订单主从表联动、状态流转、商品明细和统计信息"
         },
         "children": [
           {
-            "type": "r-text",
-            "field": "name",
+            "type": "r-tabs",
             "props": {
-              "label": "姓名",
-              "width": 120
-            }
-          },
-          {
-            "type": "r-number",
-            "field": "age",
-            "props": {
-              "label": "年龄",
-              "width": 100
-            }
-          },
-          {
-            "type": "r-date",
-            "field": "createTime",
-            "props": {
-              "label": "创建时间",
-              "width": 150
-            }
-          }
-        ]
-      },
-      {
-        "type": "h2",
-        "style": "margin-top: 24px;",
-        "children": [
-          "行级表单（绑定 currentRow）"
-        ]
-      },
-      {
-        "type": "r-form",
-        "dataKey": "users@currentRow",
-        "props": {
-          "labelWidth": "100px"
-        },
-        "children": [
-          {
-            "type": "r-text",
-            "field": "name",
-            "props": {
-              "label": "姓名"
-            }
-          },
-          {
-            "type": "r-number",
-            "field": "age",
-            "props": {
-              "label": "年龄",
-              "min": 0,
-              "max": 150
-            }
-          },
-          {
-            "type": "r-date",
-            "field": "createTime",
-            "props": {
-              "label": "创建时间"
-            }
-          }
-        ]
-      },
-      {
-        "type": "h2",
-        "style": "margin-top: 24px;",
-        "children": [
-          "详情展示示例"
-        ]
-      },
-      {
-        "type": "r-detail",
-        "dataKey": "users@currentRow",
-        "children": [
-          {
-            "type": "r-text",
-            "field": "name",
-            "props": {
-              "label": "姓名"
-            }
-          },
-          {
-            "type": "r-number",
-            "field": "age",
-            "props": {
-              "label": "年龄"
-            }
-          },
-          {
-            "type": "r-date",
-            "field": "createTime",
-            "props": {
-              "label": "创建时间"
-            }
+              "dataKey": "Orders@currentRow",
+              "toolbar": [
+                {
+                  "type": "RenderToolbarActions"
+                }
+              ]
+            },
+            "children": [
+              {
+                "type": "r-tab-pane",
+                "props": {
+                  "label": "订单列表",
+                  "name": "order-list"
+                },
+                "children": [
+                  {
+                    "type": "r-table",
+                    "props": {
+                      "dataKey": "Orders@rows",
+                      "currentRowKey": "Orders@currentRow",
+                      "selectedRowsKey": "Orders@selectedRows",
+                      "rowActions": [
+                        {
+                          "type": "RenderRowActions"
+                        }
+                      ],
+                      "toolbar": [
+                        {
+                          "type": "RenderTableToolbar"
+                        }
+                      ],
+                      "filter": {
+                        "type": "RenderFilterPanel"
+                      }
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "orderNo",
+                          "label": "订单号",
+                          "width": 150
+                        }
+                      },
+                      {
+                        "type": "r-date",
+                        "props": {
+                          "field": "orderDate",
+                          "label": "下单日期",
+                          "width": 120
+                        }
+                      },
+                      {
+                        "type": "r-select",
+                        "props": {
+                          "field": "status",
+                          "label": "状态",
+                          "width": 100,
+                          "optionKey": "OrderStatusOptions@rows",
+                          "optionLabelField": "label",
+                          "optionValueField": "value"
+                        }
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "field": "totalAmount",
+                          "label": "总金额",
+                          "width": 120
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "customerName",
+                          "label": "客户名称",
+                          "width": 150
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "contactPhone",
+                          "label": "联系电话",
+                          "width": 120
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-tab-pane",
+                "props": {
+                  "label": "订单详情",
+                  "name": "order-detail"
+                },
+                "children": [
+                  {
+                    "type": "r-detail",
+                    "props": {
+                      "dataKey": "Orders@currentRow"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "orderNo",
+                          "label": "订单号",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-date",
+                        "props": {
+                          "field": "orderDate",
+                          "label": "下单日期",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-select",
+                        "props": {
+                          "field": "status",
+                          "label": "状态",
+                          "colSpan": 12,
+                          "optionKey": "OrderStatusOptions@rows",
+                          "optionLabelField": "label",
+                          "optionValueField": "value"
+                        }
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "field": "totalAmount",
+                          "label": "总金额",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "customerName",
+                          "label": "客户名称",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "contactPhone",
+                          "label": "联系电话",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-textarea",
+                        "props": {
+                          "field": "remark",
+                          "label": "备注",
+                          "colSpan": 24
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "r-section",
+                    "props": {
+                      "title": "商品明细",
+                      "headerActions": [
+                        {
+                          "type": "RenderOrderItemActions"
+                        }
+                      ]
+                    },
+                    "children": [
+                      {
+                        "type": "r-table",
+                        "props": {
+                          "dataKey": "OrderItems@rows",
+                          "selectedRowsKey": "OrderItems@selectedRows",
+                          "rowActions": [
+                            {
+                              "type": "RenderOrderItemRowActions"
+                            }
+                          ]
+                        },
+                        "children": [
+                          {
+                            "type": "r-text",
+                            "props": {
+                              "field": "productName",
+                              "label": "商品名称",
+                              "width": 180
+                            }
+                          },
+                          {
+                            "type": "r-number",
+                            "props": {
+                              "field": "quantity",
+                              "label": "数量",
+                              "width": 100
+                            }
+                          },
+                          {
+                            "type": "r-number",
+                            "props": {
+                              "field": "unitPrice",
+                              "label": "单价",
+                              "width": 100
+                            }
+                          },
+                          {
+                            "type": "r-number",
+                            "props": {
+                              "field": "subtotal",
+                              "label": "小计",
+                              "width": 120
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-tab-pane",
+                "props": {
+                  "label": "统计信息",
+                  "name": "statistics"
+                },
+                "children": [
+                  {
+                    "type": "r-detail",
+                    "props": {
+                      "dataKey": "Orders@summaryRow"
+                    },
+                    "children": [
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "field": "totalAmount",
+                          "label": "订单总金额",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "field": "avgAmount",
+                          "label": "平均订单金额",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "field": "orderCount",
+                          "label": "订单总数",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "field": "itemCount",
+                          "label": "商品总数量",
+                          "colSpan": 12
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
