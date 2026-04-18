@@ -109,9 +109,6 @@
     </template>
   </AppLayout>
 
-  <!-- 单入口助手浮窗：应用层统一承载，配置页通过 page refresh 信号刷新当前激活实例 -->
-  <AiAssistantHub v-if="enableAI" />
-
   <!-- 主题配置抽屉 -->
   <ThemeConfigurator
     v-model="showConfigurator"
@@ -128,7 +125,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { appPageUiService, useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
@@ -521,23 +518,6 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
   void router.push(`/t/${user.tenantId}/${targetProjectId}${targetPath}`)
 }
 
-/** 懒加载 AI 面板（enableAI=false 时零开销） */
-const AiAssistantHub = defineAsyncComponent(() => import('@/components/AiAssistantHub.vue'))
-
-/** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */
-const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))
-onMounted(() => {
-  if (!enableAI.value) {
-    const timer = setInterval(() => {
-      if ((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']) {
-        enableAI.value = true
-        clearInterval(timer)
-      }
-    }, 200)
-    const stopTimer = setTimeout(() => clearInterval(timer), 5000)
-    onUnmounted(() => { clearInterval(timer); clearTimeout(stopTimer) })
-  }
-})
 </script>
 
 <style scoped>

@@ -407,11 +407,8 @@ async function startApp() {
         // _currentPageId + router.afterEach 已在 beforeMount 中设置
         const { router } = context
         
-        // ── AI 闭环：初始化 AI Loop 服务（可选） ──
+        // ── AI 闭环：初始化 AI Loop 服务（可选，供开发系统 AI 面板复用） ──
         if (appConfig.config.features.enableAI === true) {
-          // 暴露给 App.vue 的 AiChatPanel 条件渲染
-          ;(window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI'] = true
-
           // collectorTransport 已在 1.5 节提前注册到两个 Logger 体系，
           // 此处只需异步加载 AI Loop 模块并连接缓冲区。
           Promise.all([
