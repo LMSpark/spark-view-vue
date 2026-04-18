@@ -6,6 +6,7 @@ import { usePermission } from '../../../permission/index.js'
 import { isActionDisplayed } from '../support/actions/action-visibility'
 import { isBuiltinAction } from '../support/actions/builtin-action-meta'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
+import type { PermissionDeniedBehavior } from '../support/RendererActions.types'
 
 export type LateralActionPosition = 'left' | 'right'
 type ListenerMap = Record<string, unknown>
@@ -16,6 +17,7 @@ interface UseContainerActionsOptions<TScope> {
   actionConfigs: ComputedRef<SparkNode[] | undefined>
   actionPosition: ComputedRef<LateralActionPosition | undefined>
   actionClass: ComputedRef<string | undefined>
+  permissionDeniedBehavior?: ComputedRef<PermissionDeniedBehavior | undefined>
   modelPermission: ComputedRef<IModelPermission | undefined>
   dataSource?: ComputedRef<IDataSource | null | undefined>
   resolveScope: (scope: TScope) => {
@@ -25,7 +27,11 @@ interface UseContainerActionsOptions<TScope> {
   }
 }
 
-function wrapScopedHandler(handler: unknown, scopedArgs: unknown[]): unknown {
+function wrapScopedHandler(handler: unknown, scopedArgs: unknown[], allowed: boolean): unknown {
+  if (!allowed) {
+    return (..._args: unknown[]) => undefined
+  }
+
   if (typeof handler === 'function') {
     return (...args: unknown[]) => (handler as ListenerHandler)(...scopedArgs, ...args)
   }
@@ -46,9 +52,18 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
   const rawActionConfigs = computed(() => options.actionConfigs.value ?? [])
   const actionPositionValue = computed<LateralActionPosition>(() => options.actionPosition.value ?? 'right')
   const actionClassValue = computed(() => options.actionClass.value ?? '')
+  const permissionDeniedBehaviorValue = computed<PermissionDeniedBehavior>(() => options.permissionDeniedBehavior?.value ?? 'hide')
 
   const showActionsLeft = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'left')
   const showActionsRight = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'right')
+
+  function applyPermissionDisabledState(action: SparkNode, allowed: boolean): SparkNode {
+    if (allowed || permissionDeniedBehaviorValue.value !== 'disable') return action
+    return mergeNodeBeforeRenderProps(action, {
+      disabled: true,
+      buttonDisabled: true,
+    })
+  }
 
   function getScopedActionConfigs(scope: TScope): ScopedSparkNode[] {
     const resolved = options.resolveScope(scope)
@@ -81,27 +96,32 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
 
         if (patchedAction === null) return null
 
-        if (!(isActionDisplayed(patchedAction)
-          && perm.isModelActionAllowed(patchedAction, options.modelPermission.value)
-          && perm.isRowActionAllowed(patchedAction, resolved.row))) {
+        if (!isActionDisplayed(patchedAction)) return null
+
+        const permissionAllowed = perm.isModelActionAllowed(patchedAction, options.modelPermission.value)
+          && perm.isRowActionAllowed(patchedAction, resolved.row)
+
+        if (!permissionAllowed && permissionDeniedBehaviorValue.value === 'hide') {
           return null
         }
 
-        const listenerSource = patchedAction.props?.['on']
+        const permissionPatchedAction = applyPermissionDisabledState(patchedAction, permissionAllowed)
+
+        const listenerSource = permissionPatchedAction.props?.['on']
         const listenerMap = listenerSource !== null && listenerSource !== undefined && typeof listenerSource === 'object' && !Array.isArray(listenerSource)
           ? listenerSource as ListenerMap
           : undefined
 
         const wrappedOn = listenerMap
           ? Object.fromEntries(
-            Object.entries(listenerMap).map(([eventName, handler]) => [eventName, wrapScopedHandler(handler, resolved.listenerArgs)])
+            Object.entries(listenerMap).map(([eventName, handler]) => [eventName, wrapScopedHandler(handler, resolved.listenerArgs, permissionAllowed)])
           )
           : undefined
 
         const scopedAction: ScopedSparkNode = {
-          ...patchedAction,
+          ...permissionPatchedAction,
           props: {
-            ...(patchedAction.props ?? {}),
+            ...(permissionPatchedAction.props ?? {}),
             ...resolved.scopedProps,
             ...(wrappedOn ? { on: wrappedOn } : {}),
           },

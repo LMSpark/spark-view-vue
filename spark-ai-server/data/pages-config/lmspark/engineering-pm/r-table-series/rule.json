@@ -49,6 +49,7 @@
                     "type": "r-button",
                     "props": {
                       "action": "append-row",
+                      "permAction": "create",
                       "label": "新增订单",
                       "buttonType": "primary",
                       "appendPayload": {
@@ -84,6 +85,7 @@
                     "type": "r-button",
                     "props": {
                       "action": "delete-current",
+                      "permAction": "delete",
                       "label": "删除当前",
                       "buttonType": "danger",
                       "confirmTitle": "删除确认",
@@ -95,6 +97,7 @@
                     "type": "r-button",
                     "props": {
                       "action": "patch-current",
+                      "permAction": "edit",
                       "label": "更新当前订单",
                       "patch": {
                         "status": "done",
@@ -107,6 +110,7 @@
                     "type": "r-button",
                     "props": {
                       "action": "message-current",
+                      "permAction": "edit",
                       "label": "查看当前",
                       "message": "当前订单 {orderNo} | 客户 {customer} | 状态 {status} | 优先级 {priority}"
                     }
@@ -366,11 +370,15 @@
               },
               {
                 "type": "r-actions",
+                "props": {
+                  "permDeniedBehavior": "disable"
+                },
                 "children": [
                   {
                     "type": "r-button",
                     "props": {
                       "action": "message-row",
+                      "permAction": "edit",
                       "label": "查看",
                       "buttonSize": "small",
                       "message": "订单 {orderNo} | 客户 {customer} | 优先级 {priority}"

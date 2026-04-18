@@ -107,6 +107,7 @@ import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import { PAGE_SERVICE } from '../../../internal'
+import type { PermissionDeniedBehavior } from '../../support/RendererActions.types'
 
 const props = withDefaults(defineProps<RTreeProps>(), {
   type: 'r-tree',
@@ -167,6 +168,7 @@ const {
   actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
   actionPosition: computed(() => 'right'),
   actionClass: computed(() => props.actions?.props?.class),
+  permissionDeniedBehavior: computed(() => (props.actions?.props?.permDeniedBehavior as PermissionDeniedBehavior | undefined) ?? 'hide'),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({

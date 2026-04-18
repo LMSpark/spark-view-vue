@@ -2568,7 +2568,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="tree-node-content"]').exists()).toBe(true)
   })
 
-  it('should hide toolbar actions by model permission and row actions by instance permission', async () => {
+  it('should disable toolbar actions by model permission and still hide row actions by instance permission', async () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
     const permissionView = permissionDataSet.getView('Users', 'default')!
     ;(permissionView as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: false, allowExport: true }
@@ -2597,13 +2597,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
-    expect(wrapper.find('.spark-action-stub[data-type="create-button"]').exists()).toBe(false)
-    expect(wrapper.find('.spark-action-stub[data-type="export-button"]').exists()).toBe(true)
+    const deniedCreate = wrapper.find('.spark-action-stub[data-type="create-button"]')
+    const allowedExport = wrapper.find('.spark-action-stub[data-type="export-button"]')
+
+    expect(deniedCreate.exists()).toBe(true)
+    expect((deniedCreate.element as HTMLButtonElement).disabled).toBe(true)
+    expect(allowedExport.exists()).toBe(true)
+    expect((allowedExport.element as HTMLButtonElement).disabled).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="delete-row"]').exists()).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="plain-row"]').exists()).toBe(true)
   })
 
-  it('should hide tree toolbar actions by model permission and node actions by instance permission', async () => {
+  it('should disable tree toolbar actions by model permission and still hide node actions by instance permission', async () => {
     const DeniedTreeStub = defineComponent({
       setup(_, { slots }) {
         return () => h('div', { class: 'el-tree-stub denied' }, slots['default']?.({
@@ -2652,8 +2657,13 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
-    expect(wrapper.find('.spark-action-stub[data-type="import-tree"]').exists()).toBe(false)
-    expect(wrapper.find('.spark-action-stub[data-type="export-tree"]').exists()).toBe(true)
+    const deniedImport = wrapper.find('.spark-action-stub[data-type="import-tree"]')
+    const allowedExport = wrapper.find('.spark-action-stub[data-type="export-tree"]')
+
+    expect(deniedImport.exists()).toBe(true)
+    expect((deniedImport.element as HTMLButtonElement).disabled).toBe(true)
+    expect(allowedExport.exists()).toBe(true)
+    expect((allowedExport.element as HTMLButtonElement).disabled).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="create-child-node"]').exists()).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="delete-node"]').exists()).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="plain-node"]').exists()).toBe(true)

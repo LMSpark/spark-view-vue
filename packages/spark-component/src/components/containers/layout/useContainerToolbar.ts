@@ -7,6 +7,8 @@ import { isActionDisplayed } from '../support/actions/action-visibility'
 import { isBuiltinAction } from '../support/actions/builtin-action-meta'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 
+type ListenerMap = Record<string, unknown>
+
 export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 
 interface UseContainerToolbarOptions {
@@ -30,12 +32,49 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
     options.toolbarClass.value ?? 'renderer-toolbar-default'
   )
 
+  function wrapPermissionGuardedHandler(handler: unknown, allowed: boolean): unknown {
+    if (allowed) return handler
+    return (..._args: unknown[]) => undefined
+  }
+
+  function readListenerMap(action: SparkNode): ListenerMap | undefined {
+    const listenerSource = action.props?.['on']
+    return listenerSource !== null && listenerSource !== undefined && typeof listenerSource === 'object' && !Array.isArray(listenerSource)
+      ? listenerSource as ListenerMap
+      : undefined
+  }
+
+  function applyPermissionDisabledState(action: SparkNode, allowed: boolean): SparkNode {
+    const patchedAction = allowed
+      ? action
+      : mergeNodeBeforeRenderProps(action, {
+      disabled: true,
+      buttonDisabled: true,
+      })
+
+    const listenerMap = readListenerMap(patchedAction)
+    if (!listenerMap) return patchedAction
+
+    return {
+      ...patchedAction,
+      props: {
+        ...(patchedAction.props ?? {}),
+        on: Object.fromEntries(
+          Object.entries(listenerMap).map(([eventName, handler]) => [
+            eventName,
+            wrapPermissionGuardedHandler(handler, allowed),
+          ])
+        ),
+      },
+    }
+  }
+
   const visibleToolbarConfigs = computed(() =>
     toolbarConfigs.value
       .map(action => {
+        const dataSource = options.dataSource?.value ?? null
         const patched = isBuiltinAction(action)
           ? (() => {
-              const dataSource = options.dataSource?.value ?? null
               const state = resolveNodeBeforeRender(action, {
                 row: dataSource?.currentRow ?? null,
                 data: dataSource?.currentRow ?? null,
@@ -59,9 +98,16 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
 
         if (patched === null) return null
 
-        return isActionDisplayed(patched) && perm.isModelActionAllowed(patched, options.modelPermission.value)
-          ? patched
-          : null
+        if (!isActionDisplayed(patched)) return null
+
+        const currentRow = dataSource?.currentRow ?? undefined
+        const allowed = perm.isModelActionAllowed(patched, options.modelPermission.value)
+          && perm.isRowActionAllowed(patched, currentRow)
+
+        return applyPermissionDisabledState(
+          patched,
+          allowed,
+        )
       })
       .filter((action): action is SparkNode => action !== null)
   )

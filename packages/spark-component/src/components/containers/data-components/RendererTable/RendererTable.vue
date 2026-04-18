@@ -177,7 +177,7 @@ import { useContainerModuleContext } from '../../composables/useContainerModuleC
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
 import type { RendererToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
-import type { ActionsAlign, ActionsFixed } from '../../support/RendererActions.types'
+import type { ActionsAlign, ActionsFixed, PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
 import { createActionCapability } from '../../../internal'
@@ -572,6 +572,7 @@ const {
   actionConfigs: computed(() => getSparkNodeChildren(actionsNode.value?.children)),
   actionPosition: computed(() => childProp<LateralActionPosition>(actionsNode.value, 'position') ?? 'right'),
   actionClass: computed(() => childProp<string>(actionsNode.value, 'class') ?? ''),
+  permissionDeniedBehavior: computed(() => childProp<PermissionDeniedBehavior>(actionsNode.value, 'permDeniedBehavior') ?? 'hide'),
   modelPermission,
   dataSource: resolvedView,
   resolveScope: ({ row, index }) => ({

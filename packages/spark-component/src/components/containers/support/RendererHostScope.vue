@@ -84,6 +84,7 @@ const actionHostProxy: SparkActionCapability = {
     return currentActionHost.value?.isDisabled(action) ?? false
   },
   execute(action) {
+    if (currentActionHost.value?.isDisabled(action) === true) return
     currentActionHost.value?.execute(action)
   },
 }

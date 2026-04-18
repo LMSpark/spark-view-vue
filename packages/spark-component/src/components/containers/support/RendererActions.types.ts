@@ -15,6 +15,9 @@ export type ActionsPosition = 'left' | 'right'
  */
 export type ActionsFixed = boolean | ActionsPosition
 
+/** 权限不足时的动作呈现策略。 */
+export type PermissionDeniedBehavior = 'hide' | 'disable'
+
 /**
  * `r-actions` 结构化配置属性。
  *
@@ -31,6 +34,8 @@ export interface RendererActionsConfigProps extends Record<string, unknown> {
   align?: ActionsAlign
   /** 动作区固定策略。 */
   fixed?: ActionsFixed
+  /** 带 permAction 的动作在权限不足时的呈现策略。 */
+  permDeniedBehavior?: PermissionDeniedBehavior
   /** 动作区附加 class。 */
   class?: string
 }

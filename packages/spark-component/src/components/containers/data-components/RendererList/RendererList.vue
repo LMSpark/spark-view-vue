@@ -103,6 +103,7 @@ import { useContainerToolbar } from '../../layout/useContainerToolbar'
 import { useContainerGrid } from '../../layout/useContainerGrid'
 import type { ToolbarPosition } from '../../layout/useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from '../../support/slotScopeFactories'
+import type { PermissionDeniedBehavior } from '../../support/RendererActions.types'
 import { useContainerModuleContext } from '../../composables/useContainerModuleContext'
 import { createRendererListZeroCode } from './zero-code'
 
@@ -179,6 +180,7 @@ const {
   actionConfigs: computed(() => getSparkNodeChildren(props.actions?.children)),
   actionPosition: computed(() => props.actions?.props?.position ?? 'right'),
   actionClass: computed(() => String(props.actions?.props?.class ?? '')),
+  permissionDeniedBehavior: computed(() => (props.actions?.props?.permDeniedBehavior as PermissionDeniedBehavior | undefined) ?? 'hide'),
   modelPermission,
   dataSource: computed(() => resolvedView.value),
   resolveScope: ({ row, index }) => ({
