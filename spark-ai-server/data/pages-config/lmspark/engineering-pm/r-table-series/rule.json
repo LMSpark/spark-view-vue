@@ -36,7 +36,7 @@
               "filterCollapsible": true,
               "filterDefaultCollapsed": false,
               "rowActionsLabel": "操作",
-              "rowActionsWidth": 220
+              "rowActionsWidth": 300
             },
             "children": [
               {
@@ -394,6 +394,19 @@
                         "priority": "high"
                       },
                       "successMessage": "订单优先级已提升",
+                      "permAction": "edit"
+                    }
+                  },
+                  {
+                    "type": "r-button",
+                    "props": {
+                      "action": "patch-row",
+                      "label": "降级",
+                      "buttonSize": "small",
+                      "patch": {
+                        "priority": "low"
+                      },
+                      "successMessage": "订单优先级已降低",
                       "permAction": "edit"
                     }
                   },
