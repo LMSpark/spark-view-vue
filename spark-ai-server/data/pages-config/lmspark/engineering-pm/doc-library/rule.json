@@ -1,83 +1,5 @@
 [
   {
-    "type": "div",
-    "style": {
-      "display": "flex",
-      "justifyContent": "space-between",
-      "marginBottom": "16px"
-    },
-    "children": [
-      {
-        "type": "div",
-        "style": {
-          "display": "flex",
-          "gap": "8px"
-        },
-        "children": [
-          {
-            "type": "el-input",
-            "name": "docSearch",
-            "props": {
-              "placeholder": "搜索文档名称...",
-              "prefixIcon": "Search",
-              "clearable": true,
-              "style": "width:260px"
-            }
-          },
-          {
-            "type": "el-select",
-            "name": "docType",
-            "props": {
-              "placeholder": "文档类型",
-              "clearable": true,
-              "style": "width:150px"
-            },
-            "children": [
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "需求文档",
-                  "value": "需求文档"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "设计文档",
-                  "value": "设计文档"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "测试报告",
-                  "value": "测试报告"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "会议纪要",
-                  "value": "会议纪要"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-button",
-        "props": {
-          "type": "primary",
-          "icon": "Upload"
-        },
-        "children": [
-          "上传文档"
-        ]
-      }
-    ]
-  },
-  {
     "type": "r-table",
     "dataKey": "Documents@rows",
     "props": {
@@ -86,6 +8,66 @@
       "highlightCurrentRow": true
     },
     "children": [
+      {
+        "type": "r-toolbar",
+        "props": {
+          "position": "top"
+        },
+        "children": [
+          {
+            "type": "r-tail",
+            "children": [
+              {
+                "type": "r-button",
+                "props": {
+                  "label": "上传文档",
+                  "buttonType": "primary",
+                  "icon": "Upload"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-filter",
+        "children": [
+          {
+            "type": "r-text",
+            "field": "name",
+            "props": {
+              "label": "文档名称",
+              "placeholder": "搜索文档名称..."
+            }
+          },
+          {
+            "type": "r-select",
+            "field": "type",
+            "props": {
+              "label": "文档类型",
+              "placeholder": "文档类型",
+              "options": [
+                {
+                  "label": "需求文档",
+                  "value": "需求文档"
+                },
+                {
+                  "label": "设计文档",
+                  "value": "设计文档"
+                },
+                {
+                  "label": "测试报告",
+                  "value": "测试报告"
+                },
+                {
+                  "label": "会议纪要",
+                  "value": "会议纪要"
+                }
+              ]
+            }
+          }
+        ]
+      },
       {
         "type": "el-table-column",
         "props": {
@@ -143,12 +125,23 @@
         }
       },
       {
-        "type": "el-table-column",
+        "type": "r-actions",
         "props": {
           "label": "操作",
           "width": 140,
           "fixed": "right"
-        }
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "props": {
+              "action": "message-row",
+              "label": "查看",
+              "buttonSize": "small",
+              "message": "文档 {name} | 类型 {type} | 项目 {project} | 版本 {version}"
+            }
+          }
+        ]
       }
     ]
   }

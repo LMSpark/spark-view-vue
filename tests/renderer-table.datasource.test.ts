@@ -130,6 +130,8 @@ const ElTableStub = defineComponent({
 const ElTableColumnStub = defineComponent({
   props: {
     label: String,
+    prop: String,
+    sortable: [Boolean, String],
     width: [String, Number],
     minWidth: [String, Number],
     align: String,
@@ -141,6 +143,8 @@ const ElTableColumnStub = defineComponent({
     return () => h('div', {
       class: 'el-table-column-stub',
       'data-label': props.label,
+      'data-prop': String(props.prop ?? ''),
+      'data-sortable': String(props.sortable ?? ''),
       'data-width': String(props.width ?? ''),
       'data-min-width': String(props.minWidth ?? ''),
       'data-align': String(props.align ?? ''),
@@ -317,6 +321,7 @@ const SparkColumnRendererStub = defineComponent({
       const config = props.config as Record<string, unknown>
       const type = String(config['type'] ?? '')
       const componentMap: Record<string, unknown> = {
+        'el-table-column': ElTableColumnStub,
         'r-text': TableTextFieldStub,
         'r-number': TableNumberFieldStub,
         'r-date': TableDateFieldStub,
@@ -1539,6 +1544,41 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(rowActionSpy).toHaveBeenCalledWith({ id: 7, name: 'Alice' }, 2, 'evt')
   })
 
+  it('should default row-action header to center while keeping action content left-aligned and single-line', () => {
+    const rowActionDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: rowActionDataSet,
+      props: liftTestChildProps('r-table', {
+        dataKey: 'Users@rows',
+        children: [
+          {
+            type: 'r-actions',
+            children: [{ type: 'row-button' }],
+          },
+        ],
+      }),
+      global: {
+        config: {
+          warnHandler: silentWarnHandler,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const column = wrapper.find('.el-table-column-stub[data-label="操作"]')
+    expect(column.exists()).toBe(true)
+    expect(column.attributes('data-header-align')).toBe('center')
+    expect(column.attributes('data-align')).toBe('')
+
+    const rowActions = wrapper.find('.renderer-table-row-actions')
+    expect(rowActions.attributes('style')).toContain('justify-content: flex-start;')
+    expect(rowActions.attributes('style')).toContain('flex-wrap: nowrap;')
+  })
+
   it('should execute builtin toolbar actions without script handlers', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS-Builtin-Toolbar',
@@ -2168,6 +2208,37 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="biz-toolbar"]').exists()).toBe(true)
     expect(wrapper.find('.biz-row-action').attributes('data-row-id')).toBe('7')
     expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
+  })
+
+  it('should default config-driven raw table columns to sortable when they bind a field', () => {
+    const sortableDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
+    const wrapper = mountWithPageDataSet(RendererTable as any, {
+      dataSet: sortableDataSet,
+      props: {
+        dataKey: 'Users@rows',
+        children: [
+          {
+            type: 'el-table-column',
+            props: {
+              prop: 'name',
+              label: '姓名',
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        }
+      }
+    })
+
+    const column = wrapper.find('.el-table-column-stub[data-label="姓名"]')
+    expect(column.exists()).toBe(true)
+    expect(column.attributes('data-prop')).toBe('name')
+    expect(column.attributes('data-sortable')).toBe('true')
   })
 
   it('should render primitive field configs as direct table columns', () => {

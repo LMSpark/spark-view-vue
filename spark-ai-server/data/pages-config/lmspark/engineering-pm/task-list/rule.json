@@ -1,105 +1,5 @@
 [
   {
-    "type": "div",
-    "style": {
-      "display": "flex",
-      "justifyContent": "space-between",
-      "marginBottom": "16px"
-    },
-    "children": [
-      {
-        "type": "div",
-        "style": {
-          "display": "flex",
-          "gap": "8px"
-        },
-        "children": [
-          {
-            "type": "el-select",
-            "name": "projectFilter",
-            "props": {
-              "placeholder": "选择项目",
-              "clearable": true,
-              "style": "width:180px"
-            },
-            "children": [
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "智慧园区项目",
-                  "value": "p1"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "ERP升级项目",
-                  "value": "p2"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "移动办公平台",
-                  "value": "p3"
-                }
-              }
-            ]
-          },
-          {
-            "type": "el-select",
-            "name": "statusFilter",
-            "props": {
-              "placeholder": "任务状态",
-              "clearable": true,
-              "style": "width:140px"
-            },
-            "children": [
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "未开始",
-                  "value": "未开始"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "进行中",
-                  "value": "进行中"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "待审核",
-                  "value": "待审核"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "已完成",
-                  "value": "已完成"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "el-button",
-        "props": {
-          "type": "primary",
-          "icon": "Plus"
-        },
-        "children": [
-          "创建任务"
-        ]
-      }
-    ]
-  },
-  {
     "type": "r-table",
     "dataKey": "Tasks@rows",
     "props": {
@@ -108,6 +8,80 @@
       "highlightCurrentRow": true
     },
     "children": [
+      {
+        "type": "r-toolbar",
+        "props": {
+          "position": "top"
+        },
+        "children": [
+          {
+            "type": "r-tail",
+            "children": [
+              {
+                "type": "r-button",
+                "props": {
+                  "label": "创建任务",
+                  "buttonType": "primary",
+                  "icon": "Plus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-filter",
+        "children": [
+          {
+            "type": "r-select",
+            "field": "projectId",
+            "props": {
+              "label": "所属项目",
+              "placeholder": "选择项目",
+              "options": [
+                {
+                  "label": "智慧园区项目",
+                  "value": "p1"
+                },
+                {
+                  "label": "ERP升级项目",
+                  "value": "p2"
+                },
+                {
+                  "label": "移动办公平台",
+                  "value": "p3"
+                }
+              ]
+            }
+          },
+          {
+            "type": "r-select",
+            "field": "status",
+            "props": {
+              "label": "任务状态",
+              "placeholder": "任务状态",
+              "options": [
+                {
+                  "label": "未开始",
+                  "value": "未开始"
+                },
+                {
+                  "label": "进行中",
+                  "value": "进行中"
+                },
+                {
+                  "label": "待审核",
+                  "value": "待审核"
+                },
+                {
+                  "label": "已完成",
+                  "value": "已完成"
+                }
+              ]
+            }
+          }
+        ]
+      },
       {
         "type": "el-table-column",
         "props": {
@@ -173,12 +147,23 @@
         }
       },
       {
-        "type": "el-table-column",
+        "type": "r-actions",
         "props": {
           "label": "操作",
           "width": 120,
           "fixed": "right"
-        }
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "props": {
+              "action": "message-row",
+              "label": "查看",
+              "buttonSize": "small",
+              "message": "任务 {title} | 负责人 {assigneeName} | 状态 {status} | 截止 {dueDate}"
+            }
+          }
+        ]
       }
     ]
   }

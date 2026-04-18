@@ -1,83 +1,5 @@
 [
   {
-    "type": "div",
-    "style": {
-      "display": "flex",
-      "justifyContent": "space-between",
-      "marginBottom": "16px"
-    },
-    "children": [
-      {
-        "type": "div",
-        "style": {
-          "display": "flex",
-          "gap": "8px"
-        },
-        "children": [
-          {
-            "type": "el-select",
-            "name": "statusFilter",
-            "props": {
-              "placeholder": "按状态筛选",
-              "clearable": true,
-              "style": "width: 160px"
-            },
-            "children": [
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "规划中",
-                  "value": "规划中"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "进行中",
-                  "value": "进行中"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "已暂停",
-                  "value": "已暂停"
-                }
-              },
-              {
-                "type": "el-option",
-                "props": {
-                  "label": "已完结",
-                  "value": "已完结"
-                }
-              }
-            ]
-          },
-          {
-            "type": "el-input",
-            "name": "searchKey",
-            "props": {
-              "placeholder": "搜索项目名称...",
-              "prefixIcon": "Search",
-              "clearable": true,
-              "style": "width: 220px"
-            }
-          }
-        ]
-      },
-      {
-        "type": "el-button",
-        "props": {
-          "type": "primary",
-          "icon": "Plus"
-        },
-        "children": [
-          "新增项目"
-        ]
-      }
-    ]
-  },
-  {
     "type": "r-table",
     "dataKey": "Projects@rows",
     "props": {
@@ -86,6 +8,66 @@
       "highlightCurrentRow": true
     },
     "children": [
+      {
+        "type": "r-toolbar",
+        "props": {
+          "position": "top"
+        },
+        "children": [
+          {
+            "type": "r-tail",
+            "children": [
+              {
+                "type": "r-button",
+                "props": {
+                  "label": "新增项目",
+                  "buttonType": "primary",
+                  "icon": "Plus"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-filter",
+        "children": [
+          {
+            "type": "r-select",
+            "field": "status",
+            "props": {
+              "label": "状态",
+              "placeholder": "按状态筛选",
+              "options": [
+                {
+                  "label": "规划中",
+                  "value": "规划中"
+                },
+                {
+                  "label": "进行中",
+                  "value": "进行中"
+                },
+                {
+                  "label": "已暂停",
+                  "value": "已暂停"
+                },
+                {
+                  "label": "已完结",
+                  "value": "已完结"
+                }
+              ]
+            }
+          },
+          {
+            "type": "r-text",
+            "field": "name",
+            "props": {
+              "label": "项目名称",
+              "placeholder": "搜索项目名称..."
+            }
+          }
+        ]
+      },
       {
         "type": "el-table-column",
         "props": {
@@ -151,12 +133,23 @@
         }
       },
       {
-        "type": "el-table-column",
+        "type": "r-actions",
         "props": {
           "label": "操作",
           "width": 150,
           "fixed": "right"
-        }
+        },
+        "children": [
+          {
+            "type": "r-button",
+            "props": {
+              "action": "message-row",
+              "label": "查看",
+              "buttonSize": "small",
+              "message": "项目 {code} | 名称 {name} | 负责人 {managerName} | 状态 {status}"
+            }
+          }
+        ]
       }
     ]
   }

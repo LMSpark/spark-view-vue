@@ -55,7 +55,7 @@
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
-            <div class="renderer-table-row-actions">
+            <div class="renderer-table-row-actions" :style="rowActionsContainerStyle">
               <RendererHostScope
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
@@ -76,7 +76,7 @@
              说明：这是本次架构调整后的关键点，RowFragment 本体不再直接声明 el-table-column。
         -->
         <template
-          v-for="(child, index) in contentChildNodes"
+          v-for="(child, index) in renderedContentChildNodes"
           :key="nodeId(child) ?? `r-table-child-${index}`"
         >
           <el-table-column
@@ -113,7 +113,7 @@
           v-bind="rowActionColumnAttrs"
         >
           <template #default="scope">
-            <div class="renderer-table-row-actions">
+            <div class="renderer-table-row-actions" :style="rowActionsContainerStyle">
               <RendererHostScope
                 type="r-table-row-action-scope"
                 :children="getScopedRowActionConfigs(scope)"
@@ -156,7 +156,7 @@
  * - r-toolbar / r-filter / r-actions 已由绑定层从 children 提升到 props。
  * - 到达此组件时，props.children 只保留表格内容列配置，不做运行时二次分拣。
  */
-import { computed, nextTick, ref, watch, useAttrs, useSlots } from 'vue'
+import { computed, nextTick, ref, watch, useAttrs, useSlots, type CSSProperties } from 'vue'
 import {
   useSparkPageComponent, SparkComponentRenderer,
   getSparkNodeChildren, nodeId, type SparkNode,
@@ -177,6 +177,7 @@ import { useContainerModuleContext } from '../../composables/useContainerModuleC
 import RendererToolbar from '../../non-data-components/RendererToolbar.vue'
 import type { RendererToolbarProps } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
+import type { ActionsAlign, ActionsFixed } from '../../support/RendererActions.types'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import { useTableFilters } from '../../layout/useTableFilters'
 import { createActionCapability } from '../../../internal'
@@ -194,6 +195,7 @@ const STRUCTURAL_CHILD_TYPES = new Set(['r-toolbar', 'r-filter', 'r-actions'])
 // 共享 props.children 允许文本子节点；表格列区只接受结构节点，局部显式收窄。
 const allChildNodes = computed(() => getSparkNodeChildren(props.children))
 const contentChildNodes = computed(() => allChildNodes.value.filter(child => !STRUCTURAL_CHILD_TYPES.has(child.type)))
+const renderedContentChildNodes = computed(() => contentChildNodes.value.map(normalizeDefaultSortableTableNode))
 
 const slots = useSlots()
 const attrs = useAttrs()
@@ -207,6 +209,21 @@ function readLegacyNumberLikeAttr(name: string): string | number | undefined {
   const value = attrs[name]
   if (typeof value === 'number' && Number.isFinite(value)) return value
   return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+function readLegacyActionsAlignAttr(name: string): ActionsAlign | undefined {
+  const value = attrs[name]
+  return value === 'left' || value === 'center' || value === 'right'
+    ? value
+    : undefined
+}
+
+function readLegacyActionsFixedAttr(name: string): ActionsFixed | undefined {
+  const value = attrs[name]
+  if (value === true || value === false) return value
+  return value === 'left' || value === 'right'
+    ? value
+    : undefined
 }
 
 /** 从结构化 wrapper 节点上读取 props，统一访问 props.toolbar / props.filter / props.actions。 */
@@ -240,6 +257,27 @@ function isAutoFilterCandidate(node: SparkNode): boolean {
 
 function isRowFragmentNode(node: SparkNode): boolean {
   return node.type === 'r-row-fragment'
+}
+
+function normalizeDefaultSortableTableNode(node: SparkNode): SparkNode {
+  if (isRowFragmentNode(node) || node.type === 'r-column-group') return node
+
+  const sourceProps = node.props ?? {}
+  if (sourceProps['sortable'] !== undefined) return node
+
+  const field = childCompatProp<unknown>(node, 'field')
+    ?? childCompatProp<unknown>(node, 'fieldName')
+    ?? childCompatProp<unknown>(node, 'prop')
+    ?? childCompatProp<unknown>(node, 'property')
+  if (typeof field !== 'string' || field.trim().length === 0) return node
+
+  return {
+    ...node,
+    props: {
+      ...sourceProps,
+      sortable: true,
+    },
+  }
 }
 
 function rowFragmentProp(node: SparkNode, key: string): unknown {
@@ -333,9 +371,38 @@ const legacyRowActionsLabel = computed<string | undefined>(() => {
   return readLegacyStringAttr('rowActionsLabel')
 })
 
+const legacyRowActionsAlign = computed<ActionsAlign | undefined>(() => {
+  if (props.rowActionsAlign === 'left' || props.rowActionsAlign === 'center' || props.rowActionsAlign === 'right') {
+    return props.rowActionsAlign
+  }
+  const value = props.tableProps?.['rowActionsAlign']
+  if (value === 'left' || value === 'center' || value === 'right') return value
+  return readLegacyActionsAlignAttr('rowActionsAlign')
+})
+
+const legacyRowActionsFixed = computed<ActionsFixed | undefined>(() => {
+  if (
+    props.rowActionsFixed === true
+    || props.rowActionsFixed === false
+    || props.rowActionsFixed === 'left'
+    || props.rowActionsFixed === 'right'
+  ) {
+    return props.rowActionsFixed
+  }
+  const value = props.tableProps?.['rowActionsFixed']
+  if (value === true || value === false || value === 'left' || value === 'right') return value
+  return readLegacyActionsFixedAttr('rowActionsFixed')
+})
+
 const baseElTableProps = computed<Record<string, unknown>>(() => {
   const raw = props.tableProps ?? {}
-  const { rowActionsWidth: _rowActionsWidth, ...tableProps } = raw
+  const {
+    rowActionsWidth: _rowActionsWidth,
+    rowActionsLabel: _rowActionsLabel,
+    rowActionsAlign: _rowActionsAlign,
+    rowActionsFixed: _rowActionsFixed,
+    ...tableProps
+  } = raw
 
   return {
     border: true,
@@ -525,6 +592,38 @@ const {
   showActionsRight: showRowActionsRight,
 })
 
+const rowActionsAlignValue = computed<ActionsAlign | undefined>(() => {
+  const align = childCompatProp<ActionsAlign>(actionsNode.value, 'align')
+  if (align === 'left' || align === 'center' || align === 'right') return align
+  return legacyRowActionsAlign.value
+})
+
+const rowActionsHeaderAlignValue = computed<ActionsAlign>(() => {
+  return rowActionsAlignValue.value ?? 'center'
+})
+
+const rowActionsFixedValue = computed<ActionsFixed | undefined>(() => {
+  const fixed = childCompatProp<ActionsFixed>(actionsNode.value, 'fixed')
+  if (fixed === true || fixed === false || fixed === 'left' || fixed === 'right') return fixed
+  return legacyRowActionsFixed.value
+})
+
+const rowActionsJustifyContentValue = computed(() => {
+  switch (rowActionsAlignValue.value) {
+    case 'center':
+      return 'center'
+    case 'right':
+      return 'flex-end'
+    default:
+      return 'flex-start'
+  }
+})
+
+const rowActionsContainerStyle = computed<CSSProperties>(() => ({
+  justifyContent: rowActionsJustifyContentValue.value,
+  flexWrap: 'nowrap',
+}))
+
 /** 行操作列统一属性（标题 + 宽度） */
 const rowActionColumnAttrs = computed(() => {
   const label = childCompatProp<string>(actionsNode.value, 'label')
@@ -533,9 +632,15 @@ const rowActionColumnAttrs = computed(() => {
   const width = childCompatProp<number | string>(actionsNode.value, 'width')
     ?? legacyRowActionsWidth.value
     ?? 160
+  const align = rowActionsAlignValue.value
+  const headerAlign = rowActionsHeaderAlignValue.value
+  const fixed = rowActionsFixedValue.value
   return {
     label,
     width,
+    ...(align !== undefined ? { align } : {}),
+    headerAlign,
+    ...(fixed !== undefined ? { fixed } : {}),
     resizable: true,
   }
 })
@@ -712,10 +817,8 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 /* 行操作列内容左对齐，避免按钮全部挤在列中间。 */
 .renderer-table-row-actions {
   display: flex;
-  justify-content: flex-start;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 </style>

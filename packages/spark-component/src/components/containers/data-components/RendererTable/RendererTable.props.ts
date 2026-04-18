@@ -5,7 +5,7 @@ import type {
 } from '../../../shared-types'
 import type { ToolbarNode } from '../../non-data-components/RendererToolbar.types'
 import type { FilterNode } from '../../RendererFilter.types'
-import type { ActionsNode } from '../../support/RendererActions.types'
+import type { ActionsAlign, ActionsFixed, ActionsNode } from '../../support/RendererActions.types'
 
 /**
  * r-table 组件公开属性接口。
@@ -39,6 +39,10 @@ export interface RTableProps
   rowActionsLabel?: string
   /** 行操作列宽度（历史兼容字段，优先级低于 r-actions.props.width） */
   rowActionsWidth?: string | number
+  /** 行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align） */
+  rowActionsAlign?: ActionsAlign
+  /** 行操作列固定（历史兼容字段，优先级低于 r-actions.props.fixed） */
+  rowActionsFixed?: ActionsFixed
   /** 结构化筛选区 */
   filter?: FilterNode
   /** 结构化行动作 */
