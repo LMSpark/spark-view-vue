@@ -32,5 +32,5 @@ export type {
   SemanticValidationResult,
 } from './generate-validators'
 
-export { createGenerateSessionBackend } from './generate-session-backend'
-export type { GenerateSessionBackendOptions } from './generate-session-backend'
+export { createGenerateSessionBackend } from '../session-backend'
+export type { GenerateSessionBackendOptions } from '../session-backend'

@@ -1,9 +1,8 @@
 // ── Protocol (unified @@ parsing primitives) ─────────────────────────────────
 export {
   extractBlocks,
-  extractBlocks as extractProtocolBlocks,
-  stripBlocks as stripProtocolBlocks,
-  stripBlocksWithUnclosed as stripProtocolBlocksWithUnclosed,
+  stripBlocks,
+  stripBlocksWithUnclosed,
   extractProposalBlocks,
   stripProposalBlocks,
   extractFirstJsonObject,
@@ -11,7 +10,7 @@ export {
   formatTokenUsage,
   extractUiConfirmBlocks,
   stripUiBlocks,
-} from './protocol'
+} from './protocol-parser'
 export type {
   ProtocolRole,
   ProtocolMessage,
@@ -23,7 +22,7 @@ export type {
   UiConfirmOption,
   UiConfirmQuestion,
   UiConfirmPayload,
-} from './protocol'
+} from './types'
 
 // ── AI Loop (core engine) ────────────────────────────────────────────────────
 export {
@@ -130,6 +129,7 @@ export {
   STILLS_PROTOCOL_BASE,
   STILLS_DATASET_DOMAIN,
   STILLS_RUNTIME_PROMPT,
+  STILLS_EDIT_RUNTIME_PROMPT,
   STILLS_BLUEPRINT_PROMPT,
 } from './prompts/stills-prompts'
 export {
@@ -147,6 +147,7 @@ export type {
 // ── Stills（动作引擎）────────────────────────────────────────────────────────
 export {
   registerAllStills,
+  registerEditStills,
   registerStill,
   getStill,
   getAllStills,
@@ -213,7 +214,9 @@ export type {
 export {
   SessionBackendImpl,
   configureSessionBackend,
-} from './runtime/session-backend-impl'
+  createGenerateSessionBackend,
+} from './session-backend'
+export type { GenerateSessionBackendOptions } from './session-backend'
 
 // ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
 export {

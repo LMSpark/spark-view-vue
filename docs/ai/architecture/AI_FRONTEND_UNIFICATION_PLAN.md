@@ -5,9 +5,218 @@
 > 本文撰写时前端 AI 引擎使用 Stills 文本协议（`@@type:name#id` 定界块格式）与 LLM 通信。
 > **Stills 文本协议已于 2026-04 全面移除**，当前实现统一使用 **Function Calling (FC)** 替代。
 > 文中涉及 `stills-runtime.ts`、`verify-stills-real.ts`、`stills-prompts.ts`、`@@` 协议块、`Stills/1.0` 等引用均为历史描述，
-> 对应文件已删除或重构。后端 `StillsController`（`/api/stills/chat`、`/api/stills/execute`）仍保留。
+> 对应文件已删除或重构。后端 `StillsController`（`/api/stills/*`）在阶段一按零兼容策略下线。
 >
-> 本文保留供架构演进参考，**不再作为实现依据**。
+> 本文保留供架构演进参考，默认**不作为实现依据**。
+> 例外：本文内“2026-04-19 协议化细粒度编辑实施方案（待审核）”章节为当前任务执行依据。
+
+---
+
+## 2026-04-19 协议化细粒度编辑实施方案（待审核，已对齐 SAP-J v3）
+
+本节按 [docs/ai/AI_CODE_CHANGE_PROTOCOL.md](docs/ai/AI_CODE_CHANGE_PROTOCOL.md) 产出，并以 [docs/architecture/DM-SAP-J-V3-TEMPORAL-CORE-STAGE1.md](docs/architecture/DM-SAP-J-V3-TEMPORAL-CORE-STAGE1.md) 作为上位约束。
+
+### 源码对照校准（2026-04-19）
+
+1. 会话协议主干已收敛在 `/api/ai/sessions`（create/turn/turn-stream/append/conversation/destroy）。
+2. 前端会话客户端已对齐 `protocolVersion=3`。
+3. 旧 stills 协议路径处于下线路径，目标是零兼容硬切。
+4. `datasetTool.*` / `sparkNodeTree.*` 细粒度动作目录已建模，但目录文件仍标注 `catalog-only`（未作为最终证据，需以运行时接线为准）。
+5. 编辑域动作已具备 `createDatasetStills()` / `createNodeTreeStills()` 与 `registerEditStills()`，但主调用方当前仍走 `registerAllStills()`。
+6. 结论：后端会话统一与旧端点下线已完成；细粒度编辑“主链路接线”尚未闭环。
+
+因此，本方案不再新增独立 `stream-edit` 协议族，而是对齐 SAP-J v3，在 `sessions` 主干内扩展 edit 语义。
+
+### 阶段 3：充分性评估
+
+信息充分，且与 SAP-J v3 保持一致：
+
+1. 协议入口统一：仅 `/api/ai/sessions`。
+2. 协议版本统一：强制 `protocolVersion=3`。
+3. 执行控制面统一：后端主控（状态机 + 编排 + 持久化），前端做客户端适配。
+4. 兼容策略统一：零兼容硬切旧协议路径。
+5. 错误语义统一：四层错误模型（severity/category/code/retryPolicy）。
+6. 中止策略统一：连续同类错误、高风险动作、预算超限、状态冲突触发 HANDOFF。
+
+评估结论：可进入实施计划。
+
+### 阶段 2 附录：10 题一问一答记录（2026-04-19）
+
+1. 执行侧归属
+- 题目：细粒度动作由前端执行还是后端执行。
+- 选项结论：前端执行细粒度编辑（A）。
+
+2. 调用方归属
+- 题目：由哪个调用方承接本次编辑回路。
+- 选项结论：DevSystem。
+
+3. LLM 编排通道
+- 题目：LLM 是否经过后端 SSE 编排。
+- 选项结论：是（B）。
+
+4. 接口收敛策略
+- 题目：独立编辑接口还是统一会话主干。
+- 选项结论：最终收敛到 sessions 主干（对齐 SAP-J v3）。
+
+5. 结果回传形态
+- 题目：tool result 的回传方式。
+- 选项结论：保持结构化回传，并纳入会话协议链路。
+
+6. 状态主存
+- 题目：stills 状态以前端还是后端为主。
+- 选项结论：以前端主存为主，后端负责协议与执行控制面。
+
+7. 调度粒度
+- 题目：describe/request 的并行串行策略。
+- 选项结论：describe 并行、request 串行（写操作串行守卫）。
+
+8. 失败恢复
+- 题目：回传失败优先策略。
+- 选项结论：优先可恢复重试，逐步增强本地持久化补发能力。
+
+9. 业务优先级
+- 题目：数据先行还是 UI 先行。
+- 选项结论：数据先行。
+
+10. 首版覆盖范围
+- 题目：首版文件范围。
+- 选项结论：`pagedata.json` + `rule.json` 先行，script/style 后续并入。
+
+### 阶段 4：方案计划书
+
+执行分解锚点：本节的实现任务拆分以 [docs/architecture/DM-SAP-J-V3-TEMPORAL-CORE-STAGE1.md](docs/architecture/DM-SAP-J-V3-TEMPORAL-CORE-STAGE1.md) 第 13 章为准（按文件到函数级）。
+
+## 任务目标
+
+将细粒度编辑链路最终对接到 SAP-J v3 主干：不新增平行协议入口，统一在 `/api/ai/sessions` 上承载 edit 语义，并与状态机、幂等、并行冲突和 HANDOFF 策略保持一致。
+
+## 影响范围
+
+- 主要代码范围
+  - [spark-ai-server/src/main/java/com/spark/ai/controller/AiSessionController.java](spark-ai-server/src/main/java/com/spark/ai/controller/AiSessionController.java)
+  - [spark-ai-server/src/main/java/com/spark/ai/stills/StillsSessionService.java](spark-ai-server/src/main/java/com/spark/ai/stills/StillsSessionService.java)
+  - [packages/spark-ai/src/session-backend.ts](packages/spark-ai/src/session-backend.ts)
+  - [packages/spark-ai/src/runtime/session-orchestrator.ts](packages/spark-ai/src/runtime/session-orchestrator.ts)
+  - [packages/spark-ai/src/tool-calling.ts](packages/spark-ai/src/tool-calling.ts)
+
+- 零兼容清理范围
+  - [spark-ai-server/src/main/java/com/spark/ai/controller/StillsController.java](spark-ai-server/src/main/java/com/spark/ai/controller/StillsController.java)
+  - [packages/spark-ai/src/protocol-parser.ts](packages/spark-ai/src/protocol-parser.ts)
+
+## 技术方案
+
+1. 协议入口收敛：以 `/api/ai/sessions` 作为唯一入口，不新增平行编辑接口。
+2. 会话协议强化：所有 create/turn/append 请求统一强制 `protocolVersion=3`。
+3. 执行语义对齐：采用冲突感知并行、按 action 幂等、四层错误模型、HANDOFF 中止。
+4. 前端适配收敛：客户端仅做协议与消息适配，不承载最终执行控制面。
+5. 首版范围控制：优先打通 `pagedata.json` 与 `rule.json` 的 edit 闭环，script/style 后续并入。
+
+## 兼容性
+
+1. 对现有 `stream-page` 的影响：保持可用，不作为 SAP-J v3 主执行链。
+2. 对旧 stills 协议的影响：按零兼容策略下线全部 `/api/stills/*`（含 chat/execute/session*）。
+3. 对前端调用方的影响：统一迁移到 `sessions` 协议客户端。
+
+## 验证计划
+
+1. 协议与控制器：v3 校验、错误 envelope、状态迁移。
+2. 执行语义：并行冲突、幂等回放、HANDOFF 触发。
+3. 客户端适配：create/turn/append/conversation/destroy 全链路。
+4. 端到端：成功链路、中止恢复链路、并行冲突链路、幂等回放链路。
+
+## 风险项
+
+1. 单 PR 改动面大。
+  - 缓解：按 SAP-J v3 的四提交块顺序推进并逐块验证。
+2. 零兼容硬切导致旧路径瞬断。
+  - 缓解：先清点调用点，再统一迁移并验证。
+3. 首次编排能力接入复杂。
+  - 缓解：先最小骨架跑通，再补全高级语义。
+
+### 分步实施策略（最小闭环）
+
+1. 闭环 1：协议入口与错误 envelope 对齐 SAP-J v3。
+2. 闭环 2：状态机守卫与 HANDOFF 触发对齐。
+3. 闭环 3：并行冲突与幂等策略对齐。
+4. 闭环 4：零兼容清理与前端适配收尾。
+
+### 本次子计划（对齐 DM 第 13 章）
+
+子计划执行清单以 [docs/architecture/DM-SAP-J-V3-TEMPORAL-CORE-STAGE1.md](docs/architecture/DM-SAP-J-V3-TEMPORAL-CORE-STAGE1.md#L301) 第 13 章为准，本节仅作为本次任务视图。
+
+1. 子计划 A：协议入口与错误 envelope
+2. 子计划 B：状态机守卫与 HANDOFF
+3. 子计划 C：并行冲突与幂等策略
+4. 子计划 D：零兼容清理与前端适配
+5. 子计划 E：细粒度编辑执行链接线与验收
+
+进入下一子计划的门禁：当前子计划的最小验收项必须通过，不跨块并行扩面。
+
+| 子计划 | 负责人 | 主要输入 | 预期输出 | 验收命令 | 通过标准 | 当前状态 |
+|---|---|---|---|---|---|---|
+| A 协议入口与错误 envelope | 后端（本次已执行） | DM 第 13.1 节、AiSessionController、ControllersTest | v3 强校验 + 统一错误 envelope | `cd spark-ai-server && mvn test` | v3 缺失/错误可稳定返回错误码，控制器测试通过 | 已完成（AiSessionControllerTest 10/10） |
+| B 状态机守卫与 HANDOFF | 后端（本次已执行） | DM 第 13.2 节、StillsSessionService | 迁移白名单 + HANDOFF 四类触发 | `cd spark-ai-server && mvn test` | 非法迁移统一 `INVALID_STATE_TRANSITION`，HANDOFF 载荷完整 | 已完成（StateMachineTest 4/4） |
+| C 并行冲突与幂等策略 | 后端（本次已执行） | DM 第 13.3 节、StillsSessionService | 冲突感知并行 + 幂等键策略落地 | `cd spark-ai-server && mvn test` | 冲突链路与幂等回放链路可复现且无重复副作用 | 已完成（RuntimeMetaTest 3/3） |
+| D 零兼容清理与前端适配 | 前后端联合（本次已执行） | DM 第 13.4 节、StillsController、session-backend、session-orchestrator、tool-calling | `/api/stills/*` 下线 + 前端主链路迁移到 sessions v3 | `cd spark-ai-server && mvn test`；`pnpm run typecheck`；`pnpm run test -- -t "session|stills|protocol"` | 旧入口被拒绝，前端主链路仅走 `/api/ai/sessions` | 部分完成（会话链路已完成；细粒度编辑主链路未接入） |
+| E 细粒度编辑执行链接线与验收 | 前端（待执行） | `registerEditStills`、edit-domain、dataset/sparkNode catalog、DevAiPanel | 主调用方进入 edit domain，LLM 实际调用 `datasetTool.*` / `sparkNodeTree.*` 完成最小增量编辑 | `pnpm run typecheck`；`pnpm run test -- -t "session|stills|protocol"`；`npx tsx scripts/verify-ai-real-call.ts --mode iterate --pageId <id> --currentFilesDir <dir> --feedback "最小变更指令"` | 真实 iterate 中出现细粒度动作调用证据；目标文件仅最小片段变化；无整文件无关重写 | 待执行 |
+
+说明：负责人暂标“待指派”，在进入编码实施前由你指定到人；未指定前不并行启动跨块开发。
+
+### 三轮自审记录（本章）
+
+1. 自审第 1 轮（方向一致性）
+  - 发现：原方案存在 `stream-edit` 平行入口，偏离 SAP-J v3 “统一入口”原则。
+  - 修正：删除平行入口口径，统一到 `/api/ai/sessions`。
+
+2. 自审第 2 轮（源码一致性）
+  - 发现：源码已存在 `sessions` 主干与 v3 校验能力，平行接口会重复。
+  - 修正：改为“主干增强 + 客户端适配”模式。
+
+3. 自审第 3 轮（业务收敛）
+  - 发现：首版若同时覆盖 script/style 风险过高。
+  - 修正：首版仍限定 `pagedata/rule`，后续扩展。
+
+> 阶段 5（用户审核）
+>
+> 审核状态：已通过。
+> 审核口令：用户已明确回复“按计划开搞了”（2026-04-19）。
+> 结论：允许进入阶段 6 编码实施。
+
+### 阶段 6 执行边界锁定（本轮）
+
+1. 本轮执行项
+- 子计划 A/B/C/D 已完成度复核；当前聚焦子计划 E（细粒度编辑执行链接线与验收）。
+
+2. 本轮允许改动文件
+- `spark-ai-server/src/main/java/com/spark/ai/controller/AiSessionController.java`
+- `spark-ai-server/src/main/java/com/spark/ai/controller/StillsController.java`
+- `spark-ai-server/src/main/java/com/spark/ai/stills/StillsSessionService.java`
+- `spark-ai-server/src/test/java/com/spark/ai/controller/AiSessionControllerTest.java`
+- `spark-ai-server/src/test/java/com/spark/ai/controller/StillsControllerTest.java`
+- `spark-ai-server/src/test/java/com/spark/ai/stills/StillsSessionServiceStateMachineTest.java`
+- `spark-ai-server/src/test/java/com/spark/ai/stills/StillsSessionServiceRuntimeMetaTest.java`
+- `src/views/app/dev-system/DevAiPanel.vue`
+- `packages/spark-ai/src/stills/index.ts`
+- `packages/spark-ai/src/stills/edit-domain.ts`
+- `packages/spark-ai/src/stills/edit-dataset-stills.ts`
+- `packages/spark-ai/src/stills/edit-nodeTree-stills.ts`
+- `packages/spark-ai/src/stills/dataset-crud-tool-stills-catalog.ts`
+- `packages/spark-ai/src/stills/spark-node-tree-tool-catalog.ts`
+- `packages/spark-ai/src/generate/generate-tools-catalog.ts`
+- `scripts/verify-ai-real-call.ts`
+- `tests/session-orchestrator-monitors.test.ts`
+- `tests/stills-engine.test.ts`
+- `tests/session-backend-impl.test.ts`
+
+3. 本轮最小验证动作
+- 后端定向：`mvn "-Dtest=AiSessionControllerTest,StillsSessionServiceStateMachineTest,StillsSessionServiceRuntimeMetaTest,StillsControllerTest" test`
+- 前端校验：`pnpm run typecheck`
+- 前端筛选：`pnpm run test -- -t "session|stills|protocol"`
+- 真实链路：`npx tsx scripts/verify-ai-real-call.ts --mode iterate --pageId <id> --currentFilesDir <dir> --feedback "最小变更指令"`
+- 变更审计：对 `rule.json` / `pagedata.json` / `script.js` / `style.css` 输出 changedLines 统计，要求仅目标文件发生最小变更
+
+4. 本轮禁止项
+- 禁止超出上述文件范围的顺手重构、批量格式化、依赖升级与接口扩面。
 
 > 2026-04-04 · 基于 spark-ai 包 20 文件 + 后端 4 服务 + eerify 脚本 2850 行的综合分析
 
@@ -67,7 +276,7 @@
 | 术语 | 英文 | 解释 |
 |------|------|------|
 | **Stills** | SPARK Agent Protocol | LLM 与 Agent 之间的**结构化通信协议**（版本号 Stills/1.0）。统一使用 `@@type:name#id` 定界块格式，包含 **6 种核心消息类型**（见下表）。一轮只能发一个协议块。详见 `STILLS_PROTOCOL_COMPLETE.md`。 |
-| **@@ 协议块** | @@ Protocol Block | Stills 协议的具体载体格式：`@@<type>:<name>#<id>\n<JSON body>\n@@end`。前端唯一解析入口 `packages/spark-ai/src/protocol.ts`，后端 `StillsProtocolParser`。 |
+| **@@ 协议块** | @@ Protocol Block | Stills 协议的具体载体格式：`@@<type>:<name>#<id>\n<JSON body>\n@@end`。前端解析入口 `packages/spark-ai/src/protocol-parser.ts`，后端 `StillsProtocolParser`。 |
 
 **Stills 6 种核心消息类型**
 
@@ -107,10 +316,9 @@
 │     → 结果 SSE 回传 → 前端 writePageFiles                        │
 │   编排权在后端，前端只消费 SSE 结果                                │
 ├──────────────────────────────────────────────────────────────────┤
-│ Path-B1: Stills 后端闭环                                            │
-│   /api/stills/chat → StillsAssistantSereice                           │
-│     → StillsOrchestrator（5 轮工具循环 + 3 ActionHandler）           │
-│   全部在后端，前端只收最终结果                                     │
+│ Path-B1: Stills 后端闭环（历史路径，已下线）                         │
+│   /api/stills/*（GONE）                                              │
+│   已收敛到 /api/ai/sessions v3 主干                                  │
 ├──────────────────────────────────────────────────────────────────┤
 │ Path-B2: 前端 Stills 引擎（✅ 目标架构原型）                      │
 │   /api/ai/chat/stream → stills-runtime.ts                          │
@@ -909,5 +1117,5 @@ packages/spark-ai/src/
 | `POST /api/ai/chat` | 保留 | 保留 | 删除（非流式不再需要） |
 | `POST /api/ai/chat/stream` | 保留 | 保留（前端 Stills 路径使用） | **保留**（等效 proxy） |
 | `POST /api/ai/chat/stream-page` | 保留 | 前端接管编排后退化 | 转发到 stream |
-| `POST /api/stills/chat` | 保留 | 前端 Stills 引擎替代 | 删除 |
+| `POST /api/stills/chat` | 历史路径（已下线） | 前端 Stills 引擎替代 | 删除 |
 | `POST /api/ai/proxy/stream` | — | 新增或复用 stream | **主端点** |

@@ -96,7 +96,7 @@ flowchart TD
 
 ### B1. 实现前端 SessionBackend adapter
 
-- 目标：把 [../../packages/spark-ai/src/runtime/session-orchestrator.ts](../../packages/spark-ai/src/runtime/session-orchestrator.ts) 中的 `SessionBackend` 真正接到 `spark-ai-server` 的 `/api/stills/*`。
+- 目标：把 [../../packages/spark-ai/src/runtime/session-orchestrator.ts](../../packages/spark-ai/src/runtime/session-orchestrator.ts) 中的 `SessionBackend` 真正接到 `spark-ai-server` 的 `/api/ai/sessions/*`（v3 统一入口）。
 - 建议新增文件：`src/services/stills-session-backend.ts`
 - 要实现的方法：
   1. `createSession(systemPrompt, userPrompt, windowSize)`
@@ -107,9 +107,9 @@ flowchart TD
   6. `destroyAllSessions()`
 - 实现约束：
   1. 本地维护一个 `Set<string>` 记录当前客户端创建的 sessionId。
-  2. `destroyAllSessions()` 调用 `/api/stills/destroy-batch` 时发送该集合。
-  3. 所有请求统一复用认证头创建函数。
-- 依赖后端接口：[../../spark-ai-server/src/main/java/com/spark/ai/controller/StillsController.java](../../spark-ai-server/src/main/java/com/spark/ai/controller/StillsController.java)
+  2. `destroyAllSessions()` 默认逐个调用 `DELETE /api/ai/sessions/{id}`；若后端明确提供批量删除再切换批量端点。
+  3. 所有请求统一复用认证头创建函数，并强制 `protocolVersion=3`。
+- 依赖后端接口：[../../spark-ai-server/src/main/java/com/spark/ai/controller/AiSessionController.java](../../spark-ai-server/src/main/java/com/spark/ai/controller/AiSessionController.java)
 - 验收标准：
   1. adapter 完整实现 `SessionBackend`。
   2. 单会话和批量销毁行为都可跑通。
@@ -143,7 +143,7 @@ flowchart TD
 - 目标：在接入后端会话链路后，必须补足最小回归，避免只靠手工点面板。
 - 建议测试层次：
   1. 单元测试：mock `SessionBackend`，验证 `runStillsLoop()` 的回合、follow-up、abort 行为。
-  2. 适配器测试：mock `/api/stills/*` 响应，验证 adapter 的 session 集合维护。
+  2. 适配器测试：mock `/api/ai/sessions/*` 响应，验证 adapter 的 session 集合维护。
   3. UI 测试：验证 Stills 面板组件的模式切换和取消行为。
 - 建议落点：
   1. `tests/session-orchestrator.test.ts`

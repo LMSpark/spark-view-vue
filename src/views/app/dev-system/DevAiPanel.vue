@@ -189,8 +189,11 @@ import {
   runStillsLoop,
   SessionBackendImpl,
   createSession,
-  registerAllStills,
-  STILLS_RUNTIME_PROMPT,
+  registerEditStills,
+  clearRegistry,
+  clearDomains,
+  executeStill,
+  STILLS_EDIT_RUNTIME_PROMPT,
   type IStillSession,
   type DialogueTurn,
 } from '@spark-view/spark-ai'
@@ -436,6 +439,46 @@ function gatherContextFiles(): PageFiles {
   return result as PageFiles
 }
 
+function buildEditInitParamsFromFiles(contextFiles: PageFiles): {
+  ruleJson: unknown[]
+  pageDataJson: Record<string, unknown>
+  scriptJs: string
+  styleCss: string
+} {
+  const ruleRaw = contextFiles['rule.json']
+  const pagedataRaw = contextFiles['pagedata.json']
+
+  if (typeof ruleRaw !== 'string' || ruleRaw.trim() === '') {
+    throw new Error('edit.init 失败: 缺少 rule.json')
+  }
+  if (typeof pagedataRaw !== 'string' || pagedataRaw.trim() === '') {
+    throw new Error('edit.init 失败: 缺少 pagedata.json')
+  }
+
+  const parsedRule = JSON.parse(ruleRaw) as unknown
+  const parsedPageData = JSON.parse(pagedataRaw) as unknown
+
+  const ruleJson = Array.isArray(parsedRule)
+    ? parsedRule
+    : (typeof parsedRule === 'object' && parsedRule !== null && Array.isArray((parsedRule as Record<string, unknown>)['children'])
+      ? (parsedRule as Record<string, unknown>)['children'] as unknown[]
+      : null)
+
+  if (!Array.isArray(ruleJson)) {
+    throw new Error('edit.init 失败: rule.json 必须是数组，或包含 children 数组的根对象')
+  }
+  if (typeof parsedPageData !== 'object' || parsedPageData === null || Array.isArray(parsedPageData)) {
+    throw new Error('edit.init 失败: pagedata.json 必须是对象')
+  }
+
+  return {
+    ruleJson,
+    pageDataJson: parsedPageData as Record<string, unknown>,
+    scriptJs: contextFiles['script.js'] ?? '',
+    styleCss: contextFiles['style.css'] ?? '',
+  }
+}
+
 // ── Handlers ──
 
 async function handleSend() {
@@ -506,8 +549,15 @@ async function handleStillsSend() {
   loading.value = true
 
   try {
-    // 确保 Stills 注册
-    registerAllStills()
+    const contextFiles = gatherContextFiles()
+    if (getFileCount(contextFiles) === 0) {
+      throw new Error('细粒度编辑模式要求当前页面已加载上下文文件（rule.json / pagedata.json / script.js / style.css）')
+    }
+
+    // 一步到位：stills 仅走 edit domain，不再兼容生成模式目录。
+    clearRegistry()
+    clearDomains()
+    registerEditStills()
 
     // 初始化后端
     if (!stillsBackend.value) {
@@ -520,6 +570,13 @@ async function handleStillsSend() {
     const session = createSession()
     stillsSession.value = session
 
+    const initParams = buildEditInitParamsFromFiles(contextFiles)
+    const initResult = executeStill('edit.init', initParams, session, `edit-init-${Date.now()}`)
+    if (!initResult.ok) {
+      throw new Error(`edit.init 失败: ${initResult.msg}`)
+    }
+    props.state.addStatus('✅ 已进入细粒度编辑模式（edit domain）', 'success')
+
     // 初始化蓝图显示
     stillsBlueprint.value = {
       goal: text,
@@ -531,7 +588,7 @@ async function handleStillsSend() {
     const result = await runStillsLoop(text, session, stillsBackend.value, {
       maxRounds: 20,
       slidingWindow: 10,
-      systemPrompt: STILLS_RUNTIME_PROMPT,
+      systemPrompt: STILLS_EDIT_RUNTIME_PROMPT,
       onRoundStart(round: number) {
         aiMsg.content = `⏳ 执行中... (轮次 ${round})`
         scrollToBottom()

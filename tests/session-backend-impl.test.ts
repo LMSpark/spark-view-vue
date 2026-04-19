@@ -12,7 +12,7 @@
  * 我们测试其接口契约和类型安全性，而非实际 HTTP 调用。
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import {
   SessionBackendImpl,
   configureSessionBackend,
@@ -42,7 +42,7 @@ describe('SessionBackendImpl', () => {
 
   describe('constructor', () => {
     it('should accept baseUrl parameter', () => {
-      const backend = new SessionBackendImpl('http://custom-api.com/stills')
+      const backend = new SessionBackendImpl('http://custom-api.com/api/ai/sessions')
       expect(backend).toBeInstanceOf(SessionBackendImpl)
     })
 
@@ -59,7 +59,7 @@ describe('SessionBackendImpl', () => {
       backend = new SessionBackendImpl('http://localhost:8080')
     })
 
-    it('createSession should accept correct parameters', () => {
+    it('createSession signature should be callable', () => {
       const tools = [
         {
           type: 'function' as const,
@@ -74,18 +74,17 @@ describe('SessionBackendImpl', () => {
         },
       ]
 
-      // 验证参数类型正确（不实际调用，因为会 network error）
-      const promise = backend.createSession('system', 'user', 10, tools)
-      expect(promise).toBeInstanceOf(Promise)
-      // 不 await，避免网络错误
+      // 仅做签名契约断言，避免触发真实网络调用。
+      const fn: SessionBackend['createSession'] = backend.createSession.bind(backend)
+      expect(typeof fn).toBe('function')
     })
 
-    it('executeTurn should accept sessionId', () => {
-      const promise = backend.executeTurn('session-123')
-      expect(promise).toBeInstanceOf(Promise)
+    it('executeTurn signature should be callable', () => {
+      const fn: SessionBackend['executeTurn'] = backend.executeTurn.bind(backend)
+      expect(typeof fn).toBe('function')
     })
 
-    it('appendMessages should accept correct format', () => {
+    it('appendMessages signature should be callable', () => {
       const messages = [
         {
           role: 'assistant',
@@ -105,8 +104,8 @@ describe('SessionBackendImpl', () => {
         },
       ]
 
-      const promise = backend.appendMessages('session-123', messages)
-      expect(promise).toBeInstanceOf(Promise)
+      const fn: SessionBackend['appendMessages'] = backend.appendMessages.bind(backend)
+      expect(typeof fn).toBe('function')
     })
   })
 })

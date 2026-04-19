@@ -13,7 +13,7 @@ import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from '.
 
 type DispatchFn = (...args: unknown[]) => unknown
 
-const treeGuard = editGuard({ requireNodeTree: true })
+const treeGuard = editGuard({ requireNodeTree: true, requireDatasetExported: true })
 
 export function createNodeTreeStills(): StillDefinition[] {
   return SPARK_NODE_TREE_TOOL_PARAMETER_TABLE.map((row) => ({

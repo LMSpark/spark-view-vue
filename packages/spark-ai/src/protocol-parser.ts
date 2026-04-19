@@ -1,81 +1,17 @@
 /**
  * 统一 @@ 协议解析原语
- *
- * 通用块协议 — `@@type:name\n...\n@@end`（proposal / query / review / error）
- *
- * 本模块是协议块的**唯一解析入口**，其他模块不应自行编写正则。
  */
 
-// ── 类型定义 ──────────────────────────────────────────────────────────────────
-
-export type ProtocolRole = 'user' | 'assistant' | 'system'
-
-export interface ProtocolMessage {
-  role: ProtocolRole
-  content: string
-}
-
-/** 通用协议块 — @@type:name ... @@end */
-export interface ProtocolBlock {
-  /** 块类型：proposal / query / review / error / ... */
-  type: string
-  /** 块名称（kebab-case）：data-model / component-props / ... */
-  name: string
-  /** 块体内容（@@行和@@end之间的文本） */
-  payload: string
-  /** 原始匹配文本（含定界符） */
-  raw: string
-}
-
-/** 提案协议块 — 从通用块中提取的 proposal 子集（便捷类型） */
-export interface ProposalProtocolBlock {
-  /** 提案名称（= ProtocolBlock.name） */
-  name: string
-  /** 提案体内容（= ProtocolBlock.payload） */
-  body: string
-  /** 原始匹配文本 */
-  raw: string
-}
-
-/** Token 用量统计（LLM 返回的标准化格式） */
-export interface TokenUsage {
-  promptTokens?: number
-  completionTokens?: number
-  totalTokens?: number
-  /** DeepSeek 上下文缓存命中 */
-  promptCacheHitTokens?: number
-  promptCacheMissTokens?: number
-}
-
-/** SSE 流式事件回调（通用，可用于任何 SSE 端点） */
-export interface StreamCallbacks {
-  /** LLM 正文内容增量 */
-  onDelta?: (text: string) => void
-  /** DeepSeek 推理过程增量 */
-  onReasoning?: (text: string) => void
-  /** 阶段进度事件 */
-  onPhase?: (phase: number, status: string, message: string) => void
-  /** token 用量统计 */
-  onUsage?: (usage: Record<string, unknown>) => void
-  /** 错误事件 */
-  onError?: (error: string) => void
-}
-
-// ── 过滤器 ────────────────────────────────────────────────────────────────────
-
-export interface ProtocolBlockFilter {
-  /** 仅匹配指定类型（如 'proposal'） */
-  types?: string[]
-  /** 仅匹配指定名称 */
-  names?: string[]
-}
-
-// ── 正则常量 ──────────────────────────────────────────────────────────────────
+import type {
+  ProtocolBlock,
+  ProtocolBlockFilter,
+  ProposalProtocolBlock,
+  TokenUsage,
+  UiConfirmPayload,
+} from './types'
 
 /** 通用块：@@type:name ... @@end（多行模式） */
 const BLOCK_RE = /^@@(\w+):([\w-]+)\s*$([\s\S]*?)^@@end\s*$/gm
-
-// ── 通用块解析 ────────────────────────────────────────────────────────────────
 
 /**
  * 从文本中提取所有 @@type:name 通用协议块
@@ -113,8 +49,6 @@ export function stripBlocks(text: string, filter?: ProtocolBlockFilter): string 
   return collapseBlankLines(stripped)
 }
 
-// ── 提案块解析（通用块的便捷子集） ────────────────────────────────────────────
-
 /**
  * 提取提案协议块（type='proposal' 的通用块）
  */
@@ -136,12 +70,8 @@ export function stripProposalBlocks(text: string, filter?: { names?: string[] })
   })
 }
 
-// ── 通用工具 ──────────────────────────────────────────────────────────────────
-
 /**
  * 从文本中提取第一个 JSON 对象（正向括号深度匹配，容错允许 JSON 前后有非 JSON 文本）
- *
- * 使用括号计数而非 lastIndexOf，避免多个 JSON 对象共存时跨对象误匹配。
  */
 export function extractFirstJsonObject(text: string): string | null {
   const start = text.indexOf('{')
@@ -180,7 +110,6 @@ export function extractFirstJsonObject(text: string): string | null {
     }
   }
 
-  // 未找到匹配的闭合括号 → 回退到 lastIndexOf（不完整 JSON 容错）
   const end = text.lastIndexOf('}')
   if (end <= start) return null
   return text.slice(start, end + 1)
@@ -211,8 +140,6 @@ export function formatTokenUsage(usage: TokenUsage): string {
   return parts.join(' · ')
 }
 
-// ── 流式清理 ──────────────────────────────────────────────────────────────────
-
 /** 匹配流式中途未闭合的 @@ 块（缺少 @@end） */
 const UNCLOSED_BLOCK_RE = /^@@\w+:[\w-]+\s*$[\s\S]*$/m
 
@@ -227,33 +154,8 @@ export function stripBlocksWithUnclosed(text: string, filter?: ProtocolBlockFilt
     .trim()
 }
 
-// ── UI 交互块（@@ui:confirm-questions）──────────────────────────────────────
-
-/** 单个选项 */
-export interface UiConfirmOption {
-  key: string
-  label: string
-  description?: string
-}
-
-/** 单个确认问题 */
-export interface UiConfirmQuestion {
-  id: string
-  text: string
-  /** single = 单选（radio），multi = 多选（checkbox） */
-  type: 'single' | 'multi'
-  options: UiConfirmOption[]
-}
-
-/** @@ui:confirm-questions 块的 JSON 负载 */
-export interface UiConfirmPayload {
-  title?: string
-  questions: UiConfirmQuestion[]
-}
-
 /**
  * 从文本中提取 @@ui:confirm-questions 块并解析 JSON 负载。
- * 返回所有合法解析的 payload（通常只有一个）。
  */
 export function extractUiConfirmBlocks(text: string): UiConfirmPayload[] {
   const blocks = extractBlocks(text, { types: ['ui'], names: ['confirm-questions'] })
@@ -273,8 +175,6 @@ export function extractUiConfirmBlocks(text: string): UiConfirmPayload[] {
 export function stripUiBlocks(text: string): string {
   return stripBlocks(text, { types: ['ui'] })
 }
-
-// ── 内部辅助 ──────────────────────────────────────────────────────────────────
 
 function collapseBlankLines(text: string): string {
   return text.replace(/\n{3,}/g, '\n\n').trim()

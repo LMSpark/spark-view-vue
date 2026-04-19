@@ -101,11 +101,39 @@ describe('validateDataSetCrudToolStillParams', () => {
     expect(error).toContain('$.columns 应为数组')
   })
 
-  it('enforces selector-or-pair semantics for datasetTool.deleteRelation', () => {
-    const error = validateDataSetCrudToolStillParams('datasetTool.deleteRelation', {
+  it('enforces single-signature for datasetTool.deleteRelation (zero backward compat)', () => {
+    // 旧签名（selector 包装对象）应明确失败，避免隐式兼容历史协议。
+    const errorLegacySelector = validateDataSetCrudToolStillParams('datasetTool.deleteRelation', {
+      selector: {
+        parentTable: 'Department',
+        childTable: 'Employee',
+      },
+    })
+    expect(errorLegacySelector).not.toBeNull()
+
+    // 缺少 parentTable 应该失败（单一签名：必须提供 parentTable 和 childTable）
+    const errorMissingParent = validateDataSetCrudToolStillParams('datasetTool.deleteRelation', {
+      childTable: 'Employee',
+      parentField: 'deptId',
       childField: 'orderId',
     })
+    expect(errorMissingParent).toContain('parentTable')
 
-    expect(error).toContain('以下字段至少满足一组: [selector] 或 [parentTable, childTable]')
+    // 缺少 childTable 应该失败
+    const errorMissingChild = validateDataSetCrudToolStillParams('datasetTool.deleteRelation', {
+      parentTable: 'Department',
+      parentField: 'deptId',
+      childField: 'orderId',
+    })
+    expect(errorMissingChild).toContain('childTable')
+
+    // 提供完整的单一签名应该通过
+    const noError = validateDataSetCrudToolStillParams('datasetTool.deleteRelation', {
+      parentTable: 'Department',
+      childTable: 'Employee',
+      parentField: 'deptId',
+      childField: 'orderId',
+    })
+    expect(noError).toBeNull()
   })
 })

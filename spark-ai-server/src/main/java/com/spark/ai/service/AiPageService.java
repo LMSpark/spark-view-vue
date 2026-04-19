@@ -187,8 +187,12 @@ public class AiPageService {
      * </ul>
      */
     public SseEmitter processRequestStream(AiChatRequest request) {
-        long timeout = props.isReasonerModel() ? 600_000L : 300_000L;
+        long timeout = props.isReasonerModel() ? 1_200_000L : 900_000L;
         SseEmitter emitter = new SseEmitter(timeout);
+        emitter.onTimeout(() -> log.warn("[SPARK-AI][STREAM] page stream timeout pageId={} timeoutMs={}",
+            request.getPageId(), timeout));
+        emitter.onCompletion(() -> log.info("[SPARK-AI][STREAM] page stream completed pageId={}",
+            request.getPageId()));
         executor.execute(() -> doProcessRequestStream(request, emitter));
         return emitter;
     }
@@ -367,6 +371,9 @@ public class AiPageService {
             if (props.getPresencePenalty() != null) {
                 body.put("presence_penalty", props.getPresencePenalty());
             }
+        }
+        if (props.isEffectiveJsonMode()) {
+            body.put("response_format", Map.of("type", "json_object"));
         }
         if (props.isDeepSeek()) {
             body.put("stream_options", Map.of("include_usage", true));

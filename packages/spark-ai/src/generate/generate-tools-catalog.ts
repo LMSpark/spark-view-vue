@@ -210,13 +210,17 @@ export function dispatchQueryTool(
 ): string {
   switch (toolName) {
     case 'queryCapabilities':
-      return handleQueryCapabilities(args['phase'] as Phase)
+      return handleQueryCapabilities(args['phase'])
     case 'queryActionSpec':
-      return handleQueryActionSpec(args['capabilityId'] as string)
+      return handleQueryActionSpec(args['capabilityId'])
     case 'queryComponentCatalog':
-      return handleQueryComponentCatalog(args['componentType'] as string, catalog)
+      return handleQueryComponentCatalog(args['componentType'], catalog)
     default:
-      return JSON.stringify({ error: `未知的查询工具: ${toolName}` })
+      return JSON.stringify({
+        error: `未知的查询工具: ${toolName}`,
+        hint: '先调用 queryCapabilities，再调用 queryActionSpec，最后执行具体动作。',
+        availableQueryTools: ['queryCapabilities', 'queryActionSpec', 'queryComponentCatalog'],
+      })
   }
 }
 
@@ -227,39 +231,6 @@ export function dispatchQueryTool(
 interface CapabilityItem {
   id: string
   summary: string
-}
-
-const DATA_CAPABILITIES: CapabilityItem[] = [
-  { id: 'DataSet.tables', summary: '创建和配置数据表（tableName、columns、rows）' },
-  { id: 'DataSet.columns', summary: '定义列（name、type、isPrimaryKey、computeExpression 计算列）' },
-  { id: 'DataSet.relations', summary: '配置表间级联关系（parentTable、childTable、parentField、childField）' },
-  { id: 'DataSet.views', summary: '配置视图（autoCurrentFirst、aggregates 聚合）' },
-  { id: 'DataSet.treeConfig', summary: '树形数据配置（idField、parentIdField、textField、treeMode）' },
-]
-
-const UI_CAPABILITIES: CapabilityItem[] = [
-  { id: 'SparkNode.structure', summary: 'SparkNode ≡ h(type, props, children) 三段式模型 + SparkNodeTree 操作概念（⭐ 强烈建议查询）' },
-  { id: 'SparkNode.dataKey', summary: 'dataKey 数据绑定（table@field / table@viewId@field）' },
-  { id: 'SparkNode.events', summary: '事件绑定（on.click → script.js 函数名）' },
-  { id: 'SparkNode.containers', summary: '容器组件嵌套规则（r-table / r-form / r-detail / r-tree） — 使用前先 queryComponentCatalog(type) 查属性' },
-  { id: 'SparkNode.fields', summary: '字段组件（r-text / r-number / r-select 等） — 不同组件 props 不同，使用前先 queryComponentCatalog(type) 查属性' },
-  { id: 'ScriptJs.sandbox', summary: 'script.js 沙箱变量（$dataSet / $page / $route 等）' },
-  { id: 'ScriptJs.init', summary: '__init__ 页面入口函数' },
-]
-
-const STYLE_CAPABILITIES: CapabilityItem[] = [
-  { id: 'StyleCss.pageScope', summary: '页面级 CSS（.spark-page-[pageId] 作用域）' },
-  { id: 'StyleCss.elementPlus', summary: 'Element Plus 组件样式覆盖（--el-* CSS 变量）' },
-  { id: 'StyleCss.layout', summary: '布局工具类（flex / grid / gap / padding）' },
-]
-
-function handleQueryCapabilities(phase: Phase): string {
-  const capMap: Record<Phase, CapabilityItem[]> = {
-    data: DATA_CAPABILITIES,
-    ui: UI_CAPABILITIES,
-    style: STYLE_CAPABILITIES,
-  }
-  return JSON.stringify({ capabilities: capMap[phase] })
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -615,14 +586,94 @@ const ACTION_SPECS: Record<string, ActionSpec> = {
   'StyleCss.layout': SC_LAYOUT_SPEC,
 }
 
-function handleQueryActionSpec(capabilityId: string): string {
+const CAPABILITY_PHASES: Record<string, Phase> = {
+  'DataSet.tables': 'data',
+  'DataSet.columns': 'data',
+  'DataSet.relations': 'data',
+  'DataSet.views': 'data',
+  'DataSet.treeConfig': 'data',
+  'SparkNode.structure': 'ui',
+  'SparkNode.dataKey': 'ui',
+  'SparkNode.events': 'ui',
+  'SparkNode.containers': 'ui',
+  'SparkNode.fields': 'ui',
+  'ScriptJs.sandbox': 'ui',
+  'ScriptJs.init': 'ui',
+  'StyleCss.pageScope': 'style',
+  'StyleCss.elementPlus': 'style',
+  'StyleCss.layout': 'style',
+}
+
+function getCapabilityPhase(capabilityId: string): Phase | null {
+  return CAPABILITY_PHASES[capabilityId] ?? null
+}
+
+function summarizeCapability(spec: ActionSpec): string {
+  if (spec.actions && spec.actions.length > 0) {
+    return `${spec.description}（${spec.actions.length} actions）`
+  }
+  return spec.description
+}
+
+function listCapabilitiesByPhase(phase: Phase): CapabilityItem[] {
+  return Object.entries(ACTION_SPECS)
+    .filter(([capabilityId]) => getCapabilityPhase(capabilityId) === phase)
+    .map(([capabilityId, spec]) => ({
+      id: capabilityId,
+      summary: summarizeCapability(spec),
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id))
+}
+
+function parsePhaseArg(phase: unknown): Phase | null {
+  return phase === 'data' || phase === 'ui' || phase === 'style' ? phase : null
+}
+
+function handleQueryCapabilities(phaseArg: unknown): string {
+  const phase = parsePhaseArg(phaseArg)
+  if (phase === null) {
+    return JSON.stringify({
+      error: `phase 非法: ${String(phaseArg)}`,
+      hint: 'phase 仅支持 data | ui | style；请先调用 queryCapabilities({ phase }) 获取目录，再用 queryActionSpec 获取参数规格。',
+      supportedPhases: ['data', 'ui', 'style'],
+    })
+  }
+
+  return JSON.stringify({
+    phase,
+    capabilities: listCapabilitiesByPhase(phase),
+    nextStep: '从 capabilities 中选择 capabilityId，调用 queryActionSpec 获取完整参数规范。',
+  })
+}
+
+function suggestCapabilityIds(input: string): string[] {
+  const needle = input.trim().toLowerCase()
+  if (needle.length === 0) return []
+  return Object.keys(ACTION_SPECS)
+    .filter((id) => {
+      const lower = id.toLowerCase()
+      return lower.includes(needle) || needle.includes(lower)
+    })
+    .slice(0, 5)
+}
+
+function handleQueryActionSpec(capabilityIdArg: unknown): string {
+  if (typeof capabilityIdArg !== 'string' || capabilityIdArg.length === 0) {
+    return JSON.stringify({
+      error: 'capabilityId 缺失或非法',
+      hint: '先调用 queryCapabilities 获取 capabilityId，再调用 queryActionSpec({ capabilityId })。',
+    })
+  }
+  const capabilityId = capabilityIdArg
   const spec = ACTION_SPECS[capabilityId]
   if (spec !== undefined) {
     return JSON.stringify(spec)
   }
+  const suggestions = suggestCapabilityIds(capabilityId)
   return JSON.stringify({
     error: `未知能力 ID: ${capabilityId}`,
     hint: '请先调用 queryCapabilities 获取当前阶段的能力列表',
+    ...(suggestions.length > 0 ? { suggestions } : {}),
   })
 }
 
@@ -631,9 +682,16 @@ function handleQueryActionSpec(capabilityId: string): string {
 // ═══════════════════════════════════════════════════════════════
 
 function handleQueryComponentCatalog(
-  componentType: string,
+  componentTypeArg: unknown,
   catalog: ComponentCatalog | null,
 ): string {
+  if (typeof componentTypeArg !== 'string' || componentTypeArg.length === 0) {
+    return JSON.stringify({
+      error: 'componentType 缺失或非法',
+      hint: '传入具体组件 type（如 r-table）或 * 获取完整目录。',
+    })
+  }
+  const componentType = componentTypeArg
   if (catalog === null) {
     return JSON.stringify({ error: '组件目录未加载' })
   }

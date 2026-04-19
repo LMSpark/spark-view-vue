@@ -15,6 +15,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -39,6 +40,52 @@ public class StillsSessionService {
 
     private static final int DEFAULT_WINDOW_SIZE = 30;
     private static final long SESSION_TIMEOUT_MS = 30 * 60 * 1000L;
+    private static final int HANDOFF_FAILURE_THRESHOLD = 2;
+    private static final int STAGE1_MAX_WRITE_CALLS_PER_ROUND = 8;
+        private static final Set<String> ENTITY_KEY_HINTS = Set.of(
+            "id", "ids", "rowId", "recordId", "entityId", "pageId", "table", "tableName", "path");
+            private static final Map<String, ActionRule> ACTION_RULES_EXACT = Map.ofEntries(
+                Map.entry("dataset.query", new ActionRule(
+                "read",
+                "describe-only",
+                List.of("table", "tableName", "id"),
+                "low"
+            )),
+            Map.entry("dataset.batch", new ActionRule(
+                "write",
+                "windowed",
+                List.of("table", "tableName", "ids"),
+                "high"
+                ))
+            );
+            private static final LinkedHashMap<String, ActionRule> ACTION_RULES_PREFIX = new LinkedHashMap<>();
+
+            static {
+            ACTION_RULES_PREFIX.put("dataset.", new ActionRule(
+                null,
+                null,
+                List.of("table", "tableName", "id", "rowId", "recordId", "ids"),
+                "medium"
+            ));
+            ACTION_RULES_PREFIX.put("page.", new ActionRule(
+                null,
+                null,
+                List.of("pageId", "id"),
+                "medium"
+            ));
+            ACTION_RULES_PREFIX.put("file.", new ActionRule(
+                null,
+                null,
+                List.of("path", "id"),
+                "high"
+            ));
+            ACTION_RULES_PREFIX.put("nav.", new ActionRule(
+                null,
+                null,
+                List.of("id", "nodeId", "pageId"),
+                "medium"
+            ));
+            }
 
     private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
     private final ExecutorService streamExecutor = Executors.newCachedThreadPool();
@@ -80,6 +127,8 @@ public class StillsSessionService {
         session.lastActiveTime = System.currentTimeMillis();
         session.tools = tools;
         session.mode = mode != null ? mode : "stills";
+        session.state = SessionState.READY;
+        session.consecutiveFailures = 0;
 
         Message userMsg = new Message("user");
         userMsg.content = userPrompt;
@@ -100,26 +149,95 @@ public class StillsSessionService {
         Session session = sessions.get(sessionId);
         if (session == null) return null;
 
-        session.lastActiveTime = System.currentTimeMillis();
+        try {
+            int round = ++session.roundCounter;
+            if (session.state == SessionState.HANDOFF) {
+                return TurnResult.error(
+                        session.state.name(),
+                        null,
+                        "HANDOFF_REQUIRED",
+                        buildHandoffPayload("HANDOFF_REQUIRED", "请人工确认后恢复到 PLAN"));
+            }
 
-        List<Map<String, Object>> messages = buildWindowedMessages(session);
+            session.lastActiveTime = System.currentTimeMillis();
+            transition(session, SessionState.PLAN);
+            transition(session, SessionState.CALL);
 
-        log.info("[SESSION] turn sessionId={} msgCount={} tools={}",
-                sessionId, messages.size(),
-                session.tools != null ? session.tools.size() : 0);
+            List<Map<String, Object>> messages = buildWindowedMessages(session);
 
-        LlmResult llmResult = callLlm(messages, session.tools);
-        if (llmResult == null) return null;
+            log.info("[SESSION] turn sessionId={} msgCount={} tools={}",
+                    sessionId, messages.size(),
+                    session.tools != null ? session.tools.size() : 0);
 
-        // 记录 assistant 回复到对话历史
-        Message assistantMsg = new Message("assistant");
-        assistantMsg.content = llmResult.text;
-        if (llmResult.toolCalls != null && !llmResult.toolCalls.isEmpty()) {
-            assistantMsg.toolCalls = llmResult.toolCalls;
+            LlmResult llmResult = callLlm(messages, session.tools);
+            if (llmResult == null) {
+                transition(session, SessionState.FAILED);
+                session.consecutiveFailures++;
+                if (session.consecutiveFailures >= HANDOFF_FAILURE_THRESHOLD) {
+                    transition(session, SessionState.HANDOFF);
+                    return TurnResult.error(
+                            session.state.name(),
+                            "FAILED->HANDOFF",
+                            "LLM_CALL_FAILED",
+                            buildHandoffPayload("LLM_CALL_FAILED", "连续失败，进入人工接管"));
+                }
+                return TurnResult.error(
+                        session.state.name(),
+                        "CALL->FAILED",
+                        "LLM_CALL_FAILED",
+                        null);
+            }
+
+            // 记录 assistant 回复到对话历史
+            Message assistantMsg = new Message("assistant");
+            assistantMsg.content = llmResult.text;
+            if (llmResult.toolCalls != null && !llmResult.toolCalls.isEmpty()) {
+                assistantMsg.toolCalls = llmResult.toolCalls;
+            }
+            session.conversation.add(assistantMsg);
+
+            Map<String, Object> runtimeMeta = null;
+            if (llmResult.toolCalls != null && !llmResult.toolCalls.isEmpty()) {
+                runtimeMeta = buildRuntimeMeta(sessionId, round, session, llmResult.toolCalls);
+                Map<String, Object> guard = getRuntimeGuard(runtimeMeta);
+                boolean blocked = guard.get("blocked") instanceof Boolean b && b;
+                if (blocked) {
+                    String reasonCode = guard.get("reasonCode") instanceof String s
+                            ? s : "RUNTIME_GUARD_BLOCKED";
+                    transition(session, SessionState.FAILED);
+                    return TurnResult.error(
+                            session.state.name(),
+                            "CALL->FAILED",
+                            reasonCode,
+                            buildHandoffPayload(reasonCode, "请根据 runtime.guard.details 处理后重试"),
+                            runtimeMeta);
+                }
+            }
+
+            transition(session, SessionState.APPLY);
+            transition(session, SessionState.VERIFY);
+            transition(session, SessionState.DONE);
+            session.consecutiveFailures = 0;
+            String stateTransition = "VERIFY->DONE";
+            transition(session, SessionState.READY);
+
+            return new TurnResult(
+                    llmResult.text,
+                    llmResult.reasoning,
+                    llmResult.toolCalls,
+                    session.state.name(),
+                    stateTransition,
+                    null,
+                    null,
+                    runtimeMeta);
+        } catch (IllegalStateException ex) {
+            log.warn("[SESSION] invalid state transition sessionId={}: {}", sessionId, ex.getMessage());
+            return TurnResult.error(
+                    session.state != null ? session.state.name() : null,
+                    null,
+                    "INVALID_STATE_TRANSITION",
+                    buildHandoffPayload("INVALID_STATE_TRANSITION", "请人工确认后恢复到 PLAN"));
         }
-        session.conversation.add(assistantMsg);
-
-        return new TurnResult(llmResult.text, llmResult.reasoning, llmResult.toolCalls);
     }
 
     /**
@@ -461,8 +579,549 @@ public class StillsSessionService {
         int windowSize;
         long lastActiveTime;
         String mode;
+        SessionState state;
+        int consecutiveFailures;
+        int roundCounter;
+        final Set<String> idempotencyLedger = new HashSet<>();
         List<Map<String, Object>> tools;
         final List<Message> conversation = new ArrayList<>();
+    }
+
+    private enum SessionState {
+        READY,
+        PLAN,
+        CALL,
+        APPLY,
+        VERIFY,
+        DONE,
+        FAILED,
+        HANDOFF
+    }
+
+    private void transition(Session session, SessionState target) {
+        SessionState current = session.state;
+        if (current == null) {
+            session.state = target;
+            return;
+        }
+        if (current == target) {
+            return;
+        }
+        if (!isTransitionAllowed(current, target)) {
+            throw new IllegalStateException("INVALID_STATE_TRANSITION: " + current + " -> " + target);
+        }
+        session.state = target;
+    }
+
+    private boolean isTransitionAllowed(SessionState from, SessionState to) {
+        return switch (from) {
+            case READY -> to == SessionState.PLAN;
+            case PLAN -> to == SessionState.CALL || to == SessionState.FAILED;
+            case CALL -> to == SessionState.APPLY || to == SessionState.FAILED;
+            case APPLY -> to == SessionState.VERIFY || to == SessionState.FAILED;
+            case VERIFY -> to == SessionState.DONE || to == SessionState.PLAN || to == SessionState.FAILED;
+            case DONE -> to == SessionState.READY;
+            case FAILED -> to == SessionState.HANDOFF;
+            case HANDOFF -> to == SessionState.PLAN;
+        };
+    }
+
+    private Map<String, Object> buildHandoffPayload(String reasonCode, String nextAction) {
+        Map<String, Object> handoff = new LinkedHashMap<>();
+        handoff.put("reasonCode", reasonCode);
+        handoff.put("nextAction", nextAction);
+        handoff.put("checklist", List.of("检查上次失败工具调用参数", "确认是否继续执行", "必要时手工修复后再恢复"));
+        return handoff;
+    }
+
+    // 包级测试辅助：用于验证阶段一状态机白名单与 HANDOFF 载荷，不影响生产调用。
+    boolean isTransitionAllowedForTesting(String from, String to) {
+        SessionState fromState = SessionState.valueOf(from);
+        SessionState toState = SessionState.valueOf(to);
+        return isTransitionAllowed(fromState, toState);
+    }
+
+    // 包级测试辅助：模拟单步迁移，非法迁移会抛 IllegalStateException。
+    String applyTransitionForTesting(String from, String to) {
+        Session session = new Session();
+        session.state = SessionState.valueOf(from);
+        transition(session, SessionState.valueOf(to));
+        return session.state.name();
+    }
+
+    // 包级测试辅助：校验 HANDOFF 载荷结构。
+    Map<String, Object> buildHandoffPayloadForTesting(String reasonCode, String nextAction) {
+        return buildHandoffPayload(reasonCode, nextAction);
+    }
+
+    // 包级测试辅助：创建最小会话并返回 sessionId。
+    String createSessionForTesting() {
+        return createSession("test-system", "test-user", DEFAULT_WINDOW_SIZE, null, "stills");
+    }
+
+    // 包级测试辅助：对给定 toolCalls 生成 runtime meta（复用真实幂等账本与并行判定）。
+    Map<String, Object> analyzeRuntimeMetaForTesting(String sessionId,
+                                                     int round,
+                                                     List<Map<String, Object>> toolCalls) {
+        Session session = sessions.get(sessionId);
+        if (session == null) {
+            throw new IllegalArgumentException("session not found: " + sessionId);
+        }
+        return buildRuntimeMeta(sessionId, round, session, toolCalls);
+    }
+
+    private Map<String, Object> buildRuntimeMeta(String sessionId,
+                                                 int round,
+                                                 Session session,
+                                                 List<Map<String, Object>> toolCalls) {
+        List<Map<String, Object>> idempotency = new ArrayList<>();
+        List<Map<String, Object>> classified = new ArrayList<>();
+        List<Map<String, Object>> blocked = new ArrayList<>();
+        Set<String> toolCallIds = new HashSet<>();
+
+        for (Map<String, Object> call : toolCalls) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> fn = call.get("function") instanceof Map<?, ?> m
+                    ? (Map<String, Object>) m : Map.of();
+
+            String callId = call.get("id") instanceof String s ? s : "";
+            String action = fn.get("name") instanceof String s ? s : "unknown.action";
+            String args = fn.get("arguments") instanceof String s ? s : "";
+            ActionRuleMatch ruleMatch = resolveActionRule(action);
+            ActionRule rule = ruleMatch.rule;
+            String mode = modeForAction(action, rule);
+            EntityResolution entityResolution = resolveEntity(action, args, mode);
+            String resourceKey = resourceKeyForAction(action, entityResolution, mode);
+
+            if (!callId.isEmpty() && !toolCallIds.add(callId)) {
+                Map<String, Object> reason = new LinkedHashMap<>();
+                reason.put("toolCallId", callId);
+                reason.put("action", action);
+                reason.put("reasonCode", "DUPLICATE_TOOL_CALL_ID");
+                blocked.add(reason);
+            }
+
+            String argsHash = shortSha256(args);
+            String key = sessionId + ":" + round + ":" + action + ":" + argsHash + ":" + callId;
+            boolean replayed = !session.idempotencyLedger.add(key);
+            String policy = policyForAction(action, rule, mode);
+            String riskLevel = riskLevelForAction(mode, rule);
+
+            if (replayed && ("strong".equals(policy) || "windowed".equals(policy))) {
+                Map<String, Object> reason = new LinkedHashMap<>();
+                reason.put("toolCallId", callId);
+                reason.put("action", action);
+                reason.put("reasonCode", "IDEMPOTENCY_REPLAY_BLOCKED");
+                reason.put("idempotencyKey", key);
+                blocked.add(reason);
+            }
+
+            Map<String, Object> idem = new LinkedHashMap<>();
+            idem.put("toolCallId", callId);
+            idem.put("action", action);
+            idem.put("policy", policy);
+            idem.put("idempotencyKey", key);
+            idem.put("argsHash", argsHash);
+            idem.put("replayed", replayed);
+            idem.put("riskLevel", riskLevel);
+            idem.put("ruleSource", ruleMatch.source);
+            idempotency.add(idem);
+
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("toolCallId", callId);
+            item.put("action", action);
+            item.put("resourceKey", resourceKey);
+            item.put("mode", mode);
+            item.put("classification", resourceKey.contains("@entity:") ? "entity" : "domain");
+            item.put("entityHintSource", entityResolution.source);
+            item.put("riskLevel", riskLevel);
+            item.put("ruleSource", ruleMatch.source);
+            classified.add(item);
+        }
+
+        Map<String, Object> scheduling = buildConflictAwareSchedule(classified);
+        blocked.addAll(evaluateParallelismRisks(scheduling, classified));
+        Map<String, Object> guard = buildRuntimeGuard(blocked);
+
+        Map<String, Object> meta = new LinkedHashMap<>();
+        meta.put("round", round);
+        meta.put("idempotency", idempotency);
+        meta.put("scheduling", scheduling);
+        meta.put("guard", guard);
+        return meta;
+    }
+
+    private Map<String, Object> getRuntimeGuard(Map<String, Object> runtimeMeta) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> guard = runtimeMeta.get("guard") instanceof Map<?, ?> m
+                ? (Map<String, Object>) m : Map.of("blocked", false);
+        return guard;
+    }
+
+    private Map<String, Object> buildRuntimeGuard(List<Map<String, Object>> blockedReasons) {
+        Map<String, Object> guard = new LinkedHashMap<>();
+        if (blockedReasons.isEmpty()) {
+            guard.put("blocked", false);
+            guard.put("reasonCode", null);
+            guard.put("details", List.of());
+            return guard;
+        }
+
+        String reasonCode = blockedReasons.stream()
+                .map(item -> item.get("reasonCode") instanceof String s ? s : "RUNTIME_GUARD_BLOCKED")
+                .findFirst()
+                .orElse("RUNTIME_GUARD_BLOCKED");
+
+        guard.put("blocked", true);
+        guard.put("reasonCode", reasonCode);
+        guard.put("details", blockedReasons);
+        return guard;
+    }
+
+    private Map<String, Object> buildConflictAwareSchedule(List<Map<String, Object>> items) {
+        List<List<Map<String, Object>>> groups = new ArrayList<>();
+
+        for (Map<String, Object> item : items) {
+            String resourceKey = item.get("resourceKey") instanceof String s ? s : "global";
+            String mode = item.get("mode") instanceof String s ? s : "write";
+
+            boolean placed = false;
+            for (List<Map<String, Object>> group : groups) {
+                if (!hasConflict(group, resourceKey, mode)) {
+                    group.add(item);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                List<Map<String, Object>> newGroup = new ArrayList<>();
+                newGroup.add(item);
+                groups.add(newGroup);
+            }
+        }
+
+        List<Map<String, Object>> parallelGroups = new ArrayList<>();
+        Set<String> scheduleRuleSources = new LinkedHashSet<>();
+        int maxParallelWidth = 0;
+        for (int i = 0; i < groups.size(); i++) {
+            List<Map<String, Object>> group = groups.get(i);
+            List<String> ids = new ArrayList<>();
+            List<String> modes = new ArrayList<>();
+            Set<String> ruleSources = new LinkedHashSet<>();
+            for (Map<String, Object> item : group) {
+                ids.add(item.get("toolCallId") instanceof String s ? s : "");
+                modes.add(item.get("mode") instanceof String s ? s : "write");
+                String source = item.get("ruleSource") instanceof String s ? s : "fallback";
+                ruleSources.add(source);
+            }
+            scheduleRuleSources.addAll(ruleSources);
+            maxParallelWidth = Math.max(maxParallelWidth, group.size());
+            Map<String, Object> g = new LinkedHashMap<>();
+            g.put("groupIndex", i);
+            g.put("toolCallIds", ids);
+            g.put("modes", modes);
+            g.put("ruleSources", new ArrayList<>(ruleSources));
+            g.put("dominantRuleSource", dominantRuleSource(ruleSources));
+            parallelGroups.add(g);
+        }
+
+        long writeCalls = items.stream()
+                .filter(item -> "write".equals(item.get("mode")))
+                .count();
+
+        Map<String, Object> scheduling = new LinkedHashMap<>();
+        scheduling.put("strategy", "conflict-aware");
+        scheduling.put("groups", parallelGroups);
+        scheduling.put("maxParallelWidth", maxParallelWidth);
+        scheduling.put("writeCalls", writeCalls);
+        scheduling.put("executionMode", writeCalls > 0 ? "serial-write-guard" : "parallel-read-safe");
+        scheduling.put("collisionScope", "domain+entity");
+        scheduling.put("classificationStrategy", "action-rule-object+runtime-fallback");
+        scheduling.put("ruleMatchStrategy", "exact-first-prefix-second-fallback");
+        scheduling.put("ruleSources", new ArrayList<>(scheduleRuleSources));
+        scheduling.put("dominantRuleSource", dominantRuleSource(scheduleRuleSources));
+        return scheduling;
+    }
+
+    private String dominantRuleSource(Set<String> sources) {
+        if (sources.contains("exact")) {
+            return "exact";
+        }
+        if (sources.contains("prefix")) {
+            return "prefix";
+        }
+        return "fallback";
+    }
+
+    private List<Map<String, Object>> evaluateParallelismRisks(Map<String, Object> scheduling,
+                                                               List<Map<String, Object>> classified) {
+        List<Map<String, Object>> blocked = new ArrayList<>();
+
+        long writeCalls = scheduling.get("writeCalls") instanceof Number n ? n.longValue() : 0L;
+        if (writeCalls > STAGE1_MAX_WRITE_CALLS_PER_ROUND) {
+            Map<String, Object> reason = new LinkedHashMap<>();
+            reason.put("reasonCode", "PARALLEL_WRITE_BUDGET_EXCEEDED");
+            reason.put("writeCalls", writeCalls);
+            reason.put("maxAllowed", STAGE1_MAX_WRITE_CALLS_PER_ROUND);
+            blocked.add(reason);
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> groups = scheduling.get("groups") instanceof List<?> list
+                ? (List<Map<String, Object>>) list : List.of();
+
+        for (Map<String, Object> group : groups) {
+            @SuppressWarnings("unchecked")
+            List<String> modes = group.get("modes") instanceof List<?> list
+                    ? (List<String>) list : List.of();
+            int width = group.get("toolCallIds") instanceof List<?> list ? list.size() : 0;
+            boolean containsWrite = modes.stream().anyMatch("write"::equals);
+            if (width > 1 && containsWrite) {
+                Map<String, Object> reason = new LinkedHashMap<>();
+                reason.put("reasonCode", "PARALLEL_WRITE_NOT_ALLOWED_STAGE1");
+                reason.put("groupIndex", group.get("groupIndex"));
+                reason.put("parallelWidth", width);
+                blocked.add(reason);
+            }
+        }
+
+        if (blocked.isEmpty() && !classified.isEmpty()) {
+            // Stage-1: keep the decision explicit for observability even when pass-through.
+            scheduling.put("decision", "allow");
+        } else {
+            scheduling.put("decision", "block");
+        }
+
+        return blocked;
+    }
+
+    private boolean hasConflict(List<Map<String, Object>> group, String resourceKey, String mode) {
+        for (Map<String, Object> existing : group) {
+            String existingResource = existing.get("resourceKey") instanceof String s ? s : "global";
+            String existingMode = existing.get("mode") instanceof String s ? s : "write";
+
+            if (!existingResource.equals(resourceKey)) {
+                continue;
+            }
+            if ("read".equals(mode) && "read".equals(existingMode)) {
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private String policyForAction(String action, ActionRule rule, String mode) {
+        if (rule != null && rule.idempotencyPolicy != null) {
+            return rule.idempotencyPolicy;
+        }
+        if ("read".equals(mode)) {
+            return "describe-only";
+        }
+        if (action.contains("batch") || action.contains("import")) {
+            return "windowed";
+        }
+        return "strong";
+    }
+
+    private String riskLevelForAction(String mode, ActionRule rule) {
+        if (rule != null && rule.riskLevel != null) {
+            return rule.riskLevel;
+        }
+        if ("read".equals(mode)) {
+            return "low";
+        }
+        return "medium";
+    }
+
+    private String modeForAction(String action, ActionRule rule) {
+        if (rule != null && rule.mode != null) {
+            return rule.mode;
+        }
+        return modeByHeuristic(action);
+    }
+
+    private ActionRuleMatch resolveActionRule(String action) {
+        ActionRule exact = ACTION_RULES_EXACT.get(action);
+        if (exact != null) {
+            return ActionRuleMatch.of(exact, "exact");
+        }
+        for (Map.Entry<String, ActionRule> entry : ACTION_RULES_PREFIX.entrySet()) {
+            if (action.startsWith(entry.getKey())) {
+                return ActionRuleMatch.of(entry.getValue(), "prefix");
+            }
+        }
+        return ActionRuleMatch.none();
+    }
+
+    private String resourceKeyForAction(String action, EntityResolution entityResolution, String mode) {
+        String domainKey = actionDomain(action);
+        if ("read".equals(mode)) {
+            return domainKey;
+        }
+
+        String entity = entityResolution.value;
+        if (entity == null || entity.isBlank()) {
+            return domainKey;
+        }
+        return domainKey + "@entity:" + entity;
+    }
+
+    private String actionDomain(String action) {
+        int idx = action.indexOf('.');
+        if (idx <= 0) {
+            return "global";
+        }
+        return action.substring(0, idx);
+    }
+
+    private EntityResolution resolveEntity(String action, String args, String mode) {
+        if ("read".equals(mode)) {
+            return EntityResolution.none();
+        }
+
+        Map<String, Object> argsMap = parseArgsMap(args);
+        if (argsMap == null) {
+            return EntityResolution.none();
+        }
+
+        List<String> declaredHints = declaredHintsForAction(action);
+        String declared = pickEntityByHints(argsMap, declaredHints);
+        if (declared != null) {
+            return EntityResolution.of(declared, "static-declared");
+        }
+
+        String fallback = pickEntityByHints(argsMap, new ArrayList<>(ENTITY_KEY_HINTS));
+        if (fallback != null) {
+            return EntityResolution.of(fallback, "runtime-fallback");
+        }
+
+        return EntityResolution.none();
+    }
+
+    private Map<String, Object> parseArgsMap(String args) {
+        if (args == null || args.isBlank()) {
+            return null;
+        }
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> map = objectMapper.readValue(args, new TypeReference<>() {});
+            return map;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private List<String> declaredHintsForAction(String action) {
+        ActionRule rule = resolveActionRule(action).rule;
+        if (rule != null && !rule.entityHints.isEmpty()) {
+            return rule.entityHints;
+        }
+        return List.of();
+    }
+
+    private String pickEntityByHints(Map<String, Object> map, List<String> hints) {
+        for (String hint : hints) {
+            Object raw = map.get(hint);
+            if (raw instanceof String s && !s.isBlank()) {
+                return normalizeDiscriminator(s);
+            }
+            if (raw instanceof Number n) {
+                return String.valueOf(n.longValue());
+            }
+            if (raw instanceof List<?> list && !list.isEmpty()) {
+                Object first = list.get(0);
+                if (first instanceof String s && !s.isBlank()) {
+                    return normalizeDiscriminator(s);
+                }
+                if (first instanceof Number n) {
+                    return String.valueOf(n.longValue());
+                }
+            }
+        }
+        return null;
+    }
+
+    private String normalizeDiscriminator(String raw) {
+        String cleaned = raw.trim();
+        if (cleaned.length() > 64) {
+            return shortSha256(cleaned);
+        }
+        return cleaned.replace(' ', '_');
+    }
+
+    private static class EntityResolution {
+        final String value;
+        final String source;
+
+        private EntityResolution(String value, String source) {
+            this.value = value;
+            this.source = source;
+        }
+
+        static EntityResolution of(String value, String source) {
+            return new EntityResolution(value, source);
+        }
+
+        static EntityResolution none() {
+            return new EntityResolution(null, "none");
+        }
+    }
+
+    private String modeByHeuristic(String action) {
+        String lower = action.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("get") || lower.startsWith("list") || lower.startsWith("query")
+                || lower.startsWith("describe") || lower.contains(".get")
+                || lower.contains(".list") || lower.contains(".query") || lower.contains(".describe")) {
+            return "read";
+        }
+        return "write";
+    }
+
+    private static class ActionRule {
+        final String mode;
+        final String idempotencyPolicy;
+        final List<String> entityHints;
+        final String riskLevel;
+
+        ActionRule(String mode, String idempotencyPolicy, List<String> entityHints, String riskLevel) {
+            this.mode = mode;
+            this.idempotencyPolicy = idempotencyPolicy;
+            this.entityHints = entityHints;
+            this.riskLevel = riskLevel;
+        }
+    }
+
+    private static class ActionRuleMatch {
+        final ActionRule rule;
+        final String source;
+
+        private ActionRuleMatch(ActionRule rule, String source) {
+            this.rule = rule;
+            this.source = source;
+        }
+
+        static ActionRuleMatch of(ActionRule rule, String source) {
+            return new ActionRuleMatch(rule, source);
+        }
+
+        static ActionRuleMatch none() {
+            return new ActionRuleMatch(null, "fallback");
+        }
+    }
+
+    private String shortSha256(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = digest.digest(value.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 8 && i < bytes.length; i++) {
+                sb.append(String.format("%02x", bytes[i]));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return Integer.toHexString(value.hashCode());
+        }
     }
 
     /**
@@ -513,19 +1172,60 @@ public class StillsSessionService {
         private final String text;
         private final String reasoning;
         private final List<Map<String, Object>> toolCalls;
+        private final String state;
+        private final String stateTransition;
+        private final String errorCode;
+        private final Map<String, Object> handoff;
+        private final Map<String, Object> runtimeMeta;
 
         public TurnResult(String text, String reasoning, List<Map<String, Object>> toolCalls) {
+            this(text, reasoning, toolCalls, null, null, null, null, null);
+        }
+
+        public TurnResult(String text,
+                          String reasoning,
+                          List<Map<String, Object>> toolCalls,
+                          String state,
+                          String stateTransition,
+                          String errorCode,
+                          Map<String, Object> handoff,
+                          Map<String, Object> runtimeMeta) {
             this.text = text;
             this.reasoning = reasoning;
             this.toolCalls = toolCalls;
+            this.state = state;
+            this.stateTransition = stateTransition;
+            this.errorCode = errorCode;
+            this.handoff = handoff;
+            this.runtimeMeta = runtimeMeta;
         }
 
         public TurnResult(String text, String reasoning) {
             this(text, reasoning, null);
         }
 
+        public static TurnResult error(String state,
+                                       String stateTransition,
+                                       String errorCode,
+                                       Map<String, Object> handoff) {
+            return new TurnResult("", null, null, state, stateTransition, errorCode, handoff, null);
+        }
+
+        public static TurnResult error(String state,
+                                       String stateTransition,
+                                       String errorCode,
+                                       Map<String, Object> handoff,
+                                       Map<String, Object> runtimeMeta) {
+            return new TurnResult("", null, null, state, stateTransition, errorCode, handoff, runtimeMeta);
+        }
+
         public String getText() { return text; }
         public String getReasoning() { return reasoning; }
         public List<Map<String, Object>> getToolCalls() { return toolCalls; }
+        public String getState() { return state; }
+        public String getStateTransition() { return stateTransition; }
+        public String getErrorCode() { return errorCode; }
+        public Map<String, Object> getHandoff() { return handoff; }
+        public Map<String, Object> getRuntimeMeta() { return runtimeMeta; }
     }
 }

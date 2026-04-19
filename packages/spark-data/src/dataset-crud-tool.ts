@@ -224,11 +224,13 @@ type DataSetCrudToolUpdateDependencyParams = DataSetCrudToolDependencySelector &
  * 4. 多参数公开方法同时支持对象参数和旧的位置参数，便于 LLM / 动态调度直接传 JSON object。
  */
 export class DataSetCrudTool {
+  private static readonly HISTORY_LIMIT = 50
+
   /**
    * 当前工具类持有的 DataSet 实例。
    */
   private _dataSet: DataSet
-  private _history: SnapshotHistory<IDataSetMetadata>
+  private _history!: SnapshotHistory<IDataSetMetadata>
 
   /**
    * 创建一个绑定到指定 dataSetName 的统一 CRUD 工具。
@@ -241,8 +243,7 @@ export class DataSetCrudTool {
       dataSetName,
       tables: {},
     })
-    this._history = new SnapshotHistory<IDataSetMetadata>(50)
-    this._history.push(this._dataSet.toJson())
+    this.initializeHistory()
   }
 
   /**
@@ -251,8 +252,7 @@ export class DataSetCrudTool {
   static fromDataSet(dataSet: DataSet): DataSetCrudTool {
     const tool = Object.create(DataSetCrudTool.prototype) as DataSetCrudTool
     tool._dataSet = dataSet
-    tool._history = new SnapshotHistory<IDataSetMetadata>(50)
-    tool._history.push(dataSet.toJson())
+    tool.initializeHistory()
     return tool
   }
 
@@ -343,6 +343,11 @@ export class DataSetCrudTool {
    * 每次结构写操作成功后调用，将当前状态推入历史栈。
    */
   private _afterWrite(): void {
+    this._history.push(this._dataSet.toJson())
+  }
+
+  private initializeHistory(): void {
+    this._history = new SnapshotHistory<IDataSetMetadata>(DataSetCrudTool.HISTORY_LIMIT)
     this._history.push(this._dataSet.toJson())
   }
 

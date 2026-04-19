@@ -260,6 +260,31 @@ describe('dispatchQueryTool', () => {
       expect(ids).toContain('StyleCss.elementPlus')
       expect(ids).toContain('StyleCss.layout')
     })
+
+    it('invalid phase returns fail-fast hint for recovery', () => {
+      const result = JSON.parse(dispatchQueryTool('queryCapabilities', { phase: 'unknown-phase' }, catalog))
+      expect(result.error).toBeDefined()
+      expect(result.supportedPhases).toEqual(['data', 'ui', 'style'])
+      expect(result.hint).toContain('queryCapabilities')
+      expect(result.hint).toContain('queryActionSpec')
+    })
+
+    it('all phases union keeps full capability directory', () => {
+      const data = JSON.parse(dispatchQueryTool('queryCapabilities', { phase: 'data' }, catalog))
+      const ui = JSON.parse(dispatchQueryTool('queryCapabilities', { phase: 'ui' }, catalog))
+      const style = JSON.parse(dispatchQueryTool('queryCapabilities', { phase: 'style' }, catalog))
+
+      const allIds = new Set<string>([
+        ...data.capabilities.map((item: { id: string }) => item.id),
+        ...ui.capabilities.map((item: { id: string }) => item.id),
+        ...style.capabilities.map((item: { id: string }) => item.id),
+      ])
+
+      expect(allIds.size).toBe(15)
+      expect(allIds.has('DataSet.tables')).toBe(true)
+      expect(allIds.has('SparkNode.structure')).toBe(true)
+      expect(allIds.has('StyleCss.layout')).toBe(true)
+    })
   })
 
   describe('queryActionSpec', () => {
@@ -284,6 +309,13 @@ describe('dispatchQueryTool', () => {
       const result = JSON.parse(dispatchQueryTool('queryActionSpec', { capabilityId: 'Nonexistent.thing' }, catalog))
       expect(result.error).toBeDefined()
       expect(result.hint).toBeDefined()
+      expect(Array.isArray(result.suggestions) || result.suggestions === undefined).toBe(true)
+    })
+
+    it('missing capabilityId returns fail-fast hint', () => {
+      const result = JSON.parse(dispatchQueryTool('queryActionSpec', {}, catalog))
+      expect(result.error).toBeDefined()
+      expect(result.hint).toContain('queryCapabilities')
     })
   })
 
@@ -322,6 +354,8 @@ describe('dispatchQueryTool', () => {
   it('unknown tool returns error', () => {
     const result = JSON.parse(dispatchQueryTool('unknownTool', {}, catalog))
     expect(result.error).toBeDefined()
+    expect(result.availableQueryTools).toContain('queryCapabilities')
+    expect(result.availableQueryTools).toContain('queryActionSpec')
   })
 })
 

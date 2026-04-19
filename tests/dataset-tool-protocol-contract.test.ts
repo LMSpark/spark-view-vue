@@ -1,0 +1,70 @@
+import { describe, expect, it } from 'vitest'
+
+import { DataSetCrudTool } from '../packages/spark-data/src/dataset-crud-tool'
+import {
+  DATASET_CRUD_TOOL_STILLS_CAPABILITY_TABLE,
+  DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
+  getDataSetCrudToolStillCapabilityRow,
+  getDataSetCrudToolStillParameterRow,
+  validateDataSetCrudToolStillParams,
+} from '../packages/spark-ai/src/stills/dataset-crud-tool-stills-catalog'
+
+describe('dataset tool protocol contract', () => {
+  it('keeps action table and capability table aligned', () => {
+    expect(DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.length).toBeGreaterThan(0)
+    expect(DATASET_CRUD_TOOL_STILLS_CAPABILITY_TABLE.length).toBe(DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE.length)
+
+    for (const row of DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE) {
+      expect(row.action.startsWith('datasetTool.')).toBe(true)
+      const cap = getDataSetCrudToolStillCapabilityRow(row.action)
+      expect(cap).toBeDefined()
+      expect(cap?.paramsRef).toBe(row.action)
+      expect(cap?.crudToolMethod).toBe(row.crudToolMethod)
+    }
+  })
+
+  it('ensures every catalog crudToolMethod exists on DataSetCrudTool surface', () => {
+    const tool = new DataSetCrudTool('ProtocolContractDS')
+    const target = tool as unknown as Record<string, unknown>
+
+    for (const row of DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE) {
+      const member = target[row.crudToolMethod]
+      expect(member, `${row.action} -> ${row.crudToolMethod} should exist`).not.toBeUndefined()
+    }
+  })
+
+  it('accepts catalog examples as valid protocol payloads', () => {
+    for (const row of DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE) {
+      const error = validateDataSetCrudToolStillParams(row.action, row.example)
+      expect(error, `${row.action} example should pass validator`).toBeNull()
+    }
+  })
+
+  it('can resolve a known action row from both indexes', () => {
+    const row = getDataSetCrudToolStillParameterRow('datasetTool.createTable')
+    const cap = getDataSetCrudToolStillCapabilityRow('datasetTool.createTable')
+
+    expect(row).toMatchObject({
+      action: 'datasetTool.createTable',
+      type: 'request',
+      crudToolMethod: 'createTable',
+    })
+
+    expect(cap).toMatchObject({
+      action: 'datasetTool.createTable',
+      paramsRef: 'datasetTool.createTable',
+      crudToolMethod: 'createTable',
+    })
+  })
+
+  it('fails fast for unknown action in validator', () => {
+    const error = validateDataSetCrudToolStillParams('datasetTool.notExists', {})
+    expect(error).not.toBeNull()
+    expect(error).toContain('datasetTool.notExists')
+  })
+
+  it('does not expose removed legacy signatures in protocol lookup', () => {
+    const legacyDeleteRelation = getDataSetCrudToolStillParameterRow('datasetTool.deleteRelationLegacy')
+    expect(legacyDeleteRelation).toBeUndefined()
+  })
+})

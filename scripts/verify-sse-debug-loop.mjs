@@ -2,6 +2,44 @@
 
 import { randomUUID } from 'node:crypto'
 
+const AUTH_TENANT_ID = process.env.AI_TENANT_ID || 'lmspark'
+const AUTH_USERNAME = process.env.AI_USERNAME || 'admin'
+const AUTH_PASSWORD = process.env.AI_PASSWORD || 'admin123'
+
+let authToken = ''
+
+function createAuthHeaders() {
+  const headers = {}
+  if (authToken) headers.Authorization = `Bearer ${authToken}`
+  if (AUTH_TENANT_ID) headers['X-Tenant-Id'] = AUTH_TENANT_ID
+  return headers
+}
+
+async function login(backendBase) {
+  const response = await fetch(makeUrl(backendBase, '/api/auth/login'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Tenant-Id': AUTH_TENANT_ID,
+    },
+    body: JSON.stringify({
+      tenantId: AUTH_TENANT_ID,
+      username: AUTH_USERNAME,
+      password: AUTH_PASSWORD,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`登录失败: ${response.status} ${response.statusText} ${await response.text()}`)
+  }
+
+  const data = await response.json()
+  if (!data?.success || typeof data.token !== 'string' || data.token === '') {
+    throw new Error('登录失败: 未返回有效 token')
+  }
+  authToken = data.token
+}
+
 function parseArgs(argv) {
   const options = {
     backendBase: 'http://127.0.0.1:8080',
@@ -67,7 +105,7 @@ function makeUrl(base, path) {
 }
 
 async function ensureOk(url, label) {
-  const response = await fetch(url)
+  const response = await fetch(url, { headers: createAuthHeaders() })
   if (!response.ok) {
     throw new Error(`${label} 检查失败: ${response.status} ${response.statusText}`)
   }
@@ -76,7 +114,7 @@ async function ensureOk(url, label) {
 async function postJson(url, payload) {
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...createAuthHeaders() },
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
@@ -124,7 +162,7 @@ async function waitEventWithTrigger({
 
   const response = await fetch(eventsUrl, {
     method: 'GET',
-    headers: { Accept: 'text/event-stream' },
+    headers: { Accept: 'text/event-stream', ...createAuthHeaders() },
     signal: controller.signal,
   })
 
@@ -249,6 +287,9 @@ async function main() {
   const eventsUrl = makeUrl(options.backendBase, '/api/events')
   const routeUrl = makeUrl(options.backendBase, '/api/ai/debug/route-request')
   const screenshotUrl = makeUrl(options.backendBase, '/api/ai/debug/screenshot-request')
+
+  console.log(`[sse-loop] 登录中 tenant=${AUTH_TENANT_ID} user=${AUTH_USERNAME}...`)
+  await login(options.backendBase)
 
   console.log('[sse-loop] 健康检查中...')
   await ensureOk(healthUrl, '后端 health')

@@ -13,8 +13,8 @@
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │                           spark-ai-server (Backend)                             │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────────────┐  │
-│  │ AiChatController│  │ StillsController│  │ PageConfigController + SSE     │  │
-│  │  /api/ai/chat   │  │ /api/stills/*   │  │ /api/tenants/{t}/projects/{p}/ │  │
+│  │ AiChatController│  │ AiSessionController│ │ PageConfigController + SSE    │  │
+│  │  /api/ai/chat   │  │ /api/ai/sessions/* │ │ /api/tenants/{t}/projects/{p}/│  │
 │  └────────┬────────┘  └────────┬────────┘  └────────────────┬────────────────┘  │
 └───────────┼─────────────────────┼──────────────────────────┼────────────────────┘
             │ SSE                 │ REST                     │ SSE + REST
@@ -70,7 +70,7 @@
 | **Dev 编辑器** | ✅ 完整 | DevFileEditor | 4 文件 + 版本 + 预览 |
 | **Stills 动作引擎** | ✅ 完整 | 未接入 | 53 个原子动作已注册 |
 | **会话编排器** | ✅ 实现 | 未接入 | runStillsLoop 未连线 |
-| **Stills Backend** | 🔶 基础 | /api/stills/* | chat/execute/session |
+| **Stills Backend（统一会话）** | ✅ 已收敛 | /api/ai/sessions/* | create/turn/append/conversation/destroy |
 | **组件目录投影** | ✅ 完整 | catalog-projections | FC/DevSystem 多角色 |
 
 ### 1.3 关键差距
@@ -101,21 +101,21 @@
 
 **当前状态**：
 - `session-orchestrator.ts` 已实现完整循环逻辑
-- `SessionBackend` 接口已定义，需实现 HTTP 客户端
-- 后端 `StillsController` 已提供基础端点
+- `SessionBackend` 接口已定义，HTTP 客户端已对齐 sessions v3
+- 后端统一入口为 `AiSessionController`（`/api/ai/sessions/*`）
 
 **实施步骤**：
 
 ```
 Step 1: 实现 SessionBackendImpl
 ────────────────────────────────
-位置: packages/spark-ai/src/runtime/session-backend-impl.ts
+位置: packages/spark-ai/src/session-backend.ts
 
 接口方法:
-- createSession() → POST /api/stills/session
-- executeTurn()   → POST /api/stills/chat
-- appendMessages()→ POST /api/stills/session/{id}/messages
-- destroySession()→ DELETE /api/stills/session/{id}
+- createSession() → POST /api/ai/sessions
+- executeTurn()   → POST /api/ai/sessions/{id}/turn
+- appendMessages()→ POST /api/ai/sessions/{id}/append
+- destroySession()→ DELETE /api/ai/sessions/{id}
 
 Step 2: 扩展 DevAiPanel UI
 ─────────────────────────────
@@ -134,10 +134,10 @@ Step 3: 连线 runStillsLoop
 
 | 文件 | 变更类型 | 说明 |
 |------|----------|------|
-| `packages/spark-ai/src/runtime/session-backend-impl.ts` | 新增 | HTTP 客户端实现 |
+| `packages/spark-ai/src/session-backend.ts` | 已实现 | HTTP 客户端统一实现 |
 | `packages/spark-ai/src/index.ts` | 修改 | 导出 runStillsLoop |
 | `src/views/app/dev-system/DevAiPanel.vue` | 修改 | 增加 Stills 模式 |
-| `spark-ai-server/.../StillsController.java` | 修改 | 补充缺失端点 |
+| `spark-ai-server/.../AiSessionController.java` | 修改 | 统一会话端点补强 |
 
 **预期收益**：
 - 支持复杂多步任务（如：一键生成完整 CRUD 模块）
@@ -276,7 +276,7 @@ watch(renderErrors, (errors) => {
 ### 3.1 SessionBackendImpl 实现
 
 ```typescript
-// packages/spark-ai/src/runtime/session-backend-impl.ts
+// packages/spark-ai/src/session-backend.ts
 
 import type { SessionBackend, LlmResponse, ToolDefinition, ToolCall } from './session-orchestrator'
 import { getConfiguredHttp } from '../protocol'
@@ -285,7 +285,7 @@ export class SessionBackendImpl implements SessionBackend {
   private sessionIds = new Set<string>()
   private baseUrl: string
 
-  constructor(baseUrl = '/api/stills') {
+  constructor(baseUrl = '/api/ai/sessions') {
     this.baseUrl = baseUrl
   }
 
@@ -464,7 +464,7 @@ packages/spark-ai/
 │   ├── runtime/
 │   │   ├── ai-loop.ts              # 页面生成闭环
 │   │   ├── session-orchestrator.ts # 会话编排器 (✅ 已实现)
-│   │   └── session-backend-impl.ts # HTTP 客户端 (待实现)
+│   │   └── session-backend.ts      # HTTP 客户端 (✅ 已收敛)
 │   ├── stills/
 │   │   ├── dataset-domain.ts       # 24 个 DataSet 动作
 │   │   ├── blueprint-domain.ts     # 8 个蓝图动作
@@ -481,8 +481,8 @@ src/views/app/dev-system/
 
 spark-ai-server/
 └── src/main/java/com/spark/ai/
-    ├── controller/StillsController.java  # Stills 端点 (待补充)
-    └── service/StillsSessionService.java # 会话管理 (待补充)
+  ├── controller/AiSessionController.java # 统一会话端点 (/api/ai/sessions/*)
+  └── stills/StillsSessionService.java   # 会话管理与状态机 (✅ 已实现)
 ```
 
 ### B. 核心接口定义

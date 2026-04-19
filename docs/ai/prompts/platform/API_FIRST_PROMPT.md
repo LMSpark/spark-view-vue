@@ -141,8 +141,18 @@
 
 | Method | Path | 说明 |
 |---|---|---|
-| `POST` | `/api/stills/chat` | Stills AI 对话 |
-| `POST` | `/api/stills/execute` | 执行 Stills 协议（`text/plain`） |
+| `POST` | `/api/stills/chat` | 历史端点（已下线） |
+| `POST` | `/api/stills/execute` | 历史端点（已下线） |
+
+### 12) AI Sessions（统一入口）
+
+| Method | Path | 说明 |
+|---|---|---|
+| `POST` | `/api/ai/sessions` | 创建会话（protocolVersion=3） |
+| `POST` | `/api/ai/sessions/{id}/turn` | 执行一轮 |
+| `POST` | `/api/ai/sessions/{id}/append` | 追加消息 |
+| `GET` | `/api/ai/sessions/{id}/conversation` | 获取会话对话 |
+| `DELETE` | `/api/ai/sessions/{id}` | 销毁会话 |
 
 ## 三、可直接复制的最小提示词
 

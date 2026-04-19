@@ -35,8 +35,6 @@ export interface RTableProps
   tableProps?: Record<string, unknown>
   /** 结构化工具栏 @componentRef r-toolbar */
   toolbar?: ToolbarNode
-  /** 行操作列标题（历史兼容字段，优先级低于 r-actions.props.label） */
-  rowActionsLabel?: string
   /** 行操作列宽度（历史兼容字段，优先级低于 r-actions.props.width） */
   rowActionsWidth?: string | number
   /** 行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align） */

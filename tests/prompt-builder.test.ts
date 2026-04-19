@@ -203,7 +203,10 @@ describe('提示词内容完整性', () => {
     expect(STILLS_RUNTIME_PROMPT).toContain('L3: 业务逻辑')
     // L4 API 目录
     expect(STILLS_RUNTIME_PROMPT).toContain('L4: API 目录')
-    expect(STILLS_RUNTIME_PROMPT).toContain('dataset.validate')
+    expect(STILLS_RUNTIME_PROMPT).toContain('目录不是硬编码动作列表')
+    expect(STILLS_RUNTIME_PROMPT).toContain('提示词只规定“先查再做”')
+    expect(STILLS_RUNTIME_PROMPT).toContain('动作名、参数字段、参数类型、可选/必填、失败码，全部以查询结果为准')
+    expect(STILLS_RUNTIME_PROMPT).not.toContain('datatable.create       — 全部表与列')
     // L5 按需查询
     expect(STILLS_RUNTIME_PROMPT).toContain('L5: 按需查询')
     expect(STILLS_RUNTIME_PROMPT).toContain('actionSpec')

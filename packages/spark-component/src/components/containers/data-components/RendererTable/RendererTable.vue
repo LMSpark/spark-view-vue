@@ -200,11 +200,6 @@ const renderedContentChildNodes = computed(() => contentChildNodes.value.map(nor
 const slots = useSlots()
 const attrs = useAttrs()
 
-function readLegacyStringAttr(name: string): string | undefined {
-  const value = attrs[name]
-  return typeof value === 'string' && value.length > 0 ? value : undefined
-}
-
 function readLegacyNumberLikeAttr(name: string): string | number | undefined {
   const value = attrs[name]
   if (typeof value === 'number' && Number.isFinite(value)) return value
@@ -362,15 +357,6 @@ const legacyRowActionsWidth = computed<string | number | undefined>(() => {
   return readLegacyNumberLikeAttr('rowActionsWidth')
 })
 
-const legacyRowActionsLabel = computed<string | undefined>(() => {
-  if (typeof props.rowActionsLabel === 'string' && props.rowActionsLabel.length > 0) {
-    return props.rowActionsLabel
-  }
-  const value = props.tableProps?.['rowActionsLabel']
-  if (typeof value === 'string' && value.length > 0) return value
-  return readLegacyStringAttr('rowActionsLabel')
-})
-
 const legacyRowActionsAlign = computed<ActionsAlign | undefined>(() => {
   if (props.rowActionsAlign === 'left' || props.rowActionsAlign === 'center' || props.rowActionsAlign === 'right') {
     return props.rowActionsAlign
@@ -398,7 +384,6 @@ const baseElTableProps = computed<Record<string, unknown>>(() => {
   const raw = props.tableProps ?? {}
   const {
     rowActionsWidth: _rowActionsWidth,
-    rowActionsLabel: _rowActionsLabel,
     rowActionsAlign: _rowActionsAlign,
     rowActionsFixed: _rowActionsFixed,
     ...tableProps
@@ -627,9 +612,7 @@ const rowActionsContainerStyle = computed<CSSProperties>(() => ({
 
 /** 行操作列统一属性（标题 + 宽度） */
 const rowActionColumnAttrs = computed(() => {
-  const label = childCompatProp<string>(actionsNode.value, 'label')
-    ?? legacyRowActionsLabel.value
-    ?? '操作'
+  const label = childCompatProp<string>(actionsNode.value, 'label') ?? '操作'
   const width = childCompatProp<number | string>(actionsNode.value, 'width')
     ?? legacyRowActionsWidth.value
     ?? 160

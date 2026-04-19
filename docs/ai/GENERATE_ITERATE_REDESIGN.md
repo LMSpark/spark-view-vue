@@ -12,7 +12,7 @@
 
 | 维度 | Generate/Iterate（页面生成） | Stills（结构化编辑） |
 |------|------|------|
-| 端点 | `POST /api/ai/chat/stream-page` | `POST /api/stills/session` → `/turn` → `/append` |
+| 端点 | `POST /api/ai/chat/stream-page` | `/api/ai/sessions/*`（v3 统一入口；`/api/stills/*` 已下线） |
 | 调用方式 | 纯 Chat Completion（无 tools） | Function Calling + 工具回路 |
 | 会话管理 | **无**（每次请求无状态） | 有（StillsSessionService，滑动窗口 30 条） |
 | 约束知识 | 500 行 system-prompt.txt 一次性注入 | ~2000 行 catalog（paramsSchema + usageRules + failureModes） |
@@ -147,7 +147,7 @@ Phase 3 ← iterate 循环
 
 - 合并 Stills 和 Generate/Iterate 到同一套会话体系
 - 通过 `mode: 'generate' | 'stills'` 区分行为
-- Stills 现有 `/api/stills/*` 端点迁移到新路径
+- Stills 现有 `/api/stills/*` 端点已下线，统一收敛到 `/api/ai/sessions/*`
 
 ### Q9 System Prompt 处理
 
@@ -262,7 +262,7 @@ packages/spark-ai/src/generate/
 ├── generate-orchestrator.ts       ← 三阶段编排器（核心循环）
 ├── generate-tools-catalog.ts      ← FC tools 定义（7 个 tool）
 ├── generate-validators.ts         ← 双重校验器（tool 层 + 语义层）
-├── generate-session-backend.ts    ← SessionBackend 实现（对接 /api/ai/sessions/*）
+├── ../session-backend.ts          ← SessionBackend 统一实现（generate/stills 共用）
 └── index.ts                       ← 模块入口
 
 packages/spark-ai/src/prompts/
@@ -286,14 +286,16 @@ packages/spark-ai/src/prompts/
 
 ### 4.2 与旧端点映射
 
+> 说明：右列均为历史端点，当前已下线（GONE），仅用于迁移对照。
+
 | 新路径 | 旧路径 |
 |--------|--------|
-| `POST /api/ai/sessions` | `POST /api/stills/session` |
-| `POST /api/ai/sessions/{id}/turn` | `POST /api/stills/turn` |
-| `POST /api/ai/sessions/{id}/append` | `POST /api/stills/append` |
-| `GET /api/ai/sessions/{id}/conversation` | `POST /api/stills/conversation` |
-| `DELETE /api/ai/sessions/{id}` | `POST /api/stills/destroy` |
-| `DELETE /api/ai/sessions` | `POST /api/stills/destroy-batch` |
+| `POST /api/ai/sessions` | `POST /api/stills/session`（已下线） |
+| `POST /api/ai/sessions/{id}/turn` | `POST /api/stills/turn`（已下线） |
+| `POST /api/ai/sessions/{id}/append` | `POST /api/stills/append`（已下线） |
+| `GET /api/ai/sessions/{id}/conversation` | `POST /api/stills/conversation`（已下线） |
+| `DELETE /api/ai/sessions/{id}` | `POST /api/stills/destroy`（已下线） |
+| `DELETE /api/ai/sessions` | `POST /api/stills/destroy-batch`（已下线） |
 
 ### 4.3 会话数据结构
 
@@ -704,7 +706,7 @@ async function runGenerate(
 |------|------|------|
 | 新建 `AiSessionController.java` | 创建 | `/api/ai/sessions/*` 统一端点 |
 | `StillsSessionService.java` | 改造 | 添加 SSE 流式 turn + tools 参数存储与转发 |
-| `StillsController.java` | 保留 | 暂不删除，标记 `@Deprecated` |
+| `StillsController.java` | 改造 | 旧 `/api/stills/*` 统一返回下线语义（GONE） |
 
 ### Step 2：前端 — FC Tools 定义
 
@@ -724,7 +726,7 @@ async function runGenerate(
 | 文件 | 动作 |
 |------|------|
 | 新建 `packages/spark-ai/src/generate/generate-orchestrator.ts` | 核心编排循环 |
-| 新建 `packages/spark-ai/src/generate/generate-session-backend.ts` | SessionBackend HTTP 实现 |
+| 复用 `packages/spark-ai/src/session-backend.ts` | SessionBackend HTTP 实现（generate/stills 统一） |
 
 ### Step 5：前端 — 双重校验器
 
@@ -751,12 +753,12 @@ async function runGenerate(
 | **新建** | `packages/spark-ai/src/generate/generate-tools-catalog.ts` | 7 个 FC tool 定义 |
 | **新建** | `packages/spark-ai/src/generate/generate-orchestrator.ts` | 三阶段编排器 |
 | **新建** | `packages/spark-ai/src/generate/generate-validators.ts` | 双重校验器 |
-| **新建** | `packages/spark-ai/src/generate/generate-session-backend.ts` | SessionBackend HTTP 实现 |
+| **改造** | `packages/spark-ai/src/session-backend.ts` | SessionBackend HTTP 统一实现 |
 | **新建** | `packages/spark-ai/src/generate/index.ts` | 模块入口 |
 | **改造** | `packages/spark-ai/src/prompts/page-system-prompt.ts` | 拆分为 5 段导出 |
 | **改造** | `scripts/iterate-ai-dataset-quality.ts` | 对接新编排器 |
-| **保留** | `spark-ai-server/.../controller/StillsController.java` | 标 @Deprecated |
-| **保留** | `spark-ai-server/.../resources/prompts/system-prompt.txt` | 旧端点仍用 |
+| **改造** | `spark-ai-server/.../controller/StillsController.java` | 旧端点下线返回 GONE |
+| **保留** | `spark-ai-server/.../resources/prompts/system-prompt.txt` | 历史 stream-page 链路仍使用 |
 
 ---
 
@@ -768,7 +770,7 @@ async function runGenerate(
 | LLM 不遵循"先查后做"约束 | 生成质量不稳定 | system prompt 硬性禁令 + tool 层校验兜底 + 场景模式示例 |
 | 滑动窗口按条数可能超出 context window | LLM 响应质量下降 | 短期可接受（现有 Stills 已运行）；中期可加 token 估算 |
 | 回溯导致无限循环 | 生成永不结束 | `maxBacktracks` 硬限制（默认 1） |
-| 迁移期间两套端点并存 | 维护成本增加 | 旧端点标 @Deprecated，测试通过后集中删除 |
+| 迁移期间两套端点并存 | 维护成本增加 | 强制统一到 `/api/ai/sessions`，旧端点仅保留下线响应 |
 
 ---
 

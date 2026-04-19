@@ -4,13 +4,12 @@
  * 目标：
  * 1. 把 DataSetCrudTool 的公开能力整理成 stills.capabilities 可消费的能力表；
  * 2. 把每个动作的参数规格、结果结构、使用规则整理成 stills.actionSpec 可消费的参数表；
- * 3. 先只做目录建模，不注册到现有 stills registry，不影响当前 AI 功能。
+ * 3. 作为 edit-dataset-stills 的统一事实源，直接驱动运行时 still 定义。
  *
  * 约束：
- * - 本文件只提供 catalog，不提供 execute 实现；
- * - DataSetCrudTool 公开方法现已兼容对象参数签名，LLM 可按 paramsSchema 直接调用 crudToolMethod；
- *   旧的位置参数签名仍保持兼容，避免破坏现有调用方；
- * - action 统一使用 datasetTool.* 命名空间，避免与当前 datatable.* / dataview.* stills 冲突；
+ * - 本文件只提供 catalog 与参数校验，不直接承担 execute 分发；
+ * - DataSetCrudTool 调用统一采用对象参数签名，LLM 按 paramsSchema 直接调用 crudToolMethod；
+ * - action 统一使用 datasetTool.* 命名空间，避免与 datatable.* / dataview.* stills 冲突；
  * - constructor / dataSet / dataSetName / toJson 不单独暴露给 LLM：
  *   - constructor 由宿主注入；
  *   - dataSet / dataSetName 属于运行时上下文；
@@ -92,8 +91,8 @@ export interface DatasetCrudToolStillCapabilityRow {
   crudToolMethod: string
   /** 动作摘要说明。 */
   description: string
-  /** 当前阶段固定为 catalog-only，明确尚未接入运行时。 */
-  integrationStatus: 'catalog-only'
+  /** 集成状态：catalog-only 表示仅目录，runtime-wired 表示已接入运行时 still 分发。 */
+  integrationStatus: 'catalog-only' | 'runtime-wired'
   /** 指回参数表 action，避免能力表重复存完整规格。 */
   paramsRef: string
   currentStillAction?: string
@@ -351,7 +350,7 @@ const DEFAULT_VIEW_RULE = '省略 viewId 时默认作用于 default 视图。'
 const DEFAULT_VIEW_LIFECYCLE_RULE = 'default 视图不能通过 createView 创建，也不能通过 deleteView 删除。'
 const REMOTE_ROW_RESULT_RULE = '行级 request 动作在远端 CRUD 模式下可能返回 CrudResult，本地模式返回本地对象或布尔值。'
 const RELATION_AMBIGUITY_RULE = '同一 parentTable + childTable 下存在多条关系时，必须补 parentField 与 childField 做消歧。'
-const CATALOG_ONLY_RULE = '本 catalog 当前未注册到 stills registry，只用于未来 LLM 动作映射。'
+const CATALOG_ONLY_RULE = '该动作已由 edit-dataset-stills 直接消费；目录定义与运行时行为需保持一致。'
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
 
 type DatasetCrudToolStillValidationRule = {
@@ -391,7 +390,7 @@ function toCapabilityRow(row: DatasetCrudToolStillParameterRow): DatasetCrudTool
     target: row.target,
     crudToolMethod: row.crudToolMethod,
     description: row.description,
-    integrationStatus: 'catalog-only',
+    integrationStatus: 'runtime-wired',
     paramsRef: row.action,
     ...(row.currentStillAction ? { currentStillAction: row.currentStillAction } : {}),
     ...(row.usageRules.length > 0 ? { rules: row.usageRules } : {}),
@@ -402,7 +401,7 @@ function toCapabilityRow(row: DatasetCrudToolStillParameterRow): DatasetCrudTool
 }
 
 /**
- * 参数表：未来 stills.actionSpec / LLM adapter 的单动作规格数据源。
+ * 参数表：stills.actionSpec / LLM adapter 的单动作规格数据源。
  *
  * 这里是完整事实源；能力表由它投影生成。
  */
@@ -1404,28 +1403,27 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     action: 'datasetTool.deleteRelation',
     target: 'relation',
     crudToolMethod: 'deleteRelation',
-    description: '删除一条表关系，支持 selector 或 parentTable + childTable 两种签名',
+    description: '删除一条表关系（单一签名：关系选择器）',
     paramsSchema: {
-      selector: RELATION_SELECTOR_SCHEMA,
-      parentTable: 'string? — 兼容签名中的父表名',
-      childTable: 'string? — 兼容签名中的子表名',
+      parentTable: PARENT_TABLE_PARAM,
+      childTable: CHILD_TABLE_PARAM,
+      parentField: 'string? — 同一父子表有多条关系时建议显式提供',
+      childField: 'string? — 同一父子表有多条关系时建议显式提供',
     },
     resultSchema: {
       deleted: 'boolean — 删除完成后视为 true',
     },
     example: {
-      selector: { parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' },
+      parentTable: 'Orders',
+      childTable: 'Items',
+      parentField: 'id',
+      childField: 'orderId',
     },
-    validation: {
-      oneOfRequiredKeyGroups: [
-        ['selector'],
-        ['parentTable', 'childTable'],
-      ],
-    },
+    validation: { requiredKeys: ['parentTable', 'childTable'] },
     usageRules: [
       JSON_OBJECT_RULE,
       RELATION_AMBIGUITY_RULE,
-      '优先使用 selector 形式，避免按 parentTable + childTable 删除时误命中多条关系。',
+      '同一父子表存在多条关系时，必须补 parentField 与 childField 消歧。',
       CATALOG_ONLY_RULE,
     ],
     failureModes: [

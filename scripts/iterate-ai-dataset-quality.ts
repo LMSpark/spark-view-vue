@@ -13,7 +13,7 @@
  */
 
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs'
-import { createGenerateSessionBackend } from '../packages/spark-ai/src/generate/generate-session-backend'
+import { createGenerateSessionBackend } from '../packages/spark-ai/src/session-backend'
 import { runGenerateLoop } from '../packages/spark-ai/src/generate/generate-orchestrator'
 import type { GenerateProgressEvent, GenerateResult } from '../packages/spark-ai/src/generate/generate-orchestrator'
 import type { ComponentCatalog } from '../packages/spark-ai/src/catalog/types'

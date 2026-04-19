@@ -6,23 +6,43 @@
 //
 // 所有提示词基于 Function Calling 模式，LLM 通过原生 tool/function 调用交互。
 
+import { EDIT_FLOW_1001_DATA_FIRST_POLICY } from './edit-flow/1001.data-first-policy'
+import { EDIT_FLOW_1002_DATA_FIRST_SEQUENCE } from './edit-flow/1002.data-first-sequence'
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. 协议基座（L1+L2：交互规则 + 能力发现）
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * FC 模式能力发现层（L1+L2）。
+ * FC 模式协议基座（L1+L2）。
  *
  * LLM 通过原生 function calling 调用工具。
- * 保留能力发现三入口的逻辑说明。
+ * 保留交互规则 + 能力发现三入口的逻辑说明。
  */
-export const STILLS_PROTOCOL_BASE = ''
+export const STILLS_PROTOCOL_BASE = `
+══ L1: 协议层 ══
+
+  你通过 Function Calling 与 Stills 引擎交互。
+  - 一轮只执行一个明确目标，不并行猜测多个写动作。
+  - 仅以 tool 执行结果判定状态，口头声明不算执行成功。
+  - 连续两次同类失败必须先澄清再继续，不允许盲试。
+
+══ L2: 能力发现层 ══
+
+  三个发现入口是唯一事实源：
+  - session.describe：当前角色 / 阶段 / 推荐下一步
+  - stills.capabilities：动作目录（params / example / guard）
+  - stills.actionSpec：单动作详细规格（usageRules / failureModes）
+
+  首轮先 session.describe，首次执行前先 stills.capabilities；
+  参数格式不猜测，全部以 capabilities/actionSpec 为准。
+`
 // ─────────────────────────────────────────────────────────────────────────────
-// L3 + L4 + L5 领域层：DataSet 建模
+// L3 + L4 + L5 + L6 + L7 领域层：DataSet 建模
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * DataSet 建模领域的 L3（业务逻辑）+ L4（API 目录）+ L5（按需查询）。
+ * DataSet 建模领域的 L3~L7 分层约束。
  * 与 STILLS_PROTOCOL_BASE 拼接后形成完整的 DataSet Stills 提示词。
  */
 export const STILLS_DATASET_DOMAIN = `
@@ -63,33 +83,11 @@ export const STILLS_DATASET_DOMAIN = `
 
   1. 生成确认问题
      针对需求生成确认问题，每个问题提供至少 5 个选项。
-     使用 @@ui:confirm-questions 协议块输出（前端渲染为可交互表单）：
-
-     @@ui:confirm-questions
-     {
-       "title": "需求确认",
-       "questions": [
-         {
-           "id": "q1",
-           "text": "问题文本",
-           "type": "single",
-           "options": [
-             { "key": "A", "label": "选项标签" },
-             { "key": "B", "label": "选项标签", "description": "补充说明" }
-           ]
-         },
-         {
-           "id": "q2",
-           "text": "多选问题",
-           "type": "multi",
-           "options": [...]
-         }
-       ]
-     }
-     @@end
-
-     type = "single"（单选） | "multi"（多选）。
-     @@ui:confirm-questions 产出确认表单，前端渲染后用户勾选提交，回答自动回传。
+     通过标准对话文本输出确认问题，结构采用 JSON 语义但不使用任何 @@ 协议块：
+     - title: 确认主题
+     - questions: 问题列表
+     - question.type = "single"（单选） | "multi"（多选）
+     前端将按 SAP3 标准会话消息解析并渲染交互，不再依赖 @@ 包裹协议。
      问题内容按当前阶段聚焦（见上方"整体工作流"）。
 
   2. 等待用户逐一选择
@@ -156,27 +154,16 @@ export const STILLS_DATASET_DOMAIN = `
 
 ══ L4: API 目录 ══
 
-  DataSet 建模五层（缺任一层不得 dataset.export）：
+  目录不是硬编码动作列表，必须通过查询获取：
+  - stills.capabilities：查询当前会话可用动作目录（按 target/type 分组）
+  - stills.actionSpec：查询单动作完整规格（paramsSchema / usageRules / failureModes / example）
 
-    结构层（schema 未锁定时）：
-      datatable.create       — 全部表与列
-      relation.add           — 全部表间关系
-      schema.lock            — 锁定结构
-
-    行为层（schema 锁定后）：
-      datatable.setApi       — 每张表的 CRUD API 端点（url + method）
-      dataview.configure     — 每张表的视图属性（排序/分页/过滤/autoLoad）
-      dataview.setAggregates — 有数值列的视图必配汇总（sum/avg/count）
-      dependency.add         — 父子表级联依赖
-
-    计算层：
-      datatable.addColumns   — 可从已有列派生的计算列（computeExpression）
-
-    数据层：
-      datatable.addRows      — 枚举表/字典表的内联初始数据
-
-    验证层：
-      dataset.validate       — 导出前必须校验
+  执行规则：
+  - 提示词只规定“先查再做”，不预设具体 FC 名。
+  - 任何写操作前，先从 capabilities 选动作，再用 actionSpec 拉取该动作的完整参数规范。
+  - 动作名、参数字段、参数类型、可选/必填、失败码，全部以查询结果为准。
+  - 不允许凭记忆拼动作名，不允许猜参数格式。
+  - 需要阶段校验时，先在 capabilities 中定位可用校验动作，再执行。
 
   导出前检查清单（全部通过才可 dataset.export）：
     □ 每张表都有 API 端点
@@ -192,17 +179,56 @@ export const STILLS_DATASET_DOMAIN = `
 
 ══ L5: 按需查询 ══
 
-  L4 目录提供动作名和用途概要。执行时若对参数格式、校验规则或边界条件不确定：
-  → @@describe:stills.actionSpec#<id> { "action": "<动作名>" }
+  L4 目录只提供检索入口，不提供硬编码调用模板。
+  执行时若对动作选择、参数格式、校验规则或边界条件不确定：
+  1) 先查 stills.capabilities
+  2) 再查 stills.actionSpec（按目标动作名）
+  3) 依据返回规格执行对应 FC
 
   actionSpec 返回完整规格：paramsSchema / usageRules / failureModes / example。
-  先查再执行，禁止猜测参数格式。`
+  先查再执行，禁止猜测参数格式。
+
+══ L6: 质量验证层 ══
+
+  每个阶段完成前必须执行该阶段最小验证：
+  - 数据阶段：执行当前会话可用的数据校验动作（以 capabilities 查询结果为准）
+  - 页面阶段：关键 dataKey / 事件函数 / Render* 绑定一致性自检
+  - 导出阶段：仅在核心校验通过后才允许导出或落盘动作
+
+  校验失败时：
+  - 先回退并修复当前阶段，不得带病推进下一阶段。
+  - 错误信息必须转为可执行修复动作，不允许只做口头解释。
+
+══ L7: 安全与交接层 ══
+
+  涉及关键业务事实、不可逆动作或高风险删除时，必须先确认再执行：
+  - 不替用户决定关键事实。
+  - 不在未确认状态下执行破坏性写动作。
+  - 达到自动化边界时明确 HANDOFF：说明现状、风险、下一步建议。
+`
 
 /**
  * Stills 运行时系统提示词。
  * = STILLS_PROTOCOL_BASE (交互规则 + 能力发现) + STILLS_DATASET_DOMAIN (业务逻辑 + API 目录 + 按需查询)
  */
 export const STILLS_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}\n${STILLS_DATASET_DOMAIN}`
+
+/**
+ * Stills 编辑模式运行时提示词。
+ *
+ * 约束模型仅调用 edit domain（edit.* / file.* / datasetTool.* / sparkNodeTree.*），
+ * 避免回退到生成模式动作目录。
+ */
+export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_RUNTIME_PROMPT}
+
+【编辑模式强约束】
+- 当前会话仅允许 edit domain 动作：edit.* / file.* / datasetTool.* / sparkNodeTree.*
+- 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.* / dataset.export
+- 在本会话中，edit.init 已由宿主完成；如遇 NOT_EDITING / NO_DATASET_EDIT / NO_NODE_TREE，先修复前置状态再继续。
+${EDIT_FLOW_1001_DATA_FIRST_POLICY}
+
+${EDIT_FLOW_1002_DATA_FIRST_SEQUENCE}
+`
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. Stills 蓝图执行提示词（完整版）

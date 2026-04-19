@@ -14,7 +14,7 @@ import { createAuthHeaders } from '@/services/http'
 export {
   extractProposalBlocks as extractProposalProtocolBlocks,
   stripProposalBlocks as stripProposalProtocolBlocks,
-  stripProtocolBlocksWithUnclosed,
+  stripBlocksWithUnclosed as stripProtocolBlocksWithUnclosed,
   extractFirstJsonObject,
   parseTokenUsage,
   formatTokenUsage,

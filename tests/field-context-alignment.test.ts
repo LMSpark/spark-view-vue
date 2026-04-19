@@ -120,10 +120,10 @@ describe('FieldContextRenderer CSS class 传递', () => {
     expect(col.attributes('data-align')).toBe('right')
   })
 
-  it('无 headerCellClassName 时 fallback 到 spark-col-header--left', () => {
+  it('无 headerCellClassName 时 fallback 到 spark-col-header--center', () => {
     const wrapper = mountFCR({})
     const col = wrapper.find('.el-table-column-test-stub')
-    expect(col.attributes('data-label-class-name')).toBe('spark-col-header--left')
+    expect(col.attributes('data-label-class-name')).toBe('spark-col-header--center')
   })
 
   it('无 cellClassName 时 fallback 到 spark-col-cell--left', () => {
@@ -132,10 +132,10 @@ describe('FieldContextRenderer CSS class 传递', () => {
     expect(col.attributes('data-class-name')).toBe('spark-col-cell--left')
   })
 
-  it('titleAlign=right 且无 headerCellClassName → fallback spark-col-header--right', () => {
+  it('titleAlign=right 且无 headerCellClassName → table header 仍按 headerAlign 默认 center', () => {
     const wrapper = mountFCR({ titleAlign: 'right' })
     const col = wrapper.find('.el-table-column-test-stub')
-    expect(col.attributes('data-label-class-name')).toBe('spark-col-header--right')
+    expect(col.attributes('data-label-class-name')).toBe('spark-col-header--center')
   })
 })
 
