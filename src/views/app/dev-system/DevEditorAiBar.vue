@@ -52,6 +52,7 @@ import { ref, computed } from 'vue'
 import { getAILoop } from '@spark-view/spark-ai'
 import type { PageFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
+import { runAiFileWriteback } from './composables/useAiFileWriteback'
 
 interface Props {
   pageId: string
@@ -157,19 +158,27 @@ async function handleCommand(command: string) {
         onPhase() {},
       })
     } else {
-      // 修改模式：获取结果后显示建议
-      const result = await loop.value.generateStream(props.pageId, prompt, {
-        onDelta() {},
-        onReasoning() {},
-        onPhase() {},
-      })
-      
-      // 解析返回的 JSON
+      // 修改模式：文件级回写优先，避免依赖 explanation 文本抽取
       const fileName = props.fileName as PageFileName
-      const content = result.files?.[fileName] ?? result.explanation
+      const result = await runAiFileWriteback({
+        loop: loop.value,
+        pageId: props.pageId,
+        prompt,
+        targetFile: fileName,
+        contextFiles: {
+          [fileName]: props.fileContent,
+        },
+        callbacks: {
+          onDelta() {},
+          onReasoning() {},
+          onPhase() {},
+        },
+      })
+
+      const content = result.content
       if (content) {
         suggestedContent.value = content
-        suggestion.value = `AI ${command === 'fix' ? '修复' : command === 'optimize' ? '优化' : '补全'}完成，点击"应用"覆盖当前内容`
+        suggestion.value = `AI ${command === 'fix' ? '修复' : command === 'optimize' ? '优化' : '补全'}完成（${result.source}），点击"应用"覆盖当前内容`
       } else {
         emit('status', '未能获取有效的修改建议', 'warning')
       }

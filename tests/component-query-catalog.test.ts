@@ -7,10 +7,12 @@ import type {
 } from '../packages/vite-plugin-spark-catalog/src/index'
 import {
   projectFcDirectory,
+  projectFcConfigGuide,
   projectFcSpec,
   projectDevTypes,
   projectDevPropNames,
   projectDevPropEnums,
+  projectDevRequiredProps,
 } from '../packages/spark-ai/src/catalog/catalog-projections'
 
 function makeConstraints(overrides?: Partial<PlatformConstraints>): PlatformConstraints {
@@ -50,6 +52,20 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
         { name: 'dataKey', type: 'string', required: false, description: '表格数据源' },
         { name: 'border', type: 'boolean', required: false, description: '是否显示边框' },
       ],
+      rootFields: [
+        {
+          name: 'currentRow',
+          type: 'object',
+          description: '当前行',
+          children: [
+            {
+              name: 'id',
+              type: 'number',
+              description: '主键',
+            },
+          ],
+        },
+      ],
     }),
     'r-text': makeEntry(),
   }
@@ -65,9 +81,48 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
       meta: [],
     },
     sharedTypes: {},
+    canonical: {
+      dictionaries: {
+        props: {
+          prop_1: {
+            name: 'rowKey',
+            type: 'string | undefined',
+            required: false,
+            description: '行唯一键',
+          },
+          prop_2: {
+            name: 'density',
+            type: '"default" | "compact"',
+            required: true,
+            description: '密度',
+          },
+        },
+        emits: {
+          emit_1: {
+            name: 'rowChange',
+            type: '[row: Record<string, unknown>] ',
+            description: '当前行变更事件',
+          },
+        },
+      },
+      components: {
+        'r-table': {
+          type: 'r-table',
+          category: 'container',
+          description: '表格容器',
+          propRefs: ['prop_1', 'prop_2'],
+          emitRefs: ['emit_1'],
+          source: 'vcm',
+        },
+      },
+    },
     components,
     constraints: makeConstraints(),
-    bindingDescriptors: {},
+    bindingDescriptors: {
+      'r-table': {
+        dataContainer: true,
+      },
+    },
     ...overrides,
   }
 }
@@ -86,6 +141,11 @@ describe('catalog-projections', () => {
       description: '表格容器',
     })
     expect(directory.registry.containers).toEqual(['r-table'])
+    expect(directory.capabilities).toBeDefined()
+    expect(directory.capabilities.eventDriven).toContain('r-table')
+    expect(directory.capabilities.dataBinding).toContain('r-table')
+    expect(Array.isArray(directory.configurationPrinciples)).toBe(true)
+    expect(directory.configurationPrinciples.length).toBeGreaterThan(0)
   })
 
   it('projectFcSpec returns component spec for stills.actionSpec', () => {
@@ -95,12 +155,29 @@ describe('catalog-projections', () => {
     expect(spec).not.toBeNull()
     expect(spec!.type).toBe('r-table')
     expect(spec!.category).toBe('container')
-    expect(spec!.props[0]?.name).toBe('dataKey')
-    expect(spec!.props[1]?.name).toBe('border')
+    expect(spec!.props.some((prop) => prop.name === 'dataKey')).toBe(true)
+    expect(spec!.props.some((prop) => prop.name === 'border')).toBe(true)
+    expect(spec!.props.some((prop) => prop.name === 'rowKey')).toBe(true)
+    expect(spec!.emits.some((emit) => emit.name === 'rowChange')).toBe(true)
   })
 
   it('projectFcSpec returns null for unknown type', () => {
     expect(projectFcSpec(makeCatalog(), 'missing')).toBeNull()
+  })
+
+  it('projectFcConfigGuide returns normalized guide for known component', () => {
+    const guide = projectFcConfigGuide(makeCatalog(), 'r-table')
+    expect(guide).not.toBeNull()
+    expect(guide?.type).toBe('r-table')
+    expect(guide?.category).toBe('container')
+    expect(guide?.minimalConfig.type).toBe('r-table')
+    expect(Array.isArray(guide?.failFastChecks)).toBe(true)
+    expect(guide?.rootFieldPaths).toContain('currentRow')
+    expect(guide?.rootFieldPaths).toContain('currentRow.id')
+  })
+
+  it('projectFcConfigGuide returns null for unknown component', () => {
+    expect(projectFcConfigGuide(makeCatalog(), 'missing')).toBeNull()
   })
 
   it('projectDevTypes returns sorted type list', () => {
@@ -114,6 +191,7 @@ describe('catalog-projections', () => {
     const propNames = projectDevPropNames(makeCatalog())
     expect(propNames['r-table']).toContain('dataKey')
     expect(propNames['r-table']).toContain('border')
+    expect(propNames['r-table']).toContain('density')
   })
 
   it('projectDevPropEnums parses enum values from type strings', () => {
@@ -150,5 +228,11 @@ describe('catalog-projections', () => {
 
     const enums = projectDevPropEnums(catalog)
     expect(enums['r-text']?.['mode']).toEqual(['input', 'textarea'])
+  })
+
+  it('projectDevRequiredProps includes required props merged from canonical refs', () => {
+    const required = projectDevRequiredProps(makeCatalog())
+    expect(required['r-table']).toBeDefined()
+    expect(required['r-table']?.['density']).toBe('')
   })
 })

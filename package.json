@@ -15,6 +15,7 @@
         "dev:full": "concurrently \"pnpm run dev\" \"pnpm run dev:api\"",
         "debug:dataset:remote": "node scripts/verify-dataset-remote-load.mjs --pageId dynamic-columns --expectText DataView",
         "debug:ai:stream-page:smoke": "node scripts/verify-ai-stream-page-smoke.mjs",
+        "debug:ai:sessions:stream:smoke": "node scripts/verify-ai-session-stream-smoke.mjs",
         "debug:ai:stream-page:medium": "npx tsx scripts/verify-ai-real-call.ts --scenario medium",
         "debug:ai:stream-page:real": "npx tsx scripts/verify-ai-real-call.ts --scenario leave",
         "debug:sse:loop": "node scripts/verify-sse-debug-loop.mjs --pageId section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expectText 姓名",

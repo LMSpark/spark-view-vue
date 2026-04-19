@@ -330,14 +330,21 @@ describe('dispatchQueryTool', () => {
       expect(result.registry.containers).toContain('r-table')
       expect(result.components).toBeDefined()
       expect(result.components).toHaveLength(3)
+      expect(result.capabilities).toBeDefined()
+      expect(Array.isArray(result.capabilities.containers)).toBe(true)
+      expect(Array.isArray(result.configurationPrinciples)).toBe(true)
     })
 
-    it('specific component returns spec', () => {
+    it('specific component returns spec and guide', () => {
       const result = JSON.parse(dispatchQueryTool('queryComponentCatalog', { componentType: 'r-table' }, catalog))
-      expect(result.type).toBe('r-table')
-      expect(result.category).toBe('container')
-      expect(result.props).toBeDefined()
-      expect(Array.isArray(result.props)).toBe(true)
+      expect(result.spec.type).toBe('r-table')
+      expect(result.spec.category).toBe('container')
+      expect(result.spec.props).toBeDefined()
+      expect(Array.isArray(result.spec.props)).toBe(true)
+      expect(result.guide).toBeDefined()
+      expect(result.guide.type).toBe('r-table')
+      expect(result.guide.minimalConfig).toBeDefined()
+      expect(Array.isArray(result.guide.failFastChecks)).toBe(true)
     })
 
     it('unknown component returns error', () => {
@@ -1122,11 +1129,9 @@ describe('Catalog Projections', () => {
       expect(types).toContain('r-number')
     })
 
-    it('handles catalog without registry gracefully', () => {
+    it('fails fast when catalog registry is missing', () => {
       const noReg = { ...catalog, registry: undefined } as unknown as ComponentCatalog
-      const dir = projectFcDirectory(noReg)
-      // Should derive from components by category
-      expect(dir.summary.total).toBeGreaterThan(0)
+      expect(() => projectFcDirectory(noReg)).toThrow('component-catalog registry 缺失')
     })
   })
 
@@ -1862,11 +1867,9 @@ describe('Catalog Projections', () => {
       expect(types).toContain('r-number')
     })
 
-    it('handles catalog without registry gracefully', () => {
+    it('fails fast when catalog registry is missing', () => {
       const noReg = { ...catalog, registry: undefined } as unknown as ComponentCatalog
-      const dir = projectFcDirectory(noReg)
-      // Should derive from components by category
-      expect(dir.summary.total).toBeGreaterThan(0)
+      expect(() => projectFcDirectory(noReg)).toThrow('component-catalog registry 缺失')
     })
   })
 

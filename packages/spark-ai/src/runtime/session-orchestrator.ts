@@ -133,8 +133,13 @@ export interface OrchestratorConfig {
   /** 滑动窗口大小（传给后端 createSession） */
   slidingWindow: number
   systemPrompt: string
+  /** 可选：续用后端既有 sessionId，启用多轮连续会话 */
+  resumeSessionId?: string
+  /** 可选：显式指定本轮允许暴露给 LLM 的 tools；省略时导出全部已注册 stills。 */
+  tools?: ToolDefinition[]
   monitors?: SessionMonitor[]
   onRoundStart?: (round: number) => void
+  onTurnComplete?: (turn: DialogueTurn) => void
   onRoundComplete?: (turn: DialogueTurn) => void
   /** 覆盖工具分发函数（测试用，默认 dispatchToolCall） */
   dispatchFc?: (toolCall: ToolCall, session: IStillSession) => FcDispatchResult
@@ -147,6 +152,15 @@ export interface OrchestratorResult {
   abortReason?: string | undefined
   exportCompleted: boolean
   sessionId: string
+}
+
+// 后端 appendMessages 所用消息结构。
+// 统一为 FC 场景下 assistant/tool 双角色消息体，便于后续复用与维护。
+type BackendMessage = {
+  role: string
+  content: string
+  tool_call_id?: string
+  tool_calls?: ToolCall[]
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -186,6 +200,81 @@ function toTurnResult(result: StillResult): StillTurnResult {
 }
 
 // ═══════════════════════════════════════════════════════════
+// Helpers — FollowUp 构建
+// 目标：把 still 执行结果、warnings、监控器建议统一折叠为 _followUp 指令
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * 针对单次 still 执行构建 followUp 指令列表。
+ *
+ * 组成来源：
+ * 1) 执行失败即时纠错（code/fix）
+ * 2) 后置校验 warnings
+ * 3) 外部监控器附加指令
+ */
+function collectFollowUpInstructions(params: {
+  action: string
+  result: StillResult
+  monitorCtx: MonitorContext
+  monitors: SessionMonitor[]
+}): string[] {
+  const { action, result, monitorCtx, monitors } = params
+  const followUpInstructions: string[] = []
+
+  if (!result.ok) {
+    followUpInstructions.push(buildErrorFollowUp(action, result.code, result.fix))
+  }
+
+  if (result.ok && result.warnings !== undefined && result.warnings.length > 0) {
+    followUpInstructions.push(formatWarningsAsFollowUp(action, result.warnings))
+  }
+
+  for (const monitor of monitors) {
+    followUpInstructions.push(...monitor.afterStillExecution(monitorCtx))
+  }
+
+  return followUpInstructions
+}
+
+/**
+ * 将 followUp 指令注入到 tool result JSON 中。
+ *
+ * 约定：
+ * - 注入字段名固定为 _followUp；
+ * - 仅在存在指令时注入，避免污染常规成功结果。
+ */
+function injectFollowUpIntoToolResult(content: string, followUpInstructions: string[]): string {
+  if (followUpInstructions.length === 0) return content
+  const original = JSON.parse(content) as Record<string, unknown>
+  original['_followUp'] = followUpInstructions
+  return JSON.stringify(original)
+}
+
+/**
+ * 统一检查监控器终止条件。
+ *
+ * 返回值语义：
+ * - abort=true  表示本轮应立即中止；
+ * - reason      优先使用监控器返回 reason，否则回落为监控器名称。
+ */
+function checkAbortByMonitors(monitors: SessionMonitor[], monitorCtx: MonitorContext): {
+  abort: boolean
+  reason?: string
+} {
+  for (const monitor of monitors) {
+    if (monitor.shouldAbort === undefined) continue
+    const abortResult = monitor.shouldAbort(monitorCtx)
+    if (abortResult.abort) {
+      return {
+        abort: true,
+        reason: abortResult.reason ?? monitor.name,
+      }
+    }
+  }
+  return { abort: false }
+}
+
+// ═══════════════════════════════════════════════════════════
 // Core Loop — Function Calling
 // ═══════════════════════════════════════════════════════════
 
@@ -210,13 +299,21 @@ export async function runStillsLoop(
   backend: SessionBackend,
   config: OrchestratorConfig,
 ): Promise<OrchestratorResult> {
+  // ─────────────────────────────────────────────────────────────────────────
+  // 功能分区 A：会话与循环基础初始化
+  // ─────────────────────────────────────────────────────────────────────────
+
   // ── 生成 tool definitions ──
-  const tools = generateToolDefinitions()
+  const tools = config.tools ?? generateToolDefinitions()
 
   // ── 创建后端会话（附带 tools） ──
-  const sessionId = await backend.createSession(
-    config.systemPrompt, userPrompt, config.slidingWindow, tools,
-  )
+  const sessionId = config.resumeSessionId
+    ?? await backend.createSession(config.systemPrompt, userPrompt, config.slidingWindow, tools)
+
+  // 续用会话时，把当前用户输入补充到既有会话，保留连续上下文。
+  if (config.resumeSessionId) {
+    await backend.appendMessages(sessionId, [{ role: 'user', content: userPrompt }])
+  }
 
   const turns: DialogueTurn[] = []
   const dispatch = config.dispatchFc ?? dispatchToolCall
@@ -224,8 +321,12 @@ export async function runStillsLoop(
   let exportCompleted = false
   let aborted = false
   let abortReason = ''
+  const monitors = config.monitors ?? []
 
   try {
+    // ───────────────────────────────────────────────────────────────────────
+    // 功能分区 B：主循环（每次循环对应一次 LLM turn）
+    // ───────────────────────────────────────────────────────────────────────
     while (round < config.maxRounds) {
       round++
       config.onRoundStart?.(round)
@@ -243,20 +344,22 @@ export async function runStillsLoop(
 
       // ── Step 2: 无 toolCalls → 纯文本回复（终态或需要用户输入） ──
       if (!toolCalls || toolCalls.length === 0) {
-        turns.push({
+        const turn: DialogueTurn = {
           round,
           timestamp: new Date().toISOString(),
           phase: 'ai-response',
           aiText: aiReply,
           aiReasoning: reasoning ?? undefined,
           elapsed: Date.now() - roundStart,
-        })
+        }
+        turns.push(turn)
+        config.onTurnComplete?.(turn)
         // FC 模式下纯文本回复通常是对话结束或等用户输入，不需要提醒
         break
       }
 
       // ── Step 3: 逐个调度 toolCalls ──
-      const messages: Array<{ role: string; content: string; tool_call_id?: string; tool_calls?: ToolCall[] }> = []
+      const messages: BackendMessage[] = []
 
       // 先追加 assistant 消息（含 tool_calls）
       messages.push({
@@ -268,6 +371,12 @@ export async function runStillsLoop(
       let lastResult: StillResult | undefined
       let lastParams: unknown
 
+      // ─────────────────────────────────────────────────────────────────────
+      // 功能分区 C：单轮内 toolCalls 顺序执行
+      // 说明：
+      // - 当前保持串行执行，确保前一 tool 结果可影响后一 tool 决策；
+      // - 每个 tool 执行后都会即时记录 turn、注入 followUp、检查中止条件。
+      // ─────────────────────────────────────────────────────────────────────
       for (const tc of toolCalls) {
         const dispatched = dispatch(tc, session)
         const { action, result, toolResult } = dispatched
@@ -287,22 +396,12 @@ export async function runStillsLoop(
           elapsed: Date.now() - roundStart,
         }
         turns.push(turn)
+        config.onTurnComplete?.(turn)
 
-        // 添加 tool result 消息
+        // 添加 tool result 消息。
+        // 这里允许对原始 result JSON 做 _followUp 注入，不改变 still 执行结果语义。
         let resultContent = toolResult.content
 
-        // 收集 followUp 指令
-        const followUpInstructions: string[] = []
-
-        if (!result.ok) {
-          followUpInstructions.push(buildErrorFollowUp(action, result.code, result.fix))
-        }
-
-        if (result.ok && result.warnings !== undefined && result.warnings.length > 0) {
-          followUpInstructions.push(formatWarningsAsFollowUp(action, result.warnings))
-        }
-
-        // 监控器
         const monitorCtx: MonitorContext = {
           session,
           currentTurn: turn,
@@ -311,16 +410,14 @@ export async function runStillsLoop(
           params: lastParams,
           result,
         }
-        for (const monitor of config.monitors ?? []) {
-          followUpInstructions.push(...monitor.afterStillExecution(monitorCtx))
-        }
 
-        // followUp 附加到 tool result content
-        if (followUpInstructions.length > 0) {
-          const original = JSON.parse(resultContent) as Record<string, unknown>
-          original['_followUp'] = followUpInstructions
-          resultContent = JSON.stringify(original)
-        }
+        const followUpInstructions = collectFollowUpInstructions({
+          action,
+          result,
+          monitorCtx,
+          monitors,
+        })
+        resultContent = injectFollowUpIntoToolResult(resultContent, followUpInstructions)
 
         messages.push({
           role: 'tool',
@@ -328,16 +425,11 @@ export async function runStillsLoop(
           content: resultContent,
         })
 
-        // 检查监控器终止
-        for (const monitor of config.monitors ?? []) {
-          if (monitor.shouldAbort !== undefined) {
-            const abortResult = monitor.shouldAbort(monitorCtx)
-            if (abortResult.abort) {
-              aborted = true
-              abortReason = abortResult.reason ?? monitor.name
-              break
-            }
-          }
+        // 检查监控器终止（每个 tool 执行后即时检查）。
+        const monitorAbort = checkAbortByMonitors(monitors, monitorCtx)
+        if (monitorAbort.abort) {
+          aborted = true
+          abortReason = monitorAbort.reason ?? ''
         }
         if (aborted) break
 
@@ -358,6 +450,7 @@ export async function runStillsLoop(
       }
 
       // ── Step 5: 终止条件 ──
+      // 终止判定为“export 完成 + 蓝图无待办 checkpoint”，避免提前停在半完成状态。
       if (exportCompleted && !hasPendingBlueprintWork(readSessionBlueprint(session))) {
         break
       }

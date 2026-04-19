@@ -12,8 +12,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
@@ -353,9 +351,23 @@ public class StillsSessionService {
             result.add(conv.get(0).toMap());
 
             int startIdx = conv.size() - (windowSize - 1);
-            if (startIdx < conv.size() && !"assistant".equals(conv.get(startIdx).role)) {
-                startIdx++;
+
+            // 1. 如果 startIdx 落在 tool 消息上，向前回溯找到对应的 assistant(tool_calls) 消息，
+            //    保证 assistant+tool_calls 块的完整性。
+            while (startIdx > 1 && "tool".equals(conv.get(startIdx).role)) {
+                startIdx--;
             }
+
+            // 2. 如果 startIdx 落在 assistant 消息且该 assistant 带 tool_calls，
+            //    则这个 assistant 及其后续 tool 消息必须一起包含（已由上步保证）。
+            //    但若 startIdx 仍不是 user/assistant，再后移一步跳过孤立消息。
+            if (startIdx < conv.size()) {
+                String role = conv.get(startIdx).role;
+                if (!"user".equals(role) && !"assistant".equals(role)) {
+                    startIdx++;
+                }
+            }
+
             for (int i = startIdx; i < conv.size(); i++) {
                 result.add(conv.get(i).toMap());
             }
@@ -450,113 +462,187 @@ public class StillsSessionService {
         Double temp = props.getEffectiveTemperature();
         if (temp != null) body.put("temperature", temp);
 
+        if (!props.isReasonerModel() && props.getTopP() != null) {
+            body.put("top_p", props.getTopP());
+        }
+        if (!props.isReasonerModel()) {
+            if (props.getFrequencyPenalty() != null) {
+                body.put("frequency_penalty", props.getFrequencyPenalty());
+            }
+            if (props.getPresencePenalty() != null) {
+                body.put("presence_penalty", props.getPresencePenalty());
+            }
+        }
+
+        if (props.isDeepSeek()) {
+            body.put("stream_options", Map.of("include_usage", true));
+        }
+
         if (tools != null && !tools.isEmpty()) {
             body.put("tools", tools);
         }
 
         String bodyJson = objectMapper.writeValueAsString(body);
 
-        // 使用原始 HttpURLConnection 消费 SSE 流
-        URI uri = URI.create(props.getBaseUrl() + "/v1/chat/completions");
-        HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
-        conn.setRequestMethod("POST");
-        conn.setDoOutput(true);
-        conn.setRequestProperty("Authorization", "Bearer " + props.getApiKey());
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setReadTimeout(300_000);
-        conn.setConnectTimeout(15_000);
-
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(bodyJson.getBytes(StandardCharsets.UTF_8));
-        }
-
         StringBuilder contentBuilder = new StringBuilder();
         StringBuilder reasoningBuilder = new StringBuilder();
         // toolCalls 增量拼装
         Map<Integer, Map<String, Object>> toolCallsMap = new LinkedHashMap<>();
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+        final String[] providerErrorDetail = new String[1];
+        final LlmResult[] fallbackHolder = new LlmResult[1];
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.startsWith("data: ")) continue;
-                String data = line.substring(6).trim();
-                if ("[DONE]".equals(data)) break;
+        try {
+            restClient.post()
+                    .uri("/v1/chat/completions")
+                    .body(bodyJson)
+                    .exchange((httpRequest, response) -> {
+                    int statusCode = response.getStatusCode().value();
+                    if (statusCode >= 400) {
+                        String errorBody = readBodyAsString(response.getBody());
+                        String detail = "HTTP " + statusCode + (errorBody.isBlank() ? "" : ": " + errorBody);
+                        providerErrorDetail[0] = detail;
+                        log.warn("[SESSION] stream provider failed, fallback to non-stream. detail={}", detail);
+                        fallbackHolder[0] = callLlm(messages, tools);
+                        return null;
+                    }
 
-                Map<String, Object> chunk = objectMapper.readValue(
-                        data, new TypeReference<>() {});
-                List<Map<String, Object>> choices =
-                        (List<Map<String, Object>>) chunk.get("choices");
-                if (choices == null || choices.isEmpty()) continue;
+                    try (BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
 
-                Map<String, Object> delta =
-                        (Map<String, Object>) choices.get(0).get("delta");
-                if (delta == null) continue;
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            if (!line.startsWith("data: ")) continue;
+                            String data = line.substring(6).trim();
+                            if ("[DONE]".equals(data)) break;
 
-                // 文本增量
-                if (delta.get("content") instanceof String s && !s.isEmpty()) {
-                    contentBuilder.append(s);
-                    emitter.send(SseEmitter.event().name("delta").data(s));
-                }
+                            Map<String, Object> chunk = objectMapper.readValue(
+                                    data, new TypeReference<>() {});
+                            List<Map<String, Object>> choices =
+                                    (List<Map<String, Object>>) chunk.get("choices");
+                            if (choices == null || choices.isEmpty()) continue;
 
-                // reasoning 增量
-                if (delta.get("reasoning_content") instanceof String s && !s.isEmpty()) {
-                    reasoningBuilder.append(s);
-                    emitter.send(SseEmitter.event().name("reasoning").data(s));
-                }
+                            Map<String, Object> delta =
+                                    (Map<String, Object>) choices.get(0).get("delta");
+                            if (delta == null) continue;
 
-                // tool_calls 增量
-                if (delta.get("tool_calls") instanceof List<?> tcDeltas) {
-                    for (Object tcd : tcDeltas) {
-                        if (!(tcd instanceof Map<?, ?> tcDelta)) continue;
-                        int idx = tcDelta.get("index") instanceof Number n ? n.intValue() : 0;
-
-                        Map<String, Object> existing = toolCallsMap.computeIfAbsent(idx,
-                                k -> {
-                                    Map<String, Object> m = new LinkedHashMap<>();
-                                    m.put("id", "");
-                                    m.put("type", "function");
-                                    Map<String, Object> fn = new LinkedHashMap<>();
-                                    fn.put("name", "");
-                                    fn.put("arguments", "");
-                                    m.put("function", fn);
-                                    return m;
-                                });
-
-                        if (tcDelta.get("id") instanceof String id && !id.isEmpty()) {
-                            existing.put("id", id);
-                        }
-
-                        if (tcDelta.get("function") instanceof Map<?, ?> fn) {
-                            Map<String, Object> existingFn =
-                                    (Map<String, Object>) existing.get("function");
-                            if (fn.get("name") instanceof String name && !name.isEmpty()) {
-                                existingFn.put("name", name);
+                            // 文本增量
+                            if (delta.get("content") instanceof String s && !s.isEmpty()) {
+                                contentBuilder.append(s);
+                                emitter.send(SseEmitter.event().name("delta").data(s));
                             }
-                            if (fn.get("arguments") instanceof String args) {
-                                existingFn.put("arguments",
-                                        existingFn.get("arguments") + args);
+
+                            // reasoning 增量
+                            if (delta.get("reasoning_content") instanceof String s && !s.isEmpty()) {
+                                reasoningBuilder.append(s);
+                                emitter.send(SseEmitter.event().name("reasoning").data(s));
+                            }
+
+                            // tool_calls 增量
+                            if (delta.get("tool_calls") instanceof List<?> tcDeltas) {
+                                for (Object tcd : tcDeltas) {
+                                    if (!(tcd instanceof Map<?, ?> tcDelta)) continue;
+                                    int idx = tcDelta.get("index") instanceof Number n ? n.intValue() : 0;
+
+                                    Map<String, Object> existing = toolCallsMap.computeIfAbsent(idx,
+                                            k -> {
+                                                Map<String, Object> m = new LinkedHashMap<>();
+                                                m.put("id", "");
+                                                m.put("type", "function");
+                                                Map<String, Object> fn = new LinkedHashMap<>();
+                                                fn.put("name", "");
+                                                fn.put("arguments", "");
+                                                m.put("function", fn);
+                                                return m;
+                                            });
+
+                                    if (tcDelta.get("id") instanceof String id && !id.isEmpty()) {
+                                        existing.put("id", id);
+                                    }
+
+                                    if (tcDelta.get("function") instanceof Map<?, ?> fn) {
+                                        Map<String, Object> existingFn =
+                                                (Map<String, Object>) existing.get("function");
+                                        if (fn.get("name") instanceof String name && !name.isEmpty()) {
+                                            existingFn.put("name", name);
+                                        }
+                                        if (fn.get("arguments") instanceof String args) {
+                                            existingFn.put("arguments",
+                                                    existingFn.get("arguments") + args);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                }
+
+                        return null;
+                    }, false);
+        } catch (Exception streamEx) {
+            String message = streamEx.getMessage() != null ? streamEx.getMessage() : "";
+            // 某些 HttpURLConnection 实现会在 4xx 时直接抛异常，不会进入 exchange 回调。
+            boolean isProvider4xx = message.contains("HTTP response code: 400")
+                    || message.contains("HTTP response code: 401")
+                    || message.contains("HTTP response code: 403")
+                    || message.contains("HTTP response code: 404")
+                    || message.contains("/v1/chat/completions");
+
+            if (isProvider4xx) {
+                String detail = message.isBlank() ? streamEx.toString() : message;
+                providerErrorDetail[0] = detail;
+                log.warn("[SESSION] stream provider exception, fallback to non-stream. detail={}", detail);
+                fallbackHolder[0] = callLlm(messages, tools);
+            } else {
+                throw streamEx;
             }
-        } finally {
-            conn.disconnect();
+        }
+
+        if (providerErrorDetail[0] != null) {
+            LlmResult fallback = fallbackHolder[0];
+            if (fallback == null) {
+                throw new RuntimeException("SSE provider error 且 fallback 失败: " + providerErrorDetail[0]);
+            }
+            emitFinalResult(emitter, session, fallback.text, fallback.reasoning, fallback.toolCalls);
+            return;
         }
 
         // 拼装最终结果
         String text = contentBuilder.toString();
         String reasoning = !reasoningBuilder.isEmpty() ? reasoningBuilder.toString() : null;
         List<Map<String, Object>> toolCalls = toolCallsMap.isEmpty()
-                ? null : new ArrayList<>(toolCallsMap.values());
+            ? null : new ArrayList<>(toolCallsMap.values());
 
-        // 记录到对话历史
-        Message assistantMsg = new Message("assistant");
-        assistantMsg.content = text;
-        assistantMsg.toolCalls = toolCalls;
-        session.conversation.add(assistantMsg);
+        emitFinalResult(emitter, session, text, reasoning, toolCalls);
+    }
+
+    private String readBodyAsString(InputStream inputStream) throws IOException {
+        if (inputStream == null) {
+            return "";
+        }
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!sb.isEmpty()) sb.append('\n');
+                sb.append(line);
+            }
+            return sb.toString();
+        }
+    }
+
+        private void emitFinalResult(SseEmitter emitter,
+                     Session session,
+                     String text,
+                     String reasoning,
+                     List<Map<String, Object>> toolCalls) throws Exception {
+        // 记录到对话历史。
+        // 当有 tool_calls 时，前端 FC 循环会通过 appendMessages 追加 assistant + tool results，
+        // 因此后端不再自动写入，避免出现两条相邻的 assistant(tool_calls) 导致 DeepSeek 400。
+        if (toolCalls == null || toolCalls.isEmpty()) {
+            Message assistantMsg = new Message("assistant");
+            assistantMsg.content = text;
+            session.conversation.add(assistantMsg);
+        }
 
         // 发送最终结果
         Map<String, Object> resultMap = new LinkedHashMap<>();
@@ -565,10 +651,10 @@ public class StillsSessionService {
         if (toolCalls != null) resultMap.put("toolCalls", toolCalls);
 
         emitter.send(SseEmitter.event().name("result")
-                .data(objectMapper.writeValueAsString(resultMap)));
+            .data(objectMapper.writeValueAsString(resultMap)));
         emitter.send(SseEmitter.event().name("done").data("{}"));
         emitter.complete();
-    }
+        }
 
     // ═════════════════════════════════════════════════════════════════════════
     // 内部类型

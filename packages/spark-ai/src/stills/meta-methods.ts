@@ -29,6 +29,7 @@ import type {
 import { noGuard, readSessionBlueprint } from './types'
 import { getAllStills, getStill } from './dispatcher'
 import { getDataSetState } from './dataset-domain'
+import { getEditState } from './edit-domain'
 import { getDomain } from './domain'
 import {
   projectFcDirectory,
@@ -176,10 +177,28 @@ function buildActionCatalog(): ActionCatalogItem[] {
  * 用于 session.describe 中的数据集概览，DataSet 未初始化时返回 0。
  */
 function countTotalColumns(session: IStillSession): number {
-  const dataset = getDataSetState(session).data
+  const dataset = getEffectiveDatasetState(session).data
   if (dataset === null) return 0
 
   return Object.values(dataset.tables).reduce((sum, table) => sum + table.columns.length, 0)
+}
+
+function getEffectiveDatasetState(session: IStillSession): DomainState {
+  const datasetDomain = session.domains['dataset']
+  if (datasetDomain) {
+    return getDataSetState(session)
+  }
+
+  const editDomain = session.domains['edit']
+  if (editDomain) {
+    const editState = getEditState(session)
+    return {
+      data: editState.datasetEdit ? editState.datasetEdit.toJson() : null,
+      phase: editState.phase,
+    }
+  }
+
+  return { data: null, phase: 'idle' }
 }
 
 /**
@@ -448,7 +467,7 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
   example: {},
   validate: () => null,
   execute: (session: IStillSession): StillResult => {
-    const datasetState = getDataSetState(session)
+    const datasetState = getEffectiveDatasetState(session)
     const dataset = datasetState.data
     const blueprintSummary = buildBlueprintSummary(readSessionBlueprint(session))
     const componentsDirectory = {

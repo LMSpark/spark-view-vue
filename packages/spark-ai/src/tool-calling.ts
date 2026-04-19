@@ -205,15 +205,33 @@ export function stillToToolDefinition(still: StillDefinition): ToolDefinition {
  * @param filter - 可选过滤器（如只导出 request 或 describe 类型）
  */
 export function generateToolDefinitions(
-  filter?: { types?: Array<'request' | 'describe'> },
+  filter?: {
+    types?: Array<'request' | 'describe'>
+    actions?: string[]
+    compactDescriptions?: boolean
+  },
 ): ToolDefinition[] {
   const tools: ToolDefinition[] = []
+  const allowedActions = filter?.actions ? new Set(filter.actions) : null
 
   for (const [, still] of getAllStills()) {
     if (filter?.types && !filter.types.includes(still.type)) {
       continue
     }
-    tools.push(stillToToolDefinition(still))
+    if (allowedActions && !allowedActions.has(still.action)) {
+      continue
+    }
+    tools.push(
+      filter?.compactDescriptions
+        ? {
+            type: 'function',
+            function: {
+              ...stillToToolDefinition(still).function,
+              description: still.description,
+            },
+          }
+        : stillToToolDefinition(still),
+    )
   }
 
   return tools
@@ -227,14 +245,30 @@ export function generateToolDefinitions(
  * 格式化 StillResult 为 tool result content（JSON 字符串）
  */
 export function formatToolResultContent(result: StillResult): string {
+  const stringify = (value: unknown): string => {
+    const seen = new WeakSet<object>()
+    return JSON.stringify(value, (_key, currentValue) => {
+      if (typeof currentValue === 'function') {
+        return '[Function]'
+      }
+      if (typeof currentValue === 'object' && currentValue !== null) {
+        if (seen.has(currentValue)) {
+          return '[Circular]'
+        }
+        seen.add(currentValue)
+      }
+      return currentValue
+    })
+  }
+
   if (result.ok) {
     const output: Record<string, unknown> = { ok: true, data: result.data, summary: result.summary }
     if (result.warnings && result.warnings.length > 0) {
       output['warnings'] = result.warnings
     }
-    return JSON.stringify(output)
+    return stringify(output)
   }
-  return JSON.stringify({ ok: false, code: result.code, msg: result.msg, fix: result.fix })
+  return stringify({ ok: false, code: result.code, msg: result.msg, fix: result.fix })
 }
 
 /**

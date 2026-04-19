@@ -5,22 +5,71 @@
  * - createGenerateSessionBackend：生成链会话客户端（基于 fetch）
  */
 
-import { createRequest } from '@spark-view/spark-utils'
+import { createFetchClient, createRequest } from '@spark-view/spark-utils'
 import type { SessionBackend, LlmResponse } from './runtime/session-orchestrator'
 import type { ToolCall, ToolDefinition } from './tool-calling'
 
 let _getHeaders: (() => Record<string, string>) | null = null
+let _onSseEvent: ((event: { sessionId: string; type: string; data: string }) => void) | null = null
 
 export function configureSessionBackend(options: {
   getHeaders?: () => Record<string, string>
+  onSseEvent?: (event: { sessionId: string; type: string; data: string }) => void
 }): void {
   if (options.getHeaders) {
     _getHeaders = options.getHeaders
   }
+  _onSseEvent = options.onSseEvent ?? null
+}
+
+/**
+ * 提取后端错误的可读摘要，避免上层只拿到“Network Error/null”这类弱信息。
+ */
+function toBackendErrorMessage(err: unknown): string {
+  const fallback = err instanceof Error ? err.message : String(err)
+  const e = err as {
+    message?: string
+    status?: number
+    code?: string
+    response?: unknown
+  }
+
+  const status = typeof e.status === 'number' ? `HTTP ${e.status}` : ''
+  const code = typeof e.code === 'string' && e.code.length > 0 ? e.code : ''
+
+  if (e.response && typeof e.response === 'object') {
+    const resp = e.response as {
+      error?: { code?: string; message?: string; category?: string }
+      state?: string
+      stateTransition?: string
+    }
+    const errorCode = resp.error?.code ?? ''
+    const errorMsg = resp.error?.message ?? ''
+    const category = resp.error?.category ?? ''
+    const state = typeof resp.state === 'string' ? resp.state : ''
+    const stateTransition = typeof resp.stateTransition === 'string' ? resp.stateTransition : ''
+
+    const parts = [
+      status,
+      code,
+      errorCode,
+      category,
+      errorMsg,
+      state ? `state=${state}` : '',
+      stateTransition ? `transition=${stateTransition}` : '',
+    ].filter(Boolean)
+
+    if (parts.length > 0) {
+      return parts.join(' | ')
+    }
+  }
+
+  return [status, code, e.message ?? fallback].filter(Boolean).join(' | ') || fallback
 }
 
 export class SessionBackendImpl implements SessionBackend {
   private http = createRequest({ timeout: 300_000 })
+  private sseClient = createFetchClient({ timeout: 300_000 })
   private sessionIds = new Set<string>()
   private baseUrl: string
 
@@ -59,6 +108,28 @@ export class SessionBackendImpl implements SessionBackend {
 
   async executeTurn(sessionId: string): Promise<LlmResponse | null> {
     try {
+      // 优先走 SSE 通道，确保与后端 /turn/stream 流式协议一致。
+      return await this.executeTurnViaSse(sessionId)
+    } catch (err) {
+      const detail = toBackendErrorMessage(err)
+
+      // 仅在 SSE 端点缺失/方法不允许时回退到非流式接口，避免掩盖真实 LLM 错误。
+      const canFallback = detail.includes('HTTP 404')
+        || detail.includes('HTTP 405')
+        || detail.includes('INVALID_STREAM_ENDPOINT')
+
+      if (canFallback) {
+        console.warn('[SessionBackend] SSE turn unavailable, fallback to non-stream turn:', detail)
+        return await this.executeTurnViaHttp(sessionId)
+      }
+
+      console.error('[SessionBackend] executeTurn failed:', detail, err)
+      throw new Error(`会话轮次调用失败: ${detail}`)
+    }
+  }
+
+  private async executeTurnViaHttp(sessionId: string): Promise<LlmResponse> {
+    try {
       const resp = await this.http.post<{
         text: string
         reasoning?: string
@@ -72,9 +143,71 @@ export class SessionBackendImpl implements SessionBackend {
       if (resp.toolCalls !== undefined) result.toolCalls = resp.toolCalls
       return result
     } catch (err) {
-      console.error('[SessionBackend] executeTurn failed:', err)
-      return null
+      const detail = toBackendErrorMessage(err)
+      throw new Error(`会话轮次调用失败: ${detail}`)
     }
+  }
+
+  private async executeTurnViaSse(sessionId: string): Promise<LlmResponse> {
+    const headers: Record<string, string> = _getHeaders ? _getHeaders() : {}
+    const events = await this.sseClient.streamSSE({
+      url: `${this.baseUrl}/${sessionId}/turn/stream`,
+      method: 'POST',
+      headers,
+    })
+
+    let finalResult: LlmResponse | null = null
+    let streamError = ''
+
+    for await (const event of events) {
+      const eventType = event.event ?? 'message'
+      const data = event.data
+      if (!data) continue
+
+      if (_onSseEvent) {
+        _onSseEvent({
+          sessionId,
+          type: eventType,
+          data,
+        })
+      }
+
+      if (eventType === 'result') {
+        try {
+          const parsed = JSON.parse(data) as {
+            text?: string
+            reasoning?: string
+            toolCalls?: ToolCall[]
+          }
+          finalResult = {
+            text: parsed.text ?? '',
+            ...(parsed.reasoning !== undefined ? { reasoning: parsed.reasoning } : {}),
+            ...(parsed.toolCalls !== undefined ? { toolCalls: parsed.toolCalls } : {}),
+          }
+        } catch {
+          // result 非 JSON 时按纯文本兜底，避免直接丢失本轮回复。
+          finalResult = { text: data }
+        }
+      }
+
+      if (eventType === 'error') {
+        streamError = data
+      }
+
+      if (eventType === 'done') {
+        break
+      }
+    }
+
+    if (streamError) {
+      throw new Error(`SSE error: ${streamError}`)
+    }
+
+    if (finalResult === null) {
+      throw new Error('SSE 未返回 result 事件')
+    }
+
+    return finalResult
   }
 
   async appendMessages(
@@ -188,8 +321,9 @@ export function createGenerateSessionBackend(
           ...(result.reasoning !== undefined ? { reasoning: result.reasoning } : {}),
           ...(result.toolCalls !== undefined ? { toolCalls: result.toolCalls } : {}),
         }
-      } catch {
-        return null
+      } catch (err) {
+        const detail = toBackendErrorMessage(err)
+        throw new Error(`会话轮次调用失败: ${detail}`)
       }
     },
 

@@ -56,7 +56,7 @@
             <div v-if="diagnosis" class="ai-diagnose__content">
               <div class="diagnosis-text" v-html="diagnosisHtml" />
               <div class="diagnosis-actions">
-                <el-button size="small" type="primary" @click="applyFix" :disabled="!suggestedFix">
+                <el-button size="small" type="primary" @click="applyFix" :disabled="suggestedFixes.length === 0">
                   <NavIcon name="Check" :size="12" /> 应用修复
                 </el-button>
                 <el-button size="small" @click="clearDiagnosis">关闭</el-button>
@@ -87,6 +87,7 @@ import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
 import { createRequest } from '@spark-view/spark-utils'
 import { createAuthHeaders } from '@/services/http'
+import { runAiFilesWriteback } from './composables/useAiFileWriteback'
 
 // ── 为预览渲染器提供带 baseURL + auth 的 HttpClient ──
 // DevPreviewTab 直接传 pageConfig（跳过加载器），但 DataSet 仍需要 HTTP 客户端
@@ -118,7 +119,7 @@ const previewConfig = shallowRef<Omit<PageConfig, 'pageId'> | null>(null)
 // ── AI 诊断相关 ──
 const diagnosing = ref(false)
 const diagnosis = ref('')
-const suggestedFix = ref<{ file: string; content: string } | null>(null)
+const suggestedFixes = ref<Array<{ file: PageFileName; content: string }>>([])
 
 const diagnosisHtml = computed(() => {
   if (!diagnosis.value) return ''
@@ -182,7 +183,7 @@ async function diagnoseError() {
   
   diagnosing.value = true
   diagnosis.value = ''
-  suggestedFix.value = null
+  suggestedFixes.value = []
   
   try {
     const ruleText = props.state.editFiles['rule.json'] ?? ''
@@ -216,24 +217,57 @@ ${scriptText.slice(0, 1000)}${scriptText.length > 1000 ? '\n... (内容过长已
 2. **原因分析**：解释为什么会出错
 3. **修复建议**：给出具体的修复代码
 
-如果能确定修复内容，在最后以以下格式输出：
-\`\`\`fix:文件名
-修复后的完整内容
-\`\`\``
+如果能确定修复，请优先通过 files 返回更新后的完整文件内容（只允许 rule.json / pagedata.json / script.js / style.css）。`
 
-    await loop.value.generateStream(props.state.activePageId.value ?? 'dev-preview', prompt, {
-      onDelta(text) { diagnosis.value += text },
-      onReasoning() {},
-      onPhase() {},
-    })
-    
-    // 解析修复建议
-    const fixMatch = diagnosis.value.match(/```fix:(\S+)\s*([\s\S]*?)```/)
-    if (fixMatch && fixMatch[1] && fixMatch[2]) {
-      suggestedFix.value = {
-        file: fixMatch[1] as 'rule.json' | 'pagedata.json' | 'script.js' | 'style.css',
-        content: fixMatch[2].trim(),
+    const contextFiles: Record<string, string> = {}
+    for (const name of PAGE_FILE_NAMES) {
+      const text = props.state.editFiles[name]
+      if (typeof text === 'string' && text.trim().length > 0) {
+        contextFiles[name] = text
       }
+    }
+
+    const result = await runAiFilesWriteback({
+      loop: loop.value,
+      pageId: props.state.activePageId.value ?? 'dev-preview',
+      prompt,
+      targetFiles: [...PAGE_FILE_NAMES],
+      contextFiles,
+      callbacks: {
+        onDelta(text) { diagnosis.value += text },
+        onReasoning() {},
+        onPhase() {},
+      },
+    })
+
+    if (!diagnosis.value.trim() && result.explanation.trim()) {
+      diagnosis.value = result.explanation
+    }
+
+    const fixes: Array<{ file: PageFileName; content: string }> = []
+    for (const fileName of PAGE_FILE_NAMES) {
+      const updated = result.files[fileName]
+      if (typeof updated !== 'string' || updated.trim().length === 0) continue
+      if (updated === (props.state.editFiles[fileName] ?? '')) continue
+      fixes.push({ file: fileName, content: updated })
+    }
+
+    // 兼容回退：旧协议 fix:文件名
+    if (fixes.length === 0) {
+      const regex = /```fix:(\S+)\s*([\s\S]*?)```/g
+      let match: RegExpExecArray | null
+      while ((match = regex.exec(diagnosis.value)) !== null) {
+        const file = match[1]
+        const content = match[2]?.trim() ?? ''
+        if (!file || !content) continue
+        if (!PAGE_FILE_NAMES.includes(file as PageFileName)) continue
+        fixes.push({ file: file as PageFileName, content })
+      }
+    }
+
+    suggestedFixes.value = fixes
+    if (fixes.length > 0) {
+      diagnosis.value += `\n\n已生成 ${fixes.length} 个文件修复补丁，可点击“应用修复”一次性写回。`
     }
   } catch (err) {
     diagnosis.value = `诊断失败: ${err instanceof Error ? err.message : String(err)}`
@@ -243,19 +277,19 @@ ${scriptText.slice(0, 1000)}${scriptText.length > 1000 ? '\n... (内容过长已
 }
 
 function applyFix() {
-  if (!suggestedFix.value) return
-  const { file, content } = suggestedFix.value
-  if (file === 'rule.json' || file === 'pagedata.json' || file === 'script.js' || file === 'style.css') {
-    props.state.updatePageFile(file as PageFileName, content)
-    props.state.addStatus(`已应用 AI 修复到 ${file}`, 'success')
-    clearDiagnosis()
-    void refresh()
+  if (suggestedFixes.value.length === 0) return
+
+  for (const fix of suggestedFixes.value) {
+    props.state.updatePageFile(fix.file, fix.content)
   }
+  props.state.addStatus(`已应用 AI 修复到 ${suggestedFixes.value.length} 个文件`, 'success')
+  clearDiagnosis()
+  void refresh()
 }
 
 function clearDiagnosis() {
   diagnosis.value = ''
-  suggestedFix.value = null
+  suggestedFixes.value = []
 }
 
 // 外部 refreshToken 变化时触发刷新（切 Tab 驱动）

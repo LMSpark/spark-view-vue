@@ -19,7 +19,7 @@
  */
 
 import type { ComponentCatalog } from '../catalog/types'
-import { projectFcDirectory, projectFcSpec } from '../catalog/catalog-projections'
+import { projectFcConfigGuide, projectFcDirectory, projectFcSpec } from '../catalog/catalog-projections'
 import {
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
   type DatasetCrudToolStillParameterRow,
@@ -701,8 +701,9 @@ function handleQueryComponentCatalog(
   }
 
   const spec = projectFcSpec(catalog, componentType)
-  if (spec !== null) {
-    return JSON.stringify(spec)
+  const guide = projectFcConfigGuide(catalog, componentType)
+  if (spec !== null && guide !== null) {
+    return JSON.stringify({ spec, guide })
   }
 
   return JSON.stringify({

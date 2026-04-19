@@ -138,7 +138,7 @@ import { ref, nextTick, watch } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
 import { formatTokenUsage as formatUsage } from '@spark-view/spark-ai'
-import type { ChatMode, FileAttachment } from '../composables/useAiChat'
+import type { ChatMode, FileAttachment, AiChatSender } from '../composables/useAiChat'
 
 const props = defineProps<{
   mode?: ChatMode
@@ -146,6 +146,7 @@ const props = defineProps<{
   title?: string
   placeholder?: string
   compact?: boolean
+  sender?: AiChatSender
 }>()
 
 const chatMode = props.mode ?? 'multi'
@@ -155,6 +156,7 @@ const chatPlaceholder = props.placeholder ?? '有什么可以帮您？'
 const { messages, isStreaming, error, send, uploadFile, clear } = useAiChat({
   mode: chatMode,
   systemPrompt: props.systemPrompt,
+  sender: props.sender,
 })
 
 const inputText = ref('')

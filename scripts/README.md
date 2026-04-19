@@ -8,7 +8,7 @@
 - `build-all.mjs`：完整构建流水线。
 - `publish-packages.mjs`：工作区包发布脚本。
 - `upload-component-metadata.mjs`：上传组件元数据到后端。
-- `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`：链路验证脚本。
+- `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`、`verify-ai-session-stream-smoke.mjs`：链路验证脚本。
 - `migrate-*.mjs`：结构迁移或批量修复脚本。
 
 ## 放置原则

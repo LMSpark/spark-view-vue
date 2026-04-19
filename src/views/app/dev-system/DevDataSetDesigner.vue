@@ -287,22 +287,43 @@
         </div>
 
         <div class="ds-ai__form">
-          <label class="ds-ai__label">💬 描述你的数据需求：</label>
-          <el-input
-            v-model="aiPrompt"
-            type="textarea"
-            :rows="4"
-            placeholder="例如：用户订单系统，用户可以有多个订单，每个订单包含多个订单项..."
-          />
-          <el-button
-            type="primary"
-            class="ds-ai__generate"
-            :loading="aiLoading"
-            :disabled="!aiPrompt.trim()"
-            @click="generateDataModel"
-          >
-            <NavIcon name="MagicStick" :size="14" /> 🚀 生成数据模型
-          </el-button>
+          <div class="ds-ai__mode">
+            <el-radio-group v-model="aiMode" size="small">
+              <el-radio-button label="edit">细粒度编辑</el-radio-button>
+              <el-radio-button label="generate">整模生成</el-radio-button>
+              <el-radio-button label="chat">聊天模式</el-radio-button>
+            </el-radio-group>
+          </div>
+          <template v-if="aiMode !== 'chat'">
+            <label class="ds-ai__label">💬 描述你的数据需求：</label>
+            <el-input
+              v-model="aiPrompt"
+              type="textarea"
+              :rows="4"
+              :placeholder="aiMode === 'edit'
+                ? '例如：给 Orders 表新增 area 字段（string，标签 区域），并把 Customer.phone 改为可空字符串'
+                : '例如：用户订单系统，用户可以有多个订单，每个订单包含多个订单项...'"
+            />
+            <el-button
+              type="primary"
+              class="ds-ai__generate"
+              :loading="aiLoading"
+              :disabled="!aiPrompt.trim()"
+              @click="generateDataModel"
+            >
+              <NavIcon name="MagicStick" :size="14" /> {{ aiMode === 'edit' ? '✨ 应用细粒度编辑' : '🚀 生成数据模型' }}
+            </el-button>
+          </template>
+
+          <div v-else class="ds-ai__chat-widget">
+            <AiChatWidget
+              mode="multi"
+              title="DataSet 聊天助手"
+              placeholder="支持文本、附件、语音输入；可连续多轮对话"
+              :compact="true"
+              :sender="datasetDesignerChatSender"
+            />
+          </div>
         </div>
 
         <!-- 蓝图执行进度 -->
@@ -317,6 +338,11 @@
         </div>
 
         <!-- AI 响应 -->
+        <div v-if="fineEditSseTrace" class="ds-ai__response">
+          <div class="ds-ai__label">🛰️ SSE 与 LLM 交互：</div>
+          <div class="ds-ai__text" v-html="fineEditSseTraceHtml" />
+        </div>
+
         <div v-if="aiResponse" class="ds-ai__response">
           <div class="ds-ai__label">💡 AI 建议：</div>
           <div class="ds-ai__text" v-html="aiResponseHtml" />
@@ -328,9 +354,32 @@
 
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted, onUnmounted } from 'vue'
-import { getAILoop, validateDataSetCrudToolStillParams } from '@spark-view/spark-ai'
+import {
+  getAILoop,
+  validateDataSetCrudToolStillParams,
+  clearRegistry,
+  clearDomains,
+  registerEditStills,
+  createSession as createStillSession,
+  executeStill,
+  runStillsLoop,
+  SessionBackendImpl,
+  configureSessionBackend,
+  createRepeatDetectionMonitor,
+  generateToolDefinitions,
+} from '@spark-view/spark-ai'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import NavIcon from '@/components/NavIcon.vue'
+import AiChatWidget from '@/components/AiChatWidget.vue'
+import { extractJsonObject, runAiFileWriteback } from './composables/useAiFileWriteback'
+import { createAuthHeaders } from '@/services/http'
+import type { AiChatSender } from '@/composables/useAiChat'
+import {
+  buildFineGrainedEditContext,
+  buildFineGrainedLoopSystemPrompt,
+  buildFineGrainedLoopUserPrompt,
+  summarizeFineGrainedTurns,
+} from './datasetFineEditOrchestration'
 import type { DevState } from './useDevState'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import type { DataColumn, TableRelation, ITableMetadata, IDataSetMetadata, IViewMetadata } from '@spark-view/spark-data'
@@ -404,11 +453,6 @@ function markHistoryChanged(): void {
 
 function resetHistoryFromDesignerState(): void {
   historyTool.value = DataSetCrudTool.fromJson(buildDataSetMetadataFromDesigner())
-  markHistoryChanged()
-}
-
-function resetHistoryFromTool(tool: DataSetCrudTool): void {
-  historyTool.value = DataSetCrudTool.fromJson(tool.toJson())
   markHistoryChanged()
 }
 
@@ -569,8 +613,13 @@ const relationLines = computed(() => {
 const aiPrompt = ref('')
 const aiLoading = ref(false)
 const aiResponse = ref('')
+const fineEditSseLines = ref<string[]>([])
+const aiMode = ref<'edit' | 'generate' | 'chat'>('edit')
 const blueprint = ref<BlueprintStep[]>([])
 const viewDependencies = ref<NonNullable<IDataSetMetadata['viewDependencies']> | undefined>(undefined)
+const fineEditSession = shallowRef<ReturnType<typeof createStillSession> | null>(null)
+const fineEditBackend = shallowRef<SessionBackendImpl | null>(null)
+const fineEditBackendSessionId = ref<string | null>(null)
 
 const hasChanges = computed(() => tables.value.length > 0)
 
@@ -605,6 +654,154 @@ const aiResponseHtml = computed(() => {
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\n/g, '<br>')
 })
+
+const fineEditSseTrace = computed(() => fineEditSseLines.value.join('\n'))
+
+const fineEditSseTraceHtml = computed(() => {
+  if (!fineEditSseTrace.value) return ''
+  return fineEditSseTrace.value
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>')
+})
+
+const AI_STREAM_PREFIX = 'AI: '
+const REASONING_STREAM_PREFIX = '思考: '
+
+function pushFineEditSseLine(line: string) {
+  if (!line.trim()) return
+  fineEditSseLines.value.push(line)
+  if (fineEditSseLines.value.length > 120) {
+    fineEditSseLines.value.splice(0, fineEditSseLines.value.length - 120)
+  }
+}
+
+function upsertFineEditStreamingLine(prefix: string, chunk: string) {
+  if (!chunk) return
+  const lastIdx = fineEditSseLines.value.length - 1
+  if (lastIdx >= 0 && fineEditSseLines.value[lastIdx].startsWith(prefix)) {
+    fineEditSseLines.value[lastIdx] += chunk
+    return
+  }
+  pushFineEditSseLine(`${prefix}${chunk}`)
+}
+
+function closeFineEditStreamingLines() {
+  const lastIdx = fineEditSseLines.value.length - 1
+  if (lastIdx < 0) return
+  const lastLine = fineEditSseLines.value[lastIdx]
+  if (lastLine.startsWith(AI_STREAM_PREFIX) || lastLine.startsWith(REASONING_STREAM_PREFIX)) {
+    fineEditSseLines.value[lastIdx] = lastLine.trimEnd()
+  }
+}
+
+function onFineEditSseEvent(event: { sessionId: string; type: string; data: string }) {
+  if (event.type === 'delta') {
+    upsertFineEditStreamingLine(AI_STREAM_PREFIX, event.data)
+    return
+  }
+
+  if (event.type === 'reasoning') {
+    upsertFineEditStreamingLine(REASONING_STREAM_PREFIX, event.data)
+    return
+  }
+
+  if (event.type === 'result') {
+    closeFineEditStreamingLines()
+    try {
+      const parsed = JSON.parse(event.data) as {
+        text?: string
+        toolCalls?: Array<{ function?: { name?: string; arguments?: string } }>
+      }
+      if (parsed.text && parsed.text.trim()) {
+        pushFineEditSseLine(`结果: ${parsed.text}`)
+      }
+      if (Array.isArray(parsed.toolCalls) && parsed.toolCalls.length > 0) {
+        const actionList = parsed.toolCalls
+          .map(tc => tc.function?.name)
+          .filter((name): name is string => Boolean(name && name.length > 0))
+        if (actionList.length > 0) {
+          pushFineEditSseLine(`工具调用: ${actionList.join(', ')}`)
+        }
+      }
+    } catch {
+      pushFineEditSseLine(`结果(raw): ${event.data}`)
+    }
+    return
+  }
+
+  if (event.type === 'error') {
+    closeFineEditStreamingLines()
+    pushFineEditSseLine(`错误: ${event.data}`)
+  }
+}
+
+function onFineEditTurnComplete(turn: {
+  round: number
+  phase: 'ai-response' | 'stills-execute'
+  toolBlock?: { action: string; id: string }
+  stillsResult?: {
+    ok: boolean
+    code?: string
+    msg?: string
+    fix?: string
+    warnings?: Array<{ rule: string; detail: string; fix?: string }>
+  }
+}) {
+  if (turn.phase !== 'stills-execute' || !turn.toolBlock || !turn.stillsResult) return
+  const { action, id } = turn.toolBlock
+  const result = turn.stillsResult
+
+  if (result.ok) {
+    const warningCount = result.warnings?.length ?? 0
+    if (warningCount > 0) {
+      pushFineEditSseLine(`[Round ${turn.round}] 执行 ${action}(${id}) -> 成功，warnings=${warningCount}`)
+      for (const warning of result.warnings ?? []) {
+        pushFineEditSseLine(`  - warning[${warning.rule}]: ${warning.detail}${warning.fix ? ` | fix: ${warning.fix}` : ''}`)
+      }
+    } else {
+      pushFineEditSseLine(`[Round ${turn.round}] 执行 ${action}(${id}) -> 成功`)
+    }
+    return
+  }
+
+  pushFineEditSseLine(
+    `[Round ${turn.round}] 执行 ${action}(${id}) -> 失败` +
+    `${result.code ? ` | code=${result.code}` : ''}` +
+    `${result.msg ? ` | msg=${result.msg}` : ''}` +
+    `${result.fix ? ` | fix=${result.fix}` : ''}`,
+  )
+}
+
+function buildFineEditFailureDetails(turns: Array<{
+  phase: 'ai-response' | 'stills-execute'
+  toolBlock?: { action: string }
+  stillsResult?: { ok: boolean; code?: string; msg?: string; fix?: string }
+}>): string {
+  const executedActions = turns
+    .filter(turn => turn.phase === 'stills-execute' && turn.toolBlock)
+    .map(turn => turn.toolBlock!.action)
+
+  const lastFailure = [...turns]
+    .reverse()
+    .find(turn => turn.phase === 'stills-execute' && turn.stillsResult && !turn.stillsResult.ok)
+
+  const actionSummary = executedActions.length > 0
+    ? executedActions.join(' -> ')
+    : '（未记录到工具执行）'
+
+  if (!lastFailure || !lastFailure.stillsResult) {
+    return `已执行动作链：${actionSummary}`
+  }
+
+  const failedAction = lastFailure.toolBlock?.action ?? 'unknown'
+  const failedResult = lastFailure.stillsResult
+  return `已执行动作链：${actionSummary}\n最后失败点：${failedAction}`
+    + `${failedResult.code ? ` | code=${failedResult.code}` : ''}`
+    + `${failedResult.msg ? ` | msg=${failedResult.msg}` : ''}`
+    + `${failedResult.fix ? ` | fix=${failedResult.fix}` : ''}`
+}
 
 const loop = computed(() => getAILoop())
 
@@ -1062,11 +1259,20 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', onDocMouseMove)
   document.removeEventListener('mouseup', onDocMouseUp)
   document.removeEventListener('keydown', onKeydown)
+
+  const backend = fineEditBackend.value
+  const sessionId = fineEditBackendSessionId.value
+  if (backend && sessionId) {
+    void backend.destroySession(sessionId)
+  }
+
+  clearRegistry()
+  clearDomains()
 })
 
 // ═══ pagedata.json 互转 ═══
 
-function parseFromPageData(silent = false) {
+function parseFromPageData(silent = false, options?: { preserveHistory?: boolean }) {
   try {
     const content = props.state.editFiles['pagedata.json'] ?? '{}'
     let data = JSON.parse(content) as Record<string, unknown>
@@ -1134,9 +1340,15 @@ function parseFromPageData(silent = false) {
       ...(typeof data['pageId'] === 'string' ? { pageId: data['pageId'] } : {}),
     }
 
-    const tool = DataSetCrudTool.fromJson(normalizedDataSet)
-    syncDesignerFromCrudTool(tool)
-    resetHistoryFromTool(tool)
+    const canPreserveHistory = Boolean(options?.preserveHistory && isDesignerStateInSyncWithHistory())
+    const nextTool = DataSetCrudTool.reconcileFromJson(normalizedDataSet, historyTool.value ?? undefined, {
+      preserveHistory: canPreserveHistory,
+    })
+    historyTool.value = nextTool
+    syncDesignerFromCrudTool(nextTool)
+    editingRel.value = null
+    selectedTableId.value = null
+    markHistoryChanged()
     
     if (!silent) ElMessage.success(`已加载 ${tables.value.length} 个表`)
   } catch {
@@ -1183,6 +1395,11 @@ function exportToPageData() {
 // ═══ AI 生成 ═══
 
 async function generateDataModel() {
+  if (aiMode.value === 'edit') {
+    await applyFineGrainedEdit()
+    return
+  }
+
   const loopInstance = loop.value
   if (!loopInstance || !aiPrompt.value.trim()) return
   
@@ -1196,116 +1413,279 @@ async function generateDataModel() {
   ]
   
   try {
-    const prompt = `你是 SPARK 数据模型设计专家。根据以下需求设计数据表结构：
+    const prompt = `你是 SPARK 数据模型设计专家。请直接修改 pagedata.json 的 DataSet 结构（不要改 rule.json/script.js/style.css），满足以下需求：
 
 需求描述：
 ${aiPrompt.value}
 
-请按以下 SPARK pagedata.json 格式返回数据模型设计：
-\`\`\`json
-{
-  "dataSetName": "PageDataSet",
-  "tableRelations": [
-    { "parentTable": "主表名", "childTable": "从表名", "parentField": "id", "childField": "主表名Id" }
-  ],
-  "tables": {
-    "表名": {
-      "tableName": "表名",
-      "columns": [
-        { "name": "字段名", "type": "string|number|boolean|date|datetime", "label": "中文标签", "isPrimaryKey": true }
-      ],
-      "views": {
-        "default": { "rows": [] }
-      }
-    }
-  }
-}
-\`\`\`
-
-规则：
+硬性规则：
 - columns 用 name（非 field），用 isPrimaryKey（非 isPrimary）
 - 每个表必须有 tableName 和 views.default
 - 每个字段都要有 label（中文标签）
 - 主键字段设 isPrimaryKey: true
-只返回 JSON，不要其他解释。`
+输出要求：
+- 优先通过 files.pagedata.json 返回完整文件内容
+- 若不能返回 files，则返回可解析的纯 JSON 对象`
 
     // 模拟蓝图进度
     blueprint.value[0]!.status = 'running'
     await new Promise((r) => setTimeout(r, 300))
     blueprint.value[0]!.status = 'done'
     blueprint.value[1]!.status = 'running'
-    
-    let fullResponse = ''
+
     const pageId = props.state.activePageId.value || 'default'
-    await loopInstance.generateStream(pageId, prompt, {
-      onDelta(text) { fullResponse += text },
-      onReasoning() {},
-      onPhase() {},
+    const contextFiles: Record<string, string> = {}
+    const currentPageData = props.state.editFiles['pagedata.json']
+    if (typeof currentPageData === 'string' && currentPageData.trim().length > 0) {
+      contextFiles['pagedata.json'] = currentPageData
+    }
+
+    let fullResponse = ''
+    const response = await runAiFileWriteback({
+      loop: loopInstance,
+      pageId,
+      prompt,
+      targetFile: 'pagedata.json',
+      contextFiles,
+      callbacks: {
+        onDelta(text) { fullResponse += text },
+        onReasoning() {},
+        onPhase() {},
+      },
     })
-    
+
     blueprint.value[1]!.status = 'done'
     blueprint.value[2]!.status = 'running'
-    
-    // 解析 JSON
-    const jsonMatch = fullResponse.match(/```json\s*([\s\S]*?)\s*```/)
-    if (jsonMatch && jsonMatch[1]) {
-      const modelData = JSON.parse(jsonMatch[1]) as Record<string, unknown>
-      
-      const modelTables = (modelData['tables'] ?? {}) as Record<string, Record<string, unknown>>
-      const normalizedTables: Record<string, ITableMetadata> = {}
-      for (const [name, tableConfig] of Object.entries(modelTables)) {
-        const columns = normalizeColumnsFromLoose(tableConfig['columns'])
 
-        const normalizedTable: ITableMetadata = {
-          tableName: name,
-          columns,
-          views: normalizeViewsFromLoose(undefined),
-        }
+    const patchedPageData = response.content
+    let modelData: Record<string, unknown> | null = null
 
-        // 与 datasetTool 能力调用共用同一参数校验，避免设计器链路与 stills 规则漂移。
-        assertDatasetToolParams('datasetTool.createTable', {
-          tableName: normalizedTable.tableName,
-          columns: normalizedTable.columns,
-          views: normalizedTable.views,
-        })
-
-        normalizedTables[name] = normalizedTable
+    if (typeof patchedPageData === 'string' && patchedPageData.trim().length > 0) {
+      const parsed = extractJsonObject(patchedPageData)
+      if (parsed) {
+        modelData = parsed
+        props.state.updatePageFile('pagedata.json', JSON.stringify(parsed, null, 2))
       }
-      
-      blueprint.value[2]!.status = 'done'
-      blueprint.value[3]!.status = 'running'
-      
-      // 应用关联 — 直接使用 canonical TableRelation 字段名
-      const modelRelations = (modelData['tableRelations'] ?? modelData['relations'] ?? []) as Array<Record<string, string>>
-      const normalizedRelations: TableRelation[] = []
-      for (const rel of modelRelations) {
-        const normalizedRelation = normalizeAndValidateRelationForCreate(rel, {
-          allowAliasKeys: true,
-          defaultParentField: 'id',
-          defaultChildField: (parentTable) => `${parentTable}_id`,
-        })
-        if (!normalizedRelation) continue
-        normalizedRelations.push(normalizedRelation)
-      }
-
-      const tool = DataSetCrudTool.fromJson({
-        dataSetName: readCurrentDataSetName(),
-        tables: normalizedTables,
-        tableRelations: normalizedRelations,
-      })
-      syncDesignerFromCrudTool(tool)
-      resetHistoryFromTool(tool)
-      
-      blueprint.value[3]!.status = 'done'
-      aiResponse.value = `已成功生成 ${tables.value.length} 个表和 ${relations.value.length} 个关联关系。`
-    } else {
-      aiResponse.value = fullResponse
     }
+
+    if (modelData === null) {
+      const fallback = extractJsonObject(fullResponse)
+      if (fallback) {
+        modelData = fallback
+        props.state.updatePageFile('pagedata.json', JSON.stringify(fallback, null, 2))
+      }
+    }
+
+    if (modelData === null) {
+      throw new Error('AI 未返回可解析的 pagedata.json 内容')
+    }
+
+    // 本地二次归一与验证（沿用 datasetTool 参数校验）
+    const modelTables = (modelData['tables'] ?? {}) as Record<string, Record<string, unknown>>
+    const normalizedTables: Record<string, ITableMetadata> = {}
+    for (const [name, tableConfig] of Object.entries(modelTables)) {
+      const columns = normalizeColumnsFromLoose(tableConfig['columns'])
+
+      const normalizedTable: ITableMetadata = {
+        tableName: name,
+        columns,
+        views: normalizeViewsFromLoose(tableConfig['views']),
+      }
+
+      assertDatasetToolParams('datasetTool.createTable', {
+        tableName: normalizedTable.tableName,
+        columns: normalizedTable.columns,
+        views: normalizedTable.views,
+      })
+
+      normalizedTables[name] = normalizedTable
+    }
+
+    blueprint.value[2]!.status = 'done'
+    blueprint.value[3]!.status = 'running'
+
+    const modelRelations = (modelData['tableRelations'] ?? modelData['relations'] ?? []) as Array<Record<string, string>>
+    const normalizedRelations: TableRelation[] = []
+    for (const rel of modelRelations) {
+      const normalizedRelation = normalizeAndValidateRelationForCreate(rel, {
+        allowAliasKeys: true,
+        defaultParentField: 'id',
+        defaultChildField: (parentTable) => `${parentTable}_id`,
+      })
+      if (!normalizedRelation) continue
+      normalizedRelations.push(normalizedRelation)
+    }
+
+    const snapshot: IDataSetMetadata = {
+      dataSetName: readCurrentDataSetName(),
+      tables: normalizedTables,
+      tableRelations: normalizedRelations,
+    }
+    const canPreserveHistory = isDesignerStateInSyncWithHistory()
+    const nextTool = DataSetCrudTool.reconcileFromJson(snapshot, historyTool.value ?? undefined, {
+      preserveHistory: canPreserveHistory,
+    })
+    historyTool.value = nextTool
+    syncDesignerFromCrudTool(nextTool)
+    editingRel.value = null
+    selectedTableId.value = null
+    markHistoryChanged()
+
+    blueprint.value[3]!.status = 'done'
+    aiResponse.value = `已通过 AI 回写 pagedata.json，并同步为 ${tables.value.length} 个表、${relations.value.length} 个关联。`
   } catch (err) {
     aiResponse.value = `生成失败: ${err instanceof Error ? err.message : String(err)}`
   } finally {
     aiLoading.value = false
   }
+}
+
+async function applyFineGrainedEdit() {
+  if (!aiPrompt.value.trim()) return
+
+  aiLoading.value = true
+  aiResponse.value = ''
+  fineEditSseLines.value = []
+  blueprint.value = []
+
+  let lastTurns: Array<{
+    phase: 'ai-response' | 'stills-execute'
+    toolBlock?: { action: string }
+    stillsResult?: { ok: boolean; code?: string; msg?: string; fix?: string }
+  }> = []
+
+  try {
+    const currentDataSet = buildDataSetMetadataFromDesigner()
+    const contextSummary = buildFineGrainedEditContext(currentDataSet)
+
+    configureSessionBackend({
+      getHeaders: createAuthHeaders,
+      onSseEvent: onFineEditSseEvent,
+    })
+    if (!fineEditSession.value || !fineEditBackend.value) {
+      clearRegistry()
+      clearDomains()
+      registerEditStills()
+
+      const session = createStillSession()
+      const initResult = executeStill('edit.init', {
+        ruleJson: [],
+        pageDataJson: currentDataSet,
+        scriptJs: '',
+        styleCss: '',
+      }, session, 'dataset-fine-edit-init')
+
+      if (!initResult.ok) {
+        throw new Error(initResult.msg)
+      }
+
+      fineEditSession.value = session
+      fineEditBackend.value = new SessionBackendImpl()
+    }
+
+    const session = fineEditSession.value
+    const backend = fineEditBackend.value
+    if (!session || !backend) {
+      throw new Error('细粒度会话初始化失败')
+    }
+
+    const orchestratorResult = await runStillsLoop(
+      buildFineGrainedLoopUserPrompt(aiPrompt.value, contextSummary),
+      session,
+      backend,
+      {
+        maxRounds: 8,
+        slidingWindow: 12,
+        systemPrompt: buildFineGrainedLoopSystemPrompt(),
+        ...(fineEditBackendSessionId.value ? { resumeSessionId: fineEditBackendSessionId.value } : {}),
+        tools: generateToolDefinitions({
+          compactDescriptions: true,
+        }),
+        monitors: [
+          {
+            name: 'bootstrap-guard',
+            afterStillExecution(ctx) {
+              const action = ctx.currentTurn.toolBlock?.action ?? ''
+              const bootstrapActions = new Set(['session.describe', 'stills.capabilities'])
+              if (!bootstrapActions.has(action)) return []
+
+              const count = ctx.allTurns.filter(t => t.toolBlock?.action === action).length
+              if (count <= 1) return []
+
+              return [
+                `[流程约束] ${action} 已重复 ${count} 次。请停止重复能力探测，直接执行 datasetTool.* 完成模型修改。`,
+              ]
+            },
+          },
+          createRepeatDetectionMonitor({
+            maxSameSignature: 2,
+            maxConsecutiveErrors: 2,
+          }),
+        ],
+        onTurnComplete(turn) {
+          onFineEditTurnComplete(turn)
+        },
+      },
+    )
+    fineEditBackendSessionId.value = orchestratorResult.sessionId
+    lastTurns = orchestratorResult.turns
+
+    if (orchestratorResult.aborted) {
+      const details = buildFineEditFailureDetails(orchestratorResult.turns)
+      throw new Error(`${orchestratorResult.abortReason ?? '细粒度编排被中止'}\n${details}`)
+    }
+
+    const exportResult = executeStill('dataset.export', {}, session, 'dataset-fine-edit-local-export')
+    if (!exportResult.ok) {
+      throw new Error(exportResult.msg)
+    }
+
+    const exportData = exportResult.data as { file: { 'pagedata.json': string } }
+    const pagedata = exportData.file['pagedata.json']
+    props.state.updatePageFile('pagedata.json', pagedata)
+    parseFromPageData(true, { preserveHistory: true })
+
+    aiResponse.value = `${summarizeFineGrainedTurns(orchestratorResult.turns)}
+
+当前 ${tables.value.length} 个表、${relations.value.length} 个关联。`
+  } catch (err) {
+    if (lastTurns.length > 0) {
+      pushFineEditSseLine('--- 失败定位摘要 ---')
+      pushFineEditSseLine(buildFineEditFailureDetails(lastTurns))
+    }
+    aiResponse.value = `细粒度编辑失败: ${err instanceof Error ? err.message : String(err)}`
+  } finally {
+    configureSessionBackend({ getHeaders: createAuthHeaders })
+    aiLoading.value = false
+  }
+}
+
+const datasetDesignerChatSender: AiChatSender = async (request) => {
+  const latestUserMessage = [...request.historyMsgs]
+    .reverse()
+    .find(message => message.role === 'user')
+
+  const prompt = latestUserMessage?.content?.trim() ?? ''
+  if (!prompt) return
+
+  request.onDelta?.('已接收需求，正在执行 DataSet 细粒度编辑...\n')
+
+  const previousPrompt = aiPrompt.value
+  aiPrompt.value = prompt
+  await applyFineGrainedEdit()
+  aiPrompt.value = previousPrompt
+
+  const result = aiResponse.value.trim()
+  if (!result) {
+    request.onDelta?.('细粒度编辑已执行完成。')
+    return
+  }
+
+  if (result.startsWith('细粒度编辑失败:')) {
+    throw new Error(result)
+  }
+
+  request.onDelta?.(result)
 }
 </script>
 
@@ -1802,6 +2182,17 @@ ${aiPrompt.value}
 .ds-ai__form {
   padding: 14px;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.ds-ai__chat-widget {
+  margin-top: 8px;
+  height: 360px;
+  min-height: 280px;
+}
+
+.ds-ai__chat-widget :deep(.ai-chat-widget.compact) {
+  height: 100%;
+  min-height: 0;
 }
 
 .ds-ai__label {

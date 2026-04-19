@@ -265,6 +265,35 @@ export class DataSetCrudTool {
   }
 
   /**
+   * 以模型层方式合并外部快照。
+   * - 无当前工具时：创建新工具（历史从快照初始化）。
+   * - preserveHistory=false：重建工具并重置历史。
+   * - preserveHistory=true：在当前历史链中提交快照，支持 undo/redo。
+   */
+  static reconcileFromJson(
+    snapshot: IDataSetMetadata,
+    current?: DataSetCrudTool,
+    options?: { preserveHistory?: boolean },
+  ): DataSetCrudTool {
+    if (!current) {
+      return DataSetCrudTool.fromJson(snapshot)
+    }
+
+    if (options?.preserveHistory === false) {
+      return DataSetCrudTool.fromJson(snapshot)
+    }
+
+    const currentJson = JSON.stringify(current.toJson())
+    const nextJson = JSON.stringify(snapshot)
+    if (currentJson === nextJson) {
+      return current
+    }
+
+    current.replaceFromJson(snapshot, { commitHistory: true })
+    return current
+  }
+
+  /**
    * 当前工具类持有的 DataSet 实例。
    */
   get dataSet(): DataSet {
@@ -337,6 +366,19 @@ export class DataSetCrudTool {
     if (current !== null) {
       this._history.push(current)
     }
+  }
+
+  /**
+   * 用外部快照替换当前 DataSet。
+   * 默认会把替换结果压入历史栈，确保该替换可被撤销/重做。
+   */
+  replaceFromJson(snapshot: IDataSetMetadata, options?: { commitHistory?: boolean }): void {
+    this._dataSet = DataSet.fromJson(snapshot)
+    if (options?.commitHistory === false) {
+      this.initializeHistory()
+      return
+    }
+    this._history.push(this._dataSet.toJson())
   }
 
   /**

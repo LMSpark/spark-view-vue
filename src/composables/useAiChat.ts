@@ -30,14 +30,28 @@ export type { TokenUsage }
 
 export type ChatMode = 'multi' | 'single'
 
+export interface AiChatSendRequest {
+  historyMsgs: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
+  mode: ChatMode
+  systemPrompt?: string
+  signal?: AbortSignal
+  onReasoning?: (reasoning: string) => void
+  onDelta?: (delta: string) => void
+  onUsage?: (usageRaw: Record<string, unknown>) => void
+}
+
+export type AiChatSender = (request: AiChatSendRequest) => Promise<void>
+
 // ── Composable ───────────────────────────────────────────────────────────────
 
 export function useAiChat(options?: {
   mode?: ChatMode
   systemPrompt?: string | undefined
+  sender?: AiChatSender
 }) {
   const mode = options?.mode ?? 'multi'
   const systemPrompt = options?.systemPrompt
+  const sender = options?.sender
 
   const messages = ref<ChatMessage[]>([])
   const isStreaming = ref(false)
@@ -108,21 +122,37 @@ export function useAiChat(options?: {
       }
 
       _abortController = new AbortController()
-      await streamAiChatText({
-        messages: historyMsgs,
-        mode,
-        signal: _abortController.signal,
-        ...(systemPrompt !== undefined ? { systemPrompt } : {}),
-        onReasoning: (reasoning) => {
-          reactiveMsg.reasoning = (reactiveMsg.reasoning ?? '') + reasoning
-        },
-        onDelta: (delta) => {
-          reactiveMsg.content += delta
-        },
-        onUsage: (usageRaw) => {
-          reactiveMsg.usage = parseTokenUsage(usageRaw)
-        },
-      })
+      const onReasoning = (reasoning: string) => {
+        reactiveMsg.reasoning = (reactiveMsg.reasoning ?? '') + reasoning
+      }
+      const onDelta = (delta: string) => {
+        reactiveMsg.content += delta
+      }
+      const onUsage = (usageRaw: Record<string, unknown>) => {
+        reactiveMsg.usage = parseTokenUsage(usageRaw)
+      }
+
+      if (sender !== undefined) {
+        await sender({
+          historyMsgs,
+          mode,
+          signal: _abortController.signal,
+          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+          onReasoning,
+          onDelta,
+          onUsage,
+        })
+      } else {
+        await streamAiChatText({
+          messages: historyMsgs,
+          mode,
+          signal: _abortController.signal,
+          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+          onReasoning,
+          onDelta,
+          onUsage,
+        })
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : '请求失败'
       error.value = msg
