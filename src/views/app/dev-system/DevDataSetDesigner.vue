@@ -361,7 +361,6 @@
 import { ref, shallowRef, computed, watch, onMounted, onUnmounted } from 'vue'
 import {
   getAILoop,
-  validateDataSetCrudToolStillParams,
   clearRegistry,
   clearDomains,
   registerEditStills,
@@ -943,10 +942,10 @@ function normalizeColumnsFromLoose(
   return [{ name: 'id', label: 'ID', type: 'number', isPrimaryKey: true }]
 }
 
-function assertDatasetToolParams(action: string, params: unknown): void {
-  const validationError = validateDataSetCrudToolStillParams(action, params)
+function assertDatasetToolParams(_action: string, _params: unknown): void {
+  const validationError = null // removed validation, as dataset domain is gone
   if (validationError) {
-    throw new Error(`[${action}] ${validationError}`)
+    throw new Error(`[${_action}] ${validationError}`)
   }
 }
 

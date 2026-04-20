@@ -157,16 +157,6 @@ export {
   createSession,
   registerDomain,
   getDomain,
-  getDataSetState,
-  findCandidateActions,
-  scoreCandidateAction,
-  validateLlmDeserializedParams,
-  formatLlmParamValidationIssues,
-  DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
-  DATASET_CRUD_TOOL_STILLS_CAPABILITY_TABLE,
-  getDataSetCrudToolStillParameterRow,
-  getDataSetCrudToolStillCapabilityRow,
-  validateDataSetCrudToolStillParams,
 } from './stills'
 export type {
   DomainState,
@@ -179,19 +169,7 @@ export type {
   BlueprintCheckpoint,
   PatchEntry,
   DomainProvider,
-  DesignPhase,
-  DataSetDomainState,
   PostValidationWarning,
-  LlmParamObjectSchema,
-  LlmParamArraySchema,
-  LlmParamValidationIssue,
-  LlmParamValidationResult,
-  LlmParamValidationOptions,
-  DatasetCrudToolStillFailureMode,
-  DatasetCrudToolStillType,
-  DatasetCrudToolStillTarget,
-  DatasetCrudToolStillParameterRow,
-  DatasetCrudToolStillCapabilityRow,
 } from './stills'
 
 // ── Session Orchestrator（会话级工具循环编排）──────────────────────────────────

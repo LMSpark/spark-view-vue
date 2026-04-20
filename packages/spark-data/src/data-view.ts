@@ -443,6 +443,13 @@ export class DataView implements IDataSource {
   /** rowsChanged 事件防抖定时器 */
   private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
 
+  private setRequestState(nextState: RequestState, options?: { emit?: boolean }): void {
+    this.requestState = nextState
+    if (options?.emit) {
+      this.events.emit('requestStateChanged', this.requestState)
+    }
+  }
+
   /** 深度遍历整棵 rows 树（含 nested children） */
   private visitRowsDeep(visitor: (row: IDataRow) => void): void {
     const stack = [...this.rows]
@@ -720,7 +727,8 @@ export class DataView implements IDataSource {
   // ── 上行：父依赖解析 → 加载自身 ──────────────
 
   /**
-  /** 视图级加载编排器（幂等：requestState≠Idle 时直接返回）。外部应使用 refresh() 或 loadFromServer()。 */
+   * 视图级加载编排器（幂等：requestState≠Idle 时直接返回）。外部应使用 refresh() 或 loadFromServer()。
+   */
   async requestData(): Promise<void> {
     if (this.requestState !== RequestState.Idle) {
       if (this._pendingRequestData) return this._pendingRequestData
@@ -729,82 +737,79 @@ export class DataView implements IDataSource {
     }
 
     const run = async (): Promise<void> => {
+      this.setRequestState(RequestState.Preparing)
 
-    this.requestState = RequestState.Preparing
+      // 逐个父视图检查依赖是否满足
+      const ds = this.dataSet
+      const parents = ds ? ds.getParentRelations(this.tableName, this.viewId) : []
 
-    // 逐个父视图检查依赖是否满足
-    const ds = this.dataSet
-    const parents = ds ? ds.getParentRelations(this.tableName, this.viewId) : []
+      // 合并两轮循环：检查父依赖就绪度的同时缓存视图和行数据，避免 getView/getParentRows 二次调用
+      const resolvedParents: Array<{ rel: (typeof parents)[number]; pView: DataView; rows: readonly IDataRow[] }> = []
+      for (const rel of parents) {
+        const pView = ds?.getView(rel.parentTable, rel.parentViewId ?? 'default')
+        if (!pView) continue
 
-    // 合并两轮循环：检查父依赖就绪度的同时缓存视图和行数据，避免 getView/getParentRows 二次调用
-    const resolvedParents: Array<{ rel: (typeof parents)[number]; pView: DataView; rows: readonly IDataRow[] }> = []
-    for (const rel of parents) {
-      const pView = ds?.getView(rel.parentTable, rel.parentViewId ?? 'default')
-      if (!pView) continue
+        if (pView.requestState === RequestState.Idle) {
+          void pView.requestData()
+        }
 
-      if (pView.requestState === RequestState.Idle) {
-        void pView.requestData()
+        const parentRows = getParentRows(pView, rel.dependencyType ?? 'currentRow')
+        // Phase 4 S2: Loading 不视为就绪（可能持有上轮旧数据），必须 Loaded 或有实际行数据
+        const parentReady = pView.requestState === RequestState.Loaded || pView.rows.length > 0
+        if (!parentReady || parentRows.length === 0) {
+          this.setRequestState(RequestState.Failed, { emit: true })
+          return
+        }
+        resolvedParents.push({ rel, pView, rows: parentRows })
       }
 
-      const parentRows = getParentRows(pView, rel.dependencyType ?? 'currentRow')
-      // Phase 4 S2: Loading 不视为就绪（可能持有上轮旧数据），必须 Loaded 或有实际行数据
-      const parentReady = pView.requestState === RequestState.Loaded || pView.rows.length > 0
-      if (!parentReady || parentRows.length === 0) {
-        this.requestState = RequestState.Failed
-        this.events.emit('requestStateChanged', this.requestState)
+      // 按各关系的 filterExpression 组装查询参数（复用 resolvedParents，无需二次 getView/getParentRows）
+      const params: QueryParams = {}
+      for (const { rel, pView, rows: parentRows } of resolvedParents) {
+        if (!parentRows.length) continue
+        const expr = rel.filterExpression
+        if (!expr) continue
+
+        let parentKey: string | undefined
+        if (typeof rel.parentField === 'string') {
+          parentKey = rel.parentField
+        } else {
+          // 回退到父视图的 primaryKey 配置（Phase 3 S1: 消除硬编码 'id'）
+          parentKey = pView.primaryKey
+        }
+
+        const values = parentRows.map(r => r[parentKey])
+
+        let childKey: string
+        if (typeof rel.childField === 'string') childKey = rel.childField
+        else if ('field' in expr) childKey = expr.field
+        else childKey = parentKey
+
+        if ('op' in expr && 'field' in expr) {
+          params[childKey] = expr.op === 'in' ? values : values[0]
+        } else {
+          params[childKey] = values[0]
+        }
+      }
+
+      // 注入视图自身的分页/排序/过滤参数
+      params.page = this.page
+      params.pageSize = this.pageSize
+      if (this.sortExpression !== undefined) params.sort = this._serializeSort(this.sortExpression)
+      if (this.filterExpression !== undefined) params.filter = this.filterExpression
+
+      try {
+        const result = await this.loadFromServer(params)
+        if (!result.success) return
+      } catch (error: unknown) {
+        // 不再静默吞异常：记录错误、设置失败状态、通知订阅方
+        this.logger.error(`requestData 失败 [${this.tableName}@${this.viewId}]: ${toErrorMessage(error)}`)
+        this.setRequestState(RequestState.Failed, { emit: true })
+        this.loadingError = error instanceof Error ? error : new Error(toErrorMessage(error))
         return
       }
-      resolvedParents.push({ rel, pView, rows: parentRows })
-    }
 
-    // 按各关系的 filterExpression 组装查询参数（复用 resolvedParents，无需二次 getView/getParentRows）
-    const params: QueryParams = {}
-    for (const { rel, pView, rows: parentRows } of resolvedParents) {
-      if (!parentRows.length) continue
-      const expr = rel.filterExpression
-      if (!expr) continue
-
-      let parentKey: string | undefined
-      if (typeof rel.parentField === 'string') {
-        parentKey = rel.parentField
-      } else {
-        // 回退到父视图的 primaryKey 配置（Phase 3 S1: 消除硬编码 'id'）
-        parentKey = pView.primaryKey
-      }
-
-      const values = parentRows.map(r => r[parentKey])
-
-      let childKey: string
-      if (typeof rel.childField === 'string') childKey = rel.childField
-      else if ('field' in expr) childKey = expr.field
-      else childKey = parentKey
-
-      if ('op' in expr && 'field' in expr) {
-        params[childKey] = expr.op === 'in' ? values : values[0]
-      } else {
-        params[childKey] = values[0]
-      }
-    }
-
-    // 注入视图自身的分页/排序/过滤参数
-    params.page = this.page
-    params.pageSize = this.pageSize
-    if (this.sortExpression !== undefined) params.sort = this._serializeSort(this.sortExpression)
-    if (this.filterExpression !== undefined) params.filter = this.filterExpression
-
-    try {
-      const result = await this.loadFromServer(params)
-      if (!result.success) return
-    } catch (error: unknown) {
-      // 不再静默吞异常：记录错误、设置失败状态、通知订阅方
-      this.logger.error(`requestData 失败 [${this.tableName}@${this.viewId}]: ${toErrorMessage(error)}`)
-      this.requestState = RequestState.Failed
-      this.loadingError = error instanceof Error ? error : new Error(toErrorMessage(error))
-      this.events.emit('requestStateChanged', this.requestState)
-      return
-    }
-
-    // 子视图级联由 rowsChanged 事件驱动（respondToParentChange），无需主动推
+      // 子视图级联由 rowsChanged 事件驱动（respondToParentChange），无需主动推
     }
 
     this._pendingRequestData = run()
@@ -820,7 +825,7 @@ export class DataView implements IDataSource {
     this.checkDestroyed()
     if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
 
-    this.requestState = RequestState.Loading
+    this.setRequestState(RequestState.Loading)
     this.loadingError = null
 
     const requestId = ++this.currentLoadRequestId
@@ -837,12 +842,10 @@ export class DataView implements IDataSource {
       if (result.success && result.data !== undefined) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         this.selectionDelegate.applyAutoFirst()
-        this.requestState = RequestState.Loaded
-        this.events.emit('requestStateChanged', this.requestState)   // 通知 Idle→Loading→Loaded 转换（DataSet.on('loadSuccess') 依赖此事件）
+        this.setRequestState(RequestState.Loaded, { emit: true })   // 通知 Idle→Loading→Loaded 转换（DataSet.on('loadSuccess') 依赖此事件）
         this.emitRowsChanged()
       } else {
-        this.requestState = RequestState.Failed
-        this.events.emit('requestStateChanged', this.requestState)
+        this.setRequestState(RequestState.Failed, { emit: true })
       }
       return result
     } catch (error) {
@@ -852,8 +855,7 @@ export class DataView implements IDataSource {
       }
 
       this.loadingError = toError(error)
-      this.requestState = RequestState.Failed
-      this.events.emit('requestStateChanged', this.requestState)
+      this.setRequestState(RequestState.Failed, { emit: true })
       throw error
     }
   }
@@ -905,7 +907,7 @@ export class DataView implements IDataSource {
     this.checkDestroyed()
     if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
 
-    this.requestState = RequestState.Loading
+    this.setRequestState(RequestState.Loading)
     this.loadingError = null
 
     const requestId = ++this.currentLoadRequestId
@@ -921,8 +923,7 @@ export class DataView implements IDataSource {
 
       this.updateFromServer(rows as IDataRow[])
       this.selectionDelegate.applyAutoFirst()
-      this.requestState = RequestState.Loaded
-      this.events.emit('requestStateChanged', this.requestState)
+      this.setRequestState(RequestState.Loaded, { emit: true })
       this.emitRowsChanged()
       return { success: true, data: rows }
     } catch (error) {
@@ -932,8 +933,7 @@ export class DataView implements IDataSource {
       }
 
       this.loadingError = toError(error)
-      this.requestState = RequestState.Failed
-      this.events.emit('requestStateChanged', this.requestState)
+      this.setRequestState(RequestState.Failed, { emit: true })
       throw error
     }
   }
@@ -941,7 +941,7 @@ export class DataView implements IDataSource {
   /** 强制刷新：先置 Idle 再 requestData()，无论当前状态一律重新拉取。清除 staged 模式的脏追踪状态。 */
   async refresh(): Promise<void> {
     this._dirtyTrackingDelegate?.clearAll()
-    this.requestState = RequestState.Idle
+    this.setRequestState(RequestState.Idle)
     return this.requestData()
   }
 
@@ -964,7 +964,7 @@ export class DataView implements IDataSource {
     this.updateFromServer(filteredRows)
     this.selectionDelegate.applyAutoFirst()
     // 内存级联不走网络，requestState 直接 Loaded（不发 requestStateChanged 避免副作用）
-    this.requestState = RequestState.Loaded
+    this.setRequestState(RequestState.Loaded)
     this.emitRowsChanged()
   }
 
@@ -1120,7 +1120,7 @@ export class DataView implements IDataSource {
     this._currentRowId = null
     this._selectedRowIds = []
     this.rowIndexMap = undefined   // 行集合已清空，索引缓存失效
-    this.requestState = RequestState.Idle
+    this.setRequestState(RequestState.Idle)
     this.loadingError = null
     this._dirtyTrackingDelegate?.clearAll()
   }

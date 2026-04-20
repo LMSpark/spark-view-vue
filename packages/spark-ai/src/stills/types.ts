@@ -125,19 +125,22 @@ export interface ExecutionBlueprint {
 // ═══════════════════════════════════════════════════════════
 
 /**
- * DomainState — stills 会话层里“某个 domain 挂在 session.domains 下的状态对象”这一核心概念。
+ * SessionDomainState — stills 会话层中所有 domain state 的最小公共协议。
  *
  * 约束：
- * 1. 统一使用 `data` 表达该域当前承载的数据对象；
- * 2. 统一使用 `phase` 表达该域当前流程阶段；
- * 3. 具体 domain 应通过 extends + 泛型实参约束 data / phase 的具体类型，而不是重新发明同义字段名；
- * 4. `phase` 的基线约束是字符串标签；domain 可细化为 string literal union；
- * 5. 域特有属性（如 dataset 的 locked）由具体域状态接口 extends 添加，不污染泛型协议；
- * 6. IStillSession.domains / getDomainState / DomainProvider.createState 全部围绕它组织。
+ * 1. 所有 domain 都必须声明 `phase`；
+ * 2. 只有真正以 `data` 作为主状态的 domain 才扩展 DomainState；
+ * 3. 像 dataset 这类已经收口到专用 facade 的 domain，可直接扩展 SessionDomainState，避免再维护伪 data 槽位。
  */
-export interface DomainState<TData = unknown, TPhase extends string = string> {
-  data: TData
+export interface SessionDomainState<TPhase extends string = string> {
   phase: TPhase
+}
+
+/**
+ * DomainState — 仍以 `data` 作为主状态槽位的 domain 通用协议。
+ */
+export interface DomainState<TData = unknown, TPhase extends string = string> extends SessionDomainState<TPhase> {
+  data: TData
 }
 
 /** 成功 request 动作写入的变更日志。 */
@@ -152,13 +155,13 @@ export interface IStillSession {
   /** 操作日志 */
   patchLog: PatchEntry[]
   /** 各域 state 的通用容器，key = 域名 */
-  domains: Record<string, DomainState<unknown, string>>
+  domains: Record<string, SessionDomainState<string>>
   /** Stills 组件目录（可选，presence 启用组件校验） */
   catalog: StillsCatalog | null
 }
 
 /** 从 session.domains 中按域名读取强类型 state。 */
-export function getDomainState<TState extends DomainState<unknown, string>>(session: IStillSession, domainName: string): TState {
+export function getDomainState<TState extends SessionDomainState<string>>(session: IStillSession, domainName: string): TState {
   return session.domains[domainName] as TState
 }
 
@@ -182,7 +185,7 @@ export function writeSessionBlueprint(session: IStillSession, blueprint: Executi
 // Domain Contract
 // ═══════════════════════════════════════════════════════════
 
-export interface DomainProvider<TState extends DomainState<unknown, string> = DomainState<unknown, string>> {
+export interface DomainProvider<TState extends SessionDomainState<string> = SessionDomainState<string>> {
   /** 域名（作为 session.domains 的 key） */
   name: string
   /** AI 角色描述（session.describe 返回给 AI 的角色定义） */

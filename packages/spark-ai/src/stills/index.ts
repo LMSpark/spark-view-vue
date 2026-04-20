@@ -23,35 +23,6 @@ import type {
 } from './types'
 import { noGuard, requireBlueprint } from './types'
 import { registerDomain, getDomain, clearDomains, createSession } from './domain'
-import {
-  datasetDomain,
-  getDataSetState,
-  datasetInit,
-  datasetDescribe,
-  datasetValidate,
-  datasetExport,
-  datasetReset,
-  datatableCreate,
-  datatableDescribe,
-  datatableAddColumns,
-  datatableUpdateColumn,
-  datatableRemoveColumn,
-  datatableSetApi,
-  datatableAddRows,
-  relationAdd,
-  relationRemove,
-  relationList,
-  schemaLock,
-  schemaUnlock,
-  dataviewCreate,
-  dataviewDescribe,
-  dataviewConfigure,
-  dataviewSetAggregates,
-  dataviewSetTreeConfig,
-  dependencyAdd,
-  dependencyRemove,
-} from './dataset-domain'
-import type { DataSetDomainState, DesignPhase } from './dataset-domain'
 import { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery } from './meta-methods'
 import {
   blueprintDomain,
@@ -92,39 +63,6 @@ export { noGuard, requireBlueprint }
 // ═══════════════════════════════════════════════════════════
 
 export { registerDomain, getDomain, clearDomains, createSession }
-
-// ═══════════════════════════════════════════════════════════
-// Dataset Domain
-// ═══════════════════════════════════════════════════════════
-
-export { datasetDomain, getDataSetState }
-export type { DataSetDomainState, DesignPhase }
-export {
-  datasetInit,
-  datasetDescribe,
-  datasetValidate,
-  datasetExport,
-  datasetReset,
-  datatableCreate,
-  datatableDescribe,
-  datatableAddColumns,
-  datatableUpdateColumn,
-  datatableRemoveColumn,
-  datatableSetApi,
-  datatableAddRows,
-  relationAdd,
-  relationRemove,
-  relationList,
-  schemaLock,
-  schemaUnlock,
-  dataviewCreate,
-  dataviewDescribe,
-  dataviewConfigure,
-  dataviewSetAggregates,
-  dataviewSetTreeConfig,
-  dependencyAdd,
-  dependencyRemove,
-}
 
 // ═══════════════════════════════════════════════════════════
 // Framework Stills
@@ -170,16 +108,7 @@ export {
 export type { BlueprintDomainState, BlueprintPhase }
 
 // ═══════════════════════════════════════════════════════════
-// PageConfig Domain
-// ═══════════════════════════════════════════════════════════
 
-import { pageConfigDomain } from './pageconfig-domain'
-export { pageConfigDomain }
-export { getPageConfigState, createPageConfigState } from './pageconfig-types'
-export type { PageConfigDomainState, PageConfigPhase, IPageConfigData, PageConfigExportResult, PageConfigValidationIssue } from './pageconfig-types'
-
-// ═══════════════════════════════════════════════════════════
-// Edit Domain
 // ═══════════════════════════════════════════════════════════
 
 import { editDomain } from './edit-domain'
@@ -213,15 +142,11 @@ const metaStills = [
 
 /**
  * 注册全部 stills 到全局 registry。
- * - dataset domain（24 个）通过 registerDomain 注册；
  * - blueprint domain（7 个）通过 registerDomain 注册；
- * - pageconfig domain（17 个）通过 registerDomain 注册；
  * - meta stills（4 个）通过 registerAll 注册。
  */
 export function registerAllStills(): void {
-  registerDomain(datasetDomain)
   registerDomain(blueprintDomain)
-  registerDomain(pageConfigDomain)
   registerAll(metaStills as unknown as StillDefinition[])
 }
 

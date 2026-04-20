@@ -355,30 +355,30 @@ describe('terminal-actions-monitor', () => {
       throw new Error('blueprint domain state is missing in test session')
     }
 
+    const nextBlueprintState = { ...blueprintState } as typeof blueprintState & { data: unknown }
+    nextBlueprintState.data = {
+      version: 1,
+      userGoal: 'test',
+      currentCheckpointId: 'cp1',
+      currentPlanItemId: 'pi1',
+      openQuestions: [],
+      checkpoints: [
+        {
+          id: 'cp1',
+          title: 'Setup',
+          plannedActions: ['dataset.bootstrap'],
+          planItems: [],
+          validation: 'ok',
+          status: allDone ? 'done' : 'pending',
+        },
+      ],
+    }
+
     return {
       ...session,
       domains: {
         ...session.domains,
-        blueprint: {
-          ...blueprintState,
-          data: {
-            version: 1,
-            userGoal: 'test',
-            currentCheckpointId: 'cp1',
-            currentPlanItemId: 'pi1',
-            openQuestions: [],
-            checkpoints: [
-              {
-                id: 'cp1',
-                title: 'Setup',
-                plannedActions: ['dataset.bootstrap'],
-                planItems: [],
-                validation: 'ok',
-                status: allDone ? 'done' : 'pending',
-              },
-            ],
-          },
-        },
+        blueprint: nextBlueprintState,
       },
     }
   }
@@ -389,15 +389,14 @@ describe('terminal-actions-monitor', () => {
     if (!blueprintState) {
       throw new Error('blueprint domain state is missing in test session')
     }
+    const nextBlueprintState = { ...blueprintState } as typeof blueprintState & { data: unknown }
+    nextBlueprintState.data = null
     const ctx = makeCtx({
       session: {
         ...session,
         domains: {
           ...session.domains,
-          blueprint: {
-            ...blueprintState,
-            data: null,
-          },
+          blueprint: nextBlueprintState,
         },
       },
     })

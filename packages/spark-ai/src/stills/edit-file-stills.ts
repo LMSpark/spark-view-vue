@@ -15,10 +15,33 @@ import {
   FILE_WRITE_STYLE_ACTION,
 } from './action-names'
 
-// ── File Catalog ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 类型与文件目录
+// ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * 当前编辑域内可直接读写的文本文件键。
+ *
+ * 这里不包含 rule.json / pagedata.json：
+ * - rule.json 走 nodeTree 相关 still；
+ * - pagedata.json 走 datasetTool.* / dataset.export 链路。
+ *
+ * 本模块只负责 script.js 与 style.css 这两类“全文本”文件。
+ */
 type EditFileKey = 'script' | 'style'
 
+/**
+ * 文件目录项描述。
+ *
+ * 每一项同时定义：
+ * 1. state 中对应的字段 key；
+ * 2. 对外暴露的读动作名；
+ * 3. 对外暴露的写动作名；
+ * 4. 用户可见的文件标签。
+ *
+ * 这样 read/write still 都可以从同一份 catalog 自动投影，
+ * 不需要分别手写两套动作定义。
+ */
 interface FileDescriptor {
   key: EditFileKey
   readAction: string
@@ -26,32 +49,86 @@ interface FileDescriptor {
   label: string
 }
 
+/**
+ * 文件目录。
+ *
+ * 设计意图：
+ * 1. 让文件种类成为单一真实源；
+ * 2. 新增文本文件时只需追加一行；
+ * 3. 动作名统一来自 action-names，避免散落字符串常量。
+ */
 const FILE_CATALOG: readonly FileDescriptor[] = [
-  { key: 'script', readAction: FILE_READ_SCRIPT_ACTION, writeAction: FILE_WRITE_SCRIPT_ACTION, label: 'script.js' },
-  { key: 'style', readAction: FILE_READ_STYLE_ACTION, writeAction: FILE_WRITE_STYLE_ACTION, label: 'style.css' },
+  {
+    key: 'script',
+    readAction: FILE_READ_SCRIPT_ACTION,
+    writeAction: FILE_WRITE_SCRIPT_ACTION,
+    label: 'script.js',
+  },
+  {
+    key: 'style',
+    readAction: FILE_READ_STYLE_ACTION,
+    writeAction: FILE_WRITE_STYLE_ACTION,
+    label: 'style.css',
+  },
 ]
 
-// ── File State Access ────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 参数模型与状态访问
+// ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * 写文件 still 的统一入参。
+ *
+ * 本模块采用“整文件覆盖”语义，而不是局部 patch：
+ * 调用方必须传入完整文本内容，状态层直接替换对应字段。
+ */
 interface EditFileWriteParams {
   content: string
 }
 
+/**
+ * 校验写文件入参。
+ *
+ * 约束非常简单：必须提供字符串类型的 content。
+ * 空字符串是允许的，因为 script/style 可能合法地被清空。
+ */
 function validateEditFileWriteParams(params: unknown): string | null {
   const payload = params as Record<string, unknown>
   return typeof payload['content'] === 'string' ? null : '缺少 content（string）'
 }
 
+/**
+ * 读取编辑态中的文件全文。
+ *
+ * edit-state 已把 script/style 直接保存在 state 上，
+ * 这里按 key 透传，避免外层 still 直接接触状态字段名。
+ */
 function readEditFileContent(session: IStillSession, key: EditFileKey): string {
   return getEditState(session)[key]
 }
 
+/**
+ * 写回编辑态中的文件全文。
+ *
+ * 该函数只做状态替换，不负责差异计算、导出或阶段推进；
+ * 这些职责分别由 diff/export 模块处理，避免本文件职责膨胀。
+ */
 function writeEditFileContent(session: IStillSession, key: EditFileKey, content: string): void {
   getEditState(session)[key] = content
 }
 
-// ── Still Factory ────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Still 工厂
+// ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * 为单个目录项创建“读文件” still。
+ *
+ * 行为：
+ * 1. 仅要求当前处于 editing 阶段；
+ * 2. 直接返回当前缓存中的全文；
+ * 3. 不修改任何状态。
+ */
 function createReadStill(desc: FileDescriptor): StillDefinition {
   return {
     action: desc.readAction,
@@ -69,6 +146,17 @@ function createReadStill(desc: FileDescriptor): StillDefinition {
   }
 }
 
+/**
+ * 为单个目录项创建“写文件” still。
+ *
+ * 写入动作使用 datasetExportedGuard，而不是普通 editingGuard。
+ * 这意味着：
+ * 1. 会话必须已经 bootstrap；
+ * 2. 数据阶段必须已经通过 dataset.export 完成；
+ * 3. 只有在数据导出检查点之后，才允许继续做 script/style 细粒度编辑。
+ *
+ * 这是编辑模式“先数据、后页面/脚本”的流程约束之一。
+ */
 function createWriteStill(desc: FileDescriptor): StillDefinition {
   const still: StillDefinition<EditFileWriteParams, undefined> = {
     action: desc.writeAction,
@@ -85,9 +173,17 @@ function createWriteStill(desc: FileDescriptor): StillDefinition {
   return still as StillDefinition
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// catalog → StillDefinition 投影
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * 由 FILE_CATALOG 驱动，每项生成一对 read/write still。
- * 新增文件类型只需向 FILE_CATALOG 追加一行。
+ *
+ * 结果特点：
+ * 1. 每个文件生成一对动作：read + write；
+ * 2. still 顺序与 catalog 顺序一致，便于目录理解；
+ * 3. 新增文件类型只需向 FILE_CATALOG 追加一行。
  */
 export const EDIT_FILE_STILLS: StillDefinition[] = FILE_CATALOG.flatMap((desc) => [
   createReadStill(desc),

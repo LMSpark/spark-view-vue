@@ -19,7 +19,7 @@
 // =========================================================
 
 import type {
-  DomainState,
+  SessionDomainState,
   StillDefinition,
   StillResult,
   IStillSession,
@@ -28,7 +28,6 @@ import type {
 } from './types'
 import { noGuard, readSessionBlueprint } from './types'
 import { getAllStills, getStill } from './dispatcher'
-import { getDataSetState } from './dataset-domain'
 import { getEditState } from './edit-state'
 import { getDomain } from './domain'
 import {
@@ -59,7 +58,7 @@ import {
 interface ActionCatalogItem {
   /** still 动作唯一名称，如 datatable.create。 */
   action: string
-  /** 动作类型，如 create / update / describe。 */
+  /** 动作类型，如 request / describe。 */
   type: string
   /** 动作一句话说明。 */
   description: string
@@ -156,10 +155,8 @@ function buildActionCatalog(): ActionCatalogItem[] {
       action: still.action,
       type: still.type,
       description: still.description,
-      // 仅在有 guard 描述时输出，避免空字段干扰 LLM。
       ...(still.guardDescription ? { guard: still.guardDescription } : {}),
       ...(still.usageRules && still.usageRules.length > 0 ? { rules: still.usageRules } : {}),
-      // failureCodes 只取 code 字符串，完整模式由 stills.actionSpec 精查。
       ...(still.failureModes && still.failureModes.length > 0
         ? { failureCodes: still.failureModes.map((failureMode) => failureMode.code) }
         : {}),
@@ -185,32 +182,19 @@ function buildActionCatalog(): ActionCatalogItem[] {
  * 用于 session.describe 中的数据集概览，DataSet 未初始化时返回 0。
  */
 function countTotalColumns(session: IStillSession): number {
-  const dataset = getEffectiveDatasetState(session).data
+  const dataset = getEffectiveDatasetSnapshot(session)
   if (dataset === null) return 0
 
   return Object.values(dataset.tables).reduce((sum, table) => sum + table.columns.length, 0)
 }
 
-function getEffectiveDatasetState(session: IStillSession): DomainState<IDataSetMetadata | null, string> {
-  const datasetDomain = session.domains['dataset']
-  if (datasetDomain) {
-    const dataSetState = getDataSetState(session)
-    return {
-      data: dataSetState.data ? dataSetState.data.toJson() : null,
-      phase: dataSetState.phase,
-    }
-  }
-
-  const editDomain = session.domains['edit']
-  if (editDomain) {
+function getEffectiveDatasetSnapshot(session: IStillSession): IDataSetMetadata | null {
+  if (session.domains['edit']) {
     const editState = getEditState(session)
-    return {
-      data: editState.datasetEdit ? editState.datasetEdit.toJson() : null,
-      phase: editState.phase,
-    }
+    return editState.datasetEdit ? editState.datasetEdit.toJson() : null
   }
 
-  return { data: null, phase: 'idle' }
+  return null
 }
 
 /**
@@ -258,7 +242,7 @@ function buildBlueprintSummary(blueprint: ExecutionBlueprint | null): BlueprintS
  */
 function inferNextStep(
   session: IStillSession,
-  datasetState: DomainState,
+  datasetSnapshot: IDataSetMetadata | null,
   blueprintSummary: BlueprintSummary | null,
 ): string {
   // 阶段 1：尚无执行蓝图，先建立全局计划。
@@ -267,7 +251,7 @@ function inferNextStep(
   }
 
   // 阶段 2：蓝图存在但 DataSet 尚未初始化，需要先执行建模动作。
-  if (datasetState.data === null) {
+  if (datasetSnapshot === null) {
     return '按蓝图执行初始化动作'
   }
 
@@ -479,8 +463,7 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
   example: {},
   validate: () => null,
   execute: (session: IStillSession): StillResult => {
-    const datasetState = getEffectiveDatasetState(session)
-    const dataset = datasetState.data
+    const dataset = getEffectiveDatasetSnapshot(session)
     const blueprintSummary = buildBlueprintSummary(readSessionBlueprint(session))
     const componentsDirectory = {
       ...projectFcDirectory(componentCatalog as ComponentCatalog),
@@ -494,10 +477,10 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
     for (const [domainName, domainState] of Object.entries(session.domains)) {
       const domainDef = getDomain(domainName)
       if (domainDef?.roleHint) roles.push(domainDef.roleHint)
+      const initialized = hasDomainData(domainState)
       domainsSummary[domainName] = {
         phase: domainState.phase,
-        // initialized 为 true 表示该域已完成初始化（data !== null）。
-        initialized: domainState.data !== null,
+        initialized,
         ...(domainDef?.roleHint ? { roleHint: domainDef.roleHint } : {}),
       }
     }
@@ -519,7 +502,7 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
       : null
 
     // 步骤 4：基于当前所有域状态推导推荐下一步，帮助 LLM 直接获得行动建议。
-    const nextStep = inferNextStep(session, datasetState, blueprintSummary)
+    const nextStep = inferNextStep(session, dataset, blueprintSummary)
 
     return {
       ok: true,
@@ -539,6 +522,10 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
       summary: '返回会话全局状态（含域状态 + 组件目录 + 执行追踪）',
     }
   },
+}
+
+function hasDomainData(domainState: SessionDomainState<string>): boolean {
+  return 'data' in domainState && domainState.data !== null
 }
 
 // =========================================================

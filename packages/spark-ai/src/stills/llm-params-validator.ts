@@ -269,26 +269,6 @@ const PRIMITIVE_KIND_CHECKERS: Readonly<Record<PrimitiveKind, (value: unknown) =
 // =========================================================
 
 /**
- * 判断归一化描述字符串是否包含"字符串类型 fallback 提示词"。
- *
- * 用于在无法精确推断类型时给出保守的 string 兜底，避免误报。
- * 参数必须是已 toLowerCase 处理后的字符串。
- */
-function hasStringFallbackHint(normalized: string): boolean {
-  return STRING_FALLBACK_HINTS.some(hint => normalized.includes(hint))
-}
-
-/**
- * 判断叶子 schema 描述是否表示"禁传字段"。
- *
- * 禁传字段用于表达"该字段由运行时计算或由函数提供，LLM 不应填入"，
- * 如 `$page`、`$dataSet` 等注入变量以及内部函数引用。
- */
-function isOmittedFieldDescription(description: string): boolean {
-  return OMITTED_FIELD_HINTS.some(hint => description.includes(hint))
-}
-
-/**
  * 判断 schema 键名是否为通配键（<keyName> 形式）。
  *
  * 通配键用于"对象键名动态、但值的结构固定"场景，
@@ -296,32 +276,6 @@ function isOmittedFieldDescription(description: string): boolean {
  */
 function isWildcardKey(key: string): boolean {
   return WILDCARD_KEY_PATTERN.test(key)
-}
-
-/**
- * 判断期望集合中是否包含任意 primitive 类型（string / number / boolean）。
- *
- * 用于决定是否需要对 value 做 primitive 类型断言，
- * 若期望集合只包含 array / object / unknown 则跳过。
- */
-function hasPrimitiveExpectation(expected: ReadonlySet<ExpectedKind>): boolean {
-  return PRIMITIVE_KIND_ORDER.some(kind => expected.has(kind))
-}
-
-/**
- * 判断 value 是否命中 expected 中任意 primitive 类型。
- *
- * 例如 expected 同时包含 string|number 时，只要 value 命中其一即可通过。
- */
-function matchesExpectedPrimitiveKind(value: unknown, expected: ReadonlySet<ExpectedKind>): boolean {
-  return PRIMITIVE_KIND_ORDER.some(kind => expected.has(kind) && PRIMITIVE_KIND_CHECKERS[kind](value))
-}
-
-/**
- * 生成 primitive 期望文案，固定输出顺序，避免集合遍历顺序导致文案抖动。
- */
-function formatExpectedPrimitiveKinds(expected: ReadonlySet<ExpectedKind>): string {
-  return PRIMITIVE_KIND_ORDER.filter(kind => expected.has(kind)).join(' | ')
 }
 
 /**
@@ -415,7 +369,7 @@ function inferExpectedKinds(description: string): Set<'string' | 'number' | 'boo
   }
 
   // fallback 1：含特定提示词时推断为 string（宽松兜底）。
-  if (expected.size === 0 && hasStringFallbackHint(normalized)) {
+  if (expected.size === 0 && STRING_FALLBACK_HINTS.some(hint => normalized.includes(hint))) {
     expected.add('string')
   }
 
@@ -473,7 +427,7 @@ function validateLeafSchema(
   issues: LlmParamValidationIssue[],
 ): void {
   // 禁传字段：运行时计算字段 / 函数字段，LLM 不应填入。
-  if (isOmittedFieldDescription(description)) {
+  if (OMITTED_FIELD_HINTS.some(hint => description.includes(hint))) {
     if (value !== undefined) {
       pushIssue(issues, path, '该字段在 LLM 参数中应省略')
     }
@@ -510,12 +464,17 @@ function validateLeafSchema(
   }
 
   // primitive 组合检查：支持 string | number | boolean 混合描述，命中其一即通过。
-  if (matchesExpectedPrimitiveKind(value, expected)) return
-  if (hasPrimitiveExpectation(expected)) {
+  const matchedPrimitive = PRIMITIVE_KIND_ORDER.some(
+    kind => expected.has(kind) && PRIMITIVE_KIND_CHECKERS[kind](value),
+  )
+  if (matchedPrimitive) return
+
+  const expectedPrimitiveKinds = PRIMITIVE_KIND_ORDER.filter(kind => expected.has(kind))
+  if (expectedPrimitiveKinds.length > 0) {
     pushIssue(
       issues,
       path,
-      `类型不匹配，期望 ${formatExpectedPrimitiveKinds(expected)}`,
+      `类型不匹配，期望 ${expectedPrimitiveKinds.join(' | ')}`,
     )
   }
 }
@@ -523,81 +482,6 @@ function validateLeafSchema(
 // =========================================================
 // 六、对象/数组节点校验（递归主逻辑）
 // =========================================================
-
-/**
- * 从 schema 对象中收集所有通配键对应的子 schema。
- *
- * 通配键（如 <customViewId>）表示"键名动态但值结构固定"，
- * 例如 views 对象中每个 viewId 对应相同的 IViewMetadata 结构。
- * 返回数组以应对 properties 和 optional 中各自含通配键的情况。
- */
-function findWildcardSchemas(source: Record<string, unknown>): unknown[] {
-  return Object.entries(source)
-    .filter(([key]) => isWildcardKey(key))
-    .map(([, value]) => value)
-}
-
-/**
- * 对 value 中所有"显式声明字段"做递归校验。
- *
- * 只处理明确列出的非通配键；通配键字段在未知键阶段统一处理，
- * 不在这里重复校验，避免路径重叠导致重复报错。
- * 字段在 value 中不存在时跳过（可选语义由 schema.required 控制）。
- */
-function validateDeclaredFields(
-  value: Record<string, unknown>,
-  fields: Record<string, unknown>,
-  path: string,
-  issues: LlmParamValidationIssue[],
-): void {
-  // 只校验显式字段；通配键会在对象未知键阶段统一处理。
-  for (const [key, childSchema] of Object.entries(fields)) {
-    // 通配键不在显式阶段处理，跳过。
-    if (isWildcardKey(key)) continue
-    // 字段存在时才校验；不存在时由 required 列表兜底。
-    if (key in value) {
-      validateSchemaNode(value[key], childSchema, `${path}.${key}`, issues, NESTED_CONTEXT)
-    }
-  }
-}
-
-/**
- * 处理对象中单个"未知键"条目，按以下优先级分发：
- *
- *  优先级 1：通配键 schema — 键名动态但值结构固定，按其 schema 递归校验。
- *  优先级 2：additionalProperties — 声明范围外的额外字段，按此 schema 校验。
- *  优先级 3：兜底报错 — 当层不允许未知键时，该字段视为非法。
- *
- * 三者互斥：命中更高优先级后立即返回，不会继续向下穿透。
- */
-function validateUnknownObjectEntry(
-  key: string,
-  childValue: unknown,
-  path: string,
-  issues: LlmParamValidationIssue[],
-  wildcardSchemas: readonly unknown[],
-  additionalProperties: unknown,
-  context: ValidationContext,
-): void {
-  const childPath = `${path}.${key}`
-
-  // 优先级 1：命中通配键，按第一个通配 schema 递归校验。
-  if (wildcardSchemas.length > 0) {
-    validateSchemaNode(childValue, wildcardSchemas[0], childPath, issues, NESTED_CONTEXT)
-    return
-  }
-
-  // 优先级 2：命中 additionalProperties，按该 schema 递归校验。
-  if (additionalProperties !== undefined) {
-    validateSchemaNode(childValue, additionalProperties, childPath, issues, NESTED_CONTEXT)
-    return
-  }
-
-  // 优先级 3：兜底，当层不允许未知键时报错。
-  if (!context.allowUnknownKeys) {
-    pushIssue(issues, childPath, '未声明的字段')
-  }
-}
 
 /**
  * 校验对象节点。
@@ -630,10 +514,13 @@ function validateObjectSchema(
     ...Object.keys(properties).filter(key => !isWildcardKey(key)),
     ...Object.keys(optional).filter(key => !isWildcardKey(key)),
   ])
-  // 合并 properties 和 optional 中的所有通配键 schema，用于未知键分派。
   const wildcardSchemas = [
-    ...findWildcardSchemas(properties),
-    ...findWildcardSchemas(optional),
+    ...Object.entries(properties)
+      .filter(([key]) => isWildcardKey(key))
+      .map(([, childSchema]) => childSchema),
+    ...Object.entries(optional)
+      .filter(([key]) => isWildcardKey(key))
+      .map(([, childSchema]) => childSchema),
   ]
 
   // 阶段 1：必填字段缺失检查。
@@ -644,21 +531,33 @@ function validateObjectSchema(
   }
 
   // 阶段 2：显式声明字段递归校验（值存在时才校验）。
-  validateDeclaredFields(value, properties, path, issues)
-  validateDeclaredFields(value, optional, path, issues)
+  for (const [key, childSchema] of Object.entries(properties)) {
+    if (isWildcardKey(key) || !(key in value)) continue
+    validateSchemaNode(value[key], childSchema, `${path}.${key}`, issues, NESTED_CONTEXT)
+  }
+  for (const [key, childSchema] of Object.entries(optional)) {
+    if (isWildcardKey(key) || !(key in value)) continue
+    validateSchemaNode(value[key], childSchema, `${path}.${key}`, issues, NESTED_CONTEXT)
+  }
 
   // 阶段 3：遍历 value 中的所有键，处理显式键之外的未知键。
   for (const [key, childValue] of Object.entries(value)) {
     if (explicitPropertyKeys.has(key)) continue
-    validateUnknownObjectEntry(
-      key,
-      childValue,
-      path,
-      issues,
-      wildcardSchemas,
-      schema.additionalProperties,
-      context,
-    )
+    const childPath = `${path}.${key}`
+
+    if (wildcardSchemas.length > 0) {
+      validateSchemaNode(childValue, wildcardSchemas[0], childPath, issues, NESTED_CONTEXT)
+      continue
+    }
+
+    if (schema.additionalProperties !== undefined) {
+      validateSchemaNode(childValue, schema.additionalProperties, childPath, issues, NESTED_CONTEXT)
+      continue
+    }
+
+    if (!context.allowUnknownKeys) {
+      pushIssue(issues, childPath, '未声明的字段')
+    }
   }
 }
 
@@ -731,23 +630,6 @@ function validateSchemaNode(
 // =========================================================
 
 /**
- * 合并 schema 自带的 required 与调用方临时叠加的 requiredKeys。
- *
- * 允许调用方在不修改 catalog schema 的前提下动态追加必填约束，
- * 常见场景是"特定调用上下文下某字段必传，但其他场景可选"。
- * 合并后统一传给 validateObjectSchema，不做去重处理。
- */
-function mergeRequiredKeys(
-  schemaRequired: readonly string[] | undefined,
-  optionsRequired: readonly string[] | undefined,
-): readonly string[] {
-  return [
-    ...(schemaRequired ?? []),
-    ...(optionsRequired ?? []),
-  ]
-}
-
-/**
  * 校验"至少满足一组 required key"的互斥必填约束。
  *
  * 语义：groups 中的每一组是一套完整的 required key 集合，
@@ -817,7 +699,10 @@ export function validateLlmDeserializedParams(
   // catalog 自身的 required 与调用点临时叠加的 requiredKeys 会合并后统一校验。
   const mergedRootSchema: LlmParamObjectSchema = {
     ...rootSchema,
-    required: mergeRequiredKeys(rootSchema.required, options.requiredKeys),
+    required: [
+      ...(rootSchema.required ?? []),
+      ...(options.requiredKeys ?? []),
+    ],
   }
 
   validateObjectSchema(params, mergedRootSchema, '$', issues, {
