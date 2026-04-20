@@ -35,7 +35,7 @@ import {
   projectFcSpec,
 } from '../catalog/catalog-projections'
 import type { IDataSetMetadata } from '@spark-view/spark-data'
-import componentCatalog from '../catalog/component-catalog.json'
+import componentCatalogJson from '../catalog/component-catalog.json'
 import type { ComponentCatalog } from '../catalog/types'
 import type { StillsCatalogRegistry } from '../catalog/stills-catalog-types'
 import {
@@ -47,8 +47,22 @@ import {
 } from './action-names'
 
 // =========================================================
-// 二、内部类型定义（仅本模块使用）
+// 二、静态目录依赖与内部类型定义
 // =========================================================
+
+/**
+ * 构建期直接注入的完整组件目录（rich catalog）。
+ *
+ * 与 session.catalog 的区别：
+ * - 这里读取的是 packages/spark-ai/src/catalog/component-catalog.json，
+ *   包含完整组件规格，适合 stills.actionSpec / session.describe 这类“元查询”。
+ * - session.catalog 是运行时挂到会话上的轻量 Stills Catalog，
+ *   更适合 catalog.query 这种按列表/分类读取的查询场景。
+ *
+ * 这层常量的目的，是把“静态完整目录”的使用边界集中收口，避免后续代码里散落
+ * `componentCatalog as ComponentCatalog` 这种重复断言写法。
+ */
+const STATIC_COMPONENT_CATALOG: ComponentCatalog = componentCatalogJson as ComponentCatalog
 
 /**
  * 单个 still 动作在目录列表中的摘要形态。
@@ -122,8 +136,22 @@ interface CatalogQueryParams {
   category?: string
 }
 
+/**
+ * session.describe 中对单个域的摘要视图。
+ *
+ * 只保留会话级监控最关心的三项信息：当前 phase、是否已初始化、以及该域的职责提示。
+ */
+interface DomainStateSummary {
+  /** 域当前阶段，例如 idle / ready / error。 */
+  phase: string
+  /** 该域是否已有可用数据。 */
+  initialized: boolean
+  /** 可选：域职责提示，用于给 LLM 补足角色边界。 */
+  roleHint?: string
+}
+
 // =========================================================
-// 三、基础工具函数
+// 三、基础工具函数与通用判定
 // =========================================================
 
 /** 生成"缺少参数"标准错误文案，用于 validate 返回值。 */
@@ -134,6 +162,16 @@ function missingParam(name: string): string {
 /** 判断值是否为非空字符串（类型守卫），用于参数存在性检查。 */
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0
+}
+
+/**
+ * 判断某个域是否已经挂载了有效数据。
+ *
+ * session.describe 需要把 phase 与“是否真的初始化完成”区分开，
+ * 因此这里不能只看 phase，还需要检查 data 是否存在。
+ */
+function hasDomainData(domainState: SessionDomainState<string>): boolean {
+  return 'data' in domainState && domainState.data !== null
 }
 
 // =========================================================
@@ -226,6 +264,73 @@ function buildBlueprintSummary(blueprint: ExecutionBlueprint | null): BlueprintS
   }
 }
 
+/**
+ * 汇总会话中所有域的运行状态，并同时收集角色提示。
+ *
+ * 这是 session.describe 的核心聚合步骤之一：
+ * - roles 用于拼接顶层 role 文案；
+ * - domainsSummary 用于按域返回 phase / initialized / roleHint。
+ */
+function buildDomainsSummary(session: IStillSession): {
+  roles: string[]
+  domainsSummary: Record<string, DomainStateSummary>
+} {
+  const roles: string[] = []
+  const domainsSummary: Record<string, DomainStateSummary> = {}
+
+  for (const [domainName, domainState] of Object.entries(session.domains)) {
+    const domainDef = getDomain(domainName)
+    if (domainDef?.roleHint) roles.push(domainDef.roleHint)
+
+    domainsSummary[domainName] = {
+      phase: domainState.phase,
+      initialized: hasDomainData(domainState),
+      ...(domainDef?.roleHint ? { roleHint: domainDef.roleHint } : {}),
+    }
+  }
+
+  return { roles, domainsSummary }
+}
+
+/**
+ * 汇总 patchLog 中各动作的执行次数。
+ *
+ * session.describe 不是逐条返回 patchLog 明细，而是把它压缩成聚合计数，
+ * 便于 LLM 快速判断“最近都执行过哪些动作、频率如何”。
+ */
+function buildExecutionTraceSummary(session: IStillSession): {
+  totalActions: number
+  actionCounts: Record<string, number>
+} {
+  const actionCounts: Record<string, number> = {}
+
+  for (const entry of session.patchLog) {
+    actionCounts[entry.action] = (actionCounts[entry.action] ?? 0) + 1
+  }
+
+  return {
+    totalActions: session.patchLog.length,
+    actionCounts,
+  }
+}
+
+/**
+ * 构造 DataSet 的轻量摘要。
+ *
+ * 这里只返回会话总览所需的概览字段，不回传完整 DataSet JSON，
+ * 以避免 session.describe 输出过大。
+ */
+function buildDatasetSummary(session: IStillSession, dataset: IDataSetMetadata | null) {
+  if (dataset === null) return null
+
+  return {
+    dataSetName: dataset.dataSetName,
+    tables: Object.keys(dataset.tables).length,
+    totalColumns: countTotalColumns(session),
+    relations: dataset.tableRelations?.length ?? 0,
+  }
+}
+
 // =========================================================
 // 六、推荐步骤推导
 // =========================================================
@@ -279,8 +384,32 @@ function inferNextStep(
 }
 
 // =========================================================
-// 七、组件规格工具函数（stills.actionSpec 专用）
+// 七、静态组件目录辅助（stills.actionSpec / session.describe）
 // =========================================================
+
+/**
+ * 从静态完整目录里按 type 查询组件规格。
+ *
+ * 这个查询与 catalog.query 不同：
+ * - 这里走的是完整 component-catalog.json；
+ * - 目的是拿到更完整的 props / emits / binding 等规格信息。
+ */
+function getStaticComponentSpec(componentType: string) {
+  return projectFcSpec(STATIC_COMPONENT_CATALOG, componentType)
+}
+
+/**
+ * 为 session.describe 构建组件目录入口摘要。
+ *
+ * 这里返回的是“目录入口”而不是全量组件详情，重点是给会话全局状态一个稳定的入口，
+ * 并附带 stills.actionSpec 的最小精查示例。
+ */
+function buildStaticComponentsDirectorySummary() {
+  return {
+    ...projectFcDirectory(STATIC_COMPONENT_CATALOG),
+    querySpecExample: 'stills.actionSpec {"action":"r-table"}',
+  }
+}
 
 /**
  * 生成"查询结果为组件规格而非 still 动作"的使用说明。
@@ -388,7 +517,8 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
       }
     }
 
-    const componentSpec = projectFcSpec(componentCatalog as ComponentCatalog, params.action)
+    // 若未命中 still 动作，则继续到静态完整组件目录中按 type 精查组件规格。
+    const componentSpec = getStaticComponentSpec(params.action)
     if (componentSpec !== null) {
       const specType = componentSpec.type
       return {
@@ -465,41 +595,16 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
   execute: (session: IStillSession): StillResult => {
     const dataset = getEffectiveDatasetSnapshot(session)
     const blueprintSummary = buildBlueprintSummary(readSessionBlueprint(session))
-    const componentsDirectory = {
-      ...projectFcDirectory(componentCatalog as ComponentCatalog),
-      querySpecExample: 'stills.actionSpec {"action":"r-table"}',
-    }
+    const componentsDirectory = buildStaticComponentsDirectorySummary()
 
-    // 步骤 1：聚合所有已注册域的角色描述与运行状态。
-    // roleHint 由各域定义（getDomain），用于向 LLM 说明该域的职责边界。
-    const roles: string[] = []
-    const domainsSummary: Record<string, { phase: string; initialized: boolean; roleHint?: string }> = {}
-    for (const [domainName, domainState] of Object.entries(session.domains)) {
-      const domainDef = getDomain(domainName)
-      if (domainDef?.roleHint) roles.push(domainDef.roleHint)
-      const initialized = hasDomainData(domainState)
-      domainsSummary[domainName] = {
-        phase: domainState.phase,
-        initialized,
-        ...(domainDef?.roleHint ? { roleHint: domainDef.roleHint } : {}),
-      }
-    }
+    // 步骤 1：统一收口域摘要聚合，避免 execute 内部堆叠过多会话遍历逻辑。
+    const { roles, domainsSummary } = buildDomainsSummary(session)
 
-    // 步骤 2：按动作名聚合 patchLog 执行次数，用于追踪各动作的调用频率。
-    const actionCounts: Record<string, number> = {}
-    for (const entry of session.patchLog) {
-      actionCounts[entry.action] = (actionCounts[entry.action] ?? 0) + 1
-    }
+    // 步骤 2：聚合 patchLog 执行痕迹，便于观察动作调用频率。
+    const executionTrace = buildExecutionTraceSummary(session)
 
     // 步骤 3：DataSet 摘要，未初始化时输出 null（LLM 可据此判断是否需要初始化）。
-    const datasetSummary = dataset
-      ? {
-          dataSetName: dataset.dataSetName,
-          tables: Object.keys(dataset.tables).length,
-          totalColumns: countTotalColumns(session),
-          relations: dataset.tableRelations?.length ?? 0,
-        }
-      : null
+    const datasetSummary = buildDatasetSummary(session, dataset)
 
     // 步骤 4：基于当前所有域状态推导推荐下一步，帮助 LLM 直接获得行动建议。
     const nextStep = inferNextStep(session, dataset, blueprintSummary)
@@ -510,10 +615,7 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
         // role：将所有域的 roleHint 合并为一句描述，无则降级为通用角色。
         role: roles.length > 0 ? roles.join('；') : '通用 Stills 助手',
         domains: domainsSummary,
-        executionTrace: {
-          totalActions: session.patchLog.length,
-          actionCounts,
-        },
+        executionTrace,
         components: componentsDirectory,
         dataset: datasetSummary,
         blueprint: blueprintSummary,
@@ -522,10 +624,6 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
       summary: '返回会话全局状态（含域状态 + 组件目录 + 执行追踪）',
     }
   },
-}
-
-function hasDomainData(domainState: SessionDomainState<string>): boolean {
-  return 'data' in domainState && domainState.data !== null
 }
 
 // =========================================================

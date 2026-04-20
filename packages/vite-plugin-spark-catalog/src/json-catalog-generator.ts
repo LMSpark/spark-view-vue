@@ -1,3 +1,19 @@
+/**
+ * JSON 组件目录生成器
+ *
+ * 职责：
+ * 1. 扫描 SPARK 组件源码；
+ * 2. 通过 VCM 提取组件 Props / Emits / 元数据；
+ * 3. 对高重复结构做共享池化与字典去重；
+ * 4. 产出 component-catalog.json 作为组件目录单一事实源。
+ *
+ * 设计原则：
+ * - 运行时模型保留完整信息，便于审计与后续扩展；
+ * - 落盘前再做瘦身，避免把内部辅助信息直接写入产物；
+ * - 通过治理契约与 canonical 字典，为 AI 和工具链提供稳定消费面。
+ */
+
+// ── 1. 依赖导入 (Imports) ─────────────────────────────────────────────────────────
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, resolve, basename } from 'node:path'
 import { globSync } from 'glob'
@@ -27,11 +43,27 @@ import type {
 import { auditCatalog, logAuditReport } from './catalog-quality-audit'
 import type { AuditReport, AuditOptions } from './catalog-quality-audit'
 
+// ── 2. 常量与生成约束 (Constants & Policies) ───────────────────────────────────────
+
+/** 统一日志前缀，方便从构建日志里快速筛出目录生成阶段输出。 */
 const logger = createLogger('spark-catalog-json')
 
+/** 组件目录标准产物文件名。 */
 const CANONICAL_CATALOG_FILE = 'component-catalog.json'
+/** 历史遗留的目录产物文件，生成完成后需要清理，避免出现双产物歧义。 */
 const LEGACY_CATALOG_FILES = ['component-catalog.ai.json'] as const
 
+// ── 3. 外部参数与内部工作上下文 (Options & Internal Contexts) ────────────────────
+
+/**
+ * 目录生成器的外部输入参数。
+ *
+ * 这些选项用于控制：
+ * - 扫描哪些组件文件；
+ * - 是否包含全局 Props；
+ * - 使用哪个 tsconfig 建立类型检查器；
+ * - 是否执行目录质量审计。
+ */
 export interface JsonCatalogOptions {
   featurePatterns?: string[] | undefined
   exclude?: string[] | undefined
@@ -43,10 +75,18 @@ export interface JsonCatalogOptions {
   audit?: AuditOptions | boolean | undefined
 }
 
+/**
+ * 计算标准目录输出路径。
+ *
+ * component-catalog.json 是当前仓库组件目录的单一事实源，所有消费者都应从该路径读取。
+ */
 export function getCanonicalCatalogOutputPath(root: string): string {
   return resolve(root, 'packages/spark-ai/src/catalog', CANONICAL_CATALOG_FILE)
 }
 
+/**
+ * 清理已废弃的旧目录产物，避免同目录下出现多个看似都能消费的 catalog 文件。
+ */
 export function cleanupLegacyCatalogOutputs(canonicalPath: string): void {
   const catalogDir = dirname(canonicalPath)
 
@@ -61,18 +101,25 @@ export function cleanupLegacyCatalogOutputs(canonicalPath: string): void {
 
 type SchemaOwner = 'workspace' | 'external'
 
+/**
+ * 带内部元信息的 PropEntry。
+ *
+ * 这些字段只在生成阶段使用，不应直接写入最终 JSON。
+ */
 interface PropEntryWithMeta extends PropEntry {
   __schemaIdentityKey?: string
   __schemaOwner?: SchemaOwner
   __componentRef?: string
 }
 
+/** 共享 schema 池的构建上下文，用于分配稳定 ref 并做去重。 */
 interface SchemaPoolContext {
   index: Map<string, string>
   pool: Record<string, PropSchema>
   sequence: number
 }
 
+/** canonical 字典上下文，用于把重复 props / emits 提升成全局字典项。 */
 interface CanonicalDictionaryContext {
   propIndex: Map<string, string>
   emitIndex: Map<string, string>
@@ -82,12 +129,25 @@ interface CanonicalDictionaryContext {
   emitSequence: number
 }
 
+/**
+ * 结构性属性不再保留在组件 props 列表里。
+ *
+ * 它们会通过治理契约表达，避免每个组件重复写出同样的低信息量字段。
+ */
 const STRUCTURAL_PROP_NAMES = new Set(['type', 'id', 'children'])
 
+/** CRUD 容器常见事件名，用于自动推导事件契约。 */
 const CRUD_EVENT_PROP_NAMES = ['onAddRow', 'onEditRow', 'onRemoveRow'] as const
+/** 表格/列表行交互事件名，用于自动推导事件契约。 */
 const ROW_EVENT_PROP_NAMES = ['onRowClick', 'onSelectionChange', 'onCurrentChange'] as const
+/** 弹窗类组件可见性生命周期事件名。 */
 const VISIBILITY_EVENT_PROP_NAMES = ['onOpen', 'onClose', 'onOpened', 'onClosed'] as const
 
+/**
+ * 低信息量枚举变体。
+ *
+ * 这类枚举通常只是宽泛基础类型的文字化表达，不足以支撑真实配置语义，写入目录只会制造噪音。
+ */
 const LOW_SIGNAL_ENUM_VARIANTS = new Set([
   'undefined',
   'null',
@@ -101,6 +161,11 @@ const LOW_SIGNAL_ENUM_VARIANTS = new Set([
   'void',
 ])
 
+/**
+ * 外部系统对象或 DOM/CSS 相关类型。
+ *
+ * 这些类型往往会展开成大量对业务无帮助的字段，因此不应进入 schemaPool。
+ */
 const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
   'Event',
   'UIEvent',
@@ -121,6 +186,12 @@ const LOW_SIGNAL_OBJECT_SCHEMA_TYPES = new Set([
   'CSSStyleDeclaration',
 ])
 
+/**
+ * 治理契约字典。
+ *
+ * 契约层的目标不是替代组件明细，而是把跨组件重复出现的结构上升为“规则层事实”，
+ * 便于 AI、审核器和后续工具统一理解某类组件的共性能力。
+ */
 const GOVERNANCE_CONTRACTS: Record<string, GovernanceContract> = {
   'spark:props:component-base': {
     layer: 'props',
@@ -169,6 +240,12 @@ const GOVERNANCE_CONTRACTS: Record<string, GovernanceContract> = {
   },
 }
 
+/**
+ * 顶层目录约束。
+ *
+ * 这里保存的是消费者需要共享遵循的平台规则，例如 DataKey 正则、容器上下文映射、
+ * 有效组件类型前缀等。它们属于目录的一部分，而不是临时构建细节。
+ */
 const DEFAULT_CONSTRAINTS: ComponentCatalog['constraints'] = {
   dataKeyPattern: String.raw`^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\.[\w.]+)?$`,
   htmlTypes: ['div', 'span', 'p', 'a', 'img', 'ul', 'li'],
@@ -185,6 +262,9 @@ const DEFAULT_CONSTRAINTS: ComponentCatalog['constraints'] = {
   nestingRules: {},
 }
 
+// ── 4. 键池与上下文工厂 (Context Factories) ───────────────────────────────────────
+
+/** 创建 schemaPool 构建上下文。 */
 function createSchemaPoolContext(): SchemaPoolContext {
   return {
     index: new Map<string, string>(),
@@ -193,6 +273,7 @@ function createSchemaPoolContext(): SchemaPoolContext {
   }
 }
 
+/** 创建 canonical 字典上下文。 */
 function createCanonicalDictionaryContext(): CanonicalDictionaryContext {
   return {
     propIndex: new Map<string, string>(),
@@ -204,26 +285,34 @@ function createCanonicalDictionaryContext(): CanonicalDictionaryContext {
   }
 }
 
+/** 生成新的 prop 字典键，保持稳定的递增编号。 */
 function allocCanonicalPropKey(context: CanonicalDictionaryContext): string {
   context.propSequence += 1
   return `prop_${String(context.propSequence).padStart(5, '0')}`
 }
 
+/** 生成新的 emit 字典键，保持稳定的递增编号。 */
 function allocCanonicalEmitKey(context: CanonicalDictionaryContext): string {
   context.emitSequence += 1
   return `emit_${String(context.emitSequence).padStart(5, '0')}`
 }
 
+/** 为共享 schema 分配 ref 键。 */
 function allocSchemaKey(context: SchemaPoolContext): string {
   context.sequence += 1
   return `schema_${String(context.sequence).padStart(5, '0')}`
 }
 
+/**
+ * 把值追加到数组中，并保持数组唯一性与原始遇见顺序。
+ *
+ * registry 分类列表希望既去重，又尽量反映稳定扫描顺序。
+ */
 function pushUnique(target: string[], value: string): void {
   if (!target.includes(value)) target.push(value)
 }
 
-// ── Props 命名规范检测 ────────────────────────────────────────────────────
+// ── 5. 命名规范与组件特征推断 (Naming & Inference) ───────────────────────────────
 
 /**
  * 从组件 type（kebab-case）推导期望的 Props 接口名。
@@ -274,6 +363,11 @@ function detectPropsInterface(
   }
 }
 
+/**
+ * 推断组件所属分类。
+ *
+ * 优先尊重显式 skillMeta 配置；如果没有，再依据文件路径回退推断。
+ */
 function inferCategory(filePath: string, explicitCategory?: string): ComponentEntry['category'] {
   if (explicitCategory === 'container' || explicitCategory === 'field' || explicitCategory === 'group' || explicitCategory === 'meta' || explicitCategory === 'feature') {
     return explicitCategory
@@ -285,6 +379,11 @@ function inferCategory(filePath: string, explicitCategory?: string): ComponentEn
   return 'feature'
 }
 
+/**
+ * 从 props 反推当前组件的绑定能力描述。
+ *
+ * 这里的目标不是做完全精确的类型系统推理，而是给目录消费者提供“够用且稳定”的行为标签。
+ */
 function inferBinding(props: PropEntry[]): CatalogBindingDescriptor | undefined {
   const names = new Set(props.map((prop) => prop.name))
   const descriptor: CatalogBindingDescriptor = {}
@@ -307,6 +406,11 @@ function inferBinding(props: PropEntry[]): CatalogBindingDescriptor | undefined 
   return Object.keys(descriptor).length > 0 ? descriptor : undefined
 }
 
+/**
+ * 稳定序列化任意 JSON 形对象。
+ *
+ * 用于把结构相同但键顺序不同的对象归并成同一 dedupe key。
+ */
 function stableStringify(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map((item) => stableStringify(item)).join(',')}]`
@@ -320,10 +424,16 @@ function stableStringify(value: unknown): string {
   return JSON.stringify(value)
 }
 
+/** 判断属性描述是否只是 MDN 引用噪音。 */
 function isMdnPropertyDescription(text?: string): boolean {
   return typeof text === 'string' && text.includes('MDN Reference')
 }
 
+/**
+ * 判断对象 schema 是否属于低信息量外部对象。
+ *
+ * 典型场景是 DOM Event/CSSProperties 这类系统类型，如果直接展开会污染 catalog。
+ */
 function isLowSignalObjectSchema(schema: Extract<PropSchema, { kind: 'object' }>): boolean {
   if (LOW_SIGNAL_OBJECT_SCHEMA_TYPES.has(schema.type)) return true
 
@@ -334,6 +444,11 @@ function isLowSignalObjectSchema(schema: Extract<PropSchema, { kind: 'object' }>
   return mdnLikeCount === properties.length
 }
 
+/**
+ * 判断 schema 是否值得保留到共享池。
+ *
+ * 过滤策略以“是否提供真实配置价值”为准，而不是单纯看 schema 是否存在。
+ */
 function shouldRetainSchema(schema: PropSchema): boolean {
   if (schema.kind === 'object' && isLowSignalObjectSchema(schema)) {
     return false
@@ -350,6 +465,11 @@ function shouldRetainSchema(schema: PropSchema): boolean {
   return true
 }
 
+/**
+ * 为 schema 获取稳定 ref。
+ *
+ * 如果上游已经提供 identityKey，则优先按 identity 去重；否则回退到结构序列化去重。
+ */
 function resolveSchemaRef(
   context: SchemaPoolContext,
   schema: PropSchema,
@@ -368,6 +488,17 @@ function resolveSchemaRef(
   return ref
 }
 
+// ── 6. 组件条目压缩与 canonical 建模 (Compaction & Canonical Model) ───────────────
+
+/**
+ * 紧凑化组件 props。
+ *
+ * 处理策略：
+ * - 移除结构性 props；
+ * - 保留基础展示字段；
+ * - 复杂 schema 提升为 schemaRef；
+ * - 若存在组件引用，则优先写 component:xxx 形式引用。
+ */
 function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolContext): PropEntry[] {
   const result: PropEntry[] = []
 
@@ -399,6 +530,11 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
   return result
 }
 
+/**
+ * 紧凑化 emits。
+ *
+ * 与 props 类似，事件 payload 的复杂类型也会提升为共享 schema 引用，避免每个组件重复展开。
+ */
 function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): EmitEntry[] {
   const result: EmitEntry[] = []
 
@@ -424,6 +560,7 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): Emi
   return result
 }
 
+/** 把单个 prop 提升到 canonical 字典，并返回对应 ref。 */
 function getCanonicalPropRef(context: CanonicalDictionaryContext, prop: PropEntry): string {
   const key = stableStringify(prop)
   const existing = context.propIndex.get(key)
@@ -435,6 +572,7 @@ function getCanonicalPropRef(context: CanonicalDictionaryContext, prop: PropEntr
   return ref
 }
 
+/** 把单个 emit 提升到 canonical 字典，并返回对应 ref。 */
 function getCanonicalEmitRef(context: CanonicalDictionaryContext, emit: EmitEntry): string {
   const key = stableStringify(emit)
   const existing = context.emitIndex.get(key)
@@ -446,6 +584,11 @@ function getCanonicalEmitRef(context: CanonicalDictionaryContext, emit: EmitEntr
   return ref
 }
 
+/**
+ * 将运行态组件条目转换为 canonical 组件视图。
+ *
+ * canonical 视图的重点是用 propRefs / emitRefs 指向全局字典，减少重复并提供更稳定的 AI 消费接口。
+ */
 function toCanonicalComponent(
   entry: ComponentEntry,
   propRefs: string[],
@@ -463,6 +606,15 @@ function toCanonicalComponent(
   }
 }
 
+/**
+ * 生成用于写盘的 payload。
+ *
+ * 运行态 catalog 会保留更多内部字段，但磁盘产物需要做瘦身：
+ * - components.* 删除 emits/source/binding；
+ * - canonical.components.* 删除 source/binding。
+ *
+ * 这样既保留运行态信息，又维持落盘 JSON 的稳定与紧凑。
+ */
 function createCatalogFilePayload(catalog: ComponentCatalog): unknown {
   const payload = JSON.parse(JSON.stringify(catalog)) as {
     components?: Record<string, Record<string, unknown>>
@@ -489,10 +641,18 @@ function createCatalogFilePayload(catalog: ComponentCatalog): unknown {
   return payload
 }
 
+// ── 7. 治理契约推断 (Governance Contracts) ────────────────────────────────────────
+
+/** 判断名称集合里是否命中任一候选项。 */
 function hasAny(names: Set<string>, expected: readonly string[]): boolean {
   return expected.some((name) => names.has(name))
 }
 
+/**
+ * 根据组件类型推断 API 层治理契约。
+ *
+ * 这里是显式白名单，不做模糊推理，目的是保证契约含义稳定可控。
+ */
 function inferApiContracts(type: string): string[] {
   const result: string[] = []
   if (type === 'r-table' || type === 'r-form' || type === 'r-detail' || type === 'r-list') {
@@ -507,6 +667,11 @@ function inferApiContracts(type: string): string[] {
   return result
 }
 
+/**
+ * 从原始 props 推断组件引用到的治理契约。
+ *
+ * 返回的是契约 ref 集合，而不是直接内联契约定义，真正定义统一由 GOVERNANCE_CONTRACTS 提供。
+ */
 function inferContracts(type: string, rawProps: PropEntryWithMeta[]): ComponentContractRefs | undefined {
   const names = new Set(rawProps.map((prop) => prop.name))
 
@@ -531,6 +696,11 @@ function inferContracts(type: string, rawProps: PropEntryWithMeta[]): ComponentC
   return Object.keys(contracts).length > 0 ? contracts : undefined
 }
 
+/**
+ * 从所有组件条目里收集真正被使用到的治理契约定义。
+ *
+ * 最终只把被引用的契约写入顶层 governance.contracts，避免输出未使用的规则模板。
+ */
 function collectGovernanceFromComponents(components: Record<string, ComponentEntry>) {
   const usedContractIds = new Set<string>()
 
@@ -549,6 +719,17 @@ function collectGovernanceFromComponents(components: Record<string, ComponentEnt
   return Object.keys(contracts).length > 0 ? { contracts } : undefined
 }
 
+// ── 8. 组件扫描与目录构建 (Scanner & Builder) ─────────────────────────────────────
+
+/**
+ * 扫描输入文件并构建完整目录模型。
+ *
+ * 该阶段负责：
+ * - 建立 TS / Vue 检查器；
+ * - 提取每个组件的 VCM API；
+ * - 生成组件条目、registry、bindingDescriptors、schemaPool；
+ * - 额外输出 canonical 视图，供 AI 和高级工具消费。
+ */
 function buildSortedComponents(
   root: string,
   files: string[],
@@ -574,9 +755,12 @@ function buildSortedComponents(
 
   for (const file of sortedFiles) {
     const abs = resolve(root, file)
+
+    // 组件 type 统一来源于推断后的 kebab-case 名称；无法识别的文件直接跳过。
     const type = inferSkillType(abs, toKebabCase(basename(file, '.vue')))
     if (type === null) continue
 
+    // 通过 VCM 抽取组件 API 明细；抽取失败说明该文件不属于可索引组件。
     const vcmApi = extractComponentApiVcm(checker, abs, file, type, { includeGlobalProps })
     if (vcmApi === null) continue
 
@@ -591,6 +775,8 @@ function buildSortedComponents(
     const binding = inferBinding(props)
     const contracts = inferContracts(type, rawProps)
     const propsInterface = detectPropsInterface(root, file, type)
+
+    // 这两个推导结果当前保留为构建期信息入口，暂未改变现有产物结构，故不改写现有行为。
     void contracts
     void propsInterface
 
@@ -607,10 +793,12 @@ function buildSortedComponents(
 
     components[type] = entry
 
+  // 同步构建 canonical 组件视图，避免后处理时再次遍历和去重。
     const propRefs = props.map((prop) => getCanonicalPropRef(canonical, prop))
     const emitRefs = emits.map((emit) => getCanonicalEmitRef(canonical, emit))
     canonicalComponents[type] = toCanonicalComponent(entry, propRefs, emitRefs)
 
+  // registry 只记录分类索引，便于消费者快速按类筛选。
     if (category === 'container') pushUnique(registry.containers, type)
     else if (category === 'field') pushUnique(registry.fields, type)
     else if (category === 'group') pushUnique(registry.groups, type)
@@ -639,6 +827,18 @@ function buildSortedComponents(
   }
 }
 
+// ── 9. 顶层生成入口 (Public Entry) ─────────────────────────────────────────────────
+
+/**
+ * 生成组件 JSON 目录并按需执行质量审计。
+ *
+ * 顶层流程：
+ * 1. 按模式扫描目标 Vue 文件；
+ * 2. 构建组件目录运行态模型；
+ * 3. 补齐 governance / constraints / canonical 等顶层信息；
+ * 4. 生成瘦身后的落盘 payload 并写入标准路径；
+ * 5. 若配置了 audit，则输出质量审计报告。
+ */
 export function generateJsonCatalog(root: string, options: JsonCatalogOptions = {}) {
   const {
     featurePatterns = [],
@@ -648,6 +848,8 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     vcmCheckerOptions = {},
     audit,
   } = options
+
+  // 当前默认只扫描容器与字段组件；featurePatterns 用于向外扩展额外扫描入口。
   const patterns = ['./packages/spark-component/src/components/containers/**/Renderer*.vue',
     './packages/spark-component/src/components/fields/**/Field*.vue', ...featurePatterns]
   const files = patterns.flatMap(p => globSync(p, { cwd: root, absolute: false, ignore: exclude }))
@@ -662,6 +864,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
 
   const governance = collectGovernanceFromComponents(components)
 
+  // 运行态 catalog 保留完整字段，供审计和调用方继续加工。
   const catalog: ComponentCatalog = {
     version: '2.0.0',
     buildTime: new Date().toISOString(),
@@ -676,6 +879,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     ...(governance !== undefined ? { governance } : {}),
   }
 
+  // 真正写盘前统一做 payload 瘦身，避免把内部辅助字段直接暴露给目录消费者。
   const filePayload = createCatalogFilePayload(catalog)
 
   const outPath = getCanonicalCatalogOutputPath(root)
@@ -683,7 +887,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   cleanupLegacyCatalogOutputs(outPath)
   logger.info(`📦 ${catalog.componentCount} 组件已写入`)
 
-  // 命名规范统计
+  // 补充输出 props 接口命名规范统计，帮助逐步推进组件库约束收敛。
   const entries = Object.values(components)
   const withInterface = entries.filter(e => e.propsInterface !== undefined)
   if (withInterface.length > 0) {
@@ -695,7 +899,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     )
   }
 
-  // 质量审计
+  // 质量审计属于后置能力：目录本身先生成，再决定是否做结构质量分析。
   let auditReport: AuditReport | undefined
   if (audit !== undefined && audit !== false) {
     const auditOptions = typeof audit === 'object' ? audit : {}

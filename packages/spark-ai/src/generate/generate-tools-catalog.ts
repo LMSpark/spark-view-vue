@@ -8,10 +8,10 @@
  * 查询型 tool 的应答由 `dispatchGenerateTool()` 从 catalog + 内置知识库返回。
  * 生成型 tool 的应答由前端编排器校验后返回 success/error。
  *
- * ACTION_SPECS 知识库从以下 stills catalog 投影生成，禁止手写重复内容：
+ * ACTION_SPECS 知识库从以下来源投影生成，禁止手写重复内容：
  * - DataSet.*:       dataset-crud-tool-stills-catalog.ts
  * - SparkNode.tree:  spark-node-tree-tool-catalog.ts
- * - SparkNode.comp:  spark-node-component-catalog.ts
+ * - SparkNode.comp:  component-catalog.json -> spark-node-component-catalog.ts
  * - ScriptJs.*:      script-js-tool-catalog.ts
  * - StyleCss.*:      style-css-tool-catalog.ts
  *
@@ -235,7 +235,7 @@ interface CapabilityItem {
 
 // ═══════════════════════════════════════════════════════════════
 // ActionSpec 知识库 — queryActionSpec 应答
-// 从 stills catalog 投影生成，禁止手写重复内容。
+// 从 stills catalog / component catalog 投影生成，禁止手写重复内容。
 // ═══════════════════════════════════════════════════════════════
 
 interface FailureMode {
@@ -453,7 +453,7 @@ const DS_TREECONFIG_SPEC: ActionSpec = {
   ],
 }
 
-// ── SparkNode.* — 从 spark-node-tree-tool-catalog + spark-node-component-catalog 投影 ──
+// ── SparkNode.* — 树操作来自 spark-node-tree-tool-catalog；组件知识来自 component-catalog.json 经 spark-node-component-catalog.ts 投影 ──
 
 const SN_STRUCTURE_SPEC = buildFromActions(
   'SparkNode.structure',
@@ -521,7 +521,7 @@ const SN_EVENTS_SPEC = buildFromActions(
   },
 )
 
-// SparkNode.containers 和 SparkNode.fields — 从 spark-node-component-catalog 投影
+// SparkNode.containers 和 SparkNode.fields — 事实源是 component-catalog.json，这里消费 spark-node-component-catalog.ts 的投影结果
 const SN_CONTAINERS_SPEC = buildFromKnowledgeEntry(
   requireEntry(SPARK_NODE_COMPONENT_ENTRIES, 'SparkNode.containers'),
 )

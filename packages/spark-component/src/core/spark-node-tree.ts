@@ -184,16 +184,30 @@ export interface SparkNodeRemoveNodesResult {
 }
 
 // ====================
-// 公共 API
+// 公共 API（SparkNodeTree FC 本体）
 // ====================
 
 /**
  * SparkNodeTree
  *
- * 面向单个组件实例（SparkNode）及其子树的修改工具。
+ * 面向单个组件实例（SparkNode）及其子树的结构编辑核心。
  *
  * 这里的 root 表示“当前被编辑的组件实例”。
  * 它既可以是页面组件，也可以是页面中的任意子组件；页面只是递归 SparkNode 模型里的一个更大组件。
+ *
+ * 在上层设计里，SparkNodeTree 可以视为一组 FC（Function Calling）能力的真实本体：
+ * 1. LLM 先查询组件列表，选择合适的组件 type；
+ * 2. 再根据组件规格构造一个 SparkNode 节点对象；
+ * 3. 最后调用 SparkNodeTree 的公开方法，把该节点写入当前子树，或对已有节点做查询与修改。
+ *
+ * 因此，这个类提供的不是“组件目录”，而是“树编辑能力集合”。
+ * 上层的 tool catalog / stills / FC 列表，只是在此基础上做协议投影。
+ *
+ * 当前公开能力大致可分为四类：
+ * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren。
+ * 2. 子树统计：countNodes / collectDataKeys / collectHandlerNames。
+ * 3. 节点写入：addNode / addNodes / replaceNode / replaceNodes / removeNode / removeNodes。
+ * 4. 属性写入：setProps / setPropsBatch。
  *
  * 设计目标：
  * 1. 构造时绑定一个当前组件实例，后续所有方法都围绕该组件及其子树工作。
@@ -309,7 +323,7 @@ export class SparkNodeTree {
     this._history.push(this._root)
   }
 
-  // ─── 查询 API ─────────────────────────────────────────────────
+  // ─── 查询 / 统计 API：供 FC 做读操作、定位目标节点、推导下一步修改策略 ───────────
 
   /**
    * 按 nodeId 查找节点；未命中时返回 null。
@@ -377,8 +391,12 @@ export class SparkNodeTree {
     return handlers
   }
 
+  // ─── 写入 API：供 FC 把新 SparkNode 写入树中，或修改既有节点结构 / 属性 ─────────
+
   /**
    * 向当前组件实例或指定子组件的 children 中添加一个新节点。
+   *
+   * 这是“先构造 SparkNode，再放入 SparkNodeTree”这条链路的最直接入口。
    */
   addNode(params: SparkNodeTreeAddParams): SparkNodeAddResult {
     const next = normalizeAddParams(params)
@@ -425,6 +443,8 @@ export class SparkNodeTree {
    *
    * - merge !== false 时，采用浅合并语义
    * - merge === false 时，直接替换整个 props 对象
+   *
+   * 这类方法承载的是“修改属性值”能力，而不是组件选择能力。
    */
   setProps(params: SparkNodeTreeSetPropsParams): SparkNodeSetPropsResult {
     const next = normalizeSetPropsParams(params)
@@ -453,6 +473,8 @@ export class SparkNodeTree {
 
   /**
    * 用一个新的 SparkNode 完整替换目标节点。
+   *
+   * 这类方法承载的是“修改节点结构”能力：节点 type、props、children 都可以整体替换。
    */
   replaceNode(params: SparkNodeTreeReplaceParams): SparkNodeReplaceResult {
     const next = normalizeReplaceParams(params)
