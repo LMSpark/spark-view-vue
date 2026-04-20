@@ -1,9 +1,7 @@
 {
-  "schemaVersion": 2,
   "dataSetName": "OrderSystemDataSet",
   "tables": {
     "Orders": {
-      "tableName": "Orders",
       "columns": [
         {
           "name": "id",
@@ -14,46 +12,36 @@
         {
           "name": "orderNo",
           "label": "订单号",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         },
         {
           "name": "orderDate",
           "label": "下单日期",
-          "type": "date",
-          "isPrimaryKey": false
+          "type": "date"
         },
         {
           "name": "customerId",
           "label": "客户ID",
-          "type": "number",
-          "isPrimaryKey": false
+          "type": "number"
         },
         {
           "name": "status",
           "label": "状态",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         },
         {
           "name": "totalAmount",
           "label": "总金额",
-          "type": "number",
-          "isPrimaryKey": false
+          "type": "number"
         },
         {
           "name": "remark",
           "label": "备注",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         }
       ],
       "views": {
         "default": {
-          "tableName": "Orders",
-          "viewId": "default",
-          "page": 1,
-          "pageSize": 20,
           "rows": [
             {
               "id": 1,
@@ -83,13 +71,11 @@
               "remark": "客户自提"
             }
           ],
-          "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          "autoCurrentFirst": true
         }
       }
     },
     "OrderItems": {
-      "tableName": "OrderItems",
       "columns": [
         {
           "name": "id",
@@ -100,40 +86,32 @@
         {
           "name": "orderId",
           "label": "订单ID",
-          "type": "number",
-          "isPrimaryKey": false
+          "type": "number"
         },
         {
           "name": "productId",
           "label": "产品ID",
-          "type": "number",
-          "isPrimaryKey": false
+          "type": "number"
         },
         {
           "name": "quantity",
           "label": "数量",
-          "type": "number",
-          "isPrimaryKey": false
+          "type": "number"
         },
         {
           "name": "unitPrice",
           "label": "单价",
-          "type": "number",
-          "isPrimaryKey": false
+          "type": "number"
         },
         {
           "name": "subtotal",
           "label": "小计",
           "type": "number",
-          "isPrimaryKey": false
+          "computeExpression": "quantity * unitPrice"
         }
       ],
       "views": {
         "default": {
-          "tableName": "OrderItems",
-          "viewId": "default",
-          "page": 1,
-          "pageSize": 20,
           "rows": [
             {
               "id": 1,
@@ -170,14 +148,11 @@
               "quantity": 1,
               "unitPrice": 980
             }
-          ],
-          "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          ]
         }
       }
     },
     "Customers": {
-      "tableName": "Customers",
       "columns": [
         {
           "name": "id",
@@ -188,28 +163,21 @@
         {
           "name": "name",
           "label": "客户名称",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         },
         {
           "name": "phone",
           "label": "联系电话",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         },
         {
           "name": "address",
           "label": "地址",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         }
       ],
       "views": {
         "default": {
-          "tableName": "Customers",
-          "viewId": "default",
-          "page": 1,
-          "pageSize": 20,
           "rows": [
             {
               "id": 1,
@@ -230,13 +198,11 @@
               "address": "广州市天河区"
             }
           ],
-          "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          "autoCurrentFirst": true
         }
       }
     },
     "Products": {
-      "tableName": "Products",
       "columns": [
         {
           "name": "id",
@@ -247,28 +213,21 @@
         {
           "name": "name",
           "label": "产品名称",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         },
         {
           "name": "category",
           "label": "分类",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         },
         {
           "name": "price",
           "label": "价格",
-          "type": "number",
-          "isPrimaryKey": false
+          "type": "number"
         }
       ],
       "views": {
         "default": {
-          "tableName": "Products",
-          "viewId": "default",
-          "page": 1,
-          "pageSize": 20,
           "rows": [
             {
               "id": 101,
@@ -300,34 +259,25 @@
               "category": "电子产品",
               "price": 980
             }
-          ],
-          "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          ]
         }
       }
     },
     "OrderStatusOptions": {
-      "tableName": "OrderStatusOptions",
       "columns": [
         {
           "name": "value",
           "label": "值",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         },
         {
           "name": "label",
           "label": "标签",
-          "type": "string",
-          "isPrimaryKey": false
+          "type": "string"
         }
       ],
       "views": {
         "default": {
-          "tableName": "OrderStatusOptions",
-          "viewId": "default",
-          "page": 1,
-          "pageSize": 20,
           "rows": [
             {
               "value": "pending",
@@ -345,14 +295,11 @@
               "value": "cancelled",
               "label": "已取消"
             }
-          ],
-          "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          ]
         }
       }
     },
     "Contacts": {
-      "tableName": "Contacts",
       "columns": [
         {
           "name": "id",
@@ -361,31 +308,38 @@
         },
         {
           "name": "name",
-          "type": "string"
+          "type": "string",
+          "label": "姓名"
         },
         {
           "name": "phone",
-          "type": "string"
+          "type": "string",
+          "label": "电话"
         },
         {
           "name": "email",
-          "type": "string"
+          "type": "string",
+          "label": "邮箱"
         },
         {
           "name": "company",
-          "type": "string"
+          "type": "string",
+          "label": "公司"
         },
         {
           "name": "position",
-          "type": "string"
+          "type": "string",
+          "label": "职位"
         },
         {
           "name": "address",
-          "type": "string"
+          "type": "string",
+          "label": "地址"
         },
         {
           "name": "remark",
-          "type": "string"
+          "type": "string",
+          "label": "备注"
         },
         {
           "name": "customerId",
@@ -395,13 +349,7 @@
       ],
       "views": {
         "default": {
-          "tableName": "Contacts",
-          "viewId": "default",
-          "page": 1,
-          "pageSize": 20,
-          "rows": [],
-          "autoCurrentFirst": true,
-          "autoSelectFirst": true
+          "rows": []
         }
       }
     }
@@ -421,43 +369,5 @@
       "childField": "customerId",
       "relationName": "客户-联系人"
     }
-  ],
-  "viewDependencies": [
-    {
-      "parentTable": "Orders",
-      "childTable": "OrderItems",
-      "dependencyType": "currentRow",
-      "autoLoad": true
-    },
-    {
-      "parentTable": "Customers",
-      "childTable": "Contacts",
-      "dependencyType": "currentRow",
-      "autoLoad": true
-    }
-  ],
-  "layout": {
-    "tablePositions": {
-      "Orders": {
-        "x": 50,
-        "y": 50
-      },
-      "OrderItems": {
-        "x": 270,
-        "y": 50
-      },
-      "Customers": {
-        "x": 490,
-        "y": 50
-      },
-      "Products": {
-        "x": 50,
-        "y": 250
-      },
-      "OrderStatusOptions": {
-        "x": 270,
-        "y": 250
-      }
-    }
-  }
+  ]
 }

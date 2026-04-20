@@ -96,22 +96,4 @@ describe('DataSetCrudTool object params', () => {
     expect(tool.getRelation({ parentTable: 'Orders', childTable: 'Items', parentField: 'id', childField: 'orderId' })).toBeUndefined()
   })
 
-  it('keeps positional params backward compatible', async () => {
-    const tool = new DataSetCrudTool('LegacyDS')
-
-    tool.createTable({
-      tableName: 'Users',
-      columns: [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'name', type: 'string' },
-      ],
-    })
-
-    tool.createView('Users', 'grid', { pageSize: 20 })
-    await tool.createRow('Users', { id: 1, name: 'Alice' })
-    await tool.updateRow('Users', 1, { name: 'Alicia' })
-
-    expect(tool.getRow('Users', 1)?.['name']).toBe('Alicia')
-    expect(tool.getView('Users', 'grid')?.pageSize).toBe(20)
-  })
 })

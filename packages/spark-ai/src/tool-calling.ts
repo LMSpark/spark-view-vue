@@ -247,7 +247,7 @@ export function generateToolDefinitions(
 export function formatToolResultContent(result: StillResult): string {
   const stringify = (value: unknown): string => {
     const seen = new WeakSet<object>()
-    return JSON.stringify(value, (_key, currentValue) => {
+    return JSON.stringify(value, (_key, currentValue: unknown) => {
       if (typeof currentValue === 'function') {
         return '[Function]'
       }

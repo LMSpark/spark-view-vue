@@ -27,6 +27,9 @@ export function configureSessionBackend(options: {
  */
 function toBackendErrorMessage(err: unknown): string {
   const fallback = err instanceof Error ? err.message : String(err)
+  if (typeof err !== 'object' || err === null) {
+    return fallback
+  }
   const e = err as {
     message?: string
     status?: number
@@ -37,7 +40,8 @@ function toBackendErrorMessage(err: unknown): string {
   const status = typeof e.status === 'number' ? `HTTP ${e.status}` : ''
   const code = typeof e.code === 'string' && e.code.length > 0 ? e.code : ''
 
-  if (e.response && typeof e.response === 'object') {
+  const response = e.response
+  if (typeof response === 'object' && response !== null) {
     const resp = e.response as {
       error?: { code?: string; message?: string; category?: string }
       state?: string

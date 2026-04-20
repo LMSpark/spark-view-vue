@@ -155,8 +155,8 @@ const chatPlaceholder = props.placeholder ?? '有什么可以帮您？'
 
 const { messages, isStreaming, error, send, uploadFile, clear } = useAiChat({
   mode: chatMode,
-  systemPrompt: props.systemPrompt,
-  sender: props.sender,
+  ...(props.systemPrompt !== undefined ? { systemPrompt: props.systemPrompt } : {}),
+  ...(props.sender !== undefined ? { sender: props.sender } : {}),
 })
 
 const inputText = ref('')

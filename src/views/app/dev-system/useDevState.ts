@@ -9,7 +9,7 @@
 import { ref, reactive, computed, shallowRef } from 'vue'
 import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { refreshRoutes } from '@spark-view/spark-app'
-import type { DataSet } from '@spark-view/spark-data'
+import type { DataSetCrudTool } from '@spark-view/spark-data'
 import { demoNavRoot } from '@/layout/demo-nav'
 import { canonicalizePageDataJson, canonicalizePageDataValue } from './policies/pageDataJsonSchema'
 import { loadTextHistory, saveTextHistory, clearTextHistoryStorage } from './composables/textHistoryStore'
@@ -163,7 +163,7 @@ export function useDevState() {
     'script.js': 0,
     'style.css': 0,
   })
-  const pageDataSet = shallowRef<DataSet | null>(null)
+  const pageDataTool = shallowRef<DataSetCrudTool | null>(null)
   const pageDataDocument = shallowRef<Record<string, unknown> | null>(null)
   const pageDataSetError = ref<string | null>(null)
   const fileTextHistory = reactive<Record<PageFileName, string[]>>({
@@ -240,7 +240,7 @@ export function useDevState() {
   }
 
   function clearPageDataBinding() {
-    pageDataSet.value = null
+    pageDataTool.value = null
     pageDataDocument.value = null
     pageDataSetError.value = null
   }
@@ -418,11 +418,11 @@ export function useDevState() {
   }
 
   function applyCanonicalPageData(canonicalPageData: CanonicalPageData) {
-    const { dataSet, value } = canonicalPageData
+    const { tool, value } = canonicalPageData
     if (activePageId.value) {
-      dataSet.pageId = activePageId.value
+      tool.dataSet.pageId = activePageId.value
     }
-    pageDataSet.value = dataSet
+    pageDataTool.value = tool
     pageDataDocument.value = value
     pageDataSetError.value = null
   }
@@ -838,7 +838,7 @@ export function useDevState() {
       const canonicalPageData = canonicalizePageDataJson(rawText)
       applyCanonicalPageData(canonicalPageData)
     } catch (error) {
-      pageDataSet.value = null
+      pageDataTool.value = null
       pageDataDocument.value = null
       pageDataSetError.value = error instanceof Error ? error.message : String(error)
     }
@@ -1199,7 +1199,7 @@ export function useDevState() {
       if (name === 'pagedata.json') {
         if (content.trim()) {
           const canonicalPageData = canonicalizePageDataJson(content)
-          canonicalPageData.dataSet.pageId = pageId
+          canonicalPageData.tool.dataSet.pageId = pageId
           applyCanonicalPageData(canonicalPageData)
           content = canonicalPageData.text
           editFiles[name] = content

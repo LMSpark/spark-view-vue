@@ -1,4 +1,4 @@
-import { DataSet } from '@spark-view/spark-data'
+import { DataSetCrudTool } from '@spark-view/spark-data'
 
 export type PageDataEditorMode = 'tree' | 'text' | 'table'
 
@@ -49,33 +49,22 @@ function parsePageDataText(rawText: string): Record<string, unknown> {
 export function canonicalizePageDataValue(rawValue: Record<string, unknown>): {
   text: string
   value: Record<string, unknown>
-  dataSet: DataSet
+  tool: DataSetCrudTool
 } {
-  const wrappedDataSetCandidate = rawValue['dataset']
-  if (
-    wrappedDataSetCandidate !== null
-    && wrappedDataSetCandidate !== undefined
-    && typeof wrappedDataSetCandidate === 'object'
-    && !Array.isArray(wrappedDataSetCandidate)
-    && 'tables' in (wrappedDataSetCandidate as Record<string, unknown>)
-  ) {
-    throw new Error('pagedata.json 不再支持 dataset 包裹结构，请将 tables/dataSetName 提升到根级')
-  }
-
-  const dataSet = DataSet.fromJson(rawValue)
-  const value = dataSet.toJson() as unknown as Record<string, unknown>
+  const tool = DataSetCrudTool.fromJson(rawValue)
+  const value = tool.toJson() as unknown as Record<string, unknown>
 
   return {
     text: `${JSON.stringify(value, null, 2)}\n`,
     value,
-    dataSet,
+    tool,
   }
 }
 
 export function canonicalizePageDataJson(rawText: string): {
   text: string
   value: Record<string, unknown>
-  dataSet: DataSet
+  tool: DataSetCrudTool
 } {
   return canonicalizePageDataValue(parsePageDataText(rawText))
 }

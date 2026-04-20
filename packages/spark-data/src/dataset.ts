@@ -1185,12 +1185,28 @@ export class DataSet implements IDataSet {
 
     const rawJson = json as Record<string, unknown>
 
+    // 兼容 legacy pagedata: { dataset: { ... }, pageId/version/schemaVersion... }
+    // 结构兼容与归一化下沉到模型层，避免 UI 层重复判断。
     const wrappedDataSetCandidate = asRecord(rawJson['dataset'])
-    if (wrappedDataSetCandidate && 'tables' in wrappedDataSetCandidate) {
-      throw new Error('DataSet.fromJson: 不再支持 dataset 包裹结构，请将 tables/dataSetName 提升到根级')
-    }
+    const modelSource = (() => {
+      if (!wrappedDataSetCandidate) return rawJson
+      if (!('tables' in wrappedDataSetCandidate) && !('dataSetName' in wrappedDataSetCandidate)) return rawJson
 
-    const directDataSetCandidate = 'tables' in rawJson ? rawJson : null
+      return {
+        ...wrappedDataSetCandidate,
+        ...(wrappedDataSetCandidate['pageId'] === undefined && rawJson['pageId'] !== undefined
+          ? { pageId: rawJson['pageId'] }
+          : {}),
+        ...(wrappedDataSetCandidate['version'] === undefined && rawJson['version'] !== undefined
+          ? { version: rawJson['version'] }
+          : {}),
+        ...(wrappedDataSetCandidate['schemaVersion'] === undefined && rawJson['schemaVersion'] !== undefined
+          ? { schemaVersion: rawJson['schemaVersion'] }
+          : {}),
+      } as Record<string, unknown>
+    })()
+
+    const directDataSetCandidate = 'tables' in modelSource ? modelSource : null
     const canonicalCandidate = directDataSetCandidate
 
     // 情形 1：直接根级 DataSet → 规范化后透传
@@ -1225,7 +1241,7 @@ export class DataSet implements IDataSet {
       })
     }
 
-    const rawPageData = rawJson
+    const rawPageData = modelSource
 
     // 情形 2：将整个 pagedata 的每个 key 归一化为一张表
     const tables: Record<string, Omit<ITableMetadata, 'tableName'> & { tableName: string }> = {}

@@ -1,13 +1,22 @@
-[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .order-system-page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .el-button {
-  margin-right: 8px;
+[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .order-management-page {
+  background-color: #f5f7fa;
 }
 
 [data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .r-section {
-  margin-bottom: 20px;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .r-table {
+  margin-bottom: 0;
+}
+
+[data-page="5b481dfc-ad4f-4427-aa05-488675d85195"] .r-tabs {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

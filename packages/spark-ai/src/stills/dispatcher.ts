@@ -7,6 +7,13 @@
  */
 
 import type { StillDefinition, StillResult, IStillSession, PatchEntry } from './types'
+import {
+  STILLS_ACTION_SPEC_ACTION,
+  BLUEPRINT_CREATE_ACTION,
+  DATASET_BOOTSTRAP_ACTION,
+  SCHEMA_UNLOCK_ACTION,
+  SCHEMA_LOCK_ACTION,
+} from './action-names'
 
 // ═══════════════════════════════════════════════════════════
 // Registry
@@ -89,13 +96,13 @@ function buildStillRetryFix(still: AnyStill, reason: string): string {
 function buildGuardPrerequisiteFix(still: AnyStill, guardCode: string): string | null {
   switch (guardCode) {
     case 'NO_BLUEPRINT':
-      return `前置条件缺失。请先${buildActionCallExample('stills.actionSpec', { action: 'blueprint.create' })}`
+      return `前置条件缺失。请先${buildActionCallExample(STILLS_ACTION_SPEC_ACTION, { action: BLUEPRINT_CREATE_ACTION })}`
     case 'NO_DATASET':
-      return `前置条件缺失。请先${buildActionCallExample('dataset.init', { dataSetName: 'MyDataSet' })}`
+      return `前置条件缺失。请先${buildActionCallExample(DATASET_BOOTSTRAP_ACTION, { dataSetName: 'MyDataSet' })}`
     case 'SCHEMA_LOCKED':
-      return `当前动作属于结构修改阶段，请先${buildActionCallExample('schema.unlock', { reason: `需要继续执行 ${still.action}` })}`
+      return `当前动作属于结构修改阶段，请先${buildActionCallExample(SCHEMA_UNLOCK_ACTION, { reason: `需要继续执行 ${still.action}` })}`
     case 'SCHEMA_NOT_LOCKED':
-      return `当前动作属于配置阶段，请先${buildActionCallExample('schema.lock', {})}`
+      return `当前动作属于配置阶段，请先${buildActionCallExample(SCHEMA_LOCK_ACTION, {})}`
     default:
       return null
   }

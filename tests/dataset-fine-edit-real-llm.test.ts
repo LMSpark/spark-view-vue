@@ -67,8 +67,8 @@ class DirectProviderSessionBackend implements SessionBackend {
     this.sessions.set(sessionId, {
       systemPrompt,
       windowSize,
-      tools,
       conversation: [{ role: 'user', content: userPrompt }],
+      ...(tools !== undefined ? { tools } : {}),
     })
     return sessionId
   }
@@ -207,7 +207,7 @@ describe('dataset fine edit real llm', () => {
     }
 
     // 初始化 edit-domain，构造最小可编辑 DataSet（Orders 仅含 id/orderNo）。
-    const init = executeStill('edit.init', {
+    const init = executeStill('edit.bootstrap', {
       ruleJson: [],
       pageDataJson: {
         dataSetName: 'PageDataSet',

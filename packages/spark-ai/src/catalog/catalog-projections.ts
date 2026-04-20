@@ -192,7 +192,7 @@ export function projectHydratedComponent(catalog: ComponentCatalog, type: string
   const entry = catalog.components[type]
   if (entry === undefined) return null
 
-  const canonicalEntry = catalog.canonical?.components?.[type]
+  const canonicalEntry = catalog.canonical?.components[type]
   const resolvedBinding = resolveBindingDescriptor(catalog, type, entry, canonicalEntry)
 
   const canonicalProps = resolveCanonicalProps(catalog, type, canonicalEntry)
@@ -295,7 +295,7 @@ function resolveBindingDescriptor(
 
 function hasAnyEmit(catalog: ComponentCatalog, type: string, entry: ComponentEntry): boolean {
   if ((entry.emits ?? []).length > 0) return true
-  const canonicalEntry = catalog.canonical?.components?.[type]
+  const canonicalEntry = catalog.canonical?.components[type]
   return (canonicalEntry?.emitRefs.length ?? 0) > 0
 }
 

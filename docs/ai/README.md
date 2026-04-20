@@ -39,13 +39,15 @@
 
 AI 配置能力的系统设计与实施规划：
 
-现行实现与后续演进以 `DATASET_STILLS_SCHEME.md` 和 `packages/spark-ai/ARCHITECTURE.md` 为准；下列带“旧”标记的文档仅保留归档，不再作为实现依据。
+现行实现与后续演进以下列文档为准；带“旧”标记的文档仅保留归档，不再作为实现依据。
 
 | 文件 | 说明 |
 |------|------|
+| [DEVSYSTEM_DATASET_TOOL_SSOT.md](architecture/DEVSYSTEM_DATASET_TOOL_SSOT.md) | **当前实现**：DevSystem / `pagedata.json` / `DataSetCrudTool` / AI 能力目录之间的 SSoT 边界与调用链 |
+| [AI_FRONTEND_UNIFICATION_PLAN.md](architecture/AI_FRONTEND_UNIFICATION_PLAN.md) | 前端 AI 引擎统一与细粒度编辑主链路规划 |
 | [AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md](architecture/AI_DRIVEN_FULL_LIFECYCLE_SOLUTION.md) | ~~旧~~ 全生命周期方案草案（含已删除的 design-session / AiDesignStudio 入口） |
-| [DATASET_STILLS_SCHEME.md](architecture/DATASET_STILLS_SCHEME.md) | **Dataset Stills 方案**（Function Calling + 渐进式 Dataset Memory 构建） |
-| [AI_DESIGN_SESSION_METADATA_FIRST_PLAN.md](architecture/AI_DESIGN_SESSION_METADATA_FIRST_PLAN.md) | ~~旧~~ design-session 计划（已被 DATASET_STILLS_SCHEME 取代） |
+| [DATASET_STILLS_SCHEME.md](architecture/DATASET_STILLS_SCHEME.md) | **旧入口名仍被引用**：若文件缺失，以当前实现文档和代码为准 |
+| [AI_DESIGN_SESSION_METADATA_FIRST_PLAN.md](architecture/AI_DESIGN_SESSION_METADATA_FIRST_PLAN.md) | ~~旧~~ design-session 计划（已被当前实现取代） |
 | [AI_INTERACTION_ARCHITECTURE.md](architecture/AI_INTERACTION_ARCHITECTURE.md) | ~~旧~~ 双通道交互体系设计（AiDesignStudio 已删除） |
 | [AI_LIFECYCLE_IMPLEMENTATION_PLAN.md](architecture/AI_LIFECYCLE_IMPLEMENTATION_PLAN.md) | ~~旧~~ 分阶段实施路线图（基于已废弃入口） |
 | [AI_METADATA_PIPELINE.md](architecture/AI_METADATA_PIPELINE.md) | 组件元数据提取管线 |

@@ -449,10 +449,10 @@ function buildEditInitParamsFromFiles(contextFiles: PageFiles): {
   const pagedataRaw = contextFiles['pagedata.json']
 
   if (typeof ruleRaw !== 'string' || ruleRaw.trim() === '') {
-    throw new Error('edit.init 失败: 缺少 rule.json')
+    throw new Error('edit.bootstrap 失败: 缺少 rule.json')
   }
   if (typeof pagedataRaw !== 'string' || pagedataRaw.trim() === '') {
-    throw new Error('edit.init 失败: 缺少 pagedata.json')
+    throw new Error('edit.bootstrap 失败: 缺少 pagedata.json')
   }
 
   const parsedRule = JSON.parse(ruleRaw) as unknown
@@ -465,10 +465,10 @@ function buildEditInitParamsFromFiles(contextFiles: PageFiles): {
       : null)
 
   if (!Array.isArray(ruleJson)) {
-    throw new Error('edit.init 失败: rule.json 必须是数组，或包含 children 数组的根对象')
+    throw new Error('edit.bootstrap 失败: rule.json 必须是数组，或包含 children 数组的根对象')
   }
   if (typeof parsedPageData !== 'object' || parsedPageData === null || Array.isArray(parsedPageData)) {
-    throw new Error('edit.init 失败: pagedata.json 必须是对象')
+    throw new Error('edit.bootstrap 失败: pagedata.json 必须是对象')
   }
 
   return {
@@ -571,9 +571,9 @@ async function handleStillsSend() {
     stillsSession.value = session
 
     const initParams = buildEditInitParamsFromFiles(contextFiles)
-    const initResult = executeStill('edit.init', initParams, session, `edit-init-${Date.now()}`)
+    const initResult = executeStill('edit.bootstrap', initParams, session, `edit-bootstrap-${Date.now()}`)
     if (!initResult.ok) {
-      throw new Error(`edit.init 失败: ${initResult.msg}`)
+      throw new Error(`edit.bootstrap 失败: ${initResult.msg}`)
     }
     props.state.addStatus('✅ 已进入细粒度编辑模式（edit domain）', 'success')
 

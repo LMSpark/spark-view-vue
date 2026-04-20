@@ -34,25 +34,25 @@ describe('DataSetCrudTool', () => {
     expect(tool.getTable('Users')?.resourceId).toBe('crm.users')
     expect(tool.getTable('Users')?.businessCategory).toBe('master')
 
-    tool.createView('Users', 'grid', { pageSize: 50 })
-    expect(tool.getView('Users', 'grid')?.pageSize).toBe(50)
+    tool.createView({ tableName: 'Users', viewId: 'grid', config: { pageSize: 50 } })
+    expect(tool.getView({ tableName: 'Users', viewId: 'grid' })?.pageSize).toBe(50)
 
-    await tool.createRow('Users', { id: 2, name: 'Bob' })
-    expect(tool.listRows('Users')).toHaveLength(2)
+    await tool.createRow({ tableName: 'Users', data: { id: 2, name: 'Bob' } })
+    expect(tool.listRows({ tableName: 'Users' })).toHaveLength(2)
     expect(tool.getTable('Users')?.rows).toHaveLength(2)
 
-    await tool.updateRow('Users', 2, { name: 'Bobby' })
-    expect(tool.getRow('Users', 2)?.['name']).toBe('Bobby')
+    await tool.updateRow({ tableName: 'Users', id: 2, data: { name: 'Bobby' } })
+    expect(tool.getRow({ tableName: 'Users', id: 2 })?.['name']).toBe('Bobby')
 
-    await tool.deleteRow('Users', 1)
-    expect(tool.getRow('Users', 1)).toBeUndefined()
+    await tool.deleteRow({ tableName: 'Users', id: 1 })
+    expect(tool.getRow({ tableName: 'Users', id: 1 })).toBeUndefined()
     expect(tool.getTable('Users')?.rows).toHaveLength(1)
 
-    tool.updateView('Users', 'grid', { page: 3 })
-    expect(tool.getView('Users', 'grid')?.page).toBe(3)
+    tool.updateView({ tableName: 'Users', viewId: 'grid', updates: { page: 3 } })
+    expect(tool.getView({ tableName: 'Users', viewId: 'grid' })?.page).toBe(3)
 
-    tool.deleteView('Users', 'grid')
-    expect(tool.getView('Users', 'grid')).toBeUndefined()
+    tool.deleteView({ tableName: 'Users', viewId: 'grid' })
+    expect(tool.getView({ tableName: 'Users', viewId: 'grid' })).toBeUndefined()
   })
 
   it('should support batch row CRUD from one facade', async () => {
@@ -72,28 +72,28 @@ describe('DataSetCrudTool', () => {
       },
     })
 
-    const createResult = await tool.createRows('Users', [
+    const createResult = await tool.createRows({ tableName: 'Users', items: [
       { id: 2, name: 'Bob' },
       { id: 3, name: 'Carol' },
-    ])
+    ] })
     expect(createResult.success).toBe(true)
     expect(createResult.data?.successCount).toBe(2)
-    expect(tool.listRows('Users')).toHaveLength(3)
+    expect(tool.listRows({ tableName: 'Users' })).toHaveLength(3)
 
-    const updateResult = await tool.updateRows('Users', [
+    const updateResult = await tool.updateRows({ tableName: 'Users', items: [
       { id: 2, data: { name: 'Bobby' } },
       { id: 3, data: { name: 'Caroline' } },
-    ])
+    ] })
     expect(updateResult.success).toBe(true)
     expect(updateResult.data?.failureCount).toBe(0)
-    expect(tool.getRow('Users', 2)?.['name']).toBe('Bobby')
-    expect(tool.getRow('Users', 3)?.['name']).toBe('Caroline')
+    expect(tool.getRow({ tableName: 'Users', id: 2 })?.['name']).toBe('Bobby')
+    expect(tool.getRow({ tableName: 'Users', id: 3 })?.['name']).toBe('Caroline')
 
-    const deleteResult = await tool.deleteRows('Users', [1, 3])
+    const deleteResult = await tool.deleteRows({ tableName: 'Users', ids: [1, 3] })
     expect(deleteResult.success).toBe(true)
     expect(deleteResult.data?.successCount).toBe(2)
-    expect(tool.getRow('Users', 1)).toBeUndefined()
-    expect(tool.getRow('Users', 3)).toBeUndefined()
+    expect(tool.getRow({ tableName: 'Users', id: 1 })).toBeUndefined()
+    expect(tool.getRow({ tableName: 'Users', id: 3 })).toBeUndefined()
     expect(tool.getTable('Users')?.rows).toHaveLength(1)
   })
 
@@ -108,21 +108,21 @@ describe('DataSetCrudTool', () => {
     })
 
     const table = tool.getTable('Users')!
-    const view = tool.getView('Users', 'default')!
+    const view = tool.getView({ tableName: 'Users', viewId: 'default' })!
     const initialColumnCount = tool.listColumns('Users').length
 
-    tool.createColumn('Users', { name: 'email', type: 'string' })
-    tool.updateColumn('Users', 'name', { label: 'User Name' })
+    tool.createColumn({ tableName: 'Users', column: { name: 'email', type: 'string' } })
+    tool.updateColumn({ tableName: 'Users', columnName: 'name', updates: { label: 'User Name' } })
 
     expect(tool.listColumns('Users')).toHaveLength(initialColumnCount + 1)
-    expect(tool.getColumn('Users', 'email')).toBeDefined()
+    expect(tool.getColumn({ tableName: 'Users', columnName: 'email' })).toBeDefined()
     expect(view.getColumn('email')).toBeDefined()
-    expect(tool.getColumn('Users', 'name')?.label).toBe('User Name')
+    expect(tool.getColumn({ tableName: 'Users', columnName: 'name' })?.label).toBe('User Name')
     expect(view.getColumn('name')?.label).toBe('User Name')
     expect(table.validator?.isValid({ id: 1, name: 'Alice', email: 'a@test.dev' })).toBe(true)
 
-    tool.deleteColumn('Users', 'email')
-    expect(tool.getColumn('Users', 'email')).toBeUndefined()
+    tool.deleteColumn({ tableName: 'Users', columnName: 'email' })
+    expect(tool.getColumn({ tableName: 'Users', columnName: 'email' })).toBeUndefined()
     expect(view.getColumn('email')).toBeUndefined()
   })
 
@@ -139,7 +139,8 @@ describe('DataSetCrudTool', () => {
       resourceId: 'common.order-status',
     })
 
-    tool.updateTable('StatusOptions', {
+    tool.updateTable({
+      tableName: 'StatusOptions',
       resourceType: 'logical-view',
       resourceId: null,
       businessCategory: 'reference',
@@ -184,13 +185,13 @@ describe('DataSetCrudTool', () => {
     expect(tool.listRelations({ parentTable: 'Orders', childTable: 'Items' })).toHaveLength(1)
 
     tool.createDependency({ parentTable: 'Orders', childTable: 'Items', dependencyType: 'currentRow', autoLoad: true })
-    expect(tool.getDependency('Orders', 'Items')?.dependencyType).toBe('currentRow')
+    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })?.dependencyType).toBe('currentRow')
 
-    tool.updateDependency('Orders', 'Items', { dependencyType: 'selectedRows', autoLoad: false })
-    expect(tool.getDependency('Orders', 'Items')?.dependencyType).toBe('selectedRows')
+    tool.updateDependency({ parentTable: 'Orders', childTable: 'Items', updates: { dependencyType: 'selectedRows', autoLoad: false } })
+    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })?.dependencyType).toBe('selectedRows')
 
-    tool.deleteDependency('Orders', 'Items')
-    expect(tool.getDependency('Orders', 'Items')).toBeUndefined()
+    tool.deleteDependency({ parentTable: 'Orders', childTable: 'Items' })
+    expect(tool.getDependency({ parentTable: 'Orders', childTable: 'Items' })).toBeUndefined()
   })
 
   it('SparkData namespace should expose createDataSetCrudTool factory', () => {

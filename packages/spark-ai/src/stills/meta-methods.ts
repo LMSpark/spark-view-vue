@@ -29,15 +29,21 @@ import type {
 import { noGuard, readSessionBlueprint } from './types'
 import { getAllStills, getStill } from './dispatcher'
 import { getDataSetState } from './dataset-domain'
-import { getEditState } from './edit-domain'
+import { getEditState } from './edit-state'
 import { getDomain } from './domain'
 import {
   projectFcDirectory,
   projectFcSpec,
 } from '../catalog/catalog-projections'
+import type { IDataSetMetadata } from '@spark-view/spark-data'
 import componentCatalog from '../catalog/component-catalog.json'
 import type { ComponentCatalog } from '../catalog/types'
 import type { StillsCatalogRegistry } from '../catalog/stills-catalog-types'
+import {
+  STILLS_CAPABILITIES_ACTION,
+  STILLS_ACTION_SPEC_ACTION,
+  DATATABLE_CREATE_ACTION,
+} from './action-names'
 
 // =========================================================
 // 二、内部类型定义（仅本模块使用）
@@ -183,10 +189,14 @@ function countTotalColumns(session: IStillSession): number {
   return Object.values(dataset.tables).reduce((sum, table) => sum + table.columns.length, 0)
 }
 
-function getEffectiveDatasetState(session: IStillSession): DomainState {
+function getEffectiveDatasetState(session: IStillSession): DomainState<IDataSetMetadata | null, string> {
   const datasetDomain = session.domains['dataset']
   if (datasetDomain) {
-    return getDataSetState(session)
+    const dataSetState = getDataSetState(session)
+    return {
+      data: dataSetState.data ? dataSetState.data.toJson() : null,
+      phase: dataSetState.phase,
+    }
   }
 
   const editDomain = session.domains['edit']
@@ -319,7 +329,7 @@ function buildComponentSpecUsageRules(componentType: string): string[] {
  *  - hint       : 引导说明（规格精查入口 stills.actionSpec）。
  */
 export const stillsCapabilities: StillDefinition<Record<string, never>, unknown> = {
-  action: 'stills.capabilities',
+  action: STILLS_CAPABILITIES_ACTION,
   type: 'describe',
   description: '返回当前可用动作目录，按命名空间分组',
   guard: noGuard,
@@ -361,12 +371,12 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
  *  调用方不应假定返回格式完全一致。
  */
 export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
-  action: 'stills.actionSpec',
+  action: STILLS_ACTION_SPEC_ACTION,
   type: 'describe',
   description: '返回指定 still 动作或组件 type 的详细规格',
   guard: noGuard,
   paramsSchema: { action: 'string — still 动作名或组件 type' },
-  example: { action: 'datatable.create' },
+  example: { action: DATATABLE_CREATE_ACTION },
   validate: (params) => {
     if (!isNonEmptyString(params.action)) return missingParam('action')
     return null

@@ -131,7 +131,7 @@ describe('dataset fine edit orchestrator', () => {
   })
 
   it('drives capability lookup, actionSpec lookup, self-heal retry, and dataset export through runStillsLoop', async () => {
-    const init = executeStill('edit.init', {
+    const init = executeStill('edit.bootstrap', {
       ruleJson: [],
       pageDataJson: {
         dataSetName: 'PageDataSet',
@@ -219,16 +219,11 @@ describe('dataset fine edit orchestrator', () => {
     expect(failureRound?.content).toContain('ok":false')
     expect(failureRound?.content).toContain('INVALID_PARAMS')
 
-    const currentModel = executeStill('dataset.currentModel', {}, session, 'after-loop')
-    expect(currentModel.ok).toBe(true)
-    if (!currentModel.ok) return
-    const tableNames = (currentModel.data as { tableNames: string[] }).tableNames
-    expect(tableNames).toContain('Orders')
-
     const exported = executeStill('dataset.export', {}, session, 'after-export')
     expect(exported.ok).toBe(true)
     if (!exported.ok) return
     const pagedata = (exported.data as { file: { 'pagedata.json': string } }).file['pagedata.json']
+    expect(pagedata).toContain('"Orders"')
     expect(pagedata).toContain('"remark"')
     expect(pagedata).toContain('"备注"')
   })

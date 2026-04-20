@@ -54,7 +54,7 @@
         </div>
 
         <!-- 画布视口 -->
-        <div class="ds-viewport" ref="viewportRef">
+        <div class="ds-viewport">
           <div class="ds-canvas-inner" :style="canvasInnerStyle">
             <!-- SVG 关系连线层 -->
             <svg class="ds-svg-layer" :width="canvasSize.width" :height="canvasSize.height">
@@ -122,7 +122,7 @@
               </div>
               <div class="ds-rel-editor__row">
                 <label>关联类型</label>
-                <el-select v-model="editingRel.relationType" size="small">
+                <el-select v-model="editingRel.draft.relationType" size="small">
                   <el-option label="一对多" value="one-to-many" />
                   <el-option label="一对一" value="one-to-one" />
                   <el-option label="多对多" value="many-to-many" />
@@ -130,26 +130,26 @@
               </div>
               <div class="ds-rel-editor__row">
                 <label>父表</label>
-                <el-select v-model="editingRel.parentTable" size="small">
+                <el-select v-model="editingRel.draft.parentTable" size="small">
                   <el-option v-for="t in tables" :key="t.id" :label="t.tableName" :value="t.tableName" />
                 </el-select>
               </div>
               <div class="ds-rel-editor__row">
                 <label>父字段</label>
-                <el-select v-model="editingRel.parentField" size="small" filterable allow-create>
-                  <el-option v-for="c in getTableByName(editingRel.parentTable)?.columns ?? []" :key="c.name" :label="c.name" :value="c.name" />
+                <el-select v-model="editingRel.draft.parentField" size="small" filterable allow-create>
+                  <el-option v-for="c in getTableByName(editingRel.draft.parentTable)?.columns ?? []" :key="c.name" :label="c.name" :value="c.name" />
                 </el-select>
               </div>
               <div class="ds-rel-editor__row">
                 <label>子表</label>
-                <el-select v-model="editingRel.childTable" size="small">
+                <el-select v-model="editingRel.draft.childTable" size="small">
                   <el-option v-for="t in tables" :key="t.id" :label="t.tableName" :value="t.tableName" />
                 </el-select>
               </div>
               <div class="ds-rel-editor__row">
                 <label>子字段</label>
-                <el-select v-model="editingRel.childField" size="small" filterable allow-create>
-                  <el-option v-for="c in getTableByName(editingRel.childTable)?.columns ?? []" :key="c.name" :label="c.name" :value="c.name" />
+                <el-select v-model="editingRel.draft.childField" size="small" filterable allow-create>
+                  <el-option v-for="c in getTableByName(editingRel.draft.childTable)?.columns ?? []" :key="c.name" :label="c.name" :value="c.name" />
                 </el-select>
               </div>
               <div class="ds-rel-editor__actions">
@@ -179,7 +179,7 @@
                 @mousedown="onCardMouseDown($event, table)"
               >
                 <NavIcon name="Grid" :size="14" />
-                <input v-model="table.tableName" class="ds-card__title" placeholder="表名" @mousedown.stop />
+                <input :value="table.tableName" class="ds-card__title" placeholder="表名" @change="handleTableNameInputChange(table, $event)" @mousedown.stop />
                 <span class="ds-card__badges">
                   <el-tag size="small" type="info" effect="plain">{{ table.columns.length }} 列</el-tag>
                   <el-tag v-if="(table.views.default.rows?.length ?? 0) > 0" size="small" type="success" effect="plain">{{ table.views.default.rows!.length }} 行</el-tag>
@@ -210,7 +210,7 @@
               <div v-if="propsExpandedTables.has(table.id)" class="ds-card__props">
                 <div class="ds-prop-row">
                   <label>资源类型</label>
-                  <el-select v-model="table.resourceType" size="small" clearable placeholder="-" @mousedown.stop>
+                  <el-select :model-value="table.resourceType" size="small" clearable placeholder="-" @update:modelValue="handleTableSemanticChange(table, { resourceType: $event ?? undefined })" @mousedown.stop>
                     <el-option label="数据库表" value="database-table" />
                     <el-option label="数据库视图" value="database-view" />
                     <el-option label="第三方 API" value="third-party-api" />
@@ -221,7 +221,7 @@
                 </div>
                 <div class="ds-prop-row">
                   <label>业务角色</label>
-                  <el-select v-model="table.businessCategory" size="small" clearable placeholder="-" @mousedown.stop>
+                  <el-select :model-value="table.businessCategory" size="small" clearable placeholder="-" @update:modelValue="handleTableSemanticChange(table, { businessCategory: $event ?? undefined })" @mousedown.stop>
                     <el-option label="主表" value="master" />
                     <el-option label="从表" value="child" />
                     <el-option label="引用表" value="reference" />
@@ -229,21 +229,21 @@
                 </div>
                 <div class="ds-prop-row">
                   <label>资源 ID</label>
-                  <input v-model="table.resourceId" class="ds-prop-row__input" placeholder="外部标识" @mousedown.stop />
+                  <input :value="table.resourceId ?? ''" class="ds-prop-row__input" placeholder="外部标识" @change="handleTableResourceIdInputChange(table, $event)" @mousedown.stop />
                 </div>
                 <div class="ds-prop-row">
                   <label>API</label>
-                  <input v-model="table.api" class="ds-prop-row__input" placeholder="如 /api/users 或留空" @mousedown.stop />
+                  <input :value="typeof table.api === 'string' ? table.api : ''" class="ds-prop-row__input" placeholder="如 /api/users 或留空" @change="handleTableApiInputChange(table, $event)" @mousedown.stop />
                 </div>
               </div>
 
               <!-- 可折叠的 schema 编辑 -->
               <div v-if="expandedTables.has(table.id)" class="ds-card__schema">
                 <div v-for="(col, cidx) in table.columns" :key="col.id" class="ds-schema-row">
-                  <el-checkbox v-model="col.isPrimaryKey" size="small" title="主键" @mousedown.stop />
-                  <input v-model="col.name" class="ds-schema-row__field" placeholder="字段名" @mousedown.stop />
-                  <input v-model="col.label" class="ds-schema-row__label" placeholder="标签" @mousedown.stop />
-                  <el-select v-model="col.type" size="small" class="ds-schema-row__type" @mousedown.stop>
+                  <el-checkbox :model-value="col.isPrimaryKey" size="small" title="主键" @update:modelValue="handleColumnFieldChange(table, col, { isPrimaryKey: Boolean($event) })" @mousedown.stop />
+                  <input :value="col.name" class="ds-schema-row__field" placeholder="字段名" @change="handleColumnNameInputChange(table, col, $event)" @mousedown.stop />
+                  <input :value="col.label ?? ''" class="ds-schema-row__label" placeholder="标签" @change="handleColumnLabelInputChange(table, col, $event)" @mousedown.stop />
+                  <el-select :model-value="col.type" size="small" class="ds-schema-row__type" @update:modelValue="handleColumnTypeChange(table, col, $event)" @mousedown.stop>
                     <el-option label="string" value="string" />
                     <el-option label="number" value="number" />
                     <el-option label="boolean" value="boolean" />
@@ -284,6 +284,11 @@
         <div class="ds-ai__header">
           <NavIcon name="Cpu" :size="16" />
           <span>AI 设计助手</span>
+          <el-tag size="small" type="success" effect="plain" class="ds-ai__new-tag">NEW</el-tag>
+        </div>
+
+        <div class="ds-ai__feature-tip">
+          新增功能：聊天模式已接入细粒度编辑执行链路，支持文本/附件/语音输入后直接修改 DataSet 模型。
         </div>
 
         <div class="ds-ai__form">
@@ -367,11 +372,24 @@ import {
   configureSessionBackend,
   createRepeatDetectionMonitor,
   generateToolDefinitions,
+  type DialogueTurn,
 } from '@spark-view/spark-ai'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import NavIcon from '@/components/NavIcon.vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
 import { extractJsonObject, runAiFileWriteback } from './composables/useAiFileWriteback'
+import {
+  buildDataSetMetadataFromDesignerProjection,
+  hasDesignerProjectionChanges,
+  normalizeViewsFromLoose,
+  projectDesignerRelations,
+  projectDesignerTables,
+  reconcileDesignerTableUiState,
+  type DesignerRelationProjection,
+  type DesignerTableProjection,
+  type DesignerTableUiState,
+  type LayoutForNewTable,
+} from './composables/designerProjection'
 import { createAuthHeaders } from '@/services/http'
 import type { AiChatSender } from '@/composables/useAiChat'
 import {
@@ -382,58 +400,41 @@ import {
 } from './datasetFineEditOrchestration'
 import type { DevState } from './useDevState'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import type { DataColumn, TableRelation, ITableMetadata, IDataSetMetadata, IViewMetadata } from '@spark-view/spark-data'
+import type { DataColumn, TableRelation, ITableMetadata, IDataSetMetadata } from '@spark-view/spark-data'
 
 /**
  * 设计器列 — DataColumn + 画布唯一标识
  */
-interface DesignerColumn extends DataColumn {
-  id: string
-}
-
-/**
- * 设计器表 — 严格继承 ITableMetadata，仅添加画布 UI 字段
- */
-interface DesignerTable extends Omit<ITableMetadata, 'columns'> {
-  /** 画布唯一标识 */
-  id: string
-  /** 画布 X 坐标 */
-  x: number
-  /** 画布 Y 坐标 */
-  y: number
-  /** 列定义（扩展 DataColumn，增加画布 id） */
-  columns: DesignerColumn[]
-}
-
-/**
- * 设计器关系 — 严格继承 TableRelation，仅添加可视化关系类型
- */
-interface DesignerRelation extends TableRelation {
-  relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many'
-}
+type DesignerColumn = DesignerTableProjection['columns'][number]
+type DesignerTable = DesignerTableProjection
+type DesignerRelation = DesignerRelationProjection
 
 interface BlueprintStep {
   action: string
   status: 'pending' | 'running' | 'done'
 }
 
+interface RelationDraftState {
+  sourceIndex: number
+  sourceSelector: ReturnType<typeof buildRelationSelector>
+  draft: DesignerRelation
+}
+
 const props = defineProps<{
   state: DevState
 }>()
 
-const tables = ref<DesignerTable[]>([])
-const relations = ref<DesignerRelation[]>([])
+const tableUiState = ref<Record<string, DesignerTableUiState>>({})
 const selectedTableId = ref<string | null>(null)
 const expandedTables = ref<Set<string>>(new Set())
 const propsExpandedTables = ref<Set<string>>(new Set())
-const viewportRef = ref<HTMLElement | null>(null)
 const hoveredRelIdx = ref(-1)
 
 // ═══ 关系编辑状态 ═══
-const editingRel = ref<(DesignerRelation & { _idx: number }) | null>(null)
+const editingRel = ref<RelationDraftState | null>(null)
 const relEditorPos = computed(() => {
   if (editingRel.value === null) return {}
-  const idx = editingRel.value._idx
+  const idx = editingRel.value.sourceIndex
   const lines = relationLines.value
   if (idx < 0 || idx >= lines.length) return {}
   const line = lines[idx]!
@@ -446,13 +447,49 @@ const relEditorPos = computed(() => {
 // ═══ Undo / Redo（DataSetCrudTool 历史栈）═══
 const historyTool = shallowRef<DataSetCrudTool | null>(null)
 const historyTick = ref(0)
+const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
 function markHistoryChanged(): void {
   historyTick.value += 1
 }
 
+const projectedMetadata = computed<IDataSetMetadata | null>(() => {
+  historyTick.value
+  return historyTool.value?.toJson() ?? null
+})
+
+const tables = computed<DesignerTable[]>(() => {
+  const metadata = projectedMetadata.value
+  if (!metadata) return []
+
+  return projectDesignerTables(metadata, tableUiState.value, generateId)
+})
+
+const relations = computed<DesignerRelation[]>(() => (
+  projectedMetadata.value ? projectDesignerRelations(projectedMetadata.value) : []
+))
+
+const viewDependencies = computed<NonNullable<IDataSetMetadata['viewDependencies']> | undefined>(() => (
+  projectedMetadata.value?.viewDependencies
+))
+
+const persistedPageDataMetadata = computed<IDataSetMetadata | null>(() => {
+  const content = props.state.editFiles['pagedata.json']
+  if (typeof content !== 'string') return null
+  try {
+    return DataSetCrudTool.fromJson(content).toJson()
+  } catch {
+    return null
+  }
+})
+
 function resetHistoryFromDesignerState(): void {
-  historyTool.value = DataSetCrudTool.fromJson(buildDataSetMetadataFromDesigner())
+  const snapshot = buildDataSetMetadataFromDesigner()
+  if (!historyTool.value) {
+    historyTool.value = DataSetCrudTool.fromJson(snapshot)
+  } else {
+    historyTool.value.replaceFromJson(snapshot, { commitHistory: false })
+  }
   markHistoryChanged()
 }
 
@@ -465,22 +502,26 @@ function isDesignerStateInSyncWithHistory(): boolean {
 
 function applyMutationWithHistory(
   mutator: (tool: DataSetCrudTool) => void,
-  layoutForNewTable?: (tableName: string, newIndex: number) => { x: number; y: number },
+  layoutForNewTable?: LayoutForNewTable,
 ): void {
   if (!historyTool.value || !isDesignerStateInSyncWithHistory()) {
     resetHistoryFromDesignerState()
   }
   const tool = historyTool.value!
-  mutator(tool)
-  syncDesignerFromCrudTool(tool, layoutForNewTable)
-  markHistoryChanged()
+  try {
+    pendingProjectionLayout.value = layoutForNewTable ?? null
+    mutator(tool)
+    markHistoryChanged()
+  } catch (error) {
+    pendingProjectionLayout.value = null
+    throw error
+  }
 }
 
 function undo() {
   if (!historyTool.value) return
   const ok = historyTool.value.undo()
   if (!ok) return
-  syncDesignerFromCrudTool(historyTool.value)
   editingRel.value = null
   selectedTableId.value = null
   markHistoryChanged()
@@ -490,7 +531,6 @@ function redo() {
   if (!historyTool.value) return
   const ok = historyTool.value.redo()
   if (!ok) return
-  syncDesignerFromCrudTool(historyTool.value)
   editingRel.value = null
   selectedTableId.value = null
   markHistoryChanged()
@@ -506,7 +546,6 @@ function commitLayoutCheckpoint(): void {
   if (!anchor) return
   // 通过 no-op 结构提交推进 DataSetCrudTool 历史游标，把当前 UI 布局绑定到同一撤销链。
   tool.updateTable({ tableName: anchor.tableName })
-  syncDesignerFromCrudTool(tool)
   markHistoryChanged()
 }
 
@@ -518,6 +557,21 @@ const canRedo = computed(() => {
   historyTick.value
   return historyTool.value?.canRedo ?? false
 })
+
+watch(
+  projectedMetadata,
+  (metadata) => {
+    if (!metadata) {
+      tableUiState.value = {}
+      pendingProjectionLayout.value = null
+      return
+    }
+
+    projectDesignerFromMetadata(metadata, pendingProjectionLayout.value ?? undefined)
+    pendingProjectionLayout.value = null
+  },
+  { flush: 'sync' },
+)
 
 function onKeydown(e: KeyboardEvent) {
   if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
@@ -616,12 +670,13 @@ const aiResponse = ref('')
 const fineEditSseLines = ref<string[]>([])
 const aiMode = ref<'edit' | 'generate' | 'chat'>('edit')
 const blueprint = ref<BlueprintStep[]>([])
-const viewDependencies = ref<NonNullable<IDataSetMetadata['viewDependencies']> | undefined>(undefined)
 const fineEditSession = shallowRef<ReturnType<typeof createStillSession> | null>(null)
 const fineEditBackend = shallowRef<SessionBackendImpl | null>(null)
 const fineEditBackendSessionId = ref<string | null>(null)
 
-const hasChanges = computed(() => tables.value.length > 0)
+const hasChanges = computed(() => {
+  return hasDesignerProjectionChanges(buildDataSetMetadataFromDesigner(), persistedPageDataMetadata.value)
+})
 
 // ═══ 自动从 pagedata.json 加载 ═══
 
@@ -680,8 +735,9 @@ function pushFineEditSseLine(line: string) {
 function upsertFineEditStreamingLine(prefix: string, chunk: string) {
   if (!chunk) return
   const lastIdx = fineEditSseLines.value.length - 1
-  if (lastIdx >= 0 && fineEditSseLines.value[lastIdx].startsWith(prefix)) {
-    fineEditSseLines.value[lastIdx] += chunk
+  const lastLine = lastIdx >= 0 ? fineEditSseLines.value[lastIdx] : undefined
+  if (lastLine !== undefined && lastLine.startsWith(prefix)) {
+    fineEditSseLines.value[lastIdx] = lastLine + chunk
     return
   }
   pushFineEditSseLine(`${prefix}${chunk}`)
@@ -691,7 +747,7 @@ function closeFineEditStreamingLines() {
   const lastIdx = fineEditSseLines.value.length - 1
   if (lastIdx < 0) return
   const lastLine = fineEditSseLines.value[lastIdx]
-  if (lastLine.startsWith(AI_STREAM_PREFIX) || lastLine.startsWith(REASONING_STREAM_PREFIX)) {
+  if (lastLine !== undefined && (lastLine.startsWith(AI_STREAM_PREFIX) || lastLine.startsWith(REASONING_STREAM_PREFIX))) {
     fineEditSseLines.value[lastIdx] = lastLine.trimEnd()
   }
 }
@@ -737,18 +793,7 @@ function onFineEditSseEvent(event: { sessionId: string; type: string; data: stri
   }
 }
 
-function onFineEditTurnComplete(turn: {
-  round: number
-  phase: 'ai-response' | 'stills-execute'
-  toolBlock?: { action: string; id: string }
-  stillsResult?: {
-    ok: boolean
-    code?: string
-    msg?: string
-    fix?: string
-    warnings?: Array<{ rule: string; detail: string; fix?: string }>
-  }
-}) {
+function onFineEditTurnComplete(turn: DialogueTurn) {
   if (turn.phase !== 'stills-execute' || !turn.toolBlock || !turn.stillsResult) return
   const { action, id } = turn.toolBlock
   const result = turn.stillsResult
@@ -774,11 +819,9 @@ function onFineEditTurnComplete(turn: {
   )
 }
 
-function buildFineEditFailureDetails(turns: Array<{
-  phase: 'ai-response' | 'stills-execute'
-  toolBlock?: { action: string }
-  stillsResult?: { ok: boolean; code?: string; msg?: string; fix?: string }
-}>): string {
+type FineEditFailureTurn = Pick<DialogueTurn, 'phase' | 'toolBlock' | 'stillsResult'>
+
+function buildFineEditFailureDetails(turns: FineEditFailureTurn[]): string {
   const executedActions = turns
     .filter(turn => turn.phase === 'stills-execute' && turn.toolBlock)
     .map(turn => turn.toolBlock!.action)
@@ -900,18 +943,6 @@ function normalizeColumnsFromLoose(
   return [{ name: 'id', label: 'ID', type: 'number', isPrimaryKey: true }]
 }
 
-function normalizeViewsFromLoose(rawViews: unknown): { default: IViewMetadata } & Record<string, IViewMetadata> {
-  const views = (asRecord(rawViews) as Record<string, IViewMetadata> | null) ?? { default: { rows: [] } }
-  const normalized = views as { default: IViewMetadata } & Record<string, IViewMetadata>
-  if (!normalized['default']) normalized['default'] = { rows: [] }
-  return normalized
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
-  return value as Record<string, unknown>
-}
-
 function assertDatasetToolParams(action: string, params: unknown): void {
   const validationError = validateDataSetCrudToolStillParams(action, params)
   if (validationError) {
@@ -957,13 +988,13 @@ function deleteTableWithRelationFallback(
 }
 
 function readCurrentDataSetName(): string {
+  if (historyTool.value) {
+    return historyTool.value.dataSetName
+  }
+
   try {
-    const raw = JSON.parse(props.state.editFiles['pagedata.json'] ?? '{}') as Record<string, unknown>
-    if (typeof raw['dataSetName'] === 'string') return raw['dataSetName']
-    if (raw['dataset'] && typeof raw['dataset'] === 'object') {
-      const wrapped = raw['dataset'] as Record<string, unknown>
-      if (typeof wrapped['dataSetName'] === 'string') return wrapped['dataSetName']
-    }
+    const content = props.state.editFiles['pagedata.json'] ?? '{}'
+    return DataSetCrudTool.fromJson(content).dataSetName
   } catch {
     // ignore
   }
@@ -971,62 +1002,19 @@ function readCurrentDataSetName(): string {
 }
 
 function buildDataSetMetadataFromDesigner(): IDataSetMetadata {
-  const tablesObj: Record<string, ITableMetadata> = {}
-  const tablePositions: Record<string, { x: number; y: number }> = {}
-  for (const table of tables.value) {
-    const { id: _id, x: _x, y: _y, columns: designerCols, ...tableRest } = table
-    const columns: DataColumn[] = designerCols.map(({ id: _cid, ...col }) => col)
-    tablesObj[table.tableName] = { ...tableRest, columns }
-    tablePositions[table.tableName] = { x: table.x, y: table.y }
-  }
-
-  return {
+  return buildDataSetMetadataFromDesignerProjection({
     dataSetName: readCurrentDataSetName(),
-    tables: tablesObj,
-    tableRelations: relations.value.map(normalizeRelation),
+    tables: tables.value,
+    relations: relations.value,
     ...(viewDependencies.value ? { viewDependencies: viewDependencies.value } : {}),
-    layout: { tablePositions },
-  }
+  })
 }
 
-function syncDesignerFromCrudTool(
-  tool: DataSetCrudTool,
-  layoutForNewTable?: (tableName: string, newIndex: number) => { x: number; y: number },
+function projectDesignerFromMetadata(
+  metadata: IDataSetMetadata,
+  layoutForNewTable?: LayoutForNewTable,
 ): void {
-  const metadata = tool.toJson()
-  const oldByName = new Map(tables.value.map(table => [table.tableName, table]))
-  const persistedPositions = metadata.layout?.tablePositions
-  let newTableCount = 0
-
-  tables.value = Object.entries(metadata.tables).map(([tableName, tableConfig], idx) => {
-    const oldTable = oldByName.get(tableName)
-    const oldColumnIdMap = new Map((oldTable?.columns ?? []).map(col => [col.name, col.id]))
-    const defaultLayout = {
-      x: 50 + (idx % 3) * 220,
-      y: 50 + Math.floor(idx / 3) * 200,
-    }
-    const newLayout = layoutForNewTable?.(tableName, newTableCount) ?? defaultLayout
-    const persistedLayout = persistedPositions?.[tableName]
-    if (!oldTable) newTableCount += 1
-
-    return {
-      id: oldTable?.id ?? generateId(),
-      x: persistedLayout?.x ?? oldTable?.x ?? newLayout.x,
-      y: persistedLayout?.y ?? oldTable?.y ?? newLayout.y,
-      ...tableConfig,
-      columns: tableConfig.columns.map((column) => ({
-        id: oldColumnIdMap.get(column.name) ?? generateId(),
-        ...column,
-      })),
-    }
-  })
-
-  relations.value = (metadata.tableRelations ?? []).map((rel) => ({
-    ...rel,
-    relationType: 'one-to-many',
-  }))
-
-  viewDependencies.value = metadata.viewDependencies
+  tableUiState.value = reconcileDesignerTableUiState(metadata, tables.value, generateId, layoutForNewTable)
 }
 
 // ═══ 表操作 ═══
@@ -1084,6 +1072,86 @@ function addColumn(table: DesignerTable) {
   })
 }
 
+function readInputValue(event: Event): string {
+  return (event.target as HTMLInputElement | null)?.value ?? ''
+}
+
+function applyMutationWithFeedback(action: () => void, failureTitle: string): void {
+  try {
+    action()
+  } catch (error) {
+    ElMessage.error(`${failureTitle}: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+function handleTableNameInputChange(table: DesignerTable, event: Event): void {
+  const nextName = readInputValue(event).trim()
+  if (!nextName || nextName === table.tableName) return
+  applyMutationWithFeedback(() => {
+    applyMutationWithHistory((tool) => {
+      tool.renameTable({ tableName: table.tableName, newTableName: nextName })
+    })
+  }, '表名更新失败')
+}
+
+function handleTableSemanticChange(
+  table: DesignerTable,
+  updates: Partial<Pick<ITableMetadata, 'resourceType' | 'businessCategory'>>,
+): void {
+  applyMutationWithFeedback(() => {
+    applyMutationWithHistory((tool) => {
+      tool.updateTable({ tableName: table.tableName, ...updates })
+    })
+  }, '表属性更新失败')
+}
+
+function handleTableResourceIdInputChange(table: DesignerTable, event: Event): void {
+  const value = readInputValue(event).trim()
+  applyMutationWithFeedback(() => {
+    applyMutationWithHistory((tool) => {
+      tool.updateTable({ tableName: table.tableName, resourceId: value || null })
+    })
+  }, '资源 ID 更新失败')
+}
+
+function handleTableApiInputChange(table: DesignerTable, event: Event): void {
+  const value = readInputValue(event).trim()
+  applyMutationWithFeedback(() => {
+    applyMutationWithHistory((tool) => {
+      tool.updateTable({ tableName: table.tableName, api: value || false })
+    })
+  }, 'API 更新失败')
+}
+
+function handleColumnFieldChange(table: DesignerTable, column: DesignerColumn, updates: Partial<DataColumn>): void {
+  applyMutationWithFeedback(() => {
+    applyMutationWithHistory((tool) => {
+      tool.updateColumn({ tableName: table.tableName, columnName: column.name, updates })
+    })
+  }, '字段更新失败')
+}
+
+function handleColumnNameInputChange(table: DesignerTable, column: DesignerColumn, event: Event): void {
+  const nextName = readInputValue(event).trim()
+  if (!nextName || nextName === column.name) return
+  applyMutationWithFeedback(() => {
+    applyMutationWithHistory((tool) => {
+      tool.renameColumn({ tableName: table.tableName, columnName: column.name, newColumnName: nextName })
+    })
+  }, '字段名更新失败')
+}
+
+function handleColumnLabelInputChange(table: DesignerTable, column: DesignerColumn, event: Event): void {
+  const nextLabel = readInputValue(event)
+  if (nextLabel === (column.label ?? '')) return
+  handleColumnFieldChange(table, column, { label: nextLabel })
+}
+
+function handleColumnTypeChange(table: DesignerTable, column: DesignerColumn, nextType: unknown): void {
+  if (typeof nextType !== 'string' || nextType === column.type) return
+  handleColumnFieldChange(table, column, { type: nextType })
+}
+
 function removeColumn(table: DesignerTable, idx: number) {
   const column = table.columns[idx]
   if (!column) return
@@ -1124,27 +1192,26 @@ function removeRelation(idx: number) {
   applyMutationWithHistory((tool) => {
     tool.deleteRelation(buildRelationSelector(rel))
   })
-  if (editingRel.value?._idx === idx) editingRel.value = null
+  if (editingRel.value?.sourceIndex === idx) editingRel.value = null
 }
 
 function editRelation(idx: number) {
   const rel = relations.value[idx]
   if (!rel) return
-  editingRel.value = { ...rel, _idx: idx }
+  editingRel.value = {
+    sourceIndex: idx,
+    sourceSelector: buildRelationSelector(rel),
+    draft: { ...rel },
+  }
 }
 
 function applyRelationEdit() {
   if (!editingRel.value) return
-  const { _idx, ...relData } = editingRel.value
-  const original = relations.value[_idx]
-  if (!original) {
-    editingRel.value = null
-    return
-  }
+  const { sourceSelector, draft } = editingRel.value
   applyMutationWithHistory((tool) => {
     tool.updateRelation({
-      selector: buildRelationSelector(original),
-      updates: normalizeRelation(relData),
+      selector: sourceSelector,
+      updates: normalizeRelation(draft),
     })
   })
   editingRel.value = null
@@ -1159,7 +1226,7 @@ async function deleteEditingRelation() {
       { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
     )
   } catch { return }
-  const idx = editingRel.value._idx
+  const idx = editingRel.value.sourceIndex
   const rel = relations.value[idx]
   editingRel.value = null
   if (!rel) return
@@ -1204,10 +1271,16 @@ async function clearAll() {
 
 function autoLayout() {
   const cols = Math.max(1, Math.min(3, Math.ceil(Math.sqrt(tables.value.length))))
-  tables.value.forEach((t, i) => {
-    t.x = 40 + (i % cols) * 320
-    t.y = 40 + Math.floor(i / cols) * 280
+  const nextUiState: Record<string, DesignerTableUiState> = { ...tableUiState.value }
+  tables.value.forEach((table, i) => {
+    nextUiState[table.tableName] = {
+      id: nextUiState[table.tableName]?.id ?? table.id,
+      columnIds: nextUiState[table.tableName]?.columnIds ?? Object.fromEntries(table.columns.map((column) => [column.name, column.id])),
+      x: 40 + (i % cols) * 320,
+      y: 40 + Math.floor(i / cols) * 280,
+    }
   })
+  tableUiState.value = nextUiState
   commitLayoutCheckpoint()
 }
 
@@ -1236,8 +1309,15 @@ function onDocMouseMove(e: MouseEvent) {
   const dy = e.clientY - dragState.value.startY
   const table = tables.value.find((t) => t.id === dragState.value!.tableId)
   if (table) {
-    table.x = Math.max(0, dragState.value.origX + dx)
-    table.y = Math.max(0, dragState.value.origY + dy)
+    tableUiState.value = {
+      ...tableUiState.value,
+      [table.tableName]: {
+        id: table.id,
+        columnIds: tableUiState.value[table.tableName]?.columnIds ?? Object.fromEntries(table.columns.map((column) => [column.name, column.id])),
+        x: Math.max(0, dragState.value.origX + dx),
+        y: Math.max(0, dragState.value.origY + dy),
+      },
+    }
   }
 }
 
@@ -1275,77 +1355,12 @@ onUnmounted(() => {
 function parseFromPageData(silent = false, options?: { preserveHistory?: boolean }) {
   try {
     const content = props.state.editFiles['pagedata.json'] ?? '{}'
-    let data = JSON.parse(content) as Record<string, unknown>
-    
-    // 兼容 { dataset: { ... } } 包装格式
-    if (data['dataset'] && typeof data['dataset'] === 'object' && !data['tables']) {
-      data = data['dataset'] as Record<string, unknown>
-    }
-    
-    let dataTables = data['tables'] as Record<string, Record<string, unknown>> | undefined
-    
-    // 兼容 legacy flat 格式：顶层 key 直接是表名（值为对象且含 columns 或 views）
-    if (!dataTables || typeof dataTables !== 'object') {
-      const inferredTables: Record<string, Record<string, unknown>> = {}
-      for (const [key, val] of Object.entries(data)) {
-        if (key === 'dataSetName' || key === 'tableRelations' || key === 'viewDependencies' || key === 'schemaVersion' || key === 'pageId' || key === 'version') continue
-        if (val && typeof val === 'object' && !Array.isArray(val)) {
-          const obj = val as Record<string, unknown>
-          if (obj['columns'] || obj['views'] || obj['tableName']) {
-            inferredTables[key] = obj
-          }
-        }
-      }
-      if (Object.keys(inferredTables).length > 0) {
-        dataTables = inferredTables
-      }
-    }
-    
-    if (!dataTables || typeof dataTables !== 'object') {
-      if (!silent) ElMessage.warning('pagedata.json 中没有找到 tables 定义')
-      return
-    }
-    
-    const normalizedTables: Record<string, ITableMetadata> = {}
-    for (const [name, config] of Object.entries(dataTables)) {
-      const columns = normalizeColumnsFromLoose(config['columns'])
-      const views = normalizeViewsFromLoose(config['views'])
-
-      normalizedTables[name] = {
-        tableName: name,
-        columns,
-        views,
-        ...(config['api'] !== undefined ? { api: config['api'] as ITableMetadata['api'] } : {}),
-        ...(config['resourceType'] !== undefined ? { resourceType: config['resourceType'] as NonNullable<ITableMetadata['resourceType']> } : {}),
-        ...(config['resourceId'] !== undefined ? { resourceId: config['resourceId'] as NonNullable<ITableMetadata['resourceId']> } : {}),
-        ...(config['businessCategory'] !== undefined ? { businessCategory: config['businessCategory'] as NonNullable<ITableMetadata['businessCategory']> } : {}),
-        ...(config['crudConfig'] !== undefined ? { crudConfig: config['crudConfig'] as ITableMetadata['crudConfig'] } : {}),
-      }
-    }
-
-    const rawRelations = data['tableRelations'] as Array<Record<string, unknown>> | undefined
-    const normalizedRelations: TableRelation[] = Array.isArray(rawRelations)
-      ? rawRelations
-        .map(rel => normalizeLooseRelation(rel, { includeAdvancedFields: true }))
-        .filter((rel): rel is TableRelation => rel !== null)
-      : []
-
-    const normalizedDataSet: IDataSetMetadata = {
-      dataSetName: (data['dataSetName'] as string | undefined) ?? 'PageDataSet',
-      tables: normalizedTables,
-      tableRelations: normalizedRelations,
-      ...(Array.isArray(data['viewDependencies'])
-        ? { viewDependencies: data['viewDependencies'] as NonNullable<IDataSetMetadata['viewDependencies']> }
-        : {}),
-      ...(typeof data['pageId'] === 'string' ? { pageId: data['pageId'] } : {}),
-    }
 
     const canPreserveHistory = Boolean(options?.preserveHistory && isDesignerStateInSyncWithHistory())
-    const nextTool = DataSetCrudTool.reconcileFromJson(normalizedDataSet, historyTool.value ?? undefined, {
+    const nextTool = DataSetCrudTool.reconcileFromJson(content, historyTool.value ?? undefined, {
       preserveHistory: canPreserveHistory,
     })
     historyTool.value = nextTool
-    syncDesignerFromCrudTool(nextTool)
     editingRel.value = null
     selectedTableId.value = null
     markHistoryChanged()
@@ -1357,37 +1372,34 @@ function parseFromPageData(silent = false, options?: { preserveHistory?: boolean
 }
 
 function exportToPageData() {
-  // 先读取现有 pagedata.json 以保留 views 里的 rows 等数据
-  let existing: Record<string, unknown> = {}
-  let isDatasetWrapped = false
+  let existingMeta: IDataSetMetadata | null = null
   try {
-    const raw = JSON.parse(props.state.editFiles['pagedata.json'] ?? '{}') as Record<string, unknown>
-    // 兼容 { dataset: { ... } } 包装格式
-    if (raw['dataset'] && typeof raw['dataset'] === 'object' && !raw['tables']) {
-      existing = raw['dataset'] as Record<string, unknown>
-      isDatasetWrapped = true
-    } else {
-      existing = raw
-    }
+    const existing = DataSetCrudTool.fromJson(props.state.editFiles['pagedata.json'] ?? '{}')
+    existingMeta = existing.toJson()
   } catch { /* ignore */ }
 
-  const tool = DataSetCrudTool.fromJson(buildDataSetMetadataFromDesigner())
+  if (!historyTool.value || !isDesignerStateInSyncWithHistory()) {
+    resetHistoryFromDesignerState()
+  }
+  const tool = historyTool.value
+  if (!tool) {
+    ElMessage.error('导出失败：DataSet 工具实例不可用')
+    return
+  }
   const toolJson = tool.toJson()
 
   const pageData: IDataSetMetadata = {
     ...toolJson,
-    dataSetName: (existing['dataSetName'] as string | undefined) ?? toolJson.dataSetName,
-    ...(existing['pageId'] ? { pageId: existing['pageId'] as string } : {}),
-    ...(Array.isArray(existing['viewDependencies'])
-      ? { viewDependencies: existing['viewDependencies'] as NonNullable<IDataSetMetadata['viewDependencies']> }
+    dataSetName: existingMeta?.dataSetName ?? toolJson.dataSetName,
+    ...(existingMeta?.pageId ? { pageId: existingMeta.pageId } : {}),
+    ...(Array.isArray(existingMeta?.viewDependencies)
+      ? { viewDependencies: existingMeta.viewDependencies }
       : toolJson.viewDependencies !== undefined
         ? { viewDependencies: toolJson.viewDependencies }
         : {}),
   }
-  
-  // 保持原有格式输出
-  const output = isDatasetWrapped ? { dataset: pageData } : pageData
-  const newContent = JSON.stringify(output, null, 2)
+
+  const newContent = JSON.stringify(pageData, null, 2)
   props.state.updatePageFile('pagedata.json', newContent)
   ElMessage.success('已导出到 pagedata.json')
 }
@@ -1406,7 +1418,7 @@ async function generateDataModel() {
   aiLoading.value = true
   aiResponse.value = ''
   blueprint.value = [
-    { action: 'dataset.init', status: 'pending' },
+    { action: 'dataset.bootstrap', status: 'pending' },
     { action: 'datatable.create', status: 'pending' },
     { action: 'datatable.addColumns', status: 'pending' },
     { action: 'relation.add', status: 'pending' },
@@ -1526,7 +1538,6 @@ ${aiPrompt.value}
       preserveHistory: canPreserveHistory,
     })
     historyTool.value = nextTool
-    syncDesignerFromCrudTool(nextTool)
     editingRel.value = null
     selectedTableId.value = null
     markHistoryChanged()
@@ -1548,11 +1559,7 @@ async function applyFineGrainedEdit() {
   fineEditSseLines.value = []
   blueprint.value = []
 
-  let lastTurns: Array<{
-    phase: 'ai-response' | 'stills-execute'
-    toolBlock?: { action: string }
-    stillsResult?: { ok: boolean; code?: string; msg?: string; fix?: string }
-  }> = []
+  let lastTurns: DialogueTurn[] = []
 
   try {
     const currentDataSet = buildDataSetMetadataFromDesigner()
@@ -1568,12 +1575,12 @@ async function applyFineGrainedEdit() {
       registerEditStills()
 
       const session = createStillSession()
-      const initResult = executeStill('edit.init', {
+      const initResult = executeStill('edit.bootstrap', {
         ruleJson: [],
         pageDataJson: currentDataSet,
         scriptJs: '',
         styleCss: '',
-      }, session, 'dataset-fine-edit-init')
+      }, session, 'dataset-fine-edit-bootstrap')
 
       if (!initResult.ok) {
         throw new Error(initResult.msg)
@@ -2177,6 +2184,21 @@ const datasetDesignerChatSender: AiChatSender = async (request) => {
   font-weight: 600;
   color: #7c3aed;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.ds-ai__new-tag {
+  margin-left: auto;
+}
+
+.ds-ai__feature-tip {
+  margin: 10px 14px 0;
+  padding: 8px 10px;
+  border: 1px dashed #86efac;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .ds-ai__form {

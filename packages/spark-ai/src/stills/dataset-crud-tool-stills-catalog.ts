@@ -17,6 +17,22 @@
  */
 
 import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from './llm-params-validator'
+import {
+  DATASET_EXPORT_ACTION,
+  DATATABLE_DESCRIBE_ACTION,
+  DATATABLE_ADD_COLUMNS_ACTION,
+  DATATABLE_UPDATE_COLUMN_ACTION,
+  DATATABLE_REMOVE_COLUMN_ACTION,
+  DATATABLE_CREATE_ACTION,
+  DATAVIEW_DESCRIBE_ACTION,
+  DATAVIEW_CREATE_ACTION,
+  DATAVIEW_CONFIGURE_ACTION,
+  RELATION_LIST_ACTION,
+  RELATION_ADD_ACTION,
+  RELATION_REMOVE_ACTION,
+  DEPENDENCY_ADD_ACTION,
+  DEPENDENCY_REMOVE_ACTION,
+} from './action-names'
 
 /** 单个动作的结构化失败模式，用于给 LLM 提前暴露 fail-fast 边界。 */
 export interface DatasetCrudToolStillFailureMode {
@@ -422,7 +438,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       CATALOG_ONLY_RULE,
     ],
     failureModes: [],
-    currentStillAction: 'dataset.export',
+    currentStillAction: DATASET_EXPORT_ACTION,
   }),
   defineDescribeRow({
     action: 'datasetTool.canUndo',
@@ -568,7 +584,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       CATALOG_ONLY_RULE,
     ],
     failureModes: [],
-    currentStillAction: 'datatable.describe',
+    currentStillAction: DATATABLE_DESCRIBE_ACTION,
   }),
   defineDescribeRow({
     action: 'datasetTool.listColumns',
@@ -596,7 +612,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先确认表名，或先执行 datasetTool.listTables。',
       },
     ],
-    currentStillAction: 'datatable.describe',
+    currentStillAction: DATATABLE_DESCRIBE_ACTION,
   }),
   defineDescribeRow({
     action: 'datasetTool.getColumn',
@@ -626,7 +642,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先确认表名，或先执行 datasetTool.listTables。',
       },
     ],
-    currentStillAction: 'datatable.describe',
+    currentStillAction: DATATABLE_DESCRIBE_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.createColumn',
@@ -662,7 +678,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '检查 column.name、column.type 与现有 schema。',
       },
     ],
-    currentStillAction: 'datatable.addColumns',
+    currentStillAction: DATATABLE_ADD_COLUMNS_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.updateColumn',
@@ -695,7 +711,49 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先执行 datasetTool.getColumn 或 datasetTool.listColumns。',
       },
     ],
-    currentStillAction: 'datatable.updateColumn',
+    currentStillAction: DATATABLE_UPDATE_COLUMN_ACTION,
+  }),
+  defineRequestRow({
+    action: 'datasetTool.renameColumn',
+    target: 'column',
+    crudToolMethod: 'renameColumn',
+    description: '重命名指定列，并同步更新该表视图、静态 rows 与相关关系引用',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      columnName: COLUMN_NAME_PARAM,
+      newColumnName: 'string — 新列名，表内唯一',
+    },
+    resultSchema: {
+      table: 'DataTable — 重命名后的数据表实例',
+    },
+    example: {
+      tableName: 'Users',
+      columnName: 'name',
+      newColumnName: 'userName',
+    },
+    validation: { requiredKeys: ['tableName', 'columnName', 'newColumnName'] },
+    usageRules: [
+      '仅用于列身份变更；普通元数据修改仍优先用 datasetTool.updateColumn。',
+      '会同步改写当前表 views 中的字段引用、静态 rows 字段键，以及 tableRelations 中的 parentField/childField 引用。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_TABLE',
+        when: '目标表不存在',
+        fix: '先确认 tableName，或先执行 datasetTool.listTables。',
+      },
+      {
+        code: 'UNKNOWN_COLUMN',
+        when: '目标列不存在',
+        fix: '先执行 datasetTool.getColumn 或 datasetTool.listColumns。',
+      },
+      {
+        code: 'COLUMN_ALREADY_EXISTS',
+        when: 'newColumnName 在同一表中已存在',
+        fix: '换一个未占用的新列名，或先清理冲突列。',
+      },
+    ],
   }),
   defineRequestRow({
     action: 'datasetTool.deleteColumn',
@@ -725,7 +783,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先执行 datasetTool.getColumn 或 datasetTool.listColumns。',
       },
     ],
-    currentStillAction: 'datatable.removeColumn',
+    currentStillAction: DATATABLE_REMOVE_COLUMN_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.createTable',
@@ -775,7 +833,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先缩小到最小可用 schema，再逐步补齐配置。',
       },
     ],
-    currentStillAction: 'datatable.create',
+    currentStillAction: DATATABLE_CREATE_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.updateTable',
@@ -827,6 +885,41 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         code: 'INVALID_UPDATE',
         when: '列更新、API 配置或 defaultRows 与当前 schema 冲突',
         fix: '拆分成多个小更新动作，逐步定位失败点。',
+      },
+    ],
+  }),
+  defineRequestRow({
+    action: 'datasetTool.renameTable',
+    target: 'table',
+    crudToolMethod: 'renameTable',
+    description: '重命名数据表，并同步更新视图、关系、依赖与布局引用',
+    paramsSchema: {
+      tableName: TABLE_NAME_PARAM,
+      newTableName: 'string — 新表名，DataSet 内唯一',
+    },
+    resultSchema: {
+      table: 'DataTable — 重命名后的数据表实例',
+    },
+    example: {
+      tableName: 'Users',
+      newTableName: 'CustomerUsers',
+    },
+    validation: { requiredKeys: ['tableName', 'newTableName'] },
+    usageRules: [
+      '仅用于表身份变更；普通资源语义、API 或列结构修改仍优先用 datasetTool.updateTable。',
+      '会同步改写表级 views.tableName、tableRelations、viewDependencies 与 layout.tablePositions 中的表名引用。',
+      CATALOG_ONLY_RULE,
+    ],
+    failureModes: [
+      {
+        code: 'UNKNOWN_TABLE',
+        when: '目标表不存在',
+        fix: '先确认 tableName，或先执行 datasetTool.listTables。',
+      },
+      {
+        code: 'TABLE_ALREADY_EXISTS',
+        when: 'newTableName 已被其他表占用',
+        fix: '换一个未占用的新表名，或先处理冲突表。',
       },
     ],
   }),
@@ -883,7 +976,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先执行 datasetTool.listTables。',
       },
     ],
-    currentStillAction: 'dataview.describe',
+    currentStillAction: DATAVIEW_DESCRIBE_ACTION,
   }),
   defineDescribeRow({
     action: 'datasetTool.getView',
@@ -908,7 +1001,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       CATALOG_ONLY_RULE,
     ],
     failureModes: [],
-    currentStillAction: 'dataview.describe',
+    currentStillAction: DATAVIEW_DESCRIBE_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.createView',
@@ -942,7 +1035,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '改用 datasetTool.updateView 更新 default 视图。',
       },
     ],
-    currentStillAction: 'dataview.create',
+    currentStillAction: DATAVIEW_CREATE_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.updateView',
@@ -977,7 +1070,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先执行 datasetTool.listViews 或 datasetTool.createView。',
       },
     ],
-    currentStillAction: 'dataview.configure',
+    currentStillAction: DATAVIEW_CONFIGURE_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.deleteView',
@@ -1298,7 +1391,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
       CATALOG_ONLY_RULE,
     ],
     failureModes: [],
-    currentStillAction: 'relation.list',
+    currentStillAction: RELATION_LIST_ACTION,
   }),
   defineDescribeRow({
     action: 'datasetTool.getRelation',
@@ -1332,7 +1425,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '补充 parentField 与 childField。',
       },
     ],
-    currentStillAction: 'relation.list',
+    currentStillAction: RELATION_LIST_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.createRelation',
@@ -1367,7 +1460,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先核对 schema，再创建关系。',
       },
     ],
-    currentStillAction: 'relation.add',
+    currentStillAction: RELATION_ADD_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.updateRelation',
@@ -1433,7 +1526,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '改用 selector，并补 parentField 与 childField。',
       },
     ],
-    currentStillAction: 'relation.remove',
+    currentStillAction: RELATION_REMOVE_ACTION,
   }),
   defineDescribeRow({
     action: 'datasetTool.listDependencies',
@@ -1511,7 +1604,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先创建表关系，再创建依赖。',
       },
     ],
-    currentStillAction: 'dependency.add',
+    currentStillAction: DEPENDENCY_ADD_ACTION,
   }),
   defineRequestRow({
     action: 'datasetTool.updateDependency',
@@ -1573,7 +1666,7 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         fix: '先执行 datasetTool.getDependency。',
       },
     ],
-    currentStillAction: 'dependency.remove',
+    currentStillAction: DEPENDENCY_REMOVE_ACTION,
   }),
 ] as const satisfies readonly DatasetCrudToolStillParameterRow[]
 

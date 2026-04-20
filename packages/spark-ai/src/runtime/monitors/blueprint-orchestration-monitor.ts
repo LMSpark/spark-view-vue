@@ -10,31 +10,51 @@
  */
 
 import type { MonitorContext, SessionMonitor } from '../session-orchestrator'
+import {
+  DATATABLE_CREATE_ACTION,
+  DATATABLE_ADD_COLUMNS_ACTION,
+  DATATABLE_UPDATE_COLUMN_ACTION,
+  DATATABLE_REMOVE_COLUMN_ACTION,
+  DATATABLE_SET_API_ACTION,
+  DATATABLE_ADD_ROWS_ACTION,
+  RELATION_ADD_ACTION,
+  RELATION_REMOVE_ACTION,
+  DATAVIEW_CREATE_ACTION,
+  DATAVIEW_CONFIGURE_ACTION,
+  DATAVIEW_SET_AGGREGATES_ACTION,
+  DATAVIEW_SET_TREE_CONFIG_ACTION,
+  DEPENDENCY_ADD_ACTION,
+  DEPENDENCY_REMOVE_ACTION,
+  BLUEPRINT_DESCRIBE_ACTION,
+  BLUEPRINT_REVISE_ACTION,
+  BLUEPRINT_SELF_CHECK_ACTION,
+  BLUEPRINT_VALIDATE_COVERAGE_ACTION,
+} from '../../stills/action-names'
 
 /** 需要蓝图审查后才能执行的写入动作集合 */
 const WRITE_ACTIONS = new Set([
-  'datatable.create',
-  'datatable.addColumns',
-  'datatable.updateColumn',
-  'datatable.removeColumn',
-  'datatable.setApi',
-  'datatable.addRows',
-  'relation.add',
-  'relation.remove',
-  'dataview.create',
-  'dataview.configure',
-  'dataview.setAggregates',
-  'dataview.setTreeConfig',
-  'dependency.add',
-  'dependency.remove',
+  DATATABLE_CREATE_ACTION,
+  DATATABLE_ADD_COLUMNS_ACTION,
+  DATATABLE_UPDATE_COLUMN_ACTION,
+  DATATABLE_REMOVE_COLUMN_ACTION,
+  DATATABLE_SET_API_ACTION,
+  DATATABLE_ADD_ROWS_ACTION,
+  RELATION_ADD_ACTION,
+  RELATION_REMOVE_ACTION,
+  DATAVIEW_CREATE_ACTION,
+  DATAVIEW_CONFIGURE_ACTION,
+  DATAVIEW_SET_AGGREGATES_ACTION,
+  DATAVIEW_SET_TREE_CONFIG_ACTION,
+  DEPENDENCY_ADD_ACTION,
+  DEPENDENCY_REMOVE_ACTION,
 ])
 
 /** 蓝图审查动作：执行过任意一个即表示 LLM 已审查蓝图 */
 const REVIEW_ACTIONS = new Set([
-  'blueprint.describe',
-  'blueprint.revise',
-  'blueprint.selfCheck',
-  'blueprint.validateCoverage',
+  BLUEPRINT_DESCRIBE_ACTION,
+  BLUEPRINT_REVISE_ACTION,
+  BLUEPRINT_SELF_CHECK_ACTION,
+  BLUEPRINT_VALIDATE_COVERAGE_ACTION,
 ])
 
 export function createBlueprintOrchestrationMonitor(): SessionMonitor {

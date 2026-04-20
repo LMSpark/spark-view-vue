@@ -22,6 +22,33 @@ import type {
   PostValidationWarning,
 } from './types'
 import { getDomainState, readSessionBlueprint, writeSessionBlueprint } from './types'
+import {
+  BLUEPRINT_CREATE_ACTION,
+  DATASET_BOOTSTRAP_ACTION,
+  DATASET_DESCRIBE_ACTION,
+  DATASET_VALIDATE_ACTION,
+  DATASET_EXPORT_ACTION,
+  DATASET_RESET_ACTION,
+  DATATABLE_CREATE_ACTION,
+  DATATABLE_DESCRIBE_ACTION,
+  DATATABLE_ADD_COLUMNS_ACTION,
+  DATATABLE_UPDATE_COLUMN_ACTION,
+  DATATABLE_REMOVE_COLUMN_ACTION,
+  DATATABLE_SET_API_ACTION,
+  DATATABLE_ADD_ROWS_ACTION,
+  RELATION_ADD_ACTION,
+  RELATION_REMOVE_ACTION,
+  RELATION_LIST_ACTION,
+  SCHEMA_LOCK_ACTION,
+  SCHEMA_UNLOCK_ACTION,
+  DATAVIEW_CREATE_ACTION,
+  DATAVIEW_DESCRIBE_ACTION,
+  DATAVIEW_CONFIGURE_ACTION,
+  DATAVIEW_SET_AGGREGATES_ACTION,
+  DATAVIEW_SET_TREE_CONFIG_ACTION,
+  DEPENDENCY_ADD_ACTION,
+  DEPENDENCY_REMOVE_ACTION,
+} from './action-names'
 import type { DataColumn, CrudApi, IDataRow, AggregateColumnConfig, TreeConfig, IViewMetadata, DataTable, DataView, TableRelation } from '@spark-view/spark-data'
 import { DataSet, INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
 
@@ -321,14 +348,14 @@ function postValidateOptionViews(dataset: DataSet): PostValidationWarning[] {
       warnings.push({
         rule: 'OPTIONS_VALUE_FIELD',
         detail: `${tableName}.options 视图缺少 valueField`,
-        fix: `请 dataview.configure { tableName: "${tableName}", viewId: "options", valueField: "id" }`,
+        fix: `请 ${DATAVIEW_CONFIGURE_ACTION} { tableName: "${tableName}", viewId: "options", valueField: "id" }`,
       })
     }
     if (optionsView.labelField === undefined) {
       warnings.push({
         rule: 'OPTIONS_LABEL_FIELD',
         detail: `${tableName}.options 视图缺少 labelField`,
-        fix: `请 dataview.configure { tableName: "${tableName}", viewId: "options", labelField: "name" }`,
+        fix: `请 ${DATAVIEW_CONFIGURE_ACTION} { tableName: "${tableName}", viewId: "options", labelField: "name" }`,
       })
     }
 
@@ -337,7 +364,7 @@ function postValidateOptionViews(dataset: DataSet): PostValidationWarning[] {
       warnings.push({
         rule: 'OPTIONS_TREE_CONFIG',
         detail: `${tableName} 含 parentId 列，options 视图缺少 treeConfig`,
-        fix: `请 dataview.setTreeConfig { tableName: "${tableName}", viewId: "options", treeConfig: { idField: "id", parentIdField: "parentId", textField: "name" } }`,
+        fix: `请 ${DATAVIEW_SET_TREE_CONFIG_ACTION} { tableName: "${tableName}", viewId: "options", treeConfig: { idField: "id", parentIdField: "parentId", textField: "name" } }`,
       })
     }
   }
@@ -717,7 +744,7 @@ function mapRelationAddError(error: unknown): DataSetOpError {
   const message = toErrorMessage(error)
   if (message.includes('not found')) {
     const code = message.includes('field') ? 'COLUMN_NOT_FOUND' : 'TABLE_NOT_FOUND'
-    return new DataSetOpError(code, message, '请查 datatable.describe')
+    return new DataSetOpError(code, message, `请查 ${DATATABLE_DESCRIBE_ACTION}`)
   }
   if (message.includes('already exists')) {
     return new DataSetOpError('RELATION_EXISTS', '相同关系已存在', '跳过此步骤')
@@ -728,10 +755,10 @@ function mapRelationAddError(error: unknown): DataSetOpError {
 function mapRelationRemoveError(error: unknown, parentTable: string, childTable: string): DataSetOpError {
   const message = toErrorMessage(error)
   if (message.includes('not found')) {
-    return new DataSetOpError('RELATION_NOT_FOUND', '关系不存在', '请查 relation.list')
+    return new DataSetOpError('RELATION_NOT_FOUND', '关系不存在', `请查 ${RELATION_LIST_ACTION}`)
   }
   if (message.includes('referenced')) {
-    return new DataSetOpError('RELATION_IN_USE', `关系 ${parentTable}→${childTable} 被 viewDependency 引用`, '先 dependency.remove 再删关系')
+    return new DataSetOpError('RELATION_IN_USE', `关系 ${parentTable}→${childTable} 被 viewDependency 引用`, `先 ${DEPENDENCY_REMOVE_ACTION} 再删关系`)
   }
   return new DataSetOpError('UNKNOWN', message, '')
 }
@@ -742,7 +769,7 @@ function mapDependencyAddError(error: unknown): DataSetOpError {
     return new DataSetOpError('TABLE_NOT_FOUND', message, '请确认表名')
   }
   if (message.includes('No tableRelation')) {
-    return new DataSetOpError('NO_RELATION', message, '请先 relation.add')
+    return new DataSetOpError('NO_RELATION', message, `请先 ${RELATION_ADD_ACTION}`)
   }
   if (message.includes('already exists')) {
     return new DataSetOpError('DEPENDENCY_EXISTS', '相同依赖已存在', '跳过此步骤')
@@ -774,23 +801,23 @@ interface DsGuardOptions {
 function dsGuard(checks: DsGuardOptions = {}): StillGuard {
   return (session: IStillSession): { code: string; msg: string } | null => {
     if (checks.requireBlueprint === true && readSessionBlueprint(session) === null) {
-      return { code: 'NO_BLUEPRINT', msg: 'Blueprint 尚未创建，请先执行 blueprint.create' }
+      return { code: 'NO_BLUEPRINT', msg: `Blueprint 尚未创建，请先执行 ${BLUEPRINT_CREATE_ACTION}` }
     }
     const state = getDataSetState(session)
     if (checks.requireDataset !== false && state.data === null) {
-      return { code: 'NO_DATASET', msg: 'Dataset 尚未初始化，请先执行 dataset.init' }
+      return { code: 'NO_DATASET', msg: `Dataset 尚未初始化，请先执行 ${DATASET_BOOTSTRAP_ACTION}` }
     }
     if (checks.requireSchemaUnlocked === true && state.locked) {
-      return { code: 'SCHEMA_LOCKED', msg: 'Schema 已锁定，不允许此操作。如需修改请先 schema.unlock' }
+      return { code: 'SCHEMA_LOCKED', msg: `Schema 已锁定，不允许此操作。如需修改请先 ${SCHEMA_UNLOCK_ACTION}` }
     }
     if (checks.requireSchemaLocked === true && !state.locked) {
-      return { code: 'SCHEMA_NOT_LOCKED', msg: 'Schema 尚未锁定。视图/API/依赖配置需在 schema.lock 之后执行' }
+      return { code: 'SCHEMA_NOT_LOCKED', msg: `Schema 尚未锁定。视图/API/依赖配置需在 ${SCHEMA_LOCK_ACTION} 之后执行` }
     }
     return null
   }
 }
 
-/** 仅要求 blueprint 存在；dataset.init 用这个 guard，因为它本身就是创建 dataset 的动作。 */
+/** 仅要求 blueprint 存在；dataset.bootstrap 用这个 guard，因为它本身就是创建 dataset 的动作。 */
 const guardBlueprintOnly = dsGuard({ requireDataset: false, requireBlueprint: true })
 const guardBlueprintOnlyDesc = '需要 blueprint 已创建'
 
@@ -824,7 +851,7 @@ const guardNone = dsGuard({ requireDataset: false })
 function requireDataset(session: IStillSession): { ds: DataSet } | { error: StillFailure } {
   const state = getDataSetState(session)
   if (state.data === null) {
-    return { error: { ok: false, code: 'NO_DATASET', msg: 'Dataset 未初始化', fix: '请先执行 dataset.init' } }
+    return { error: { ok: false, code: 'NO_DATASET', msg: 'Dataset 未初始化', fix: `请先执行 ${DATASET_BOOTSTRAP_ACTION}` } }
   }
   return { ds: state.data }
 }
@@ -851,7 +878,7 @@ class DataSetOpError extends Error {
 function requireTable(ds: DataSet, tableName: string): DataTable {
   const table = ds.getTable(tableName)
   if (!table) {
-    throw new DataSetOpError('TABLE_NOT_FOUND', `表 ${tableName} 不存在`, '请先 datatable.create 建表')
+    throw new DataSetOpError('TABLE_NOT_FOUND', `表 ${tableName} 不存在`, `请先 ${DATATABLE_CREATE_ACTION} 建表`)
   }
   return table
 }
@@ -864,7 +891,7 @@ function requireView(ds: DataSet, tableName: string, viewId?: string): { table: 
     throw new DataSetOpError(
       'VIEW_NOT_FOUND',
       `视图 ${vid} 不存在`,
-      vid === 'default' ? '请先 datatable.create 建表' : '请先 dataview.create 创建视图',
+      vid === 'default' ? `请先 ${DATATABLE_CREATE_ACTION} 建表` : `请先 ${DATAVIEW_CREATE_ACTION} 创建视图`,
     )
   }
   return { table, view, vid }
@@ -895,14 +922,14 @@ function executeDSOperation<T>(operation: () => ProjectedPayload<T>): StillResul
 // dataset.* (5)
 // ═══════════════════════════════════════════════════════════
 
-// ─── dataset.init ──────────────────────────────────────────
+// ─── dataset.bootstrap ─────────────────────────────────────
 
 interface DatasetInitParams { dataSetName: string }
 
 const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
-  action: 'dataset.init',
+  action: DATASET_BOOTSTRAP_ACTION,
   type: 'request',
-  description: '创建空 DataSet 实例（设 dataSetName）',
+  description: '引导 Dataset 域：创建空 DataSet 实例（设 dataSetName）',
   guard: guardBlueprintOnly,
   guardDescription: guardBlueprintOnlyDesc,
   paramsSchema: { dataSetName: 'string — DataSet 名称' },
@@ -914,7 +941,7 @@ const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
   execute: (session, params): StillResult => {
     const state = getDataSetState(session)
     if (state.data !== null) {
-      return { ok: false, code: 'DATASET_EXISTS', msg: 'Dataset 已存在', fix: '如需重建请先 dataset.reset' }
+      return { ok: false, code: 'DATASET_EXISTS', msg: 'Dataset 已存在', fix: `如需重建请先 ${DATASET_RESET_ACTION}` }
     }
     state.data = createWorkingDataSet(params.dataSetName)
     const snapshot = state.data.toJson()
@@ -938,7 +965,7 @@ const datasetInit: StillDefinition<DatasetInitParams, unknown> = {
 // ─── dataset.describe ──────────────────────────────────────
 
 const datasetDescribe: StillDefinition<Record<string, never>, unknown> = {
-  action: 'dataset.describe',
+  action: DATASET_DESCRIBE_ACTION,
   type: 'describe',
   description: '返回当前 dataset 结构摘要',
   guard: guardDatasetOnly,
@@ -962,14 +989,14 @@ const datasetDescribe: StillDefinition<Record<string, never>, unknown> = {
 // ─── dataset.validate ──────────────────────────────────────
 
 const datasetValidate: StillDefinition<Record<string, never>, unknown> = {
-  action: 'dataset.validate',
+  action: DATASET_VALIDATE_ACTION,
   type: 'request',
   description: '全量结构校验，返回 issues[]',
   guard: guardDatasetOnly,
   guardDescription: guardDatasetOnlyDesc,
   usageRules: [
     '执行成功只代表校验动作本身完成；是否通过要继续检查返回值里的 data.valid。',
-    '适合在 schema.lock 之后、dataset.export 之前做全量验收；若 valid=false，先修 issues 再继续。',
+    `适合在 ${SCHEMA_LOCK_ACTION} 之后、${DATASET_EXPORT_ACTION} 之前做全量验收；若 valid=false，先修 issues 再继续。`,
   ],
   paramsSchema: {},
   resultSchema: {
@@ -983,7 +1010,7 @@ const datasetValidate: StillDefinition<Record<string, never>, unknown> = {
     {
       code: 'NO_DATASET',
       when: '当前会话尚未初始化 DataSet 就执行 dataset.validate',
-      fix: '先 dataset.init，再继续建模与校验',
+      fix: `先 ${DATASET_BOOTSTRAP_ACTION}，再继续建模与校验`,
     },
   ],
   validate: () => null,
@@ -992,7 +1019,7 @@ const datasetValidate: StillDefinition<Record<string, never>, unknown> = {
     return withDS(session, (DS) => {
       const result = validateDatasetInstance(DS)
       const hint = result.data.valid
-        ? (state.locked ? '校验通过' : '校验通过，无问题。请执行 schema.lock 锁定 schema')
+        ? (state.locked ? '校验通过' : `校验通过，无问题。请执行 ${SCHEMA_LOCK_ACTION} 锁定 schema`)
         : '存在校验问题，请先修复'
       return {
         ok: true,
@@ -1010,7 +1037,7 @@ const datasetValidate: StillDefinition<Record<string, never>, unknown> = {
 // ─── dataset.export ────────────────────────────────────────
 
 const datasetExport: StillDefinition<Record<string, never>, unknown> = {
-  action: 'dataset.export',
+  action: DATASET_EXPORT_ACTION,
   type: 'request',
   description: '导出当前 DataSet 的序列化快照',
   guard: guardBlueprintAndDataset,
@@ -1024,7 +1051,7 @@ const datasetExport: StillDefinition<Record<string, never>, unknown> = {
 // ─── dataset.reset ─────────────────────────────────────────
 
 const datasetReset: StillDefinition<Record<string, never>, unknown> = {
-  action: 'dataset.reset',
+  action: DATASET_RESET_ACTION,
   type: 'request',
   description: '清空重来（需前端二次确认）',
   guard: guardNone,
@@ -1053,7 +1080,7 @@ const datasetReset: StillDefinition<Record<string, never>, unknown> = {
 interface DatatableCreateParams { tableName: string; columns: DataColumn[] }
 
 const datatableCreate: StillDefinition<DatatableCreateParams, unknown> = {
-  action: 'datatable.create',
+  action: DATATABLE_CREATE_ACTION,
   type: 'request',
   description: '添加一张表（tableName + columns）',
   guard: guardSchemaUnlocked,
@@ -1079,7 +1106,7 @@ const datatableCreate: StillDefinition<DatatableCreateParams, unknown> = {
       try {
         DS.addTable(params.tableName, params.columns)
       } catch {
-        throw new DataSetOpError('TABLE_EXISTS', `表 ${params.tableName} 已存在`, '使用 datatable.addColumns 向已有表追加列')
+        throw new DataSetOpError('TABLE_EXISTS', `表 ${params.tableName} 已存在`, `使用 ${DATATABLE_ADD_COLUMNS_ACTION} 向已有表追加列`)
       }
       const computedCols = params.columns.filter(c => c.computeExpression !== undefined)
       return {
@@ -1100,7 +1127,7 @@ const datatableCreate: StillDefinition<DatatableCreateParams, unknown> = {
 interface DatatableDescribeParams { tableName: string }
 
 const datatableDescribe: StillDefinition<DatatableDescribeParams, unknown> = {
-  action: 'datatable.describe',
+  action: DATATABLE_DESCRIBE_ACTION,
   type: 'describe',
   description: '返回指定表详情（列清单/关系/API/视图数）',
   guard: guardDatasetOnly,
@@ -1119,7 +1146,7 @@ const datatableDescribe: StillDefinition<DatatableDescribeParams, unknown> = {
 interface AddColumnsParams { tableName: string; columns: DataColumn[] }
 
 const datatableAddColumns: StillDefinition<AddColumnsParams, unknown> = {
-  action: 'datatable.addColumns',
+  action: DATATABLE_ADD_COLUMNS_ACTION,
   type: 'request',
   description: '向已有表追加列（同名列不覆盖）',
   guard: guardSchemaUnlocked,
@@ -1146,7 +1173,7 @@ const datatableAddColumns: StillDefinition<AddColumnsParams, unknown> = {
 interface UpdateColumnParams { tableName: string; columnName: string; updates: Partial<DataColumn> }
 
 const datatableUpdateColumn: StillDefinition<UpdateColumnParams, unknown> = {
-  action: 'datatable.updateColumn',
+  action: DATATABLE_UPDATE_COLUMN_ACTION,
   type: 'request',
   description: '修改单列属性（type/label/computeExpression 等）',
   guard: guardSchemaUnlocked,
@@ -1174,7 +1201,7 @@ const datatableUpdateColumn: StillDefinition<UpdateColumnParams, unknown> = {
           summary: `更新 ${params.tableName}.${params.columnName}: ${Object.keys(safeUpdates).join(', ')}`,
         }
       } catch {
-        throw new DataSetOpError('COLUMN_NOT_FOUND', `列 ${params.columnName} 不存在`, '请查 datatable.describe')
+        throw new DataSetOpError('COLUMN_NOT_FOUND', `列 ${params.columnName} 不存在`, `请查 ${DATATABLE_DESCRIBE_ACTION}`)
       }
     }))
   },
@@ -1185,7 +1212,7 @@ const datatableUpdateColumn: StillDefinition<UpdateColumnParams, unknown> = {
 interface RemoveColumnParams { tableName: string; columnName: string }
 
 const datatableRemoveColumn: StillDefinition<RemoveColumnParams, unknown> = {
-  action: 'datatable.removeColumn',
+  action: DATATABLE_REMOVE_COLUMN_ACTION,
   type: 'request',
   description: '删除列（校验关系/视图引用，返回 impact）',
   guard: guardSchemaUnlocked,
@@ -1205,12 +1232,12 @@ const datatableRemoveColumn: StillDefinition<RemoveColumnParams, unknown> = {
             || (rel.childTable === params.tableName && rel.childField === params.columnName),
       )
       if (relImpact.length > 0) {
-        throw new DataSetOpError('COLUMN_IN_USE', `列 ${params.columnName} 被 ${relImpact.length} 条关系引用`, '请先 relation.remove 相关关系后再删除此列')
+        throw new DataSetOpError('COLUMN_IN_USE', `列 ${params.columnName} 被 ${relImpact.length} 条关系引用`, `请先 ${RELATION_REMOVE_ACTION} 相关关系后再删除此列`)
       }
       try {
         table.removeColumn(params.columnName)
       } catch {
-        throw new DataSetOpError('COLUMN_NOT_FOUND', `列 ${params.columnName} 不存在`, '请查 datatable.describe')
+        throw new DataSetOpError('COLUMN_NOT_FOUND', `列 ${params.columnName} 不存在`, `请查 ${DATATABLE_DESCRIBE_ACTION}`)
       }
       return {
         data: { status: 'ok', tableName: params.tableName, columnName: params.columnName, remainingColumns: table.columns.length },
@@ -1224,7 +1251,7 @@ const datatableRemoveColumn: StillDefinition<RemoveColumnParams, unknown> = {
 interface SetApiParams { tableName: string; api: CrudApi }
 
 const datatableSetApi: StillDefinition<SetApiParams, unknown> = {
-  action: 'datatable.setApi',
+  action: DATATABLE_SET_API_ACTION,
   type: 'request',
   description: '设置表的 CrudApi 配置',
   guard: guardSchemaLocked,
@@ -1255,7 +1282,7 @@ const datatableSetApi: StillDefinition<SetApiParams, unknown> = {
     {
       code: 'TABLE_NOT_FOUND',
       when: 'tableName 不存在',
-      fix: '先 datatable.create 建表，或核对 tableName',
+      fix: `先 ${DATATABLE_CREATE_ACTION} 建表，或核对 tableName`,
     },
   ],
   validate: (params) => {
@@ -1278,7 +1305,7 @@ const datatableSetApi: StillDefinition<SetApiParams, unknown> = {
 interface AddRowsParams { tableName: string; rows: IDataRow[] }
 
 const datatableAddRows: StillDefinition<AddRowsParams, unknown> = {
-  action: 'datatable.addRows',
+  action: DATATABLE_ADD_ROWS_ACTION,
   type: 'request',
   description: '写入内联静态行（枚举/配置表用）',
   guard: guardBlueprintAndDataset,
@@ -1307,7 +1334,7 @@ const datatableAddRows: StillDefinition<AddRowsParams, unknown> = {
     {
       code: 'TABLE_NOT_FOUND',
       when: 'tableName 指向不存在的表',
-      fix: '先 datatable.create 建表，或核对 tableName',
+      fix: `先 ${DATATABLE_CREATE_ACTION} 建表，或核对 tableName`,
     },
     {
       code: 'INVALID_ROW_DATA',
@@ -1364,7 +1391,7 @@ interface RelationAddParams {
 }
 
 const relationAdd: StillDefinition<RelationAddParams, unknown> = {
-  action: 'relation.add',
+  action: RELATION_ADD_ACTION,
   type: 'request',
   description: '添加 TableRelation',
   guard: guardSchemaUnlocked,
@@ -1405,7 +1432,7 @@ const relationAdd: StillDefinition<RelationAddParams, unknown> = {
 interface RelationRemoveParams { parentTable: string; childTable: string }
 
 const relationRemove: StillDefinition<RelationRemoveParams, unknown> = {
-  action: 'relation.remove',
+  action: RELATION_REMOVE_ACTION,
   type: 'request',
   description: '删除 TableRelation（校验 viewDependency 引用）',
   guard: guardSchemaUnlocked,
@@ -1433,7 +1460,7 @@ const relationRemove: StillDefinition<RelationRemoveParams, unknown> = {
 // ─── relation.list ─────────────────────────────────────────
 
 const relationList: StillDefinition<Record<string, never>, unknown> = {
-  action: 'relation.list',
+  action: RELATION_LIST_ACTION,
   type: 'describe',
   description: '列出所有 tableRelations',
   guard: guardDatasetOnly,
@@ -1451,14 +1478,14 @@ const relationList: StillDefinition<Record<string, never>, unknown> = {
 // ─── schema.lock ───────────────────────────────────────────
 
 const schemaLock: StillDefinition<Record<string, never>, unknown> = {
-  action: 'schema.lock',
+  action: SCHEMA_LOCK_ACTION,
   type: 'request',
   description: '锁定结构（禁止增删表/列/关系，允许 dataview / dependency / api 配置）',
   guard: guardSchemaUnlocked,
   guardDescription: guardSchemaUnlockedDesc,
   usageRules: [
     '只在核心表结构、主键和主要关系都准备好之后再锁定。',
-    '锁定后不再新增或删除表/列/关系；如果必须改结构，先 schema.unlock 说明原因。',
+    `锁定后不再新增或删除表/列/关系；如果必须改结构，先 ${SCHEMA_UNLOCK_ACTION} 说明原因。`,
   ],
   paramsSchema: {},
   resultSchema: {
@@ -1471,12 +1498,12 @@ const schemaLock: StillDefinition<Record<string, never>, unknown> = {
     {
       code: 'EMPTY_SCHEMA',
       when: '当前 DataSet 还没有任何表',
-      fix: '先用 datatable.create 建立至少一张表',
+      fix: `先用 ${DATATABLE_CREATE_ACTION} 建立至少一张表`,
     },
     {
       code: 'MISSING_PK',
       when: '仍有表缺少主键列时尝试锁定 schema',
-      fix: '先补齐 isPrimaryKey=true 的列，再执行 schema.lock',
+      fix: `先补齐 isPrimaryKey=true 的列，再执行 ${SCHEMA_LOCK_ACTION}`,
     },
   ],
   validate: () => null,
@@ -1484,13 +1511,13 @@ const schemaLock: StillDefinition<Record<string, never>, unknown> = {
     const preflight = inspectSchemaInstance(DS)
 
     if (preflight.tableCount === 0) {
-      return { ok: false, code: 'EMPTY_SCHEMA', msg: '没有任何表，无法锁定', fix: '请先 datatable.create' }
+      return { ok: false, code: 'EMPTY_SCHEMA', msg: '没有任何表，无法锁定', fix: `请先 ${DATATABLE_CREATE_ACTION}` }
     }
     if (preflight.missingPrimaryKeys.length > 0) {
       return {
         ok: false, code: 'MISSING_PK',
         msg: `以下表缺少主键列: ${preflight.missingPrimaryKeys.join(', ')}`,
-        fix: '请 datatable.addColumns 添加 isPrimaryKey=true 的列',
+        fix: `请 ${DATATABLE_ADD_COLUMNS_ACTION} 添加 isPrimaryKey=true 的列`,
       }
     }
 
@@ -1514,7 +1541,7 @@ const schemaLock: StillDefinition<Record<string, never>, unknown> = {
 interface SchemaUnlockParams { reason?: string }
 
 const schemaUnlock: StillDefinition<SchemaUnlockParams, unknown> = {
-  action: 'schema.unlock',
+  action: SCHEMA_UNLOCK_ACTION,
   type: 'request',
   description: '解锁结构（需说明原因，允许修改表/列/关系）',
   guard: guardSchemaLocked,
@@ -1543,7 +1570,7 @@ const schemaUnlock: StillDefinition<SchemaUnlockParams, unknown> = {
 interface DataviewCreateParams { tableName: string; viewId: string }
 
 const dataviewCreate: StillDefinition<DataviewCreateParams, unknown> = {
-  action: 'dataview.create',
+  action: DATAVIEW_CREATE_ACTION,
   type: 'request',
   description: '为表添加自定义 DataView（default 视图在建表时已自动创建）',
   guard: guardSchemaLocked,
@@ -1558,7 +1585,7 @@ const dataviewCreate: StillDefinition<DataviewCreateParams, unknown> = {
   execute: (session, params): StillResult => withDS(session, (DS) => executeDSOperation(() => {
       const table = requireTable(DS, params.tableName)
       if (table.getView(params.viewId)) {
-        throw new DataSetOpError('VIEW_EXISTS', `视图 ${params.viewId} 已存在`, '请用 dataview.configure 配置')
+        throw new DataSetOpError('VIEW_EXISTS', `视图 ${params.viewId} 已存在`, `请用 ${DATAVIEW_CONFIGURE_ACTION} 配置`)
       }
       table.addView(params.viewId)
       return projectViewCreation(table, params.viewId)
@@ -1570,7 +1597,7 @@ const dataviewCreate: StillDefinition<DataviewCreateParams, unknown> = {
 interface DataviewDescribeParams { tableName: string; viewId?: string }
 
 const dataviewDescribe: StillDefinition<DataviewDescribeParams, unknown> = {
-  action: 'dataview.describe',
+  action: DATAVIEW_DESCRIBE_ACTION,
   type: 'describe',
   description: '查看视图配置详情',
   guard: guardDatasetOnly,
@@ -1618,7 +1645,7 @@ function extractViewConfig(params: DataviewConfigureParams): Partial<IViewMetada
 }
 
 const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
-  action: 'dataview.configure',
+  action: DATAVIEW_CONFIGURE_ACTION,
   type: 'request',
   description: '配置视图属性（autoLoad / autoCurrentFirst / pageSize / rows 等）',
   guard: guardSchemaLocked,
@@ -1651,7 +1678,7 @@ const dataviewConfigure: StillDefinition<DataviewConfigureParams, unknown> = {
     {
       code: 'VIEW_NOT_FOUND',
       when: '指定的 tableName/viewId 找不到对应视图',
-      fix: '先 dataview.describe 或 dataview.create，确认视图存在后再配置',
+      fix: `先 ${DATAVIEW_DESCRIBE_ACTION} 或 ${DATAVIEW_CREATE_ACTION}，确认视图存在后再配置`,
     },
   ],
   validate: (params) => {
@@ -1687,7 +1714,7 @@ interface SetAggregatesParams {
 }
 
 const dataviewSetAggregates: StillDefinition<SetAggregatesParams, unknown> = {
-  action: 'dataview.setAggregates',
+  action: DATAVIEW_SET_AGGREGATES_ACTION,
   type: 'request',
   description: '设置视图级聚合列',
   guard: guardSchemaLocked,
@@ -1729,7 +1756,7 @@ interface SetTreeConfigParams {
 }
 
 const dataviewSetTreeConfig: StillDefinition<SetTreeConfigParams, unknown> = {
-  action: 'dataview.setTreeConfig',
+  action: DATAVIEW_SET_TREE_CONFIG_ACTION,
   type: 'request',
   description: '设置视图树配置（treeMode / idField / parentIdField / textField）',
   guard: guardSchemaLocked,
@@ -1784,7 +1811,7 @@ const VALID_DEPENDENCY_TYPES: ReadonlyArray<ViewDependency['dependencyType']> = 
 ]
 
 const dependencyAdd: StillDefinition<DependencyAddParams, unknown> = {
-  action: 'dependency.add',
+  action: DEPENDENCY_ADD_ACTION,
   type: 'request',
   description: '添加 ViewDependency（级联类型默认 currentRow）',
   guard: guardSchemaLocked,
@@ -1834,7 +1861,7 @@ interface DependencyRemoveParams {
 }
 
 const dependencyRemove: StillDefinition<DependencyRemoveParams, unknown> = {
-  action: 'dependency.remove',
+  action: DEPENDENCY_REMOVE_ACTION,
   type: 'request',
   description: '删除 ViewDependency',
   guard: guardSchemaLocked,

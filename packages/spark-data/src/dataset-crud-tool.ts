@@ -8,9 +8,9 @@ import type {
   CrudOperationConfig,
   CrudResult,
   DataColumn,
-  IDataSet,
   IDataSetMetadata,
   IDataRow,
+  ITableMetadata,
   IViewMetadata,
   TableRelation,
   ViewDependency,
@@ -23,7 +23,7 @@ import type {
 /**
  * 创建数据表时的输入参数。
  */
-export interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
+interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
   /**
    * 表名。
    * 在同一个 DataSet 内必须唯一，后续所有表级 CRUD 都以它为入口。
@@ -52,7 +52,7 @@ export interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata
 /**
  * 更新数据表时的输入参数。
  */
-export interface DataSetCrudToolUpdateTableOptions {
+interface DataSetCrudToolUpdateTableOptions {
   /**
    * 需要新增的列。
    * 内部统一走 DataTable.addColumns，保证 validator 与 DataView 列缓存同步刷新。
@@ -96,76 +96,6 @@ export interface DataSetCrudToolUpdateTableOptions {
   defaultRows?: IDataRow[]
 }
 
-type DataSetCrudToolTableNameParams = {
-  tableName: string
-}
-
-type DataSetCrudToolColumnSelector = DataSetCrudToolTableNameParams & {
-  columnName: string
-}
-
-type DataSetCrudToolCreateColumnParams = DataSetCrudToolTableNameParams & {
-  column: DataColumn
-}
-
-type DataSetCrudToolUpdateColumnParams = DataSetCrudToolColumnSelector & {
-  updates: Partial<DataColumn>
-}
-
-type DataSetCrudToolUpdateTableParams = DataSetCrudToolTableNameParams & DataSetCrudToolUpdateTableOptions
-
-type DataSetCrudToolViewSelector = DataSetCrudToolTableNameParams & {
-  viewId?: string
-}
-
-type DataSetCrudToolCreateViewParams = DataSetCrudToolTableNameParams & {
-  viewId: string
-  config?: IViewMetadata
-}
-
-type DataSetCrudToolUpdateViewParams = DataSetCrudToolTableNameParams & {
-  viewId?: string
-  updates: Partial<IViewMetadata>
-}
-
-type DataSetCrudToolDeleteViewParams = DataSetCrudToolTableNameParams & {
-  viewId: string
-}
-
-type DataSetCrudToolRowSelector = DataSetCrudToolTableNameParams & {
-  id: string | number
-  viewId?: string
-}
-
-type DataSetCrudToolCreateRowParams = DataSetCrudToolTableNameParams & {
-  data: Partial<IDataRow>
-  viewId?: string
-}
-
-type DataSetCrudToolCreateRowsParams = DataSetCrudToolTableNameParams & {
-  items: Array<Partial<IDataRow>>
-  viewId?: string
-}
-
-type DataSetCrudToolUpdateRowParams = DataSetCrudToolRowSelector & {
-  data: Partial<IDataRow>
-}
-
-type DataSetCrudToolUpdateRowsItem = {
-  id: string | number
-  data: Partial<IDataRow>
-}
-
-type DataSetCrudToolUpdateRowsParams = DataSetCrudToolTableNameParams & {
-  items: DataSetCrudToolUpdateRowsItem[]
-  viewId?: string
-}
-
-type DataSetCrudToolDeleteRowsParams = DataSetCrudToolTableNameParams & {
-  ids: Array<string | number>
-  viewId?: string
-}
-
 /**
  * 关系选择器。
  *
@@ -180,48 +110,13 @@ type RelationSelector = {
 }
 
 /**
- * 创建表关系所需参数。
- */
-type CreateRelationParams = {
-  parentTable: string
-  childTable: string
-  parentField: string
-  childField: string
-  relationName?: string
-}
-
-type DataSetCrudToolUpdateRelationParams = {
-  selector: RelationSelector
-  updates: Partial<TableRelation>
-}
-
-/**
- * 创建视图依赖所需参数。
- */
-type CreateDependencyParams = {
-  parentTable: string
-  childTable: string
-  dependencyType?: DependencyType | undefined
-  autoLoad?: boolean
-}
-
-type DataSetCrudToolDependencySelector = {
-  parentTable: string
-  childTable: string
-}
-
-type DataSetCrudToolUpdateDependencyParams = DataSetCrudToolDependencySelector & {
-  updates: Partial<ViewDependency>
-}
-
-/**
  * DataSet 级统一 CRUD facade。
  *
  * 设计目标：
  * 1. 构造时只要求 dataSetName，外部无需先手动拼装 DataSet。
  * 2. 统一收口表、列、视图、行、关系、依赖这几类对象的常用操作。
  * 3. 全部复用现有 DataSet/DataTable/DataView 能力，避免再造第二套状态模型。
- * 4. 多参数公开方法同时支持对象参数和旧的位置参数，便于 LLM / 动态调度直接传 JSON object。
+ * 4. 所有公开方法统一使用单一对象参数，便于 LLM / 动态调度直接传 JSON object。
  */
 export class DataSetCrudTool {
   private static readonly HISTORY_LIMIT = 50
@@ -259,7 +154,7 @@ export class DataSetCrudTool {
   /**
    * 从 JSON 元数据创建工具类。
    */
-  static fromJson(json: IDataSetMetadata): DataSetCrudTool {
+  static fromJson(json: IDataSetMetadata | Record<string, unknown> | string): DataSetCrudTool {
     const ds = DataSet.fromJson(json)
     return DataSetCrudTool.fromDataSet(ds)
   }
@@ -271,25 +166,28 @@ export class DataSetCrudTool {
    * - preserveHistory=true：在当前历史链中提交快照，支持 undo/redo。
    */
   static reconcileFromJson(
-    snapshot: IDataSetMetadata,
+    snapshot: IDataSetMetadata | Record<string, unknown> | string,
     current?: DataSetCrudTool,
     options?: { preserveHistory?: boolean },
   ): DataSetCrudTool {
+    const normalizedSnapshot = DataSet.fromJson(snapshot).toJson()
+
     if (!current) {
-      return DataSetCrudTool.fromJson(snapshot)
+      return DataSetCrudTool.fromJson(normalizedSnapshot)
     }
 
     if (options?.preserveHistory === false) {
-      return DataSetCrudTool.fromJson(snapshot)
+      current.replaceFromJson(normalizedSnapshot, { commitHistory: false })
+      return current
     }
 
     const currentJson = JSON.stringify(current.toJson())
-    const nextJson = JSON.stringify(snapshot)
+    const nextJson = JSON.stringify(normalizedSnapshot)
     if (currentJson === nextJson) {
       return current
     }
 
-    current.replaceFromJson(snapshot, { commitHistory: true })
+    current.replaceFromJson(normalizedSnapshot, { commitHistory: true })
     return current
   }
 
@@ -345,7 +243,7 @@ export class DataSetCrudTool {
   undo(): boolean {
     const snapshot = this._history.undo()
     if (snapshot === null) return false
-    this._dataSet = DataSet.fromJson(snapshot)
+    this._dataSet.replaceFromJson(snapshot)
     return true
   }
 
@@ -356,7 +254,7 @@ export class DataSetCrudTool {
   redo(): boolean {
     const snapshot = this._history.redo()
     if (snapshot === null) return false
-    this._dataSet = DataSet.fromJson(snapshot)
+    this._dataSet.replaceFromJson(snapshot)
     return true
   }
 
@@ -372,8 +270,9 @@ export class DataSetCrudTool {
    * 用外部快照替换当前 DataSet。
    * 默认会把替换结果压入历史栈，确保该替换可被撤销/重做。
    */
-  replaceFromJson(snapshot: IDataSetMetadata, options?: { commitHistory?: boolean }): void {
-    this._dataSet = DataSet.fromJson(snapshot)
+  replaceFromJson(snapshot: IDataSetMetadata | Record<string, unknown> | string, options?: { commitHistory?: boolean }): void {
+    const normalizedSnapshot = DataSet.fromJson(snapshot).toJson()
+    this._dataSet.replaceFromJson(normalizedSnapshot)
     if (options?.commitHistory === false) {
       this.initializeHistory()
       return
@@ -412,7 +311,7 @@ export class DataSetCrudTool {
    * @param tableName 表名。
    * @returns 命中的 DataTable；不存在时返回 undefined。
    */
-  getTable(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataTable | undefined {
+  getTable(tableNameOrParams: string | { tableName: string }): DataTable | undefined {
     return this.dataSet.getTable(this.normalizeTableNameArg(tableNameOrParams, 'getTable'))
   }
 
@@ -423,7 +322,7 @@ export class DataSetCrudTool {
    * @returns 列定义副本列表。
    * @throws 当表不存在时抛错。
    */
-  listColumns(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataColumn[] {
+  listColumns(tableNameOrParams: string | { tableName: string }): DataColumn[] {
     return [...this.getTableOrThrow(this.normalizeTableNameArg(tableNameOrParams, 'listColumns')).columns]
   }
 
@@ -435,14 +334,10 @@ export class DataSetCrudTool {
    * @returns 命中的列定义；不存在时返回 undefined。
    * @throws 当表不存在时抛错。
    */
-  getColumn(tableName: string, columnName: string): DataColumn | undefined
-  getColumn(params: DataSetCrudToolColumnSelector): DataColumn | undefined
-  getColumn(
-    tableNameOrParams: string | DataSetCrudToolColumnSelector,
-    columnName?: string,
-  ): DataColumn | undefined {
-    const selector = this.normalizeColumnSelectorArgs(tableNameOrParams, columnName, 'getColumn')
-    return this.getTableOrThrow(selector.tableName).columns.find(column => column.name === selector.columnName)
+  getColumn(params: { tableName: string; columnName: string }): DataColumn | undefined {
+    const tableName = this.requireNonEmptyString(params.tableName, 'getColumn.tableName')
+    const columnName = this.requireNonEmptyString(params.columnName, 'getColumn.columnName')
+    return this.getTableOrThrow(tableName).columns.find(column => column.name === columnName)
   }
 
   /**
@@ -453,16 +348,12 @@ export class DataSetCrudTool {
    * @returns 更新后的 DataTable。
    * @throws 当表不存在或列定义非法时抛错。
    */
-  createColumn(tableName: string, column: DataColumn): DataTable
-  createColumn(params: DataSetCrudToolCreateColumnParams): DataTable
-  createColumn(
-    tableNameOrParams: string | DataSetCrudToolCreateColumnParams,
-    column?: DataColumn,
-  ): DataTable {
+  createColumn(params: { tableName: string; column: DataColumn }): DataTable {
+    const tableName = this.requireNonEmptyString(params.tableName, 'createColumn.tableName')
+    const column = this.requireObjectArg(params.column, 'createColumn.column')
+    const table = this.getTableOrThrow(tableName)
     // 必须走 DataTable.addColumns，不能直接改 metadata，否则 validator / view 列缓存会失效。
-    const next = this.normalizeCreateColumnArgs(tableNameOrParams, column)
-    const table = this.getTableOrThrow(next.tableName)
-    table.addColumns([next.column])
+    table.addColumns([column])
     this._afterWrite()
     return table
   }
@@ -476,19 +367,102 @@ export class DataSetCrudTool {
    * @returns 更新后的 DataTable。
    * @throws 当表或列不存在时抛错。
    */
-  updateColumn(tableName: string, columnName: string, updates: Partial<DataColumn>): DataTable
-  updateColumn(params: DataSetCrudToolUpdateColumnParams): DataTable
-  updateColumn(
-    tableNameOrParams: string | DataSetCrudToolUpdateColumnParams,
-    columnNameOrUpdates?: string | Partial<DataColumn>,
-    maybeUpdates?: Partial<DataColumn>,
-  ): DataTable {
+  updateColumn(params: { tableName: string; columnName: string; updates: Partial<DataColumn> }): DataTable {
+    const tableName = this.requireNonEmptyString(params.tableName, 'updateColumn.tableName')
+    const columnName = this.requireNonEmptyString(params.columnName, 'updateColumn.columnName')
+    const updates = this.requireObjectArg(params.updates, 'updateColumn.updates')
+    const table = this.getTableOrThrow(tableName)
     // 列更新后会触发 DataTable 内部运行时刷新链，保证 DataView.getColumn 与 schema 保持一致。
-    const next = this.normalizeUpdateColumnArgs(tableNameOrParams, columnNameOrUpdates, maybeUpdates)
-    const table = this.getTableOrThrow(next.tableName)
-    table.updateColumn(next.columnName, next.updates)
+    table.updateColumn(columnName, updates)
     this._afterWrite()
     return table
+  }
+
+  renameColumn(params: { tableName: string; columnName: string; newColumnName: string }): DataTable {
+    const tableName = params.tableName.trim()
+    const columnName = params.columnName.trim()
+    const newColumnName = params.newColumnName.trim()
+
+    if (!tableName) throw new Error('renameColumn: tableName 不能为空')
+    if (!columnName) throw new Error('renameColumn: columnName 不能为空')
+    if (!newColumnName) throw new Error('renameColumn: newColumnName 不能为空')
+    if (columnName === newColumnName) return this.getTableOrThrow(tableName)
+
+    const snapshot = JSON.parse(JSON.stringify(this.toJson())) as IDataSetMetadata
+    const table = snapshot.tables[tableName]
+    if (!table) throw new Error(`renameColumn: table ${tableName} 不存在`)
+    if (table.columns.some((column) => column.name === newColumnName)) {
+      throw new Error(`renameColumn: 列 ${newColumnName} 已存在于表 ${tableName}`)
+    }
+
+    const column = table.columns.find((entry) => entry.name === columnName)
+    if (!column) throw new Error(`renameColumn: column ${columnName} 不存在于表 ${tableName}`)
+    column.name = newColumnName
+
+    const renameRowField = (row: Record<string, unknown>): Record<string, unknown> => {
+      if (!Object.prototype.hasOwnProperty.call(row, columnName)) return row
+      const nextRow: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(row)) {
+        nextRow[key === columnName ? newColumnName : key] = value
+      }
+      return nextRow
+    }
+
+    const renameFieldRefs = (value: unknown): unknown => {
+      if (Array.isArray(value)) {
+        return value.map(item => renameFieldRefs(item))
+      }
+      if (value === null || value === undefined || typeof value !== 'object') {
+        return value
+      }
+
+      const record = value as Record<string, unknown>
+      const nextRecord: Record<string, unknown> = {}
+      for (const [key, child] of Object.entries(record)) {
+        if (key === 'field' && child === columnName) {
+          nextRecord[key] = newColumnName
+          continue
+        }
+        if (key === 'valueField') {
+          if (child === columnName) {
+            nextRecord[key] = newColumnName
+            continue
+          }
+          if (Array.isArray(child)) {
+            nextRecord[key] = (child as string[]).map(item => item === columnName ? newColumnName : item)
+            continue
+          }
+        }
+        if (key === 'labelField' && child === columnName) {
+          nextRecord[key] = newColumnName
+          continue
+        }
+        nextRecord[key] = renameFieldRefs(child)
+      }
+      return nextRecord
+    }
+
+    const renamedViews = Object.fromEntries(
+      Object.entries(table.views).map(([viewId, view]) => {
+        const nextView = renameFieldRefs(view) as IViewMetadata
+        if (Array.isArray(nextView.rows)) {
+          nextView.rows = nextView.rows.map(row => renameRowField(row))
+        }
+        return [viewId, nextView]
+      }),
+    ) as ITableMetadata['views']
+    table.views = renamedViews
+
+    if (snapshot.tableRelations) {
+      snapshot.tableRelations = snapshot.tableRelations.map((relation) => ({
+        ...relation,
+        ...(relation.parentTable === tableName && relation.parentField === columnName ? { parentField: newColumnName } : {}),
+        ...(relation.childTable === tableName && relation.childField === columnName ? { childField: newColumnName } : {}),
+      }))
+    }
+
+    this.replaceFromJson(snapshot, { commitHistory: true })
+    return this.getTableOrThrow(tableName)
   }
 
   /**
@@ -498,14 +472,10 @@ export class DataSetCrudTool {
    * @param columnName 列名。
    * @throws 当表或列不存在时抛错。
    */
-  deleteColumn(tableName: string, columnName: string): void
-  deleteColumn(params: DataSetCrudToolColumnSelector): void
-  deleteColumn(
-    tableNameOrParams: string | DataSetCrudToolColumnSelector,
-    columnName?: string,
-  ): void {
-    const selector = this.normalizeColumnSelectorArgs(tableNameOrParams, columnName, 'deleteColumn')
-    this.getTableOrThrow(selector.tableName).removeColumn(selector.columnName)
+  deleteColumn(params: { tableName: string; columnName: string }): void {
+    const tableName = this.requireNonEmptyString(params.tableName, 'deleteColumn.tableName')
+    const columnName = this.requireNonEmptyString(params.columnName, 'deleteColumn.columnName')
+    this.getTableOrThrow(tableName).removeColumn(columnName)
     this._afterWrite()
   }
 
@@ -549,47 +519,106 @@ export class DataSetCrudTool {
    * @returns 更新后的 DataTable。
    * @throws 当表不存在或某项结构更新非法时抛错。
    */
-  updateTable(tableName: string, updates: DataSetCrudToolUpdateTableOptions): DataTable
-  updateTable(params: DataSetCrudToolUpdateTableParams): DataTable
-  updateTable(
-    tableNameOrParams: string | DataSetCrudToolUpdateTableParams,
-    updates?: DataSetCrudToolUpdateTableOptions,
-  ): DataTable {
-    const next = this.normalizeUpdateTableArgs(tableNameOrParams, updates)
-    const table = this.getTableOrThrow(next.tableName)
+  updateTable(params: { tableName: string } & DataSetCrudToolUpdateTableOptions): DataTable {
+    const tableName = this.requireNonEmptyString(params.tableName, 'updateTable.tableName')
+    const table = this.getTableOrThrow(tableName)
 
     // 结构变更优先执行，避免后续 rows / api / crudConfig 更新面对旧 schema。
-    if (next.columnsToAdd?.length) {
-      table.addColumns(next.columnsToAdd)
+    if (params.columnsToAdd?.length) {
+      table.addColumns(params.columnsToAdd)
     }
-    if (next.columnUpdates?.length) {
-      for (const entry of next.columnUpdates) {
+    if (params.columnUpdates?.length) {
+      for (const entry of params.columnUpdates) {
         table.updateColumn(entry.columnName, entry.updates)
       }
     }
-    if (next.columnsToRemove?.length) {
-      for (const columnName of next.columnsToRemove) {
+    if (params.columnsToRemove?.length) {
+      for (const columnName of params.columnsToRemove) {
         table.removeColumn(columnName)
       }
     }
-    if (next.api !== undefined) {
-      table.setApi(next.api)
+    if (params.api !== undefined) {
+      table.setApi(params.api)
     }
-    if (next.crudConfig !== undefined) {
-      if (next.crudConfig === null) {
+    if (params.crudConfig !== undefined) {
+      if (params.crudConfig === null) {
         delete table.crudConfig
       } else {
-        table.setCrudConfig(next.crudConfig)
+        table.setCrudConfig(params.crudConfig)
       }
     }
-    this.applyTableSemanticMetadataUpdates(table, next)
-    if (next.defaultRows !== undefined) {
-      table.rows = [...next.defaultRows]
-      table.getView('default')?.replaceRows([...next.defaultRows])
+    this.applyTableSemanticMetadata(table, params, true)
+    if (params.defaultRows !== undefined) {
+      table.rows = [...params.defaultRows]
+      table.getView('default')?.replaceRows([...params.defaultRows])
     }
 
     this._afterWrite()
     return table
+  }
+
+  renameTable(params: { tableName: string; newTableName: string }): DataTable {
+    const tableName = params.tableName.trim()
+    const newTableName = params.newTableName.trim()
+
+    if (!tableName) throw new Error('renameTable: tableName 不能为空')
+    if (!newTableName) throw new Error('renameTable: newTableName 不能为空')
+    if (tableName === newTableName) return this.getTableOrThrow(tableName)
+
+    const snapshot = JSON.parse(JSON.stringify(this.toJson())) as IDataSetMetadata
+    const table = snapshot.tables[tableName]
+    if (!table) throw new Error(`renameTable: table ${tableName} 不存在`)
+    if (snapshot.tables[newTableName]) {
+      throw new Error(`renameTable: table ${newTableName} 已存在`)
+    }
+
+    const nextTables: Record<string, ITableMetadata> = {}
+    for (const [key, value] of Object.entries(snapshot.tables)) {
+      if (key !== tableName) {
+        nextTables[key] = value
+        continue
+      }
+
+      nextTables[newTableName] = {
+        ...value,
+        tableName: newTableName,
+        views: Object.fromEntries(
+          Object.entries(value.views).map(([viewId, view]) => [viewId, { ...view, tableName: newTableName }]),
+        ) as ITableMetadata['views'],
+      }
+    }
+    snapshot.tables = nextTables
+
+    if (snapshot.tableRelations) {
+      snapshot.tableRelations = snapshot.tableRelations.map((relation) => ({
+        ...relation,
+        ...(relation.parentTable === tableName ? { parentTable: newTableName } : {}),
+        ...(relation.childTable === tableName ? { childTable: newTableName } : {}),
+      }))
+    }
+
+    if (snapshot.viewDependencies) {
+      snapshot.viewDependencies = snapshot.viewDependencies.map((dependency) => ({
+        ...dependency,
+        ...(dependency.parentTable === tableName ? { parentTable: newTableName } : {}),
+        ...(dependency.childTable === tableName ? { childTable: newTableName } : {}),
+      }))
+    }
+
+    const currentTablePositions = snapshot.layout?.tablePositions
+    const nextLayoutEntry = currentTablePositions?.[tableName]
+    if (nextLayoutEntry !== undefined && currentTablePositions !== undefined) {
+      const { [tableName]: _removedLayoutEntry, ...rest } = currentTablePositions
+      snapshot.layout = {
+        tablePositions: {
+          ...rest,
+          [newTableName]: nextLayoutEntry,
+        },
+      }
+    }
+
+    this.replaceFromJson(snapshot, { commitHistory: true })
+    return this.getTableOrThrow(newTableName)
   }
 
   /**
@@ -598,8 +627,8 @@ export class DataSetCrudTool {
    * @param tableName 表名。
    * @throws 当表不存在，或仍被 relation / dependency 引用时抛错。
    */
-  deleteTable(tableNameOrParams: string | DataSetCrudToolTableNameParams): void {
-    this.dataSetContract.removeTable(this.normalizeTableNameArg(tableNameOrParams, 'deleteTable'))
+  deleteTable(tableNameOrParams: string | { tableName: string }): void {
+    this.dataSet.removeTable(this.normalizeTableNameArg(tableNameOrParams, 'deleteTable'))
     this._afterWrite()
   }
 
@@ -614,7 +643,7 @@ export class DataSetCrudTool {
    * @returns 视图实例列表。
    * @throws 当表不存在时抛错。
    */
-  listViews(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataView[] {
+  listViews(tableNameOrParams: string | { tableName: string }): DataView[] {
     return Object.values(this.getTableOrThrow(this.normalizeTableNameArg(tableNameOrParams, 'listViews')).views)
   }
 
@@ -625,14 +654,9 @@ export class DataSetCrudTool {
    * @param viewId 视图 ID，默认 default。
    * @returns 视图实例；不存在时返回 undefined。
    */
-  getView(tableName: string, viewId?: string): DataView | undefined
-  getView(params: DataSetCrudToolViewSelector): DataView | undefined
-  getView(
-    tableNameOrParams: string | DataSetCrudToolViewSelector,
-    viewId = 'default',
-  ): DataView | undefined {
-    const selector = this.normalizeViewSelectorArgs(tableNameOrParams, viewId, 'getView')
-    return this.dataSet.getView(selector.tableName, selector.viewId)
+  getView(params: { tableName: string; viewId?: string }): DataView | undefined {
+    const tableName = this.requireNonEmptyString(params.tableName, 'getView.tableName')
+    return this.dataSet.getView(tableName, params.viewId ?? 'default')
   }
 
   /**
@@ -644,23 +668,17 @@ export class DataSetCrudTool {
    * @returns 新创建的视图实例。
    * @throws 当表不存在，或试图创建 default 视图时抛错。
    */
-  createView(tableName: string, viewId: string, config?: IViewMetadata): DataView
-  createView(params: DataSetCrudToolCreateViewParams): DataView
-  createView(
-    tableNameOrParams: string | DataSetCrudToolCreateViewParams,
-    viewIdOrConfig?: string | IViewMetadata,
-    config?: IViewMetadata,
-  ): DataView {
-    const next = this.normalizeCreateViewArgs(tableNameOrParams, viewIdOrConfig, config)
+  createView(params: { tableName: string; viewId: string; config?: IViewMetadata }): DataView {
+    const tableName = this.requireNonEmptyString(params.tableName, 'createView.tableName')
+    const viewId = this.requireNonEmptyString(params.viewId, 'createView.viewId')
     // default 视图在建表时就存在，单独创建会破坏约定，因此强制改走 updateView。
-    if (next.viewId === 'default') {
+    if (viewId === 'default') {
       throw new Error('Default view already exists, use updateView instead')
     }
-
-    const table = this.getTableOrThrow(next.tableName)
-    const view = table.addView(next.viewId)
-    if (next.config) {
-      this.applyViewMetadata(table, view, next.config)
+    const table = this.getTableOrThrow(tableName)
+    const view = table.addView(viewId)
+    if (params.config) {
+      this.applyViewMetadata(table, view, params.config)
     }
     this._afterWrite()
     return view
@@ -675,17 +693,13 @@ export class DataSetCrudTool {
    * @returns 更新后的视图实例。
    * @throws 当表或视图不存在时抛错。
    */
-  updateView(tableName: string, viewId: string, updates: Partial<IViewMetadata>): DataView
-  updateView(params: DataSetCrudToolUpdateViewParams): DataView
-  updateView(
-    tableNameOrParams: string | DataSetCrudToolUpdateViewParams,
-    viewIdOrUpdates?: string | Partial<IViewMetadata>,
-    maybeUpdates?: Partial<IViewMetadata>,
-  ): DataView {
-    const next = this.normalizeUpdateViewArgs(tableNameOrParams, viewIdOrUpdates, maybeUpdates)
-    const table = this.getTableOrThrow(next.tableName)
-    const view = this.getViewOrThrow(next.tableName, next.viewId)
-    this.applyViewMetadata(table, view, next.updates)
+  updateView(params: { tableName: string; viewId?: string; updates: Partial<IViewMetadata> }): DataView {
+    const tableName = this.requireNonEmptyString(params.tableName, 'updateView.tableName')
+    const viewId = params.viewId ?? 'default'
+    const updates = this.requireObjectArg(params.updates, 'updateView.updates')
+    const table = this.getTableOrThrow(tableName)
+    const view = this.getViewOrThrow(tableName, viewId)
+    this.applyViewMetadata(table, view, updates)
     this._afterWrite()
     return view
   }
@@ -697,18 +711,14 @@ export class DataSetCrudTool {
    * @param viewId 视图 ID。
    * @throws 当表不存在，或试图删除 default 视图时抛错。
    */
-  deleteView(tableName: string, viewId: string): void
-  deleteView(params: DataSetCrudToolDeleteViewParams): void
-  deleteView(
-    tableNameOrParams: string | DataSetCrudToolDeleteViewParams,
-    viewId?: string,
-  ): void {
-    const next = this.normalizeRequiredViewSelectorArgs(tableNameOrParams, viewId, 'deleteView')
+  deleteView(params: { tableName: string; viewId: string }): void {
+    const tableName = this.requireNonEmptyString(params.tableName, 'deleteView.tableName')
+    const viewId = this.requireNonEmptyString(params.viewId, 'deleteView.viewId')
     // default 视图是 DataTable 基础组成部分，不允许删除。
-    if (next.viewId === 'default') {
+    if (viewId === 'default') {
       throw new Error('Default view cannot be deleted')
     }
-    this.getTableOrThrow(next.tableName).destroyView(next.viewId)
+    this.getTableOrThrow(tableName).destroyView(viewId)
     this._afterWrite()
   }
 
@@ -724,14 +734,9 @@ export class DataSetCrudTool {
    * @returns 行数组副本。
    * @throws 当表或视图不存在时抛错。
    */
-  listRows(tableName: string, viewId?: string): IDataRow[]
-  listRows(params: DataSetCrudToolViewSelector): IDataRow[]
-  listRows(
-    tableNameOrParams: string | DataSetCrudToolViewSelector,
-    viewId = 'default',
-  ): IDataRow[] {
-    const selector = this.normalizeViewSelectorArgs(tableNameOrParams, viewId, 'listRows')
-    return [...this.getViewOrThrow(selector.tableName, selector.viewId).rows]
+  listRows(params: { tableName: string; viewId?: string }): IDataRow[] {
+    const tableName = this.requireNonEmptyString(params.tableName, 'listRows.tableName')
+    return [...this.getViewOrThrow(tableName, params.viewId ?? 'default').rows]
   }
 
   /**
@@ -743,17 +748,12 @@ export class DataSetCrudTool {
    * @returns 命中的行；不存在时返回 undefined。
    * @throws 当表或视图不存在时抛错。
    */
-  getRow(tableName: string, id: string | number, viewId?: string): IDataRow | undefined
-  getRow(params: DataSetCrudToolRowSelector): IDataRow | undefined
-  getRow(
-    tableNameOrParams: string | DataSetCrudToolRowSelector,
-    idOrViewId?: string | number,
-    viewId = 'default',
-  ): IDataRow | undefined {
-    const next = this.normalizeRowSelectorArgs(tableNameOrParams, idOrViewId, viewId, 'getRow')
-    const view = this.getViewOrThrow(next.tableName, next.viewId)
+  getRow(params: { tableName: string; id: string | number; viewId?: string }): IDataRow | undefined {
+    const tableName = this.requireNonEmptyString(params.tableName, 'getRow.tableName')
+    const viewId = params.viewId ?? 'default'
+    const view = this.getViewOrThrow(tableName, viewId)
     // 行查找支持树形 children 递归扫描，避免调用方区分平铺表和树表。
-    return this.findRowById(view.rows, next.id, row => view.getPkKey(row))
+    return this.findRowById(view.rows, params.id, row => view.getPkKey(row))
   }
 
   /**
@@ -765,19 +765,15 @@ export class DataSetCrudTool {
    * @returns 本地模式下通常返回 IDataRow；远端 CRUD 模式下可能返回 CrudResult。
    * @throws 当表或视图不存在，或创建失败时抛错。
    */
-  createRow(tableName: string, data: Partial<IDataRow>, viewId?: string): Promise<IDataRow | CrudResult<IDataRow>>
-  createRow(params: DataSetCrudToolCreateRowParams): Promise<IDataRow | CrudResult<IDataRow>>
-  async createRow(
-    tableNameOrParams: string | DataSetCrudToolCreateRowParams,
-    data?: Partial<IDataRow>,
-    viewId = 'default',
-  ): Promise<IDataRow | CrudResult<IDataRow>> {
-    const next = this.normalizeCreateRowArgs(tableNameOrParams, data, viewId)
-    const table = this.getTableOrThrow(next.tableName)
-    const view = this.getViewOrThrow(next.tableName, next.viewId)
-    const result = await view.addRow(next.data)
+  async createRow(params: { tableName: string; data: Partial<IDataRow>; viewId?: string }): Promise<IDataRow | CrudResult<IDataRow>> {
+    const tableName = this.requireNonEmptyString(params.tableName, 'createRow.tableName')
+    const data = this.requireObjectArg(params.data, 'createRow.data')
+    const viewId = params.viewId ?? 'default'
+    const table = this.getTableOrThrow(tableName)
+    const view = this.getViewOrThrow(tableName, viewId)
+    const result = await view.addRow(data)
     // 无远端 API 的 default view 同时承担 DataTable.rows 的静态源数据，需要双向保持一致。
-    this.syncInlineDefaultRows(table, next.viewId)
+    this.syncInlineDefaultRows(table, viewId)
     return result
   }
 
@@ -787,24 +783,16 @@ export class DataSetCrudTool {
    * - immediate + API 模式：优先走 view.crud.batchCreateRecords
    * - 其余模式：逐条复用 view.addRow，并统一收口为 BatchResult
    */
-  createRows(
-    tableName: string,
-    items: Array<Partial<IDataRow>>,
-    viewId?: string,
-  ): Promise<CrudResult<BatchResult>>
-  createRows(params: DataSetCrudToolCreateRowsParams): Promise<CrudResult<BatchResult>>
-  async createRows(
-    tableNameOrParams: string | DataSetCrudToolCreateRowsParams,
-    items?: Array<Partial<IDataRow>>,
-    viewId = 'default',
-  ): Promise<CrudResult<BatchResult>> {
-    const next = this.normalizeCreateRowsArgs(tableNameOrParams, items, viewId)
-    const table = this.getTableOrThrow(next.tableName)
-    const view = this.getViewOrThrow(next.tableName, next.viewId)
+  async createRows(params: { tableName: string; items: Array<Partial<IDataRow>>; viewId?: string }): Promise<CrudResult<BatchResult>> {
+    const tableName = this.requireNonEmptyString(params.tableName, 'createRows.tableName')
+    const items = this.requireNonEmptyArray(params.items, 'createRows.items')
+    const viewId = params.viewId ?? 'default'
+    const table = this.getTableOrThrow(tableName)
+    const view = this.getViewOrThrow(tableName, viewId)
     const result = this.shouldUseRemoteBatch(table, view)
-      ? await view.crud.batchCreateRecords(next.items)
-      : await this.executeLocalCreateRows(view, next.items)
-    this.syncInlineDefaultRows(table, next.viewId)
+      ? await view.crud.batchCreateRecords(items)
+      : await this.executeBatchLocal(items, (item) => view.addRow(item))
+    this.syncInlineDefaultRows(table, viewId)
     return result
   }
 
@@ -818,25 +806,15 @@ export class DataSetCrudTool {
    * @returns 本地模式下通常返回 boolean；远端 CRUD 模式下可能返回 CrudResult。
    * @throws 当表或视图不存在，或更新失败时抛错。
    */
-  updateRow(
-    tableName: string,
-    id: string | number,
-    data: Partial<IDataRow>,
-    viewId?: string,
-  ): Promise<boolean | CrudResult<IDataRow>>
-  updateRow(params: DataSetCrudToolUpdateRowParams): Promise<boolean | CrudResult<IDataRow>>
-  async updateRow(
-    tableNameOrParams: string | DataSetCrudToolUpdateRowParams,
-    idOrData?: string | number | Partial<IDataRow>,
-    dataOrViewId?: Partial<IDataRow> | string,
-    viewId = 'default',
-  ): Promise<boolean | CrudResult<IDataRow>> {
-    const next = this.normalizeUpdateRowArgs(tableNameOrParams, idOrData, dataOrViewId, viewId)
-    const table = this.getTableOrThrow(next.tableName)
-    const view = this.getViewOrThrow(next.tableName, next.viewId)
-    const result = await view.editRowById(next.id, next.data)
+  async updateRow(params: { tableName: string; id: string | number; data: Partial<IDataRow>; viewId?: string }): Promise<boolean | CrudResult<IDataRow>> {
+    const tableName = this.requireNonEmptyString(params.tableName, 'updateRow.tableName')
+    const data = this.requireObjectArg(params.data, 'updateRow.data')
+    const viewId = params.viewId ?? 'default'
+    const table = this.getTableOrThrow(tableName)
+    const view = this.getViewOrThrow(tableName, viewId)
+    const result = await view.editRowById(params.id, data)
     // 仅同步内联 default view，避免误把远端视图状态反写成静态源数据。
-    this.syncInlineDefaultRows(table, next.viewId)
+    this.syncInlineDefaultRows(table, viewId)
     return result
   }
 
@@ -845,27 +823,19 @@ export class DataSetCrudTool {
    *
    * 对话侧统一传 id + data，底层再按视图主键字段拼装 batchUpdate payload。
    */
-  updateRows(
-    tableName: string,
-    items: DataSetCrudToolUpdateRowsItem[],
-    viewId?: string,
-  ): Promise<CrudResult<BatchResult>>
-  updateRows(params: DataSetCrudToolUpdateRowsParams): Promise<CrudResult<BatchResult>>
-  async updateRows(
-    tableNameOrParams: string | DataSetCrudToolUpdateRowsParams,
-    items?: DataSetCrudToolUpdateRowsItem[],
-    viewId = 'default',
-  ): Promise<CrudResult<BatchResult>> {
-    const next = this.normalizeUpdateRowsArgs(tableNameOrParams, items, viewId)
-    const table = this.getTableOrThrow(next.tableName)
-    const view = this.getViewOrThrow(next.tableName, next.viewId)
+  async updateRows(params: { tableName: string; items: Array<{ id: string | number; data: Partial<IDataRow> }>; viewId?: string }): Promise<CrudResult<BatchResult>> {
+    const tableName = this.requireNonEmptyString(params.tableName, 'updateRows.tableName')
+    const items = this.requireNonEmptyArray(params.items, 'updateRows.items')
+    const viewId = params.viewId ?? 'default'
+    const table = this.getTableOrThrow(tableName)
+    const view = this.getViewOrThrow(tableName, viewId)
     const result = this.shouldUseRemoteBatch(table, view)
-      ? await view.crud.batchUpdateRecords(next.items.map((item) => ({
+      ? await view.crud.batchUpdateRecords(items.map((item) => ({
         ...item.data,
         [view.primaryKey]: item.id,
       })))
-      : await this.executeLocalUpdateRows(view, next.items)
-    this.syncInlineDefaultRows(table, next.viewId)
+      : await this.executeBatchLocal(items, (item) => view.editRowById(item.id, item.data))
+    this.syncInlineDefaultRows(table, viewId)
     return result
   }
 
@@ -878,42 +848,29 @@ export class DataSetCrudTool {
    * @returns 本地模式下通常返回 boolean；远端 CRUD 模式下可能返回 CrudResult。
    * @throws 当表或视图不存在，或删除失败时抛错。
    */
-  deleteRow(tableName: string, id: string | number, viewId?: string): Promise<boolean | CrudResult<boolean>>
-  deleteRow(params: DataSetCrudToolRowSelector): Promise<boolean | CrudResult<boolean>>
-  async deleteRow(
-    tableNameOrParams: string | DataSetCrudToolRowSelector,
-    idOrViewId?: string | number,
-    viewId = 'default',
-  ): Promise<boolean | CrudResult<boolean>> {
-    const next = this.normalizeRowSelectorArgs(tableNameOrParams, idOrViewId, viewId, 'deleteRow')
-    const table = this.getTableOrThrow(next.tableName)
-    const view = this.getViewOrThrow(next.tableName, next.viewId)
-    const result = await view.removeRow(next.id)
-    this.syncInlineDefaultRows(table, next.viewId)
+  async deleteRow(params: { tableName: string; id: string | number; viewId?: string }): Promise<boolean | CrudResult<boolean>> {
+    const tableName = this.requireNonEmptyString(params.tableName, 'deleteRow.tableName')
+    const viewId = params.viewId ?? 'default'
+    const table = this.getTableOrThrow(tableName)
+    const view = this.getViewOrThrow(tableName, viewId)
+    const result = await view.removeRow(params.id)
+    this.syncInlineDefaultRows(table, viewId)
     return result
   }
 
   /**
    * 批量删除多条行数据。
    */
-  deleteRows(
-    tableName: string,
-    ids: Array<string | number>,
-    viewId?: string,
-  ): Promise<CrudResult<BatchResult>>
-  deleteRows(params: DataSetCrudToolDeleteRowsParams): Promise<CrudResult<BatchResult>>
-  async deleteRows(
-    tableNameOrParams: string | DataSetCrudToolDeleteRowsParams,
-    ids?: Array<string | number>,
-    viewId = 'default',
-  ): Promise<CrudResult<BatchResult>> {
-    const next = this.normalizeDeleteRowsArgs(tableNameOrParams, ids, viewId)
-    const table = this.getTableOrThrow(next.tableName)
-    const view = this.getViewOrThrow(next.tableName, next.viewId)
+  async deleteRows(params: { tableName: string; ids: Array<string | number>; viewId?: string }): Promise<CrudResult<BatchResult>> {
+    const tableName = this.requireNonEmptyString(params.tableName, 'deleteRows.tableName')
+    const ids = this.requireNonEmptyArray(params.ids, 'deleteRows.ids')
+    const viewId = params.viewId ?? 'default'
+    const table = this.getTableOrThrow(tableName)
+    const view = this.getViewOrThrow(tableName, viewId)
     const result = this.shouldUseRemoteBatch(table, view)
-      ? await view.crud.batchDeleteRecords(next.ids)
-      : await this.executeLocalDeleteRows(view, next.ids)
-    this.syncInlineDefaultRows(table, next.viewId)
+      ? await view.crud.batchDeleteRecords(ids)
+      : await this.executeBatchLocal(ids, (id) => view.removeRow(id))
+    this.syncInlineDefaultRows(table, viewId)
     return result
   }
 
@@ -943,9 +900,13 @@ export class DataSetCrudTool {
    * @throws 当 selector 命中多条关系且未完成字段级消歧时抛错。
    */
   getRelation(selector: RelationSelector): TableRelation | undefined {
-    const matches = this.findRelations(selector)
+    const matches = (this.dataSet.tableRelations ?? []).filter((relation) => {
+      if (relation.parentTable !== selector.parentTable || relation.childTable !== selector.childTable) return false
+      if (selector.parentField !== undefined && relation.parentField !== selector.parentField) return false
+      if (selector.childField !== undefined && relation.childField !== selector.childField) return false
+      return true
+    })
     if (matches.length > 1) {
-      // 同一父子表可能存在多条关系，此时要求调用方显式给出字段级 selector，避免误删误改。
       throw new Error(`Relation ${selector.parentTable}→${selector.childTable} is ambiguous, specify parentField/childField`)
     }
     return matches[0]
@@ -958,10 +919,14 @@ export class DataSetCrudTool {
    * @returns 新创建的表关系。
    * @throws 当父表、子表、字段不存在或关系重复时抛错。
    */
-  createRelation(params: CreateRelationParams): TableRelation {
+  createRelation(params: { parentTable: string; childTable: string; parentField: string; childField: string; relationName?: string }): TableRelation {
     this.dataSet.addRelation(params)
     this._afterWrite()
-    return this.getRelationOrThrow(params)
+    const relation = this.getRelation(params)
+    if (!relation) {
+      throw new Error(`Relation "${params.parentTable}→${params.childTable}" not found`)
+    }
+    return relation
   }
 
   /**
@@ -972,14 +937,9 @@ export class DataSetCrudTool {
    * @returns 更新后的表关系。
    * @throws 当关系不存在、选择器不唯一或更新后关系非法时抛错。
    */
-  updateRelation(selector: RelationSelector, updates: Partial<TableRelation>): TableRelation
-  updateRelation(params: DataSetCrudToolUpdateRelationParams): TableRelation
-  updateRelation(
-    selectorOrParams: RelationSelector | DataSetCrudToolUpdateRelationParams,
-    updates?: Partial<TableRelation>,
-  ): TableRelation {
-    const next = this.normalizeUpdateRelationArgs(selectorOrParams, updates)
-    const result = this.dataSetContract.updateRelation(next.selector, next.updates)
+  updateRelation(params: { selector: RelationSelector; updates: Partial<TableRelation> }): TableRelation {
+    const updates = this.requireObjectArg(params.updates, 'updateRelation.updates')
+    const result = this.dataSet.updateRelation(params.selector, updates)
     this._afterWrite()
     return result
   }
@@ -1020,15 +980,11 @@ export class DataSetCrudTool {
    * @param childTable 子表名。
    * @returns 命中的依赖；不存在时返回 undefined。
    */
-  getDependency(parentTable: string, childTable: string): ViewDependency | undefined
-  getDependency(params: DataSetCrudToolDependencySelector): ViewDependency | undefined
-  getDependency(
-    parentTableOrParams: string | DataSetCrudToolDependencySelector,
-    childTable?: string,
-  ): ViewDependency | undefined {
-    const next = this.normalizeDependencySelectorArgs(parentTableOrParams, childTable, 'getDependency')
+  getDependency(params: { parentTable: string; childTable: string }): ViewDependency | undefined {
+    const parentTable = this.requireNonEmptyString(params.parentTable, 'getDependency.parentTable')
+    const childTable = this.requireNonEmptyString(params.childTable, 'getDependency.childTable')
     return (this.dataSet.viewDependencies ?? []).find(
-      dependency => dependency.parentTable === next.parentTable && dependency.childTable === next.childTable,
+      dependency => dependency.parentTable === parentTable && dependency.childTable === childTable,
     )
   }
 
@@ -1039,10 +995,14 @@ export class DataSetCrudTool {
    * @returns 新创建的依赖。
    * @throws 当依赖引用非法或底层 relation 不满足要求时抛错。
    */
-  createDependency(params: CreateDependencyParams): ViewDependency {
+  createDependency(params: { parentTable: string; childTable: string; dependencyType?: DependencyType; autoLoad?: boolean }): ViewDependency {
     this.dataSet.addDependency(params)
     this._afterWrite()
-    return this.getDependencyOrThrow(params.parentTable, params.childTable)
+    const dependency = this.getDependency({ parentTable: params.parentTable, childTable: params.childTable })
+    if (!dependency) {
+      throw new Error(`Dependency "${params.parentTable}→${params.childTable}" not found`)
+    }
+    return dependency
   }
 
   /**
@@ -1054,19 +1014,11 @@ export class DataSetCrudTool {
    * @returns 更新后的依赖。
    * @throws 当依赖不存在、更新目标非法或缺少底层 relation 时抛错。
    */
-  updateDependency(
-    parentTable: string,
-    childTable: string,
-    updates: Partial<ViewDependency>,
-  ): ViewDependency
-  updateDependency(params: DataSetCrudToolUpdateDependencyParams): ViewDependency
-  updateDependency(
-    parentTableOrParams: string | DataSetCrudToolUpdateDependencyParams,
-    childTableOrUpdates?: string | Partial<ViewDependency>,
-    updates?: Partial<ViewDependency>,
-  ): ViewDependency {
-    const next = this.normalizeUpdateDependencyArgs(parentTableOrParams, childTableOrUpdates, updates)
-    const result = this.dataSetContract.updateDependency(next.parentTable, next.childTable, next.updates)
+  updateDependency(params: { parentTable: string; childTable: string; updates: Partial<ViewDependency> }): ViewDependency {
+    const parentTable = this.requireNonEmptyString(params.parentTable, 'updateDependency.parentTable')
+    const childTable = this.requireNonEmptyString(params.childTable, 'updateDependency.childTable')
+    const updates = this.requireObjectArg(params.updates, 'updateDependency.updates')
+    const result = this.dataSet.updateDependency(parentTable, childTable, updates)
     this._afterWrite()
     return result
   }
@@ -1078,14 +1030,10 @@ export class DataSetCrudTool {
    * @param childTable 子表名。
    * @throws 当依赖不存在时抛错。
    */
-  deleteDependency(parentTable: string, childTable: string): void
-  deleteDependency(params: DataSetCrudToolDependencySelector): void
-  deleteDependency(
-    parentTableOrParams: string | DataSetCrudToolDependencySelector,
-    childTable?: string,
-  ): void {
-    const next = this.normalizeDependencySelectorArgs(parentTableOrParams, childTable, 'deleteDependency')
-    this.dataSet.removeDependency(next.parentTable, next.childTable)
+  deleteDependency(params: { parentTable: string; childTable: string }): void {
+    const parentTable = this.requireNonEmptyString(params.parentTable, 'deleteDependency.parentTable')
+    const childTable = this.requireNonEmptyString(params.childTable, 'deleteDependency.childTable')
+    this.dataSet.removeDependency(parentTable, childTable)
     this._afterWrite()
   }
 
@@ -1106,15 +1054,6 @@ export class DataSetCrudTool {
       throw new Error(`Table "${tableName}" not found in DataSet "${this.dataSetName}"`)
     }
     return table
-  }
-
-  /**
-   * 以 IDataSet 契约暴露 DataSet，便于统一走接口能力。
-   *
-   * @returns IDataSet 视图。
-   */
-  private get dataSetContract(): IDataSet {
-    return this.dataSet
   }
 
   private requireNonEmptyString(value: string | undefined, label: string): string {
@@ -1139,397 +1078,12 @@ export class DataSetCrudTool {
   }
 
   private normalizeTableNameArg(
-    tableNameOrParams: string | DataSetCrudToolTableNameParams,
+    tableNameOrParams: string | { tableName: string },
     methodName: string,
   ): string {
     return typeof tableNameOrParams === 'string'
       ? this.requireNonEmptyString(tableNameOrParams, `${methodName}.tableName`)
       : this.requireNonEmptyString(tableNameOrParams.tableName, `${methodName}.tableName`)
-  }
-
-  private normalizeColumnSelectorArgs(
-    tableNameOrParams: string | DataSetCrudToolColumnSelector,
-    columnName: string | undefined,
-    methodName: string,
-  ): DataSetCrudToolColumnSelector {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, `${methodName}.tableName`),
-        columnName: this.requireNonEmptyString(columnName, `${methodName}.columnName`),
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, `${methodName}.tableName`),
-      columnName: this.requireNonEmptyString(tableNameOrParams.columnName, `${methodName}.columnName`),
-    }
-  }
-
-  private normalizeCreateColumnArgs(
-    tableNameOrParams: string | DataSetCrudToolCreateColumnParams,
-    column: DataColumn | undefined,
-  ): DataSetCrudToolCreateColumnParams {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'createColumn.tableName'),
-        column: this.requireObjectArg(column, 'createColumn.column'),
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'createColumn.tableName'),
-      column: this.requireObjectArg(tableNameOrParams.column, 'createColumn.column'),
-    }
-  }
-
-  private normalizeUpdateColumnArgs(
-    tableNameOrParams: string | DataSetCrudToolUpdateColumnParams,
-    columnNameOrUpdates: string | Partial<DataColumn> | undefined,
-    maybeUpdates?: Partial<DataColumn>,
-  ): DataSetCrudToolUpdateColumnParams {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'updateColumn.tableName'),
-        columnName: this.requireNonEmptyString(
-          typeof columnNameOrUpdates === 'string' ? columnNameOrUpdates : undefined,
-          'updateColumn.columnName',
-        ),
-        updates: this.requireObjectArg(maybeUpdates, 'updateColumn.updates'),
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'updateColumn.tableName'),
-      columnName: this.requireNonEmptyString(tableNameOrParams.columnName, 'updateColumn.columnName'),
-      updates: this.requireObjectArg(tableNameOrParams.updates, 'updateColumn.updates'),
-    }
-  }
-
-  private normalizeUpdateTableArgs(
-    tableNameOrParams: string | DataSetCrudToolUpdateTableParams,
-    updates?: DataSetCrudToolUpdateTableOptions,
-  ): DataSetCrudToolUpdateTableParams {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'updateTable.tableName'),
-        ...(updates ?? {}),
-      }
-    }
-
-    return {
-      ...tableNameOrParams,
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'updateTable.tableName'),
-    }
-  }
-
-  private normalizeViewSelectorArgs(
-    tableNameOrParams: string | DataSetCrudToolViewSelector,
-    viewId: string | undefined,
-    methodName: string,
-  ): Required<DataSetCrudToolViewSelector> {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, `${methodName}.tableName`),
-        viewId: viewId ?? 'default',
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, `${methodName}.tableName`),
-      viewId: tableNameOrParams.viewId ?? 'default',
-    }
-  }
-
-  private normalizeRequiredViewSelectorArgs(
-    tableNameOrParams: string | DataSetCrudToolDeleteViewParams,
-    viewId: string | undefined,
-    methodName: string,
-  ): DataSetCrudToolDeleteViewParams {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, `${methodName}.tableName`),
-        viewId: this.requireNonEmptyString(viewId, `${methodName}.viewId`),
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, `${methodName}.tableName`),
-      viewId: this.requireNonEmptyString(tableNameOrParams.viewId, `${methodName}.viewId`),
-    }
-  }
-
-  private normalizeCreateViewArgs(
-    tableNameOrParams: string | DataSetCrudToolCreateViewParams,
-    viewIdOrConfig?: string | IViewMetadata,
-    config?: IViewMetadata,
-  ): DataSetCrudToolCreateViewParams {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'createView.tableName'),
-        viewId: this.requireNonEmptyString(
-          typeof viewIdOrConfig === 'string' ? viewIdOrConfig : undefined,
-          'createView.viewId',
-        ),
-        ...(viewIdOrConfig !== undefined && typeof viewIdOrConfig !== 'string'
-          ? { config: this.requireObjectArg(viewIdOrConfig, 'createView.config') }
-          : config !== undefined
-            ? { config: this.requireObjectArg(config, 'createView.config') }
-            : {}),
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'createView.tableName'),
-      viewId: this.requireNonEmptyString(tableNameOrParams.viewId, 'createView.viewId'),
-      ...(tableNameOrParams.config !== undefined
-        ? { config: this.requireObjectArg(tableNameOrParams.config, 'createView.config') }
-        : {}),
-    }
-  }
-
-  private normalizeUpdateViewArgs(
-    tableNameOrParams: string | DataSetCrudToolUpdateViewParams,
-    viewIdOrUpdates?: string | Partial<IViewMetadata>,
-    maybeUpdates?: Partial<IViewMetadata>,
-  ): Required<DataSetCrudToolUpdateViewParams> {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'updateView.tableName'),
-        viewId: this.requireNonEmptyString(
-          typeof viewIdOrUpdates === 'string' ? viewIdOrUpdates : undefined,
-          'updateView.viewId',
-        ),
-        updates: this.requireObjectArg(maybeUpdates, 'updateView.updates'),
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'updateView.tableName'),
-      viewId: tableNameOrParams.viewId ?? 'default',
-      updates: this.requireObjectArg(tableNameOrParams.updates, 'updateView.updates'),
-    }
-  }
-
-  private normalizeRowSelectorArgs(
-    tableNameOrParams: string | DataSetCrudToolRowSelector,
-    idOrViewId: string | number | undefined,
-    viewId: string | undefined,
-    methodName: string,
-  ): Required<DataSetCrudToolRowSelector> {
-    if (typeof tableNameOrParams === 'string') {
-      if (typeof idOrViewId !== 'string' && typeof idOrViewId !== 'number') {
-        throw new Error(`${methodName}.id must be a string or number`)
-      }
-
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, `${methodName}.tableName`),
-        id: idOrViewId,
-        viewId: viewId ?? 'default',
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, `${methodName}.tableName`),
-      id: tableNameOrParams.id,
-      viewId: tableNameOrParams.viewId ?? 'default',
-    }
-  }
-
-  private normalizeCreateRowArgs(
-    tableNameOrParams: string | DataSetCrudToolCreateRowParams,
-    data: Partial<IDataRow> | undefined,
-    viewId: string | undefined,
-  ): Required<DataSetCrudToolCreateRowParams> {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'createRow.tableName'),
-        data: this.requireObjectArg(data, 'createRow.data'),
-        viewId: viewId ?? 'default',
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'createRow.tableName'),
-      data: this.requireObjectArg(tableNameOrParams.data, 'createRow.data'),
-      viewId: tableNameOrParams.viewId ?? 'default',
-    }
-  }
-
-  private normalizeCreateRowsArgs(
-    tableNameOrParams: string | DataSetCrudToolCreateRowsParams,
-    items: Array<Partial<IDataRow>> | undefined,
-    viewId: string | undefined,
-  ): Required<DataSetCrudToolCreateRowsParams> {
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'createRows.tableName'),
-        items: this.requireNonEmptyArray(items, 'createRows.items').map((item, index) =>
-          this.requireObjectArg(item, `createRows.items[${index}]`),
-        ),
-        viewId: viewId ?? 'default',
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'createRows.tableName'),
-      items: this.requireNonEmptyArray(tableNameOrParams.items, 'createRows.items').map((item, index) =>
-        this.requireObjectArg(item, `createRows.items[${index}]`),
-      ),
-      viewId: tableNameOrParams.viewId ?? 'default',
-    }
-  }
-
-  private normalizeUpdateRowArgs(
-    tableNameOrParams: string | DataSetCrudToolUpdateRowParams,
-    idOrData?: string | number | Partial<IDataRow>,
-    dataOrViewId?: Partial<IDataRow> | string,
-    viewId?: string,
-  ): Required<DataSetCrudToolUpdateRowParams> {
-    if (typeof tableNameOrParams === 'string') {
-      if (typeof idOrData !== 'string' && typeof idOrData !== 'number') {
-        throw new Error('updateRow.id must be a string or number')
-      }
-
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'updateRow.tableName'),
-        id: idOrData,
-        data: this.requireObjectArg(
-          typeof dataOrViewId === 'string' ? undefined : dataOrViewId,
-          'updateRow.data',
-        ),
-        viewId: typeof dataOrViewId === 'string' ? dataOrViewId : (viewId ?? 'default'),
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'updateRow.tableName'),
-      id: tableNameOrParams.id,
-      data: this.requireObjectArg(tableNameOrParams.data, 'updateRow.data'),
-      viewId: tableNameOrParams.viewId ?? 'default',
-    }
-  }
-
-  private normalizeUpdateRowsArgs(
-    tableNameOrParams: string | DataSetCrudToolUpdateRowsParams,
-    items: DataSetCrudToolUpdateRowsItem[] | undefined,
-    viewId: string | undefined,
-  ): Required<DataSetCrudToolUpdateRowsParams> {
-    const normalizeItems = (
-      value: DataSetCrudToolUpdateRowsItem[] | undefined,
-      label: string,
-    ): DataSetCrudToolUpdateRowsItem[] => this.requireNonEmptyArray(value, label).map((item, index) => {
-      const candidate = this.requireObjectArg(item, `${label}[${index}]`)
-      const id = candidate['id']
-      if (typeof id !== 'string' && typeof id !== 'number') {
-        throw new Error(`${label}[${index}].id must be a string or number`)
-      }
-      return {
-        id,
-        data: this.requireObjectArg(candidate['data'], `${label}[${index}].data`),
-      }
-    })
-
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'updateRows.tableName'),
-        items: normalizeItems(items, 'updateRows.items'),
-        viewId: viewId ?? 'default',
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'updateRows.tableName'),
-      items: normalizeItems(tableNameOrParams.items, 'updateRows.items'),
-      viewId: tableNameOrParams.viewId ?? 'default',
-    }
-  }
-
-  private normalizeDeleteRowsArgs(
-    tableNameOrParams: string | DataSetCrudToolDeleteRowsParams,
-    ids: Array<string | number> | undefined,
-    viewId: string | undefined,
-  ): Required<DataSetCrudToolDeleteRowsParams> {
-    const normalizeIds = (
-      value: Array<string | number> | undefined,
-      label: string,
-    ): Array<string | number> => this.requireNonEmptyArray(value, label).map((id, index) => {
-      if (typeof id !== 'string' && typeof id !== 'number') {
-        throw new Error(`${label}[${index}] must be a string or number`)
-      }
-      return id
-    })
-
-    if (typeof tableNameOrParams === 'string') {
-      return {
-        tableName: this.requireNonEmptyString(tableNameOrParams, 'deleteRows.tableName'),
-        ids: normalizeIds(ids, 'deleteRows.ids'),
-        viewId: viewId ?? 'default',
-      }
-    }
-
-    return {
-      tableName: this.requireNonEmptyString(tableNameOrParams.tableName, 'deleteRows.tableName'),
-      ids: normalizeIds(tableNameOrParams.ids, 'deleteRows.ids'),
-      viewId: tableNameOrParams.viewId ?? 'default',
-    }
-  }
-
-  private normalizeUpdateRelationArgs(
-    selectorOrParams: RelationSelector | DataSetCrudToolUpdateRelationParams,
-    updates?: Partial<TableRelation>,
-  ): DataSetCrudToolUpdateRelationParams {
-    if ('selector' in selectorOrParams) {
-      return {
-        selector: selectorOrParams.selector,
-        updates: this.requireObjectArg(selectorOrParams.updates, 'updateRelation.updates'),
-      }
-    }
-
-    return {
-      selector: selectorOrParams,
-      updates: this.requireObjectArg(updates, 'updateRelation.updates'),
-    }
-  }
-
-  private normalizeDependencySelectorArgs(
-    parentTableOrParams: string | DataSetCrudToolDependencySelector,
-    childTable: string | undefined,
-    methodName: string,
-  ): DataSetCrudToolDependencySelector {
-    if (typeof parentTableOrParams === 'string') {
-      return {
-        parentTable: this.requireNonEmptyString(parentTableOrParams, `${methodName}.parentTable`),
-        childTable: this.requireNonEmptyString(childTable, `${methodName}.childTable`),
-      }
-    }
-
-    return {
-      parentTable: this.requireNonEmptyString(parentTableOrParams.parentTable, `${methodName}.parentTable`),
-      childTable: this.requireNonEmptyString(parentTableOrParams.childTable, `${methodName}.childTable`),
-    }
-  }
-
-  private normalizeUpdateDependencyArgs(
-    parentTableOrParams: string | DataSetCrudToolUpdateDependencyParams,
-    childTableOrUpdates?: string | Partial<ViewDependency>,
-    updates?: Partial<ViewDependency>,
-  ): DataSetCrudToolUpdateDependencyParams {
-    if (typeof parentTableOrParams === 'string') {
-      return {
-        parentTable: this.requireNonEmptyString(parentTableOrParams, 'updateDependency.parentTable'),
-        childTable: this.requireNonEmptyString(
-          typeof childTableOrUpdates === 'string' ? childTableOrUpdates : undefined,
-          'updateDependency.childTable',
-        ),
-        updates: this.requireObjectArg(updates, 'updateDependency.updates'),
-      }
-    }
-
-    return {
-      parentTable: this.requireNonEmptyString(parentTableOrParams.parentTable, 'updateDependency.parentTable'),
-      childTable: this.requireNonEmptyString(parentTableOrParams.childTable, 'updateDependency.childTable'),
-      updates: this.requireObjectArg(parentTableOrParams.updates, 'updateDependency.updates'),
-    }
   }
 
   /**
@@ -1584,58 +1138,16 @@ export class DataSetCrudTool {
     return table.api !== undefined && view.commitMode === 'immediate'
   }
 
-  private async executeLocalCreateRows(
-    view: DataView,
-    items: Array<Partial<IDataRow>>,
+  private async executeBatchLocal<T>(
+    items: T[],
+    executor: (item: T) => Promise<unknown>,
   ): Promise<CrudResult<BatchResult>> {
     const results: CrudResult[] = []
     for (const item of items) {
       try {
-        const result = await view.addRow(item)
-        results.push(this.toCrudResult(result, true))
-      } catch (error) {
-        results.push(this.toCrudResult(error, false))
-      }
-    }
-    return this.toBatchCrudResult(results)
-  }
-
-  private async executeLocalUpdateRows(
-    view: DataView,
-    items: DataSetCrudToolUpdateRowsItem[],
-  ): Promise<CrudResult<BatchResult>> {
-    const results: CrudResult[] = []
-    for (const item of items) {
-      try {
-        const result = await view.editRowById(item.id, item.data)
+        const result = await executor(item)
         if (result === false) {
-          results.push({
-            success: false,
-            message: `Row "${item.id}" not found`,
-          })
-        } else {
-          results.push(this.toCrudResult(result, true))
-        }
-      } catch (error) {
-        results.push(this.toCrudResult(error, false))
-      }
-    }
-    return this.toBatchCrudResult(results)
-  }
-
-  private async executeLocalDeleteRows(
-    view: DataView,
-    ids: Array<string | number>,
-  ): Promise<CrudResult<BatchResult>> {
-    const results: CrudResult[] = []
-    for (const id of ids) {
-      try {
-        const result = await view.removeRow(id)
-        if (result === false) {
-          results.push({
-            success: false,
-            message: `Row "${id}" not found`,
-          })
+          results.push({ success: false, message: `Item "${String(item)}" not found` })
         } else {
           results.push(this.toCrudResult(result, true))
         }
@@ -1647,8 +1159,8 @@ export class DataSetCrudTool {
   }
 
   private toCrudResult(result: unknown, defaultSuccess: boolean): CrudResult {
-    if (this.isCrudResult(result)) {
-      return result
+    if (typeof result === 'object' && result !== null && 'success' in result) {
+      return result as CrudResult
     }
 
     if (result instanceof Error) {
@@ -1683,105 +1195,29 @@ export class DataSetCrudTool {
     }
   }
 
-  private isCrudResult(value: unknown): value is CrudResult {
-    return typeof value === 'object' && value !== null && 'success' in value
-  }
 
   /**
    * 给数据表写入资源语义元数据。
    *
    * 这些字段只描述“资源身份”和“业务角色”，不参与运行时行为判断。
    */
-  private applyTableSemanticMetadata(table: DataTable, metadata: TableSemanticMetadata): void {
+  private applyTableSemanticMetadata(
+    table: DataTable,
+    metadata: Pick<DataSetCrudToolUpdateTableOptions, 'resourceType' | 'resourceId' | 'businessCategory'>,
+    allowNull = false,
+  ): void {
     if (metadata.resourceType !== undefined) {
-      table.resourceType = metadata.resourceType
+      if (allowNull && metadata.resourceType === null) delete table.resourceType
+      else if (metadata.resourceType !== null) table.resourceType = metadata.resourceType
     }
     if (metadata.resourceId !== undefined) {
-      table.resourceId = metadata.resourceId
+      if (allowNull && metadata.resourceId === null) delete table.resourceId
+      else if (metadata.resourceId !== null) table.resourceId = metadata.resourceId
     }
     if (metadata.businessCategory !== undefined) {
-      table.businessCategory = metadata.businessCategory
+      if (allowNull && metadata.businessCategory === null) delete table.businessCategory
+      else if (metadata.businessCategory !== null) table.businessCategory = metadata.businessCategory
     }
-  }
-
-  /**
-   * 更新数据表的资源语义元数据。
-   *
-   * updateTable 允许用 null 显式清空已有字段，方便建模工具做重分类或解绑。
-   */
-  private applyTableSemanticMetadataUpdates(
-    table: DataTable,
-    updates: Pick<DataSetCrudToolUpdateTableOptions, 'resourceType' | 'resourceId' | 'businessCategory'>,
-  ): void {
-    if (updates.resourceType !== undefined) {
-      if (updates.resourceType === null) {
-        delete table.resourceType
-      } else {
-        table.resourceType = updates.resourceType
-      }
-    }
-
-    if (updates.resourceId !== undefined) {
-      if (updates.resourceId === null) {
-        delete table.resourceId
-      } else {
-        table.resourceId = updates.resourceId
-      }
-    }
-
-    if (updates.businessCategory !== undefined) {
-      if (updates.businessCategory === null) {
-        delete table.businessCategory
-      } else {
-        table.businessCategory = updates.businessCategory
-      }
-    }
-  }
-
-  /**
-   * 获取单条表关系；不存在时抛错。
-   *
-   * @param selector 关系选择器。
-   * @returns 表关系。
-   * @throws 当关系不存在时抛错。
-   */
-  private getRelationOrThrow(selector: RelationSelector): TableRelation {
-    const relation = this.getRelation(selector)
-    if (!relation) {
-      throw new Error(`Relation "${selector.parentTable}→${selector.childTable}" not found`)
-    }
-    return relation
-  }
-
-  /**
-   * 获取单条视图依赖；不存在时抛错。
-   *
-   * @param parentTable 父表名。
-   * @param childTable 子表名。
-   * @returns 视图依赖。
-   * @throws 当依赖不存在时抛错。
-   */
-  private getDependencyOrThrow(parentTable: string, childTable: string): ViewDependency {
-    const dependency = this.getDependency(parentTable, childTable)
-    if (!dependency) {
-      throw new Error(`Dependency "${parentTable}→${childTable}" not found`)
-    }
-    return dependency
-  }
-
-  /**
-   * 按 selector 筛选关系集合。
-   *
-   * @param selector 关系选择器。
-   * @returns 命中的关系列表。
-   */
-  private findRelations(selector: RelationSelector): TableRelation[] {
-    return (this.dataSet.tableRelations ?? []).filter((relation) => {
-      if (relation.parentTable !== selector.parentTable || relation.childTable !== selector.childTable) return false
-      if (selector.parentField !== undefined && relation.parentField !== selector.parentField) return false
-      if (selector.childField !== undefined && relation.childField !== selector.childField) return false
-      return true
-    })
   }
 
   /**

@@ -49,10 +49,10 @@ function pcData(): IPageConfigData {
   return d!
 }
 
-/** 建立 blueprint + dataset（pageconfig.init 的前置条件） */
+/** 建立 blueprint + dataset（pageconfig.bootstrap 的前置条件） */
 function setupPrerequisites(): void {
-  exec('blueprint.create', { title: 'test page', requirements: 'test', checkpoints: [{ id: 'c1', title: 'setup', plannedActions: ['pageconfig.init'], validation: 'ok' }] })
-  exec('dataset.init', { dataSetName: 'TestDS' })
+  exec('blueprint.create', { title: 'test page', requirements: 'test', checkpoints: [{ id: 'c1', title: 'setup', plannedActions: ['pageconfig.bootstrap'], validation: 'ok' }] })
+  exec('dataset.bootstrap', { dataSetName: 'TestDS' })
   exec('datatable.create', { tableName: 'Users', columns: [{ name: 'id', type: 'string' }, { name: 'name', type: 'string' }] })
 }
 
@@ -67,22 +67,22 @@ beforeEach(() => {
 })
 
 // ═══════════════════════════════════════════════════════════
-// pageconfig.init
+// pageconfig.bootstrap
 // ═══════════════════════════════════════════════════════════
 
-describe('pageconfig.init', () => {
+describe('pageconfig.bootstrap', () => {
   it('fails without blueprint', () => {
-    expectFail(exec('pageconfig.init'), 'NO_BLUEPRINT')
+    expectFail(exec('pageconfig.bootstrap'), 'NO_BLUEPRINT')
   })
 
   it('fails without dataset', () => {
-    exec('blueprint.create', { title: 'test', requirements: 'test', checkpoints: [{ id: 'c1', title: 't', plannedActions: ['pageconfig.init'], validation: 'ok' }] })
-    expectFail(exec('pageconfig.init'), 'NO_DATASET')
+    exec('blueprint.create', { title: 'test', requirements: 'test', checkpoints: [{ id: 'c1', title: 't', plannedActions: ['pageconfig.bootstrap'], validation: 'ok' }] })
+    expectFail(exec('pageconfig.bootstrap'), 'NO_DATASET')
   })
 
   it('creates empty shell with root div', () => {
     setupPrerequisites()
-    const r = exec('pageconfig.init')
+    const r = exec('pageconfig.bootstrap')
     expectOk(r)
     expect(pcState().phase).toBe('bootstrapped')
     const pc = pcData()
@@ -97,14 +97,14 @@ describe('pageconfig.init', () => {
 
   it('custom rootType', () => {
     setupPrerequisites()
-    expectOk(exec('pageconfig.init', { rootType: 'el-container' }))
+    expectOk(exec('pageconfig.bootstrap', { rootType: 'el-container' }))
     expect(pcData().rule!.type).toBe('el-container')
   })
 
   it('rejects duplicate init', () => {
     setupPrerequisites()
-    expectOk(exec('pageconfig.init'))
-    expectFail(exec('pageconfig.init'), 'ALREADY_INIT')
+    expectOk(exec('pageconfig.bootstrap'))
+    expectFail(exec('pageconfig.bootstrap'), 'ALREADY_INIT')
   })
 })
 
@@ -115,7 +115,7 @@ describe('pageconfig.init', () => {
 describe('rule.addComponent', () => {
   beforeEach(() => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
   })
 
   it('adds component to root', () => {
@@ -165,7 +165,7 @@ describe('rule.addComponent', () => {
 describe('rule.setProps', () => {
   beforeEach(() => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
     exec('rule.addComponent', { parentId: null, type: 'r-table', id: 'tbl', props: { border: true } })
   })
 
@@ -193,7 +193,7 @@ describe('rule.setProps', () => {
 describe('rule.removeComponent', () => {
   beforeEach(() => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
     exec('rule.addComponent', { parentId: null, type: 'div', id: 'target' })
   })
 
@@ -219,7 +219,7 @@ describe('rule.removeComponent', () => {
 describe('script stills', () => {
   beforeEach(() => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
   })
 
   it('script.addHandler adds function', () => {
@@ -258,7 +258,7 @@ describe('script stills', () => {
 describe('script var stills', () => {
   beforeEach(() => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
   })
 
   it('script.setVar adds a variable', () => {
@@ -290,7 +290,7 @@ describe('script var stills', () => {
 describe('style stills', () => {
   beforeEach(() => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
   })
 
   it('style.addRule adds CSS rule', () => {
@@ -322,7 +322,7 @@ describe('style stills', () => {
 describe('pageconfig.validate', () => {
   beforeEach(() => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
   })
 
   it('passes with valid dataKey', () => {
@@ -361,7 +361,7 @@ describe('pageconfig.validate', () => {
 describe('pageconfig.export', () => {
   beforeEach(() => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
   })
 
   it('exports rule.json + script.js + style.css', () => {
@@ -388,7 +388,7 @@ describe('pageconfig.export', () => {
 describe('pageconfig.describe', () => {
   it('describes current state', () => {
     setupPrerequisites()
-    exec('pageconfig.init')
+    exec('pageconfig.bootstrap')
     exec('rule.addComponent', { parentId: null, type: 'r-table' })
     exec('script.addHandler', { name: 'fn1', body: '...' })
     exec('script.setVar', { name: '_state', value: '{}' })

@@ -183,11 +183,18 @@ export type { PageConfigDomainState, PageConfigPhase, IPageConfigData, PageConfi
 // ═══════════════════════════════════════════════════════════
 
 import { editDomain } from './edit-domain'
-export { editDomain, getEditState, editGuard } from './edit-domain'
-export type { EditDomainState, EditPhase, EditGuardOptions } from './edit-domain'
-export { editInit, fileReadScript, fileWriteScript, fileReadStyle, fileWriteStyle } from './edit-domain'
-export { createNodeTreeStills } from './edit-nodeTree-stills'
-export { createDatasetStills } from './edit-dataset-stills'
+export { editDomain } from './edit-domain'
+export { EDIT_STILLS } from './edit-domain'
+export { editInit, EDIT_LIFECYCLE_STILLS } from './edit-lifecycle-stills'
+export { getEditState } from './edit-state'
+export type { EditDomainState, EditPhase } from './edit-state'
+export { editGuard } from './edit-guard'
+export type { EditGuardOptions } from './edit-guard'
+export { EDIT_FILE_STILLS } from './edit-file-stills'
+export { EDIT_DIFF_STILLS } from './edit-diff-stills'
+export { EDIT_EXPORT_STILLS } from './edit-export-stills'
+export { EDIT_NODE_TREE_STILLS } from './edit-nodeTree-stills'
+export { EDIT_DATASET_STILLS } from './edit-dataset-stills'
 
 // ═══════════════════════════════════════════════════════════
 // Register All

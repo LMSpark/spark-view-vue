@@ -25,6 +25,20 @@ import type {
 } from './types'
 import { getDomainState } from './types'
 import { getStill } from './dispatcher'
+import {
+  STILLS_ACTION_SPEC_ACTION,
+  BLUEPRINT_CREATE_ACTION,
+  BLUEPRINT_DESCRIBE_ACTION,
+  BLUEPRINT_ADVANCE_ACTION,
+  BLUEPRINT_ITEM_ADVANCE_ACTION,
+  BLUEPRINT_REVISE_ACTION,
+  BLUEPRINT_VALIDATE_COVERAGE_ACTION,
+  BLUEPRINT_SELF_CHECK_ACTION,
+  DATASET_BOOTSTRAP_ACTION,
+  DATATABLE_CREATE_ACTION,
+  RELATION_ADD_ACTION,
+  SCHEMA_LOCK_ACTION,
+} from './action-names'
 
 // ═══════════════════════════════════════════════════════════
 // Types & State
@@ -90,7 +104,7 @@ function requireBP(
         ok: false,
         code: 'NO_BLUEPRINT',
         msg: 'Blueprint 未创建',
-        fix: `请先查看 blueprint.create 规格并创建蓝图：\n${buildActionSpecFix('blueprint.create', 'retry-blueprint-create-spec')}`,
+        fix: `请先查看 ${BLUEPRINT_CREATE_ACTION} 规格并创建蓝图：\n${buildActionSpecFix(BLUEPRINT_CREATE_ACTION, 'retry-blueprint-create-spec')}`,
       },
     }
   }
@@ -733,11 +747,11 @@ function formatProtocolBlock(
 }
 
 function buildBlueprintDescribeFix(requestId = 'retry-blueprint-describe'): string {
-  return formatProtocolBlock('describe', 'blueprint.describe', requestId, {})
+  return formatProtocolBlock('describe', BLUEPRINT_DESCRIBE_ACTION, requestId, {})
 }
 
 function buildActionSpecFix(action: string, requestId = 'retry-action-spec'): string {
-  return formatProtocolBlock('describe', 'stills.actionSpec', requestId, { action })
+  return formatProtocolBlock('describe', STILLS_ACTION_SPEC_ACTION, requestId, { action })
 }
 
 function buildPlanItemAdvanceFix(planItemId: string, note = '动作执行完成', requestId = 'retry-plan-item-advance'): string {
@@ -752,7 +766,7 @@ function buildCheckpointAdvanceFix(
   note = 'checkpoint 已完成',
   requestId = 'retry-checkpoint-advance',
 ): string {
-  return formatProtocolBlock('request', 'blueprint.advance', requestId, {
+  return formatProtocolBlock('request', BLUEPRINT_ADVANCE_ACTION, requestId, {
     completedCheckpointId: checkpointId,
     note,
   })
@@ -765,7 +779,7 @@ function buildCheckpointAdvanceFix(
 // ─── blueprint.create ──────────────────────────────────────
 
 export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = {
-  action: 'blueprint.create',
+  action: BLUEPRINT_CREATE_ACTION,
   type: 'request',
   description: '根据用户目标生成执行蓝图与 checkpoints',
   guard: guardNone,
@@ -798,14 +812,14 @@ export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = 
       {
         id: 'cp1',
         title: '初始化 DataSet',
-        plannedActions: ['dataset.init'],
+        plannedActions: [DATASET_BOOTSTRAP_ACTION],
         validation: 'session.describe',
         executionMode: 'inline',
       },
       {
         id: 'cp2',
         title: '创建核心表结构',
-        plannedActions: ['datatable.create', 'relation.add'],
+        plannedActions: [DATATABLE_CREATE_ACTION, RELATION_ADD_ACTION],
         validation: '表与关系齐备',
         dependsOn: ['cp1'],
         relatedCheckpointIds: ['cp3'],
@@ -901,7 +915,7 @@ export const blueprintCreate: StillDefinition<BlueprintCreateParams, unknown> = 
 // ─── blueprint.describe ────────────────────────────────────
 
 export const blueprintDescribe: StillDefinition<Record<string, never>, unknown> = {
-  action: 'blueprint.describe',
+  action: BLUEPRINT_DESCRIBE_ACTION,
   type: 'describe',
   description: '返回当前蓝图、当前 checkpoint、未决问题',
   guard: guardBlueprint,
@@ -997,7 +1011,7 @@ export const blueprintDescribe: StillDefinition<Record<string, never>, unknown> 
 // ─── blueprint.advance ─────────────────────────────────────
 
 export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> = {
-  action: 'blueprint.advance',
+  action: BLUEPRINT_ADVANCE_ACTION,
   type: 'request',
   description: '标记当前 checkpoint 完成并推进下一步',
   guard: guardBlueprint,
@@ -1010,7 +1024,7 @@ export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> 
     completedCheckpointId: 'string — 要标记完成的 checkpoint ID',
     note: 'string? — 完成备注',
   },
-  example: { completedCheckpointId: 'cp1', note: 'dataset.init 成功' },
+  example: { completedCheckpointId: 'cp1', note: 'dataset.bootstrap 成功' },
   failureModes: [
     {
       code: 'CHECKPOINT_DEPENDENCIES_PENDING',
@@ -1108,7 +1122,7 @@ export const blueprintAdvance: StillDefinition<BlueprintAdvanceParams, unknown> 
 // ─── blueprint.item.advance ────────────────────────────────
 
 export const blueprintItemAdvance: StillDefinition<BlueprintItemAdvanceParams, unknown> = {
-  action: 'blueprint.item.advance',
+  action: BLUEPRINT_ITEM_ADVANCE_ACTION,
   type: 'request',
   description: '标记单个 plan item 完成，并在必要时自动完成对应 checkpoint',
   guard: guardBlueprint,
@@ -1277,7 +1291,7 @@ export const blueprintItemAdvance: StillDefinition<BlueprintItemAdvanceParams, u
 // ─── blueprint.revise ──────────────────────────────────────
 
 export const blueprintRevise: StillDefinition<BlueprintReviseParams, unknown> = {
-  action: 'blueprint.revise',
+  action: BLUEPRINT_REVISE_ACTION,
   type: 'request',
   description: '根据执行反馈修订 blueprint',
   guard: guardBlueprint,
@@ -1307,7 +1321,7 @@ export const blueprintRevise: StillDefinition<BlueprintReviseParams, unknown> = 
     updateCheckpoints: [
       {
         id: 'cp2',
-        plannedActions: ['datatable.create', 'relation.add', 'schema.lock'],
+        plannedActions: [DATATABLE_CREATE_ACTION, RELATION_ADD_ACTION, SCHEMA_LOCK_ACTION],
         validation: '核心表、关系与锁定全部完成',
       },
     ],
@@ -1315,7 +1329,7 @@ export const blueprintRevise: StillDefinition<BlueprintReviseParams, unknown> = 
       {
         id: 'cp3',
         title: '字典表',
-        plannedActions: ['datatable.create'],
+        plannedActions: [DATATABLE_CREATE_ACTION],
         validation: '字典表建成',
         insertAfter: 'cp2',
         dependsOn: ['cp2'],
@@ -1628,7 +1642,7 @@ function collectBlueprintIssues(blueprint: ExecutionBlueprint): CoverageIssue[] 
 // ─── blueprint.validateCoverage ────────────────────────────
 
 export const blueprintValidateCoverage: StillDefinition<Record<string, never>, unknown> = {
-  action: 'blueprint.validateCoverage',
+  action: BLUEPRINT_VALIDATE_COVERAGE_ACTION,
   type: 'describe',
   description: '检查蓝图结构完整度：checkpoints/planItems 完成率 + 依赖链完整性',
   guard: guardBlueprint,
@@ -1683,7 +1697,7 @@ export const blueprintValidateCoverage: StillDefinition<Record<string, never>, u
 // ─── blueprint.selfCheck ───────────────────────────────────
 
 export const blueprintSelfCheck: StillDefinition<Record<string, never>, unknown> = {
-  action: 'blueprint.selfCheck',
+  action: BLUEPRINT_SELF_CHECK_ACTION,
   type: 'describe',
   description: '蓝图结构审计：返回 checkpoint/planItem 进度清单 + 依赖图 + 问题列表',
   guard: guardBlueprint,

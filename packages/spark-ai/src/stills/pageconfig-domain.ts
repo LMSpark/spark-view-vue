@@ -36,6 +36,13 @@ import type {
   PageConfigValidationIssue,
 } from './pageconfig-types'
 import { getDataSetState } from './dataset-domain'
+import {
+  DATASET_BOOTSTRAP_ACTION,
+  PAGECONFIG_BOOTSTRAP_ACTION,
+  PAGECONFIG_VALIDATE_ACTION,
+  PAGECONFIG_EXPORT_ACTION,
+  PAGECONFIG_DESCRIBE_ACTION,
+} from './action-names'
 import type { StillsCatalog, StillsComponentEntry } from '../catalog/stills-catalog-types'
 
 // ═══════════════════════════════════════════════════════════
@@ -94,7 +101,7 @@ function validateComponentAgainstCatalog(
 function withPC<T>(session: IStillSession, op: (pc: IPageConfigData) => StillResult<T>): StillResult<T> {
   const state = getPageConfigState(session)
   if (state.data === null) {
-    return { ok: false, code: 'NO_PAGECONFIG', msg: 'PageConfig 未初始化', fix: '先执行 pageconfig.init' }
+    return { ok: false, code: 'NO_PAGECONFIG', msg: 'PageConfig 未初始化', fix: `先执行 ${PAGECONFIG_BOOTSTRAP_ACTION}` }
   }
   return op(state.data)
 }
@@ -229,7 +236,7 @@ function serializeStyleMap(map: Record<string, string>): string {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Still: pageconfig.init
+// Still: pageconfig.bootstrap
 // ═══════════════════════════════════════════════════════════
 
 interface PageConfigInitParams {
@@ -238,9 +245,9 @@ interface PageConfigInitParams {
 }
 
 const pageconfigInit: StillDefinition<PageConfigInitParams, IPageConfigData> = {
-  action: 'pageconfig.init',
+  action: PAGECONFIG_BOOTSTRAP_ACTION,
   type: 'request',
-  description: '初始化 PageConfig 域——创建空壳骨架（根 SparkNode + 空 scriptMap/styleMap）。需要 Dataset 域已完成设计。',
+  description: '引导 PageConfig 域——创建空壳骨架（根 SparkNode + 空 scriptMap/styleMap）。需要 Dataset 域已完成设计。',
   guard: guardInitReady,
   guardDescription: guardInitReadyDesc,
   usageRules: [
@@ -260,12 +267,12 @@ const pageconfigInit: StillDefinition<PageConfigInitParams, IPageConfigData> = {
   execute: (session, params): StillResult<IPageConfigData> => {
     const pcState = getPageConfigState(session)
     if (pcState.data !== null) {
-      return { ok: false, code: 'ALREADY_INIT', msg: 'PageConfig 已初始化', fix: '无需重复执行 pageconfig.init' }
+      return { ok: false, code: 'ALREADY_INIT', msg: 'PageConfig 已初始化', fix: `无需重复执行 ${PAGECONFIG_BOOTSTRAP_ACTION}` }
     }
     // 确保 Dataset 域已就绪
     const dsState = getDataSetState(session)
     if (dsState.data === null) {
-      return { ok: false, code: 'NO_DATASET', msg: 'Dataset 域尚未初始化', fix: '先执行 dataset.init' }
+      return { ok: false, code: 'NO_DATASET', msg: 'Dataset 域尚未初始化', fix: `先执行 ${DATASET_BOOTSTRAP_ACTION}` }
     }
 
     const rootId = nextNodeId('root')
@@ -390,7 +397,7 @@ const ruleSetProps: StillDefinition<SetPropsParams, void> = {
   execute: (session, params): StillResult<void> => {
     return withPC(session, (pc) => {
       if (pc.rule === null) {
-        return { ok: false, code: 'NO_RULE', msg: '组件树为空', fix: '先执行 pageconfig.init' }
+        return { ok: false, code: 'NO_RULE', msg: '组件树为空', fix: `先执行 ${PAGECONFIG_BOOTSTRAP_ACTION}` }
       }
       const node = findById(pc.rule, params.nodeId)
       if (node === null) {
@@ -433,7 +440,7 @@ const ruleRemoveComponent: StillDefinition<RemoveComponentParams, void> = {
   execute: (session, params): StillResult<void> => {
     return withPC(session, (pc) => {
       if (pc.rule === null) {
-        return { ok: false, code: 'NO_RULE', msg: '组件树为空', fix: '先执行 pageconfig.init' }
+        return { ok: false, code: 'NO_RULE', msg: '组件树为空', fix: `先执行 ${PAGECONFIG_BOOTSTRAP_ACTION}` }
       }
       if (readId(pc.rule) === params.nodeId) {
         return { ok: false, code: 'CANNOT_REMOVE_ROOT', msg: '不能移除根节点', fix: '移除根节点的子节点即可' }
@@ -475,7 +482,7 @@ const ruleSetLayout: StillDefinition<SetLayoutParams, void> = {
   execute: (session, params): StillResult<void> => {
     return withPC(session, (pc) => {
       if (pc.rule === null) {
-        return { ok: false, code: 'NO_RULE', msg: '组件树为空', fix: '先执行 pageconfig.init' }
+        return { ok: false, code: 'NO_RULE', msg: '组件树为空', fix: `先执行 ${PAGECONFIG_BOOTSTRAP_ACTION}` }
       }
       const node = findById(pc.rule, params.nodeId)
       if (node === null) {
@@ -779,7 +786,7 @@ const styleSetTheme: StillDefinition<StyleSetThemeParams, void> = {
 // ═══════════════════════════════════════════════════════════
 
 const pageconfigValidate: StillDefinition<Record<string, never>, PageConfigValidationIssue[]> = {
-  action: 'pageconfig.validate',
+  action: PAGECONFIG_VALIDATE_ACTION,
   type: 'describe',
   description: '校验 PageConfig 一致性：组件树 dataKey 引用是否在 DataSet 中存在、事件处理器是否在 scriptMap 中定义。',
   guard: guardDataOnly,
@@ -830,7 +837,7 @@ const pageconfigValidate: StillDefinition<Record<string, never>, PageConfigValid
 // ═══════════════════════════════════════════════════════════
 
 const pageconfigExport: StillDefinition<Record<string, never>, PageConfigExportResult> = {
-  action: 'pageconfig.export',
+  action: PAGECONFIG_EXPORT_ACTION,
   type: 'describe',
   description: '导出 PageConfig 为 rule.json + script.js + style.css 文本。',
   guard: guardDataOnly,
@@ -859,7 +866,7 @@ const pageconfigExport: StillDefinition<Record<string, never>, PageConfigExportR
 // ═══════════════════════════════════════════════════════════
 
 const pageconfigDescribe: StillDefinition<Record<string, never>, unknown> = {
-  action: 'pageconfig.describe',
+  action: PAGECONFIG_DESCRIBE_ACTION,
   type: 'describe',
   description: '描述当前 PageConfig 状态：组件树结构概览、scriptMap 函数列表、styleMap 选择器列表。',
   guard: guardDataOnly,

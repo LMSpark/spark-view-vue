@@ -26,7 +26,7 @@ beforeEach(() => {
 })
 
 describe('edit domain fine-grained flow', () => {
-  it('fails fast for changedLines before edit.init', () => {
+  it('fails fast for changedLines before edit.bootstrap', () => {
     const result = exec('edit.changedLines')
     expect(result.ok).toBe(false)
     if (result.ok) return
@@ -34,7 +34,7 @@ describe('edit domain fine-grained flow', () => {
   })
 
   it('lands dataset-first fine-grained flow', () => {
-    const init = exec('edit.init', {
+    const init = exec('edit.bootstrap', {
       ruleJson: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],
       pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
       scriptJs: 'export default {}\n',
@@ -50,21 +50,6 @@ describe('edit domain fine-grained flow', () => {
       ],
     })
     expect(addTable.ok).toBe(true)
-
-    const baselineModel = exec('dataset.baselineModel')
-    expect(baselineModel.ok).toBe(true)
-    if (!baselineModel.ok) return
-    expect((baselineModel.data as { tableNames: string[] }).tableNames).toEqual([])
-
-    const currentModel = exec('dataset.currentModel')
-    expect(currentModel.ok).toBe(true)
-    if (!currentModel.ok) return
-    expect((currentModel.data as { tableNames: string[] }).tableNames).toContain('Users')
-
-    const modelDeltaAfterCreate = exec('dataset.modelDelta')
-    expect(modelDeltaAfterCreate.ok).toBe(true)
-    if (!modelDeltaAfterCreate.ok) return
-    expect((modelDeltaAfterCreate.data as { addedTables: string[] }).addedTables).toContain('Users')
 
     const blockedScriptWrite = exec('file.writeScript', { content: 'export default { blocked: true }\n' })
     expect(blockedScriptWrite.ok).toBe(false)
@@ -127,15 +112,6 @@ describe('edit domain fine-grained flow', () => {
     const undo = exec('datasetTool.undo')
     expect(undo.ok).toBe(true)
 
-    const modelDeltaAfterUndo = exec('dataset.modelDelta')
-    expect(modelDeltaAfterUndo.ok).toBe(true)
-    if (!modelDeltaAfterUndo.ok) return
-    const changedTables = (modelDeltaAfterUndo.data as {
-      changedTables: Array<{ tableName: string; addedColumns: string[] }>
-    }).changedTables
-    const usersDelta = changedTables.find((item) => item.tableName === 'Users')
-    expect(usersDelta?.addedColumns ?? []).not.toContain('email')
-
     const changed = exec('edit.changedLines')
     expect(changed.ok).toBe(true)
     if (!changed.ok) return
@@ -172,7 +148,7 @@ describe('edit domain fine-grained flow', () => {
 
   it('deleteRelation single-signature regression (zero backward-compat)', () => {
     // 初始化时已经包含表和关系，但没有视图依赖（避免约束冲突）
-    const init = exec('edit.init', {
+    const init = exec('edit.bootstrap', {
       ruleJson: [],
       pageDataJson: {
         dataSetName: 'TestDS',
@@ -220,18 +196,6 @@ describe('edit domain fine-grained flow', () => {
       childField: 'deptId',
     })
     expect(deleteRel.ok).toBe(true)
-
-    // 检查 modelDelta 以验证关系删除被追踪
-    const modelDelta = exec('dataset.modelDelta')
-    expect(modelDelta.ok).toBe(true)
-    if (!modelDelta.ok) return
-    const delta = modelDelta.data as {
-      removedRelations: string[]
-    }
-    
-    // 关系应该出现在 removedRelations 中（即使是通过 parentTable.field->childTable.field 格式）
-    expect(delta.removedRelations.length).toBeGreaterThan(0)
-    expect(delta.removedRelations.some((rel) => rel.includes('Department') && rel.includes('Employee'))).toBe(true)
 
     // 导出验证关系不再存在
     const exported = exec('dataset.export')

@@ -15,6 +15,7 @@
 import type { SparkNode } from '@spark-view/spark-component'
 import type { DomainState, IStillSession, StillGuard } from './types'
 import { getDomainState, readSessionBlueprint } from './types'
+import { PAGECONFIG_BOOTSTRAP_ACTION } from './action-names'
 
 // ═══════════════════════════════════════════════════════════
 // 域状态
@@ -87,12 +88,12 @@ export function pcGuard(checks: PcGuardOptions = {}): StillGuard {
     }
     const state = getPageConfigState(session)
     if (checks.requireData !== false && state.data === null) {
-      return { code: 'NO_PAGECONFIG', msg: 'PageConfig 未初始化，请先执行 pageconfig.init' }
+      return { code: 'NO_PAGECONFIG', msg: `PageConfig 未初始化，请先执行 ${PAGECONFIG_BOOTSTRAP_ACTION}` }
     }
     if (checks.requireBootstrapped === true) {
       const validPhases = new Set<PageConfigPhase>(['bootstrapped', 'refining', 'exported'])
       if (!validPhases.has(state.phase)) {
-        return { code: 'NOT_BOOTSTRAPPED', msg: 'PageConfig 尚未引导完成，请先执行 pageconfig.init' }
+        return { code: 'NOT_BOOTSTRAPPED', msg: `PageConfig 尚未引导完成，请先执行 ${PAGECONFIG_BOOTSTRAP_ACTION}` }
       }
     }
     return null
@@ -103,7 +104,7 @@ export function pcGuard(checks: PcGuardOptions = {}): StillGuard {
 // 预置 Guard 实例
 // ═══════════════════════════════════════════════════════════
 
-/** pageconfig.init 用：需要 blueprint，但 pageconfig data 尚不存在（它正是创建 data 的动作） */
+/** pageconfig.bootstrap 用：需要 blueprint，但 pageconfig data 尚不存在（它正是创建 data 的动作） */
 export const guardInitReady = pcGuard({ requireData: false, requireBlueprint: true })
 export const guardInitReadyDesc = '需要 blueprint 已创建'
 

@@ -11,10 +11,11 @@
 
 import type { MonitorContext, SessionMonitor } from '../session-orchestrator'
 import { readSessionBlueprint } from '../../stills/types'
+import { DATASET_VALIDATE_ACTION, DATASET_EXPORT_ACTION } from '../../stills/action-names'
 
 const TERMINAL_ACTIONS = new Set([
-  'dataset.validate',
-  'dataset.export',
+  DATASET_VALIDATE_ACTION,
+  DATASET_EXPORT_ACTION,
 ])
 
 export function createTerminalActionsMonitor(): SessionMonitor {

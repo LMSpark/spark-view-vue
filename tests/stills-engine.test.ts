@@ -3,7 +3,7 @@
  *
  * 模拟 STILLS_BLUEPRINT_PROMPT 中的 Stills 引擎全流程：
  * session.describe → stills.capabilities → blueprint.create →
- * dataset.init → datatable.create×5 → relation.add×4 →
+ * dataset.bootstrap → datatable.create×5 → relation.add×4 →
  * schema.lock → dataview.configure×5 → dependency.add×3 →
  * dataset.validate → dataset.export
  */
@@ -317,13 +317,13 @@ describe('blueprint stills (P1)', () => {
           plannedActions: [],
           validation: 'v1',
           planItems: [
-            { id: 'cp1.item1', title: '初始化数据集', action: 'dataset.init' },
+            { id: 'cp1.item1', title: '初始化数据集', action: 'dataset.bootstrap' },
             { id: 'cp1.item2', title: '查看蓝图', action: 'blueprint.describe', dependsOn: ['cp1.item1'] },
           ],
         },
       ],
     })
-    exec('dataset.init', { dataSetName: 'TestDS' })
+    exec('dataset.bootstrap', { dataSetName: 'TestDS' })
     const r = exec('blueprint.item.advance', { completedPlanItemId: 'cp1.item1', note: '初始化完成' })
     expectOk(r)
     const blueprint = expectDefined(getBlueprintState(session).data)
@@ -367,7 +367,7 @@ describe('blueprint stills (P1)', () => {
           plannedActions: [],
           validation: 'v1',
           planItems: [
-            { id: 'cp1.item1', title: '初始化数据集', action: 'dataset.init' },
+            { id: 'cp1.item1', title: '初始化数据集', action: 'dataset.bootstrap' },
           ],
         },
       ],
@@ -376,7 +376,7 @@ describe('blueprint stills (P1)', () => {
     const r = exec('blueprint.item.advance', { completedPlanItemId: 'cp1.item1' })
 
     expectFail(r, 'PLAN_ITEM_NOT_EXECUTED')
-    expect(r.fix).toContain('@@describe:stills.actionSpec#retry-dataset-init-spec')
+    expect(r.fix).toContain('@@describe:stills.actionSpec#retry-dataset-bootstrap-spec')
     expect(r.fix).toContain('@@request:blueprint.item.advance#retry-cp1.item1')
   })
 
@@ -462,7 +462,7 @@ describe('blueprint stills (P1)', () => {
       title: '测试',
       requirements: '测试需求',
       checkpoints: [
-        { id: 'cp1', title: '步骤1', plannedActions: ['dataset.init'], validation: 'v1' },
+        { id: 'cp1', title: '步骤1', plannedActions: ['dataset.bootstrap'], validation: 'v1' },
         { id: 'cp2', title: '步骤2', plannedActions: ['datatable.create'], validation: 'v2', dependsOn: ['cp1'] },
       ],
     })
@@ -546,9 +546,9 @@ function createTestBlueprint(): void {
 }
 
 describe('dataset stills (P2)', () => {
-  it('dataset.init creates empty dataset', () => {
+  it('dataset.bootstrap creates empty dataset', () => {
     createTestBlueprint()
-    const r = exec('dataset.init', { dataSetName: 'LeaveSystem' })
+    const r = exec('dataset.bootstrap', { dataSetName: 'LeaveSystem' })
     expectOk(r)
     expect(datasetState().data).not.toBeNull()
     expect(datasetState().data!.dataSetName).toBe('LeaveSystem')
@@ -557,7 +557,7 @@ describe('dataset stills (P2)', () => {
 
   it('dataset.describe shows state', () => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     const r = exec('dataset.describe')
     expectOk(r)
     const data = r.data as { dataSetName: string; tableCount: number }
@@ -567,7 +567,7 @@ describe('dataset stills (P2)', () => {
 
   it('dataset.validate reports row consistency issues', () => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'Employees',
       columns: [
@@ -589,7 +589,7 @@ describe('dataset stills (P2)', () => {
 
   it('dataset.validate ignores internal row metadata fields', () => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'Statuses',
       columns: [
@@ -618,7 +618,7 @@ describe('dataset stills (P2)', () => {
 describe('datatable stills (P2)', () => {
   beforeEach(() => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
   })
 
   it('datatable.create adds a table', () => {
@@ -799,7 +799,7 @@ describe('datatable stills (P2)', () => {
 describe('relation stills (P2)', () => {
   beforeEach(() => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'Orders',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
@@ -902,7 +902,7 @@ describe('relation stills (P2)', () => {
 describe('schema stills (P3)', () => {
   beforeEach(() => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'Users',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
@@ -941,7 +941,7 @@ describe('schema stills (P3)', () => {
 describe('dataview stills (P4)', () => {
   beforeEach(() => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'Orders',
       columns: [
@@ -1044,7 +1044,7 @@ describe('dataview stills (P4)', () => {
 describe('dependency stills (P4)', () => {
   beforeEach(() => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'Orders',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
@@ -1103,7 +1103,7 @@ describe('dependency stills (P4)', () => {
 describe('guard system', () => {
   it('rejects schema-locked ops when schema unlocked', () => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'T',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
@@ -1116,7 +1116,7 @@ describe('guard system', () => {
 
   it('rejects schema-unlocked ops when schema locked', () => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'T',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
@@ -1138,7 +1138,7 @@ describe('guard system', () => {
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
     })
     expectFail(r, 'NO_DATASET')
-    expect(r.fix).toContain('dataset_init')
+    expect(r.fix).toContain('dataset_bootstrap')
   })
 
   it('unknown action returns UNKNOWN_ACTION', () => {
@@ -1152,19 +1152,19 @@ describe('patchLog tracking', () => {
   it('logs request actions but not describe actions', () => {
     createTestBlueprint()
     const logBefore = session.patchLog.length // blueprint.create is also logged
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('dataset.describe')
-    // dataset.init = request → logged, dataset.describe = describe → not logged
+    // dataset.bootstrap = request → logged, dataset.describe = describe → not logged
     expect(session.patchLog.length).toBe(logBefore + 1)
     const lastPatch = expectDefined(session.patchLog[session.patchLog.length - 1])
-    expect(lastPatch.action).toBe('dataset.init')
+    expect(lastPatch.action).toBe('dataset.bootstrap')
   })
 })
 
 describe('dataset.validate', () => {
   beforeEach(() => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
   })
 
   it('reports missing PKs', () => {
@@ -1208,7 +1208,7 @@ describe('dataset.validate', () => {
 describe('dataset.export & reset', () => {
   it('export returns deep copy', () => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'T',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
@@ -1224,7 +1224,7 @@ describe('dataset.export & reset', () => {
 
   it('dataset.reset clears everything', () => {
     createTestBlueprint()
-    exec('dataset.init', { dataSetName: 'Test' })
+    exec('dataset.bootstrap', { dataSetName: 'Test' })
     exec('datatable.create', {
       tableName: 'T',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
@@ -1257,7 +1257,7 @@ describe('full leave-system scenario (E2E)', () => {
       title: '请假管理系统',
       requirements: '员工请假申请、审批流程、假别管理、假期余额管理',
       checkpoints: [
-        { id: 'cp0', title: '初始化数据集', plannedActions: ['dataset.init'], validation: 'dataset ready' },
+        { id: 'cp0', title: '初始化数据集', plannedActions: ['dataset.bootstrap'], validation: 'dataset ready' },
         {
           id: 'cp1',
           title: '建表阶段',
@@ -1327,8 +1327,8 @@ describe('full leave-system scenario (E2E)', () => {
     })
     expectOk(s3)
 
-    // Step ④: dataset.init
-    exec('dataset.init', { dataSetName: 'LeaveSystem' })
+    // Step ④: dataset.bootstrap
+    exec('dataset.bootstrap', { dataSetName: 'LeaveSystem' })
     exec('blueprint.item.advance', { completedPlanItemId: 'cp0.item1', note: '数据集初始化完成' })
     exec('blueprint.advance', { completedCheckpointId: 'cp0' })
 

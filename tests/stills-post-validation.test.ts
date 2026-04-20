@@ -80,7 +80,7 @@ describe('postValidate pipeline', () => {
       requirements: '管道验证',
       checkpoints: [{ id: 'cp1', title: '建模', plannedActions: ['datatable.create'], validation: 'ok' }],
     }))
-    expectOk(exec('dataset.init', { dataSetName: 'PV' }))
+    expectOk(exec('dataset.bootstrap', { dataSetName: 'PV' }))
     expectOk(exec('datatable.create', {
       tableName: 'Users',
       columns: [{ name: 'id', type: 'string', isPrimaryKey: true }],
@@ -98,7 +98,7 @@ describe('postValidate pipeline', () => {
       requirements: '验证 options postValidate',
       checkpoints: [{ id: 'cp1', title: '建模', plannedActions: ['datatable.create'], validation: 'ok' }],
     }))
-    expectOk(exec('dataset.init', { dataSetName: 'PVOpt' }))
+    expectOk(exec('dataset.bootstrap', { dataSetName: 'PVOpt' }))
     expectOk(exec('datatable.create', {
       tableName: 'Statuses',
       columns: [

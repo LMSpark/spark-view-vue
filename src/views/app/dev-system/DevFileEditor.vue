@@ -62,16 +62,6 @@
       </el-tabs>
 
       <div class="editor-body" v-loading="!editor.isReady.value">
-        <!-- AI 辅助工具栏 -->
-        <DevEditorAiBar
-          :page-id="state.activePageId.value ?? ''"
-          :file-name="resolvedActiveFile"
-          :file-content="state.editFiles[resolvedActiveFile] ?? ''"
-          :enabled="Boolean(state.activePageId.value)"
-          @apply="handleAiApply"
-          @status="handleAiStatus"
-        />
-        
         <div class="editor-area">
           <JsonTreeEditor
             v-if="resolvedActiveFile === 'rule.json'"
@@ -111,6 +101,16 @@
             @update:model-value="editor.updateText"
           />
         </div>
+
+        <!-- AI 设计助手（右侧） -->
+        <DevEditorAiBar
+          :page-id="state.activePageId.value ?? ''"
+          :file-name="resolvedActiveFile"
+          :file-content="state.editFiles[resolvedActiveFile] ?? ''"
+          :enabled="Boolean(state.activePageId.value)"
+          @apply="handleAiApply"
+          @status="handleAiStatus"
+        />
 
         <!-- ── 版本侧栏（内联） ── -->
         <transition name="slide-version">

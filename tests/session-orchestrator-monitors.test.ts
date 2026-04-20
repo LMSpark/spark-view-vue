@@ -55,7 +55,7 @@ function makeTurn(overrides: Partial<DialogueTurn> = {}): DialogueTurn {
     round: 1,
     timestamp: new Date().toISOString(),
     phase: 'stills-execute',
-    toolBlock: { action: 'dataset.init', id: 'r1', params: {} },
+    toolBlock: { action: 'dataset.bootstrap', id: 'r1', params: {} },
     stillsResult: { ok: true, summary: 'done' },
     ...overrides,
   }
@@ -102,7 +102,7 @@ describe('repeat-detection-monitor', () => {
   it('allows different actions without aborting', () => {
     const monitor = createRepeatDetectionMonitor()
 
-    const actions = ['dataset.init', 'datatable.create', 'datatable.addColumns']
+    const actions = ['dataset.bootstrap', 'datatable.create', 'datatable.addColumns']
     for (const action of actions) {
       const ctx = makeCtx({
         currentTurn: makeTurn({ toolBlock: { action, id: 'r1', params: {} } }),
@@ -371,7 +371,7 @@ describe('terminal-actions-monitor', () => {
               {
                 id: 'cp1',
                 title: 'Setup',
-                plannedActions: ['dataset.init'],
+                plannedActions: ['dataset.bootstrap'],
                 planItems: [],
                 validation: 'ok',
                 status: allDone ? 'done' : 'pending',
@@ -530,7 +530,7 @@ describe('runStillsLoop', () => {
 
   it('runs a single-turn session.describe', async () => {
     // Init session so stills can run
-    exec('dataset.init', { dataSetName: 'DS' })
+    exec('dataset.bootstrap', { dataSetName: 'DS' })
 
     const backend = createMockBackend([
       { toolCalls: [makeToolCall('session.describe', 'r1')] },
@@ -558,7 +558,7 @@ describe('runStillsLoop', () => {
     }))
 
     // Init session
-    exec('dataset.init', { dataSetName: 'DS' })
+    exec('dataset.bootstrap', { dataSetName: 'DS' })
 
     const backend = createMockBackend(infiniteReplies)
     const result = await runStillsLoop('test', session, backend, {
@@ -572,7 +572,7 @@ describe('runStillsLoop', () => {
   })
 
   it('aborts when monitor triggers abort', async () => {
-    exec('dataset.init', { dataSetName: 'DS' })
+    exec('dataset.bootstrap', { dataSetName: 'DS' })
 
     // Same action repeated → repeat detection fires
     const replies = Array.from({ length: 5 }, (_, i) => ({
@@ -612,7 +612,7 @@ describe('runStillsLoop', () => {
 
   it('terminates on export + blueprint done', async () => {
     // Prepare session with blueprint all-done
-    exec('dataset.init', { dataSetName: 'DS' })
+    exec('dataset.bootstrap', { dataSetName: 'DS' })
     exec('blueprint.create', {
       userGoal: 'test',
       checkpoints: [

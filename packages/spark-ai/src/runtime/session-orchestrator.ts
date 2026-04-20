@@ -23,6 +23,7 @@
 
 import type { IStillSession, StillResult, PostValidationWarning, ExecutionBlueprint } from '../stills/types'
 import { readSessionBlueprint } from '../stills/types'
+import { DATASET_EXPORT_ACTION } from '../stills/action-names'
 import type { ToolCall, FcDispatchResult, ToolDefinition } from '../tool-calling'
 import { dispatchToolCall, generateToolDefinitions } from '../tool-calling'
 
@@ -434,7 +435,7 @@ export async function runStillsLoop(
         if (aborted) break
 
         // 检查 export 完成
-        if (result.ok && action === 'dataset.export') {
+        if (result.ok && action === DATASET_EXPORT_ACTION) {
           exportCompleted = true
         }
       }

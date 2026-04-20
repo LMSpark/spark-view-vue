@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### feat
+
+- [AI-FE-20260420] DevSystem 数据设计器新增“多模态细粒编辑”能力：聊天模式可复用细粒度编辑执行链路，支持文本/附件/语音输入后直接驱动 FC 工具修改 DataSet 模型，并在界面中增加新功能标识与说明。
+
 ### docs
 
 - 新增 API-first 提示词模板，当前收口于 `docs/ai/prompts/platform/API_FIRST_PROMPT.md`（前端优先调用 API，禁止默认改后端）。
