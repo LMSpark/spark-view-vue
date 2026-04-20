@@ -122,17 +122,6 @@ function parseJson(content: string | undefined): unknown {
   }
 }
 
-function pushInvalidJsonIssue(
-  issues: ConfigValidationIssue[],
-  fileName: 'rule.json' | 'pagedata.json',
-  category: ConfigValidationCategory,
-  severity: ConfigValidationSeverity,
-  message: string,
-  suggestion: string,
-): void {
-  pushIssue(issues, category, severity, message, fileName, suggestion)
-}
-
 function extractScriptFunctions(script: string | undefined): Set<string> {
   const names = new Set<string>()
   const scriptText = asNonEmptyString(script)
@@ -546,12 +535,12 @@ function reportInvalidJsonInputs(
 ): void {
   for (const spec of JSON_INPUT_SPECS) {
     if (files[spec.fileName] === undefined || parsedJson[spec.fileName] !== null) continue
-    pushInvalidJsonIssue(
+    pushIssue(
       issues,
-      spec.fileName,
       spec.category,
       spec.severity,
       spec.message,
+      spec.fileName,
       spec.suggestion,
     )
   }

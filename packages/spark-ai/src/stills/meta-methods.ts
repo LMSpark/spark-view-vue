@@ -43,6 +43,8 @@ import {
   STILLS_CAPABILITIES_ACTION,
   STILLS_ACTION_SPEC_ACTION,
   DATATABLE_CREATE_ACTION,
+  SESSION_DESCRIBE_ACTION,
+  CATALOG_QUERY_ACTION,
 } from './action-names'
 
 // =========================================================
@@ -464,7 +466,7 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
  *  - 各域深度自检请调用对应域 still（blueprint.selfCheck / dataset.validate）。
  */
 export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = {
-  action: 'session.describe',
+  action: SESSION_DESCRIBE_ACTION,
   type: 'describe',
   description: '会话全局监控：返回所有域状态、执行追踪（patchLog）、推荐下一步',
   guard: noGuard,
@@ -561,7 +563,7 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
  *  说明构建产物未正确注入，这是部署问题而非运行时问题。
  */
 export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
-  action: 'catalog.query',
+  action: CATALOG_QUERY_ACTION,
   type: 'describe',
   description: '查询可用组件目录。无参数返回全量列表；指定 type 返回单组件详情；指定 category 返回分类列表。',
   guard: noGuard,

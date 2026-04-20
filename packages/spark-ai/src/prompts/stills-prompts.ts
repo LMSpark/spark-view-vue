@@ -223,7 +223,7 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_RUNTIME_PROMPT}
 
 【编辑模式强约束】
 - 当前会话仅允许 edit domain 动作：edit.* / file.* / datasetTool.* / sparkNodeTree.*
-- 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.* / dataset.export
+- 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
 - 在本会话中，edit.bootstrap 已由宿主完成；如遇 NOT_EDITING / NO_DATASET_EDIT / NO_NODE_TREE，先修复前置状态再继续。
 ${EDIT_FLOW_1001_DATA_FIRST_POLICY}
 

@@ -16,7 +16,7 @@ import {
 
 // ── Changed Lines ────────────────────────────────────────────
 
-export interface EditChangedLinesSummary {
+export interface EditDiffLinesSummary {
   ruleJson: number
   pageDataJson: number
   scriptJs: number
@@ -24,7 +24,7 @@ export interface EditChangedLinesSummary {
   total: number
 }
 
-export function collectEditChangedLines(state: EditDomainState): EditChangedLinesSummary {
+export function collectEditChangedLines(state: EditDomainState): EditDiffLinesSummary {
   if (!state.baselineSnapshot) {
     return { ruleJson: 0, pageDataJson: 0, scriptJs: 0, styleCss: 0, total: 0 }
   }

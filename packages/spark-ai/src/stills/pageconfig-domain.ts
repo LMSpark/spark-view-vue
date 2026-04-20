@@ -42,6 +42,19 @@ import {
   PAGECONFIG_VALIDATE_ACTION,
   PAGECONFIG_EXPORT_ACTION,
   PAGECONFIG_DESCRIBE_ACTION,
+  RULE_ADD_COMPONENT_ACTION,
+  RULE_SET_PROPS_ACTION,
+  RULE_REMOVE_COMPONENT_ACTION,
+  RULE_SET_LAYOUT_ACTION,
+  SCRIPT_ADD_HANDLER_ACTION,
+  SCRIPT_ADD_INIT_LOGIC_ACTION,
+  SCRIPT_REPLACE_HANDLER_ACTION,
+  SCRIPT_REMOVE_HANDLER_ACTION,
+  SCRIPT_SET_VAR_ACTION,
+  SCRIPT_REMOVE_VAR_ACTION,
+  STYLE_ADD_RULE_ACTION,
+  STYLE_REMOVE_RULE_ACTION,
+  STYLE_SET_THEME_ACTION,
 } from './action-names'
 import type { StillsCatalog, StillsComponentEntry } from '../catalog/stills-catalog-types'
 
@@ -310,7 +323,7 @@ interface AddComponentParams {
 }
 
 const ruleAddComponent: StillDefinition<AddComponentParams, { id: string }> = {
-  action: 'rule.addComponent',
+  action: RULE_ADD_COMPONENT_ACTION,
   type: 'request',
   description: '向组件树中添加一个 SparkNode。parentId=null 时添加到根节点的 children。',
   guard: guardBootstrapped,
@@ -378,7 +391,7 @@ interface SetPropsParams {
 }
 
 const ruleSetProps: StillDefinition<SetPropsParams, void> = {
-  action: 'rule.setProps',
+  action: RULE_SET_PROPS_ACTION,
   type: 'request',
   description: '设置/合并节点的 props。merge=true（默认）合并，merge=false 替换。',
   guard: guardBootstrapped,
@@ -427,7 +440,7 @@ interface RemoveComponentParams {
 }
 
 const ruleRemoveComponent: StillDefinition<RemoveComponentParams, void> = {
-  action: 'rule.removeComponent',
+  action: RULE_REMOVE_COMPONENT_ACTION,
   type: 'request',
   description: '从组件树中移除一个节点（及其所有子节点）。不可移除根节点。',
   guard: guardBootstrapped,
@@ -465,7 +478,7 @@ interface SetLayoutParams {
 }
 
 const ruleSetLayout: StillDefinition<SetLayoutParams, void> = {
-  action: 'rule.setLayout',
+  action: RULE_SET_LAYOUT_ACTION,
   type: 'request',
   description: '设置节点的布局属性（写入 props.style 或 props.class 等）。',
   guard: guardBootstrapped,
@@ -504,7 +517,7 @@ interface ScriptAddHandlerParams {
 }
 
 const scriptAddHandler: StillDefinition<ScriptAddHandlerParams, void> = {
-  action: 'script.addHandler',
+  action: SCRIPT_ADD_HANDLER_ACTION,
   type: 'request',
   description: '向 scriptMap 添加一个事件处理函数。',
   guard: guardBootstrapped,
@@ -536,7 +549,7 @@ interface ScriptAddInitLogicParams {
 }
 
 const scriptAddInitLogic: StillDefinition<ScriptAddInitLogicParams, void> = {
-  action: 'script.addInitLogic',
+  action: SCRIPT_ADD_INIT_LOGIC_ACTION,
   type: 'request',
   description: '向 __init__ 函数追加初始化代码段。',
   guard: guardBootstrapped,
@@ -566,7 +579,7 @@ interface ScriptReplaceHandlerParams {
 }
 
 const scriptReplaceHandler: StillDefinition<ScriptReplaceHandlerParams, void> = {
-  action: 'script.replaceHandler',
+  action: SCRIPT_REPLACE_HANDLER_ACTION,
   type: 'request',
   description: '替换 scriptMap 中已有函数的函数体。',
   guard: guardBootstrapped,
@@ -600,7 +613,7 @@ interface ScriptRemoveHandlerParams {
 }
 
 const scriptRemoveHandler: StillDefinition<ScriptRemoveHandlerParams, void> = {
-  action: 'script.removeHandler',
+  action: SCRIPT_REMOVE_HANDLER_ACTION,
   type: 'request',
   description: '从 scriptMap 中移除一个函数。',
   guard: guardBootstrapped,
@@ -632,7 +645,7 @@ interface ScriptSetVarParams {
 }
 
 const scriptSetVar: StillDefinition<ScriptSetVarParams, void> = {
-  action: 'script.setVar',
+  action: SCRIPT_SET_VAR_ACTION,
   type: 'request',
   description: '设置/覆盖一个闭包公共变量（导出时生成 let 声明）。',
   guard: guardBootstrapped,
@@ -664,7 +677,7 @@ interface ScriptRemoveVarParams {
 }
 
 const scriptRemoveVar: StillDefinition<ScriptRemoveVarParams, void> = {
-  action: 'script.removeVar',
+  action: SCRIPT_REMOVE_VAR_ACTION,
   type: 'request',
   description: '移除一个闭包公共变量。',
   guard: guardBootstrapped,
@@ -696,7 +709,7 @@ interface StyleAddRuleParams {
 }
 
 const styleAddRule: StillDefinition<StyleAddRuleParams, void> = {
-  action: 'style.addRule',
+  action: STYLE_ADD_RULE_ACTION,
   type: 'request',
   description: '向 styleMap 添加/替换一条 CSS 规则。',
   guard: guardBootstrapped,
@@ -728,7 +741,7 @@ interface StyleRemoveRuleParams {
 }
 
 const styleRemoveRule: StillDefinition<StyleRemoveRuleParams, void> = {
-  action: 'style.removeRule',
+  action: STYLE_REMOVE_RULE_ACTION,
   type: 'request',
   description: '从 styleMap 中移除一条 CSS 规则。',
   guard: guardBootstrapped,
@@ -759,7 +772,7 @@ interface StyleSetThemeParams {
 }
 
 const styleSetTheme: StillDefinition<StyleSetThemeParams, void> = {
-  action: 'style.setTheme',
+  action: STYLE_SET_THEME_ACTION,
   type: 'request',
   description: '批量设置主题样式（用 CSS 变量）。写入 :root 选择器的声明。',
   guard: guardBootstrapped,

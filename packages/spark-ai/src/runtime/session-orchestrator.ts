@@ -231,7 +231,9 @@ function collectFollowUpInstructions(params: {
   }
 
   for (const monitor of monitors) {
-    followUpInstructions.push(...monitor.afterStillExecution(monitorCtx))
+    try {
+      followUpInstructions.push(...monitor.afterStillExecution(monitorCtx))
+    } catch { /* monitor failure must not break the loop */ }
   }
 
   return followUpInstructions
@@ -264,13 +266,15 @@ function checkAbortByMonitors(monitors: SessionMonitor[], monitorCtx: MonitorCon
 } {
   for (const monitor of monitors) {
     if (monitor.shouldAbort === undefined) continue
-    const abortResult = monitor.shouldAbort(monitorCtx)
-    if (abortResult.abort) {
-      return {
-        abort: true,
-        reason: abortResult.reason ?? monitor.name,
+    try {
+      const abortResult = monitor.shouldAbort(monitorCtx)
+      if (abortResult.abort) {
+        return {
+          abort: true,
+          reason: abortResult.reason ?? monitor.name,
+        }
       }
-    }
+    } catch { /* monitor failure must not break the loop */ }
   }
   return { abort: false }
 }

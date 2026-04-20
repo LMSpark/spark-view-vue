@@ -183,8 +183,7 @@ export type { PageConfigDomainState, PageConfigPhase, IPageConfigData, PageConfi
 // ═══════════════════════════════════════════════════════════
 
 import { editDomain } from './edit-domain'
-export { editDomain } from './edit-domain'
-export { EDIT_STILLS } from './edit-domain'
+export { editDomain, EDIT_STILLS } from './edit-domain'
 export { editInit, EDIT_LIFECYCLE_STILLS } from './edit-lifecycle-stills'
 export { getEditState } from './edit-state'
 export type { EditDomainState, EditPhase } from './edit-state'
@@ -216,7 +215,7 @@ const metaStills = [
  * 注册全部 stills 到全局 registry。
  * - dataset domain（24 个）通过 registerDomain 注册；
  * - blueprint domain（7 个）通过 registerDomain 注册；
- * - pageconfig domain（18 个）通过 registerDomain 注册；
+ * - pageconfig domain（17 个）通过 registerDomain 注册；
  * - meta stills（4 个）通过 registerAll 注册。
  */
 export function registerAllStills(): void {

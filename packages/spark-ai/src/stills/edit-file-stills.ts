@@ -8,6 +8,12 @@
 import type { IStillSession, StillDefinition, StillResult } from './types'
 import { editingGuard, datasetExportedGuard } from './edit-guard'
 import { getEditState } from './edit-state'
+import {
+  FILE_READ_SCRIPT_ACTION,
+  FILE_WRITE_SCRIPT_ACTION,
+  FILE_READ_STYLE_ACTION,
+  FILE_WRITE_STYLE_ACTION,
+} from './action-names'
 
 // ── File Catalog ─────────────────────────────────────────────
 
@@ -21,8 +27,8 @@ interface FileDescriptor {
 }
 
 const FILE_CATALOG: readonly FileDescriptor[] = [
-  { key: 'script', readAction: 'file.readScript', writeAction: 'file.writeScript', label: 'script.js' },
-  { key: 'style', readAction: 'file.readStyle', writeAction: 'file.writeStyle', label: 'style.css' },
+  { key: 'script', readAction: FILE_READ_SCRIPT_ACTION, writeAction: FILE_WRITE_SCRIPT_ACTION, label: 'script.js' },
+  { key: 'style', readAction: FILE_READ_STYLE_ACTION, writeAction: FILE_WRITE_STYLE_ACTION, label: 'style.css' },
 ]
 
 // ── File State Access ────────────────────────────────────────

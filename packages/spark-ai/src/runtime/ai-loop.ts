@@ -599,17 +599,22 @@ async function consumeSSEStream(
           if (typeof parsed['reasoning'] === 'string') callbacks?.onReasoning?.(parsed['reasoning'])
           break
         case 'phase':
-          callbacks?.onPhase?.(
-            parsed['phase'] as number,
-            parsed['status'] as string,
-            parsed['message'] as string,
-          )
+          if (typeof parsed['phase'] === 'number'
+            && typeof parsed['status'] === 'string'
+            && typeof parsed['message'] === 'string') {
+            callbacks?.onPhase?.(parsed['phase'], parsed['status'], parsed['message'])
+          }
           break
         case 'usage':
-          callbacks?.onUsage?.(parsed['usage'] as Record<string, unknown>)
+          if (parsed['usage'] !== null && typeof parsed['usage'] === 'object') {
+            callbacks?.onUsage?.(parsed['usage'] as Record<string, unknown>)
+          }
           break
         case 'result':
-          return parsed as unknown as AIResponse
+          if (typeof parsed['text'] === 'string') {
+            return parsed as unknown as AIResponse
+          }
+          break
         case 'done':
           streamState.sawDoneEvent = true
           break

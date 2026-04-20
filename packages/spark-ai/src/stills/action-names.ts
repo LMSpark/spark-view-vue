@@ -1,6 +1,8 @@
 // ── stills meta ──────────────────────────────────────────────
 export const STILLS_CAPABILITIES_ACTION = 'stills.capabilities'
 export const STILLS_ACTION_SPEC_ACTION = 'stills.actionSpec'
+export const SESSION_DESCRIBE_ACTION = 'session.describe'
+export const CATALOG_QUERY_ACTION = 'catalog.query'
 
 // ── blueprint ────────────────────────────────────────────────
 export const BLUEPRINT_CREATE_ACTION = 'blueprint.create'
@@ -52,6 +54,27 @@ export const PAGECONFIG_BOOTSTRAP_ACTION = 'pageconfig.bootstrap'
 export const PAGECONFIG_VALIDATE_ACTION = 'pageconfig.validate'
 export const PAGECONFIG_EXPORT_ACTION = 'pageconfig.export'
 export const PAGECONFIG_DESCRIBE_ACTION = 'pageconfig.describe'
+
+// ── pageconfig rule/script/style ─────────────────────────────
+export const RULE_ADD_COMPONENT_ACTION = 'rule.addComponent'
+export const RULE_SET_PROPS_ACTION = 'rule.setProps'
+export const RULE_REMOVE_COMPONENT_ACTION = 'rule.removeComponent'
+export const RULE_SET_LAYOUT_ACTION = 'rule.setLayout'
+export const SCRIPT_ADD_HANDLER_ACTION = 'script.addHandler'
+export const SCRIPT_ADD_INIT_LOGIC_ACTION = 'script.addInitLogic'
+export const SCRIPT_REPLACE_HANDLER_ACTION = 'script.replaceHandler'
+export const SCRIPT_REMOVE_HANDLER_ACTION = 'script.removeHandler'
+export const SCRIPT_SET_VAR_ACTION = 'script.setVar'
+export const SCRIPT_REMOVE_VAR_ACTION = 'script.removeVar'
+export const STYLE_ADD_RULE_ACTION = 'style.addRule'
+export const STYLE_REMOVE_RULE_ACTION = 'style.removeRule'
+export const STYLE_SET_THEME_ACTION = 'style.setTheme'
+
+// ── file (edit-domain) ───────────────────────────────────────
+export const FILE_READ_SCRIPT_ACTION = 'file.readScript'
+export const FILE_WRITE_SCRIPT_ACTION = 'file.writeScript'
+export const FILE_READ_STYLE_ACTION = 'file.readStyle'
+export const FILE_WRITE_STYLE_ACTION = 'file.writeStyle'
 
 export const EDIT_BOOTSTRAP_ACTION = 'edit.bootstrap'
 export const EDIT_CHANGED_LINES_ACTION = 'edit.changedLines'

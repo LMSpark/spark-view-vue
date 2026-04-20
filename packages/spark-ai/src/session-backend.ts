@@ -5,9 +5,11 @@
  * - createGenerateSessionBackend：生成链会话客户端（基于 fetch）
  */
 
-import { createFetchClient, createRequest } from '@spark-view/spark-utils'
+import { createFetchClient, createRequest, Logger } from '@spark-view/spark-utils'
 import type { SessionBackend, LlmResponse } from './runtime/session-orchestrator'
 import type { ToolCall, ToolDefinition } from './tool-calling'
+
+const log = Logger('SessionBackend')
 
 let _getHeaders: (() => Record<string, string>) | null = null
 let _onSseEvent: ((event: { sessionId: string; type: string; data: string }) => void) | null = null
@@ -123,11 +125,11 @@ export class SessionBackendImpl implements SessionBackend {
         || detail.includes('INVALID_STREAM_ENDPOINT')
 
       if (canFallback) {
-        console.warn('[SessionBackend] SSE turn unavailable, fallback to non-stream turn:', detail)
+        log.warn('SSE turn unavailable, fallback to non-stream turn:', detail)
         return await this.executeTurnViaHttp(sessionId)
       }
 
-      console.error('[SessionBackend] executeTurn failed:', detail, err)
+      log.error('executeTurn failed:', detail, err)
       throw new Error(`会话轮次调用失败: ${detail}`)
     }
   }

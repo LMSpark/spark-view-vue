@@ -8,7 +8,7 @@
 import type { StillDefinition, StillResult } from './types'
 import { getEditState, type EditDomainState } from './edit-state'
 import { datasetGuard, datasetExportedGuard } from './edit-guard'
-import { EditModel } from './edit-model'
+import { EditModel, type EditFilesExport } from './edit-model'
 import { collectEditChangedLines } from './edit-diff-stills'
 import {
   EDIT_EXPORT_FILES_ACTION,
@@ -18,12 +18,7 @@ import {
 // ── Export Result Types ──────────────────────────────────────
 
 interface EditFilesExportResult {
-  files: {
-    'rule.json': string
-    'pagedata.json': string
-    'script.js': string
-    'style.css': string
-  }
+  files: EditFilesExport
   changedLines: ReturnType<typeof collectEditChangedLines>
 }
 
