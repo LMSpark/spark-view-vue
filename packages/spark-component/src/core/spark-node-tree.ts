@@ -1,4 +1,4 @@
-import { isSparkNode, nodeId as readNodeId, type SparkNode, type SparkNodeChildren } from './types.js'
+import { isSparkNode, normalizeSparkNode, nodeId as readNodeId, type SparkNode, type SparkNodeChildren } from './types.js'
 import { SnapshotHistory } from '@spark-view/spark-utils'
 
 // ====================
@@ -23,17 +23,17 @@ export interface SparkNodeTreeRootParams {
 }
 
 /**
- * 需要按 nodeId 查找节点时使用的参数。
+ * 需要按 componentId 查找节点时使用的参数。
  */
 export interface SparkNodeTreeLookupParams {
-  nodeId: string
+  componentId: string
 }
 
 /**
  * 需要定位某个父节点 children 时使用的参数。
  */
 export interface SparkNodeTreeChildrenParams {
-  parentId?: string | null
+  parentComponentId?: string | null
 }
 
 /**
@@ -105,7 +105,7 @@ export interface SparkNodeTreeRemoveParams extends SparkNodeTreeLookupParams {}
  * 批量删除节点时使用的参数。
  */
 export interface SparkNodeTreeRemoveNodesParams {
-  nodeIds: string[]
+  componentIds: string[]
 }
 
 /**
@@ -312,6 +312,18 @@ export class SparkNodeTree {
     }
   }
 
+  /**
+   * 加载新的根节点，替换当前根并以新根作为历史基线重新开始。
+   * 清空既有历史栈，等价于 DataSetCrudTool.replaceFromJson。
+   */
+  loadRoot(newRoot: SparkNode): void {
+    const next = normalizeRootParams({ root: newRoot }, 'loadRoot')
+    this._root = next.root
+    this._history.clear()
+    this._version = 0
+    this._history.push(this._root)
+  }
+
   // ─── 内部历史管理 ──────────────────────────────────────────────
 
   /**
@@ -326,11 +338,11 @@ export class SparkNodeTree {
   // ─── 查询 / 统计 API：供 FC 做读操作、定位目标节点、推导下一步修改策略 ───────────
 
   /**
-   * 按 nodeId 查找节点；未命中时返回 null。
+   * 按 componentId 查找节点；未命中时返回 null。
    */
   getNode(params: SparkNodeTreeLookupParams): SparkNode | null {
     const next = normalizeLookupParams(params, 'getNode')
-    return findLocationRecursive(this._root, next.nodeId, null, -1, 0)?.node ?? null
+    return findLocationRecursive(this._root, next.componentId, null, -1, 0)?.node ?? null
   }
 
   /**
@@ -338,11 +350,11 @@ export class SparkNodeTree {
    */
   getLocation(params: SparkNodeTreeLookupParams): SparkNodeLocation | null {
     const next = normalizeLookupParams(params, 'getLocation')
-    return findLocationRecursive(this._root, next.nodeId, null, -1, 0)
+    return findLocationRecursive(this._root, next.componentId, null, -1, 0)
   }
 
   /**
-   * 判断指定 nodeId 是否存在。
+   * 判断指定 componentId 是否存在。
    */
   hasNode(params: SparkNodeTreeLookupParams): boolean {
     return this.getNode(normalizeLookupParams(params, 'hasNode')) !== null
@@ -362,7 +374,7 @@ export class SparkNodeTree {
    */
   listChildren(params: SparkNodeTreeChildrenParams = {}): SparkNodeChildren {
     const next = normalizeChildrenParams(params, 'listChildren')
-    const parent = resolveParentNode(this._root, next.parentId)
+    const parent = resolveParentNode(this._root, next.parentComponentId)
     return [...(parent.children ?? [])]
   }
 
@@ -421,7 +433,7 @@ export class SparkNodeTree {
     for (const node of next.nodes) {
       const operation = applyAddNode(workingRoot, {
         node,
-        ...(next.parentId !== undefined ? { parentId: next.parentId } : {}),
+        ...(next.parentComponentId !== undefined ? { parentComponentId: next.parentComponentId } : {}),
         ...(nextIndex !== undefined ? { index: nextIndex } : {}),
       })
       workingRoot = operation.nextRoot
@@ -521,8 +533,8 @@ export class SparkNodeTree {
     let workingRoot = this._root
     const items: SparkNodeRemoveResult[] = []
 
-    for (const nodeId of next.nodeIds) {
-      const operation = applyRemoveNode(workingRoot, { nodeId })
+    for (const componentId of next.componentIds) {
+      const operation = applyRemoveNode(workingRoot, { componentId })
       workingRoot = operation.nextRoot
       items.push(operation.result)
     }
@@ -583,7 +595,7 @@ function normalizeLookupParams(
 ): SparkNodeTreeLookupParams {
   const next = requireObjectArg(params, `${methodName}.params`)
   return {
-    nodeId: requireNonEmptyString(next.nodeId, `${methodName}.nodeId`),
+    componentId: requireNonEmptyString(next.componentId, `${methodName}.componentId`),
   }
 }
 
@@ -595,12 +607,12 @@ function normalizeChildrenParams(
   methodName: string,
 ): SparkNodeTreeChildrenParams {
   const next = requireObjectArg(params, `${methodName}.params`)
-  if (next.parentId === undefined) {
+  if (next.parentComponentId === undefined) {
     return {}
   }
 
-  const parentId = normalizeOptionalNodeId(next.parentId, `${methodName}.parentId`)
-  return parentId === undefined ? {} : { parentId }
+  const parentComponentId = normalizeOptionalNodeId(next.parentComponentId, `${methodName}.parentComponentId`)
+  return parentComponentId === undefined ? {} : { parentComponentId }
 }
 
 /**
@@ -612,13 +624,13 @@ function normalizeAddParams(params: SparkNodeTreeAddParams): SparkNodeTreeAddPar
     assertNonNegativeInteger(next.index, 'addNode.index')
   }
 
-  const parentId = next.parentId === undefined
+  const parentComponentId = next.parentComponentId === undefined
     ? undefined
-    : normalizeOptionalNodeId(next.parentId, 'addNode.parentId')
+    : normalizeOptionalNodeId(next.parentComponentId, 'addNode.parentComponentId')
 
   return {
     node: requireSparkNode(next.node, 'addNode.node'),
-    ...(parentId !== undefined ? { parentId } : {}),
+    ...(parentComponentId !== undefined ? { parentComponentId } : {}),
     ...(next.index !== undefined ? { index: next.index } : {}),
   }
 }
@@ -632,13 +644,13 @@ function normalizeAddNodesParams(params: SparkNodeTreeAddNodesParams): SparkNode
     assertNonNegativeInteger(next.index, 'addNodes.index')
   }
 
-  const parentId = next.parentId === undefined
+  const parentComponentId = next.parentComponentId === undefined
     ? undefined
-    : normalizeOptionalNodeId(next.parentId, 'addNodes.parentId')
+    : normalizeOptionalNodeId(next.parentComponentId, 'addNodes.parentComponentId')
 
   return {
     nodes: requireNonEmptySparkNodeArray(next.nodes, 'addNodes.nodes'),
-    ...(parentId !== undefined ? { parentId } : {}),
+    ...(parentComponentId !== undefined ? { parentComponentId } : {}),
     ...(next.index !== undefined ? { index: next.index } : {}),
   }
 }
@@ -649,7 +661,7 @@ function normalizeAddNodesParams(params: SparkNodeTreeAddNodesParams): SparkNode
 function normalizeSetPropsParams(params: SparkNodeTreeSetPropsParams): SparkNodeTreeSetPropsParams {
   const next = requireObjectArg(params, 'setProps.params')
   return {
-    nodeId: requireNonEmptyString(next.nodeId, 'setProps.nodeId'),
+    componentId: requireNonEmptyString(next.componentId, 'setProps.componentId'),
     props: requireRecord(next.props, 'setProps.props'),
     ...(next.merge !== undefined ? { merge: next.merge } : {}),
   }
@@ -664,15 +676,15 @@ function normalizeSetPropsBatchParams(
   const next = requireObjectArg(params, 'setPropsBatch.params')
   const items = requireObjectArray(next.items, 'setPropsBatch.items').map((item, index) => {
     return {
-      nodeId: requireNonEmptyString(
-        typeof item['nodeId'] === 'string' ? item['nodeId'] : undefined,
-        `setPropsBatch.items[${index}].nodeId`,
+      componentId: requireNonEmptyString(
+        typeof item['componentId'] === 'string' ? item['componentId'] : undefined,
+        `setPropsBatch.items[${index}].componentId`,
       ),
       props: requireRecord(item['props'], `setPropsBatch.items[${index}].props`),
       ...(item['merge'] !== undefined ? { merge: item['merge'] as boolean } : {}),
     }
   })
-  assertUniqueNodeIds(items.map((item) => item.nodeId), 'setPropsBatch.items')
+  assertUniqueNodeIds(items.map((item) => item.componentId), 'setPropsBatch.items')
   return { items }
 }
 
@@ -682,7 +694,7 @@ function normalizeSetPropsBatchParams(
 function normalizeReplaceParams(params: SparkNodeTreeReplaceParams): SparkNodeTreeReplaceParams {
   const next = requireObjectArg(params, 'replaceNode.params')
   return {
-    nodeId: requireNonEmptyString(next.nodeId, 'replaceNode.nodeId'),
+    componentId: requireNonEmptyString(next.componentId, 'replaceNode.componentId'),
     node: requireSparkNode(next.node, 'replaceNode.node'),
   }
 }
@@ -696,14 +708,14 @@ function normalizeReplaceNodesParams(
   const next = requireObjectArg(params, 'replaceNodes.params')
   const items = requireObjectArray(next.items, 'replaceNodes.items').map((item, index) => {
     return {
-      nodeId: requireNonEmptyString(
-        typeof item['nodeId'] === 'string' ? item['nodeId'] : undefined,
-        `replaceNodes.items[${index}].nodeId`,
+      componentId: requireNonEmptyString(
+        typeof item['componentId'] === 'string' ? item['componentId'] : undefined,
+        `replaceNodes.items[${index}].componentId`,
       ),
       node: requireSparkNode(item['node'], `replaceNodes.items[${index}].node`),
     }
   })
-  assertUniqueNodeIds(items.map((item) => item.nodeId), 'replaceNodes.items')
+  assertUniqueNodeIds(items.map((item) => item.componentId), 'replaceNodes.items')
   return { items }
 }
 
@@ -721,9 +733,9 @@ function normalizeRemoveNodesParams(
   params: SparkNodeTreeRemoveNodesParams,
 ): SparkNodeTreeRemoveNodesParams {
   const next = requireObjectArg(params, 'removeNodes.params')
-  const nodeIds = requireNonEmptyStringArray(next.nodeIds, 'removeNodes.nodeIds')
-  assertUniqueNodeIds(nodeIds, 'removeNodes.nodeIds')
-  return { nodeIds }
+  const componentIds = requireNonEmptyStringArray(next.componentIds, 'removeNodes.componentIds')
+  assertUniqueNodeIds(componentIds, 'removeNodes.componentIds')
+  return { componentIds }
 }
 
 // ====================
@@ -773,7 +785,7 @@ function assertNodeLike(node: unknown, fieldName: string): asserts node is Spark
  */
 function requireSparkNode(value: unknown, fieldName: string): SparkNode {
   assertNodeLike(value, fieldName)
-  return value
+  return normalizeSparkNode(value)
 }
 
 /**
@@ -870,11 +882,17 @@ function clampInsertIndex(index: number | undefined, length: number): number {
  */
 function buildSparkNode(params: {
   type: string
+  id?: string
   props?: Record<string, unknown>
   children?: SparkNodeChildren
 }): SparkNode {
+  const normalizedId = typeof params.id === 'string'
+    ? params.id
+    : (typeof params.props?.['id'] === 'string' ? params.props['id'] : undefined)
+
   return {
     type: params.type,
+    ...(normalizedId !== undefined ? { id: normalizedId } : {}),
     ...(params.props !== undefined ? { props: params.props } : {}),
     ...(params.children !== undefined ? { children: params.children } : {}),
   }
@@ -892,19 +910,12 @@ function copySparkNode(
   const type = nextType === KEEP ? node.type : nextType
   const props = nextProps === KEEP ? node.props : nextProps
   const children = nextChildren === KEEP ? node.children : nextChildren
-
-  const rawLegacyId = (node as { id?: unknown }).id
-  const legacyId = typeof rawLegacyId === 'string' ? rawLegacyId : undefined
-  const normalizedProps = props !== undefined
-    ? {
-      ...props,
-      ...(legacyId !== undefined && typeof props['id'] !== 'string' ? { id: legacyId } : {}),
-    }
-    : (legacyId !== undefined ? { id: legacyId } : undefined)
+  const nextId = typeof props?.['id'] === 'string' ? props['id'] : readNodeId(node)
 
   return buildSparkNode({
     type,
-    ...(normalizedProps !== undefined ? { props: normalizedProps } : {}),
+    ...(nextId !== undefined ? { id: nextId } : {}),
+    ...(props !== undefined ? { props } : {}),
     ...(children !== undefined ? { children } : {}),
   })
 }
@@ -961,13 +972,13 @@ function applyAddNode(
   root: SparkNode,
   params: SparkNodeTreeAddParams,
 ): { nextRoot: SparkNode; result: SparkNodeAddResult } {
-  const parent = resolveParentNode(root, params.parentId)
+  const parent = resolveParentNode(root, params.parentComponentId)
   const currentChildren = parent.children ?? []
   const index = clampInsertIndex(params.index, currentChildren.length)
   const nextChildren = [...currentChildren]
   nextChildren.splice(index, 0, params.node)
 
-  if (params.parentId === null || params.parentId === undefined) {
+  if (params.parentComponentId === null || params.parentComponentId === undefined) {
     return {
       nextRoot: copySparkNode(root, KEEP, KEEP, nextChildren),
       result: {
@@ -977,7 +988,7 @@ function applyAddNode(
     }
   }
 
-  const rewritten = rewriteNodeById(root, params.parentId, (location) => ({
+  const rewritten = rewriteNodeById(root, params.parentComponentId, (location) => ({
     nextNode: copySparkNode(location.node, KEEP, KEEP, nextChildren),
     result: {
       node: params.node,
@@ -998,12 +1009,12 @@ function applySetProps(
   root: SparkNode,
   params: SparkNodeTreeSetPropsParams,
 ): { nextRoot: SparkNode; result: SparkNodeSetPropsResult } {
-  const location = requireLocation(root, params.nodeId)
+  const location = requireLocation(root, params.componentId)
   const nextProps = params.merge === false
     ? { ...params.props }
     : { ...(location.node.props ?? {}), ...params.props }
 
-  const rewritten = rewriteNodeById(root, params.nodeId, (currentLocation) => {
+  const rewritten = rewriteNodeById(root, params.componentId, (currentLocation) => {
     const nextNode = copySparkNode(currentLocation.node, KEEP, nextProps)
     return {
       nextNode,
@@ -1027,9 +1038,9 @@ function applyReplaceNode(
   root: SparkNode,
   params: SparkNodeTreeReplaceParams,
 ): { nextRoot: SparkNode; result: SparkNodeReplaceResult } {
-  const previous = requireLocation(root, params.nodeId).node
+  const previous = requireLocation(root, params.componentId).node
 
-  const rewritten = rewriteNodeById(root, params.nodeId, () => ({
+  const rewritten = rewriteNodeById(root, params.componentId, () => ({
     nextNode: params.node,
     result: {
       node: params.node,
@@ -1051,12 +1062,12 @@ function applyRemoveNode(
   root: SparkNode,
   params: SparkNodeTreeRemoveParams,
 ): { nextRoot: SparkNode; result: SparkNodeRemoveResult } {
-  const location = requireLocation(root, params.nodeId)
+  const location = requireLocation(root, params.componentId)
   if (location.parent === null) {
     throw new Error('Cannot remove root node')
   }
 
-  const rewritten = rewriteNodeById(root, params.nodeId, (currentLocation) => ({
+  const rewritten = rewriteNodeById(root, params.componentId, (currentLocation) => ({
     nextNode: null,
     result: {
       removed: currentLocation.node,

@@ -159,6 +159,7 @@ export {
   createSession,
   registerDomain,
   getDomain,
+  getEditState,
 } from './stills'
 export type {
   DomainState,
@@ -172,6 +173,7 @@ export type {
   PatchEntry,
   DomainProvider,
   PostValidationWarning,
+  EditDomainState,
 } from './stills'
 
 // ── Session Orchestrator（会话级工具循环编排）──────────────────────────────────

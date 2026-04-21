@@ -50,9 +50,6 @@ describe('sparkNodeTree stills execution coverage', () => {
     })
     expect(init.ok).toBe(true)
 
-    const datasetExported = exec('dataset.export')
-    expect(datasetExported.ok).toBe(true)
-
     const failedAdd = exec('sparkNodeTree.addNode', {
       parentComponentId: 'root-table',
       node: {
@@ -107,9 +104,6 @@ describe('sparkNodeTree stills execution coverage', () => {
     })
     expect(init.ok).toBe(true)
 
-    const datasetExported = exec('dataset.export')
-    expect(datasetExported.ok).toBe(true)
-
     const getNode = exec('sparkNodeTree.getNode', { componentId: 'root-table' })
     executedActions.add('sparkNodeTree.getNode')
     const node = expectOk<{ type: string }>(getNode)
@@ -121,7 +115,7 @@ describe('sparkNodeTree stills execution coverage', () => {
     expect(location.depth).toBeGreaterThan(0)
     expect(location.parent?.type).toBe('r-table')
 
-    const hasNode = exec('sparkNodeTree.hasNode', { nodeId: 'toolbar-btn' })
+    const hasNode = exec('sparkNodeTree.hasNode', { componentId: 'toolbar-btn' })
     executedActions.add('sparkNodeTree.hasNode')
     const exists = expectOk<boolean>(hasNode)
     expect(exists).toBe(true)
@@ -135,10 +129,6 @@ describe('sparkNodeTree stills execution coverage', () => {
     executedActions.add('sparkNodeTree.listChildren')
     const initialChildren = expectOk<unknown[]>(listChildren)
     expect(initialChildren.length).toBe(2)
-
-    const listChildrenLegacyAlias = exec('sparkNodeTree.listChildren', { parentId: 'root-table' })
-    const legacyChildren = expectOk<unknown[]>(listChildrenLegacyAlias)
-    expect(legacyChildren.length).toBe(2)
 
     const countNodes = exec('sparkNodeTree.countNodes')
     executedActions.add('sparkNodeTree.countNodes')

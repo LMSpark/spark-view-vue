@@ -615,24 +615,24 @@ function detectDependencyCycle<TNode extends { id: string; dependsOn?: string[] 
   const visiting = new Set<string>()
   const path: string[] = []
 
-  const visit = (nodeId: string): string | null => {
-    if (visited.has(nodeId)) return null
-    if (visiting.has(nodeId)) {
-      const cycleStart = path.indexOf(nodeId)
-      const cycle = cycleStart >= 0 ? [...path.slice(cycleStart), nodeId] : [nodeId, nodeId]
+  const visit = (graphNodeId: string): string | null => {
+    if (visited.has(graphNodeId)) return null
+    if (visiting.has(graphNodeId)) {
+      const cycleStart = path.indexOf(graphNodeId)
+      const cycle = cycleStart >= 0 ? [...path.slice(cycleStart), graphNodeId] : [graphNodeId, graphNodeId]
       return `${label} 依赖存在循环: ${cycle.join(' -> ')}`
     }
 
-    visiting.add(nodeId)
-    path.push(nodeId)
-    const node = nodeMap.get(nodeId)
+    visiting.add(graphNodeId)
+    path.push(graphNodeId)
+    const node = nodeMap.get(graphNodeId)
     for (const dependencyId of node?.dependsOn ?? []) {
       const error = visit(dependencyId)
       if (error) return error
     }
     path.pop()
-    visiting.delete(nodeId)
-    visited.add(nodeId)
+    visiting.delete(graphNodeId)
+    visited.add(graphNodeId)
     return null
   }
 

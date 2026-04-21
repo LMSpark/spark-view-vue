@@ -7,7 +7,6 @@
 
 import type { StillDefinition, StillResult } from './types'
 import { getEditState, type EditDomainState } from './edit-state'
-import { editingGuard, datasetGuard } from './edit-guard'
 import { EditModel } from './edit-model'
 import {
   EDIT_CHANGED_LINES_ACTION,
@@ -43,7 +42,6 @@ const editChangedLines: StillDefinition = {
   action: EDIT_CHANGED_LINES_ACTION,
   type: 'describe',
   description: '统计当前会话相对 edit.bootstrap 基线在 4 个文件上的变更行数',
-  guard: editingGuard,
   validate: () => null,
   execute: (session): StillResult => {
     const data = collectEditChangedLines(getEditState(session))
@@ -55,7 +53,6 @@ const datasetChangedLines: StillDefinition = {
   action: DATASET_CHANGED_LINES_ACTION,
   type: 'describe',
   description: '统计 pagedata.json 相对 edit.bootstrap 基线的变更行数',
-  guard: datasetGuard,
   validate: () => null,
   execute: (session): StillResult => {
     const state = getEditState(session)

@@ -13,9 +13,10 @@
       <el-radio-button label="edit">细粒度编辑</el-radio-button>
       <el-radio-button label="generate">整模生成</el-radio-button>
       <el-radio-button label="chat">聊天模式</el-radio-button>
+      <el-radio-button v-if="isRuleFile" label="tool">直接工具</el-radio-button>
     </el-radio-group>
 
-    <template v-if="mode !== 'chat'">
+    <template v-if="mode !== 'chat' && mode !== 'tool'">
       <label class="ai-assistant__label">描述你的需求</label>
       <el-input
         v-model="requestText"
@@ -49,14 +50,88 @@
       </div>
     </template>
 
+    <div v-else-if="mode === 'tool'" class="ai-assistant__tool-panel">
+      <div class="ai-assistant__label">工具动作</div>
+      <el-select
+        v-model="toolAction"
+        size="small"
+        style="width:100%"
+        @change="(v: string) => { toolParams = TOOL_PARAM_EXAMPLES[v] ?? '{}' }"
+      >
+        <el-option-group label="查询">
+          <el-option v-for="a in TOOL_READ_ACTIONS" :key="a" :label="a" :value="a" />
+        </el-option-group>
+        <el-option-group label="变更">
+          <el-option v-for="a in TOOL_WRITE_ACTIONS" :key="a" :label="a" :value="a" />
+        </el-option-group>
+      </el-select>
+
+      <div class="ai-assistant__label" style="margin-top:4px">参数 (JSON)</div>
+      <el-input
+        v-model="toolParams"
+        type="textarea"
+        :rows="6"
+        resize="none"
+        placeholder="{}"
+        class="ai-assistant__tool-params"
+        spellcheck="false"
+      />
+
+      <el-button
+        type="primary"
+        size="small"
+        :loading="loading"
+        :disabled="!enabled"
+        style="margin-top:6px"
+        @click="execTool(toolAction, toolParams)"
+      >执行</el-button>
+    </div>
+
     <div v-else class="ai-assistant__chat-wrap">
       <AiChatWidget
         mode="multi"
         title="DataSet 聊天助手"
         placeholder="支持文本、附件、语音输入；可连续多轮对话"
         :compact="true"
+        v-bind="isRuleFile ? { sender: ruleEditChatSender } : {}"
       />
     </div>
+
+    <!-- Stills session panel: shared by edit + tool + chat for rule.json -->
+    <template v-if="isRuleFile">
+      <div class="ai-assistant__label">
+        会话：
+        <el-tag size="small" :type="ruleReady ? 'success' : 'info'" effect="plain">
+          {{ ruleReady ? '已就绪' : '未初始化' }}
+        </el-tag>
+        <el-tag v-if="ruleDirty" size="small" type="warning" effect="plain" style="margin-left:4px">有待应用</el-tag>
+      </div>
+      <div class="ai-assistant__tool-btns">
+        <el-button
+          v-if="ruleDirty"
+          type="success"
+          size="small"
+          :loading="loading"
+          @click="exportAndApply()"
+        >导出并应用</el-button>
+        <el-button
+          v-if="ruleReady"
+          size="small"
+          :disabled="loading"
+          @click="resetRuleEdit()"
+        >重置会话</el-button>
+      </div>
+      <div v-if="ruleAiBuffer" class="ai-assistant__streaming">
+        <div class="ai-assistant__label">💬 AI 思考中...</div>
+        <div class="ai-assistant__streaming-text">{{ ruleAiBuffer }}</div>
+      </div>
+      <div v-if="ruleLog.length" class="ai-assistant__tool-log">
+        <div v-for="(entry, i) in ruleLog" :key="i" :class="['ai-assistant__tool-log-entry', `is-${entry.type}`]">
+          <span class="ai-assistant__tool-log-tag">{{ entry.tag }}</span>
+          <pre class="ai-assistant__tool-log-body">{{ entry.text }}</pre>
+        </div>
+      </div>
+    </template>
 
     <el-dialog v-model="showResultDialog" title="AI 生成结果" width="70%" append-to-body>
       <pre class="ai-assistant__code">{{ suggestedContent }}</pre>
@@ -74,19 +149,25 @@ import { getAILoop } from '@spark-view/spark-ai'
 import type { PageFileName } from './useDevState'
 import AiChatWidget from '@/components/AiChatWidget.vue'
 import { runAiFileWriteback } from './composables/useAiFileWriteback'
+import type { AiChatSender } from '@/composables/useAiChat'
+import {
+  useRuleEditSession,
+  TOOL_READ_ACTIONS,
+  TOOL_WRITE_ACTIONS,
+  TOOL_PARAM_EXAMPLES,
+} from './composables/useRuleEditSession'
 
 interface Props {
   pageId: string
   fileName: string
   fileContent: string
+  contextFiles?: Record<string, string>
   enabled?: boolean
 }
 
-type AiMode = 'edit' | 'generate' | 'chat'
+type AiMode = 'edit' | 'generate' | 'chat' | 'tool'
 
-const props = withDefaults(defineProps<Props>(), {
-  enabled: true,
-})
+const props = withDefaults(defineProps<Props>(), { enabled: true })
 
 const emit = defineEmits<{
   (e: 'apply', content: string): void
@@ -95,23 +176,57 @@ const emit = defineEmits<{
 
 const loop = computed(() => getAILoop())
 const mode = ref<AiMode>('edit')
-const loading = ref(false)
+const wbLoading = ref(false)
 const requestText = ref('')
 const suggestedContent = ref('')
 const showResultDialog = ref(false)
 
 const isPageDataFile = computed(() => props.fileName === 'pagedata.json')
+const isRuleFile = computed(() => props.fileName === 'rule.json')
 
-function getFileType(): 'json' | 'js' | 'css' {
-  if (props.fileName.endsWith('.json')) return 'json'
-  if (props.fileName.endsWith('.js')) return 'js'
-  return 'css'
+// ── Rule edit session (tool layer) ────────────────────────────────
+const {
+  ready: ruleReady,
+  dirty: ruleDirty,
+  busy: ruleBusy,
+  aiBuffer: ruleAiBuffer,
+  log: ruleLog,
+  execTool,
+  runLlm,
+  exportAndApply,
+  reset: resetRuleEdit,
+} = useRuleEditSession({
+  getContextFiles: () => ({ ...(props.contextFiles ?? {}), [props.fileName]: props.fileContent }),
+  onApply: (files) => {
+    const nextContent = files[props.fileName] ?? files['rule.json']
+    if (typeof nextContent === 'string') emit('apply', nextContent)
+  },
+  onStatus: (msg, type) => emit('status', msg, type),
+})
+
+// Single busy flag covering both stills ops and writeback
+const loading = computed(() => ruleBusy.value || wbLoading.value)
+
+// ── Direct tool panel inputs (local UI state only) ────────────────
+const toolAction = ref<string>('sparkNodeTree.listChildren')
+const toolParams = ref<string>(TOOL_PARAM_EXAMPLES['sparkNodeTree.listChildren'] ?? '{}')
+
+// ── Chat sender: proxies to ruleEdit.runLlm ──────────────────────
+const ruleEditChatSender: AiChatSender = async (request) => {
+  const prompt = [...request.historyMsgs].reverse().find(m => m.role === 'user')?.content?.trim() ?? ''
+  if (!prompt) return
+  request.onDelta?.('已接收需求，正在执行 rule.json 细粒度编辑...\n')
+  await runLlm(prompt)
+  const latest = ruleLog.value[0]
+  if (!latest) { request.onDelta?.('细粒度编辑已执行完成。'); return }
+  if (latest.type === 'error') throw new Error(`${latest.tag}: ${latest.text}`)
+  request.onDelta?.(`${latest.tag}: ${latest.text}`)
 }
 
-function buildPrompt(currentMode: Exclude<AiMode, 'chat'>): string {
-  const fileType = getFileType()
-  const lang = fileType === 'json' ? 'json' : fileType === 'js' ? 'javascript' : 'css'
-  const context = [
+// ── Writeback (non-rule files) ─────────────────────────────────
+function buildPrompt(currentMode: Exclude<AiMode, 'chat' | 'tool'>): string {
+  const ext = props.fileName.endsWith('.js') ? 'javascript' : props.fileName.endsWith('.css') ? 'css' : 'json'
+  const ctx = [
     `当前文件: ${props.fileName}`,
     `页面ID: ${props.pageId}`,
     '',
@@ -119,35 +234,40 @@ function buildPrompt(currentMode: Exclude<AiMode, 'chat'>): string {
     requestText.value,
     '',
     '文件内容:',
-    `\`\`\`${lang}`,
+    `\`\`\`${ext}`,
     props.fileContent,
     '\`\`\`',
   ].join('\n')
-
   if (isPageDataFile.value) {
-    if (currentMode === 'edit') {
-      return `${context}\n\n你是 SPARK DataSet 细粒度编辑助手。只做与用户需求直接相关的最小必要改动，不要无关重写。输出可直接写回 pagedata.json 的完整内容。`
-    }
-    return `${context}\n\n你是 SPARK 数据建模助手。基于用户需求重新组织 DataSet（tables、tableRelations、views.default），输出可直接写回 pagedata.json 的完整内容。`
-  }
+    return currentMode === 'edit'
+      ? `${ctx}
 
-  if (currentMode === 'edit') {
-    return `${context}\n\n请基于用户需求对当前文件做最小必要修改，保持原有结构和风格，返回完整文件内容。`
+你是 SPARK DataSet 细粒度编辑助手。只做与用户需求直接相关的最小必要改动，不要无关重写。输出可直接写回 pagedata.json 的完整内容。`
+      : `${ctx}
+
+你是 SPARK 数据建模助手。基于用户需求重新组织 DataSet（tables、tableRelations、views.default），输出可直接写回 pagedata.json 的完整内容。`
   }
-  return `${context}\n\n请根据用户需求对当前文件进行重构式生成，保证内容完整可用，返回完整文件内容。`
+  return currentMode === 'edit'
+    ? `${ctx}
+
+请基于用户需求对当前文件做最小必要修改，保持原有结构和风格，返回完整文件内容。`
+    : `${ctx}
+
+请根据用户需求对当前文件进行重构式生成，保证内容完整可用，返回完整文件内容。`
 }
 
 async function handleApplyByMode() {
   if (!props.enabled || !loop.value) return
-  if (mode.value === 'chat') return
-
+  if (mode.value === 'chat' || mode.value === 'tool') return
   const trimmed = requestText.value.trim()
-  if (!trimmed) {
-    emit('status', '请先输入你的修改需求', 'warning')
+  if (!trimmed) { emit('status', '请先输入你的修改需求', 'warning'); return }
+
+  if (isRuleFile.value && mode.value === 'edit') {
+    await runLlm(trimmed)
     return
   }
 
-  loading.value = true
+  wbLoading.value = true
   try {
     const targetFile = props.fileName as PageFileName
     const result = await runAiFileWriteback({
@@ -155,27 +275,16 @@ async function handleApplyByMode() {
       pageId: props.pageId,
       prompt: buildPrompt(mode.value),
       targetFile,
-      contextFiles: {
-        [targetFile]: props.fileContent,
-      },
-      callbacks: {
-        onDelta() {},
-        onReasoning() {},
-        onPhase() {},
-      },
+      contextFiles: { [targetFile]: props.fileContent },
+      callbacks: { onDelta() {}, onReasoning() {}, onPhase() {} },
     })
-
-    if (!result.content) {
-      emit('status', '未生成可应用内容，请调整需求后重试', 'warning')
-      return
-    }
-
+    if (!result.content) { emit('status', '未生成可应用内容，请调整需求后重试', 'warning'); return }
     suggestedContent.value = result.content
     emit('status', `AI 已完成${mode.value === 'edit' ? '细粒度编辑' : '整模生成'}（${result.source}）`, 'success')
   } catch (err) {
     emit('status', `AI 操作失败: ${err instanceof Error ? err.message : String(err)}`, 'error')
   } finally {
-    loading.value = false
+    wbLoading.value = false
   }
 }
 
@@ -258,6 +367,106 @@ function applySuggestion() {
   min-height: 360px;
 }
 
+.ai-assistant__tool-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ai-assistant__streaming {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-assistant__streaming-text {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f8faff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-size: 11px;
+  line-height: 1.55;
+  max-height: 100px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.ai-assistant__tool-btns {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.ai-assistant__tool-params :deep(textarea) {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.ai-assistant__tool-log {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.ai-assistant__tool-log-entry {
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.ai-assistant__tool-log-entry.is-success {
+  border-color: #bbf7d0;
+}
+
+.ai-assistant__tool-log-entry.is-error {
+  border-color: #fecaca;
+}
+
+.ai-assistant__tool-log-tag {
+  display: block;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.is-success .ai-assistant__tool-log-tag {
+  background: #f0fdf4;
+  color: #166534;
+  border-bottom-color: #bbf7d0;
+}
+
+.is-error .ai-assistant__tool-log-tag {
+  background: #fef2f2;
+  color: #991b1b;
+  border-bottom-color: #fecaca;
+}
+
+.ai-assistant__tool-log-body {
+  margin: 0;
+  padding: 6px 8px;
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 180px;
+  overflow: auto;
+}
+
 .ai-assistant__chat-wrap :deep(.ai-chat-widget.compact) {
   max-width: none;
   max-height: none;
@@ -277,6 +486,32 @@ function applySuggestion() {
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.ai-assistant__trace,
+.ai-assistant__rule-response {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-assistant__trace-text {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #0b1020;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.6;
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.ai-assistant__rule-response .ai-assistant__trace-text {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
 }
 
 @media (max-width: 1280px) {

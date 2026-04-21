@@ -152,7 +152,7 @@ const B: SparkNode = {
     "id": "user-table",
     "props": { "dataKey": "Users@rows", "highlightCurrentRow": true }
   },
-  "parentId": null,   // null 表示当前绑定的根组件实例
+        "parentComponentId": null,   // null 表示当前绑定的根组件实例
   "index": 0
 }
 ```
@@ -162,10 +162,10 @@ const B: SparkNode = {
 | 参数 | 说明 |
 |------|------|
 | `node` | 第 4 步构造好的 SparkNode 实例 B |
-| `parentId` | 目标父节点的 id（null = 根节点） |
+| `parentComponentId` | 目标父节点的组件 id（null = 当前绑定根组件实例） |
 | `index` | 插入位置（省略则追加到末尾） |
 
-**这里最关键的分层边界**：组件配置（`type + props`）封装在 `node` 参数里，而写入位置（`parentId + index`）是 FC 参数本身，两者不混淆。
+**这里最关键的分层边界**：组件配置（`type + props`）封装在 `node` 参数里，而写入位置（`parentComponentId + index`）是 FC 参数本身，两者不混淆。
 
 ---
 
@@ -177,7 +177,7 @@ const B: SparkNode = {
 
 | 动作 | 方法 | 说明 |
 |------|------|------|
-| `sparkNodeTree.getNode` | `getNode` | 按 nodeId 查找节点 |
+| `sparkNodeTree.getNode` | `getNode` | 按 componentId 查找节点 |
 | `sparkNodeTree.getLocation` | `getLocation` | 查找节点的父节点和位置信息 |
 | `sparkNodeTree.hasNode` | `hasNode` | 判断节点是否存在 |
 | `sparkNodeTree.getParent` | `getParent` | 获取直接父节点 |
@@ -258,7 +258,7 @@ spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
 ### 树写入层（第 5 步）
 
 - 写操作前必须先 Bootstrap，确保 `SparkNodeTree` 实例已初始化（`EDIT_BOOTSTRAP_ACTION`）；
-- `addNode.parentId = null` 表示放在当前绑定的根组件实例下；
+- `addNode.parentComponentId = null` 表示放在当前绑定的根组件实例下；
 - 写操作产生新的不可变子树快照，不直接修改传入节点；
 - `setProps` 默认做浅合并（`merge !== false`），传 `merge: false` 时会完全替换 props 对象。
 
@@ -283,7 +283,7 @@ Step 3: [LLM 内部推理] 基于规格，构造 SparkNode 实例 B
         B = { type: 'r-table', props: { dataKey: 'Users@rows', ... }, children: [...] }
 
 Step 4: sparkNodeTree.addNode / sparkNodeTree.addNodes
-        参数: { node: B, parentId: 'section-main', index: 0 }
+        参数: { node: B, parentComponentId: 'section-main', index: 0 }
 ```
 
 ---

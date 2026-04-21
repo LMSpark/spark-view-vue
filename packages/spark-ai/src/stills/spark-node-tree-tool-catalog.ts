@@ -52,14 +52,12 @@ export interface SparkNodeTreeToolCapabilityRow {
 }
 
 const NO_PARAMS: Record<string, unknown> = {}
-const COMPONENT_ID_PARAM = 'string — 当前组件子树内的组件 id（兼容 nodeId）'
-const PARENT_COMPONENT_ID_PARAM = 'string | null ? — 父组件 id（兼容 parentId）；null/省略表示当前绑定组件实例'
+const COMPONENT_ID_PARAM = 'string — 当前组件子树内的组件 id'
+const PARENT_COMPONENT_ID_PARAM = 'string | null ? — 父组件 id；null/省略表示当前绑定组件实例'
 const INDEX_PARAM = 'number? — 插入位置；省略时追加到末尾'
 const PROPS_PARAM = 'Record<string, unknown> — 要写入的 props 对象'
 const NODES_PARAM = 'SparkNode[] — 按顺序插入的多个节点'
-const COMPONENT_IDS_PARAM = 'string[] — 目标组件 id 列表（兼容 nodeIds）'
-const SET_PROPS_BATCH_ITEMS_PARAM = 'Array<{ componentId: string; props: Record<string, unknown>; merge?: boolean }>（兼容 nodeId）'
-const REPLACE_NODES_ITEMS_PARAM = 'Array<{ componentId: string; node: SparkNode }>（兼容 nodeId）'
+const COMPONENT_IDS_PARAM = 'string[] — 目标组件 id 列表'
 const NODE_PARAM = {
   kind: 'object',
   required: ['type'],
@@ -70,6 +68,35 @@ const NODE_PARAM = {
     children: 'SparkNodeChildren ? — 子节点数组，可混合 SparkNode / string / number',
   },
   note: 'node 必须是完整 SparkNode 对象，不要只传类型名字符串。',
+} as const
+const SET_PROPS_BATCH_ITEM_SCHEMA = {
+  kind: 'object',
+  required: ['componentId', 'props'],
+  properties: {
+    componentId: COMPONENT_ID_PARAM,
+    props: PROPS_PARAM,
+  },
+  optional: {
+    merge: 'boolean? — true=合并，false=替换；省略时默认合并',
+  },
+  note: '每个批处理项都必须显式提供 componentId；不再接受 nodeId 兼容字段。',
+} as const
+const SET_PROPS_BATCH_ITEMS_SCHEMA = {
+  kind: 'array',
+  items: SET_PROPS_BATCH_ITEM_SCHEMA,
+} as const
+const REPLACE_NODES_ITEM_SCHEMA = {
+  kind: 'object',
+  required: ['componentId', 'node'],
+  properties: {
+    componentId: COMPONENT_ID_PARAM,
+    node: NODE_PARAM,
+  },
+  note: '每个替换项都必须显式提供 componentId；不再接受 nodeId 兼容字段。',
+} as const
+const REPLACE_NODES_ITEMS_SCHEMA = {
+  kind: 'array',
+  items: REPLACE_NODES_ITEM_SCHEMA,
 } as const
 
 const CATALOG_ONLY_RULE = '本 catalog 只定义核心层动作目录，不接 spark-ai stills registry，也不提供 execute 实现。'
@@ -118,7 +145,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.getNode',
     target: 'node',
     coreMethod: 'getNode',
-    description: '按 componentId 查找节点；未命中时返回 null（兼容 nodeId）。',
+    description: '按 componentId 查找节点；未命中时返回 null。',
     paramsSchema: {
       componentId: COMPONENT_ID_PARAM,
     },
@@ -152,7 +179,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.hasNode',
     target: 'node',
     coreMethod: 'hasNode',
-    description: '判断指定 componentId 是否存在于当前树中（兼容 nodeId）。',
+    description: '判断指定 componentId 是否存在于当前树中。',
     paramsSchema: {
       componentId: COMPONENT_ID_PARAM,
     },
@@ -362,7 +389,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     coreMethod: 'setPropsBatch',
     description: '批量写入多个节点的 props，整个批次只提交一次树状态。',
     paramsSchema: {
-      items: SET_PROPS_BATCH_ITEMS_PARAM,
+      items: SET_PROPS_BATCH_ITEMS_SCHEMA,
     },
     resultSchema: {
       nodes: 'SparkNode[] — props 已更新的节点数组',
@@ -424,7 +451,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     coreMethod: 'replaceNodes',
     description: '批量替换多个节点，适合一次性重建多个字段或容器节点。',
     paramsSchema: {
-      items: REPLACE_NODES_ITEMS_PARAM,
+      items: REPLACE_NODES_ITEMS_SCHEMA,
     },
     resultSchema: {
       items: 'Array<{ node: SparkNode; previous: SparkNode }> — 每个替换项的新旧节点结果',
@@ -482,7 +509,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.removeNodes',
     target: 'node',
     coreMethod: 'removeNodes',
-    description: '按 componentIds 批量删除当前组件实例子树内的多个节点，整个批次只提交一次树状态（兼容 nodeIds）。',
+    description: '按 componentIds 批量删除当前组件实例子树内的多个节点，整个批次只提交一次树状态。',
     paramsSchema: {
       componentIds: COMPONENT_IDS_PARAM,
     },

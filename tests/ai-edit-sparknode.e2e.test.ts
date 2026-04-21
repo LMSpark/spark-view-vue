@@ -164,12 +164,9 @@ describe('Real LLM E2E Verification — Edit Domain SparkNodeTree Build', () => 
     }, session, 'seed-create-table')
     expect(seededCreateTable.ok).toBe(true)
 
-    const seededDatasetExport = executeStill('dataset.export', {}, session, 'seed-dataset-export')
-    expect(seededDatasetExport.ok).toBe(true)
-
     const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`)
 
-    const prompt = `当前会话已经完成 edit.bootstrap 且已执行 dataset.export，数据阶段已完成。
+    const prompt = `当前会话已经完成 edit.bootstrap，4 个文件已进入同一编辑会话。
 任务目标：在 root-table 下新增一个 r-text 子节点，节点为
 {
   "type": "r-text",
@@ -211,7 +208,6 @@ ${AUTONOMOUS_GUARDRAILS}
       seededState: {
         bootstrapOk: seededBootstrap.ok,
         createTableOk: seededCreateTable.ok,
-        datasetExportOk: seededDatasetExport.ok,
       },
       rounds: result.rounds,
       aborted: result.aborted,
@@ -323,12 +319,9 @@ ${AUTONOMOUS_GUARDRAILS}
     }, session, 'seed-create-table-fullflow')
     expect(seededCreateTable.ok).toBe(true)
 
-    const seededDatasetExport = executeStill('dataset.export', {}, session, 'seed-dataset-export-fullflow')
-    expect(seededDatasetExport.ok).toBe(true)
-
     const backend = new SessionBackendImpl(`${BASE_URL}/api/ai/sessions`)
 
-    const prompt = `当前会话已经完成 edit.bootstrap 且已执行 dataset.export，数据阶段已完成。
+    const prompt = `当前会话已经完成 edit.bootstrap，4 个文件已进入同一编辑会话。
   任务目标（最终状态约束）：
   - root-table.props.border = true；
   - root-table 子节点最终仅保留一个 r-text 节点：id=dept-name-b，label=部门名称B-替换；
@@ -366,7 +359,6 @@ ${AUTONOMOUS_GUARDRAILS}
       seededState: {
         bootstrapOk: seededBootstrap.ok,
         createTableOk: seededCreateTable.ok,
-        datasetExportOk: seededDatasetExport.ok,
       },
       rounds: result.rounds,
       aborted: result.aborted,

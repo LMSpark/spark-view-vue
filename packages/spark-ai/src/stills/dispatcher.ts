@@ -181,8 +181,8 @@ export function executeStill(
     return unknownActionResult(action)
   }
 
-  // 2. guard 负责检查当前会话上下文是否允许执行该动作
-  const guardResult = still.guard(session)
+  // 2. guard 负责检查当前会话上下文是否允许执行该动作；省略时视为直接可执行
+  const guardResult = still.guard?.(session) ?? null
   if (guardResult !== null) {
     return {
       ok: false,

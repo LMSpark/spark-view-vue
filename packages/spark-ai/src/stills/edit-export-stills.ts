@@ -7,7 +7,6 @@
 
 import type { StillDefinition, StillResult } from './types'
 import { getEditState, type EditDomainState } from './edit-state'
-import { datasetGuard, datasetExportedGuard } from './edit-guard'
 import { EditModel, type EditFilesExport } from './edit-model'
 import { collectEditChangedLines } from './edit-diff-stills'
 import {
@@ -56,7 +55,6 @@ function finalizeDatasetFileExport(state: EditDomainState): {
   const tables = state.datasetEdit
     ? Object.keys(state.datasetEdit.toJson().tables).sort()
     : []
-  state.datasetExported = true
   return {
     data: { file: { 'pagedata.json': pagedata }, changedLines, tables },
     summary: `dataset 导出完成，${tables.length} 张表，变更 ${changedLines.pagedataJson} 行`,
@@ -67,7 +65,6 @@ const editExportFiles: StillDefinition = {
   action: EDIT_EXPORT_FILES_ACTION,
   type: 'request',
   description: '导出当前编辑结果（rule.json/pagedata.json/script.js/style.css）及变更行统计',
-  guard: datasetExportedGuard,
   validate: () => null,
   execute: (session): StillResult => {
     const result = finalizeEditFilesExport(getEditState(session))
@@ -79,7 +76,6 @@ const datasetExport: StillDefinition = {
   action: DATASET_EXPORT_ACTION,
   type: 'request',
   description: '仅导出 pagedata.json 及数据域变更统计，适用于先数据后布局的细粒度流程',
-  guard: datasetGuard,
   validate: () => null,
   execute: (session): StillResult => {
     const result = finalizeDatasetFileExport(getEditState(session))

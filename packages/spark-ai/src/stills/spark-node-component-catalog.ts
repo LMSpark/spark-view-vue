@@ -319,7 +319,7 @@ function buildContainersEntry(): SparkNodeComponentEntry {
       },
       {
         code: 'TREE_WRITE_MISMATCH',
-        when: 'SparkNode 已构造完成，但写入 SparkNodeTree 时 parentId / index / node 结构不合法',
+        when: 'SparkNode 已构造完成，但写入 SparkNodeTree 时 parentComponentId / index / node 结构不合法',
         fix: '把"组件配置"与"树写入参数"分开处理：先构造 node，再调用 SparkNodeTree FC。',
       },
     ],

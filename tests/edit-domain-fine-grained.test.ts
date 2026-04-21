@@ -26,14 +26,20 @@ beforeEach(() => {
 })
 
 describe('edit domain fine-grained flow', () => {
-  it('fails fast for changedLines before edit.bootstrap', () => {
+  it('returns zero changedLines before edit.bootstrap', () => {
     const result = exec('edit.changedLines')
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.code).toBe('NOT_EDITING')
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.data).toEqual({
+      ruleJson: 0,
+      pageDataJson: 0,
+      scriptJs: 0,
+      styleCss: 0,
+      total: 0,
+    })
   })
 
-  it('supports sparkNodeTree componentId lookups with legacy top-level id', () => {
+  it('uses top-level id as the sparkNodeTree componentId standard', () => {
     const init = exec('edit.bootstrap', {
       ruleJson: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],
       pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
@@ -41,9 +47,6 @@ describe('edit domain fine-grained flow', () => {
       styleCss: '.page {}\n',
     })
     expect(init.ok).toBe(true)
-
-    const datasetExported = exec('dataset.export')
-    expect(datasetExported.ok).toBe(true)
 
     const hasRoot = exec('sparkNodeTree.hasNode', { componentId: 'root-table' })
     expect(hasRoot.ok).toBe(true)
@@ -55,10 +58,7 @@ describe('edit domain fine-grained flow', () => {
       node: {
         type: 'r-text',
         id: 'dept-name-field',
-        props: {
-          field: 'name',
-          label: '部门名称',
-        },
+        props: { field: 'name', label: '部门名称' },
       },
     })
     expect(addNode.ok).toBe(true)
@@ -69,7 +69,7 @@ describe('edit domain fine-grained flow', () => {
     expect(hasChild.data).toBe(true)
   })
 
-  it('lands dataset-first fine-grained flow', () => {
+  it('supports single-session fine-grained flow without export gating', () => {
     const init = exec('edit.bootstrap', {
       ruleJson: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],
       pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
@@ -87,11 +87,8 @@ describe('edit domain fine-grained flow', () => {
     })
     expect(addTable.ok).toBe(true)
 
-    const blockedScriptWrite = exec('file.writeScript', { content: 'export default { blocked: true }\n' })
-    expect(blockedScriptWrite.ok).toBe(false)
-    if (!blockedScriptWrite.ok) {
-      expect(blockedScriptWrite.code).toBe('DATA_PHASE_REQUIRED')
-    }
+    const scriptWrite = exec('file.writeScript', { content: 'export default { immediate: true }\n' })
+    expect(scriptWrite.ok).toBe(true)
 
     const blockedRawExport = exec('datasetTool.export')
     expect(blockedRawExport.ok).toBe(false)
@@ -99,11 +96,16 @@ describe('edit domain fine-grained flow', () => {
       expect(blockedRawExport.code).toBe('INVALID_PARAMS')
     }
 
-    const blockedEditExport = exec('edit.exportFiles')
-    expect(blockedEditExport.ok).toBe(false)
-    if (!blockedEditExport.ok) {
-      expect(blockedEditExport.code).toBe('DATA_PHASE_REQUIRED')
+    const editExport = exec('edit.exportFiles')
+    expect(editExport.ok).toBe(true)
+    if (!editExport.ok) return
+    const editExportData = editExport.data as {
+      files: Record<string, string>
+      changedLines: { total: number }
     }
+    expect(editExportData.files['pagedata.json']).toContain('"Users"')
+    expect(editExportData.files['script.js']).toContain('immediate')
+    expect(editExportData.changedLines.total).toBeGreaterThan(0)
 
     const datasetChanged = exec('dataset.changedLines')
     expect(datasetChanged.ok).toBe(true)
@@ -123,27 +125,14 @@ describe('edit domain fine-grained flow', () => {
     expect(datasetData.changedLines.pagedataJson).toBeGreaterThan(0)
     expect(datasetData.tables).toContain('Users')
 
-    const scriptWriteAfterExport = exec('file.writeScript', { content: 'export default { ok: true }\n' })
-    expect(scriptWriteAfterExport.ok).toBe(true)
-
-    // 迭代修改：再次改动数据后，必须重新 dataset.export 才能继续脚本/样式编辑。
     const addColumn = exec('datasetTool.createColumn', {
       tableName: 'Users',
       column: { name: 'email', type: 'string' },
     })
     expect(addColumn.ok).toBe(true)
 
-    const blockedScriptAfterSecondDatasetChange = exec('file.writeScript', { content: 'export default { blockedAgain: true }\n' })
-    expect(blockedScriptAfterSecondDatasetChange.ok).toBe(false)
-    if (!blockedScriptAfterSecondDatasetChange.ok) {
-      expect(blockedScriptAfterSecondDatasetChange.code).toBe('DATA_PHASE_REQUIRED')
-    }
-
-    const reExported = exec('dataset.export')
-    expect(reExported.ok).toBe(true)
-
-    const scriptWriteAfterReExport = exec('file.writeScript', { content: 'export default { okAfterReExport: true }\n' })
-    expect(scriptWriteAfterReExport.ok).toBe(true)
+    const scriptWriteAfterDatasetChange = exec('file.writeScript', { content: 'export default { okAfterDatasetChange: true }\n' })
+    expect(scriptWriteAfterDatasetChange.ok).toBe(true)
 
     const undo = exec('datasetTool.undo')
     expect(undo.ok).toBe(true)
@@ -160,15 +149,6 @@ describe('edit domain fine-grained flow', () => {
     }
     expect(stats.pageDataJson).toBeGreaterThan(0)
     expect(stats.total).toBeGreaterThan(0)
-
-    const blockedEditExportAfterUndo = exec('edit.exportFiles')
-    expect(blockedEditExportAfterUndo.ok).toBe(false)
-    if (!blockedEditExportAfterUndo.ok) {
-      expect(blockedEditExportAfterUndo.code).toBe('DATA_PHASE_REQUIRED')
-    }
-
-    const finalDatasetExport = exec('dataset.export')
-    expect(finalDatasetExport.ok).toBe(true)
 
     const exported = exec('edit.exportFiles')
     expect(exported.ok).toBe(true)

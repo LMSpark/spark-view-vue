@@ -14,8 +14,6 @@
 
 import type { IStillSession, StillDefinition, StillResult } from './types'
 import { getEditState } from './edit-state'
-import { treeGuard } from './edit-guard'
-import { EDIT_BOOTSTRAP_ACTION } from './action-names'
 import { SPARK_NODE_TREE_TOOL_PARAMETER_TABLE } from './spark-node-tree-tool-catalog'
 import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from './llm-params-validator'
 
@@ -26,161 +24,6 @@ import { validateLlmDeserializedParams, formatLlmParamValidationIssues } from '.
  */
 type DispatchFn = (...args: unknown[]) => unknown
 
-type JsonObject = Record<string, unknown>
-
-function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function pickString(record: JsonObject, preferredKey: string, legacyKey: string): string | undefined {
-  const preferredValue = record[preferredKey]
-  if (typeof preferredValue === 'string') return preferredValue
-  const legacyValue = record[legacyKey]
-  return typeof legacyValue === 'string' ? legacyValue : undefined
-}
-
-function pickStringArray(record: JsonObject, preferredKey: string, legacyKey: string): string[] | undefined {
-  const preferredValue = record[preferredKey]
-  if (Array.isArray(preferredValue) && preferredValue.every((item) => typeof item === 'string')) {
-    return [...preferredValue]
-  }
-  const legacyValue = record[legacyKey]
-  if (Array.isArray(legacyValue) && legacyValue.every((item) => typeof item === 'string')) {
-    return [...legacyValue]
-  }
-  return undefined
-}
-
-function withCanonicalId(
-  record: JsonObject,
-  canonicalKey: string,
-  legacyKey: string,
-  allowNull = false,
-): JsonObject {
-  const preferredValue = record[canonicalKey]
-  if (typeof preferredValue === 'string' || (allowNull && preferredValue === null)) {
-    const { [legacyKey]: _legacy, ...rest } = record
-    return { ...rest, [canonicalKey]: preferredValue }
-  }
-
-  const legacyValue = record[legacyKey]
-  if (typeof legacyValue === 'string' || (allowNull && legacyValue === null)) {
-    const { [legacyKey]: _legacy, ...rest } = record
-    return { ...rest, [canonicalKey]: legacyValue }
-  }
-
-  return record
-}
-
-function withCanonicalIds(record: JsonObject, canonicalKey: string, legacyKey: string): JsonObject {
-  const resolvedIds = pickStringArray(record, canonicalKey, legacyKey)
-  if (resolvedIds === undefined) return record
-  const { [legacyKey]: _legacy, ...rest } = record
-  return { ...rest, [canonicalKey]: resolvedIds }
-}
-
-function normalizeSparkNodeTreeParams(action: string, params: unknown): unknown {
-  if (!isJsonObject(params)) return params
-
-  if (
-    action === 'sparkNodeTree.getNode'
-    || action === 'sparkNodeTree.getLocation'
-    || action === 'sparkNodeTree.hasNode'
-    || action === 'sparkNodeTree.getParent'
-    || action === 'sparkNodeTree.setProps'
-    || action === 'sparkNodeTree.replaceNode'
-    || action === 'sparkNodeTree.removeNode'
-  ) {
-    return withCanonicalId(params, 'componentId', 'nodeId')
-  }
-
-  if (action === 'sparkNodeTree.setPropsBatch' || action === 'sparkNodeTree.replaceNodes') {
-    const rawItems = params['items']
-    if (!Array.isArray(rawItems)) return params
-    const items: unknown[] = rawItems
-    return {
-      ...params,
-      items: items.map((item) => (isJsonObject(item) ? withCanonicalId(item, 'componentId', 'nodeId') : item)),
-    }
-  }
-
-  if (action === 'sparkNodeTree.removeNodes') {
-    return withCanonicalIds(params, 'componentIds', 'nodeIds')
-  }
-
-  if (
-    action === 'sparkNodeTree.listChildren'
-    || action === 'sparkNodeTree.addNode'
-    || action === 'sparkNodeTree.addNodes'
-  ) {
-    return withCanonicalId(params, 'parentComponentId', 'parentId', true)
-  }
-
-  return params
-}
-
-function normalizeSparkNodeTreeCoreParams(action: string, params: unknown): unknown {
-  if (!isJsonObject(params)) return params
-
-  if (
-    action === 'sparkNodeTree.getNode'
-    || action === 'sparkNodeTree.getLocation'
-    || action === 'sparkNodeTree.hasNode'
-    || action === 'sparkNodeTree.getParent'
-    || action === 'sparkNodeTree.setProps'
-    || action === 'sparkNodeTree.replaceNode'
-    || action === 'sparkNodeTree.removeNode'
-  ) {
-    const componentId = pickString(params, 'componentId', 'nodeId')
-    if (componentId === undefined) return params
-    return { ...params, nodeId: componentId }
-  }
-
-  if (action === 'sparkNodeTree.setPropsBatch' || action === 'sparkNodeTree.replaceNodes') {
-    const rawItems = params['items']
-    if (!Array.isArray(rawItems)) return params
-    const items: unknown[] = rawItems
-    return {
-      ...params,
-      items: items.map((item) => {
-        if (!isJsonObject(item)) return item
-        const componentId = pickString(item, 'componentId', 'nodeId')
-        return componentId === undefined ? item : { ...item, nodeId: componentId }
-      }),
-    }
-  }
-
-  if (action === 'sparkNodeTree.removeNodes') {
-    const componentIds = pickStringArray(params, 'componentIds', 'nodeIds')
-    if (componentIds === undefined) return params
-    return {
-      ...params,
-      nodeIds: componentIds,
-    }
-  }
-
-  if (
-    action === 'sparkNodeTree.listChildren'
-    || action === 'sparkNodeTree.addNode'
-    || action === 'sparkNodeTree.addNodes'
-  ) {
-    const preferredParent = params['parentComponentId']
-    if (typeof preferredParent !== 'string' && preferredParent !== null) {
-      const legacyParent = params['parentId']
-      if (typeof legacyParent !== 'string' && legacyParent !== null) return params
-      return {
-        ...params,
-        parentId: legacyParent,
-      }
-    }
-    return {
-      ...params,
-      parentId: preferredParent,
-    }
-  }
-
-  return params
-}
 
 // ── 3. 参数验证逻辑 (Parameter Validation) ────────────────────────────────────────
 
@@ -198,13 +41,11 @@ function validateNodeTreeStillRow(
   row: (typeof SPARK_NODE_TREE_TOOL_PARAMETER_TABLE)[number],
   params: unknown,
 ): string | null {
-  const normalizedParams = normalizeSparkNodeTreeParams(row.action, params)
-
   // 如果此动作无需任何参数（对应的 schema 为空），则直接通过校验
   if (Object.keys(row.paramsSchema).length === 0) return null
 
   // 调用通用的校验器执行深层校验
-  const result = validateLlmDeserializedParams(normalizedParams ?? {}, row.paramsSchema)
+  const result = validateLlmDeserializedParams(params ?? {}, row.paramsSchema)
   
   // 返回校验结果或统一格式化后的错误详情
   return result.ok ? null : formatLlmParamValidationIssues(result.issues)
@@ -228,19 +69,16 @@ function executeNodeTreeStillRow(
   row: (typeof SPARK_NODE_TREE_TOOL_PARAMETER_TABLE)[number],
   params: unknown,
 ): StillResult {
-  const normalizedParams = normalizeSparkNodeTreeParams(row.action, params)
-  const coreParams = normalizeSparkNodeTreeCoreParams(row.action, normalizedParams)
-
   // 从共享状态的 store 中获取已经初始化的页面节点树（SparkNodeTree）
   const tree = getEditState(session).nodeTree
-  
+
   // 防卫检查：如因生命周期顺序错乱导致树未建立，给出修补建议
   if (!tree) {
-    return { 
-      ok: false, 
-      code: 'NO_NODE_TREE', 
-      msg: 'nodeTree 未初始化', 
-      fix: `请先执行 ${EDIT_BOOTSTRAP_ACTION} 初始化编辑会话` 
+    return {
+      ok: false,
+      code: 'NO_NODE_TREE',
+      msg: 'nodeTree 未初始化',
+      fix: '请先执行 edit.bootstrap 初始化编辑会话',
     }
   }
   
@@ -251,7 +89,7 @@ function executeNodeTreeStillRow(
     if (!fn) throw new Error(`Method ${row.coreMethod} not found on SparkNodeTree`)
     
     // 执行底层修改逻辑，携带从外界传入的参数
-    const data = fn.call(tree, coreParams ?? {})
+    const data = fn.call(tree, params ?? {})
     
     // 封装并返回成功摘要给调用方
     return { ok: true, data, summary: `${row.action} 完成` }
@@ -285,7 +123,6 @@ export const EDIT_NODE_TREE_STILLS: StillDefinition[] = SPARK_NODE_TREE_TOOL_PAR
   action: row.action,
   type: row.type,
   description: row.description,
-  guard: treeGuard, // 复用同一个依赖阶段检查守卫
   paramsSchema: row.paramsSchema,
   resultSchema: row.resultSchema,
   example: row.example,

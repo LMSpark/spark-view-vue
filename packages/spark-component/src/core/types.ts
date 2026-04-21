@@ -117,7 +117,9 @@ export type SparkNodeChildren = Array<SparkNode | string>
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
-  /** 组件属性（所有业务输入均通过 props 传递，含 id / dataKey / class） */
+  /** 节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准） */
+  id?: string
+  /** 组件属性（业务输入通过 props 传递，如 dataKey / class / 组件自有配置项） */
   props?: Record<string, unknown>
   /** 子组件配置（递归）；第三方 / HTML 组件允许直接传字符串文本子节点数组 */
   children?: SparkNodeChildren
@@ -126,11 +128,11 @@ export interface SparkNode {
 // ── SparkNode 结构键（运行时） ────────────────────────────────────────────
 
 /**
- * SparkNode 结构键集合（严格 h(type, props, children) 三段式）
+ * SparkNode 结构键集合（type / id / props / children）
  *
- * 只有这 3 个键归 SPARK 框架所有；id 是业务属性，存放在 props.id。
+ * `id` 属于运行时结构键，不再视为普通业务属性。
  */
-export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['type', 'props', 'children'])
+export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['type', 'id', 'props', 'children'])
 
 // ── SparkNode 归一化 ────────────────────────────────────────────
 
@@ -139,8 +141,8 @@ export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['typ
  *
  * 统一处理：
  * - 空 type → fallbackType（fallbackType 本身为空时兜底 `'unknown'`）
+ * - 节点定位 id：优先顶层 id；缺失时用 props.id 补齐到顶层
  * - props 非纯对象（null / 数组 / 原始值）→ 省略 props 键
- * - 兼容 legacy 顶层 id：当 props.id 缺失时自动迁移到 props.id
  * - children 缺省或非数组 → `[]`
  *
  * @param node - 待归一化的 SparkNode
@@ -156,25 +158,25 @@ export function normalizeSparkNode(node: SparkNode, fallbackType = 'unknown'): S
     ? node.type
     : normalizedFallbackType
 
+  const rawTopLevelId = (node as { id?: unknown }).id
+  const topLevelId = typeof rawTopLevelId === 'string' ? rawTopLevelId : undefined
   const rawProps = (node as { props?: unknown }).props
-  const rawLegacyId = (node as { id?: unknown }).id
-  const legacyId = typeof rawLegacyId === 'string' ? rawLegacyId : undefined
   const hasObjectProps = rawProps !== undefined
     && rawProps !== null
     && typeof rawProps === 'object'
     && !Array.isArray(rawProps)
+  const propsId = hasObjectProps && typeof (rawProps as Record<string, unknown>)['id'] === 'string'
+    ? ((rawProps as Record<string, unknown>)['id'] as string)
+    : undefined
+  const normalizedId = topLevelId ?? propsId
 
   const normalizedProps = hasObjectProps
-    ? {
-      ...(rawProps as Record<string, unknown>),
-      ...(legacyId !== undefined && typeof (rawProps as Record<string, unknown>)['id'] !== 'string'
-        ? { id: legacyId }
-        : {}),
-    }
-    : (legacyId !== undefined ? { id: legacyId } : undefined)
+    ? { ...(rawProps as Record<string, unknown>) }
+    : undefined
 
   return {
     type: normalizedType,
+    ...(normalizedId !== undefined ? { id: normalizedId } : {}),
     ...(normalizedProps !== undefined ? { props: normalizedProps } : {}),
     children: Array.isArray(node.children) ? node.children : [],
   }
@@ -197,15 +199,15 @@ export function getSparkNodeChildren(children: SparkNodeChildren | undefined): S
 /**
  * 读取节点 id。
  *
- * 规范形态优先使用 props.id；
- * 兼容编辑域历史输入（顶层 id）以避免树定位失败。
+ * 规范形态以顶层 id 为准；对未归一化输入回退读取 props.id。
  */
-export function nodeId(node: { props?: Record<string, unknown>; id?: unknown }): string | undefined {
+export function nodeId(node: { id?: unknown; props?: Record<string, unknown> }): string | undefined {
+  const topLevelId = node.id
+  if (typeof topLevelId === 'string') return topLevelId
+
   const propsId = node.props?.['id']
   if (typeof propsId === 'string') return propsId
-
-  const legacyId = node.id
-  return typeof legacyId === 'string' ? legacyId : undefined
+  return undefined
 }
 
 /**

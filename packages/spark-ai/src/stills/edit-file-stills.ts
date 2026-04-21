@@ -6,7 +6,6 @@
  */
 
 import type { IStillSession, StillDefinition, StillResult } from './types'
-import { editingGuard, datasetExportedGuard } from './edit-guard'
 import { getEditState } from './edit-state'
 import {
   FILE_READ_SCRIPT_ACTION,
@@ -125,16 +124,14 @@ function writeEditFileContent(session: IStillSession, key: EditFileKey, content:
  * 为单个目录项创建“读文件” still。
  *
  * 行为：
- * 1. 仅要求当前处于 editing 阶段；
- * 2. 直接返回当前缓存中的全文；
- * 3. 不修改任何状态。
+ * 1. 直接返回当前缓存中的全文；
+ * 2. 不修改任何状态。
  */
 function createReadStill(desc: FileDescriptor): StillDefinition {
   return {
     action: desc.readAction,
     type: 'describe',
     description: `返回 ${desc.label} 当前内容`,
-    guard: editingGuard,
     validate: () => null,
     execute: (session): StillResult => {
       return {
@@ -149,20 +146,13 @@ function createReadStill(desc: FileDescriptor): StillDefinition {
 /**
  * 为单个目录项创建“写文件” still。
  *
- * 写入动作使用 datasetExportedGuard，而不是普通 editingGuard。
- * 这意味着：
- * 1. 会话必须已经 bootstrap；
- * 2. 数据阶段必须已经通过 dataset.export 完成；
- * 3. 只有在数据导出检查点之后，才允许继续做 script/style 细粒度编辑。
- *
- * 这是编辑模式“先数据、后页面/脚本”的流程约束之一。
+ * 写入语义是“整文件覆盖”，不额外引入阶段 guard。
  */
 function createWriteStill(desc: FileDescriptor): StillDefinition {
   const still: StillDefinition<EditFileWriteParams, undefined> = {
     action: desc.writeAction,
     type: 'request',
     description: `写入 ${desc.label} 全文`,
-    guard: datasetExportedGuard,
     paramsSchema: { content: `string — 完整的 ${desc.label} 内容` },
     validate: validateEditFileWriteParams,
     execute: (session, params): StillResult<undefined> => {

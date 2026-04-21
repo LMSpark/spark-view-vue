@@ -222,7 +222,7 @@ flowchart LR
 ### spark-ai
 
 - `packages/spark-ai/src/stills/edit-domain.ts`
-  - `edit.init` 时构造 `state.datasetEdit = DataSetCrudTool.fromJson(...)`
+  - `edit.bootstrap` 时构造 `state.datasetEdit = DataSetCrudTool.fromJson(...)`
 - `packages/spark-ai/src/stills/dataset-crud-tool-stills-catalog.ts`
   - AI 能力目录事实源
 - `packages/spark-ai/src/stills/edit-dataset-stills.ts`

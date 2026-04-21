@@ -104,9 +104,11 @@
 
         <!-- AI 设计助手（右侧） -->
         <DevEditorAiBar
+          v-if="props.showAiBar !== false"
           :page-id="state.activePageId.value ?? ''"
           :file-name="resolvedActiveFile"
           :file-content="state.editFiles[resolvedActiveFile] ?? ''"
+          :context-files="state.editFiles"
           :enabled="Boolean(state.activePageId.value)"
           @apply="handleAiApply"
           @status="handleAiStatus"
@@ -159,6 +161,7 @@ const props = defineProps<{
   state: DevState
   activeFile?: PageFileName
   showTabs?: boolean
+  showAiBar?: boolean
 }>()
 
 const localActiveFile = ref<PageFileName>('rule.json')

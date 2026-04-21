@@ -70,6 +70,13 @@
             </template>
             <DevDataSetDesigner v-if="workTab === 'dataset'" :state="state" />
           </el-tab-pane>
+          <!-- 🌳 Rule 可视化编辑器 -->
+          <el-tab-pane name="rule" :disabled="!state.activePageId.value">
+            <template #label>
+              <span><NavIcon name="Crop" :size="13" /> Rule 编辑</span>
+            </template>
+            <DevRuleEditor v-if="workTab === 'rule'" :state="state" />
+          </el-tab-pane>
         </el-tabs>
         <div class="workspace-footer">
           <div class="workspace-footer__left">
@@ -138,6 +145,7 @@ import DevAiPanel from './DevAiPanel.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
+import DevRuleEditor from './DevRuleEditor.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
 const { router, tenantPath } = useTenantRouter()

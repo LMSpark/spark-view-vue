@@ -60,20 +60,6 @@ describe('SessionBackendImpl', () => {
     })
 
     it('createSession signature should be callable', () => {
-      const tools = [
-        {
-          type: 'function' as const,
-          function: {
-            name: 'test_action',
-            description: 'Test action',
-            parameters: {
-              type: 'object' as const,
-              properties: {},
-            },
-          },
-        },
-      ]
-
       // 仅做签名契约断言，避免触发真实网络调用。
       const fn: SessionBackend['createSession'] = backend.createSession.bind(backend)
       expect(typeof fn).toBe('function')
@@ -85,25 +71,6 @@ describe('SessionBackendImpl', () => {
     })
 
     it('appendMessages signature should be callable', () => {
-      const messages = [
-        {
-          role: 'assistant',
-          content: 'response',
-          tool_calls: [
-            {
-              id: 'call-1',
-              type: 'function',
-              function: { name: 'test', arguments: '{}' },
-            },
-          ],
-        },
-        {
-          role: 'tool',
-          content: '{"ok":true}',
-          tool_call_id: 'call-1',
-        },
-      ]
-
       const fn: SessionBackend['appendMessages'] = backend.appendMessages.bind(backend)
       expect(typeof fn).toBe('function')
     })

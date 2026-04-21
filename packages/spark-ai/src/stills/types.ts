@@ -50,8 +50,8 @@ export interface StillDefinition<TParams = unknown, TResult = unknown> {
   type: 'request' | 'describe'
   /** 供 AI 查询的说明 */
   description: string
-  /** 函数式准入条件 */
-  guard: StillGuard
+  /** 函数式准入条件；省略时视为无需 guard。 */
+  guard?: StillGuard
   /** 人类可读的 guard 描述（供 stills.capabilities / stills.actionSpec 返回给 AI） */
   guardDescription?: string
   /** 使用约束 / 关键规则（供 stills.actionSpec 返回，减少 AI 猜测） */

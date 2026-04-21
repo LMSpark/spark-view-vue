@@ -17,11 +17,11 @@ function exec(action: string, params: unknown = {}): StillResult {
   return executeStill(action, params, session, `legacy-alias-${seq}`)
 }
 
-function expectOk<T = unknown>(result: StillResult): T {
-  if (!result.ok) {
-    throw new Error(`${result.code ?? 'UNKNOWN'}: ${result.msg ?? 'still execution failed'}${result.fix !== undefined ? ` | fix=${result.fix}` : ''}`)
-  }
-  return result.data as T
+function expectInvalidAlias(result: StillResult, aliasKey: string): void {
+  expect(result.ok).toBe(false)
+  if (result.ok) return
+  expect(result.code).toBe('INVALID_PARAMS')
+  expect(`${result.msg ?? ''} ${result.fix ?? ''}`).toContain(aliasKey)
 }
 
 beforeEach(() => {
@@ -33,7 +33,7 @@ beforeEach(() => {
 })
 
 describe('sparkNodeTree legacy alias compatibility', () => {
-  it('supports nodeId/nodeIds/parentId aliases across query and write actions', () => {
+  it('rejects nodeId/nodeIds/parentId aliases across query and write actions', () => {
     const init = exec('edit.bootstrap', {
       ruleJson: [
         {
@@ -61,92 +61,53 @@ describe('sparkNodeTree legacy alias compatibility', () => {
     })
     expect(init.ok).toBe(true)
 
-    const datasetExported = exec('dataset.export')
-    expect(datasetExported.ok).toBe(true)
-
-    const root = expectOk<{ type: string }>(exec('sparkNodeTree.getNode', { nodeId: 'root-table' }))
-    expect(root.type).toBe('r-table')
-
-    const location = expectOk<{ depth: number }>(exec('sparkNodeTree.getLocation', { nodeId: 'name-field' }))
-    expect(location.depth).toBeGreaterThan(0)
-
-    const exists = expectOk<boolean>(exec('sparkNodeTree.hasNode', { nodeId: 'name-field' }))
-    expect(exists).toBe(true)
-
-    const parent = expectOk<{ type: string } | null>(exec('sparkNodeTree.getParent', { nodeId: 'name-field' }))
-    expect(parent?.type).toBe('r-table')
-
-    const children = expectOk<unknown[]>(exec('sparkNodeTree.listChildren', { parentId: 'root-table' }))
-    expect(children.length).toBe(1)
-
-    const addNode = expectOk<{ index: number }>(exec('sparkNodeTree.addNode', {
+    expectInvalidAlias(exec('sparkNodeTree.getNode', { nodeId: 'root-table' }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.getLocation', { nodeId: 'name-field' }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.hasNode', { nodeId: 'name-field' }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.getParent', { nodeId: 'name-field' }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.listChildren', { parentId: 'root-table' }), 'parentId')
+    expectInvalidAlias(exec('sparkNodeTree.addNode', {
       parentId: 'root-table',
       node: {
         type: 'r-text',
         id: 'legacy-a',
         props: { field: 'email', label: '邮箱' },
       },
-    }))
-    expect(addNode.index).toBeGreaterThanOrEqual(0)
-
-    const addNodes = expectOk<{ indexes: number[] }>(exec('sparkNodeTree.addNodes', {
+    }), 'parentId')
+    expectInvalidAlias(exec('sparkNodeTree.addNodes', {
       parentId: 'root-table',
       nodes: [
         { type: 'r-text', id: 'legacy-b', props: { field: 'mobile', label: '手机号' } },
         { type: 'r-text', id: 'legacy-c', props: { field: 'title', label: '职位' } },
       ],
-    }))
-    expect(addNodes.indexes.length).toBe(2)
-
-    const setProps = expectOk<{ node: { props?: Record<string, unknown> } }>(exec('sparkNodeTree.setProps', {
-      nodeId: 'legacy-a',
+    }), 'parentId')
+    expectInvalidAlias(exec('sparkNodeTree.setProps', {
+      nodeId: 'name-field',
       props: { class: 'legacy-a' },
       merge: true,
-    }))
-    expect(setProps.node.props?.['class']).toBe('legacy-a')
-
-    const setPropsBatch = expectOk<{ nodes: unknown[] }>(exec('sparkNodeTree.setPropsBatch', {
+    }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.setPropsBatch', {
       items: [
-        { nodeId: 'legacy-b', props: { class: 'legacy-b' }, merge: true },
-        { nodeId: 'legacy-c', props: { class: 'legacy-c' }, merge: true },
+        { nodeId: 'name-field', props: { class: 'legacy-b' }, merge: true },
       ],
-    }))
-    expect(setPropsBatch.nodes.length).toBe(2)
-
-    const replaceNode = expectOk<{ node: { props?: Record<string, unknown> } }>(exec('sparkNodeTree.replaceNode', {
-      nodeId: 'legacy-c',
+    }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.replaceNode', {
+      nodeId: 'name-field',
       node: {
         type: 'r-text',
-        id: 'legacy-c',
+        id: 'name-field',
         props: { field: 'position', label: '岗位' },
       },
-    }))
-    expect(replaceNode.node.props?.['field']).toBe('position')
-
-    const replaceNodes = expectOk<{ items: unknown[] }>(exec('sparkNodeTree.replaceNodes', {
+    }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.replaceNodes', {
       items: [
         {
-          nodeId: 'legacy-b',
-          node: { type: 'r-text', id: 'legacy-b', props: { field: 'alias', label: '别名' } },
-        },
-        {
-          nodeId: 'legacy-c',
-          node: { type: 'r-text', id: 'legacy-c', props: { field: 'city', label: '城市' } },
+          nodeId: 'name-field',
+          node: { type: 'r-text', id: 'name-field', props: { field: 'city', label: '城市' } },
         },
       ],
-    }))
-    expect(replaceNodes.items.length).toBe(2)
-
-    expectOk(exec('sparkNodeTree.removeNode', { nodeId: 'legacy-a' }))
-
-    const removedBatch = expectOk<{ items: unknown[] }>(exec('sparkNodeTree.removeNodes', { nodeIds: ['legacy-b', 'legacy-c'] }))
-    expect(removedBatch.items.length).toBe(2)
-
-    const remainsA = expectOk<boolean>(exec('sparkNodeTree.hasNode', { nodeId: 'legacy-a' }))
-    const remainsB = expectOk<boolean>(exec('sparkNodeTree.hasNode', { nodeId: 'legacy-b' }))
-    const remainsC = expectOk<boolean>(exec('sparkNodeTree.hasNode', { nodeId: 'legacy-c' }))
-    expect(remainsA).toBe(false)
-    expect(remainsB).toBe(false)
-    expect(remainsC).toBe(false)
+    }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.removeNode', { nodeId: 'name-field' }), 'nodeId')
+    expectInvalidAlias(exec('sparkNodeTree.removeNodes', { nodeIds: ['name-field'] }), 'nodeIds')
   })
 })

@@ -48,7 +48,6 @@ function bootstrapEditSession(state: EditDomainState, payload: EditBootstrapPayl
   state.script = payload.scriptJs
   state.style = payload.styleCss
   state.baselineSnapshot = new EditModel(state.nodeTree, state.datasetEdit, state.script, state.style).snapshot
-  state.datasetExported = false
   state.phase = 'editing'
 }
 
@@ -56,13 +55,6 @@ export const editInit: StillDefinition<EditInitParams, undefined> = {
   action: EDIT_BOOTSTRAP_ACTION,
   type: 'request',
   description: '引导编辑会话：接收 4 个文件内容，构建 SparkNodeTree + DataSetCrudTool + 存储 script/style',
-  guard: (session) => {
-    const state = getEditState(session)
-    if (state.phase === 'editing') {
-      return { code: 'ALREADY_EDITING', msg: '编辑会话已初始化，不可重复引导' }
-    }
-    return null
-  },
   paramsSchema: {
     ruleJson: 'SparkNode[] — 解析后的规则数组',
     pageDataJson: 'IDataSetMetadata — 解析后的 DataSet 元数据',

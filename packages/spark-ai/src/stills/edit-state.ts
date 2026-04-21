@@ -23,7 +23,6 @@ export interface EditDomainState extends DomainState<null, EditPhase> {
   script: string
   style: string
   baselineSnapshot: EditModelSnapshot | null
-  datasetExported: boolean
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -43,6 +42,5 @@ export function createEditState(): EditDomainState {
     script: '',
     style: '',
     baselineSnapshot: null,
-    datasetExported: false,
   }
 }

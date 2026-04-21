@@ -7,7 +7,6 @@
 
 import type { IStillSession, StillDefinition, StillResult } from './types'
 import { getEditState } from './edit-state'
-import { datasetGuard } from './edit-guard'
 import { EDIT_BOOTSTRAP_ACTION } from './action-names'
 import {
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
@@ -111,8 +110,7 @@ function validateDatasetStillRow(
  * 2. 校验 datasetEdit 是否已由 edit.bootstrap 初始化；
  * 3. 根据 catalog 指定的方法名进行动态派发；
  * 4. 清洗返回结果中的 layout 噪音字段；
- * 5. 若当前 still 属于 request 类型，重置 datasetExported，表示导出结果已失效；
- * 6. 统一把运行时异常折叠为 StillResult，避免异常逃逸到主循环。
+ * 5. 统一把运行时异常折叠为 StillResult，避免异常逃逸到主循环。
  */
 function executeDatasetStillRow(
   session: IStillSession,
@@ -137,10 +135,6 @@ function executeDatasetStillRow(
         ? (member as DispatchFn).call(tool, ...resolveDispatchArgs(row.action, params))
         : member
     const data = stripLayoutField(rawData)
-
-    if (row.type === 'request') {
-      state.datasetExported = false
-    }
 
     return { ok: true, data, summary: `${row.action} 完成` }
   } catch (err) {
@@ -169,7 +163,6 @@ export const EDIT_DATASET_STILLS: StillDefinition[] = DATASET_CRUD_TOOL_STILLS_P
   action: row.action,
   type: row.type,
   description: row.description,
-  guard: datasetGuard,
   paramsSchema: row.paramsSchema,
   resultSchema: row.resultSchema,
   example: row.example,

@@ -10,9 +10,9 @@
 > - 修正 §7.1 错误脚注（catalog 实际有 17 个，非 16）
 > - 要求 SparkNodeTree 和 DataSetCrudTool 暴露 `historyCursor` 公共 getter（T1b/T1）
 > - 明确 SnapshotHistory\<T\> 存裸值：SparkNode / IDataSetMetadata
-> - 明确 edit.init 由前端编排层调用（非 LLM），edit.init 后 state.data 非 null
-> - 简化 EditTransaction checkpoint：去除 null 分支，createCheckpoint 接收 EditData
-> - 增加 §5.8 Guard 策略 + Phase 1 隔离说明
+> - 明确 edit.bootstrap 由前端编排层调用（非 LLM），调用后 4 个文件进入同一 edit session
+> - 简化 EditTransaction checkpoint：基于 EditDomainState 直接记录 4 文件会话状态
+> - 增加 §5.8 单会话状态模型说明（不再使用 guard/Phase 解锁）
 > - 切换模式须同时调用 clearRegistry() + clearDomains()
 > - 新增 3 个风险：script/style 编辑器锁定、undoTransaction 部分失败、SnapshotHistory 类型适配
 
@@ -181,12 +181,12 @@ interface EditDomainState {
 }
 ```
 
-**初始化动作** `edit.init`：
+**初始化动作** `edit.bootstrap`：
 
 ```typescript
 // 接收 DevSystem 当前 4 个文件的内容，构建编辑会话
 {
-  action: 'edit.init',
+  action: 'edit.bootstrap',
   params: {
     ruleJson: SparkNode[],            // 解析后的规则数组
     pageDataJson: IDataSetMetadata,   // 解析后的 DataSet 元数据
@@ -217,12 +217,14 @@ function createNodeTreeStills(): StillDefinition[] {
       action: 'sparkNodeTree.addNode',
       type: 'request',
       description: '向组件树添加节点',
-      guard: editGuard({ requireNodeTree: true }),
       paramsSchema: { /* from catalog */ },
       example: { /* from catalog */ },
       validate: (params) => { /* from catalog validation rules */ },
       execute: (session, params) => {
-        const tree = getEditState(session).nodeTree!
+        const tree = getEditState(session).nodeTree
+        if (!tree) {
+          return { ok: false, code: 'NO_NODE_TREE', msg: 'nodeTree 未初始化', fix: '请先执行 edit.bootstrap' }
+        }
         const result = tree.addNode(params)
         return { ok: true, data: result, summary: `添加 ${params.node.type}` }
       },
@@ -271,7 +273,7 @@ interface EditOrchestrator {
    * 执行一轮编辑交互。
    *
    * @param userPrompt  用户自然语言指令（如"在用户表中加一列 email"）
-   * @param session     编辑会话（已 edit.init）
+  * @param session     编辑会话（已 edit.bootstrap）
    * @param backend     LLM 后端
    * @param config      编辑配置
    */
@@ -374,8 +376,8 @@ export function registerEditStills(): void {
 3. 前端构建 edit session:
    a. clearRegistry() + clearDomains() + registerEditStills()
    b. createSession() → session
-   c. **前端（非 LLM）** 直接执行 edit.init（灌入当前 4 个文件内容）
-      — 注：edit.init 由前端编排层调用，不走 Stills 协议、不经 LLM
+  c. **前端（非 LLM）** 直接执行 edit.bootstrap（灌入当前 4 个文件内容）
+    — 注：edit.bootstrap 由前端编排层调用，经 executeStill 进入 session，但不经 LLM 工具循环
 4. 启动 runEditLoop(userPrompt, session, backend)
 5. 事件流 → UI 展示 Stills 交互过程（F 决策）
 6. 循环结束 → 从 session 提取最新状态:
@@ -428,19 +430,24 @@ export const EDIT_MODE_PROMPT = `\
 `
 ```
 
-### 5.8 Edit Stills Guard 策略
+### 5.8 Edit 单会话状态模型
 
-所有 edit stills 共享一个 guard 分层策略，确保 edit.init 调用前其他操作不可执行：
+当前实现不再使用 editGuard 分层策略，也不再做 Phase 1 / Phase 2 解锁。宿主进入编辑模式时，通过 `edit.bootstrap` 一次性把 4 个文件装入同一个 edit session；后续 still 直接读取该 session 的局部状态。
 
-| Guard | 适用 stills | 检查条件 |
-|-------|-----------|---------|
-| `editGuard()` | 全部 55 个 edit stills（基础层） | `state.data !== null`（edit.init 已执行）；phase 为 `'editing'` |
-| `editGuard({ requireNodeTree: true })` | 所有 `sparkNodeTree.*` | 基础层 + `state.data.nodeTree` 存在 |
-| `editGuard({ requireDatasetEdit: true })` | 所有 `datasetTool.*` | 基础层 + `state.data.datasetEdit` 存在 |
+| 会话字段 | 对应文件 | 主要消费者 |
+|---------|---------|-----------|
+| `state.nodeTree` | `rule.json` | `sparkNodeTree.*`、`edit.exportFiles`、`edit.changedLines` |
+| `state.datasetEdit` | `pagedata.json` | `datasetTool.*`、`dataset.export`、`dataset.changedLines`、`edit.exportFiles` |
+| `state.script` | `script.js` | `file.readScript` / `file.writeScript`、`edit.exportFiles` |
+| `state.style` | `style.css` | `file.readStyle` / `file.writeStyle`、`edit.exportFiles` |
 
-`edit.init` 本身不使用 editGuard，使用专用 guard：`state.data === null`（phase 为 `'idle'`，防止重复 init）。
+约束下沉到各 still 的 `execute()`：
 
-> **Phase 1 隔离说明**：Phase 1 仅注册 `datasetTool.*` + `edit.*` stills（不注册 `sparkNodeTree.*` 和 `file.*`）。但 `edit.init` 仍加载全部 4 个文件到 session（为 Phase 2 平滑过渡），LLM 只看到 datasetTool 域的可用操作列表。
+- 缺少 `nodeTree` 时，由相关 still 返回 `NO_NODE_TREE`
+- 缺少 `datasetEdit` 时，由相关 still 返回 `NO_DATASET_EDIT`
+- `script.js` / `style.css` 采用整文件覆盖，不再依赖额外阶段 guard
+
+宿主负责 reset / re-bootstrap，会话重入靠覆盖当前 session 状态完成，不再依赖 guard 链路做解锁。
 
 ---
 
@@ -575,9 +582,9 @@ export const EDIT_MODE_PROMPT = `\
 
 | 动作 | 类型 | 说明 |
 |------|------|------|
-| `edit.init` | request | 初始化编辑会话（灌入 4 个文件） |
-| `edit.describe` | describe | 返回当前编辑会话状态摘要 |
-| `edit.export` | describe | 导出 4 个文件的当前内容 |
+| `edit.bootstrap` | request | 初始化编辑会话（灌入 4 个文件） |
+| `edit.changedLines` | describe | 统计 4 个文件相对 bootstrap 基线的变更行数 |
+| `edit.exportFiles` | request | 导出 4 个文件的当前内容及变更统计 |
 
 > **评审决策**：不设 escape hatch（`edit.replaceRule` / `edit.replacePagedata`）。"重构" 用 `deleteTable` + `createTable` 或 `removeNodes` + `addNodes` 组合实现，每步走校验。
 
@@ -588,7 +595,7 @@ export const EDIT_MODE_PROMPT = `\
 | 维度 | 生成模式 stills | 编辑模式 stills |
 |------|----------------|----------------|
 | 注册函数 | `registerAllStills()` | `registerEditStills()` |
-| session 创建 | `createSession()` + blueprint | `createSession()` + edit.init |
+| session 创建 | `createSession()` + blueprint | `createSession()` + edit.bootstrap |
 | 使用场景 | DevAiPanel "生成" / AIPageLoop | DevAiPanel "编辑" / 协作编辑 |
 | action 命名空间 | `dataset.*` / `datatable.*` / `rule.*` / `script.*` / `style.*` | `datasetTool.*` / `sparkNodeTree.*` / `file.*` / `edit.*` |
 | 状态管理 | 会话内存 → export 文件 | SSoT 实例 → 回写 editor |
@@ -622,13 +629,12 @@ class DataSetCrudTool {
 ### 9.2 Edit Domain State（spark-ai）
 
 ```typescript
-interface EditDomainState extends DomainState<EditData | null, EditPhase> {}
-
-interface EditData {
-  nodeTree: SparkNodeTree
-  datasetEdit: DataSetCrudTool
+interface EditDomainState extends DomainState<null, EditPhase> {
+  nodeTree: SparkNodeTree | null
+  datasetEdit: DataSetCrudTool | null
   script: string
   style: string
+  baselineSnapshot: EditModelSnapshot | null
 }
 
 type EditPhase = 'idle' | 'editing' | 'saved'
@@ -676,37 +682,40 @@ interface EditTransaction {
   }
 }
 
-// 每次用户发指令前记录（edit.init 之后 state.data 必存在）
-function createCheckpoint(data: EditData): EditTransaction['checkpoints'] {
+// 每次用户发指令前记录（edit.bootstrap 之后 nodeTree / datasetEdit 已装入会话）
+function createCheckpoint(state: EditDomainState): EditTransaction['checkpoints'] {
+  if (!state.nodeTree || !state.datasetEdit) {
+    throw new Error('edit session 未完成 bootstrap')
+  }
   return {
-    nodeTreeCursor: data.nodeTree.historyCursor,
-    datasetCursor: data.datasetEdit.historyCursor,
-    scriptBefore: data.script,
-    styleBefore: data.style,
+    nodeTreeCursor: state.nodeTree.historyCursor,
+    datasetCursor: state.datasetEdit.historyCursor,
+    scriptBefore: state.script,
+    styleBefore: state.style,
   }
 }
 
 // Ctrl+Z 时回滚到事务前状态
-function undoTransaction(data: EditData, tx: EditTransaction): void {
+function undoTransaction(state: EditDomainState, tx: EditTransaction): void {
+  if (!state.nodeTree || !state.datasetEdit) return
   // nodeTree：连续 undo 直到 cursor 回到事务前位置
-  while (data.nodeTree.historyCursor > tx.checkpoints.nodeTreeCursor!)
-    data.nodeTree.undo()
+  while (state.nodeTree.historyCursor > tx.checkpoints.nodeTreeCursor!)
+    state.nodeTree.undo()
   // datasetEdit：同理
-  while (data.datasetEdit.historyCursor > tx.checkpoints.datasetCursor!)
-    data.datasetEdit.undo()
+  while (state.datasetEdit.historyCursor > tx.checkpoints.datasetCursor!)
+    state.datasetEdit.undo()
   // script/style：直接恢复原文
-  data.script = tx.checkpoints.scriptBefore
-  data.style = tx.checkpoints.styleBefore
+  state.script = tx.checkpoints.scriptBefore
+  state.style = tx.checkpoints.styleBefore
 }
 ```
 
 **设计要点**：
 - 事务表在 Edit Orchestrator 内部，不污染各工具 API
 - `SnapshotHistory.cursor` 只读暴露给事务记录，回滚通过连续调用 `undo()` 实现
-- shistoryCursor` 只读暴露给事务记录（SparkNodeTree.historyCursor、DataSetCrudTool.historyCursor 各自委托 `SnapshotHistory.cursor`），回滚通过连续调用 `undo()` 实现
 - script/style 无快照数组，事务表直接记录原文（文件级，体积小）
 - 事务粒度 = 一次用户指令（非一个 Stills turn）
-- createCheckpoint 接收 `EditData`（edit.init 后必存在），所有字段非 null — 消除 null 判断复杂度
+- createCheckpoint 接收 `EditDomainState`；调用点保证已完成 `edit.bootstrap`
 ---
 
 ## 10. 风险与缓解
@@ -720,7 +729,7 @@ function undoTransaction(data: EditData, tx: EditTransaction): void {
 | human 和 LLM 同时编辑冲突 | 数据不一致 | Q3-C 决策：请求-响应轮次，human 发指令期间不接受其他编辑 |
 | script/style 编辑器内容与 session 状态分离 | LLM 循环期间 human 在 CodeEditor 修改 script/style，sync 时被覆盖 | 方案：LLM 循环进行中锁定 script/style 编辑器为只读；循环结束 syncToEditors() 后解锁 |
 | undoTransaction 部分失败 | nodeTree undo 成功但 datasetEdit undo 失败 → 状态不一致 | undo 循环中 catch 异常，回滚失败时 toast 警告 + 记录日志，不中断剩余回滚 |
-| SnapshotHistory<T> 类型适配 | SparkNodeTree 当前存 SparkNodeTreeSnapshot（含 metadata），SnapshotHistory 存裸 T | T1b 中 SnapshotHistory<SparkNode> 只存 root 节点；version/timestamp 等 metadata 由 SparkNodeTree 维护在外部（或简化移除） |
+| `SnapshotHistory<T>` 类型适配 | SparkNodeTree 当前存 SparkNodeTreeSnapshot（含 metadata），SnapshotHistory 存裸 T | T1b 中 `SnapshotHistory<SparkNode>` 只存 root 节点；version/timestamp 等 metadata 由 SparkNodeTree 维护在外部（或简化移除） |
 
 ---
 
@@ -733,7 +742,7 @@ function undoTransaction(data: EditData, tx: EditTransaction): void {
 | **T0** | `SnapshotHistory<T>`（spark-utils） | ✅ 完成 | 零偏差。API 完全匹配：`push/undo/redo/canUndo/canRedo/cursor/current/clear`，默认 50 条限幅。纯 TS 零依赖。 |
 | **T1** | DataSetCrudTool 工厂 + undo（spark-data） | ✅ 完成 | 零偏差。`fromDataSet()` / `fromJson()` 静态工厂、`undo()/redo()/canUndo/canRedo/historyCursor` 全部就位。内部 `_history: SnapshotHistory<IDataSetMetadata>`，`_afterWrite()` 钩子自动压栈。 |
 | **T1b** | SparkNodeTree 重构为 SnapshotHistory（spark-component） | ✅ 完成 | 零偏差。`_history: SnapshotHistory<SparkNode>` 替代原 `_history[] + _cursor`。`historyCursor` getter 委托 `_history.cursor`。构造函数初始化首条快照。 |
-| **T2** | Edit Domain 定义（spark-ai） | ✅ 完成 | 零偏差。`EditDomainState`、`EditData`、`EditPhase` 类型定义完整。`edit.init` still 由前端编排层调用，`editGuard()` 三级 guard 策略就位。 |
+| **T2** | Edit Domain 定义（spark-ai） | ✅ 完成 | 当前实现以 `EditDomainState` 为 4 文件单会话真实源：`nodeTree` / `datasetEdit` / `script` / `style` 同时装入 session，由前端直接执行 `edit.bootstrap`；不再依赖 `editGuard()` 三级策略。 |
 | **T3** | 17 个 sparkNodeTree.* stills（spark-ai） | ✅ 完成 | 零偏差。`createNodeTreeStills()` 从 catalog 生成 17 个 StillDefinition（8 describe + 9 request），execute 委托 `tree[method](params)`。 |
 | **T4** | 31 个 datasetTool.* stills（spark-ai） | ✅ 完成 | 零偏差。`createDatasetStills()` 从 catalog 生成 31 个 StillDefinition（12 describe + 19 request），execute 委托 `tool[method](params)`。 |
 | **T5** | 4 个 file.* stills（spark-ai） | ⚠️ 完成，组织偏差 | 功能完整：`file.readScript/writeScript/readStyle/writeStyle` 4 个 still 均定义并注册。**偏差**：DM 要求独立 `edit-file-stills.ts`，实际合并在 `edit-domain.ts` 中（~40 行）。不影响功能，属组织层面偏差。 |

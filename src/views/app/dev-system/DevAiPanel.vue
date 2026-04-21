@@ -585,6 +585,7 @@ async function handleStillsSend() {
     }
 
     // 运行 Stills Loop
+    let capturedExportFiles: Record<string, string> | null = null
     const result = await runStillsLoop(text, session, stillsBackend.value, {
       maxRounds: 20,
       slidingWindow: 10,
@@ -611,6 +612,15 @@ async function handleStillsSend() {
         }
         scrollToBottom()
       },
+      onTurnComplete(turn: DialogueTurn) {
+        // 捕获 edit.exportFiles 返回的文件内容，用于直接回写到编辑器
+        if (turn.toolBlock?.action === 'edit.exportFiles' && turn.stillsResult?.ok) {
+          const exportData = turn.stillsResult.data as { files?: Record<string, string> }
+          if (exportData?.files) {
+            capturedExportFiles = exportData.files
+          }
+        }
+      },
     })
 
     // 完成
@@ -624,8 +634,14 @@ async function handleStillsSend() {
       aiMsg.content += `\n\n📊 Stills 已完成 ${result.rounds} 轮`
     }
 
-    if (currentFormPageId.value === pid) {
-      props.state.requestAllPageFileReload()
+    // 将 stills session 中的修改回写到编辑器（不从服务端重新加载）
+    if (capturedExportFiles && currentFormPageId.value === pid) {
+      const pageFileNames = new Set(['rule.json', 'pagedata.json', 'script.js', 'style.css'])
+      for (const [fname, content] of Object.entries(capturedExportFiles)) {
+        if (typeof content === 'string' && content.length > 0 && pageFileNames.has(fname)) {
+          props.state.updatePageFile(fname as 'rule.json' | 'pagedata.json' | 'script.js' | 'style.css', content)
+        }
+      }
     }
     void props.state.loadPages()
   } catch (err) {
