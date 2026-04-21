@@ -122,6 +122,8 @@ type PropEntryWithIdentity = PropEntry & {
   __schemaIdentityKey?: string
   __schemaOwner?: SchemaOwner
   __componentRef?: string
+  /** 自动从 rawType 中提取的字符串字面量枚举 variants（引号包裹，如 `"\"start\""`） */
+  __enumVariants?: string[]
 }
 
 const normalizedWorkspaceRoot = `${process.cwd().replace(/\\/g, '/').toLowerCase()}/`
@@ -136,6 +138,30 @@ const normalizedWorkspaceRoot = `${process.cwd().replace(/\\/g, '/').toLowerCase
  * - owner：类型来源于 workspace 还是 external
  * - identityKey：对象 schema 的稳定身份标识
  * ========================================================================== */
+
+/**
+ * 从 TS rawType 中提取字符串字面量 union 的所有 variants。
+ *
+ * 仅当 rawType 是一个纯字符串字面量 union（允许包含 undefined）时才返回结果；
+ * 遇到非字符串字面量成员（boolean、number 等）时返回 undefined，不生成枚举 schema。
+ * 返回值已用双引号包裹，例如 `["\"start\"", "\"center\""]`。
+ */
+function getRawTypeStringLiteralVariants(rawType: unknown): string[] | undefined {
+  if (rawType === null || typeof rawType !== 'object') return undefined
+  const rt = rawType as { isUnion?: () => boolean; types?: unknown[] }
+  if (typeof rt.isUnion !== 'function' || !rt.isUnion()) return undefined
+  const types = rt.types ?? []
+  const variants: string[] = []
+  for (const t of types) {
+    if (t === null || typeof t !== 'object') return undefined
+    const member = t as { isStringLiteral?: () => boolean; intrinsicName?: string; value?: unknown }
+    if (member.intrinsicName === 'undefined') continue
+    if (typeof member.isStringLiteral !== 'function' || !member.isStringLiteral()) return undefined
+    if (typeof member.value !== 'string') return undefined
+    variants.push(`"${member.value}"`)
+  }
+  return variants.length > 0 ? variants : undefined
+}
 
 function getRawTypeDeclarationFiles(rawType: unknown): string[] {
   if (rawType === null || typeof rawType !== 'object') return []
@@ -283,6 +309,12 @@ function buildPropEntry(p: {
   }
 
   const typeObject = resolveTypeObject(p)
+
+  // 从 rawType 自动提取字符串字面量 union variants（如 InlineAlign、InlineJustify 等命名枚举）
+  const enumVariants = getRawTypeStringLiteralVariants(typeObject)
+  if (enumVariants !== undefined) {
+    entry.__enumVariants = enumVariants
+  }
 
   // schema 为纯字符串时不落盘；只有真正的结构信息才保留。
   const schema = convertSchema(p.schema)

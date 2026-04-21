@@ -31,8 +31,9 @@ import { getAllStills, getStill } from './dispatcher'
 import { getEditState } from './edit-state'
 import { getDomain } from './domain'
 import {
-  projectFcDirectory,
-  projectFcSpec,
+  projectComponentDirectory,
+  projectComponentSpec,
+  projectComponentConfigGuide,
 } from '../catalog/catalog-projections'
 import type { IDataSetMetadata } from '@spark-view/spark-data'
 import componentCatalogJson from '../catalog/component-catalog.json'
@@ -44,6 +45,7 @@ import {
   DATATABLE_CREATE_ACTION,
   SESSION_DESCRIBE_ACTION,
   CATALOG_QUERY_ACTION,
+  CATALOG_GUIDE_ACTION,
 } from './action-names'
 
 // =========================================================
@@ -127,13 +129,25 @@ interface ActionSpecParams {
 /**
  * catalog.query 动作的参数结构。
  *
- * 三种查询模式通过参数是否存在来区分，详见动作实现。
+ * 目录模式通过参数是否存在来区分：
+ *  - 无参数  → 全量列表
+ *  - category → 分类列表
+ *
+ * 若需要查询单组件的详细配置规格，请改用 catalog.guide。
  */
 interface CatalogQueryParams {
-  /** 可选：精确匹配组件 type，返回单组件完整规格。 */
-  type?: string
   /** 可选：按分类过滤（container | field | group | meta）。 */
   category?: string
+}
+
+/**
+ * catalog.guide 动作的参数结构。
+ *
+ * 精确匹配组件 type，返回单组件完整配置指南（含必填/可选分组、最小示例、fail-fast 自检）。
+ */
+interface CatalogGuideParams {
+  /** 必填：精确匹配的组件 type，如 "r-table"。 */
+  type: string
 }
 
 /**
@@ -162,6 +176,22 @@ function missingParam(name: string): string {
 /** 判断值是否为非空字符串（类型守卫），用于参数存在性检查。 */
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0
+}
+
+/** 将 catalog.query 的 category 参数映射到 registry key。 */
+function resolveCatalogRegistryKey(category: string): keyof StillsCatalogRegistry | null {
+  switch (category) {
+    case 'container':
+      return 'containers'
+    case 'field':
+      return 'fields'
+    case 'group':
+      return 'groups'
+    case 'meta':
+      return 'meta'
+    default:
+      return null
+  }
 }
 
 /**
@@ -395,34 +425,20 @@ function inferNextStep(
  * - 目的是拿到更完整的 props / emits / binding 等规格信息。
  */
 function getStaticComponentSpec(componentType: string) {
-  return projectFcSpec(STATIC_COMPONENT_CATALOG, componentType)
+  return projectComponentSpec(STATIC_COMPONENT_CATALOG, componentType)
 }
 
 /**
  * 为 session.describe 构建组件目录入口摘要。
  *
  * 这里返回的是“目录入口”而不是全量组件详情，重点是给会话全局状态一个稳定的入口，
- * 并附带 stills.actionSpec 的最小精查示例。
+ * 并附带 catalog.query 的最小精查示例。
  */
 function buildStaticComponentsDirectorySummary() {
   return {
-    ...projectFcDirectory(STATIC_COMPONENT_CATALOG),
-    querySpecExample: 'stills.actionSpec {"action":"r-table"}',
+    ...projectComponentDirectory(STATIC_COMPONENT_CATALOG),
+    queryGuideExample: 'catalog.guide {"type":"r-table"}',
   }
-}
-
-/**
- * 生成"查询结果为组件规格而非 still 动作"的使用说明。
- *
- * 当 LLM 以组件 type 调用 stills.actionSpec 时，返回的规格结构与 still 不同，
- * 这里给出引导提示，避免 LLM 混淆两种规格格式。
- */
-function buildComponentSpecUsageRules(componentType: string): string[] {
-  return [
-    '当前返回的是组件配置规格，不是 still 动作执行规格。',
-    '如需查动作参数，请继续用 stills.capabilities 或 stills.actionSpec 查询真正的 still action。',
-    `可直接复用当前参数格式继续精查其他组件：stills.actionSpec {"action":"${componentType}"}`,
-  ]
 }
 
 // =========================================================
@@ -468,29 +484,25 @@ export const stillsCapabilities: StillDefinition<Record<string, never>, unknown>
 }
 
 // =========================================================
-// 九、stills.actionSpec — 动作/组件规格精查
+// 九、stills.actionSpec — 动作规格精查
 // =========================================================
 
 /**
  * stills.actionSpec
  *
- * 返回指定 still 动作或渲染器组件 type 的完整规格。
+ * 返回指定 still 动作的完整规格。
  *
  * 查询优先级：
  *  1. 先在 still 注册表中精确匹配 action 名称。
- *  2. 若未命中，在 component-catalog 中按 type 匹配组件。
+ *  2. 若未命中但命中组件 type，明确返回“组件应走 catalog.query”的引导错误。
  *  3. 两者均未命中，返回 UNKNOWN_ACTION 错误。
- *
- * 注意：
- *  still 规格 和 组件规格 的数据结构不同（subjectKind 字段用于区分），
- *  调用方不应假定返回格式完全一致。
  */
 export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
   action: STILLS_ACTION_SPEC_ACTION,
   type: 'describe',
-  description: '返回指定 still 动作或组件 type 的详细规格',
+  description: '返回指定 still 动作的详细规格（组件定义请使用 catalog.query）',
   guard: noGuard,
-  paramsSchema: { action: 'string — still 动作名或组件 type' },
+  paramsSchema: { action: 'string — still 动作名' },
   example: { action: DATATABLE_CREATE_ACTION },
   validate: (params) => {
     if (!isNonEmptyString(params.action)) return missingParam('action')
@@ -517,41 +529,24 @@ export const stillsActionSpec: StillDefinition<ActionSpecParams, unknown> = {
       }
     }
 
-    // 若未命中 still 动作，则继续到静态完整组件目录中按 type 精查组件规格。
+    // 若未命中 still 动作，但命中组件 type，则显式引导改走 catalog.query。
     const componentSpec = getStaticComponentSpec(params.action)
     if (componentSpec !== null) {
       const specType = componentSpec.type
       return {
-        ok: true,
-        data: {
-          action: specType,
-          subjectKind: 'component',
-          type: 'component',
-          componentType: specType,
-          category: componentSpec.category,
-          description: componentSpec.description,
-          props: componentSpec.props,
-          emits: componentSpec.emits,
-          rootFields: componentSpec.rootFields ?? [],
-          binding: componentSpec.binding ?? null,
-          notes: componentSpec['notes'] ?? null,
-          guard: null,
-          usageRules: buildComponentSpecUsageRules(specType),
-          paramsSchema: null,
-          resultSchema: null,
-          example: { action: specType },
-          failureModes: [],
-        },
-        summary: `返回组件 ${specType} 的规格`,
+        ok: false,
+        code: 'COMPONENT_QUERY_REQUIRED',
+        msg: `${specType} 是组件 type，不是 still 动作名`,
+        fix: `请改用 catalog.query 查询组件定义：catalog.query {"type":"${specType}"}。动作能力参数请继续使用 stills.actionSpec（action 传真实动作名）。`,
       }
     }
 
-    // still 与组件均未命中，返回统一错误并引导下一步。
+    // 未命中任何 still 动作，返回统一错误并引导下一步。
     return {
       ok: false,
       code: 'UNKNOWN_ACTION',
-      msg: `未知动作或组件: ${params.action}`,
-      fix: '请先查 session.describe 获取组件目录，或查 stills.capabilities 获取动作列表',
+      msg: `未知动作: ${params.action}`,
+      fix: '请先查 stills.capabilities 获取动作列表；组件定义请使用 catalog.query。',
     }
   },
 }
@@ -627,65 +622,56 @@ export const sessionDescribe: StillDefinition<Record<string, never>, unknown> = 
 }
 
 // =========================================================
-// 十一、catalog.query — 渲染器组件目录查询
+// 十一、catalog.query — 渲染器组件目录（Directory）
 // =========================================================
 
 /**
  * catalog.query
  *
- * 根据参数组合以三种模式查询渲染器组件目录：
+ * 纯目录查询（Component Directory）——返回可用组件列表，不含单组件配置指南。
  *
- *  模式 1（精查）: 指定 type → 返回单组件完整规格（props + emits + rootFields + binding + nestingRule）
- *  模式 2（分类）: 指定 category → 返回该分类的组件列表（type + description）
- *  模式 3（全量）: 无参数 → 返回所有组件的轻量列表（type + category + description）
+ *  模式 1（分类）: 指定 category → 返回该分类的组件列表（type + description）
+ *  模式 2（全量）: 无参数 → 返回所有组件的轻量列表（type + category + description）
  *
  * 使用场景：
- *  - 构建 rule.json 前确认组件 props 格式。
- *  - 列举某类组件（如所有 field）选择合适类型。
- *  - 在 session.describe 返回的目录基础上做进一步精查。
+ *  - 选型阶段：了解有哪些组件可用，按分类浏览。
+ *  - 确定目标 type 后，调用 catalog.guide 获取该组件的完整配置指南。
  *
- * 注意：catalog 由构建期生成，运行时只读；若 session.catalog 为 null，
- *  说明构建产物未正确注入，这是部署问题而非运行时问题。
+ * 注意：catalog 由构建期生成，运行时只读；查询严格依赖 session.catalog。
  */
 export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
   action: CATALOG_QUERY_ACTION,
   type: 'describe',
-  description: '查询可用组件目录。无参数返回全量列表；指定 type 返回单组件详情；指定 category 返回分类列表。',
+  description: '组件目录：无参数返回全量列表；指定 category 返回分类列表。按 type 查配置指南请用 catalog.guide。',
   guard: noGuard,
-  paramsSchema: { type: '可选，组件类型', category: '可选，container|field|group|meta' },
+  paramsSchema: { category: '可选，container|field|group|meta' },
   example: { category: 'field' },
   validate: () => null,
   execute: (session: IStillSession, params: CatalogQueryParams): StillResult => {
+    const queryCategory = isNonEmptyString(params.category) ? params.category : null
+
+    if (params.category !== undefined && queryCategory === null) {
+      return { ok: false, code: 'INVALID_PARAMS', msg: 'category 必须是非空字符串', fix: '仅支持 container | field | group | meta' }
+    }
+
     if (session.catalog === null) {
       return {
         ok: false,
         code: 'NO_CATALOG',
         msg: 'Stills Catalog 未加载',
-        fix: '请确认构建时已生成组件目录',
+        fix: '请确认 createSession 时已注入 catalog',
       }
     }
+
     const catalog = session.catalog
 
-    // 模式 1：按 type 精查单组件，返回完整 API 规格（props / emits / rootFields / binding / nestingRule）。
-    if (isNonEmptyString(params.type)) {
-      const entry = catalog.components[params.type]
-      if (entry === undefined) {
-        return { ok: false, code: 'NOT_FOUND', msg: `组件 "${params.type}" 不在目录中`, fix: '请用 catalog.query 查看可用组件列表' }
+    // 模式 1：按 category 过滤，返回该分类的组件类型列表（轻量）。
+    if (queryCategory !== null) {
+      const registryKey = resolveCatalogRegistryKey(queryCategory)
+      if (registryKey === null) {
+        return { ok: false, code: 'INVALID_CATEGORY', msg: `非法 category: ${queryCategory}`, fix: '仅支持 container | field | group | meta' }
       }
-      const parts = [`${entry.props.length} props`]
-      if (entry.emits && entry.emits.length > 0) parts.push(`${entry.emits.length} emits`)
-      if (entry.rootFields && entry.rootFields.length > 0) parts.push(`${entry.rootFields.length} rootFields`)
-      if (entry.nestingRule) parts.push('有嵌套规则')
-      return {
-        ok: true,
-        data: { type: params.type, ...entry },
-        summary: `${params.type} (${entry.category}): ${parts.join(', ')}`,
-      }
-    }
 
-    // 模式 2：按 category 过滤，返回该分类的组件类型列表（轻量）。
-    if (isNonEmptyString(params.category)) {
-      const registryKey = params.category as keyof StillsCatalogRegistry
       const types = catalog.registry[registryKey]
       const list = types.map((t) => ({
         type: t,
@@ -693,12 +679,12 @@ export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
       }))
       return {
         ok: true,
-        data: { category: params.category, count: list.length, components: list },
-        summary: `${params.category}: ${list.length} 组件`,
+        data: { category: queryCategory, count: list.length, components: list },
+        summary: `${queryCategory}: ${list.length} 组件`,
       }
     }
 
-    // 模式 3：无参数时返回全量轻量列表（type + category + description），适合做快速概览。
+    // 模式 2：无参数时返回全量轻量列表（type + category + description），适合做快速概览。
     const list = Object.entries(catalog.components).map(([type, e]) => ({
       type,
       category: e.category,
@@ -708,6 +694,58 @@ export const catalogQuery: StillDefinition<CatalogQueryParams, unknown> = {
       ok: true,
       data: { total: list.length, components: list },
       summary: `共 ${list.length} 个可用组件`,
+    }
+  },
+}
+
+// =========================================================
+// 十二、catalog.guide — 单组件配置指南（Component Config Guide）
+// =========================================================
+
+/**
+ * catalog.guide
+ *
+ * 按 type 精查单组件，返回完整配置指南（Component Config Guide）：
+ *  - 必填 / 可选属性分组（requiredProps / optionalProps）
+ *  - 事件使用指南（eventGuide）
+ *  - 数据绑定能力摘要（bindingGuide）
+ *  - 根字段路径（rootFieldPaths）
+ *  - 最小安全配置示例（minimalConfig）
+ *  - fail-fast 自检清单（failFastChecks）
+ *
+ * 使用场景：
+ *  - 用 catalog.query 确定目标组件 type 后，调用本动作获取配置指南。
+ *  - 构建 rule.json / SparkNode 前，依据 minimalConfig 与 failFastChecks 自检。
+ *
+ * 与 catalog.query 的区别：
+ *  - catalog.query → 组件目录（Directory）：了解有哪些组件可用
+ *  - catalog.guide → 组件配置指南（Config Guide）：了解如何配置某个组件
+ */
+export const catalogGuide: StillDefinition<CatalogGuideParams, unknown> = {
+  action: CATALOG_GUIDE_ACTION,
+  type: 'describe',
+  description: '单组件配置指南：返回指定 type 的 props 分组、最小示例与 fail-fast 自检清单。',
+  guard: noGuard,
+  paramsSchema: { type: '必填，组件类型，如 "r-table"' },
+  example: { type: 'r-table' },
+  validate: (params) => {
+    if (!isNonEmptyString(params.type)) return missingParam('type')
+    return null
+  },
+  execute: (_session: IStillSession, params: CatalogGuideParams): StillResult => {
+    const guide = projectComponentConfigGuide(STATIC_COMPONENT_CATALOG, params.type)
+    if (guide === null) {
+      return {
+        ok: false,
+        code: 'NOT_FOUND',
+        msg: `组件 "${params.type}" 不在目录中`,
+        fix: '请先用 catalog.query 查看可用组件列表，确认 type 后再调用 catalog.guide',
+      }
+    }
+    return {
+      ok: true,
+      data: guide,
+      summary: `${params.type} 配置指南：${guide.requiredProps.length} 必填属性，${guide.optionalProps.length} 可选属性`,
     }
   },
 }

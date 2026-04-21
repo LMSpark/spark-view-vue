@@ -22,7 +22,7 @@ export interface RTreeProps
   toolbar?: ToolbarNode
   /** 结构化节点动作 */
   actions?: ActionsNode
-  /** 结构化编辑区 */
+  /** 结构化编辑区 @componentRef r-editor */
   editor?: EditorNode
   /** 节点主键字段名，默认取 treeConfig.idField */
   nodeKey?: string

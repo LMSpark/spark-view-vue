@@ -82,8 +82,8 @@ const AUTONOMOUS_SYSTEM_PROMPT = [
 ].join(' ')
 
 const AUTONOMOUS_GUARDRAILS = `执行底线约束（稳定优先，必须遵守）：
-1) 本任务只允许以下动作：stills.actionSpec、sparkNodeTree.hasNode、sparkNodeTree.getNode、sparkNodeTree.listChildren、sparkNodeTree.setProps、sparkNodeTree.addNode、sparkNodeTree.addNodes、sparkNodeTree.replaceNode、sparkNodeTree.replaceNodes、sparkNodeTree.removeNode、sparkNodeTree.removeNodes、sparkNodeTree.countNodes；其它动作即使在能力表中出现也视为本任务不可用；
-2) 不要求调用 stills.capabilities；仅在必要时查询 stills.actionSpec，且只查询将要写入的组件类型；
+1) 本任务只允许以下动作：catalog.query、catalog.guide、stills.actionSpec、sparkNodeTree.hasNode、sparkNodeTree.getNode、sparkNodeTree.listChildren、sparkNodeTree.setProps、sparkNodeTree.addNode、sparkNodeTree.addNodes、sparkNodeTree.replaceNode、sparkNodeTree.replaceNodes、sparkNodeTree.removeNode、sparkNodeTree.removeNodes、sparkNodeTree.countNodes；其它动作即使在能力表中出现也视为本任务不可用；
+2) 不要求调用 stills.capabilities；查询组件目录时使用 catalog.query（可选 category），查询单组件配置指南时使用 catalog.guide（type），查询动作参数指南时才使用 stills.actionSpec（action）；禁止把三者混用；
 3) 关键写动作前先确认参数结构与字段含义，不猜测、不假设未知字段；
 4) 不做同参数重复查询；仅在发生相关写入后，才允许再次读取同一目标状态；
 5) 目标态校验采用“写后统一校验”，避免每轮重复自检；
@@ -242,7 +242,7 @@ ${AUTONOMOUS_GUARDRAILS}
       .map((turn) => turn.toolBlock?.action)
       .filter((action): action is string => typeof action === 'string')
 
-    const usedCatalogQuery = executedActions.some((action) => action === 'catalog.query' || action === 'stills.actionSpec')
+    const usedCatalogQuery = executedActions.some((action) => action === 'catalog.query' || action === 'catalog.guide' || action === 'stills.actionSpec')
     const usedTreeWrite = executedActions.some((action) =>
       action === 'sparkNodeTree.addNode'
       || action === 'sparkNodeTree.addNodes'
@@ -398,7 +398,7 @@ ${AUTONOMOUS_GUARDRAILS}
       .map((turn) => turn.toolBlock?.action)
       .filter((action): action is string => typeof action === 'string')
 
-    const usedCatalogQuery = executedActions.some((action) => action === 'catalog.query' || action === 'stills.actionSpec')
+    const usedCatalogQuery = executedActions.some((action) => action === 'catalog.query' || action === 'catalog.guide' || action === 'stills.actionSpec')
     const usedAddAction = executedActions.some((action) => action === 'sparkNodeTree.addNode' || action === 'sparkNodeTree.addNodes')
     const usedReplaceAction = executedActions.some((action) => action === 'sparkNodeTree.replaceNode' || action === 'sparkNodeTree.replaceNodes')
     const usedSetPropsAction = executedActions.some((action) => action === 'sparkNodeTree.setProps' || action === 'sparkNodeTree.setPropsBatch')

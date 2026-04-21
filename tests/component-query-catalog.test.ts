@@ -6,9 +6,9 @@ import type {
   PlatformConstraints,
 } from '../packages/vite-plugin-spark-catalog/src/index'
 import {
-  projectFcDirectory,
-  projectFcConfigGuide,
-  projectFcSpec,
+  projectComponentDirectory,
+  projectComponentConfigGuide,
+  projectComponentSpec,
   projectDevTypes,
   projectDevPropNames,
   projectDevPropEnums,
@@ -128,9 +128,9 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
 }
 
 describe('catalog-projections', () => {
-  it('projectFcDirectory returns directory summary for session.describe', () => {
+  it('projectComponentDirectory returns directory summary for session.describe', () => {
     const catalog = makeCatalog()
-    const directory = projectFcDirectory(catalog)
+    const directory = projectComponentDirectory(catalog)
 
     expect(directory.summary.total).toBe(2)
     expect(directory.summary.containers).toBe(1)
@@ -148,9 +148,9 @@ describe('catalog-projections', () => {
     expect(directory.configurationPrinciples.length).toBeGreaterThan(0)
   })
 
-  it('projectFcSpec returns component spec for stills.actionSpec', () => {
+  it('projectComponentSpec returns component spec for catalog.guide', () => {
     const catalog = makeCatalog()
-    const spec = projectFcSpec(catalog, 'r-table')
+    const spec = projectComponentSpec(catalog, 'r-table')
 
     expect(spec).not.toBeNull()
     expect(spec!.type).toBe('r-table')
@@ -161,12 +161,12 @@ describe('catalog-projections', () => {
     expect(spec!.emits.some((emit) => emit.name === 'rowChange')).toBe(true)
   })
 
-  it('projectFcSpec returns null for unknown type', () => {
-    expect(projectFcSpec(makeCatalog(), 'missing')).toBeNull()
+  it('projectComponentSpec returns null for unknown type', () => {
+    expect(projectComponentSpec(makeCatalog(), 'missing')).toBeNull()
   })
 
-  it('projectFcConfigGuide returns normalized guide for known component', () => {
-    const guide = projectFcConfigGuide(makeCatalog(), 'r-table')
+  it('projectComponentConfigGuide returns normalized guide for known component', () => {
+    const guide = projectComponentConfigGuide(makeCatalog(), 'r-table')
     expect(guide).not.toBeNull()
     expect(guide?.type).toBe('r-table')
     expect(guide?.category).toBe('container')
@@ -176,8 +176,8 @@ describe('catalog-projections', () => {
     expect(guide?.rootFieldPaths).toContain('currentRow.id')
   })
 
-  it('projectFcConfigGuide returns null for unknown component', () => {
-    expect(projectFcConfigGuide(makeCatalog(), 'missing')).toBeNull()
+  it('projectComponentConfigGuide returns null for unknown component', () => {
+    expect(projectComponentConfigGuide(makeCatalog(), 'missing')).toBeNull()
   })
 
   it('projectDevTypes returns sorted type list', () => {

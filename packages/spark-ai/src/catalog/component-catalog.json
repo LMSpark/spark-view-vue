@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "buildTime": "2026-04-20T03:13:54.518Z",
+  "buildTime": "2026-04-21T08:51:19.096Z",
   "componentCount": 109,
   "registry": {
     "containers": [
@@ -97,14 +97,16 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
-          "description": "标题对齐"
+          "description": "标题对齐",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
-          "description": "值对齐"
+          "description": "值对齐",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "detailProps",
@@ -324,7 +326,8 @@
           "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"hover\"",
-          "description": "卡片阴影模式"
+          "description": "卡片阴影模式",
+          "schemaRef": "schema_00002"
         },
         {
           "name": "itemColSpan",
@@ -463,7 +466,8 @@
           "name": "rowActionsAlign",
           "type": "ActionsAlign | undefined",
           "required": false,
-          "description": "行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align）"
+          "description": "行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align）",
+          "schemaRef": "schema_00003"
         },
         {
           "name": "rowActionsFixed",
@@ -475,7 +479,8 @@
           "name": "filter",
           "type": "FilterNode | undefined",
           "required": false,
-          "description": "结构化筛选区"
+          "description": "结构化筛选区",
+          "schemaRef": "component:r-filter"
         },
         {
           "name": "actions",
@@ -556,7 +561,8 @@
           "name": "editor",
           "type": "EditorNode | undefined",
           "required": false,
-          "description": "结构化编辑区"
+          "description": "结构化编辑区",
+          "schemaRef": "component:r-editor"
         },
         {
           "name": "nodeKey",
@@ -683,14 +689,16 @@
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"vertical\"",
-          "description": "排列方向"
+          "description": "排列方向",
+          "schemaRef": "schema_00004"
         },
         {
           "name": "anchorType",
           "type": "\"default\" | \"underline\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "锚点类型（避免与 SparkNode.type 冲突）"
+          "description": "锚点类型（避免与 SparkNode.type 冲突）",
+          "schemaRef": "schema_00005"
         },
         {
           "name": "hostProps",
@@ -857,7 +865,8 @@
           "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"always\"",
-          "description": "阴影显示策略"
+          "description": "阴影显示策略",
+          "schemaRef": "schema_00002"
         },
         {
           "name": "bodyStyle",
@@ -990,13 +999,15 @@
           "name": "header",
           "type": "HeaderNode | undefined",
           "required": false,
-          "description": "结构化头部"
+          "description": "结构化头部",
+          "schemaRef": "component:r-header"
         },
         {
           "name": "footer",
           "type": "FooterNode | undefined",
           "required": false,
-          "description": "结构化底部"
+          "description": "结构化底部",
+          "schemaRef": "component:r-footer"
         },
         {
           "name": "title",
@@ -1083,21 +1094,24 @@
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"horizontal\"",
-          "description": "分割方向"
+          "description": "分割方向",
+          "schemaRef": "schema_00004"
         },
         {
           "name": "borderStyle",
           "type": "\"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\" | undefined",
           "required": false,
           "default": "\"solid\"",
-          "description": "边框样式"
+          "description": "边框样式",
+          "schemaRef": "schema_00006"
         },
         {
           "name": "contentPosition",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"center\"",
-          "description": "文本位置（横向模式）"
+          "description": "文本位置（横向模式）",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "content",
@@ -1123,13 +1137,15 @@
           "name": "header",
           "type": "HeaderNode | undefined",
           "required": false,
-          "description": "结构化头部"
+          "description": "结构化头部",
+          "schemaRef": "component:r-header"
         },
         {
           "name": "footer",
           "type": "FooterNode | undefined",
           "required": false,
-          "description": "结构化底部"
+          "description": "结构化底部",
+          "schemaRef": "component:r-footer"
         },
         {
           "name": "title",
@@ -1222,7 +1238,8 @@
           "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
-          "description": "触发方式"
+          "description": "触发方式",
+          "schemaRef": "schema_00007"
         },
         {
           "name": "hideOnClick",
@@ -1274,7 +1291,8 @@
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
-          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。"
+          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
+          "schemaRef": "schema_00008"
         },
         {
           "name": "offset",
@@ -1325,7 +1343,8 @@
           "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "链接类型"
+          "description": "链接类型",
+          "schemaRef": "schema_00009"
         },
         {
           "name": "underline",
@@ -1345,7 +1364,8 @@
           "type": "\"_self\" | \"_blank\" | \"_parent\" | \"_top\" | undefined",
           "required": false,
           "default": "\"_self\"",
-          "description": "跳转目标"
+          "description": "跳转目标",
+          "schemaRef": "schema_00010"
         },
         {
           "name": "hostProps",
@@ -1417,14 +1437,16 @@
           "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
-          "description": "确认按钮类型"
+          "description": "确认按钮类型",
+          "schemaRef": "schema_00009"
         },
         {
           "name": "cancelButtonType",
           "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"\"",
-          "description": "取消按钮类型"
+          "description": "取消按钮类型",
+          "schemaRef": "schema_00009"
         },
         {
           "name": "icon",
@@ -1491,7 +1513,8 @@
           "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
-          "description": "浮层触发方式。"
+          "description": "浮层触发方式。",
+          "schemaRef": "schema_00011"
         },
         {
           "name": "hostProps",
@@ -1511,7 +1534,8 @@
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
-          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。"
+          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
+          "schemaRef": "schema_00008"
         },
         {
           "name": "offset",
@@ -1568,7 +1592,8 @@
           "name": "header",
           "type": "HeaderNode | undefined",
           "required": false,
-          "description": "结构化头部"
+          "description": "结构化头部",
+          "schemaRef": "component:r-header"
         },
         {
           "name": "title",
@@ -1617,7 +1642,8 @@
           "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"never\"",
-          "description": "卡片阴影模式"
+          "description": "卡片阴影模式",
+          "schemaRef": "schema_00002"
         },
         {
           "name": "bodyClass",
@@ -1701,7 +1727,8 @@
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"horizontal\"",
-          "description": "主轴方向"
+          "description": "主轴方向",
+          "schemaRef": "schema_00004"
         },
         {
           "name": "size",
@@ -1729,7 +1756,8 @@
           "type": "\"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\" | undefined",
           "required": false,
           "default": "\"center\"",
-          "description": "交叉轴对齐方式"
+          "description": "交叉轴对齐方式",
+          "schemaRef": "schema_00012"
         },
         {
           "name": "hostProps",
@@ -1827,7 +1855,8 @@
           "name": "mode",
           "type": "\"header\" | \"content\"",
           "required": true,
-          "description": "渲染模式：步骤头部或内容区"
+          "description": "渲染模式：步骤头部或内容区",
+          "schemaRef": "schema_00013"
         }
       ]
     },
@@ -2018,13 +2047,15 @@
           "name": "align",
           "type": "InlineAlign | undefined",
           "required": false,
-          "description": "交叉轴对齐"
+          "description": "交叉轴对齐",
+          "schemaRef": "schema_00014"
         },
         {
           "name": "justify",
           "type": "InlineJustify | undefined",
           "required": false,
-          "description": "主轴分布"
+          "description": "主轴分布",
+          "schemaRef": "schema_00015"
         },
         {
           "name": "hostProps",
@@ -2078,7 +2109,8 @@
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"dark\"",
-          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。"
+          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
+          "schemaRef": "schema_00008"
         },
         {
           "name": "offset",
@@ -2156,7 +2188,8 @@
           "type": "\"default\" | \"primary\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "引导类型"
+          "description": "引导类型",
+          "schemaRef": "schema_00016"
         },
         {
           "name": "closeOnPressEscape",
@@ -2189,7 +2222,8 @@
           "name": "position",
           "type": "ToolbarPosition | undefined",
           "required": false,
-          "description": "工具栏位置"
+          "description": "工具栏位置",
+          "schemaRef": "schema_00017"
         },
         {
           "name": "width",
@@ -2363,7 +2397,8 @@
           "type": "\"circle\" | \"square\" | undefined",
           "required": false,
           "default": "\"circle\"",
-          "description": "头像形状"
+          "description": "头像形状",
+          "schemaRef": "schema_00018"
         },
         {
           "name": "src",
@@ -2388,7 +2423,8 @@
           "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" | undefined",
           "required": false,
           "default": "\"cover\"",
-          "description": "图片填充方式"
+          "description": "图片填充方式",
+          "schemaRef": "schema_00019"
         },
         {
           "name": "text",
@@ -2460,7 +2496,8 @@
           "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"danger\"",
-          "description": "徽标主题类型。"
+          "description": "徽标主题类型。",
+          "schemaRef": "schema_00020"
         },
         {
           "name": "showZero",
@@ -2530,7 +2567,8 @@
           "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" | undefined",
           "required": false,
           "default": "\"cover\"",
-          "description": "图片适应模式"
+          "description": "图片适应模式",
+          "schemaRef": "schema_00019"
         },
         {
           "name": "alt",
@@ -2716,7 +2754,8 @@
           "type": "\"circle\" | \"line\" | \"dashboard\" | undefined",
           "required": false,
           "default": "\"line\"",
-          "description": "进度条类型"
+          "description": "进度条类型",
+          "schemaRef": "schema_00021"
         },
         {
           "name": "strokeWidth",
@@ -2736,7 +2775,8 @@
           "name": "status",
           "type": "\"success\" | \"warning\" | \"exception\" | undefined",
           "required": false,
-          "description": "状态"
+          "description": "状态",
+          "schemaRef": "schema_00022"
         },
         {
           "name": "indeterminate",
@@ -2776,7 +2816,8 @@
           "type": "\"round\" | \"square\" | \"butt\" | undefined",
           "required": false,
           "default": "\"round\"",
-          "description": "线帽样式"
+          "description": "线帽样式",
+          "schemaRef": "schema_00023"
         },
         {
           "name": "formatText",
@@ -2897,7 +2938,8 @@
           "name": "tagType",
           "type": "\"\" | TagType | undefined",
           "required": false,
-          "description": "标签类型"
+          "description": "标签类型",
+          "schemaRef": "schema_00024"
         },
         {
           "name": "dynamicType",
@@ -2944,14 +2986,16 @@
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "尺寸"
+          "description": "尺寸",
+          "schemaRef": "schema_00025"
         },
         {
           "name": "effect",
           "type": "\"plain\" | \"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
-          "description": "视觉效果"
+          "description": "视觉效果",
+          "schemaRef": "schema_00026"
         },
         {
           "name": "hostProps",
@@ -3002,7 +3046,8 @@
           "name": "format",
           "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
           "required": false,
-          "description": "格式化方式"
+          "description": "格式化方式",
+          "schemaRef": "schema_00027"
         },
         {
           "name": "precision",
@@ -3073,7 +3118,8 @@
           "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
           "required": false,
           "default": "\"info\"",
-          "description": "提示类型"
+          "description": "提示类型",
+          "schemaRef": "schema_00028"
         },
         {
           "name": "closable",
@@ -3107,7 +3153,8 @@
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
-          "description": "主题效果"
+          "description": "主题效果",
+          "schemaRef": "schema_00008"
         },
         {
           "name": "hostProps",
@@ -3291,14 +3338,16 @@
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"horizontal\"",
-          "description": "排列方向"
+          "description": "排列方向",
+          "schemaRef": "schema_00004"
         },
         {
           "name": "descriptionsSize",
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "尺寸"
+          "description": "尺寸",
+          "schemaRef": "schema_00025"
         },
         {
           "name": "hostProps",
@@ -3331,13 +3380,15 @@
           "name": "labelAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "标签对齐方式"
+          "description": "标签对齐方式",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "contentAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "内容对齐方式"
+          "description": "内容对齐方式",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "labelClassName",
@@ -3452,7 +3503,8 @@
           "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
           "required": false,
           "default": "\"info\"",
-          "description": "结果图标类型"
+          "description": "结果图标类型",
+          "schemaRef": "schema_00028"
         },
         {
           "name": "title",
@@ -3568,14 +3620,16 @@
           "type": "\"bottom\" | \"top\" | undefined",
           "required": false,
           "default": "\"bottom\"",
-          "description": "时间戳位置"
+          "description": "时间戳位置",
+          "schemaRef": "schema_00029"
         },
         {
           "name": "itemType",
           "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
-          "description": "节点类型"
+          "description": "节点类型",
+          "schemaRef": "schema_00030"
         },
         {
           "name": "color",
@@ -3588,7 +3642,8 @@
           "type": "\"large\" | \"normal\" | undefined",
           "required": false,
           "default": "\"normal\"",
-          "description": "节点尺寸"
+          "description": "节点尺寸",
+          "schemaRef": "schema_00031"
         },
         {
           "name": "hollow",
@@ -3704,13 +3759,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -3779,7 +3836,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -3861,13 +3919,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -4023,13 +4083,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -4091,7 +4153,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -4169,13 +4232,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -4337,13 +4402,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -4387,7 +4454,8 @@
           "name": "dateType",
           "type": "DatePickerType | undefined",
           "required": false,
-          "description": "日期选择器模式。"
+          "description": "日期选择器模式。",
+          "schemaRef": "schema_00033"
         },
         {
           "name": "valueFormat",
@@ -4482,13 +4550,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -4524,7 +4594,8 @@
           "name": "filterMode",
           "type": "\"range\" | undefined",
           "required": false,
-          "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。"
+          "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。",
+          "schemaRef": "schema_00034"
         }
       ]
     },
@@ -4602,7 +4673,8 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "default": "'auto'",
-          "description": "主值持久化模式"
+          "description": "主值持久化模式",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -4719,7 +4791,8 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "default": "\"auto\"",
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -4800,13 +4873,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -4971,13 +5046,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -5117,13 +5194,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -5242,13 +5321,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -5324,7 +5405,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -5405,13 +5487,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -5562,13 +5646,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -5640,7 +5726,8 @@
           "type": "\"bottom\" | \"top\" | undefined",
           "required": false,
           "default": "\"bottom\"",
-          "description": "候选浮层位置"
+          "description": "候选浮层位置",
+          "schemaRef": "schema_00029"
         },
         {
           "name": "showArrow",
@@ -5678,7 +5765,8 @@
           "type": "\"text\" | \"textarea\" | undefined",
           "required": false,
           "default": "\"text\"",
-          "description": "输入框类型"
+          "description": "输入框类型",
+          "schemaRef": "schema_00035"
         },
         {
           "name": "hostProps",
@@ -5738,13 +5826,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -5834,7 +5924,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -5915,13 +6006,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -6055,13 +6148,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -6109,7 +6204,8 @@
           "name": "filterMode",
           "type": "\"range\" | undefined",
           "required": false,
-          "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。"
+          "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。",
+          "schemaRef": "schema_00034"
         }
       ]
     },
@@ -6187,7 +6283,8 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "default": "'auto'",
-          "description": "主值持久化模式"
+          "description": "主值持久化模式",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -6289,7 +6386,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -6367,13 +6465,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -6515,13 +6615,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -6573,7 +6675,8 @@
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "尺寸"
+          "description": "尺寸",
+          "schemaRef": "schema_00025"
         },
         {
           "name": "block",
@@ -6604,7 +6707,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -6676,13 +6780,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -6774,7 +6880,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -6855,13 +6962,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -7003,13 +7112,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -7135,13 +7246,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -7239,13 +7352,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -7364,13 +7479,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -7519,13 +7636,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -7658,13 +7777,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -7723,7 +7844,8 @@
           "type": "\"push\" | \"unshift\" | \"original\" | undefined",
           "required": false,
           "default": "\"original\"",
-          "description": "目标面板排序策略。"
+          "description": "目标面板排序策略。",
+          "schemaRef": "schema_00036"
         },
         {
           "name": "hostProps",
@@ -7747,7 +7869,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -7826,13 +7949,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -7938,7 +8063,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -8020,13 +8146,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -8129,7 +8257,8 @@
           "type": "\"text\" | \"picture\" | \"picture-card\" | undefined",
           "required": false,
           "default": "\"text\"",
-          "description": "上传列表展示样式。"
+          "description": "上传列表展示样式。",
+          "schemaRef": "schema_00037"
         },
         {
           "name": "hostProps",
@@ -8204,13 +8333,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         {
           "name": "headerCellClassName",
@@ -8339,7 +8470,8 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "default": "'auto'",
-          "description": "主值持久化模式"
+          "description": "主值持久化模式",
+          "schemaRef": "schema_00032"
         },
         {
           "name": "textSeparator",
@@ -8477,13 +8609,15 @@
           "name": "align",
           "type": "TextAlign | undefined",
           "required": false,
-          "description": "列对齐"
+          "description": "列对齐",
+          "schemaRef": "schema_00038"
         },
         {
           "name": "headerAlign",
           "type": "TextAlign | undefined",
           "required": false,
-          "description": "表头对齐"
+          "description": "表头对齐",
+          "schemaRef": "schema_00038"
         },
         {
           "name": "mergedChildren",
@@ -8531,13 +8665,15 @@
           "name": "titleAlign",
           "type": "TextAlign | undefined",
           "required": false,
-          "description": "标题对齐（table/detail）"
+          "description": "标题对齐（table/detail）",
+          "schemaRef": "schema_00038"
         },
         {
           "name": "valueAlign",
           "type": "TextAlign | undefined",
           "required": false,
-          "description": "值对齐（table/detail）"
+          "description": "值对齐（table/detail）",
+          "schemaRef": "schema_00038"
         },
         {
           "name": "headerCellClassName",
@@ -8816,7 +8952,8 @@
           "type": "SparkCodeLanguage | undefined",
           "required": false,
           "default": "\"javascript\"",
-          "description": "语言模式"
+          "description": "语言模式",
+          "schemaRef": "schema_00039"
         },
         {
           "name": "readOnly",
@@ -8880,7 +9017,8 @@
           "type": "SparkJsonEditorMode | undefined",
           "required": false,
           "default": "\"text\"",
-          "description": "编辑模式"
+          "description": "编辑模式",
+          "schemaRef": "schema_00040"
         },
         {
           "name": "indentation",
@@ -9123,6 +9261,387 @@
       "props": []
     }
   },
+  "schemaPool": {
+    "schema_00001": {
+      "kind": "enum",
+      "type": "\"left\" | \"center\" | \"right\"",
+      "variants": [
+        "\"left\"",
+        "\"center\"",
+        "\"right\""
+      ]
+    },
+    "schema_00002": {
+      "kind": "enum",
+      "type": "\"hover\" | \"always\" | \"never\"",
+      "variants": [
+        "\"hover\"",
+        "\"always\"",
+        "\"never\""
+      ]
+    },
+    "schema_00003": {
+      "kind": "enum",
+      "type": "ActionsAlign",
+      "variants": [
+        "\"left\"",
+        "\"center\"",
+        "\"right\""
+      ]
+    },
+    "schema_00004": {
+      "kind": "enum",
+      "type": "\"vertical\" | \"horizontal\"",
+      "variants": [
+        "\"vertical\"",
+        "\"horizontal\""
+      ]
+    },
+    "schema_00005": {
+      "kind": "enum",
+      "type": "\"default\" | \"underline\"",
+      "variants": [
+        "\"default\"",
+        "\"underline\""
+      ]
+    },
+    "schema_00006": {
+      "kind": "enum",
+      "type": "\"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\"",
+      "variants": [
+        "\"solid\"",
+        "\"dashed\"",
+        "\"dotted\"",
+        "\"double\"",
+        "\"none\""
+      ]
+    },
+    "schema_00007": {
+      "kind": "enum",
+      "type": "\"hover\" | \"click\" | \"contextmenu\"",
+      "variants": [
+        "\"hover\"",
+        "\"click\"",
+        "\"contextmenu\""
+      ]
+    },
+    "schema_00008": {
+      "kind": "enum",
+      "type": "\"dark\" | \"light\"",
+      "variants": [
+        "\"dark\"",
+        "\"light\""
+      ]
+    },
+    "schema_00009": {
+      "kind": "enum",
+      "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+      "variants": [
+        "\"\"",
+        "\"default\"",
+        "\"primary\"",
+        "\"success\"",
+        "\"warning\"",
+        "\"info\"",
+        "\"danger\""
+      ]
+    },
+    "schema_00010": {
+      "kind": "enum",
+      "type": "\"_self\" | \"_blank\" | \"_parent\" | \"_top\"",
+      "variants": [
+        "\"_self\"",
+        "\"_blank\"",
+        "\"_parent\"",
+        "\"_top\""
+      ]
+    },
+    "schema_00011": {
+      "kind": "enum",
+      "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\"",
+      "variants": [
+        "\"hover\"",
+        "\"click\"",
+        "\"contextmenu\"",
+        "\"focus\""
+      ]
+    },
+    "schema_00012": {
+      "kind": "enum",
+      "type": "\"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\"",
+      "variants": [
+        "\"center\"",
+        "\"stretch\"",
+        "\"flex-start\"",
+        "\"flex-end\"",
+        "\"baseline\""
+      ]
+    },
+    "schema_00013": {
+      "kind": "enum",
+      "type": "\"header\" | \"content\"",
+      "variants": [
+        "\"header\"",
+        "\"content\""
+      ]
+    },
+    "schema_00014": {
+      "kind": "enum",
+      "type": "InlineAlign",
+      "variants": [
+        "\"center\"",
+        "\"stretch\"",
+        "\"start\"",
+        "\"end\""
+      ]
+    },
+    "schema_00015": {
+      "kind": "enum",
+      "type": "InlineJustify",
+      "variants": [
+        "\"center\"",
+        "\"start\"",
+        "\"end\"",
+        "\"space-between\""
+      ]
+    },
+    "schema_00016": {
+      "kind": "enum",
+      "type": "\"default\" | \"primary\"",
+      "variants": [
+        "\"default\"",
+        "\"primary\""
+      ]
+    },
+    "schema_00017": {
+      "kind": "enum",
+      "type": "ToolbarPosition",
+      "variants": [
+        "\"left\"",
+        "\"right\"",
+        "\"bottom\"",
+        "\"top\""
+      ]
+    },
+    "schema_00018": {
+      "kind": "enum",
+      "type": "\"circle\" | \"square\"",
+      "variants": [
+        "\"circle\"",
+        "\"square\""
+      ]
+    },
+    "schema_00019": {
+      "kind": "enum",
+      "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\"",
+      "variants": [
+        "\"fill\"",
+        "\"none\"",
+        "\"cover\"",
+        "\"contain\"",
+        "\"scale-down\""
+      ]
+    },
+    "schema_00020": {
+      "kind": "enum",
+      "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+      "variants": [
+        "\"\"",
+        "\"primary\"",
+        "\"success\"",
+        "\"warning\"",
+        "\"info\"",
+        "\"danger\""
+      ]
+    },
+    "schema_00021": {
+      "kind": "enum",
+      "type": "\"circle\" | \"line\" | \"dashboard\"",
+      "variants": [
+        "\"circle\"",
+        "\"line\"",
+        "\"dashboard\""
+      ]
+    },
+    "schema_00022": {
+      "kind": "enum",
+      "type": "\"success\" | \"warning\" | \"exception\"",
+      "variants": [
+        "\"success\"",
+        "\"warning\"",
+        "\"exception\""
+      ]
+    },
+    "schema_00023": {
+      "kind": "enum",
+      "type": "\"round\" | \"square\" | \"butt\"",
+      "variants": [
+        "\"round\"",
+        "\"square\"",
+        "\"butt\""
+      ]
+    },
+    "schema_00024": {
+      "kind": "enum",
+      "type": "\"\" | TagType",
+      "variants": [
+        "\"\"",
+        "\"success\"",
+        "\"warning\"",
+        "\"info\"",
+        "\"danger\""
+      ]
+    },
+    "schema_00025": {
+      "kind": "enum",
+      "type": "\"default\" | \"large\" | \"small\"",
+      "variants": [
+        "\"default\"",
+        "\"large\"",
+        "\"small\""
+      ]
+    },
+    "schema_00026": {
+      "kind": "enum",
+      "type": "\"plain\" | \"dark\" | \"light\"",
+      "variants": [
+        "\"plain\"",
+        "\"dark\"",
+        "\"light\""
+      ]
+    },
+    "schema_00027": {
+      "kind": "enum",
+      "type": "\"number\" | \"currency\" | \"percent\" | \"date\"",
+      "variants": [
+        "\"number\"",
+        "\"currency\"",
+        "\"percent\"",
+        "\"date\""
+      ]
+    },
+    "schema_00028": {
+      "kind": "enum",
+      "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
+      "variants": [
+        "\"success\"",
+        "\"warning\"",
+        "\"info\"",
+        "\"error\""
+      ]
+    },
+    "schema_00029": {
+      "kind": "enum",
+      "type": "\"bottom\" | \"top\"",
+      "variants": [
+        "\"bottom\"",
+        "\"top\""
+      ]
+    },
+    "schema_00030": {
+      "kind": "enum",
+      "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
+      "variants": [
+        "\"primary\"",
+        "\"success\"",
+        "\"warning\"",
+        "\"info\"",
+        "\"danger\""
+      ]
+    },
+    "schema_00031": {
+      "kind": "enum",
+      "type": "\"large\" | \"normal\"",
+      "variants": [
+        "\"large\"",
+        "\"normal\""
+      ]
+    },
+    "schema_00032": {
+      "kind": "enum",
+      "type": "SparkOptionValueMode",
+      "variants": [
+        "\"auto\"",
+        "\"array\"",
+        "\"separated-string\""
+      ]
+    },
+    "schema_00033": {
+      "kind": "enum",
+      "type": "DatePickerType",
+      "variants": [
+        "\"date\"",
+        "\"year\"",
+        "\"month\"",
+        "\"dates\"",
+        "\"datetime\"",
+        "\"week\"",
+        "\"datetimerange\"",
+        "\"daterange\"",
+        "\"monthrange\"",
+        "\"yearrange\""
+      ]
+    },
+    "schema_00034": {
+      "kind": "enum",
+      "type": "\"range\"",
+      "variants": [
+        "\"range\""
+      ]
+    },
+    "schema_00035": {
+      "kind": "enum",
+      "type": "\"text\" | \"textarea\"",
+      "variants": [
+        "\"text\"",
+        "\"textarea\""
+      ]
+    },
+    "schema_00036": {
+      "kind": "enum",
+      "type": "\"push\" | \"unshift\" | \"original\"",
+      "variants": [
+        "\"push\"",
+        "\"unshift\"",
+        "\"original\""
+      ]
+    },
+    "schema_00037": {
+      "kind": "enum",
+      "type": "\"text\" | \"picture\" | \"picture-card\"",
+      "variants": [
+        "\"text\"",
+        "\"picture\"",
+        "\"picture-card\""
+      ]
+    },
+    "schema_00038": {
+      "kind": "enum",
+      "type": "TextAlign",
+      "variants": [
+        "\"left\"",
+        "\"center\"",
+        "\"right\""
+      ]
+    },
+    "schema_00039": {
+      "kind": "enum",
+      "type": "SparkCodeLanguage",
+      "variants": [
+        "\"javascript\"",
+        "\"css\""
+      ]
+    },
+    "schema_00040": {
+      "kind": "enum",
+      "type": "SparkJsonEditorMode",
+      "variants": [
+        "\"text\"",
+        "\"table\"",
+        "\"tree\""
+      ]
+    }
+  },
   "constraints": {
     "dataKeyPattern": "^(#[\\w-]+@)?[\\w-]+@([\\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\\.[\\w.]+)?$",
     "htmlTypes": [
@@ -9179,14 +9698,16 @@
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
-          "description": "标题对齐"
+          "description": "标题对齐",
+          "schemaRef": "schema_00001"
         },
         "prop_00003": {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"left\"",
-          "description": "值对齐"
+          "description": "值对齐",
+          "schemaRef": "schema_00001"
         },
         "prop_00004": {
           "name": "detailProps",
@@ -9325,7 +9846,8 @@
           "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"hover\"",
-          "description": "卡片阴影模式"
+          "description": "卡片阴影模式",
+          "schemaRef": "schema_00002"
         },
         "prop_00025": {
           "name": "itemColSpan",
@@ -9398,7 +9920,8 @@
           "name": "rowActionsAlign",
           "type": "ActionsAlign | undefined",
           "required": false,
-          "description": "行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align）"
+          "description": "行操作列对齐（历史兼容字段，优先级低于 r-actions.props.align）",
+          "schemaRef": "schema_00003"
         },
         "prop_00037": {
           "name": "rowActionsFixed",
@@ -9410,7 +9933,8 @@
           "name": "filter",
           "type": "FilterNode | undefined",
           "required": false,
-          "description": "结构化筛选区"
+          "description": "结构化筛选区",
+          "schemaRef": "component:r-filter"
         },
         "prop_00039": {
           "name": "actions",
@@ -9446,7 +9970,8 @@
           "name": "editor",
           "type": "EditorNode | undefined",
           "required": false,
-          "description": "结构化编辑区"
+          "description": "结构化编辑区",
+          "schemaRef": "component:r-editor"
         },
         "prop_00045": {
           "name": "nodeKey",
@@ -9535,14 +10060,16 @@
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"vertical\"",
-          "description": "排列方向"
+          "description": "排列方向",
+          "schemaRef": "schema_00004"
         },
         "prop_00059": {
           "name": "anchorType",
           "type": "\"default\" | \"underline\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "锚点类型（避免与 SparkNode.type 冲突）"
+          "description": "锚点类型（避免与 SparkNode.type 冲突）",
+          "schemaRef": "schema_00005"
         },
         "prop_00060": {
           "name": "href",
@@ -9667,7 +10194,8 @@
           "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"always\"",
-          "description": "阴影显示策略"
+          "description": "阴影显示策略",
+          "schemaRef": "schema_00002"
         },
         "prop_00080": {
           "name": "bodyStyle",
@@ -9757,13 +10285,15 @@
           "name": "header",
           "type": "HeaderNode | undefined",
           "required": false,
-          "description": "结构化头部"
+          "description": "结构化头部",
+          "schemaRef": "component:r-header"
         },
         "prop_00095": {
           "name": "footer",
           "type": "FooterNode | undefined",
           "required": false,
-          "description": "结构化底部"
+          "description": "结构化底部",
+          "schemaRef": "component:r-footer"
         },
         "prop_00096": {
           "name": "title",
@@ -9815,21 +10345,24 @@
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"horizontal\"",
-          "description": "分割方向"
+          "description": "分割方向",
+          "schemaRef": "schema_00004"
         },
         "prop_00104": {
           "name": "borderStyle",
           "type": "\"solid\" | \"dashed\" | \"dotted\" | \"double\" | \"none\" | undefined",
           "required": false,
           "default": "\"solid\"",
-          "description": "边框样式"
+          "description": "边框样式",
+          "schemaRef": "schema_00006"
         },
         "prop_00105": {
           "name": "contentPosition",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
           "default": "\"center\"",
-          "description": "文本位置（横向模式）"
+          "description": "文本位置（横向模式）",
+          "schemaRef": "schema_00001"
         },
         "prop_00106": {
           "name": "content",
@@ -9855,7 +10388,8 @@
           "type": "\"hover\" | \"click\" | \"contextmenu\" | undefined",
           "required": false,
           "default": "\"hover\"",
-          "description": "触发方式"
+          "description": "触发方式",
+          "schemaRef": "schema_00007"
         },
         "prop_00110": {
           "name": "hideOnClick",
@@ -9901,7 +10435,8 @@
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
-          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。"
+          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
+          "schemaRef": "schema_00008"
         },
         "prop_00117": {
           "name": "offset",
@@ -9944,7 +10479,8 @@
           "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "链接类型"
+          "description": "链接类型",
+          "schemaRef": "schema_00009"
         },
         "prop_00124": {
           "name": "underline",
@@ -9964,7 +10500,8 @@
           "type": "\"_self\" | \"_blank\" | \"_parent\" | \"_top\" | undefined",
           "required": false,
           "default": "\"_self\"",
-          "description": "跳转目标"
+          "description": "跳转目标",
+          "schemaRef": "schema_00010"
         },
         "prop_00127": {
           "name": "title",
@@ -10002,14 +10539,16 @@
           "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
-          "description": "确认按钮类型"
+          "description": "确认按钮类型",
+          "schemaRef": "schema_00009"
         },
         "prop_00133": {
           "name": "cancelButtonType",
           "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"\"",
-          "description": "取消按钮类型"
+          "description": "取消按钮类型",
+          "schemaRef": "schema_00009"
         },
         "prop_00134": {
           "name": "iconColor",
@@ -10056,7 +10595,8 @@
           "type": "\"hover\" | \"click\" | \"contextmenu\" | \"focus\" | undefined",
           "required": false,
           "default": "\"click\"",
-          "description": "浮层触发方式。"
+          "description": "浮层触发方式。",
+          "schemaRef": "schema_00011"
         },
         "prop_00141": {
           "name": "showArrow",
@@ -10118,7 +10658,8 @@
           "type": "\"hover\" | \"always\" | \"never\" | undefined",
           "required": false,
           "default": "\"never\"",
-          "description": "卡片阴影模式"
+          "description": "卡片阴影模式",
+          "schemaRef": "schema_00002"
         },
         "prop_00150": {
           "name": "expandText",
@@ -10160,7 +10701,8 @@
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"horizontal\"",
-          "description": "主轴方向"
+          "description": "主轴方向",
+          "schemaRef": "schema_00004"
         },
         "prop_00156": {
           "name": "size",
@@ -10188,7 +10730,8 @@
           "type": "\"center\" | \"stretch\" | \"flex-start\" | \"flex-end\" | \"baseline\" | undefined",
           "required": false,
           "default": "\"center\"",
-          "description": "交叉轴对齐方式"
+          "description": "交叉轴对齐方式",
+          "schemaRef": "schema_00012"
         },
         "prop_00160": {
           "name": "name",
@@ -10236,7 +10779,8 @@
           "name": "mode",
           "type": "\"header\" | \"content\"",
           "required": true,
-          "description": "渲染模式：步骤头部或内容区"
+          "description": "渲染模式：步骤头部或内容区",
+          "schemaRef": "schema_00013"
         },
         "prop_00168": {
           "name": "value",
@@ -10333,13 +10877,15 @@
           "name": "align",
           "type": "InlineAlign | undefined",
           "required": false,
-          "description": "交叉轴对齐"
+          "description": "交叉轴对齐",
+          "schemaRef": "schema_00014"
         },
         "prop_00184": {
           "name": "justify",
           "type": "InlineJustify | undefined",
           "required": false,
-          "description": "主轴分布"
+          "description": "主轴分布",
+          "schemaRef": "schema_00015"
         },
         "prop_00185": {
           "name": "content",
@@ -10366,7 +10912,8 @@
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"dark\"",
-          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。"
+          "description": "浮层主题。\n通常对应浅色或深色两套视觉风格。",
+          "schemaRef": "schema_00008"
         },
         "prop_00189": {
           "name": "steps",
@@ -10405,7 +10952,8 @@
           "type": "\"default\" | \"primary\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "引导类型"
+          "description": "引导类型",
+          "schemaRef": "schema_00016"
         },
         "prop_00195": {
           "name": "closeOnPressEscape",
@@ -10424,7 +10972,8 @@
           "name": "position",
           "type": "ToolbarPosition | undefined",
           "required": false,
-          "description": "工具栏位置"
+          "description": "工具栏位置",
+          "schemaRef": "schema_00017"
         },
         "prop_00198": {
           "name": "width",
@@ -10546,7 +11095,8 @@
           "type": "\"circle\" | \"square\" | undefined",
           "required": false,
           "default": "\"circle\"",
-          "description": "头像形状"
+          "description": "头像形状",
+          "schemaRef": "schema_00018"
         },
         "prop_00218": {
           "name": "src",
@@ -10571,7 +11121,8 @@
           "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" | undefined",
           "required": false,
           "default": "\"cover\"",
-          "description": "图片填充方式"
+          "description": "图片填充方式",
+          "schemaRef": "schema_00019"
         },
         "prop_00222": {
           "name": "text",
@@ -10623,7 +11174,8 @@
           "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"danger\"",
-          "description": "徽标主题类型。"
+          "description": "徽标主题类型。",
+          "schemaRef": "schema_00020"
         },
         "prop_00230": {
           "name": "showZero",
@@ -10673,7 +11225,8 @@
           "type": "\"fill\" | \"none\" | \"cover\" | \"contain\" | \"scale-down\" | undefined",
           "required": false,
           "default": "\"cover\"",
-          "description": "图片适应模式"
+          "description": "图片适应模式",
+          "schemaRef": "schema_00019"
         },
         "prop_00238": {
           "name": "alt",
@@ -10819,7 +11372,8 @@
           "type": "\"circle\" | \"line\" | \"dashboard\" | undefined",
           "required": false,
           "default": "\"line\"",
-          "description": "进度条类型"
+          "description": "进度条类型",
+          "schemaRef": "schema_00021"
         },
         "prop_00260": {
           "name": "strokeWidth",
@@ -10839,7 +11393,8 @@
           "name": "status",
           "type": "\"success\" | \"warning\" | \"exception\" | undefined",
           "required": false,
-          "description": "状态"
+          "description": "状态",
+          "schemaRef": "schema_00022"
         },
         "prop_00263": {
           "name": "indeterminate",
@@ -10879,7 +11434,8 @@
           "type": "\"round\" | \"square\" | \"butt\" | undefined",
           "required": false,
           "default": "\"round\"",
-          "description": "线帽样式"
+          "description": "线帽样式",
+          "schemaRef": "schema_00023"
         },
         "prop_00269": {
           "name": "formatText",
@@ -10954,7 +11510,8 @@
           "name": "tagType",
           "type": "\"\" | TagType | undefined",
           "required": false,
-          "description": "标签类型"
+          "description": "标签类型",
+          "schemaRef": "schema_00024"
         },
         "prop_00281": {
           "name": "dynamicType",
@@ -10995,14 +11552,16 @@
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "尺寸"
+          "description": "尺寸",
+          "schemaRef": "schema_00025"
         },
         "prop_00287": {
           "name": "effect",
           "type": "\"plain\" | \"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
-          "description": "视觉效果"
+          "description": "视觉效果",
+          "schemaRef": "schema_00026"
         },
         "prop_00288": {
           "name": "tag",
@@ -11015,7 +11574,8 @@
           "name": "format",
           "type": "\"number\" | \"currency\" | \"percent\" | \"date\" | undefined",
           "required": false,
-          "description": "格式化方式"
+          "description": "格式化方式",
+          "schemaRef": "schema_00027"
         },
         "prop_00290": {
           "name": "precision",
@@ -11066,7 +11626,8 @@
           "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
           "required": false,
           "default": "\"info\"",
-          "description": "提示类型"
+          "description": "提示类型",
+          "schemaRef": "schema_00028"
         },
         "prop_00298": {
           "name": "closable",
@@ -11100,7 +11661,8 @@
           "type": "\"dark\" | \"light\" | undefined",
           "required": false,
           "default": "\"light\"",
-          "description": "主题效果"
+          "description": "主题效果",
+          "schemaRef": "schema_00008"
         },
         "prop_00303": {
           "name": "separator",
@@ -11208,14 +11770,16 @@
           "type": "\"vertical\" | \"horizontal\" | undefined",
           "required": false,
           "default": "\"horizontal\"",
-          "description": "排列方向"
+          "description": "排列方向",
+          "schemaRef": "schema_00004"
         },
         "prop_00320": {
           "name": "descriptionsSize",
           "type": "\"default\" | \"large\" | \"small\" | undefined",
           "required": false,
           "default": "\"default\"",
-          "description": "尺寸"
+          "description": "尺寸",
+          "schemaRef": "schema_00025"
         },
         "prop_00321": {
           "name": "label",
@@ -11234,13 +11798,15 @@
           "name": "labelAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "标签对齐方式"
+          "description": "标签对齐方式",
+          "schemaRef": "schema_00001"
         },
         "prop_00324": {
           "name": "contentAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "内容对齐方式"
+          "description": "内容对齐方式",
+          "schemaRef": "schema_00001"
         },
         "prop_00325": {
           "name": "labelClassName",
@@ -11313,7 +11879,8 @@
           "type": "\"success\" | \"warning\" | \"info\" | \"error\" | undefined",
           "required": false,
           "default": "\"info\"",
-          "description": "结果图标类型"
+          "description": "结果图标类型",
+          "schemaRef": "schema_00028"
         },
         "prop_00337": {
           "name": "title",
@@ -11387,14 +11954,16 @@
           "type": "\"bottom\" | \"top\" | undefined",
           "required": false,
           "default": "\"bottom\"",
-          "description": "时间戳位置"
+          "description": "时间戳位置",
+          "schemaRef": "schema_00029"
         },
         "prop_00348": {
           "name": "itemType",
           "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\" | undefined",
           "required": false,
           "default": "\"primary\"",
-          "description": "节点类型"
+          "description": "节点类型",
+          "schemaRef": "schema_00030"
         },
         "prop_00349": {
           "name": "color",
@@ -11407,7 +11976,8 @@
           "type": "\"large\" | \"normal\" | undefined",
           "required": false,
           "default": "\"normal\"",
-          "description": "节点尺寸"
+          "description": "节点尺寸",
+          "schemaRef": "schema_00031"
         },
         "prop_00351": {
           "name": "hollow",
@@ -11503,13 +12073,15 @@
           "name": "titleAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。"
+          "description": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         "prop_00366": {
           "name": "valueAlign",
           "type": "\"left\" | \"center\" | \"right\" | undefined",
           "required": false,
-          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。"
+          "description": "值区对齐方向。\n用于表格单元格及详情项值区的水平对齐控制。",
+          "schemaRef": "schema_00001"
         },
         "prop_00367": {
           "name": "headerCellClassName",
@@ -11564,7 +12136,8 @@
           "name": "valueMode",
           "type": "SparkOptionValueMode | undefined",
           "required": false,
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         "prop_00376": {
           "name": "textSeparator",
@@ -11723,7 +12296,8 @@
           "name": "dateType",
           "type": "DatePickerType | undefined",
           "required": false,
-          "description": "日期选择器模式。"
+          "description": "日期选择器模式。",
+          "schemaRef": "schema_00033"
         },
         "prop_00401": {
           "name": "valueFormat",
@@ -11775,7 +12349,8 @@
           "name": "filterMode",
           "type": "\"range\" | undefined",
           "required": false,
-          "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。"
+          "description": "过滤模式。\n当值为 `range` 时，组件通常切换到范围筛选 UI。",
+          "schemaRef": "schema_00034"
         },
         "prop_00409": {
           "name": "label",
@@ -11845,7 +12420,8 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "default": "'auto'",
-          "description": "主值持久化模式"
+          "description": "主值持久化模式",
+          "schemaRef": "schema_00032"
         },
         "prop_00419": {
           "name": "textSeparator",
@@ -11936,7 +12512,8 @@
           "type": "SparkOptionValueMode | undefined",
           "required": false,
           "default": "\"auto\"",
-          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。"
+          "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
+          "schemaRef": "schema_00032"
         },
         "prop_00432": {
           "name": "value",
@@ -12093,7 +12670,8 @@
           "type": "\"bottom\" | \"top\" | undefined",
           "required": false,
           "default": "\"bottom\"",
-          "description": "候选浮层位置"
+          "description": "候选浮层位置",
+          "schemaRef": "schema_00029"
         },
         "prop_00455": {
           "name": "showArrow",
@@ -12131,7 +12709,8 @@
           "type": "\"text\" | \"textarea\" | undefined",
           "required": false,
           "default": "\"text\"",
-          "description": "输入框类型"
+          "description": "输入框类型",
+          "schemaRef": "schema_00035"
         },
         "prop_00461": {
           "name": "rows",
@@ -12412,7 +12991,8 @@
           "type": "\"push\" | \"unshift\" | \"original\" | undefined",
           "required": false,
           "default": "\"original\"",
-          "description": "目标面板排序策略。"
+          "description": "目标面板排序策略。",
+          "schemaRef": "schema_00036"
         },
         "prop_00503": {
           "name": "value",
@@ -12466,7 +13046,8 @@
           "type": "\"text\" | \"picture\" | \"picture-card\" | undefined",
           "required": false,
           "default": "\"text\"",
-          "description": "上传列表展示样式。"
+          "description": "上传列表展示样式。",
+          "schemaRef": "schema_00037"
         },
         "prop_00511": {
           "name": "buttonText",
@@ -12533,13 +13114,15 @@
           "name": "align",
           "type": "TextAlign | undefined",
           "required": false,
-          "description": "列对齐"
+          "description": "列对齐",
+          "schemaRef": "schema_00038"
         },
         "prop_00522": {
           "name": "headerAlign",
           "type": "TextAlign | undefined",
           "required": false,
-          "description": "表头对齐"
+          "description": "表头对齐",
+          "schemaRef": "schema_00038"
         },
         "prop_00523": {
           "name": "mergedChildren",
@@ -12587,13 +13170,15 @@
           "name": "titleAlign",
           "type": "TextAlign | undefined",
           "required": false,
-          "description": "标题对齐（table/detail）"
+          "description": "标题对齐（table/detail）",
+          "schemaRef": "schema_00038"
         },
         "prop_00531": {
           "name": "valueAlign",
           "type": "TextAlign | undefined",
           "required": false,
-          "description": "值对齐（table/detail）"
+          "description": "值对齐（table/detail）",
+          "schemaRef": "schema_00038"
         },
         "prop_00532": {
           "name": "headerCellClassName",
@@ -12828,7 +13413,8 @@
           "type": "SparkCodeLanguage | undefined",
           "required": false,
           "default": "\"javascript\"",
-          "description": "语言模式"
+          "description": "语言模式",
+          "schemaRef": "schema_00039"
         },
         "prop_00568": {
           "name": "height",
@@ -12856,7 +13442,8 @@
           "type": "SparkJsonEditorMode | undefined",
           "required": false,
           "default": "\"text\"",
-          "description": "编辑模式"
+          "description": "编辑模式",
+          "schemaRef": "schema_00040"
         },
         "prop_00572": {
           "name": "indentation",

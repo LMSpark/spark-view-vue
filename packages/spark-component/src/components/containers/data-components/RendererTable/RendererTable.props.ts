@@ -41,7 +41,7 @@ export interface RTableProps
   rowActionsAlign?: ActionsAlign
   /** 行操作列固定（历史兼容字段，优先级低于 r-actions.props.fixed） */
   rowActionsFixed?: ActionsFixed
-  /** 结构化筛选区 */
+  /** 结构化筛选区 @componentRef r-filter */
   filter?: FilterNode
   /** 结构化行动作 */
   actions?: ActionsNode

@@ -18,7 +18,7 @@
 // ══════════════════════════════════════════════════════════════
 
 import componentCatalogJson from '../catalog/component-catalog.json'
-import { projectFcConfigGuide, projectFcSpec, projectHydratedComponent } from '../catalog/catalog-projections'
+import { projectComponentConfigGuide, projectComponentSpec, projectHydratedComponent } from '../catalog/catalog-projections'
 import type { HydratedPropEntry } from '../catalog/catalog-projections'
 import type { ComponentCatalog, PropSchema } from '../catalog/types'
 
@@ -213,8 +213,8 @@ function formatPropSummary(prop: HydratedPropEntry, catalog: ComponentCatalog, d
  * @param componentType  要构建指南的组件 type 值（如 'r-table'）
  */
 function buildPerComponentGuide(componentType: string): Record<string, unknown> {
-  const spec = projectFcSpec(COMPONENT_CATALOG, componentType)
-  const guide = projectFcConfigGuide(COMPONENT_CATALOG, componentType)
+  const spec = projectComponentSpec(COMPONENT_CATALOG, componentType)
+  const guide = projectComponentConfigGuide(COMPONENT_CATALOG, componentType)
   const hydrated = projectHydratedComponent(COMPONENT_CATALOG, componentType)
 
   // 三个投影同时成功才有意义；任一为 null 说明目录生成链存在漂移
@@ -294,7 +294,7 @@ function buildContainersEntry(): SparkNodeComponentEntry {
       _说明: '这里严格以 component-catalog.registry.containers 为准，不再手写维护组件清单。',
       _建模流程: [
         '先从 _组件列表 中选择目标组件 type。',
-        '再通过 queryComponentCatalog(type) 查看该组件完整 props / emits / binding 规格。',
+        '再通过 queryComponentGuide(type) 查阅该组件完整 props / emits / binding 规格。',
         '根据规格构造 SparkNode：{ type, props, children? }。',
         '最后调用 SparkNodeTree.addNode / addNodes / replaceNode 等 FC，把该 SparkNode 写入当前子树。',
       ],
@@ -310,7 +310,7 @@ function buildContainersEntry(): SparkNodeComponentEntry {
       {
         code: 'COMPONENT_NOT_FOUND',
         when: '选择的组件 type 不在自动投影出的组件列表中',
-        fix: '先查看 _组件列表 或调用 queryComponentCatalog(type) 确认组件存在。',
+        fix: '先查看 _组件列表 或调用 queryComponentCatalog("*") 确认组件存在，再用 queryComponentGuide(type) 查阅规格。',
       },
       {
         code: 'PROP_NOT_SUPPORTED',
@@ -350,7 +350,7 @@ function buildFieldsEntry(): SparkNodeComponentEntry {
       _字段组件列表: componentTypes,
       _建模流程: [
         '先从 _字段组件列表 中选择字段组件 type。',
-        '再通过 queryComponentCatalog(type) 查看字段组件 props 规格。',
+        '再通过 queryComponentGuide(type) 查阅字段组件 props 规格。',
         '构造 SparkNode：{ type, props: { field, label, ...组件特有属性 } }。',
         '最后把该 SparkNode 放入已有数据容器或其它合适的 SparkNodeTree 位置。',
       ],

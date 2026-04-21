@@ -6,6 +6,9 @@
  */
 
 import type { StillsCatalog } from '../catalog/stills-catalog-types'
+import componentCatalogJson from '../catalog/component-catalog.json'
+import type { ComponentCatalog } from '../catalog/types'
+import { projectStillsCatalog } from '../catalog/catalog-projections'
 import type { IStillSession, DomainProvider } from './types'
 import { registerAll } from './dispatcher'
 
@@ -45,11 +48,13 @@ export interface CreateSessionOptions {
   catalog?: StillsCatalog
 }
 
+const DEFAULT_SESSION_CATALOG = projectStillsCatalog(componentCatalogJson as ComponentCatalog)
+
 function createBaseSession(options?: CreateSessionOptions): IStillSession {
   return {
     patchLog: [],
     domains: {},
-    catalog: options?.catalog ?? null,
+    catalog: options?.catalog ?? DEFAULT_SESSION_CATALOG,
   }
 }
 

@@ -2,7 +2,7 @@
  * Generate FC Tools 目录 — 7 个 Function Calling 工具定义。
  *
  * 分两类：
- * - 查询型：queryCapabilities / queryActionSpec / queryComponentCatalog
+ * - 查询型：queryCapabilities / queryActionSpec / queryComponentCatalog / queryComponentGuide
  * - 生成型：emitPagedata / emitRuleJson / emitScriptJs / emitStyleCss
  *
  * 查询型 tool 的应答由 `dispatchGenerateTool()` 从 catalog + 内置知识库返回。
@@ -19,7 +19,7 @@
  */
 
 import type { ComponentCatalog } from '../catalog/types'
-import { projectFcConfigGuide, projectFcDirectory, projectFcSpec } from '../catalog/catalog-projections'
+import { projectComponentConfigGuide, projectComponentDirectory, projectComponentSpec } from '../catalog/catalog-projections'
 import {
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
   type DatasetCrudToolStillParameterRow,
@@ -50,6 +50,7 @@ export type GenerateToolName =
   | 'queryCapabilities'
   | 'queryActionSpec'
   | 'queryComponentCatalog'
+  | 'queryComponentGuide'
   | 'emitPagedata'
   | 'emitRuleJson'
   | 'emitScriptJs'
@@ -96,13 +97,30 @@ const QUERY_TOOLS: FcToolDefinition[] = [
     type: 'function',
     function: {
       name: 'queryComponentCatalog',
-      description: '查询已注册组件的元数据。传 * 获取全部组件列表；传 type 获取该组件的 props 规格。在调用 addNode 等写入操作前，必须先用此工具查阅组件规格。',
+      description: '组件目录：查询已注册组件列表。传 * 获取全部组件；传 category（container|field|group|meta）按分类过滤。',
       parameters: {
         type: 'object',
         properties: {
           componentType: {
             type: 'string',
-            description: '组件类型（如 r-table、r-form）。传 * 获取全部组件列表。在组装 SparkNode 前，必须先传确定的 type 获取规格。',
+            description: '传 * 获取全部组件列表，或传 category 值（container|field|group|meta）按分类过滤。',
+          },
+        },
+        required: ['componentType'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'queryComponentGuide',
+      description: '组件配置指南：传 type 获取该组件的 props 规格、最小配置示例与 fail-fast 自检清单。调用 addNode 等写入操作前必须先查。',
+      parameters: {
+        type: 'object',
+        properties: {
+          componentType: {
+            type: 'string',
+            description: '组件类型（如 r-table、r-form）。在组装 SparkNode 前，必须先调用此工具查阅规格。',
           },
         },
         required: ['componentType'],
@@ -215,11 +233,13 @@ export function dispatchQueryTool(
       return handleQueryActionSpec(args['capabilityId'])
     case 'queryComponentCatalog':
       return handleQueryComponentCatalog(args['componentType'], catalog)
+    case 'queryComponentGuide':
+      return handleQueryComponentGuide(args['componentType'], catalog)
     default:
       return JSON.stringify({
         error: `未知的查询工具: ${toolName}`,
         hint: '先调用 queryCapabilities，再调用 queryActionSpec，最后执行具体动作。',
-        availableQueryTools: ['queryCapabilities', 'queryActionSpec', 'queryComponentCatalog'],
+        availableQueryTools: ['queryCapabilities', 'queryActionSpec', 'queryComponentCatalog', 'queryComponentGuide'],
       })
   }
 }
@@ -461,19 +481,19 @@ const SN_STRUCTURE_SPEC = buildFromActions(
   projectSparkNodeRows(),
   [
     'SparkNode ≡ h(type, props, children)：type 是渲染什么，props 是所有属性，children 是子节点',
-    'type 使用 kebab-case（如 r-table，不是 RTable），必须先 queryComponentCatalog(type) 确认存在',
-    '⚠️ 每个组件有独立的 props 规格 — 使用前必须 queryComponentCatalog(type) 查询可用 props、events、嵌套规则',
+    'type 使用 kebab-case（如 r-table，不是 RTable），必须先 queryComponentCatalog("*") 确认组件存在，再 queryComponentGuide(type) 查阅配置指南',
+    '⚠️ 每个组件有独立的 props 规格 — 使用前必须 queryComponentGuide(type) 查阅 props、events、嵌套规则',
     'props 包含所有属性（dataKey、field、label、on、visible、disabled 等均在 props 中）',
     '根级允许的便捷字段：dataKey、field、id、on、visible、disabled、label、style、class — 绑定阶段自动收入 props',
   ],
   [
-    { code: 'COMPONENT_NOT_FOUND', when: '组件不渲染', fix: '先调用 queryComponentCatalog(type) 确认组件存在' },
-    { code: 'PROP_NOT_SUPPORTED', when: '属性不生效', fix: '调用 queryComponentCatalog(type) 查询该组件的可用 props 列表' },
+    { code: 'COMPONENT_NOT_FOUND', when: '组件不渲染', fix: '先调用 queryComponentCatalog("*") 确认组件存在，再用 queryComponentGuide(type) 查阅规格' },
+    { code: 'PROP_NOT_SUPPORTED', when: '属性不生效', fix: '调用 queryComponentGuide(type) 查阅该组件的配置指南（含可用 props 列表）' },
   ],
   // For paramsSchema, show the SparkNode model (most useful for LLM)
   {
-    type: 'string — 组件类型（kebab-case），必须通过 queryComponentCatalog(type) 确认存在',
-    props: 'object — 该组件接收的全部属性；每个组件的可用 props 不同，必须查询组件元数据确认',
+    type: 'string — 组件类型（kebab-case），必须通过 queryComponentGuide(type) 查阅规格后使用',
+    props: 'object — 该组件接收的全部属性；每个组件的可用 props 不同，必须通过 queryComponentGuide 查阅确认',
     children: 'SparkNode[] | (string | number | SparkNode)[] — 子节点数组',
     _树操作: '详见 actions[]: getNode / addNode / setProps / replaceNode / removeNode 等',
   },
@@ -688,26 +708,69 @@ function handleQueryComponentCatalog(
   if (typeof componentTypeArg !== 'string' || componentTypeArg.length === 0) {
     return JSON.stringify({
       error: 'componentType 缺失或非法',
-      hint: '传入具体组件 type（如 r-table）或 * 获取完整目录。',
+      hint: '传入 * 获取完整目录，或传 category 值（container|field|group|meta）按分类过滤。',
     })
   }
-  const componentType = componentTypeArg
   if (catalog === null) {
     return JSON.stringify({ error: '组件目录未加载' })
   }
 
-  if (componentType === '*') {
-    return JSON.stringify(projectFcDirectory(catalog))
+  const componentType = componentTypeArg
+
+  // 支持按 category 过滤
+  if (['container', 'field', 'group', 'meta'].includes(componentType)) {
+    const registry = catalog.registry
+    if (registry === undefined) return JSON.stringify({ error: '组件目录 registry 缺失' })
+    const key = componentType === 'container' ? 'containers'
+      : componentType === 'field' ? 'fields'
+      : componentType === 'group' ? 'groups'
+      : 'meta'
+    const types = registry[key as keyof typeof registry]
+    return JSON.stringify({
+      category: componentType,
+      count: types.length,
+      components: types.map((t: string) => ({
+        type: t,
+        description: catalog.components[t]?.description ?? '',
+      })),
+      nextStep: `从列表中选择 type，再调用 queryComponentGuide 查阅配置指南。`,
+    })
   }
 
-  const spec = projectFcSpec(catalog, componentType)
-  const guide = projectFcConfigGuide(catalog, componentType)
+  // 全量目录
+  return JSON.stringify({
+    ...projectComponentDirectory(catalog),
+    nextStep: '从目录中选择目标组件 type，再调用 queryComponentGuide 获取配置指南。',
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 组件配置指南 — queryComponentGuide 应答
+// ═══════════════════════════════════════════════════════════════
+
+function handleQueryComponentGuide(
+  componentTypeArg: unknown,
+  catalog: ComponentCatalog | null,
+): string {
+  if (typeof componentTypeArg !== 'string' || componentTypeArg.length === 0) {
+    return JSON.stringify({
+      error: 'componentType 缺失或非法',
+      hint: '传入具体组件 type（如 r-table）获取配置指南。',
+    })
+  }
+  if (catalog === null) {
+    return JSON.stringify({ error: '组件目录未加载' })
+  }
+
+  const componentType = componentTypeArg
+  const spec = projectComponentSpec(catalog, componentType)
+  const guide = projectComponentConfigGuide(catalog, componentType)
   if (spec !== null && guide !== null) {
     return JSON.stringify({ spec, guide })
   }
 
   return JSON.stringify({
     error: `未找到组件: ${componentType}`,
-    hint: '请传 * 查看全部可用组件列表',
+    hint: '请调用 queryComponentCatalog 传 * 查看全部可用组件列表',
   })
 }

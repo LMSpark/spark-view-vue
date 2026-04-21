@@ -146,6 +146,8 @@ export interface PropSchemaProperty {
   type: string
   required?: boolean
   description?: string
+  /** 嵌套结构 schema（当该属性本身也是复杂类型时递归展开） */
+  schema?: PropSchema
 }
 
 export interface EmitEntry {

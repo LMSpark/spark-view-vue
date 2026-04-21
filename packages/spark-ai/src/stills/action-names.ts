@@ -3,6 +3,7 @@ export const STILLS_CAPABILITIES_ACTION = 'stills.capabilities'
 export const STILLS_ACTION_SPEC_ACTION = 'stills.actionSpec'
 export const SESSION_DESCRIBE_ACTION = 'session.describe'
 export const CATALOG_QUERY_ACTION = 'catalog.query'
+export const CATALOG_GUIDE_ACTION = 'catalog.guide'
 
 // ── blueprint ────────────────────────────────────────────────
 export const BLUEPRINT_CREATE_ACTION = 'blueprint.create'

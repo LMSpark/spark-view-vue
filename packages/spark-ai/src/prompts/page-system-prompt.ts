@@ -24,7 +24,8 @@ export const GENERATE_BASE_PROMPT = `你是 SPARK View 框架的页面配置专�
 你拥有以下工具：
 - queryCapabilities(phase) — 查询当前阶段可用的系统能力列表
 - queryActionSpec(capabilityId) — 查询指定能力的 Schema、使用规则、常见失败模式
-- queryComponentCatalog(componentType) — 查询组件元数据（传 * 获取全部列表）
+- queryComponentCatalog(componentType) — 组件目录：传 * 获取全部列表；传 category 按分类过滤
+- queryComponentGuide(componentType) — 组件配置指南：传具体 type 获取该组件的 props 规格、最小示例与自检清单
 - emitPagedata(content) — 提交 pagedata.json
 - emitRuleJson(content) — 提交 rule.json
 - emitScriptJs(content) — 提交 script.js
@@ -33,7 +34,7 @@ export const GENERATE_BASE_PROMPT = `你是 SPARK View 框架的页面配置专�
 **严格工作流**：
 1. 在生成任何配置前，**必须** 先调用 queryCapabilities 了解当前阶段的能力
 2. 对每个要使用的能力，**必须** 调用 queryActionSpec 获取参数 Schema 和使用规则
-3. 使用组件前，**必须** 调用 queryComponentCatalog 确认组件存在及其属性
+3. 使用组件前，**必须** 先调用 queryComponentCatalog 确认组件存在，再调用 queryComponentGuide 获取配置规格
 4. 只有在查询完成后，才能调用 emit* 工具提交产物
 5. **禁止** 凭记忆假设任何配置格式 — 如果不确定，先查再写
 
@@ -147,8 +148,8 @@ export const UI_PHASE_PROMPT = `
 1. queryCapabilities("ui") → 获取本阶段可用的 SparkNode.* 和 ScriptJs.* 能力列表
 2. queryActionSpec("SparkNode.structure") → 了解 SparkNode ≡ h(type, props, children) 三段式模型
 3. queryComponentCatalog("*") → 获取全部组件列表（了解可用组件 type）
-4. **对你计划使用的每个容器/核心组件**调用 queryComponentCatalog(type) → 获取该组件的完整 props、events、嵌套规则
-   - 例如：queryComponentCatalog("r-table") / queryComponentCatalog("r-form") / queryComponentCatalog("r-select") / queryComponentCatalog("display-statistic")
+4. **对你计划使用的每个容器/核心组件**调用 queryComponentGuide(type) → 获取该组件的完整 props、events、嵌套规则
+   - 例如：queryComponentGuide("r-table") / queryComponentGuide("r-form") / queryComponentGuide("r-select") / queryComponentGuide("display-statistic")
    - ⚠️ 每个组件的 props 不同，禁止猜测 — **先查再写**
 5. queryActionSpec("ScriptJs.sandbox") + queryActionSpec("ScriptJs.init") → 了解脚本沙箱规范
 6. emitRuleJson → 提交 UI 配置
@@ -157,11 +158,11 @@ export const UI_PHASE_PROMPT = `
 ─── SparkNode ≡ h(type, props, children) ───
 
 SparkNode 严格对齐 Vue h(type, props, children) 三段式，每个节点只有 3 个核心字段：
-- **type** → 渲染什么组件（kebab-case，必须通过 queryComponentCatalog 确认存在）
+- **type** → 渲染什么组件（kebab-case，必须先通过 queryComponentCatalog 确认存在，再通过 queryComponentGuide 获取规格）
 - **props** → 该组件接收的全部属性（必须查询组件元数据确认可用 props）
 - **children** → 嵌套子节点数组
 
-⚠️ **每个组件都有独立的属性规格**。在使用组件前，**必须** 调用 queryComponentCatalog(componentType) 查询：
+⚠️ **每个组件都有独立的属性规格**。在使用组件前，**必须** 调用 queryComponentGuide(componentType) 查阅：
 - 该组件支持哪些 props（名称、类型、是否必填、默认值）
 - 该组件支持哪些 events
 - 该组件的嵌套规则（允许/禁止哪些子组件）
@@ -197,7 +198,7 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 组件选择优先级：
 - 默认优先使用 SPARK 组件（r-*）
 - 仅在 r-* 不覆盖需求时使用 el-*
-- 使用组件前必须先调用 queryComponentCatalog 确认其存在及 props
+- 使用组件前必须先调用 queryComponentCatalog 确认其存在，再调用 queryComponentGuide 获取 props 规格
 
 组件嵌套约束：
 - r-table 内部只能放 r-* 字段组件（r-text / r-number 等），严禁 el-table-column

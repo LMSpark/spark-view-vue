@@ -68,7 +68,7 @@ export const STILLS_DATASET_DOMAIN = `
         · 工具栏按钮
       【UI 组装强制 SOP】：
         1. 必定先通过 queryComponentCatalog('*') 查询并掌握所有可用组件及其分类。
-        2. 决定使用某个组件前，必定通过 queryComponentCatalog(type) 查询它的完整规格（props schema 和规则）。
+        2. 决定使用某个组件前，必定通过 queryComponentGuide(type) 查阅它的完整规格（props schema 和规则）。
         3. 依据上一步获得的规格组装出合法的 SparkNode 实例后，再调用 sparkNodeTree.addNode 等。绝对禁止凭猜测构造 props。
       此阶段数据已确定，问题数量少且聚焦，几轮即可完成。
       完成标志：rule.json 写入成功

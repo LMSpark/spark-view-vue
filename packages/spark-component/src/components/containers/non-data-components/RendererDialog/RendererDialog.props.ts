@@ -10,9 +10,9 @@ export interface RDialogProps
   extends SparkNodeProps,
     SparkVisibilityContainerProps,
     SparkGridLayoutProps {
-  /** 结构化头部 */
+  /** 结构化头部 @componentRef r-header */
   header?: HeaderNode
-  /** 结构化底部 */
+  /** 结构化底部 @componentRef r-footer */
   footer?: FooterNode
   /** 对话框标题 */
   title?: string

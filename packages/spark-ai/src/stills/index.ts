@@ -23,7 +23,7 @@ import type {
 } from './types'
 import { noGuard, requireBlueprint } from './types'
 import { registerDomain, getDomain, clearDomains, createSession } from './domain'
-import { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery } from './meta-methods'
+import { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery, catalogGuide } from './meta-methods'
 import {
   blueprintDomain,
   getBlueprintState,
@@ -68,7 +68,7 @@ export { registerDomain, getDomain, clearDomains, createSession }
 // Framework Stills
 // ═══════════════════════════════════════════════════════════
 
-export { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery }
+export { stillsCapabilities, stillsActionSpec, sessionDescribe, catalogQuery, catalogGuide }
 export {
   validateLlmDeserializedParams,
   formatLlmParamValidationIssues,
@@ -138,6 +138,7 @@ const metaStills = [
   stillsActionSpec,
   sessionDescribe,
   catalogQuery,
+  catalogGuide,
 ] as const
 
 /**

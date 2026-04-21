@@ -80,16 +80,18 @@ export {
 // 单一 SSoT JSON + 消费端投影
 export { default as COMPONENT_CATALOG_JSON } from './catalog/component-catalog.json'
 export {
-  projectFcDirectory,
-  projectFcSpec,
+  projectComponentDirectory,
+  projectComponentSpec,
+  projectComponentConfigGuide,
   projectHydratedComponent,
   projectDevTypes,
   projectDevPropNames,
   projectDevPropEnums,
 } from './catalog/catalog-projections'
 export type {
-  FcDirectoryPayload,
-  FcComponentSpec,
+  ComponentDirectoryPayload,
+  ComponentSpec,
+  ComponentConfigGuide,
   HydratedComponentEntry,
   HydratedPropEntry,
   HydratedEmitEntry,

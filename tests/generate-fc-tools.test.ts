@@ -22,8 +22,8 @@ import {
 import type { SessionBackend } from '../packages/spark-ai/src/runtime/session-orchestrator'
 import type { ComponentCatalog } from '../packages/spark-ai/src/catalog/types'
 import {
-  projectFcDirectory,
-  projectFcSpec,
+  projectComponentDirectory,
+  projectComponentSpec,
   projectDevTypes,
   projectDevPropNames,
   projectDevPropEnums,
@@ -191,14 +191,15 @@ const VALID_STYLE_CSS = `
 // ═══════════════════════════════════════════════════════════
 
 describe('FC Tool Definitions', () => {
-  it('should export 7 tools (3 query + 4 emit)', () => {
+  it('should export 8 tools (4 query + 4 emit)', () => {
     const tools = getGenerateTools()
-    expect(tools).toHaveLength(7)
+    expect(tools).toHaveLength(8)
 
     const names = tools.map(t => t.function.name)
     expect(names).toContain('queryCapabilities')
     expect(names).toContain('queryActionSpec')
     expect(names).toContain('queryComponentCatalog')
+    expect(names).toContain('queryComponentGuide')
     expect(names).toContain('emitPagedata')
     expect(names).toContain('emitRuleJson')
     expect(names).toContain('emitScriptJs')
@@ -335,8 +336,23 @@ describe('dispatchQueryTool', () => {
       expect(Array.isArray(result.configurationPrinciples)).toBe(true)
     })
 
+    it('category filter returns category list', () => {
+      const result = JSON.parse(dispatchQueryTool('queryComponentCatalog', { componentType: 'container' }, catalog))
+      expect(result.category).toBe('container')
+      expect(result.count).toBe(1)
+      expect(Array.isArray(result.components)).toBe(true)
+      expect(result.components[0].type).toBe('r-table')
+    })
+
+    it('null catalog returns error', () => {
+      const result = JSON.parse(dispatchQueryTool('queryComponentCatalog', { componentType: '*' }, null))
+      expect(result.error).toBeDefined()
+    })
+  })
+
+  describe('queryComponentGuide', () => {
     it('specific component returns spec and guide', () => {
-      const result = JSON.parse(dispatchQueryTool('queryComponentCatalog', { componentType: 'r-table' }, catalog))
+      const result = JSON.parse(dispatchQueryTool('queryComponentGuide', { componentType: 'r-table' }, catalog))
       expect(result.spec.type).toBe('r-table')
       expect(result.spec.category).toBe('container')
       expect(result.spec.props).toBeDefined()
@@ -348,12 +364,12 @@ describe('dispatchQueryTool', () => {
     })
 
     it('unknown component returns error', () => {
-      const result = JSON.parse(dispatchQueryTool('queryComponentCatalog', { componentType: 'nonexistent' }, catalog))
+      const result = JSON.parse(dispatchQueryTool('queryComponentGuide', { componentType: 'nonexistent' }, catalog))
       expect(result.error).toBeDefined()
     })
 
     it('null catalog returns error', () => {
-      const result = JSON.parse(dispatchQueryTool('queryComponentCatalog', { componentType: '*' }, null))
+      const result = JSON.parse(dispatchQueryTool('queryComponentGuide', { componentType: 'r-table' }, null))
       expect(result.error).toBeDefined()
     })
   })
@@ -363,6 +379,8 @@ describe('dispatchQueryTool', () => {
     expect(result.error).toBeDefined()
     expect(result.availableQueryTools).toContain('queryCapabilities')
     expect(result.availableQueryTools).toContain('queryActionSpec')
+    expect(result.availableQueryTools).toContain('queryComponentCatalog')
+    expect(result.availableQueryTools).toContain('queryComponentGuide')
   })
 })
 
@@ -1110,7 +1128,7 @@ describe('Catalog Projections', () => {
 
   describe('projectFcDirectory', () => {
     it('returns summary with correct counts', () => {
-      const dir = projectFcDirectory(catalog)
+      const dir = projectComponentDirectory(catalog)
       expect(dir.summary.total).toBe(3)
       expect(dir.summary.containers).toBe(1)
       expect(dir.summary.fields).toBe(2)
@@ -1121,7 +1139,7 @@ describe('Catalog Projections', () => {
     })
 
     it('components list has all entries', () => {
-      const dir = projectFcDirectory(catalog)
+      const dir = projectComponentDirectory(catalog)
       expect(dir.components).toHaveLength(3)
       const types = dir.components.map((c: Record<string, unknown>) => c['type'])
       expect(types).toContain('r-table')
@@ -1131,13 +1149,13 @@ describe('Catalog Projections', () => {
 
     it('fails fast when catalog registry is missing', () => {
       const noReg = { ...catalog, registry: undefined } as unknown as ComponentCatalog
-      expect(() => projectFcDirectory(noReg)).toThrow('component-catalog registry 缺失')
+      expect(() => projectComponentDirectory(noReg)).toThrow('component-catalog registry 缺失')
     })
   })
 
   describe('projectFcSpec', () => {
     it('returns spec for known component', () => {
-      const spec = projectFcSpec(catalog, 'r-table')
+      const spec = projectComponentSpec(catalog, 'r-table')
       expect(spec).not.toBeNull()
       expect(spec!.type).toBe('r-table')
       expect(spec!.category).toBe('container')
@@ -1146,12 +1164,12 @@ describe('Catalog Projections', () => {
     })
 
     it('returns null for unknown component', () => {
-      const spec = projectFcSpec(catalog, 'nonexistent')
+      const spec = projectComponentSpec(catalog, 'nonexistent')
       expect(spec).toBeNull()
     })
 
     it('simplifies props (only name/type/required/default/description)', () => {
-      const spec = projectFcSpec(catalog, 'r-table')!
+      const spec = projectComponentSpec(catalog, 'r-table')!
       for (const prop of spec.props) {
         expect(prop).toHaveProperty('name')
         expect(prop).toHaveProperty('type')
@@ -1848,7 +1866,7 @@ describe('Catalog Projections', () => {
 
   describe('projectFcDirectory', () => {
     it('returns summary with correct counts', () => {
-      const dir = projectFcDirectory(catalog)
+      const dir = projectComponentDirectory(catalog)
       expect(dir.summary.total).toBe(3)
       expect(dir.summary.containers).toBe(1)
       expect(dir.summary.fields).toBe(2)
@@ -1859,7 +1877,7 @@ describe('Catalog Projections', () => {
     })
 
     it('components list has all entries', () => {
-      const dir = projectFcDirectory(catalog)
+      const dir = projectComponentDirectory(catalog)
       expect(dir.components).toHaveLength(3)
       const types = dir.components.map((c: Record<string, unknown>) => c['type'])
       expect(types).toContain('r-table')
@@ -1869,13 +1887,13 @@ describe('Catalog Projections', () => {
 
     it('fails fast when catalog registry is missing', () => {
       const noReg = { ...catalog, registry: undefined } as unknown as ComponentCatalog
-      expect(() => projectFcDirectory(noReg)).toThrow('component-catalog registry 缺失')
+      expect(() => projectComponentDirectory(noReg)).toThrow('component-catalog registry 缺失')
     })
   })
 
   describe('projectFcSpec', () => {
     it('returns spec for known component', () => {
-      const spec = projectFcSpec(catalog, 'r-table')
+      const spec = projectComponentSpec(catalog, 'r-table')
       expect(spec).not.toBeNull()
       expect(spec!.type).toBe('r-table')
       expect(spec!.category).toBe('container')
@@ -1884,12 +1902,12 @@ describe('Catalog Projections', () => {
     })
 
     it('returns null for unknown component', () => {
-      const spec = projectFcSpec(catalog, 'nonexistent')
+      const spec = projectComponentSpec(catalog, 'nonexistent')
       expect(spec).toBeNull()
     })
 
     it('simplifies props (only name/type/required/default/description)', () => {
-      const spec = projectFcSpec(catalog, 'r-table')!
+      const spec = projectComponentSpec(catalog, 'r-table')!
       for (const prop of spec.props) {
         expect(prop).toHaveProperty('name')
         expect(prop).toHaveProperty('type')

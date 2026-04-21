@@ -24,8 +24,10 @@ import type {
   EmitEntry,
   PropEntry,
   PropSchema,
+  PropSchemaProperty,
   RootFieldEntry,
 } from './types'
+import type { StillsCatalog, StillsComponentEntry } from './stills-catalog-types'
 
 // ══════════════════════════════════════════════════════════════
 // 第一部分：接口定义区 (Exported Projection Types)
@@ -39,7 +41,7 @@ import type {
  * 包含：组件总数统计、registry 分类列表、能力分组（数据绑定 / 事件驱动 / 选项驱动）
  * 以及面向 LLM 的配置使用原则。
  */
-export interface FcDirectoryPayload {
+export interface ComponentDirectoryPayload {
   /** LLM 阅读提示：引导大模型在需要时进一步查询单组件规格 */
   hint: string
   /** 各分类组件数量统计摘要 */
@@ -78,7 +80,7 @@ export interface FcDirectoryPayload {
  * 由 `projectFcSpec` 生成，适合作为 stills.actionSpec 的消费目标。
  * LLM 可依据此结构选择组件 type、填写 props、绑定事件。
  */
-export interface FcComponentSpec {
+export interface ComponentSpec {
   /** 组件 type 值，如 'r-table' */
   type: string
   /** 组件分类：container / field / group / meta / feature */
@@ -107,7 +109,7 @@ export interface FcComponentSpec {
  * - 带占位值的最小安全配置示例；
  * - fail-fast 自检清单，防止 LLM 产生无效配置。
  */
-export interface FcComponentConfigGuide {
+export interface ComponentConfigGuide {
   /** 组件 type 值 */
   type: string
   /** 组件分类 */
@@ -417,9 +419,39 @@ function hasAnyEmit(catalog: ComponentCatalog, type: string, entry: ComponentEnt
  * @param prop    待解析的属性记录
  * @returns       解析得到的 PropSchema；若不存在则返回 undefined
  */
-function resolvePropSchema(catalog: ComponentCatalog, prop: PropEntry): PropSchema | undefined {
+function resolvePropSchema(
+  catalog: ComponentCatalog,
+  prop: PropEntry,
+  visited: Set<string> = new Set(),
+): PropSchema | undefined {
   if (prop.schema !== undefined) return prop.schema
   if (prop.schemaRef === undefined) return undefined
+
+  // "component:X" 引用：从 catalog.components[X].props 递归展开为 object schema
+  if (prop.schemaRef.startsWith('component:')) {
+    const componentType = prop.schemaRef.slice('component:'.length)
+    // 防环：已访问过的组件类型不再递归
+    if (visited.has(componentType)) return undefined
+    const referencedEntry = catalog.components[componentType]
+    if (referencedEntry !== undefined) {
+      const nextVisited = new Set(visited)
+      nextVisited.add(componentType)
+      const properties: Record<string, PropSchemaProperty> = {}
+      for (const refProp of referencedEntry.props) {
+        const nestedSchema = resolvePropSchema(catalog, refProp, nextVisited)
+        properties[refProp.name] = {
+          name: refProp.name,
+          type: refProp.type,
+          ...(refProp.required ? { required: refProp.required } : {}),
+          ...(refProp.description !== undefined ? { description: refProp.description } : {}),
+          ...(nestedSchema !== undefined ? { schema: nestedSchema } : {}),
+        }
+      }
+      return { kind: 'object', type: componentType, properties }
+    }
+    return undefined
+  }
+
   return catalog.schemaPool?.[prop.schemaRef]
 }
 
@@ -465,7 +497,7 @@ function resolveEmitSchemas(catalog: ComponentCatalog, emit: EmitEntry): PropSch
  * @returns       可直接返回给 LLM 的目录摘要负载
  * @throws        catalog.registry 缺失时抛出
  */
-export function projectFcDirectory(catalog: ComponentCatalog): FcDirectoryPayload {
+export function projectComponentDirectory(catalog: ComponentCatalog): ComponentDirectoryPayload {
   const entries = Object.entries(catalog.components)
   const featureCount = entries.filter(([, e]) => inferCategory(e) === 'feature').length
   const registry = catalog.registry
@@ -492,7 +524,7 @@ export function projectFcDirectory(catalog: ComponentCatalog): FcDirectoryPayloa
     .sort((a, b) => a.localeCompare(b))
 
   return {
-    hint: 'session.describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 查询 stills.actionSpec。',
+    hint: 'session.describe 可直接返回该目录摘要；如需查看单组件属性规格，请按组件 type 调用 catalog.guide 查阅配置指南。',
     summary: {
       total: catalog.componentCount,
       containers: registry.containers.length,
@@ -524,7 +556,7 @@ export function projectFcDirectory(catalog: ComponentCatalog): FcDirectoryPayloa
 }
 
 /**
- * AI FC 投影：提炼单组件能力核心规格（适用于 stills.actionSpec）。
+ * AI FC 投影：提炼单组件能力核心规格（适用于 catalog.guide / queryComponentGuide）。
  *
  * 输出精简的 FcComponentSpec，仅保留 LLM 构造 SparkNode 所需的最小信息：
  * type / category / description / props（含必填标记）/ emits（含描述）。
@@ -534,7 +566,7 @@ export function projectFcDirectory(catalog: ComponentCatalog): FcDirectoryPayloa
  * @param type    目标组件 type 值（如 'r-table'）
  * @returns       单组件规格对象；type 不存在时返回 null
  */
-export function projectFcSpec(catalog: ComponentCatalog, type: string): FcComponentSpec | null {
+export function projectComponentSpec(catalog: ComponentCatalog, type: string): ComponentSpec | null {
   const entry = projectHydratedComponent(catalog, type)
   if (entry === null) return null
 
@@ -557,6 +589,52 @@ export function projectFcSpec(catalog: ComponentCatalog, type: string): FcCompon
     ...(entry.rootFields !== undefined && entry.rootFields.length > 0 ? { rootFields: entry.rootFields } : {}),
     ...(entry.binding !== undefined ? { binding: entry.binding } : {}),
     ...(entry.notes !== undefined ? { notes: entry.notes } : {}),
+  }
+}
+
+/**
+ * Stills 投影：把完整 component catalog 收敛为会话可读的轻量目录。
+ *
+ * 该投影用于 `createSession()` 默认注入，确保 `catalog.query` 只依赖
+ * session.catalog，不依赖运行时兜底分支。
+ */
+export function projectStillsCatalog(catalog: ComponentCatalog): StillsCatalog {
+  const registry = catalog.registry
+  if (registry === undefined) {
+    throw new Error('component-catalog registry 缺失：无法构建 StillsCatalog')
+  }
+
+  const components: Record<string, StillsComponentEntry> = {}
+
+  for (const type of Object.keys(catalog.components)) {
+    const spec = projectComponentSpec(catalog, type)
+    if (spec === null) continue
+
+    const nestingRule = catalog.constraints?.nestingRules[type]
+
+    components[type] = {
+      category: spec.category ?? 'feature',
+      description: spec.description,
+      props: spec.props,
+      ...(spec.emits.length > 0 ? { emits: spec.emits } : {}),
+      ...(spec.rootFields !== undefined ? { rootFields: spec.rootFields } : {}),
+      ...(spec.notes !== undefined ? { notes: spec.notes } : {}),
+      ...(spec.binding !== undefined ? { binding: { ...spec.binding } as Record<string, unknown> } : {}),
+      ...(nestingRule !== undefined ? { nestingRule } : {}),
+    }
+  }
+
+  return {
+    version: catalog.version,
+    buildTime: catalog.buildTime,
+    componentCount: Object.keys(components).length,
+    registry: {
+      containers: [...registry.containers],
+      fields: [...registry.fields],
+      groups: [...registry.groups],
+      meta: [...registry.meta],
+    },
+    components,
   }
 }
 
@@ -621,7 +699,7 @@ function flattenRootFieldPaths(fields: RootFieldEntry[], prefix = ''): string[] 
  * @param type    目标组件 type 值
  * @returns       详尽配置指导书；type 不存在时返回 null
  */
-export function projectFcConfigGuide(catalog: ComponentCatalog, type: string): FcComponentConfigGuide | null {
+export function projectComponentConfigGuide(catalog: ComponentCatalog, type: string): ComponentConfigGuide | null {
   const entry = projectHydratedComponent(catalog, type)
   if (entry === null) return null
 
@@ -632,6 +710,7 @@ export function projectFcConfigGuide(catalog: ComponentCatalog, type: string): F
       type: prop.type,
       ...(prop.default !== undefined ? { default: prop.default } : {}),
       ...(prop.description !== undefined ? { description: prop.description } : {}),
+      ...(prop.schema !== undefined ? { schema: prop.schema } : {}),
     }))
 
   const optionalProps = entry.props
@@ -641,6 +720,7 @@ export function projectFcConfigGuide(catalog: ComponentCatalog, type: string): F
       type: prop.type,
       ...(prop.default !== undefined ? { default: prop.default } : {}),
       ...(prop.description !== undefined ? { description: prop.description } : {}),
+      ...(prop.schema !== undefined ? { schema: prop.schema } : {}),
     }))
 
   const eventGuide = entry.emits.map((emit) => ({

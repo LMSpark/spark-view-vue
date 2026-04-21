@@ -110,6 +110,8 @@ interface PropEntryWithMeta extends PropEntry {
   __schemaIdentityKey?: string
   __schemaOwner?: SchemaOwner
   __componentRef?: string
+  /** 自动提取的字符串字面量枚举 variants（已用引号包裹） */
+  __enumVariants?: string[]
 }
 
 /** 共享 schema 池的构建上下文，用于分配稳定 ref 并做去重。 */
@@ -517,6 +519,11 @@ function compactProps(rawProps: PropEntryWithMeta[], schemaPool: SchemaPoolConte
     // 因为 VCM 对复杂类型只能生成 enum 字符串变体，不如组件引用有用
     if (prop.__componentRef !== undefined) {
       compacted.schemaRef = `component:${prop.__componentRef}`
+    } else if (prop.__enumVariants !== undefined && prop.__enumVariants.length > 0) {
+      // 命名枚举类型（如 InlineAlign、InlineJustify）：自动提升为共享 enum schema
+      const enumType = prop.type.replace(/\s*\|\s*undefined\s*$/, '').trim()
+      const enumSchema: PropSchema = { kind: 'enum', type: enumType, variants: prop.__enumVariants }
+      compacted.schemaRef = resolveSchemaRef(schemaPool, enumSchema)
     } else if (prop.schema !== undefined) {
       const isExternalObjectSchema = prop.schema.kind === 'object' && prop.__schemaOwner === 'external'
       if (!isExternalObjectSchema && shouldRetainSchema(prop.schema)) {
