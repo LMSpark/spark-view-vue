@@ -11,129 +11,23 @@
       <div class="re-ai">
         <div class="re-ai__header">
           <NavIcon name="Cpu" :size="16" />
-          <span>AI 编辑助手</span>
-          <el-tag v-if="session.ready.value" size="small" type="success" effect="plain">已就绪</el-tag>
-          <el-tag v-if="session.dirty.value" size="small" type="warning" effect="plain">待导出</el-tag>
+          <span>AI 设计助手</span>
+          <el-tag size="small" type="success" effect="plain" class="re-ai__new-tag">NEW</el-tag>
         </div>
 
-        <!-- 模式切换 -->
-        <div class="re-ai__mode">
-          <el-radio-group v-model="aiMode" size="small">
-            <el-radio-button label="edit">细粒度编辑</el-radio-button>
-            <el-radio-button label="tool">工具模式</el-radio-button>
-          </el-radio-group>
+        <div class="re-ai__feature-tip">
+          仅保留聊天模式，所有 AI 修改统一走细粒度编辑执行链路。
         </div>
 
-        <!-- 细粒度编辑模式 -->
-        <template v-if="aiMode === 'edit'">
-          <label class="re-ai__label">💬 描述你的修改需求：</label>
-          <el-input
-            v-model="editPrompt"
-            type="textarea"
-            :rows="4"
-            :disabled="session.busy.value"
-            placeholder="例如：在表格右侧增加一个「查看详情」按钮列，点击时调用 openDetail 脚本函数"
-          />
-          <el-button
-            type="primary"
-            class="re-ai__run"
-            :loading="session.busy.value"
-            :disabled="!editPrompt.trim() || !props.state.activePageId.value"
-            @click="session.runLlm(editPrompt.trim())"
-          >
-            <NavIcon name="MagicStick" :size="14" /> ✨ 执行编辑
-          </el-button>
-        </template>
-
-        <!-- 工具模式 -->
-        <template v-else>
-          <label class="re-ai__label">🔧 选择工具：</label>
-          <el-select v-model="selectedAction" size="small" style="width: 100%" filterable placeholder="选择 sparkNodeTree.* 工具">
-            <el-option-group label="查询">
-              <el-option v-for="a in TOOL_READ_ACTIONS" :key="a" :label="a" :value="a" />
-            </el-option-group>
-            <el-option-group label="写入">
-              <el-option v-for="a in TOOL_WRITE_ACTIONS" :key="a" :label="a" :value="a" />
-            </el-option-group>
-          </el-select>
-
-          <label class="re-ai__label" style="margin-top: 8px">📋 参数 JSON：</label>
-          <el-input
-            v-model="toolParams"
-            type="textarea"
-            :rows="6"
-            :disabled="session.busy.value"
-            spellcheck="false"
-            placeholder="{}"
-            style="font-family: monospace; font-size: 12px"
-          />
-          <div class="re-ai__tool-actions">
-            <el-button
-              size="small"
-              :disabled="!selectedAction || !props.state.activePageId.value"
-              @click="fillExample"
-            >
-              填入示例
-            </el-button>
-            <el-button
-              type="primary"
-              size="small"
-              :loading="session.busy.value"
-              :disabled="!selectedAction || !props.state.activePageId.value"
-              @click="session.execTool(selectedAction, toolParams)"
-            >
-              <NavIcon name="Lightning" :size="12" /> 执行
-            </el-button>
-          </div>
-        </template>
-
-        <!-- 导出并应用（仅当会话 dirty 时） -->
-        <div v-if="session.dirty.value" class="re-ai__export-bar">
-          <el-alert
-            title="SparkNode 树已在会话中修改，点击「导出并应用」写回 rule.json"
-            type="warning"
-            :closable="false"
-            show-icon
-            style="margin-bottom: 6px"
-          />
-          <el-button
-            type="warning"
-            size="small"
-            :loading="session.busy.value"
-            @click="session.exportAndApply"
-          >
-            <NavIcon name="Upload" :size="12" /> 导出并应用
-          </el-button>
-        </div>
-
-        <!-- 重置会话 -->
-        <div class="re-ai__session-bar">
-          <el-button
-            size="small"
-            :disabled="session.busy.value"
-            @click="session.reset"
-          >
-            <NavIcon name="Refresh" :size="12" /> 重置会话
-          </el-button>
-        </div>
-
-        <!-- 执行日志 -->
-        <div class="re-ai__log-header">
-          <span>执行日志</span>
-          <el-tag size="small" type="info" effect="plain">{{ session.log.value.length }}</el-tag>
-        </div>
-        <div class="re-ai__log">
-          <div v-if="session.log.value.length === 0" class="re-ai__log-empty">
-            日志为空，执行操作后此处显示结果
-          </div>
-          <div
-            v-for="(entry, idx) in session.log.value"
-            :key="idx"
-            class="re-log-entry"
-            :class="`re-log-entry--${entry.type}`"
-          >
-            <span class="re-log-tag">{{ entry.tag }}</span>
-            <pre class="re-log-text">{{ entry.text }}</pre>
+        <div class="re-ai__form">
+          <div class="re-ai__chat-widget">
+            <AiChatWidget
+              mode="multi"
+              title="Rule 聊天助手"
+              placeholder="支持文本、附件、语音输入；可连续多轮对话"
+              :compact="true"
+              :sender="ruleEditChatSender"
+            />
           </div>
         </div>
       </div>
@@ -142,23 +36,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import AiChatWidget from '@/components/AiChatWidget.vue'
+import type { AiChatSender } from '@/composables/useAiChat'
 import NavIcon from '@/components/NavIcon.vue'
 import DevFileEditor from './DevFileEditor.vue'
-import {
-  useRuleEditSession,
-  TOOL_READ_ACTIONS,
-  TOOL_WRITE_ACTIONS,
-  TOOL_PARAM_EXAMPLES,
-} from './composables/useRuleEditSession'
+import { useRuleEditSession } from './composables/useRuleEditSession'
 import { PAGE_FILE_NAMES } from './useDevState'
 import type { DevState } from './useDevState'
 
 const props = defineProps<{ state: DevState }>()
 
+async function ensureRuleContextLoaded() {
+  await Promise.all(PAGE_FILE_NAMES.map(name => props.state.loadPageFile(name)))
+}
+
 const session = useRuleEditSession({
   getContextFiles: () => ({ ...props.state.editFiles }),
+  ensureContextLoaded: ensureRuleContextLoaded,
   onApply: (files) => {
     for (const name of PAGE_FILE_NAMES) {
       if (files[name] !== undefined) props.state.updatePageFile(name, files[name])
@@ -176,13 +72,36 @@ watch(() => props.state.editFiles['rule.json'], (text) => {
   if (text) session.loadRuleJson(text)
 })
 
-const aiMode = ref<'edit' | 'tool'>('edit')
-const editPrompt = ref('')
-const selectedAction = ref('')
-const toolParams = ref('{}')
+const ruleEditChatSender: AiChatSender = async (request) => {
+  const latestUserMessage = [...request.historyMsgs]
+    .reverse()
+    .find(message => message.role === 'user')
 
-function fillExample() {
-  toolParams.value = TOOL_PARAM_EXAMPLES[selectedAction.value] ?? '{}'
+  const prompt = latestUserMessage?.content?.trim() ?? ''
+  if (!prompt) return
+
+  request.onDelta?.('已接收需求，正在执行 rule.json 细粒度编辑...\n')
+
+  let streamed = false
+  await session.runLlm(prompt, {
+    onDelta: (delta) => {
+      streamed = true
+      request.onDelta?.(delta)
+    },
+    onReasoning: (reasoning) => {
+      request.onReasoning?.(reasoning)
+    },
+  })
+  if (streamed) return
+  const latest = session.log.value[0]
+  if (!latest) {
+    request.onDelta?.('细粒度编辑已执行完成。')
+    return
+  }
+  if (latest.type === 'error') {
+    throw new Error(`${latest.tag}: ${latest.text}`)
+  }
+  request.onDelta?.(`${latest.tag}: ${latest.text}`)
 }
 </script>
 
@@ -227,125 +146,48 @@ function fillExample() {
 /* ── 右侧 AI 面板 ── */
 .re-ai {
   width: 320px;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
-  overflow-y: auto;
-  background: var(--el-fill-color-light);
+  background: #fff;
 }
 
 .re-ai__header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--el-text-color-primary);
+  color: #7c3aed;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.re-ai__mode {
-  flex-shrink: 0;
+.re-ai__new-tag {
+  margin-left: auto;
 }
 
-.re-ai__label {
+.re-ai__feature-tip {
+  margin: 10px 14px 0;
+  padding: 8px 10px;
+  border: 1px dashed #86efac;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #166534;
   font-size: 12px;
-  color: var(--el-text-color-secondary);
-  margin-bottom: 2px;
-  display: block;
+  line-height: 1.5;
 }
 
-.re-ai__run {
-  width: 100%;
-  margin-top: 4px;
+.re-ai__form {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.re-ai__tool-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-  margin-top: 4px;
+.re-ai__chat-widget {
+  margin-top: 8px;
 }
 
-.re-ai__export-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.re-ai__session-bar {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* ── 日志 ── */
-.re-ai__log-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--el-text-color-secondary);
-  border-top: 1px solid var(--el-border-color-light);
-  padding-top: 8px;
-  margin-top: 4px;
-}
-
-.re-ai__log {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 120px;
-  max-height: 400px;
-}
-
-.re-ai__log-empty {
-  font-size: 12px;
-  color: var(--el-text-color-placeholder);
-  text-align: center;
-  padding: 16px 0;
-}
-
-.re-log-entry {
-  border-radius: 6px;
-  padding: 6px 8px;
-  font-size: 11.5px;
-  background: var(--el-bg-color);
-  border-left: 3px solid var(--el-border-color);
-}
-
-.re-log-entry--success {
-  border-left-color: var(--el-color-success);
-}
-
-.re-log-entry--error {
-  border-left-color: var(--el-color-danger);
-}
-
-.re-log-entry--info {
-  border-left-color: var(--el-color-info);
-}
-
-.re-log-tag {
-  display: block;
-  font-weight: 600;
-  color: var(--el-text-color-secondary);
-  margin-bottom: 2px;
-  font-size: 11px;
-}
-
-.re-log-text {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-all;
-  color: var(--el-text-color-primary);
-  font-family: monospace;
-  font-size: 11px;
-  max-height: 160px;
-  overflow-y: auto;
+.re-ai__chat-widget :deep(.ai-chat-widget.compact) {
+  height: 100%;
+  min-height: 0;
 }
 </style>

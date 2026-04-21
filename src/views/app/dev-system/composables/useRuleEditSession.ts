@@ -105,14 +105,21 @@ type StillsSession = ReturnType<typeof createStillSession>
 export interface RuleEditSessionOptions {
   /** Returns the 4 page files for bootstrap params. */
   getContextFiles: () => Record<string, string>
+  /** Ensures page context files are loaded before first bootstrap. */
+  ensureContextLoaded?: () => Promise<void>
   /** Called when an AI export is ready; receives all changed files (rule.json, pagedata.json, script.js, style.css). */
   onApply: (files: Record<string, string>) => void
   /** Called to surface user-facing status messages. */
   onStatus: (msg: string, type: 'success' | 'warning' | 'error') => void
 }
 
+export interface RuleEditRunHooks {
+  onDelta?: (delta: string) => void
+  onReasoning?: (reasoning: string) => void
+}
+
 export function useRuleEditSession(options: RuleEditSessionOptions) {
-  const { getContextFiles, onApply, onStatus } = options
+  const { getContextFiles, ensureContextLoaded, onApply, onStatus } = options
 
   // Single stable backend instance — not reactive (no template binding needed)
   const backend = new SessionBackendImpl()
@@ -125,6 +132,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
   const aiBuffer = ref('')
   const log = ref<LogEntry[]>([])
   const nodeTree = shallowRef<SparkNodeTree | null>(null)
+  let runHooks: RuleEditRunHooks | null = null
 
   // ── Internal helpers ────────────────────────────────────────────────────────
 
@@ -185,9 +193,28 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     return s
   }
 
+  function exportSessionFiles(currentSession: StillsSession): Record<string, string> {
+    const result = executeStill('edit.exportFiles', {}, currentSession, 'export')
+    if (!result.ok) throw new Error(result.msg)
+    const exportData = result.data as { files?: Record<string, string> }
+    return exportData.files ?? {}
+  }
+
+  function applyFiles(files: Record<string, string>, tag: string, text: string) {
+    if (Object.keys(files).length === 0) return false
+    if (!files['rule.json']) throw new Error('exportFiles 未返回 rule.json')
+    onApply(files)
+    dirty.value = false
+    pushLog('success', tag, text)
+    return true
+  }
+
   function onSseEvent(event: { sessionId: string; type: string; data: string }) {
     if (event.type === 'delta') {
       aiBuffer.value += event.data
+      runHooks?.onDelta?.(event.data)
+    } else if (event.type === 'reasoning') {
+      runHooks?.onReasoning?.(event.data)
     } else if (event.type === 'result') {
       try {
         const parsed = JSON.parse(event.data) as {
@@ -248,11 +275,15 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
   }
 
   /** Run the LLM orchestration loop for a given prompt (edit/chat mode). */
-  async function runLlm(prompt: string): Promise<void> {
+  async function runLlm(prompt: string, hooks?: RuleEditRunHooks): Promise<void> {
     busy.value = true
     aiBuffer.value = ''
+    runHooks = hooks ?? null
     const captureState: { files: Record<string, string> | null } = { files: null }
     try {
+      if (!ready.value) {
+        await ensureContextLoaded?.()
+      }
       const s = ensureSession()
       configureSessionBackend({ getHeaders: createAuthHeaders, onSseEvent })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
@@ -280,16 +311,16 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       })
       backendSessionId = result.sessionId
       if (result.aborted) throw new Error(`Stills 中止: ${result.abortReason}`)
-      const capturedFiles = captureState.files
-      if (capturedFiles !== null && Object.keys(capturedFiles).length > 0) {
-        onApply(capturedFiles)
-        dirty.value = false
-        pushLog('success', '✅ 已应用', `文件更新完成 (${result.rounds} 轮): ${Object.keys(capturedFiles).join(', ')}`)
+      let filesToApply = captureState.files
+      if (filesToApply === null || Object.keys(filesToApply).length === 0) {
+        filesToApply = exportSessionFiles(s)
+      }
+      if (applyFiles(filesToApply, '✅ 已应用', `文件更新完成 (${result.rounds} 轮): ${Object.keys(filesToApply).join(', ')}`)) {
         onStatus(`✅ 细粒度编辑完成 (${result.rounds} 轮)`, 'success')
       } else {
-        dirty.value = true
-        pushLog('info', `${result.rounds} 轮完成`, '未获取到导出文件，如有变更请点击「导出并应用」')
-        onStatus('⚠️ 执行完成但无文件导出', 'warning')
+        dirty.value = false
+        pushLog('info', `${result.rounds} 轮完成`, '未检测到文件变更')
+        onStatus(`✅ 细粒度编辑完成 (${result.rounds} 轮)`, 'success')
       }
     } catch (err) {
       pushLog('error', '编辑失败', err instanceof Error ? err.message : String(err))
@@ -297,6 +328,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       throw err
     } finally {
       configureSessionBackend({ getHeaders: createAuthHeaders })
+      runHooks = null
       busy.value = false
     }
   }
@@ -306,20 +338,10 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     if (!dirty.value || !session.value) return
     busy.value = true
     try {
-      const result = executeStill('edit.exportFiles', {}, session.value, 'export')
-      if (!result.ok) {
-        pushLog('error', 'edit.exportFiles', result.msg)
-        return
-      }
-      const exportData = result.data as { files?: Record<string, string> }
-      const files = exportData.files ?? {}
-      if (!files['rule.json']) {
-        pushLog('error', '导出', 'exportFiles 未返回 rule.json')
-        return
-      }
-      onApply(files)
+      const files = exportSessionFiles(session.value)
+      if (applyFiles(files, '已应用', `文件已写回编辑器: ${Object.keys(files).join(', ')}`)) return
       dirty.value = false
-      pushLog('success', '已应用', `文件已写回编辑器: ${Object.keys(files).join(', ')}`)
+      pushLog('info', '已应用', '未检测到文件变更')
     } catch (err) {
       pushLog('error', '异常', err instanceof Error ? err.message : String(err))
     } finally {
@@ -329,6 +351,10 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
 
   /** Reset session (re-bootstrap on next use). */
   function reset() {
+    if (backendSessionId) {
+      void backend.destroySession(backendSessionId)
+      backendSessionId = null
+    }
     session.value = null
     ready.value = false
     dirty.value = false

@@ -109,6 +109,7 @@
           :file-name="resolvedActiveFile"
           :file-content="state.editFiles[resolvedActiveFile] ?? ''"
           :context-files="state.editFiles"
+          :ensure-context-loaded="ensureAllContextFilesLoaded"
           :enabled="Boolean(state.activePageId.value)"
           @apply="handleAiApply"
           @status="handleAiStatus"
@@ -211,6 +212,10 @@ function saveFile() {
 
 function refreshFile() {
   void editor.refresh()
+}
+
+async function ensureAllContextFilesLoaded() {
+  await Promise.all(PAGE_FILE_NAMES.map(name => props.state.loadPageFile(name)))
 }
 
 // ── AI 辅助处理 ──
