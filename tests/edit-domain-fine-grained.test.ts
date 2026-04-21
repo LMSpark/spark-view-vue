@@ -33,6 +33,42 @@ describe('edit domain fine-grained flow', () => {
     expect(result.code).toBe('NOT_EDITING')
   })
 
+  it('supports sparkNodeTree componentId lookups with legacy top-level id', () => {
+    const init = exec('edit.bootstrap', {
+      ruleJson: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],
+      pageDataJson: { dataSetName: 'PageDataSet', tables: {} },
+      scriptJs: 'export default {}\n',
+      styleCss: '.page {}\n',
+    })
+    expect(init.ok).toBe(true)
+
+    const datasetExported = exec('dataset.export')
+    expect(datasetExported.ok).toBe(true)
+
+    const hasRoot = exec('sparkNodeTree.hasNode', { componentId: 'root-table' })
+    expect(hasRoot.ok).toBe(true)
+    if (!hasRoot.ok) return
+    expect(hasRoot.data).toBe(true)
+
+    const addNode = exec('sparkNodeTree.addNode', {
+      parentComponentId: 'root-table',
+      node: {
+        type: 'r-text',
+        id: 'dept-name-field',
+        props: {
+          field: 'name',
+          label: '部门名称',
+        },
+      },
+    })
+    expect(addNode.ok).toBe(true)
+
+    const hasChild = exec('sparkNodeTree.hasNode', { componentId: 'dept-name-field' })
+    expect(hasChild.ok).toBe(true)
+    if (!hasChild.ok) return
+    expect(hasChild.data).toBe(true)
+  })
+
   it('lands dataset-first fine-grained flow', () => {
     const init = exec('edit.bootstrap', {
       ruleJson: [{ id: 'root-table', type: 'r-table', props: { dataKey: 'Users@default' }, children: [] }],

@@ -18,6 +18,7 @@
         "debug:ai:sessions:stream:smoke": "node scripts/verify-ai-session-stream-smoke.mjs",
         "debug:ai:stream-page:medium": "npx tsx scripts/verify-ai-real-call.ts --scenario medium",
         "debug:ai:stream-page:real": "npx tsx scripts/verify-ai-real-call.ts --scenario leave",
+        "debug:ai:edit:sparknode": "cross-env RUN_REAL_AI=true vitest run tests/ai-edit-sparknode.e2e.test.ts",
         "debug:sse:loop": "node scripts/verify-sse-debug-loop.mjs --pageId section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expectText 姓名",
         "debug:sse:loop:py": "python scripts/verify-sse-debug-loop.py --page-id section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expect-text 姓名",
         "debug:sse:loop:py:visual": "python scripts/verify-sse-debug-loop.py --page-id section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expect-text 姓名 --assert-visual-change --min-diff-ratio 0.0001",

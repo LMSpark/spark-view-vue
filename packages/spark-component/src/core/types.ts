@@ -140,6 +140,7 @@ export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['typ
  * 统一处理：
  * - 空 type → fallbackType（fallbackType 本身为空时兜底 `'unknown'`）
  * - props 非纯对象（null / 数组 / 原始值）→ 省略 props 键
+ * - 兼容 legacy 顶层 id：当 props.id 缺失时自动迁移到 props.id
  * - children 缺省或非数组 → `[]`
  *
  * @param node - 待归一化的 SparkNode
@@ -156,14 +157,25 @@ export function normalizeSparkNode(node: SparkNode, fallbackType = 'unknown'): S
     : normalizedFallbackType
 
   const rawProps = (node as { props?: unknown }).props
+  const rawLegacyId = (node as { id?: unknown }).id
+  const legacyId = typeof rawLegacyId === 'string' ? rawLegacyId : undefined
   const hasObjectProps = rawProps !== undefined
     && rawProps !== null
     && typeof rawProps === 'object'
     && !Array.isArray(rawProps)
 
+  const normalizedProps = hasObjectProps
+    ? {
+      ...(rawProps as Record<string, unknown>),
+      ...(legacyId !== undefined && typeof (rawProps as Record<string, unknown>)['id'] !== 'string'
+        ? { id: legacyId }
+        : {}),
+    }
+    : (legacyId !== undefined ? { id: legacyId } : undefined)
+
   return {
     type: normalizedType,
-    ...(hasObjectProps ? { props: rawProps as Record<string, unknown> } : {}),
+    ...(normalizedProps !== undefined ? { props: normalizedProps } : {}),
     children: Array.isArray(node.children) ? node.children : [],
   }
 }
@@ -183,11 +195,17 @@ export function getSparkNodeChildren(children: SparkNodeChildren | undefined): S
 }
 
 /**
- * 读取节点 id（严格从 props.id）
+ * 读取节点 id。
+ *
+ * 规范形态优先使用 props.id；
+ * 兼容编辑域历史输入（顶层 id）以避免树定位失败。
  */
-export function nodeId(node: { props?: Record<string, unknown> }): string | undefined {
-  const id = node.props?.['id']
-  return typeof id === 'string' ? id : undefined
+export function nodeId(node: { props?: Record<string, unknown>; id?: unknown }): string | undefined {
+  const propsId = node.props?.['id']
+  if (typeof propsId === 'string') return propsId
+
+  const legacyId = node.id
+  return typeof legacyId === 'string' ? legacyId : undefined
 }
 
 /**

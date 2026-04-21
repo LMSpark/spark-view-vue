@@ -609,6 +609,88 @@ describe('runStillsLoop', () => {
     expect(result.rounds).toBe(1)
   })
 
+  it('injects escalated followUp after repeated same failed signature', async () => {
+    type MockReply = {
+      text?: string
+      reasoning?: string
+      toolCalls?: ToolCall[]
+    }
+
+    const replies: MockReply[] = [
+      { toolCalls: [makeToolCall('sparkNodeTree.addNode', 'r1', { parentComponentId: 'root-table', index: 0 })] },
+      { toolCalls: [makeToolCall('sparkNodeTree.addNode', 'r2', { parentComponentId: 'root-table', index: 0 })] },
+      { text: 'done' },
+    ]
+
+    let callIndex = 0
+    const appended: Array<{ role: string; content: string; tool_call_id?: string; tool_calls?: ToolCall[] }> = []
+
+    const backend: SessionBackend = {
+      async createSession() { return 'mock-session-id' },
+      async executeTurn() {
+        const reply = replies[callIndex]
+        if (reply === undefined) return null
+        callIndex++
+        const response: LlmResponse = { text: reply.text ?? '' }
+        if (reply.reasoning !== undefined) response.reasoning = reply.reasoning
+        if (reply.toolCalls !== undefined) response.toolCalls = reply.toolCalls
+        return response
+      },
+      async appendMessages(_sid, msgs) {
+        appended.push(...msgs)
+      },
+      async getConversation() {
+        return appended.map(m => ({ role: m.role, content: m.content }))
+      },
+      async destroySession() { /* noop */ },
+      async destroyAllSessions() { /* noop */ },
+    }
+
+    const mockDispatchFc = (tc: ToolCall): FcDispatchResult => {
+      const result: StillResult = {
+        ok: false,
+        code: 'EXECUTE_ERROR',
+        msg: 'addNode.node must be a SparkNode with a non-empty type',
+        fix: '正确参数格式: {"node":{"type":"r-text"}}',
+      }
+      return {
+        action: 'sparkNodeTree.addNode',
+        result,
+        toolCall: tc,
+        toolResult: {
+          tool_call_id: tc.id,
+          content: JSON.stringify({ ok: false, code: result.code, msg: result.msg, fix: result.fix }),
+        },
+      }
+    }
+
+    const result = await runStillsLoop('test', session, backend, {
+      maxRounds: 5,
+      slidingWindow: 20,
+      systemPrompt: 'test',
+      dispatchFc: mockDispatchFc,
+    })
+
+    expect(result.rounds).toBe(3)
+    const toolMessages = appended.filter(m => m.role === 'tool')
+    expect(toolMessages.length).toBe(2)
+
+    const firstPayload = JSON.parse(toolMessages[0]?.content ?? '{}') as { _followUp?: string[] }
+    const secondPayload = JSON.parse(toolMessages[1]?.content ?? '{}') as { _followUp?: string[] }
+    const firstFollowUp = firstPayload._followUp ?? []
+    const secondFollowUp = secondPayload._followUp ?? []
+
+    expect(firstFollowUp.join('\n')).toContain('系统即时纠错')
+    expect(firstFollowUp.join('\n')).toContain('错误详情')
+    expect(firstFollowUp.join('\n')).toContain('对应动作 actionSpec（已内联，无需再次查询）')
+    expect(firstFollowUp.join('\n')).not.toContain('系统升级纠错')
+    expect(secondFollowUp.join('\n')).toContain('系统即时纠错')
+    expect(secondFollowUp.join('\n')).toContain('系统升级纠错')
+    expect(secondFollowUp.join('\n')).toContain('对应动作 actionSpec（已内联，无需再次查询）')
+    expect(secondFollowUp.join('\n')).not.toContain('下一步必须先调用 stills.actionSpec')
+    expect(secondFollowUp.join('\n')).toContain('sparkNodeTree.addNode')
+  })
+
   it('terminates on export + blueprint done', async () => {
     // Prepare session with blueprint all-done
     exec('dataset.bootstrap', { dataSetName: 'DS' })

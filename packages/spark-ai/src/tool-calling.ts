@@ -77,6 +77,7 @@ export interface JsonSchemaProperty {
   description?: string
   items?: JsonSchemaProperty
   properties?: Record<string, JsonSchemaProperty>
+  required?: string[]
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -137,20 +138,25 @@ function inferPropertySchema(raw: string): { prop: JsonSchemaProperty; required:
   const typePart = dashIdx > 0 ? raw.slice(0, dashIdx).trim() : raw.trim()
   const descPart = dashIdx > 0 ? raw.slice(dashIdx + 1).trim() : undefined
 
-  const optional = typePart.endsWith('?')
-  const cleanType = optional ? typePart.slice(0, -1).trim() : typePart
+  const optional = typePart.endsWith('?') || typePart.includes('undefined')
+  const cleanType = typePart.endsWith('?') ? typePart.slice(0, -1).trim() : typePart
+
+  const unionParts = cleanType
+    .split('|')
+    .map(part => part.trim().toLowerCase())
+    .filter(part => part.length > 0 && part !== 'null' && part !== 'undefined')
 
   const prop: JsonSchemaProperty = { type: 'string' }
   if (descPart) prop.description = descPart
 
-  if (cleanType.endsWith('[]')) {
+  if (unionParts.some(part => part.endsWith('[]') || part.startsWith('array<'))) {
     prop.type = 'array'
     prop.items = { type: 'object' }
-  } else if (cleanType === 'number' || cleanType === 'integer') {
+  } else if (unionParts.some(part => part === 'number' || part === 'integer')) {
     prop.type = 'number'
-  } else if (cleanType === 'boolean') {
+  } else if (unionParts.some(part => part === 'boolean')) {
     prop.type = 'boolean'
-  } else if (cleanType === 'string') {
+  } else if (unionParts.some(part => part === 'string' || /^".*"$/u.test(part) || /^'.*'$/u.test(part))) {
     prop.type = 'string'
   } else {
     // 复合类型（CrudApi / Record / 其他）→ object
@@ -160,21 +166,117 @@ function inferPropertySchema(raw: string): { prop: JsonSchemaProperty; required:
   return { prop, required: !optional }
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function inferPropertySchemaFromUnknown(rawDesc: unknown): { prop: JsonSchemaProperty; required: boolean } {
+  if (typeof rawDesc === 'string') {
+    return inferPropertySchema(rawDesc)
+  }
+
+  if (!isPlainRecord(rawDesc)) {
+    return { prop: { type: 'object' }, required: true }
+  }
+
+  const kind = rawDesc['kind']
+  const note = typeof rawDesc['note'] === 'string' ? rawDesc['note'] : undefined
+
+  if (kind === 'array') {
+    const itemSchema = inferPropertySchemaFromUnknown(rawDesc['items']).prop
+    return {
+      prop: {
+        type: 'array',
+        ...(note ? { description: note } : {}),
+        items: itemSchema,
+      },
+      required: true,
+    }
+  }
+
+  if (kind === 'object') {
+    const properties: Record<string, JsonSchemaProperty> = {}
+    const requiredSet = new Set<string>()
+
+    const required = rawDesc['required']
+    if (Array.isArray(required)) {
+      for (const key of required) {
+        if (typeof key === 'string' && key.length > 0) requiredSet.add(key)
+      }
+    }
+
+    const rawProperties = isPlainRecord(rawDesc['properties']) ? rawDesc['properties'] : {}
+    for (const [key, value] of Object.entries(rawProperties)) {
+      const inferred = inferPropertySchemaFromUnknown(value)
+      properties[key] = inferred.prop
+      if (inferred.required) requiredSet.add(key)
+    }
+
+    const optionalProperties = isPlainRecord(rawDesc['optional']) ? rawDesc['optional'] : {}
+    for (const [key, value] of Object.entries(optionalProperties)) {
+      const inferred = inferPropertySchemaFromUnknown(value)
+      properties[key] = inferred.prop
+      requiredSet.delete(key)
+    }
+
+    return {
+      prop: {
+        type: 'object',
+        ...(note ? { description: note } : {}),
+        properties,
+        ...(requiredSet.size > 0 ? { required: Array.from(requiredSet) } : {}),
+      },
+      required: true,
+    }
+  }
+
+  const properties: Record<string, JsonSchemaProperty> = {}
+  const required: string[] = []
+  for (const [key, value] of Object.entries(rawDesc)) {
+    const inferred = inferPropertySchemaFromUnknown(value)
+    properties[key] = inferred.prop
+    if (inferred.required) required.push(key)
+  }
+
+  return {
+    prop: {
+      type: 'object',
+      properties,
+      ...(required.length > 0 ? { required } : {}),
+    },
+    required: true,
+  }
+}
+
+function inferToolParametersFromSchema(paramsSchema: unknown): { properties: Record<string, JsonSchemaProperty>; required: string[] } {
+  if (!isPlainRecord(paramsSchema)) {
+    return { properties: {}, required: [] }
+  }
+
+  if (paramsSchema['kind'] === 'object') {
+    const inferred = inferPropertySchemaFromUnknown(paramsSchema)
+    return {
+      properties: inferred.prop.properties ?? {},
+      required: inferred.prop.required ?? [],
+    }
+  }
+
+  const properties: Record<string, JsonSchemaProperty> = {}
+  const required: string[] = []
+  for (const [key, rawDesc] of Object.entries(paramsSchema)) {
+    const inferred = inferPropertySchemaFromUnknown(rawDesc)
+    properties[key] = inferred.prop
+    if (inferred.required) required.push(key)
+  }
+
+  return { properties, required }
+}
+
 /**
  * 从单个 StillDefinition 生成 JSON Schema tool definition
  */
 export function stillToToolDefinition(still: StillDefinition): ToolDefinition {
-  const properties: Record<string, JsonSchemaProperty> = {}
-  const required: string[] = []
-
-  if (still.paramsSchema) {
-    for (const [key, rawDesc] of Object.entries(still.paramsSchema)) {
-      if (typeof rawDesc !== 'string') continue
-      const { prop, required: isRequired } = inferPropertySchema(rawDesc)
-      properties[key] = prop
-      if (isRequired) required.push(key)
-    }
-  }
+  const { properties, required } = inferToolParametersFromSchema(still.paramsSchema)
 
   // 补充 guard 和 usageRules 到 description
   const descParts = [still.description]

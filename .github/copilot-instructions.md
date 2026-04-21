@@ -17,7 +17,7 @@ Purpose: repo-wide defaults for AI coding agents. Keep this file short, actionab
 - Husky pre-commit runs `lint` + `typecheck`.
 - Commit scopes are restricted to: `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`.
 
-## Repo Map
+## Repos Map
 
 - `packages/spark-utils` — pure TypeScript primitives: capability keys, logger, HTTP, sandbox helpers.
 - `packages/spark-data` — pure TypeScript data space: `DataSet`, `DataTable`, `DataView`, `TreeManager`, `data-key`.
@@ -38,6 +38,11 @@ High-value entry points:
 
 ## Non-Negotiable Rules
 
+- **UI 组装强制 SOP**（AI Tool 调用规范）：
+  1. 需要构造组件时，先调用 `queryComponentCatalog('*')` 或 `stills.actionSpec({ action: 'SparkNode.containers' })` 查全量列表。
+  2. 选定组件类型（如 r-table）后，必定调用 `queryComponentCatalog('r-table')` 拉取该型 props schema (配置规格)。
+  3. 基于拉取到的合法规格在本地拼接 SparkNode (`{ type, props, children }`)。
+  4. 最后调用 `sparkNodeTree.addNode` 或 `sparkNodeTree.addNodes` 实施写入。**绝对禁止不看 specs 凭空构造 props！**
 - Config-first: prefer `rule.json`, `pagedata.json`, view metadata, and existing renderer capabilities. Use `script.js` only when config cannot express the behavior.
 - Single DataSet pipeline: `pagedata.json` -> `parsePageData()` -> `DataSet` -> `usePageDataSet()` -> `PAGE_DATASET` -> `DataKey` -> `DataView` -> UI. Do not reintroduce renderer-side raw JSON normalization, `pageData`, or `$data` side channels.
 - `clearDataSet()` only releases the reference. Never call `DataSet.destroy()` there. `DataSet` instances are cached and reused across navigations.

@@ -96,13 +96,13 @@ const QUERY_TOOLS: FcToolDefinition[] = [
     type: 'function',
     function: {
       name: 'queryComponentCatalog',
-      description: '查询已注册组件的元数据（props、events、描述）。传 * 获取全部组件列表。',
+      description: '查询已注册组件的元数据。传 * 获取全部组件列表；传 type 获取该组件的 props 规格。在调用 addNode 等写入操作前，必须先用此工具查阅组件规格。',
       parameters: {
         type: 'object',
         properties: {
           componentType: {
             type: 'string',
-            description: '组件类型（如 r-table、r-form、el-table-column）。传 * 获取全部组件列表。',
+            description: '组件类型（如 r-table、r-form）。传 * 获取全部组件列表。在组装 SparkNode 前，必须先传确定的 type 获取规格。',
           },
         },
         required: ['componentType'],

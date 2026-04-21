@@ -106,6 +106,7 @@ describe('SparkNodeTree', () => {
     expect(merged.node.props).toEqual({
       dataKey: 'Users@rows',
       border: true,
+      id: 'table',
       stripe: true,
     })
 

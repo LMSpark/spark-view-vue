@@ -892,9 +892,19 @@ function copySparkNode(
   const type = nextType === KEEP ? node.type : nextType
   const props = nextProps === KEEP ? node.props : nextProps
   const children = nextChildren === KEEP ? node.children : nextChildren
+
+  const rawLegacyId = (node as { id?: unknown }).id
+  const legacyId = typeof rawLegacyId === 'string' ? rawLegacyId : undefined
+  const normalizedProps = props !== undefined
+    ? {
+      ...props,
+      ...(legacyId !== undefined && typeof props['id'] !== 'string' ? { id: legacyId } : {}),
+    }
+    : (legacyId !== undefined ? { id: legacyId } : undefined)
+
   return buildSparkNode({
     type,
-    ...(props !== undefined ? { props } : {}),
+    ...(normalizedProps !== undefined ? { props: normalizedProps } : {}),
     ...(children !== undefined ? { children } : {}),
   })
 }

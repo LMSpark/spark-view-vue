@@ -52,21 +52,21 @@ export interface SparkNodeTreeToolCapabilityRow {
 }
 
 const NO_PARAMS: Record<string, unknown> = {}
-const NODE_ID_PARAM = 'string — 当前组件子树内的节点 id'
-const PARENT_ID_PARAM = 'string | null ? — 父节点 id；null/省略表示当前绑定组件实例'
+const COMPONENT_ID_PARAM = 'string — 当前组件子树内的组件 id（兼容 nodeId）'
+const PARENT_COMPONENT_ID_PARAM = 'string | null ? — 父组件 id（兼容 parentId）；null/省略表示当前绑定组件实例'
 const INDEX_PARAM = 'number? — 插入位置；省略时追加到末尾'
 const PROPS_PARAM = 'Record<string, unknown> — 要写入的 props 对象'
 const NODES_PARAM = 'SparkNode[] — 按顺序插入的多个节点'
-const NODE_IDS_PARAM = 'string[] — 目标节点 id 列表'
-const SET_PROPS_BATCH_ITEMS_PARAM = 'Array<{ nodeId: string; props: Record<string, unknown>; merge?: boolean }>'
-const REPLACE_NODES_ITEMS_PARAM = 'Array<{ nodeId: string; node: SparkNode }>'
+const COMPONENT_IDS_PARAM = 'string[] — 目标组件 id 列表（兼容 nodeIds）'
+const SET_PROPS_BATCH_ITEMS_PARAM = 'Array<{ componentId: string; props: Record<string, unknown>; merge?: boolean }>（兼容 nodeId）'
+const REPLACE_NODES_ITEMS_PARAM = 'Array<{ componentId: string; node: SparkNode }>（兼容 nodeId）'
 const NODE_PARAM = {
   kind: 'object',
   required: ['type'],
   properties: {
     type: 'string — 组件类型',
-    id: 'string? — 节点 id；建议由宿主提供稳定 id',
-    props: 'Record<string, unknown> ? — 节点属性',
+    id: 'string? — 历史兼容字段；推荐放在 props.id',
+    props: 'Record<string, unknown> ? — 节点属性（推荐在 props.id 提供稳定节点 id）',
     children: 'SparkNodeChildren ? — 子节点数组，可混合 SparkNode / string / number',
   },
   note: 'node 必须是完整 SparkNode 对象，不要只传类型名字符串。',
@@ -76,6 +76,7 @@ const CATALOG_ONLY_RULE = '本 catalog 只定义核心层动作目录，不接 s
 const INSTANCE_RULE = '需先通过 new SparkNodeTree({ root }) 绑定一个当前组件实例（SparkNode）；该实例既可以是页面组件，也可以是任意子组件，后续动作都作用于它的当前子树状态。'
 const NAMED_PARAM_RULE = '运行时应优先使用命名参数对象，而不是位置参数。'
 const DIRECT_CHILDREN_RULE = 'children 相关动作只作用于直接子节点，不递归跨层修改。'
+const SCALAR_PARENT_COMPONENT_RULE = 'parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。'
 const INSTANCE_WRITE_RULE = 'SparkNodeTree 的写操作会更新当前组件实例对应的 root；如需最新子树快照，请读取 tree.root 或 toJSON()。'
 
 function defineDescribeRow(
@@ -117,15 +118,15 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.getNode',
     target: 'node',
     coreMethod: 'getNode',
-    description: '按 nodeId 查找节点；未命中时返回 null。',
+    description: '按 componentId 查找节点；未命中时返回 null（兼容 nodeId）。',
     paramsSchema: {
-      nodeId: NODE_ID_PARAM,
+      componentId: COMPONENT_ID_PARAM,
     },
     resultSchema: {
       node: 'SparkNode | null — 命中的节点',
     },
     example: {
-      nodeId: 'table',
+      componentId: 'table',
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
     failureModes: [],
@@ -136,13 +137,13 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     coreMethod: 'getLocation',
     description: '查找节点并返回其父节点、层级深度和直接索引位置。',
     paramsSchema: {
-      nodeId: NODE_ID_PARAM,
+      componentId: COMPONENT_ID_PARAM,
     },
     resultSchema: {
       location: 'SparkNodeLocation | null — 命中的位置信息',
     },
     example: {
-      nodeId: 'name-column',
+      componentId: 'name-column',
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
     failureModes: [],
@@ -151,15 +152,15 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.hasNode',
     target: 'node',
     coreMethod: 'hasNode',
-    description: '判断指定 nodeId 是否存在于当前树中。',
+    description: '判断指定 componentId 是否存在于当前树中（兼容 nodeId）。',
     paramsSchema: {
-      nodeId: NODE_ID_PARAM,
+      componentId: COMPONENT_ID_PARAM,
     },
     resultSchema: {
       exists: 'boolean — 是否存在',
     },
     example: {
-      nodeId: 'toolbar',
+      componentId: 'toolbar',
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
     failureModes: [],
@@ -170,13 +171,13 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     coreMethod: 'getParent',
     description: '获取指定节点的直接父节点；当前绑定 root 或未命中时返回 null。',
     paramsSchema: {
-      nodeId: NODE_ID_PARAM,
+      componentId: COMPONENT_ID_PARAM,
     },
     resultSchema: {
       parent: 'SparkNode | null — 直接父节点',
     },
     example: {
-      nodeId: 'name-column',
+      componentId: 'name-column',
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
     failureModes: [],
@@ -187,19 +188,23 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     coreMethod: 'listChildren',
     description: '读取当前组件实例或指定子组件的直接 children 数组。',
     paramsSchema: {
-      parentId: PARENT_ID_PARAM,
+      kind: 'object',
+      optional: {
+        parentComponentId: PARENT_COMPONENT_ID_PARAM,
+      },
+      note: 'parentComponentId 必须是 string/null 原子值；省略时默认当前绑定组件实例。',
     },
     resultSchema: {
       children: 'SparkNodeChildren — 直接子节点数组',
     },
     example: {
-      parentId: null,
+      parentComponentId: null,
     },
-    usageRules: [INSTANCE_RULE, DIRECT_CHILDREN_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, DIRECT_CHILDREN_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, CATALOG_ONLY_RULE],
     failureModes: [
       {
         code: 'PARENT_NOT_FOUND',
-        when: 'parentId 未命中现有节点',
+        when: 'parentComponentId 未命中现有节点',
         fix: '先通过 sparkNodeTree.getNode 或 sparkNodeTree.hasNode 确认父节点存在。',
       },
     ],
@@ -247,26 +252,33 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.addNode',
     target: 'children',
     coreMethod: 'addNode',
-    description: '向当前组件实例或指定子组件的 children 中插入一个新节点。',
+    description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 queryComponentCatalog 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
     paramsSchema: {
-      parentId: PARENT_ID_PARAM,
-      node: NODE_PARAM,
-      index: INDEX_PARAM,
+      kind: 'object',
+      required: ['node'],
+      properties: {
+        node: NODE_PARAM,
+      },
+      optional: {
+        parentComponentId: PARENT_COMPONENT_ID_PARAM,
+        index: INDEX_PARAM,
+      },
+      note: 'node 为必填；parentComponentId 必须是 string/null 原子值。',
     },
     resultSchema: {
       node: 'SparkNode — 新插入的节点',
       index: 'number — 实际插入位置',
     },
     example: {
-      parentId: 'toolbar',
+      parentComponentId: 'toolbar',
       node: { type: 'r-button', id: 'refresh-action', props: { action: 'refresh' } },
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
     failureModes: [
       {
         code: 'PARENT_NOT_FOUND',
-        when: 'parentId 未命中现有节点',
-        fix: '先确认父节点 id，或把 parentId 置为 null 直接挂到当前绑定组件实例。',
+        when: 'parentComponentId 未命中现有节点',
+        fix: '先确认父组件 id，或把 parentComponentId 置为 null 直接挂到当前绑定组件实例。',
       },
       {
         code: 'INVALID_NODE',
@@ -279,29 +291,36 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.addNodes',
     target: 'children',
     coreMethod: 'addNodes',
-    description: '向同一个子组件容器批量插入多个新节点，减少逐个 addNode 的多轮调用。',
+    description: '向同一个子组件容器批量插入多个新节点。警告：入参 nodes 必须是由指定 type 的 props schema 组装而成的合法 SparkNode 数组。构造前必须查阅组件规格，绝对禁止凭空猜测 props。',
     paramsSchema: {
-      parentId: PARENT_ID_PARAM,
-      nodes: NODES_PARAM,
-      index: INDEX_PARAM,
+      kind: 'object',
+      required: ['nodes'],
+      properties: {
+        nodes: NODES_PARAM,
+      },
+      optional: {
+        parentComponentId: PARENT_COMPONENT_ID_PARAM,
+        index: INDEX_PARAM,
+      },
+      note: 'nodes 为必填；parentComponentId 必须是 string/null 原子值。',
     },
     resultSchema: {
       nodes: 'SparkNode[] — 按传入顺序成功插入的节点',
       indexes: 'number[] — 每个节点的实际插入位置',
     },
     example: {
-      parentId: 'toolbar',
+      parentComponentId: 'toolbar',
       nodes: [
         { type: 'r-button', id: 'refresh-action', props: { action: 'refresh' } },
         { type: 'r-button', id: 'export-action', props: { action: 'export' } },
       ],
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
+    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
     failureModes: [
       {
         code: 'PARENT_NOT_FOUND',
-        when: 'parentId 未命中现有节点',
-        fix: '先确认父节点存在，或把 parentId 置为 null。',
+        when: 'parentComponentId 未命中现有节点',
+        fix: '先确认父组件存在，或把 parentComponentId 置为 null。',
       },
       {
         code: 'INVALID_NODE_LIST',
@@ -316,7 +335,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     coreMethod: 'setProps',
     description: '写入或替换目标节点的 props。',
     paramsSchema: {
-      nodeId: NODE_ID_PARAM,
+      componentId: COMPONENT_ID_PARAM,
       props: PROPS_PARAM,
       merge: 'boolean? — true=合并，false=替换；省略时默认合并',
     },
@@ -324,7 +343,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       node: 'SparkNode — props 已更新的节点',
     },
     example: {
-      nodeId: 'table',
+      componentId: 'table',
       props: { stripe: true },
       merge: true,
     },
@@ -332,7 +351,7 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
-        when: 'nodeId 未命中现有节点',
+        when: 'componentId 未命中现有节点',
         fix: '先通过 sparkNodeTree.getNode 或 sparkNodeTree.hasNode 确认目标节点存在。',
       },
     ],
@@ -350,21 +369,21 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     example: {
       items: [
-        { nodeId: 'table', props: { stripe: true }, merge: true },
-        { nodeId: 'toolbar', props: { class: 'toolbar-wide' }, merge: true },
+        { componentId: 'table', props: { stripe: true }, merge: true },
+        { componentId: 'toolbar', props: { class: 'toolbar-wide' }, merge: true },
       ],
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
-        when: '某个 nodeId 未命中现有节点',
+        when: '某个 componentId 未命中现有节点',
         fix: '执行前先用 sparkNodeTree.hasNode 批量确认目标节点存在。',
       },
       {
         code: 'DUPLICATE_NODE_ID',
-        when: 'items 中重复出现同一个 nodeId',
-        fix: '同一批次内每个 nodeId 只保留一条更新。',
+        when: 'items 中重复出现同一个 componentId',
+        fix: '同一批次内每个 componentId 只保留一条更新。',
       },
     ],
   }),
@@ -372,9 +391,9 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.replaceNode',
     target: 'node',
     coreMethod: 'replaceNode',
-    description: '用新的 SparkNode 替换目标节点，返回新节点和旧节点。',
+    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 queryComponentCatalog 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
     paramsSchema: {
-      nodeId: NODE_ID_PARAM,
+      componentId: COMPONENT_ID_PARAM,
       node: NODE_PARAM,
     },
     resultSchema: {
@@ -382,14 +401,14 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
       previous: 'SparkNode — 被替换的旧节点',
     },
     example: {
-      nodeId: 'name-column',
+      componentId: 'name-column',
       node: { type: 'el-table-column', id: 'name-column', props: { field: 'displayName' } },
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
-        when: 'nodeId 未命中现有节点',
+        when: 'componentId 未命中现有节点',
         fix: '先确认目标节点存在，再执行 replace。',
       },
       {
@@ -412,20 +431,20 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     },
     example: {
       items: [
-        { nodeId: 'name-column', node: { type: 'el-table-column', id: 'name-column', props: { field: 'displayName' } } },
-        { nodeId: 'toolbar', node: { type: 'r-toolbar', id: 'toolbar', props: { dense: true } } },
+        { componentId: 'name-column', node: { type: 'el-table-column', id: 'name-column', props: { field: 'displayName' } } },
+        { componentId: 'toolbar', node: { type: 'r-toolbar', id: 'toolbar', props: { dense: true } } },
       ],
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, CATALOG_ONLY_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
-        when: '某个 nodeId 未命中现有节点',
+        when: '某个 componentId 未命中现有节点',
         fix: '先确认目标节点存在，再执行 replaceNodes。',
       },
       {
         code: 'DUPLICATE_NODE_ID',
-        when: 'items 中重复出现同一个 nodeId',
+        when: 'items 中重复出现同一个 componentId',
         fix: '同一批次内同一个节点只保留一次 replace。',
       },
     ],
@@ -436,20 +455,20 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     coreMethod: 'removeNode',
     description: '删除当前组件实例子树内的指定节点，并返回被删除节点和原始索引。',
     paramsSchema: {
-      nodeId: NODE_ID_PARAM,
+      componentId: COMPONENT_ID_PARAM,
     },
     resultSchema: {
       removed: 'SparkNode — 被删除的节点',
       index: 'number — 删除前在父节点 children 中的索引',
     },
     example: {
-      nodeId: 'toolbar',
+      componentId: 'toolbar',
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, '不能删除根节点。', CATALOG_ONLY_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
-        when: 'nodeId 未命中现有节点',
+        when: 'componentId 未命中现有节点',
         fix: '先确认目标节点存在。',
       },
       {
@@ -463,31 +482,31 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     action: 'sparkNodeTree.removeNodes',
     target: 'node',
     coreMethod: 'removeNodes',
-    description: '按 nodeIds 批量删除当前组件实例子树内的多个节点，整个批次只提交一次树状态。',
+    description: '按 componentIds 批量删除当前组件实例子树内的多个节点，整个批次只提交一次树状态（兼容 nodeIds）。',
     paramsSchema: {
-      nodeIds: NODE_IDS_PARAM,
+      componentIds: COMPONENT_IDS_PARAM,
     },
     resultSchema: {
       items: 'Array<{ removed: SparkNode; index: number }> — 每个删除项的结果',
     },
     example: {
-      nodeIds: ['toolbar', 'name-column'],
+      componentIds: ['toolbar', 'name-column'],
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, '不能删除根节点。', CATALOG_ONLY_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
-        when: '某个 nodeId 未命中现有节点',
-        fix: '先确认 nodeIds 全部存在。',
+        when: '某个 componentId 未命中现有节点',
+        fix: '先确认 componentIds 全部存在。',
       },
       {
         code: 'DUPLICATE_NODE_ID',
-        when: 'nodeIds 中出现重复 id',
+        when: 'componentIds 中出现重复 id',
         fix: '去重后再提交删除批次。',
       },
       {
         code: 'CANNOT_REMOVE_ROOT',
-        when: 'nodeIds 中包含根节点',
+        when: 'componentIds 中包含根节点',
         fix: '只删除根节点的子节点。',
       },
     ],

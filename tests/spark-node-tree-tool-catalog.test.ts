@@ -37,7 +37,22 @@ describe('SparkNodeTree tool catalog', () => {
 
     expect(addNode?.usageRules).toContain('本 catalog 只定义核心层动作目录，不接 spark-ai stills registry，也不提供 execute 实现。')
     expect(addNode?.usageRules).toContain('运行时应优先使用命名参数对象，而不是位置参数。')
+    expect(addNode?.usageRules).toContain('parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。')
     expect(listChildren?.failureModes.map(item => item.code)).toContain('PARENT_NOT_FOUND')
+  })
+
+  it('catalog 应对高风险 children 写动作声明必填字段', () => {
+    const addNode = getSparkNodeTreeToolParameterRow('sparkNodeTree.addNode')
+    const addNodes = getSparkNodeTreeToolParameterRow('sparkNodeTree.addNodes')
+
+    expect(addNode?.paramsSchema).toMatchObject({
+      kind: 'object',
+      required: ['node'],
+    })
+    expect(addNodes?.paramsSchema).toMatchObject({
+      kind: 'object',
+      required: ['nodes'],
+    })
   })
 
   it('catalog 应包含批量节点动作，且不暴露历史版本动作', () => {

@@ -176,7 +176,7 @@ export const Spark = {
   },
 
   /**
-   * 读取节点 id（严格从 `node.props.id`）
+   * 读取节点 id（优先 `node.props.id`，兼容顶层 `node.id`）。
    *
    * @example Spark.nodeId(child) ?? `fallback-${i}`
    */
