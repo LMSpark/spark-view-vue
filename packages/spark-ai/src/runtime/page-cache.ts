@@ -15,7 +15,7 @@ interface ConfigLoaderRef {
 /** ConfigLoader 实例引用，需由启动代码通过 setConfigLoader 注入 */
 let _configLoader: ConfigLoaderRef | null = null
 
-/** 注册 ConfigLoader 实例（start.ts / AiChatPanel 中调用） */
+/** 注册 ConfigLoader 实例（由应用启动层或页面壳层注入） */
 export function setConfigLoader(loader: ConfigLoaderRef): void {
   _configLoader = loader
 }

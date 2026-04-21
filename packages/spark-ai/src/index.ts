@@ -24,35 +24,6 @@ export type {
   UiConfirmPayload,
 } from './types'
 
-// ── AI Loop (core engine) ────────────────────────────────────────────────────
-export {
-  configureAILoopHttp,
-  onLogUpdate,
-  onPageRefresh,
-  AIPageLoop,
-  PageLogCollector,
-  summarizeLogBatch,
-  writePageFiles,
-  readPageFile,
-  readPageFiles,
-  setupHotReload,
-  setAutoIterating,
-  isAutoIterating,
-  configureAutoIterateTimeout,
-  triggerPageRefresh,
-  initAILoop,
-  getAILoop,
-} from './runtime/ai-loop'
-export type {
-  PageFiles,
-  AIResponse,
-  LogSnapshot,
-  AIPageLoopOptions,
-  LogIssueSummary,
-  LogBatchSummary,
-  PageDiagnosticsReport,
-} from './runtime/ai-loop'
-
 // ── Config Validator ────────────────────────────────────────────────────────
 export { validateGeneratedConfig } from './validation/config-validator'
 export type {
@@ -196,9 +167,7 @@ export type {
 export {
   SessionBackendImpl,
   configureSessionBackend,
-  createGenerateSessionBackend,
 } from './session-backend'
-export type { GenerateSessionBackendOptions } from './session-backend'
 
 // ── Function Calling Adapter（FC 模式工具调用适配层）─────────────────────────
 export {

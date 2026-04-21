@@ -61,7 +61,6 @@ export const VUE_PAGE_MAP: Record<string, VuePageEntry> = {
   '/site-manager':    { title: '站点管理',    icon: 'Globe',        scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue'), description: '开发系统（站点管理入口）' },
   '/page-manager':    { title: '页面管理',    icon: 'Document',     scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue'), description: '开发系统（页面管理入口）' },
   '/dev':             { title: '开发系统',    icon: 'Tools',        scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue') },
-  '/ai-studio':       { title: 'AI Studio',   icon: 'MagicStick',   scope: 'app',      source: 'src/views/app/ai-studio/AiStudioPanel.vue',     load: () => import('../views/app/ai-studio/AiStudioPanel.vue'), description: 'AI 驱动的可视化页面设计工作室' },
   '/skill-catalog':   { title: '组件目录',    icon: 'Notebook',     scope: 'platform',  source: 'src/views/app/SkillCatalog.vue',                 load: () => import('../views/app/SkillCatalog.vue'), description: 'SPARK 组件配置目录（Props / 能力 / 示例）', hidden: true },
 }
 

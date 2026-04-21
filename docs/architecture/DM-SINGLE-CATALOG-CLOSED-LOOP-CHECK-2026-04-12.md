@@ -109,7 +109,7 @@
 检查项：
 
 1. ComponentMetadataService 能解析新目录并建立索引/详情。
-2. AiPageService buildSystemPrompt 优先链路正常。
+2. 旧页面生成服务的 buildSystemPrompt 优先链路当时验证正常。
 3. 相关 controller/service 测试通过。
 
 通过标准：
@@ -276,7 +276,7 @@
 | 4.0 | 4.1 上传脚本切换 | build-all/upload 脚本改读新目录输入 | 构建上传链更新 | 3.4 | 上传入参结构已切换 |
 | 4.0 | 4.2 构建链联调 | 验证上传接口对接结果 | 上传联调记录 | 4.1 | 接口返回成功 |
 | 5.0 | 5.1 后端解析模型更新 | ComponentMetadataService 解析新目录并建索引 | 后端解析代码 | 4.2 | 新结构可解析 |
-| 5.0 | 5.2 提示词拼接链验证 | AiPageService 读取索引/详情链路验证 | 服务链路验证记录 | 5.1 | Prompt 拼接链正常 |
+| 5.0 | 5.2 提示词拼接链验证 | 旧页面生成服务读取索引/详情链路验证 | 服务链路验证记录 | 5.1 | Prompt 拼接链正常 |
 | 5.0 | 5.3 后端测试回归 | 执行 mvn test | 后端测试报告 | 5.2 | 环3通过 |
 | 6.0 | 6.1 全量构建验证 | 执行 pnpm run build | 构建与上传结果 | 5.3 | 环4通过 |
 | 6.0 | 6.2 手工验收 | SkillCatalog + DevSystem 关键路径验收 | 手工验收记录 | 6.1 | 环5通过 |
@@ -324,7 +324,7 @@
 | 4.1 | 上传脚本切换 | Copilot | 2026-04-12 13:12:00 | 2026-04-12 13:17:00 | PASS | `build-all.mjs` / `upload-component-metadata.mjs` | 上传源改为单目录 |
 | 4.2 | 构建链联调 | Copilot | 2026-04-12 13:19:35 | 2026-04-12 13:20:16 | PASS | `pnpm run build` 输出 | 上传 API 返回 ok=true |
 | 5.1 | 后端解析模型更新 | Copilot | 2026-04-12 13:12:00 | 2026-04-12 13:17:00 | PASS | `ComponentMetadataService.java` | 改为 components map 解析并重建 prompt 缓存 |
-| 5.2 | 提示词拼接链验证 | Copilot | 2026-04-12 13:19:15 | 2026-04-12 13:19:26 | PASS | `mvn test` + 启动日志 | `AiPageService` 优先读取服务端 metadata prompt |
+| 5.2 | 提示词拼接链验证 | Copilot | 2026-04-12 13:19:15 | 2026-04-12 13:19:26 | PASS | `mvn test` + 启动日志 | 旧页面生成服务优先读取服务端 metadata prompt |
 | 5.3 | 后端测试回归 | Copilot | 2026-04-12 13:19:15 | 2026-04-12 13:19:26 | PASS | `mvn test` | 75 tests, 0 fail |
 | 6.1 | 全量构建验证 | Copilot | 2026-04-12 13:19:35 | 2026-04-12 13:20:16 | PASS | `pnpm run build` | Java+Vite+上传全链路通过 |
 | 6.2 | 手工验收 | Copilot | 2026-04-12 18:20:47 | 2026-04-12 18:21:24 | PASS | `tests/ring5-skillcatalog-devsystem.test.ts` | SkillCatalog + DevSystem 关键路径已自动化验收 |

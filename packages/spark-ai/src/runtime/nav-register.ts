@@ -25,7 +25,7 @@ let _getNavApiUrl: (() => string) | null = null
 
 /**
  * 配置导航注册模块的 HTTP 信息。
- * 通常在 `configureAILoopHttp` 中一并调用，无需应用层单独调用。
+ * 由应用层在启动阶段注入，无需调用方自行拼接请求头或路径。
  */
 export function configureNavRegister(options: {
   getNavApiUrl: () => string

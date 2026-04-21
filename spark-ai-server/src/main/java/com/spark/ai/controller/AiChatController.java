@@ -1,9 +1,6 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.model.AiChatRequest;
-import com.spark.ai.model.AiResponse;
 import com.spark.ai.model.GeneralChatRequest;
-import com.spark.ai.service.AiPageService;
 import com.spark.ai.service.AiStreamService;
 import com.spark.ai.service.ComponentMetadataService;
 import com.spark.ai.service.SseService;
@@ -33,7 +30,6 @@ import java.util.UUID;
  * AI 端点控制器。
  *
  * <ul>
- *   <li>POST /api/ai/chat              — 页面配置生成（非流式，AIPageLoop 使用）</li>
  *   <li>POST /api/ai/chat/stream       — 通用对话流式 SSE（AiChatWidget 使用）</li>
  *   <li>POST /api/ai/upload            — 文件上传（聊天附件）</li>
  *   <li>POST /api/ai/component-metadata — 组件元数据上传（构建时自动调用）</li>
@@ -46,7 +42,6 @@ public class AiChatController {
 
     private static final Logger log = LoggerFactory.getLogger(AiChatController.class);
 
-    private final AiPageService aiPageService;
     private final AiStreamService aiStreamService;
     private final ComponentMetadataService metadataService;
     private final SseService sseService;
@@ -54,42 +49,12 @@ public class AiChatController {
     @Value("${spark.pages.config-dir:./data/pages-config}")
     private String pagesConfigDir;
 
-    public AiChatController(AiPageService aiPageService,
-                            AiStreamService aiStreamService,
+    public AiChatController(AiStreamService aiStreamService,
                             ComponentMetadataService metadataService,
                             SseService sseService) {
-        this.aiPageService = aiPageService;
         this.aiStreamService = aiStreamService;
         this.metadataService = metadataService;
         this.sseService = sseService;
-    }
-
-    /**
-     * POST /api/ai/chat
-     * 接收 generate / iterate 指令，调用 LLM，返回 AIResponse。
-     */
-    @PostMapping("/chat")
-    public AiResponse chat(@RequestBody AiChatRequest request) {
-        return aiPageService.processRequest(request);
-    }
-
-    /**
-     * POST /api/ai/chat/stream-page
-     * 流式版页面配置生成，以 SSE 逐 token 推送 LLM 输出。
-     *
-     * <p>SSE 事件类型：
-     * <ul>
-     *   <li><b>phase</b>：阶段进度（{"phase":1,"status":"start","message":"..."}）</li>
-     *   <li><b>delta</b>：LLM 正文增量（{"delta":"..."}）</li>
-     *   <li><b>reasoning</b>：推理过程增量（{"reasoning":"..."}，仅 DeepSeek）</li>
-     *   <li><b>result</b>：最终合并结果（{"files":{...},"explanation":"..."}）</li>
-     *   <li><b>done</b>：流结束（{"done":true}）</li>
-     *   <li><b>error</b>：错误（{"error":"..."}）</li>
-     * </ul>
-     */
-    @PostMapping(value = "/chat/stream-page", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter chatStreamPage(@RequestBody AiChatRequest request) {
-        return aiPageService.processRequestStream(request);
     }
 
     /**

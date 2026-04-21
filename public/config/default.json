@@ -48,7 +48,6 @@
         "version": "1.0.0",
         "features": {
             "enableAI": true,
-            "aiEndpoint": "/api/ai/chat",
             "enableExport": true,
             "enableOffline": false
         }

@@ -6,99 +6,86 @@
     </div>
 
     <div class="ai-assistant__tip">
-      新增功能：聊天模式已接入细粒度编辑执行链路，支持文本/附件/语音输入后直接修改当前文件。
+      {{ isRuleFile
+        ? 'rule.json 已接入细粒度编辑会话，可在编辑提示、聊天模式和直接工具之间切换。'
+        : '旧整模生成/文件写回链已删除。当前文件不再支持从这里直接回写。' }}
     </div>
 
-    <el-radio-group v-model="mode" size="small" class="ai-assistant__mode">
-      <el-radio-button label="edit">细粒度编辑</el-radio-button>
-      <el-radio-button label="generate">整模生成</el-radio-button>
-      <el-radio-button label="chat">聊天模式</el-radio-button>
-      <el-radio-button v-if="isRuleFile" label="tool">直接工具</el-radio-button>
-    </el-radio-group>
-
-    <template v-if="mode !== 'chat' && mode !== 'tool'">
-      <label class="ai-assistant__label">描述你的需求</label>
-      <el-input
-        v-model="requestText"
-        type="textarea"
-        :rows="5"
-        resize="none"
-        placeholder="例如：把 Orders 表新增 area 字段（string，标签 区域），并把 Customer.phone 改为可空字符串"
-      />
-
-      <el-button
-        type="primary"
-        :loading="loading"
-        :disabled="!enabled"
-        class="ai-assistant__submit"
-        @click="handleApplyByMode"
-      >
-        {{ mode === 'edit' ? '应用细粒度编辑' : '应用整模生成' }}
-      </el-button>
-
-      <div v-if="suggestedContent" class="ai-assistant__result">
-        <el-alert
-          :title="`AI 已生成${mode === 'edit' ? '细粒度编辑' : '整模'}结果，点击应用覆盖当前文件`"
-          type="success"
-          :closable="false"
-          show-icon
-        />
-        <div class="ai-assistant__result-actions">
-          <el-button size="small" @click="showResultDialog = true">查看结果</el-button>
-          <el-button size="small" type="primary" @click="applySuggestion">应用到当前文件</el-button>
-        </div>
-      </div>
-    </template>
-
-    <div v-else-if="mode === 'tool'" class="ai-assistant__tool-panel">
-      <div class="ai-assistant__label">工具动作</div>
-      <el-select
-        v-model="toolAction"
-        size="small"
-        style="width:100%"
-        @change="(v: string) => { toolParams = TOOL_PARAM_EXAMPLES[v] ?? '{}' }"
-      >
-        <el-option-group label="查询">
-          <el-option v-for="a in TOOL_READ_ACTIONS" :key="a" :label="a" :value="a" />
-        </el-option-group>
-        <el-option-group label="变更">
-          <el-option v-for="a in TOOL_WRITE_ACTIONS" :key="a" :label="a" :value="a" />
-        </el-option-group>
-      </el-select>
-
-      <div class="ai-assistant__label" style="margin-top:4px">参数 (JSON)</div>
-      <el-input
-        v-model="toolParams"
-        type="textarea"
-        :rows="6"
-        resize="none"
-        placeholder="{}"
-        class="ai-assistant__tool-params"
-        spellcheck="false"
-      />
-
-      <el-button
-        type="primary"
-        size="small"
-        :loading="loading"
-        :disabled="!enabled"
-        style="margin-top:6px"
-        @click="execTool(toolAction, toolParams)"
-      >执行</el-button>
-    </div>
-
-    <div v-else class="ai-assistant__chat-wrap">
-      <AiChatWidget
-        mode="multi"
-        title="DataSet 聊天助手"
-        placeholder="支持文本、附件、语音输入；可连续多轮对话"
-        :compact="true"
-        v-bind="isRuleFile ? { sender: ruleEditChatSender } : {}"
-      />
-    </div>
-
-    <!-- Stills session panel: shared by edit + tool + chat for rule.json -->
     <template v-if="isRuleFile">
+      <el-radio-group v-model="mode" size="small" class="ai-assistant__mode">
+        <el-radio-button label="edit">细粒度编辑</el-radio-button>
+        <el-radio-button label="chat">聊天模式</el-radio-button>
+        <el-radio-button label="tool">直接工具</el-radio-button>
+      </el-radio-group>
+
+      <template v-if="mode === 'edit'">
+        <label class="ai-assistant__label">描述你的需求</label>
+        <el-input
+          v-model="requestText"
+          type="textarea"
+          :rows="5"
+          resize="none"
+          placeholder="例如：把当前规则里的查询区改成两列布局，并给状态字段加标签色"
+        />
+
+        <el-button
+          type="primary"
+          :loading="loading"
+          :disabled="!enabled"
+          class="ai-assistant__submit"
+          @click="handleApplyByMode"
+        >
+          执行细粒度编辑
+        </el-button>
+      </template>
+
+      <div v-else-if="mode === 'tool'" class="ai-assistant__tool-panel">
+        <div class="ai-assistant__label">工具动作</div>
+        <el-select
+          v-model="toolAction"
+          size="small"
+          style="width:100%"
+          @change="(v: string) => { toolParams = TOOL_PARAM_EXAMPLES[v] ?? '{}' }"
+        >
+          <el-option-group label="查询">
+            <el-option v-for="a in TOOL_READ_ACTIONS" :key="a" :label="a" :value="a" />
+          </el-option-group>
+          <el-option-group label="变更">
+            <el-option v-for="a in TOOL_WRITE_ACTIONS" :key="a" :label="a" :value="a" />
+          </el-option-group>
+        </el-select>
+
+        <div class="ai-assistant__label" style="margin-top:4px">参数 (JSON)</div>
+        <el-input
+          v-model="toolParams"
+          type="textarea"
+          :rows="6"
+          resize="none"
+          placeholder="{}"
+          class="ai-assistant__tool-params"
+          spellcheck="false"
+        />
+
+        <el-button
+          type="primary"
+          size="small"
+          :loading="loading"
+          :disabled="!enabled"
+          style="margin-top:6px"
+          @click="execTool(toolAction, toolParams)"
+        >执行</el-button>
+      </div>
+
+      <div v-else class="ai-assistant__chat-wrap">
+        <AiChatWidget
+          mode="multi"
+          title="Rule 聊天助手"
+          placeholder="支持文本、附件、语音输入；可连续多轮对话"
+          :compact="true"
+          :sender="ruleEditChatSender"
+        />
+      </div>
+
       <div class="ai-assistant__label">
         会话：
         <el-tag size="small" :type="ruleReady ? 'success' : 'info'" effect="plain">
@@ -133,22 +120,21 @@
       </div>
     </template>
 
-    <el-dialog v-model="showResultDialog" title="AI 生成结果" width="70%" append-to-body>
-      <pre class="ai-assistant__code">{{ suggestedContent }}</pre>
-      <template #footer>
-        <el-button @click="showResultDialog = false">关闭</el-button>
-        <el-button type="primary" @click="applySuggestion">应用到当前文件</el-button>
-      </template>
-    </el-dialog>
+    <el-alert
+      v-else
+      title="该入口已下线旧 AI 写回链"
+      type="info"
+      :closable="false"
+      show-icon
+    >
+      当前文件仍可手动编辑；若需 AI 改写，请使用 DataSet 设计器中的聊天入口。
+    </el-alert>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { getAILoop } from '@spark-view/spark-ai'
-import type { PageFileName } from './useDevState'
+import { computed, ref, watch } from 'vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
-import { runAiFileWriteback } from './composables/useAiFileWriteback'
 import type { AiChatSender } from '@/composables/useAiChat'
 import {
   useRuleEditSession,
@@ -165,7 +151,7 @@ interface Props {
   enabled?: boolean
 }
 
-type AiMode = 'edit' | 'generate' | 'chat' | 'tool'
+type AiMode = 'edit' | 'chat' | 'tool'
 
 const props = withDefaults(defineProps<Props>(), { enabled: true })
 
@@ -174,15 +160,9 @@ const emit = defineEmits<{
   (e: 'status', message: string, type: 'success' | 'warning' | 'error'): void
 }>()
 
-const loop = computed(() => getAILoop())
-const mode = ref<AiMode>('edit')
-const wbLoading = ref(false)
-const requestText = ref('')
-const suggestedContent = ref('')
-const showResultDialog = ref(false)
-
-const isPageDataFile = computed(() => props.fileName === 'pagedata.json')
 const isRuleFile = computed(() => props.fileName === 'rule.json')
+const mode = ref<AiMode>(isRuleFile.value ? 'edit' : 'chat')
+const requestText = ref('')
 
 // ── Rule edit session (tool layer) ────────────────────────────────
 const {
@@ -204,8 +184,12 @@ const {
   onStatus: (msg, type) => emit('status', msg, type),
 })
 
-// Single busy flag covering both stills ops and writeback
-const loading = computed(() => ruleBusy.value || wbLoading.value)
+watch(isRuleFile, (nextIsRuleFile) => {
+  mode.value = nextIsRuleFile ? 'edit' : 'chat'
+  requestText.value = ''
+})
+
+const loading = computed(() => ruleBusy.value)
 
 // ── Direct tool panel inputs (local UI state only) ────────────────
 const toolAction = ref<string>('sparkNodeTree.listChildren')
@@ -223,76 +207,16 @@ const ruleEditChatSender: AiChatSender = async (request) => {
   request.onDelta?.(`${latest.tag}: ${latest.text}`)
 }
 
-// ── Writeback (non-rule files) ─────────────────────────────────
-function buildPrompt(currentMode: Exclude<AiMode, 'chat' | 'tool'>): string {
-  const ext = props.fileName.endsWith('.js') ? 'javascript' : props.fileName.endsWith('.css') ? 'css' : 'json'
-  const ctx = [
-    `当前文件: ${props.fileName}`,
-    `页面ID: ${props.pageId}`,
-    '',
-    '用户需求:',
-    requestText.value,
-    '',
-    '文件内容:',
-    `\`\`\`${ext}`,
-    props.fileContent,
-    '\`\`\`',
-  ].join('\n')
-  if (isPageDataFile.value) {
-    return currentMode === 'edit'
-      ? `${ctx}
-
-你是 SPARK DataSet 细粒度编辑助手。只做与用户需求直接相关的最小必要改动，不要无关重写。输出可直接写回 pagedata.json 的完整内容。`
-      : `${ctx}
-
-你是 SPARK 数据建模助手。基于用户需求重新组织 DataSet（tables、tableRelations、views.default），输出可直接写回 pagedata.json 的完整内容。`
-  }
-  return currentMode === 'edit'
-    ? `${ctx}
-
-请基于用户需求对当前文件做最小必要修改，保持原有结构和风格，返回完整文件内容。`
-    : `${ctx}
-
-请根据用户需求对当前文件进行重构式生成，保证内容完整可用，返回完整文件内容。`
-}
-
 async function handleApplyByMode() {
-  if (!props.enabled || !loop.value) return
-  if (mode.value === 'chat' || mode.value === 'tool') return
+  if (!props.enabled || !isRuleFile.value || mode.value !== 'edit') return
   const trimmed = requestText.value.trim()
   if (!trimmed) { emit('status', '请先输入你的修改需求', 'warning'); return }
 
-  if (isRuleFile.value && mode.value === 'edit') {
-    await runLlm(trimmed)
-    return
-  }
-
-  wbLoading.value = true
   try {
-    const targetFile = props.fileName as PageFileName
-    const result = await runAiFileWriteback({
-      loop: loop.value,
-      pageId: props.pageId,
-      prompt: buildPrompt(mode.value),
-      targetFile,
-      contextFiles: { [targetFile]: props.fileContent },
-      callbacks: { onDelta() {}, onReasoning() {}, onPhase() {} },
-    })
-    if (!result.content) { emit('status', '未生成可应用内容，请调整需求后重试', 'warning'); return }
-    suggestedContent.value = result.content
-    emit('status', `AI 已完成${mode.value === 'edit' ? '细粒度编辑' : '整模生成'}（${result.source}）`, 'success')
+    await runLlm(trimmed)
   } catch (err) {
     emit('status', `AI 操作失败: ${err instanceof Error ? err.message : String(err)}`, 'error')
-  } finally {
-    wbLoading.value = false
   }
-}
-
-function applySuggestion() {
-  if (!suggestedContent.value) return
-  emit('apply', suggestedContent.value)
-  emit('status', '已应用 AI 结果', 'success')
-  showResultDialog.value = false
 }
 </script>
 

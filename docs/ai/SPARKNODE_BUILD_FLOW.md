@@ -61,7 +61,7 @@
 **关键源码**：
 - 投影函数：[packages/spark-ai/src/catalog/catalog-projections.ts](../../../packages/spark-ai/src/catalog/catalog-projections.ts)（`projectFcDirectory`）
 - 事实源：[packages/spark-ai/src/catalog/component-catalog.json](../../../packages/spark-ai/src/catalog/component-catalog.json)
-- 查询分发：[packages/spark-ai/src/generate/generate-tools-catalog.ts](../../../packages/spark-ai/src/generate/generate-tools-catalog.ts)（`handleQueryComponentCatalog`）
+- 查询分发：[packages/spark-ai/src/stills/meta-methods.ts](../../../packages/spark-ai/src/stills/meta-methods.ts)（`catalogQuery` / `catalogGuide`）
 
 ---
 
@@ -234,8 +234,14 @@ spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
                 └── SPARK_NODE_TREE_TOOL_PARAMETER_TABLE
                         └── edit-nodeTree-stills.ts
                                 └── EDIT_NODE_TREE_STILLS ─→ 执行桥接
-                                        └── generate-tools-catalog.ts
-                                                └── dispatchQueryTool() ─→ LLM FC 入口
+
+meta-methods.ts
+        ├── catalog.query()         ─→ 组件目录查询入口
+        ├── catalog.guide()         ─→ 单组件配置指南入口
+        └── stills.actionSpec()     ─→ 动作规格查询入口
+
+tool-calling.ts
+        └── generateToolDefinitions() ─→ LLM FC 工具注册入口
 ```
 
 ---
@@ -246,7 +252,7 @@ spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
 
 - 事实源唯一：`component-catalog.json` 是唯一来源，任何代码不得手写维护组件列表；
 - 投影只读：`catalog-projections.ts` 全部为纯函数，无副作用；
-- LLM 访问口两个：`queryComponentCatalog(type)` 查单组件规格；`queryActionSpec({ capabilityId: 'SparkNode.containers' })` 查分类知识条目。
+- LLM 访问口三个：`catalog.query({})` 查组件目录；`catalog.guide({ type })` 查单组件规格；`stills.actionSpec({ action })` 查动作参数与约束。
 
 ### SparkNode 实例层（第 4 步）
 
@@ -269,10 +275,10 @@ spark-node-tree.ts (SparkNodeTree 类)   ←── 第 5 步底层 API
 ### 查询阶段（两步，必须先执行）
 
 ```
-Step 1: queryComponentCatalog('*')
-        ↳ 拿到 registry.containers / registry.fields 全列表
+Step 1: catalog.query({})
+        ↳ 拿到全部组件 type + category + description 轻量目录
 
-Step 2: queryComponentCatalog('r-table')  // 按需查，不必全查
+Step 2: catalog.guide({ type: 'r-table' })  // 按需查，不必全查
         ↳ 拿到 r-table 的 requiredProps / minimalConfig / failFastChecks
 ```
 
@@ -301,5 +307,5 @@ Step 4: sparkNodeTree.addNode / sparkNodeTree.addNodes
 | FC Catalog 表 | `packages/spark-ai/src/stills/spark-node-tree-tool-catalog.ts` |
 | FC 执行桥接 | `packages/spark-ai/src/stills/edit-nodeTree-stills.ts` |
 | 元动作（组件目录查询） | `packages/spark-ai/src/stills/meta-methods.ts` |
-| LLM FC 工具注册与分发 | `packages/spark-ai/src/generate/generate-tools-catalog.ts` |
+| LLM FC 工具注册与分发 | `packages/spark-ai/src/tool-calling.ts` |
 | 目录生成器（构建期） | `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts` |

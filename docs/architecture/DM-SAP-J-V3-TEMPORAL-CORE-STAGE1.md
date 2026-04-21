@@ -315,7 +315,7 @@
 - 收敛错误返回结构为四层错误 envelope。
 - 对非法请求参数返回可定位的 fail-fast 错误码。
 
-2. [spark-ai-server/src/main/java/com/spark/ai/model/AiChatRequest.java](spark-ai-server/src/main/java/com/spark/ai/model/AiChatRequest.java) 或会话请求 DTO
+2. 统一会话请求 DTO（旧 generate/iterate 请求 DTO 已删除）
 - 明确 v3 必填字段最小集合与校验策略。
 - 删除与旧协议耦合的输入字段或标记为不可用。
 

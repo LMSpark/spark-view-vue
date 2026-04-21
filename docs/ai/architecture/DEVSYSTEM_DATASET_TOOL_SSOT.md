@@ -185,7 +185,7 @@ flowchart TD
 flowchart LR
     A[DataSetCrudTool 公开方法] --> B[dataset-crud-tool-stills-catalog]
     B --> C[edit-dataset-stills 运行时 still 定义]
-    B --> D[generate-tools-catalog 查询能力/动作说明]
+  B --> D[meta-methods 提供 stills.capabilities / stills.actionSpec]
     C --> E[LLM 实际执行 datasetTool.*]
     D --> E
 ```
@@ -227,8 +227,8 @@ flowchart LR
   - AI 能力目录事实源
 - `packages/spark-ai/src/stills/edit-dataset-stills.ts`
   - 根据目录表动态分发到 `DataSetCrudTool`
-- `packages/spark-ai/src/generate/generate-tools-catalog.ts`
-  - 把目录表投影为 `queryCapabilities` / `queryActionSpec` 可见能力
+- `packages/spark-ai/src/stills/meta-methods.ts`
+  - 把目录表暴露为 `stills.capabilities` / `stills.actionSpec` 等元查询能力
 
 ## 维护规则
 

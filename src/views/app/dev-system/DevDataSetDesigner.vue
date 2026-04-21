@@ -288,39 +288,11 @@
         </div>
 
         <div class="ds-ai__feature-tip">
-          新增功能：聊天模式已接入细粒度编辑执行链路，支持文本/附件/语音输入后直接修改 DataSet 模型。
+          仅保留聊天模式，所有 AI 修改统一走细粒度编辑执行链路。
         </div>
 
         <div class="ds-ai__form">
-          <div class="ds-ai__mode">
-            <el-radio-group v-model="aiMode" size="small">
-              <el-radio-button label="edit">细粒度编辑</el-radio-button>
-              <el-radio-button label="generate">整模生成</el-radio-button>
-              <el-radio-button label="chat">聊天模式</el-radio-button>
-            </el-radio-group>
-          </div>
-          <template v-if="aiMode !== 'chat'">
-            <label class="ds-ai__label">💬 描述你的数据需求：</label>
-            <el-input
-              v-model="aiPrompt"
-              type="textarea"
-              :rows="4"
-              :placeholder="aiMode === 'edit'
-                ? '例如：给 Orders 表新增 area 字段（string，标签 区域），并把 Customer.phone 改为可空字符串'
-                : '例如：用户订单系统，用户可以有多个订单，每个订单包含多个订单项...'"
-            />
-            <el-button
-              type="primary"
-              class="ds-ai__generate"
-              :loading="aiLoading"
-              :disabled="!aiPrompt.trim()"
-              @click="generateDataModel"
-            >
-              <NavIcon name="MagicStick" :size="14" /> {{ aiMode === 'edit' ? '✨ 应用细粒度编辑' : '🚀 生成数据模型' }}
-            </el-button>
-          </template>
-
-          <div v-else class="ds-ai__chat-widget">
+          <div class="ds-ai__chat-widget">
             <AiChatWidget
               mode="multi"
               title="DataSet 聊天助手"
@@ -360,7 +332,6 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted, onUnmounted } from 'vue'
 import {
-  getAILoop,
   clearRegistry,
   clearDomains,
   registerEditStills,
@@ -376,11 +347,9 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus'
 import NavIcon from '@/components/NavIcon.vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
-import { extractJsonObject, runAiFileWriteback } from './composables/useAiFileWriteback'
 import {
   buildDataSetMetadataFromDesignerProjection,
   hasDesignerProjectionChanges,
-  normalizeViewsFromLoose,
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
@@ -663,11 +632,8 @@ const relationLines = computed(() => {
   }).filter((v): v is NonNullable<typeof v> => v !== null)
 })
 
-const aiPrompt = ref('')
-const aiLoading = ref(false)
 const aiResponse = ref('')
 const fineEditSseLines = ref<string[]>([])
-const aiMode = ref<'edit' | 'generate' | 'chat'>('edit')
 const blueprint = ref<BlueprintStep[]>([])
 const fineEditSession = shallowRef<ReturnType<typeof createStillSession> | null>(null)
 const fineEditBackend = shallowRef<SessionBackendImpl | null>(null)
@@ -845,8 +811,6 @@ function buildFineEditFailureDetails(turns: FineEditFailureTurn[]): string {
     + `${failedResult.fix ? ` | fix=${failedResult.fix}` : ''}`
 }
 
-const loop = computed(() => getAILoop())
-
 function normalizeRelation(rel: DesignerRelation): TableRelation {
   return {
     parentTable: rel.parentTable,
@@ -857,95 +821,6 @@ function normalizeRelation(rel: DesignerRelation): TableRelation {
     ...(rel.condition !== undefined ? { condition: rel.condition } : {}),
     ...(rel.cascadeUpdate !== undefined ? { cascadeUpdate: rel.cascadeUpdate } : {}),
     ...(rel.cascadeDelete !== undefined ? { cascadeDelete: rel.cascadeDelete } : {}),
-  }
-}
-
-function normalizeLooseRelation(
-  rel: Record<string, unknown>,
-  options: {
-    allowAliasKeys?: boolean
-    defaultParentField?: string
-    defaultChildField?: (parentTable: string) => string
-    includeAdvancedFields?: boolean
-  } = {},
-): TableRelation | null {
-  const parentTable = (rel['parentTable'] as string | undefined)
-    ?? (options.allowAliasKeys ? (rel['from'] as string | undefined) : undefined)
-  const childTable = (rel['childTable'] as string | undefined)
-    ?? (options.allowAliasKeys ? (rel['to'] as string | undefined) : undefined)
-
-  if (!parentTable || !childTable) return null
-
-  const parentField = (rel['parentField'] as string | undefined)
-    ?? (options.allowAliasKeys ? (rel['fromField'] as string | undefined) : undefined)
-    ?? options.defaultParentField
-  const childField = (rel['childField'] as string | undefined)
-    ?? (options.allowAliasKeys ? (rel['toField'] as string | undefined) : undefined)
-    ?? options.defaultChildField?.(parentTable)
-
-  const normalized: TableRelation = {
-    parentTable,
-    childTable,
-    ...(parentField !== undefined ? { parentField } : {}),
-    ...(childField !== undefined ? { childField } : {}),
-  }
-
-  if (!options.includeAdvancedFields) return normalized
-
-  return {
-    ...normalized,
-    ...(typeof rel['relationName'] === 'string' ? { relationName: rel['relationName'] } : {}),
-    ...(rel['condition'] && typeof rel['condition'] === 'object' ? { condition: rel['condition'] as Record<string, unknown> } : {}),
-    ...(typeof rel['cascadeUpdate'] === 'boolean' ? { cascadeUpdate: rel['cascadeUpdate'] } : {}),
-    ...(typeof rel['cascadeDelete'] === 'boolean' ? { cascadeDelete: rel['cascadeDelete'] } : {}),
-  }
-}
-
-function normalizeAndValidateRelationForCreate(
-  rel: Record<string, unknown>,
-  options: {
-    allowAliasKeys?: boolean
-    defaultParentField?: string
-    defaultChildField?: (parentTable: string) => string
-  } = {},
-): TableRelation | null {
-  const normalized = normalizeLooseRelation(rel, {
-    ...(options.allowAliasKeys !== undefined ? { allowAliasKeys: options.allowAliasKeys } : {}),
-    ...(options.defaultParentField !== undefined ? { defaultParentField: options.defaultParentField } : {}),
-    ...(options.defaultChildField !== undefined ? { defaultChildField: options.defaultChildField } : {}),
-  })
-  if (!normalized) return null
-
-  assertDatasetToolParams('datasetTool.createRelation', {
-    parentTable: normalized.parentTable,
-    childTable: normalized.childTable,
-    parentField: normalized.parentField,
-    childField: normalized.childField,
-  })
-  return normalized
-}
-
-function normalizeColumnsFromLoose(
-  rawColumns: unknown,
-  fallbackPrimaryKey = true,
-): DataColumn[] {
-  const cols = (Array.isArray(rawColumns) ? rawColumns : []) as Array<Record<string, unknown>>
-  const normalized = cols.map((c) => ({
-    name: (c['name'] ?? c['field'] ?? '') as string,
-    label: (c['label'] ?? '') as string,
-    type: (c['type'] ?? 'string') as DesignerColumn['type'],
-    isPrimaryKey: Boolean(c['isPrimaryKey']),
-  }))
-
-  if (normalized.length > 0) return normalized
-  if (!fallbackPrimaryKey) return []
-  return [{ name: 'id', label: 'ID', type: 'number', isPrimaryKey: true }]
-}
-
-function assertDatasetToolParams(_action: string, _params: unknown): void {
-  const validationError = null // removed validation, as dataset domain is gone
-  if (validationError) {
-    throw new Error(`[${_action}] ${validationError}`)
   }
 }
 
@@ -1403,157 +1278,11 @@ function exportToPageData() {
   ElMessage.success('已导出到 pagedata.json')
 }
 
-// ═══ AI 生成 ═══
+// ═══ AI 细粒度聊天编辑 ═══
 
-async function generateDataModel() {
-  if (aiMode.value === 'edit') {
-    await applyFineGrainedEdit()
-    return
-  }
+async function applyFineGrainedEdit(prompt: string) {
+  if (!prompt.trim()) return ''
 
-  const loopInstance = loop.value
-  if (!loopInstance || !aiPrompt.value.trim()) return
-  
-  aiLoading.value = true
-  aiResponse.value = ''
-  blueprint.value = [
-    { action: 'dataset.bootstrap', status: 'pending' },
-    { action: 'datatable.create', status: 'pending' },
-    { action: 'datatable.addColumns', status: 'pending' },
-    { action: 'relation.add', status: 'pending' },
-  ]
-  
-  try {
-    const prompt = `你是 SPARK 数据模型设计专家。请直接修改 pagedata.json 的 DataSet 结构（不要改 rule.json/script.js/style.css），满足以下需求：
-
-需求描述：
-${aiPrompt.value}
-
-硬性规则：
-- columns 用 name（非 field），用 isPrimaryKey（非 isPrimary）
-- 每个表必须有 tableName 和 views.default
-- 每个字段都要有 label（中文标签）
-- 主键字段设 isPrimaryKey: true
-输出要求：
-- 优先通过 files.pagedata.json 返回完整文件内容
-- 若不能返回 files，则返回可解析的纯 JSON 对象`
-
-    // 模拟蓝图进度
-    blueprint.value[0]!.status = 'running'
-    await new Promise((r) => setTimeout(r, 300))
-    blueprint.value[0]!.status = 'done'
-    blueprint.value[1]!.status = 'running'
-
-    const pageId = props.state.activePageId.value || 'default'
-    const contextFiles: Record<string, string> = {}
-    const currentPageData = props.state.editFiles['pagedata.json']
-    if (typeof currentPageData === 'string' && currentPageData.trim().length > 0) {
-      contextFiles['pagedata.json'] = currentPageData
-    }
-
-    let fullResponse = ''
-    const response = await runAiFileWriteback({
-      loop: loopInstance,
-      pageId,
-      prompt,
-      targetFile: 'pagedata.json',
-      contextFiles,
-      callbacks: {
-        onDelta(text) { fullResponse += text },
-        onReasoning() {},
-        onPhase() {},
-      },
-    })
-
-    blueprint.value[1]!.status = 'done'
-    blueprint.value[2]!.status = 'running'
-
-    const patchedPageData = response.content
-    let modelData: Record<string, unknown> | null = null
-
-    if (typeof patchedPageData === 'string' && patchedPageData.trim().length > 0) {
-      const parsed = extractJsonObject(patchedPageData)
-      if (parsed) {
-        modelData = parsed
-        props.state.updatePageFile('pagedata.json', JSON.stringify(parsed, null, 2))
-      }
-    }
-
-    if (modelData === null) {
-      const fallback = extractJsonObject(fullResponse)
-      if (fallback) {
-        modelData = fallback
-        props.state.updatePageFile('pagedata.json', JSON.stringify(fallback, null, 2))
-      }
-    }
-
-    if (modelData === null) {
-      throw new Error('AI 未返回可解析的 pagedata.json 内容')
-    }
-
-    // 本地二次归一与验证（沿用 datasetTool 参数校验）
-    const modelTables = (modelData['tables'] ?? {}) as Record<string, Record<string, unknown>>
-    const normalizedTables: Record<string, ITableMetadata> = {}
-    for (const [name, tableConfig] of Object.entries(modelTables)) {
-      const columns = normalizeColumnsFromLoose(tableConfig['columns'])
-
-      const normalizedTable: ITableMetadata = {
-        tableName: name,
-        columns,
-        views: normalizeViewsFromLoose(tableConfig['views']),
-      }
-
-      assertDatasetToolParams('datasetTool.createTable', {
-        tableName: normalizedTable.tableName,
-        columns: normalizedTable.columns,
-        views: normalizedTable.views,
-      })
-
-      normalizedTables[name] = normalizedTable
-    }
-
-    blueprint.value[2]!.status = 'done'
-    blueprint.value[3]!.status = 'running'
-
-    const modelRelations = (modelData['tableRelations'] ?? modelData['relations'] ?? []) as Array<Record<string, string>>
-    const normalizedRelations: TableRelation[] = []
-    for (const rel of modelRelations) {
-      const normalizedRelation = normalizeAndValidateRelationForCreate(rel, {
-        allowAliasKeys: true,
-        defaultParentField: 'id',
-        defaultChildField: (parentTable) => `${parentTable}_id`,
-      })
-      if (!normalizedRelation) continue
-      normalizedRelations.push(normalizedRelation)
-    }
-
-    const snapshot: IDataSetMetadata = {
-      dataSetName: readCurrentDataSetName(),
-      tables: normalizedTables,
-      tableRelations: normalizedRelations,
-    }
-    const canPreserveHistory = isDesignerStateInSyncWithHistory()
-    const nextTool = DataSetCrudTool.reconcileFromJson(snapshot, historyTool.value ?? undefined, {
-      preserveHistory: canPreserveHistory,
-    })
-    historyTool.value = nextTool
-    editingRel.value = null
-    selectedTableId.value = null
-    markHistoryChanged()
-
-    blueprint.value[3]!.status = 'done'
-    aiResponse.value = `已通过 AI 回写 pagedata.json，并同步为 ${tables.value.length} 个表、${relations.value.length} 个关联。`
-  } catch (err) {
-    aiResponse.value = `生成失败: ${err instanceof Error ? err.message : String(err)}`
-  } finally {
-    aiLoading.value = false
-  }
-}
-
-async function applyFineGrainedEdit() {
-  if (!aiPrompt.value.trim()) return
-
-  aiLoading.value = true
   aiResponse.value = ''
   fineEditSseLines.value = []
   blueprint.value = []
@@ -1596,7 +1325,7 @@ async function applyFineGrainedEdit() {
     }
 
     const orchestratorResult = await runStillsLoop(
-      buildFineGrainedLoopUserPrompt(aiPrompt.value, contextSummary),
+      buildFineGrainedLoopUserPrompt(prompt, contextSummary),
       session,
       backend,
       {
@@ -1662,8 +1391,9 @@ async function applyFineGrainedEdit() {
     aiResponse.value = `细粒度编辑失败: ${err instanceof Error ? err.message : String(err)}`
   } finally {
     configureSessionBackend({ getHeaders: createAuthHeaders })
-    aiLoading.value = false
   }
+
+  return aiResponse.value.trim()
 }
 
 const datasetDesignerChatSender: AiChatSender = async (request) => {
@@ -1676,12 +1406,7 @@ const datasetDesignerChatSender: AiChatSender = async (request) => {
 
   request.onDelta?.('已接收需求，正在执行 DataSet 细粒度编辑...\n')
 
-  const previousPrompt = aiPrompt.value
-  aiPrompt.value = prompt
-  await applyFineGrainedEdit()
-  aiPrompt.value = previousPrompt
-
-  const result = aiResponse.value.trim()
+  const result = await applyFineGrainedEdit(prompt)
   if (!result) {
     request.onDelta?.('细粒度编辑已执行完成。')
     return
@@ -2207,8 +1932,6 @@ const datasetDesignerChatSender: AiChatSender = async (request) => {
 
 .ds-ai__chat-widget {
   margin-top: 8px;
-  height: 360px;
-  min-height: 280px;
 }
 
 .ds-ai__chat-widget :deep(.ai-chat-widget.compact) {
@@ -2222,11 +1945,6 @@ const datasetDesignerChatSender: AiChatSender = async (request) => {
   font-size: 13px;
   font-weight: 500;
   color: #334155;
-}
-
-.ds-ai__generate {
-  width: 100%;
-  margin-top: 12px;
 }
 
 .ds-ai__blueprint {

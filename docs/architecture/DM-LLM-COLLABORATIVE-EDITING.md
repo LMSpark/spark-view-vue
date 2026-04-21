@@ -596,7 +596,7 @@ export const EDIT_MODE_PROMPT = `\
 |------|----------------|----------------|
 | 注册函数 | `registerAllStills()` | `registerEditStills()` |
 | session 创建 | `createSession()` + blueprint | `createSession()` + edit.bootstrap |
-| 使用场景 | DevAiPanel "生成" / AIPageLoop | DevAiPanel "编辑" / 协作编辑 |
+| 使用场景 | 旧页面生成链（已删除） | 协作编辑 |
 | action 命名空间 | `dataset.*` / `datatable.*` / `rule.*` / `script.*` / `style.*` | `datasetTool.*` / `sparkNodeTree.*` / `file.*` / `edit.*` |
 | 状态管理 | 会话内存 → export 文件 | SSoT 实例 → 回写 editor |
 | undo | 无内置 undo | SparkNodeTree/DataSet history |

@@ -1974,7 +1974,7 @@ Phase 0 — 类型定义 + 归一化函数（历史方案，未作为现行路�
 Phase 1 — AI 生成入口切换
   ├─ AI system-prompt 指定生成 SparkNode v2 格式
   ├─ 附带类型适用矩阵 + 事件命名规范
-  ├─ AiPageService 输出 SparkNode v2 JSON
+  ├─ 当前聊天 / 会话编排路径输出 SparkNode v2 JSON
   └─ 旧页面保持 SparkNode，互不干扰
 
 Phase 2 — JSON Schema + IDE 支持

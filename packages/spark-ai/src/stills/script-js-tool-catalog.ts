@@ -2,7 +2,7 @@
  * ScriptJs Capability Catalog
  *
  * 为 ScriptJs.sandbox 和 ScriptJs.init 两个 capabilityId 提供结构化知识，
- * 作为 generate-tools-catalog.ts queryActionSpec 的事实源。
+ * 作为 stills.actionSpec / session.describe 的事实源。
  *
  * 约束：
  * - 本文件只提供 catalog，不提供 execute 实现；

@@ -41,7 +41,6 @@ export const COMPONENT_EXCLUDE_PATTERNS = [
   '**/*.spec.vue',
   '**/__tests__/**',
   // dev-system 仅暴露顶层 dev-system 视图；其内部编辑器/面板/节点配置组件属于实现细节。
-  '**/src/views/app/dev-system/DevAiPanel.vue',
   '**/src/views/app/dev-system/DevFileEditor.vue',
   '**/src/views/app/dev-system/DevNodeProps.vue',
   '**/src/views/app/dev-system/DevSiteTree.vue',
@@ -55,8 +54,6 @@ export const COMPONENT_EXCLUDE_PATTERNS = [
  * 若将其纳入 feature 扫描会产生大量“缺少 @skill 注解”噪声，干扰目录覆盖率判断。
  */
 export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
-  '**/src/components/AiAssistantHub.vue',
-  '**/src/components/AiChatPanel.vue',
   '**/src/components/AiChatWidget.vue',
   '**/src/components/ErrorFallback.vue',
   '**/src/components/IconPicker.vue',

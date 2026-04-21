@@ -2,7 +2,6 @@
  * 会话后端 HTTP 客户端统一实现。
  *
  * - SessionBackendImpl：运行时 stills 会话客户端（基于 createRequest）
- * - createGenerateSessionBackend：生成链会话客户端（基于 fetch）
  */
 
 import { createFetchClient, createRequest, Logger } from '@spark-view/spark-utils'
@@ -191,7 +190,6 @@ export class SessionBackendImpl implements SessionBackend {
             ...(parsed.toolCalls !== undefined ? { toolCalls: parsed.toolCalls } : {}),
           }
         } catch {
-          // result 非 JSON 时按纯文本兜底，避免直接丢失本轮回复。
           finalResult = { text: data }
         }
       }
@@ -252,118 +250,5 @@ export class SessionBackendImpl implements SessionBackend {
       await this.http.delete(`${this.baseUrl}/${sessionId}`)
     }
     this.sessionIds.clear()
-  }
-}
-
-export interface GenerateSessionBackendOptions {
-  baseUrl: string
-  token?: string
-}
-
-export function createGenerateSessionBackend(
-  options: GenerateSessionBackendOptions,
-): SessionBackend {
-  const { baseUrl } = options
-  const sessionIds: Set<string> = new Set()
-
-  function headers(): Record<string, string> {
-    const h: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (options.token) {
-      h['Authorization'] = `Bearer ${options.token}`
-    }
-    return h
-  }
-
-  async function request<T>(path: string, init: RequestInit): Promise<T> {
-    const url = `${baseUrl}${path}`
-    const resp = await fetch(url, {
-      ...init,
-      headers: { ...headers(), ...(init.headers as Record<string, string> | undefined) },
-    })
-    if (!resp.ok) {
-      const text = await resp.text().catch(() => '')
-      throw new Error(`HTTP ${resp.status}: ${text}`)
-    }
-    return resp.json() as Promise<T>
-  }
-
-  return {
-    async createSession(
-      systemPrompt: string,
-      userPrompt: string,
-      windowSize: number,
-      tools?: ToolDefinition[],
-    ): Promise<string> {
-      const body: Record<string, unknown> = {
-        protocolVersion: 3,
-        systemPrompt,
-        userPrompt,
-        windowSize,
-        mode: 'generate',
-      }
-      if (tools) {
-        body['tools'] = tools
-      }
-      const result = await request<{ sessionId: string }>('/api/ai/sessions', {
-        method: 'POST',
-        body: JSON.stringify(body),
-      })
-      sessionIds.add(result.sessionId)
-      return result.sessionId
-    },
-
-    async executeTurn(sessionId: string): Promise<LlmResponse | null> {
-      try {
-        const result = await request<{
-          text?: string
-          reasoning?: string
-          toolCalls?: ToolCall[]
-        }>(`/api/ai/sessions/${sessionId}/turn`, {
-          method: 'POST',
-          body: JSON.stringify({ protocolVersion: 3 }),
-        })
-        return {
-          text: result.text ?? '',
-          ...(result.reasoning !== undefined ? { reasoning: result.reasoning } : {}),
-          ...(result.toolCalls !== undefined ? { toolCalls: result.toolCalls } : {}),
-        }
-      } catch (err) {
-        const detail = toBackendErrorMessage(err)
-        throw new Error(`会话轮次调用失败: ${detail}`)
-      }
-    },
-
-    async appendMessages(
-      sessionId: string,
-      messages: Array<{ role: string; content: string; tool_call_id?: string; tool_calls?: ToolCall[] }>,
-    ): Promise<void> {
-      await request<unknown>(`/api/ai/sessions/${sessionId}/append`, {
-        method: 'POST',
-        body: JSON.stringify({ protocolVersion: 3, messages }),
-      })
-    },
-
-    async getConversation(sessionId: string): Promise<Array<{ role: string; content: string }>> {
-      const result = await request<{ conversation: Array<{ role: string; content: string }> }>(
-        `/api/ai/sessions/${sessionId}/conversation`,
-        { method: 'GET' },
-      )
-      return result.conversation
-    },
-
-    async destroySession(sessionId: string): Promise<void> {
-      await request<unknown>(`/api/ai/sessions/${sessionId}`, { method: 'DELETE' })
-      sessionIds.delete(sessionId)
-    },
-
-    async destroyAllSessions(): Promise<void> {
-      if (sessionIds.size === 0) return
-      const ids = [...sessionIds]
-      await request<unknown>('/api/ai/sessions', {
-        method: 'DELETE',
-        body: JSON.stringify({ sessionIds: ids }),
-      })
-      sessionIds.clear()
-    },
   }
 }

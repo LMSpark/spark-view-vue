@@ -1,6 +1,6 @@
 # SPARK AI Server
 
-Java Spring Boot 后端，实现 `POST /api/ai/chat`，接收 SPARK View 前端的 AI 闭环请求，调用 LLM 生成页面配置，返回 `AIResponse`。
+Java Spring Boot 后端，当前主要承载三类能力：通用聊天流式接口 `POST /api/ai/chat/stream`、统一会话接口 `/api/ai/sessions/*`、以及页面配置/导航/SSE 调试等平台后端能力。
 
 ## 数据目录约定
 
@@ -60,7 +60,7 @@ mvn spring-boot:run
 AI_BACKEND_URL=http://localhost:8080
 ```
 
-然后重启 Vite 开发服务器（`pnpm run dev`）。此后前端的 AI Studio 页面将使用真实 LLM 生成。
+然后重启 Vite 开发服务器（`pnpm run dev`）。此后前端的 `AiChatWidget` 与基于 stills 的编辑会话会走真实后端。
 
 ---
 
@@ -110,48 +110,50 @@ $env:AI_MODEL        = "qwen-plus"
 
 ## API 接口
 
-### `POST /api/ai/chat`
+### `POST /api/ai/chat/stream`
 
-**请求体（generate）：**
+通用对话流式 SSE 端点，供 `AiChatWidget` 等聊天入口使用。
+
+**请求体：**
 ```json
 {
-  "action": "generate",
-  "pageId": "my-page",
-  "prompt": "生成一个订单管理页面，包含订单列表、金额汇总",
-  "sessionId": "session-abc"
-}
-```
-
-**请求体（iterate）：**
-```json
-{
-  "action": "iterate",
-  "pageId": "my-page",
-  "sessionId": "session-abc",
-  "feedback": "请把表格改成带斑马纹，并添加创建时间列",
-  "currentFiles": {
-    "rule.json": "...",
-    "pagedata.json": "..."
-  },
-  "logs": [
-    { "timestamp": 1700000000000, "level": "error", "message": "Table xxx has no API" }
-  ]
+  "messages": [
+    { "role": "user", "content": "你好，帮我解释当前 DataSet 结构" }
+  ],
+  "mode": "multi",
+  "systemPrompt": "(可选) 覆盖默认 system prompt"
 }
 ```
 
 **响应：**
-```json
-{
-  "files": {
-    "rule.json": "[{\"type\":\"r-table\",...}]",
-    "pagedata.json": "{\"dataSetName\":\"my-page\",...}",
-    "script.js": "function __init__() { ... }",
-    "style.css": ""
-  },
-  "explanation": "生成了包含5列的订单管理表格，头部有搜索栏",
-  "needsIteration": false
-}
-```
+
+SSE 事件流，典型事件包括 `delta`、`reasoning`、`usage`、`done`。
+
+### `/api/ai/sessions/*`
+
+统一会话接口，供 stills / FC 会话编排使用。
+
+| Method | Path | 说明 |
+|---|---|---|
+| `POST` | `/api/ai/sessions` | 创建会话 |
+| `POST` | `/api/ai/sessions/{sessionId}/turn` | 非流式执行一轮 |
+| `POST` | `/api/ai/sessions/{sessionId}/turn/stream` | 流式执行一轮 |
+| `POST` | `/api/ai/sessions/{sessionId}/append` | 追加消息 |
+| `GET` | `/api/ai/sessions/{sessionId}/conversation` | 获取完整会话历史 |
+| `DELETE` | `/api/ai/sessions/{sessionId}` | 销毁单个会话 |
+| `DELETE` | `/api/ai/sessions` | 批量销毁当前会话 |
+
+### 其他 AI 相关端点
+
+| Method | Path | 说明 |
+|---|---|---|
+| `POST` | `/api/ai/upload` | 上传聊天附件 |
+| `POST` | `/api/ai/component-metadata` | 上传组件元数据 |
+| `GET` | `/api/ai/component-metadata` | 查询组件元数据状态 |
+| `POST` | `/api/ai/debug/screenshot-request` | 触发截图调试请求 |
+| `POST` | `/api/ai/debug/screenshot-result` | 回传截图调试结果 |
+| `POST` | `/api/ai/debug/route-request` | 触发路由调试请求 |
+| `POST` | `/api/ai/debug/route-result` | 回传路由调试结果 |
 
 ---
 

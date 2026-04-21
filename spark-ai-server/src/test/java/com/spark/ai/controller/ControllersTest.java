@@ -1,9 +1,6 @@
 package com.spark.ai.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spark.ai.model.AiChatRequest;
-import com.spark.ai.model.AiResponse;
-import com.spark.ai.service.AiPageService;
 import com.spark.ai.service.AiStreamService;
 import com.spark.ai.service.ComponentMetadataService;
 import com.spark.ai.service.PageConfigService;
@@ -39,9 +36,6 @@ class ControllersTest {
     ObjectMapper objectMapper;
 
     @MockBean
-    AiPageService aiPageService;
-
-    @MockBean
     AiStreamService aiStreamService;
 
     @MockBean
@@ -55,30 +49,6 @@ class ControllersTest {
 
     @MockBean
     TenantService tenantService;
-
-    // ── AiChatController ──────────────────────────────────────────────────
-
-    @Test
-    void postAiChat_returnsAiResponse() throws Exception {
-        AiResponse mockResp = new AiResponse(
-                Map.of("rule.json", "[{\"type\":\"div\"}]"),
-                "生成完成",
-                false
-        );
-        when(aiPageService.processRequest(any(AiChatRequest.class))).thenReturn(mockResp);
-
-        String body = """
-                {"action":"generate","pageId":"test","prompt":"hello","sessionId":"s1"}
-                """;
-
-        mockMvc.perform(post("/api/ai/chat")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.files['rule.json']").value("[{\"type\":\"div\"}]"))
-                .andExpect(jsonPath("$.explanation").value("生成完成"))
-                .andExpect(jsonPath("$.needsIteration").value(false));
-    }
 
     // ── PageConfigController: GET ──────────────────────────────────────────
 

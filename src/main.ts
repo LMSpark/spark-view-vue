@@ -39,9 +39,8 @@
  */
 
 // SPARK 架构包
-import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger, addGlobalTransport } from '@spark-view/spark-app'
+import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger } from '@spark-view/spark-app'
 import { getNavHomePath } from '@spark-view/spark-app'
-import type { LogTransport } from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark, registerAllRenderers } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
 import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
@@ -154,48 +153,8 @@ async function startApp() {
     //   B) spark-app    AppLogger → addGlobalTransport() — error handler / warnHandler / startupLogger
     //   C) APP_SERVICES.logger    → 实际是 Logger('PageRenderer')，走链路 A
     //
-    // collectorTransport 同时注册到 A + B，确保无论走哪条链路都能被 AI Loop 收集。
+    // 远程日志仍然通过统一 logger 配置上报；旧 AI 闭环本地 collector 已下线。
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-    // ⚡ AI 闭环 collectorTransport — 在 SparkApp.start 之前同步注册
-    // 页面首次渲染（beforeMount 阶段注册路由后 router.isReady() 触发）产生的 JSON 解析错误等
-    // 必须在渲染发生前就能被捕获，所以 transport 注册越早越好。
-    interface BufferedLog { level: string; message: string; meta?: Record<string, unknown> | undefined; timestamp: number; pageId?: string | undefined }
-    let _loopCollector: { push(entry: BufferedLog): void } | null = null
-    const _bufferedLogs: BufferedLog[] = []
-
-    /** 清除 meta 中不可序列化的值（Vue Proxy / 循环引用） */
-    function safeMeta(raw?: Record<string, unknown>): Record<string, unknown> | undefined {
-      if (raw === undefined) return undefined
-      try {
-        JSON.stringify(raw)
-        return raw
-      } catch {
-        const safe: Record<string, unknown> = {}
-        for (const [k, v] of Object.entries(raw)) {
-          if (v === undefined || v === null || typeof v !== 'object') { safe[k] = v; continue }
-          try { safe[k] = JSON.parse(JSON.stringify(v)) }
-          catch { safe[k] = '[circular]' }
-        }
-        return safe
-      }
-    }
-
-    const collectorTransport: LogTransport & UtilsLogTransport = {
-      send(level, message, meta) {
-        const entry: BufferedLog = { level, message, meta: safeMeta(meta), timestamp: Date.now(), pageId: _currentPageId }
-        if (_loopCollector) {
-          _loopCollector.push(entry)
-        } else {
-          _bufferedLogs.push(entry)
-        }
-      },
-    }
-
-    // 链路 A：spark-utils Logger（原生 transport，结构化 message+meta，无损传递）
-    addLogTransport(collectorTransport)
-    // 链路 B：spark-app AppLogger（error handler / warnHandler 等）
-    addGlobalTransport(collectorTransport)
 
     const auditRemoteLogsEnabled = import.meta.env['VITE_AUDIT_REMOTE_LOGS'] === 'true'
     if (auditRemoteLogsEnabled) {
@@ -254,8 +213,8 @@ async function startApp() {
     // 平台级路径集合 — 路由守卫用（未登录时只允许这些路径）
     const platformPaths = getPlatformPaths()
     startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuthNav: ${preAuthNavTree.children.length} 个节点, platformPaths: ${platformPaths.size} 个`)
-    
-    const { getPageApi, getNavApi } = await import('./services/api-paths')
+
+    const { getNavApi } = await import('./services/api-paths')
 
     // 5.1 URL → localStorage 项目上下文预同步
     // 浏览器地址栏输入跨项目 URL 时，在 registerRoutes() 加载导航树之前
@@ -403,80 +362,6 @@ async function startApp() {
       // 挂载后钩子
       afterMount: (context) => {
         startupLogger.info('✅ 应用启动完成')
-        
-        // _currentPageId + router.afterEach 已在 beforeMount 中设置
-        const { router } = context
-        
-        // ── AI 闭环：初始化 AI Loop 服务（可选，供开发系统 AI 面板复用） ──
-        if (appConfig.config.features.enableAI === true) {
-          // collectorTransport 已在 1.5 节提前注册到两个 Logger 体系，
-          // 此处只需异步加载 AI Loop 模块并连接缓冲区。
-          Promise.all([
-            import('@spark-view/spark-ai'),
-          ]).then(([{ initAILoop, setupHotReload, setConfigLoader, triggerPageRefresh, configureAILoopHttp }]) => {
-            // 配置 AI Loop HTTP 客户端的认证头和租户作用域
-            configureAILoopHttp({
-              getHeaders: createAuthHeaders,
-              getPageApiUrl: getPageApi,
-              getNavApiUrl: getNavApi,
-            })
-
-            const loop = initAILoop({
-              aiEndpoint: appConfig.config.features.aiEndpoint ?? '/api/ai/chat',
-
-              onFilesUpdated: (pageId) => {
-                startupLogger.info('AI 已更新页面文件', { pageId })
-              },
-              onError: (err) => {
-                startupLogger.error('AI Loop 错误', err)
-              },
-            })
-
-            // 注册 configLoader 到 ai-loop（使 clearPageCache 能同时清除 memCache）
-            const configRoute = router.getRoutes().find(
-              r => r.meta['pageId'] !== null && r.meta['pageId'] !== undefined && r.meta['type'] !== 'system-page'
-            )
-            if (configRoute) {
-              const routeProps = configRoute.props['default'] as Record<string, unknown> | undefined
-              const loader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
-              if (loader) setConfigLoader(loader)
-            }
-
-            // 将缓冲区中的日志刷入 AI Loop collector，然后切换为直连
-            for (const entry of _bufferedLogs) {
-              loop.collector.push(entry)
-            }
-            _bufferedLogs.length = 0
-            _loopCollector = loop.collector
-
-            // SSE 监听：AI 写入文件后自动清缓存 + 通知当前激活的配置页实例执行 reload()
-            // 刷新入口放在 App.vue，避免通过改 key 重挂载页面而破坏 SPA keep-alive 缓存语义
-            setupHotReload(
-              () => _currentPageId ?? '',
-              () => { triggerPageRefresh() },
-            )
-
-            // 浏览器控制台快捷入口：window.__aiLoop
-            if (import.meta.env.DEV) {
-              const w = window as unknown as Record<string, unknown>
-              w['__aiLoop'] = {
-                /** 生成新页面：__aiLoop.generate('my-page', '订单列表') */
-                generate: (pageId: string, prompt: string) => loop.generate(pageId, prompt),
-                /** 迭代修改：__aiLoop.iterate('my-page', '表格没数据') */
-                iterate: (pageId: string, feedback?: string) => loop.iterate(pageId, feedback),
-                /** 查看收集的日志 */
-                logs: (pageId?: string) => loop.collector.peek(pageId),
-                /** 当前会话 ID */
-                sessionId: loop.sessionId,
-              }
-              startupLogger.info('💡 控制台可用：window.__aiLoop.generate(pageId, prompt)')
-            }
-
-            startupLogger.info('🤖 AI Loop 已初始化', { sessionId: loop.sessionId })
-          }).catch((err: unknown) => {
-            startupLogger.warn('AI Loop 加载失败', { error: String(err) })
-          })
-        }
         
         // 统计路由信息
         const allRoutes = context.router.getRoutes()

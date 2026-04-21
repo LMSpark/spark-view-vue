@@ -17,16 +17,25 @@
 
 ## 二、后端完整 API 清单（按 Controller，2026-03-17 校验）
 
-### 1) AI 对话与页面生成（AiChatController）
+### 1) AI 对话与会话（AiChatController / AiSessionController）
 
 | Method | Path | 说明 |
 |---|---|---|
-| `POST` | `/api/ai/chat` | 页面生成（generate/iterate，非流式） |
-| `POST` | `/api/ai/chat/stream-page` | 页面生成流式 SSE（phase/delta/reasoning/result/done/error） |
 | `POST` | `/api/ai/chat/stream` | 通用对话流式 SSE |
+| `POST` | `/api/ai/sessions` | 创建统一会话 |
+| `POST` | `/api/ai/sessions/{sessionId}/turn` | 非流式执行一轮 |
+| `POST` | `/api/ai/sessions/{sessionId}/turn/stream` | 流式执行一轮 |
+| `POST` | `/api/ai/sessions/{sessionId}/append` | 追加消息 |
+| `GET` | `/api/ai/sessions/{sessionId}/conversation` | 获取会话历史 |
+| `DELETE` | `/api/ai/sessions/{sessionId}` | 销毁单个会话 |
+| `DELETE` | `/api/ai/sessions` | 批量销毁会话 |
 | `POST` | `/api/ai/upload` | 上传聊天附件（multipart/form-data） |
 | `POST` | `/api/ai/component-metadata` | 上传组件元数据 |
 | `GET` | `/api/ai/component-metadata` | 查询组件元数据状态 |
+| `POST` | `/api/ai/debug/screenshot-request` | 触发截图调试 |
+| `POST` | `/api/ai/debug/screenshot-result` | 回传截图调试结果 |
+| `POST` | `/api/ai/debug/route-request` | 触发路由调试 |
+| `POST` | `/api/ai/debug/route-result` | 回传路由调试结果 |
 
 ### 2) 页面配置（PageConfigController）
 

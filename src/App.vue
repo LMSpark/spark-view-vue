@@ -140,7 +140,7 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
-import { clearAllCache, getCacheStats, onPageRefresh } from '@spark-view/spark-ai'
+import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { createAuthHeaders } from '@/services/http'
 import { startSseDebugScreenshotBridge } from '@/services/sse-debug-screenshot'
@@ -173,7 +173,6 @@ const { mode, setMode } = useTabPages()
 useColorScheme()
 let _stopSseDebugScreenshot: (() => void) | null = null
 let _stopSseDebugRoute: (() => void) | null = null
-let _pageRefreshTimer: ReturnType<typeof setTimeout> | null = null
 
 interface ReloadableRouteComponent {
   reload?: () => Promise<void> | void
@@ -365,23 +364,6 @@ watch(
   },
 )
 
-const _stopPageRefresh = onPageRefresh(() => {
-  if (!isSparkRendererRoute.value) return
-  if (_pageRefreshTimer !== null) {
-    clearTimeout(_pageRefreshTimer)
-  }
-  _pageRefreshTimer = setTimeout(() => {
-    _pageRefreshTimer = null
-    const reload = activeSparkRendererHost.value?.reload
-    if (typeof reload !== 'function') return
-    void Promise.resolve(reload.call(activeSparkRendererHost.value)).catch((error: unknown) => {
-      if (import.meta.env.DEV) {
-        console.error('[App] 当前激活页面刷新失败', error)
-      }
-    })
-  }, 120)
-})
-
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
 function applyNavTree(navData: AppNavRoot | null): void {
   const safeChildren = Array.isArray(navData?.children) ? navData.children : []
@@ -421,11 +403,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   moduleContextListeners.clear()
-  if (_pageRefreshTimer !== null) {
-    clearTimeout(_pageRefreshTimer)
-    _pageRefreshTimer = null
-  }
-  _stopPageRefresh()
   _stopSseDebugScreenshot?.()
   _stopSseDebugScreenshot = null
   _stopSseDebugRoute?.()

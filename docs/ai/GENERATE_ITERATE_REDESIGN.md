@@ -1,7 +1,7 @@
 # Generate/Iterate 重构方案
 
 > **文档版本**: v1.0 · 2026-04-09
-> **状态**: 待实施
+> **状态**: 已归档（对应的 `packages/spark-ai/src/generate/*` 与 `scripts/iterate-ai-dataset-quality.ts` 已于 2026-04-22 删除）
 > **前置文档**: [AI_CODE_CHANGE_PROTOCOL.md](./AI_CODE_CHANGE_PROTOCOL.md)
 
 ---
@@ -12,7 +12,7 @@
 
 | 维度 | Generate/Iterate（页面生成） | Stills（结构化编辑） |
 |------|------|------|
-| 端点 | `POST /api/ai/chat/stream-page` | `/api/ai/sessions/*`（v3 统一入口；`/api/stills/*` 已下线） |
+| 端点 | 旧页面生成专用流式端点 | `/api/ai/sessions/*`（v3 统一入口；`/api/stills/*` 已下线） |
 | 调用方式 | 纯 Chat Completion（无 tools） | Function Calling + 工具回路 |
 | 会话管理 | **无**（每次请求无状态） | 有（StillsSessionService，滑动窗口 30 条） |
 | 约束知识 | 500 行 system-prompt.txt 一次性注入 | ~2000 行 catalog（paramsSchema + usageRules + failureModes） |

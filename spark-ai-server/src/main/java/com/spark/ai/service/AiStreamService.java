@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
  *
  * <ul>
  *   <li>调用 OpenAI 兼容端点（stream: true），逐 token 流式转发给客户端 SSE。</li>
- *   <li>独立于 {@link AiPageService}（后者专注于页面配置生成），本服务面向通用聊天场景。</li>
+ *   <li>仅服务通用聊天场景，不再承载页面配置生成链路。</li>
  * </ul>
  *
  * <h3>DeepSeek 适配要点</h3>

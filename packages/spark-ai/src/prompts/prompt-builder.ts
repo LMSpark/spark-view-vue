@@ -1,9 +1,6 @@
-// ── 系统提示词拼接器（从 AiPageService.buildSystemPrompt 迁入）────────────
+// ── 系统提示词拼接器（前端 SSoT）─────────────────────────────────────────
 //
-// 原始来源：AiPageService.java L931-1095
-// 迁移原因：提示词前端化（Phase 0），前端直接拼接完整系统提示词
-//
-// 当前模块作为提示词拼接的单一入口（SSoT）。
+// 当前模块作为提示词拼接的单一入口，统一承接页面生成与 stills 相关提示词组装。
 
 import { PAGE_SYSTEM_PROMPT } from './page-system-prompt'
 import { STILLS_RUNTIME_PROMPT, STILLS_BLUEPRINT_PROMPT } from './stills-prompts'
@@ -12,7 +9,7 @@ import { STILLS_RUNTIME_PROMPT, STILLS_BLUEPRINT_PROMPT } from './stills-prompts
 // 类型
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** 提示词拼接上下文（对应 Java 端 AiChatRequest 子集） */
+/** 提示词拼接上下文 */
 export interface PromptBuildContext {
   /** 用户输入的 prompt 文本 */
   prompt?: string
@@ -46,10 +43,10 @@ export interface BuildPagePromptOptions {
 export type PromptMode = 'page' | 'stills' | 'stills-blueprint'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Skill 类型关键词检测（从 AiPageService.detectRelevantSkillTypes 迁入）
+// Skill 类型关键词检测
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** skill 类型 → 关键词列表（对应 Java 端 detectRelevantSkillTypes 中的匹配逻辑） */
+/** skill 类型 → 关键词列表 */
 const SKILL_KEYWORDS: Record<string, string[]> = {
   'r-tree': [
     'r-tree', '树容器', '树形', '树节点', 'nodeclick', 'node-click',
@@ -72,7 +69,6 @@ const SKILL_KEYWORDS: Record<string, string[]> = {
 
 /**
  * 从上下文中检测相关的 skill 类型。
- * 对应 Java 端 AiPageService.detectRelevantSkillTypes。
  */
 export function detectRelevantSkillTypes(context?: PromptBuildContext): string[] {
   const text = collectSkillDetectionContext(context).toLowerCase()
@@ -89,7 +85,6 @@ export function detectRelevantSkillTypes(context?: PromptBuildContext): string[]
 
 /**
  * 拼接 skill 检测上下文文本。
- * 对应 Java 端 AiPageService.collectSkillDetectionContext。
  */
 function collectSkillDetectionContext(context?: PromptBuildContext): string {
   if (!context) return ''
@@ -116,13 +111,13 @@ function collectSkillDetectionContext(context?: PromptBuildContext): string {
   return parts.join(' ')
 }
 
-/** 多关键词匹配。对应 Java 端 containsAny。 */
+/** 多关键词匹配。 */
 function containsAny(text: string, needles: string[]): boolean {
   return needles.some(n => text.includes(n.toLowerCase()))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 提示词拼接（从 AiPageService.buildSystemPrompt 迁入）
+// 提示词拼接
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** 追加提示词分节（双换行分隔） */
@@ -132,7 +127,7 @@ function appendSection(base: string, section: string): string {
 
 /**
  * 拼接页面生成系统提示词。
- * 完整迁移 Java 端 AiPageService.buildSystemPrompt 三级优先逻辑：
+ * 当前逻辑分三层优先级：
  *
  * 1. metadataProvider.getSkillPromptIndex() + detectRelevantSkillTypes → getSkillPromptForTypes
  * 2. metadataProvider.getSkillPromptCompact()

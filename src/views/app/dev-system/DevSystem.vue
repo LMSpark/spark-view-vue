@@ -20,14 +20,6 @@
         >
           <NavIcon name="FolderChecked" :size="14" /> 全部保存
         </el-button>
-        <el-divider direction="vertical" />
-        <el-button
-          size="small"
-          :type="state.aiPanelVisible.value ? 'primary' : 'default'"
-          @click="state.aiPanelVisible.value = !state.aiPanelVisible.value"
-        >
-          <NavIcon name="Cpu" :size="14" /> AI
-        </el-button>
       </div>
     </div>
 
@@ -109,9 +101,6 @@
 
     </div>
 
-    <!-- ═══ AI 助手浮动面板 ═══ -->
-    <DevAiPanel :state="state" />
-
     <!-- ═══ 底部状态栏 ═══ -->
     <div class="dev-status-bar">
       <div class="status-messages">
@@ -141,7 +130,6 @@ import { PAGE_FILE_NAMES, useDevState } from './useDevState'
 import type { DevWorkspaceTab, PageFileName } from './useDevState'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
-import DevAiPanel from './DevAiPanel.vue'
 import DevFileEditor from './DevFileEditor.vue'
 import DevPreviewTab from './DevPreviewTab.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
