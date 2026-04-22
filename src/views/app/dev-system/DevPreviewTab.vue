@@ -48,7 +48,6 @@ import { SparkPageRenderer } from '@spark-view/spark-component'
 import { compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
 import type { DevState } from './useDevState'
-import { PAGE_FILE_NAMES } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
 import { createRequest } from '@spark-view/spark-utils'
@@ -82,10 +81,7 @@ const previewConfig = shallowRef<Omit<PageConfig, 'pageId'> | null>(null)
 
 /** 确保 4 个文件全部从服务器加载完成 */
 async function ensureAllFilesLoaded() {
-  const promises = PAGE_FILE_NAMES
-    .filter((name) => props.state.fileLoadState[name] !== 'loaded')
-    .map((name) => props.state.loadPageFile(name))
-  if (promises.length > 0) await Promise.all(promises)
+  await props.state.ensureActivePageFilesLoaded()
 }
 
 function buildPreviewConfig(): Omit<PageConfig, 'pageId'> | null {

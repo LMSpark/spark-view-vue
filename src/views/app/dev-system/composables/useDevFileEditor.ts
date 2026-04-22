@@ -13,7 +13,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
       return
     }
 
-    await state.loadPageFile(activeFile.value, options)
+    await state.ensureActivePageFilesLoaded(options)
   }
 
   function updateText(value: string) {
@@ -41,8 +41,8 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
   }
 
   watch(
-    [() => state.activePageId.value, activeFile],
-    ([pageId], [previousPageId]) => {
+    () => state.activePageId.value,
+    (pageId, previousPageId) => {
       if (!pageId) {
         return
       }
@@ -50,17 +50,6 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
       void ensureLoaded({ forceReload: pageId !== previousPageId })
     },
     { immediate: true },
-  )
-
-  watch(
-    () => state.fileReloadToken[activeFile.value],
-    (nextToken, previousToken) => {
-      if (nextToken === previousToken || !state.activePageId.value) {
-        return
-      }
-
-      void ensureLoaded({ forceReload: true })
-    },
   )
 
   return {

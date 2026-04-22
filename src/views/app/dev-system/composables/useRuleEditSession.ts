@@ -136,15 +136,25 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
   const busy = ref(false)
   const aiBuffer = ref('')
   const log = ref<LogEntry[]>([])
+  const LOG_LIMIT = 200
   const nodeTree = shallowRef<SparkNodeTree | null>(null)
   let activeRunId = 0
   let runAbortController: AbortController | null = null
 
   // ── Internal helpers ────────────────────────────────────────────────────────
 
-  function pushLog(type: LogEntry['type'], tag: string, text: string) {
-    log.value.unshift({ type, tag, text })
-    if (log.value.length > 30) log.value.splice(30)
+  function pushLog(type: LogEntry['type'], tag: string, text: string, logOptions?: { merge?: boolean }) {
+    if (logOptions?.merge) {
+      const last = log.value.at(-1)
+      if (last?.type === type && last.tag === tag) {
+        last.text += text
+        return
+      }
+    }
+    log.value.push({ type, tag, text })
+    if (log.value.length > LOG_LIMIT) {
+      log.value.splice(0, log.value.length - LOG_LIMIT)
+    }
   }
 
   function ensureSession(): StillsSession {
@@ -183,9 +193,12 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     if (event.type === 'delta') {
       aiBuffer.value += event.data
       hooks?.onDelta?.(event.data)
+      pushLog('info', 'SSE delta', event.data, { merge: true })
     } else if (event.type === 'reasoning') {
       hooks?.onReasoning?.(event.data)
+      pushLog('info', 'SSE reasoning', event.data, { merge: true })
     } else if (event.type === 'result') {
+      pushLog('success', 'SSE result', event.data)
       try {
         const parsed = JSON.parse(event.data) as {
           toolCalls?: Array<{ function?: { name?: string } }>
@@ -208,6 +221,8 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
     } else if (event.type === 'error') {
       pushLog('error', 'SSE 错误', event.data)
       aiBuffer.value = ''
+    } else {
+      pushLog('info', `SSE ${event.type}`, event.data || '(empty)')
     }
   }
 
@@ -269,7 +284,7 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
       configureSessionBackend({ getHeaders: createAuthHeaders })
       pushLog('info', '开始 LLM 编辑', `需求: ${prompt}`)
       const result = await runStillsLoop(prompt, s, sessionHost.backend, {
-        maxRounds: 12,
+        maxRounds: 200,
         slidingWindow: 12,
         systemPrompt: STILLS_EDIT_RUNTIME_PROMPT,
         signal: runController.signal,
@@ -279,7 +294,9 @@ export function useRuleEditSession(options: RuleEditSessionOptions) {
         },
         ...sessionHost.getResumeSessionOptions(),
         tools: generateToolDefinitions({ compactDescriptions: true }),
-        monitors: [createRepeatDetectionMonitor({ maxSameSignature: 2, maxConsecutiveErrors: 2 })],
+        // 在编辑会话中优先让 LLM 自修正，不要因短暂探索失败快速中止。
+        // 周期循环会通过 monitor followUp 提醒换路径；这里仅把硬中止阈值调高。
+        monitors: [createRepeatDetectionMonitor({ maxSameSignature: 12, maxConsecutiveErrors: 12 })],
         onTurnComplete(turn: DialogueTurn) {
           if (turn.toolBlock?.action && turn.stillsResult) {
             const r = turn.stillsResult

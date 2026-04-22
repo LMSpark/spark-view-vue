@@ -1,6 +1,10 @@
 <template>
-  <div v-if="props.state.activePageId.value" class="floating-ai-panel">
-    <div class="floating-ai-panel__frame">
+  <!-- inline 模式：直接嵌入布局，无 fixed 定位/拖拽 -->
+  <template v-if="props.inline">
+    <div
+      v-if="props.state.activePageId.value"
+      class="floating-ai-panel__frame floating-ai-panel__frame--inline"
+    >
       <div class="floating-ai-panel__summary">
         <div class="floating-ai-panel__summary-main">
           <span class="floating-ai-panel__title">AI 编辑面板</span>
@@ -40,6 +44,18 @@
         >
           {{ pageDataBlockReason }}
         </el-alert>
+        <!-- 工具调用日志 -->
+        <div v-if="ruleSession.log.value.length > 0" class="floating-ai-panel__tool-log">
+          <div
+            v-for="(entry, i) in ruleSession.log.value"
+            :key="i"
+            :class="['tool-log-entry', `tool-log-entry--${entry.type}`]"
+          >
+            <span class="tool-log-entry__type">{{ entry.type }}</span>
+            <span class="tool-log-entry__tag">{{ entry.tag }}</span>
+            <span class="tool-log-entry__text">{{ entry.text }}</span>
+          </div>
+        </div>
         <AiChatWidget
           :key="currentAiChatStorageKey"
           :storage-key="currentAiChatStorageKey"
@@ -73,31 +89,302 @@
         </el-alert>
       </div>
     </div>
-  </div>
+  </template>
+
+  <!-- floating 模式：原 fixed 定位可拖拽浮层 -->
+  <template v-else>
+    <div
+      v-if="props.state.activePageId.value"
+      class="floating-ai-panel"
+      :class="{ 'floating-ai-panel--dragging': isDragging }"
+      :style="panelStyle"
+    >
+      <div
+        ref="frameRef"
+        class="floating-ai-panel__frame"
+        :class="{ 'floating-ai-panel__frame--collapsed': isCollapsed }"
+      >
+        <div class="floating-ai-panel__summary" @pointerdown="startDrag">
+          <div class="floating-ai-panel__summary-main">
+            <span class="floating-ai-panel__title">AI 编辑面板</span>
+            <span class="floating-ai-panel__context">
+              {{ props.state.activePageId.value }}
+              <template v-if="props.activeFile"> · {{ props.activeFile }}</template>
+            </span>
+          </div>
+          <div class="floating-ai-panel__summary-actions" @pointerdown.stop>
+            <el-button size="small" @click.stop="toggleCollapsed">{{ isCollapsed ? '展开' : '折叠' }}</el-button>
+            <el-tooltip content="撤销上一条 AI 页面事务" placement="bottom" :show-after="600">
+              <el-button size="small" :disabled="!props.state.canPageEditTransactionBack()" @click="props.state.undoPageEditTransaction()">
+                <NavIcon name="RefreshLeft" :size="14" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="重做上一条 AI 页面事务" placement="bottom" :show-after="600">
+              <el-button size="small" :disabled="!props.state.canPageEditTransactionForward()" @click="props.state.redoPageEditTransaction()">
+                <NavIcon name="RefreshRight" :size="14" />
+              </el-button>
+            </el-tooltip>
+            <el-tag v-if="props.state.getPageEditTransactionCount() > 0" size="small" type="info" effect="plain">
+              AI 事务 {{ props.state.getPageEditTransactionCount() }}
+            </el-tag>
+          </div>
+        </div>
+
+        <template v-if="!isCollapsed">
+          <div v-if="supportsAiEditing" class="floating-ai-panel__body">
+            <div class="floating-ai-panel__rule-tip" :class="{ 'floating-ai-panel__rule-tip--dataset': isPageDataFile }">
+              {{ currentAiTip }}
+            </div>
+            <el-alert
+              v-if="isPageDataFile && pageDataBlockReason"
+              class="floating-ai-panel__dataset-alert"
+              title="存在未保存 DataSet 改动"
+              type="warning"
+              :closable="false"
+              show-icon
+            >
+              {{ pageDataBlockReason }}
+            </el-alert>
+            <AiChatWidget
+              :key="currentAiChatStorageKey"
+              :storage-key="currentAiChatStorageKey"
+              mode="multi"
+              :title="currentAiTitle"
+              :placeholder="currentAiPlaceholder"
+              :compact="true"
+              :sender="currentAiSender"
+            />
+          </div>
+
+          <div v-else-if="props.activeFile" class="floating-ai-panel__body">
+            <el-alert
+              title="当前文件暂未接入模型级 AI"
+              type="info"
+              :closable="false"
+              show-icon
+            >
+              当前浮层仅支持页面 4 文件模型编辑；请切到 rule.json、pagedata.json、script.js 或 style.css。
+            </el-alert>
+          </div>
+
+          <div v-else class="floating-ai-panel__placeholder">
+            <el-alert
+              title="切换到页面文件后可使用 AI"
+              type="info"
+              :closable="false"
+              show-icon
+            >
+              当前工作区不是页面文件视图；请切到 rule.json、pagedata.json、script.js 或 style.css。
+            </el-alert>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
 import NavIcon from '@/components/NavIcon.vue'
 import type { AiChatSender } from '@/composables/useAiChat'
 import type { AiChatSendRequest } from '@/composables/useAiChat'
 import { usePageModelSessionHost } from '../composables/usePageModelSessionHost'
 import { useRuleEditSession } from '../composables/useRuleEditSession'
-import { PAGE_FILE_NAMES } from '../useDevState'
 import type { DevState, PageFileName } from '../useDevState'
 
 interface Props {
   state: DevState
   activeFile: PageFileName | null
+  inline?: boolean
 }
 
 const props = defineProps<Props>()
 const AI_CHAT_STORAGE_PREFIX = 'devsystem-ai-chat'
+const AI_PANEL_LAYOUT_STORAGE_PREFIX = 'devsystem-ai-panel-layout'
+
+interface PanelLayoutSnapshot {
+  left: number
+  top: number
+  collapsed: boolean
+}
+
+const frameRef = ref<HTMLElement | null>(null)
+const panelLeft = ref(0)
+const panelTop = ref(0)
+const panelPositionReady = ref(false)
+const isCollapsed = ref(false)
+const isDragging = ref(false)
+
+let dragPointerId: number | null = null
+let dragStartX = 0
+let dragStartY = 0
+let dragOriginLeft = 0
+let dragOriginTop = 0
 
 function buildAiChatStorageKey(pageId: string | undefined | null): string {
   return `${AI_CHAT_STORAGE_PREFIX}:${pageId ?? ''}`
 }
+
+function buildPanelLayoutStorageKey(): string {
+  if (typeof window === 'undefined') {
+    return AI_PANEL_LAYOUT_STORAGE_PREFIX
+  }
+  return `${AI_PANEL_LAYOUT_STORAGE_PREFIX}:${window.location.pathname}`
+}
+
+function parseCssPxNumber(rawValue: string, fallback: number): number {
+  const parsed = Number.parseFloat(rawValue)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function readViewportHeaderOffset(): number {
+  if (typeof window === 'undefined') return 80
+  const rootStyle = window.getComputedStyle(document.documentElement)
+  const headerHeight = parseCssPxNumber(rootStyle.getPropertyValue('--spark-header-height').trim(), 56)
+  return headerHeight + 24
+}
+
+function getFrameSize(): { width: number; height: number } {
+  const rect = frameRef.value?.getBoundingClientRect()
+  return {
+    width: rect?.width ?? 360,
+    height: rect?.height ?? (isCollapsed.value ? 68 : 560),
+  }
+}
+
+function clampPanelPosition(left: number, top: number): { left: number; top: number } {
+  if (typeof window === 'undefined') {
+    return { left, top }
+  }
+
+  const margin = 12
+  const frameSize = getFrameSize()
+  const maxLeft = Math.max(margin, window.innerWidth - frameSize.width - margin)
+  const maxTop = Math.max(margin, window.innerHeight - frameSize.height - margin)
+
+  return {
+    left: Math.min(Math.max(left, margin), maxLeft),
+    top: Math.min(Math.max(top, margin), maxTop),
+  }
+}
+
+function applyPanelPosition(left: number, top: number): void {
+  const next = clampPanelPosition(left, top)
+  panelLeft.value = next.left
+  panelTop.value = next.top
+}
+
+function savePanelLayoutSnapshot(): void {
+  if (typeof window === 'undefined') return
+  const snapshot: PanelLayoutSnapshot = {
+    left: panelLeft.value,
+    top: panelTop.value,
+    collapsed: isCollapsed.value,
+  }
+  try {
+    window.localStorage.setItem(buildPanelLayoutStorageKey(), JSON.stringify(snapshot))
+  } catch {
+    // Ignore storage failures to avoid breaking panel interaction in private mode.
+  }
+}
+
+function loadPanelLayoutSnapshot(): PanelLayoutSnapshot | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(buildPanelLayoutStorageKey())
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<PanelLayoutSnapshot>
+    if (typeof parsed.left !== 'number' || typeof parsed.top !== 'number') return null
+    return {
+      left: parsed.left,
+      top: parsed.top,
+      collapsed: Boolean(parsed.collapsed),
+    }
+  } catch {
+    return null
+  }
+}
+
+function initializePanelPosition(): void {
+  if (panelPositionReady.value || typeof window === 'undefined') return
+
+  const restored = loadPanelLayoutSnapshot()
+  if (restored) {
+    isCollapsed.value = restored.collapsed
+    applyPanelPosition(restored.left, restored.top)
+    panelPositionReady.value = true
+    return
+  }
+
+  const defaultWidth = getFrameSize().width
+  const defaultLeft = Math.max(12, window.innerWidth - defaultWidth - 24)
+  const defaultTop = readViewportHeaderOffset()
+  applyPanelPosition(defaultLeft, defaultTop)
+  panelPositionReady.value = true
+}
+
+function removeDragListeners(): void {
+  if (typeof window === 'undefined') return
+  window.removeEventListener('pointermove', handleDragMove)
+  window.removeEventListener('pointerup', stopDrag)
+  window.removeEventListener('pointercancel', stopDrag)
+}
+
+function startDrag(event: PointerEvent): void {
+  if (event.button !== 0) return
+  initializePanelPosition()
+  dragPointerId = event.pointerId
+  dragStartX = event.clientX
+  dragStartY = event.clientY
+  dragOriginLeft = panelLeft.value
+  dragOriginTop = panelTop.value
+  isDragging.value = true
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('pointermove', handleDragMove)
+    window.addEventListener('pointerup', stopDrag)
+    window.addEventListener('pointercancel', stopDrag)
+  }
+}
+
+function handleDragMove(event: PointerEvent): void {
+  if (!isDragging.value) return
+  if (dragPointerId !== null && event.pointerId !== dragPointerId) return
+  applyPanelPosition(
+    dragOriginLeft + (event.clientX - dragStartX),
+    dragOriginTop + (event.clientY - dragStartY),
+  )
+}
+
+function stopDrag(event?: PointerEvent): void {
+  if (!isDragging.value) return
+  if (event && dragPointerId !== null && event.pointerId !== dragPointerId) return
+  isDragging.value = false
+  dragPointerId = null
+  removeDragListeners()
+  savePanelLayoutSnapshot()
+}
+
+function toggleCollapsed(): void {
+  isCollapsed.value = !isCollapsed.value
+  void nextTick(() => {
+    initializePanelPosition()
+    applyPanelPosition(panelLeft.value, panelTop.value)
+    savePanelLayoutSnapshot()
+  })
+}
+
+function handleViewportResize(): void {
+  if (!panelPositionReady.value) return
+  applyPanelPosition(panelLeft.value, panelTop.value)
+}
+
+const panelStyle = computed<CSSProperties>(() => ({
+  left: `${panelLeft.value}px`,
+  top: `${panelTop.value}px`,
+  visibility: panelPositionReady.value ? 'visible' : 'hidden',
+}))
 
 const sharedSessionHost = usePageModelSessionHost({
   getLiveModelAdapter: () => props.state.createLiveEditModelAdapter(),
@@ -160,7 +447,7 @@ watch(() => props.state.activePageId.value, (pageId, previousPageId) => {
 })
 
 async function ensureAllContextFilesLoaded() {
-  await Promise.all(PAGE_FILE_NAMES.map(name => props.state.loadPageFile(name)))
+  await props.state.ensureActivePageFilesLoaded()
 }
 
 function buildContinuationPrompt(prompt: string, historyMsgs: AiChatSendRequest['historyMsgs']): string {
@@ -218,7 +505,7 @@ async function runRuleSessionChat(request: AiChatSendRequest, prompt: string): P
   })
   if (request.signal?.aborted === true) return
   if (streamed) return
-  const latest = ruleSession.log.value[0]
+  const latest = ruleSession.log.value.at(-1)
   if (!latest) {
     request.onDelta?.('模型级编辑已执行完成。')
     return
@@ -241,23 +528,103 @@ const pageDataModelChatSender: AiChatSender = async (request) => {
 }
 
 const currentAiSender = computed<AiChatSender>(() => isPageDataFile.value ? pageDataModelChatSender : pageModelChatSender)
+
+onMounted(() => {
+  void nextTick(() => {
+    initializePanelPosition()
+  })
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', handleViewportResize)
+  }
+})
+
+onBeforeUnmount(() => {
+  removeDragListeners()
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', handleViewportResize)
+  }
+})
 </script>
 
 <style scoped>
+/* ─── inline 模式：嵌入布局右栏 ─── */
+.floating-ai-panel__frame--inline {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  background: var(--el-bg-color);
+}
+
+.floating-ai-panel__frame--inline .floating-ai-panel__summary {
+  cursor: default;
+  touch-action: auto;
+}
+
+/* ─── tool call log ─── */
+.floating-ai-panel__tool-log {
+  margin: 8px 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tool-log-entry {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.5;
+  background: var(--el-fill-color);
+}
+
+.tool-log-entry--info { color: var(--el-text-color-secondary); }
+.tool-log-entry--success { color: var(--el-color-success); background: var(--el-color-success-light-9); }
+.tool-log-entry--error { color: var(--el-color-danger); background: var(--el-color-danger-light-9); }
+
+.tool-log-entry__type {
+  text-transform: uppercase;
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.tool-log-entry__tag {
+  font-weight: 500;
+  font-family: ui-monospace, monospace;
+  word-break: break-word;
+}
+
+.tool-log-entry__text {
+  color: var(--el-text-color-regular);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ─── floating 模式 ─── */
 .floating-ai-panel {
   position: fixed;
-  top: calc(var(--spark-header-height) + 24px);
-  right: 24px;
-  bottom: calc(var(--spark-footer-height) + 24px);
-  width: min(360px, calc(100vw - 48px));
+  width: min(360px, calc(100vw - 24px));
   z-index: 2100;
   pointer-events: none;
+}
+
+.floating-ai-panel--dragging {
+  user-select: none;
 }
 
 .floating-ai-panel__frame {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: min(72dvh, calc(100dvh - var(--spark-header-height) - var(--spark-footer-height) - 48px));
   min-height: 320px;
   overflow: hidden;
   border: 1px solid var(--el-border-color-lighter);
@@ -265,6 +632,11 @@ const currentAiSender = computed<AiChatSender>(() => isPageDataFile.value ? page
   background: color-mix(in srgb, var(--el-bg-color) 94%, white 6%);
   box-shadow: 0 16px 40px rgb(15 23 42 / 0.18);
   pointer-events: auto;
+}
+
+.floating-ai-panel__frame--collapsed {
+  height: auto;
+  min-height: 0;
 }
 
 .floating-ai-panel__summary {
@@ -275,6 +647,8 @@ const currentAiSender = computed<AiChatSender>(() => isPageDataFile.value ? page
   padding: 12px 14px;
   border-bottom: 1px solid var(--el-border-color-lighter);
   background: linear-gradient(135deg, rgb(255 255 255 / 0.98), rgb(241 245 249 / 0.92));
+  cursor: move;
+  touch-action: none;
 }
 
 .floating-ai-panel__summary-main {
@@ -290,6 +664,7 @@ const currentAiSender = computed<AiChatSender>(() => isPageDataFile.value ? page
   gap: 6px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  cursor: default;
 }
 
 .floating-ai-panel__title {
@@ -403,8 +778,6 @@ const currentAiSender = computed<AiChatSender>(() => isPageDataFile.value ? page
 
 @media (max-width: 1280px) {
   .floating-ai-panel {
-    right: 16px;
-    bottom: 16px;
     width: min(340px, calc(100vw - 32px));
   }
 }

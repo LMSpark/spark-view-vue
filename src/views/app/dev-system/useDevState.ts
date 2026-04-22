@@ -197,12 +197,9 @@ export function useDevState() {
     'script.js': 'idle',
     'style.css': 'idle',
   })
-  const fileReloadToken = reactive<Record<PageFileName, number>>({
-    'rule.json': 0,
-    'pagedata.json': 0,
-    'script.js': 0,
-    'style.css': 0,
-  })
+  let activePageFilesLoadPromise: Promise<void> | null = null
+  let activePageFilesLoadPageId = ''
+  let activePageFilesLoadEpoch = 0
   const pageRuleDocument = shallowRef<SparkNode[] | null>(null)
   const pageRuleTree = shallowRef<SparkNodeTree | null>(null)
   const pageDataTool = shallowRef<DataSetCrudTool | null>(null)
@@ -289,8 +286,51 @@ export function useDevState() {
     return path ? path.replace(/^\/+/, '').trim() : ''
   }
 
+  function buildActivePageStorageKey(): string {
+    if (typeof window === 'undefined') {
+      return 'dev-system:active-page'
+    }
+    return `dev-system:active-page:${window.location.pathname}`
+  }
+
+  function readPersistedActivePageId(): string {
+    if (typeof window === 'undefined') return ''
+    try {
+      return window.localStorage.getItem(buildActivePageStorageKey())?.trim() ?? ''
+    } catch {
+      return ''
+    }
+  }
+
+  function persistActivePageId(pageId: string): void {
+    if (typeof window === 'undefined') return
+    const key = buildActivePageStorageKey()
+    try {
+      if (pageId) {
+        window.localStorage.setItem(key, pageId)
+      } else {
+        window.localStorage.removeItem(key)
+      }
+    } catch {
+      // Ignore storage failures to keep editor flow available.
+    }
+  }
+
   function isConfigNodeKind(nodeKind: NavNodeKind): boolean {
     return nodeKind === 'page' || nodeKind === 'sub-page'
+  }
+
+  function findConfigNodeByPageId(nodes: NavNode[], pageId: string): NavNode | null {
+    for (const node of nodes) {
+      if (isConfigNodeKind(node.nodeKind ?? 'page') && normalizePageIdFromPath(node.path) === pageId) {
+        return node
+      }
+      if (Array.isArray(node.children)) {
+        const found = findConfigNodeByPageId(node.children, pageId)
+        if (found) return found
+      }
+    }
+    return null
   }
 
   function resolveFileTextHistoryIndex(name: PageFileName, rawText?: string): number {
@@ -410,6 +450,49 @@ export function useDevState() {
     pageStyleDocument.value = null
   }
 
+  function invalidateActivePageFilesLoad() {
+    activePageFilesLoadPromise = null
+    activePageFilesLoadPageId = ''
+    activePageFilesLoadEpoch += 1
+  }
+
+  function clearFileBinding(name: PageFileName) {
+    if (name === 'pagedata.json') {
+      clearPageDataBinding()
+      return
+    }
+
+    if (name === 'rule.json') {
+      clearRuleBinding()
+      return
+    }
+
+    if (name === 'script.js') {
+      clearScriptBinding()
+      return
+    }
+
+    clearStyleBinding()
+  }
+
+  function resetPageFileRuntimeState(name: PageFileName) {
+    editFiles[name] = ''
+    savedFiles[name] = ''
+    fileDirty[name] = false
+    fileTextHistory[name] = []
+    fileTextHistoryCursor[name] = -1
+    fileTextHistoryDraft[name] = null
+    fileTextLastSnapshotAt[name] = 0
+    fileLoadState[name] = 'idle'
+    clearFileBinding(name)
+  }
+
+  function markPageFileNeedsReload(name: PageFileName) {
+    invalidateActivePageFilesLoad()
+    fileLoadState[name] = 'idle'
+    clearFileBinding(name)
+  }
+
   function syncRuleDocumentFromTree(): SparkNode[] | null {
     const tree = pageRuleTree.value
     if (!tree) {
@@ -429,8 +512,9 @@ export function useDevState() {
     if (pageRuleTree.value) return pageRuleTree.value
 
     if (pageRuleDocument.value !== null) {
-      pageRuleTree.value = new SparkNodeTree({
-        root: { type: 'page', children: deepClone(pageRuleDocument.value) },
+      pageRuleTree.value = SparkNodeTree.fromJson({
+        type: 'page',
+        children: deepClone(pageRuleDocument.value),
       })
       syncRuleDocumentFromTree()
       return pageRuleTree.value
@@ -452,12 +536,21 @@ export function useDevState() {
     try {
       const parsedRule = parseRuleDocument(rawText)
       const nextRoot: SparkNode = { type: 'page', children: parsedRule }
+      const normalizedRoot = SparkNodeTree.fromJson(nextRoot).toJSON()
       if (pageRuleTree.value) {
-        pageRuleTree.value.loadRoot(nextRoot)
+        pageRuleTree.value.loadRoot(normalizedRoot)
       } else {
-        pageRuleTree.value = new SparkNodeTree({ root: nextRoot })
+        pageRuleTree.value = SparkNodeTree.fromJson(normalizedRoot)
       }
-      syncRuleDocumentFromTree()
+      const normalizedRule = syncRuleDocumentFromTree()
+      if (normalizedRule !== null) {
+        const normalizedText = serializeRuleDocument(normalizedRule)
+        editFiles['rule.json'] = normalizedText
+        if (fileLoadState['rule.json'] === 'loading') {
+          savedFiles['rule.json'] = normalizedText
+        }
+        fileDirty['rule.json'] = editFiles['rule.json'] !== savedFiles['rule.json']
+      }
     } catch {
       pageRuleDocument.value = null
       pageRuleTree.value = null
@@ -486,30 +579,14 @@ export function useDevState() {
     const shouldReset = forceReset || activePageId.value !== pageId
 
     if (shouldReset) {
+      invalidateActivePageFilesLoad()
       for (const name of PAGE_FILE_NAMES) {
-        editFiles[name] = ''
-        savedFiles[name] = ''
-        fileDirty[name] = false
-        fileTextHistory[name] = []
-        fileTextHistoryCursor[name] = -1
-        fileTextHistoryDraft[name] = null
-        fileTextLastSnapshotAt[name] = 0
-        fileLoadState[name] = 'idle'
-        fileReloadToken[name] = 0
-
-        if (name === 'pagedata.json') {
-          clearPageDataBinding()
-        } else if (name === 'rule.json') {
-          clearRuleBinding()
-        } else if (name === 'script.js') {
-          clearScriptBinding()
-        } else {
-          clearStyleBinding()
-        }
+        resetPageFileRuntimeState(name)
       }
     }
 
     activePageId.value = pageId
+    persistActivePageId(pageId)
 
     return true
   }
@@ -645,8 +722,7 @@ export function useDevState() {
 
   function updatePageDataDocument(nextValue: Record<string, unknown>) {
     const canonicalPageData = canonicalizePageDataValue(nextValue)
-    editFiles['pagedata.json'] = canonicalPageData.text
-    recomputePageDataFileDirty()
+    syncFileTextAndBindings('pagedata.json', canonicalPageData.text)
     fileTextHistoryDraft['pagedata.json'] = null
     applyCanonicalPageData(canonicalPageData)
     commitFileTextHistory('pagedata.json', canonicalPageData.text)
@@ -657,12 +733,10 @@ export function useDevState() {
     if (currentPageData === null) return null
 
     const canonicalPageData = canonicalizePageDataValue(currentPageData as unknown as Record<string, unknown>)
-    editFiles['pagedata.json'] = canonicalPageData.text
+    syncFileTextAndBindings('pagedata.json', canonicalPageData.text)
     fileLoadState['pagedata.json'] = 'loaded'
-    syncPageDataBinding(canonicalPageData.text)
     fileTextHistoryDraft['pagedata.json'] = null
     commitFileTextHistory('pagedata.json', canonicalPageData.text)
-    recomputePageDataFileDirty()
     return canonicalPageData.text
   }
 
@@ -671,12 +745,16 @@ export function useDevState() {
     if (ruleJson === null) return null
 
     const content = serializeRuleDocument(ruleJson)
-    editFiles['rule.json'] = content
+    syncFileTextAndBindings('rule.json', content)
     fileLoadState['rule.json'] = 'loaded'
     fileTextHistoryDraft['rule.json'] = null
     commitFileTextHistory('rule.json', content)
-    fileDirty['rule.json'] = content !== savedFiles['rule.json']
     return content
+  }
+
+  function applyFileHistoryText(name: PageFileName, index: number, text: string): void {
+    fileTextHistoryCursor[name] = index
+    syncFileTextAndBindings(name, text)
   }
 
   function createLiveEditModelAdapter(): EditLiveModelAdapter {
@@ -898,8 +976,9 @@ export function useDevState() {
     return root
   }
 
-  async function loadNavConfig(options?: { preserveSelectedNodeId?: string | null }) {
+  async function loadNavConfig(options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null }) {
     const preservedSelectedNodeId = options?.preserveSelectedNodeId ?? selectedNode.value?.id ?? null
+    const preservedActivePageId = options?.preserveActivePageId?.trim() ?? ''
     navLoading.value = true
     try {
       const config = await http.get<{ childPlacement?: string; children?: NavNode[]; homePath?: string }>(getNavApi())
@@ -934,6 +1013,23 @@ export function useDevState() {
       }
     }
 
+    if (preservedActivePageId) {
+      const matchedNode = findConfigNodeByPageId(treeData.value, preservedActivePageId)
+      if (matchedNode) {
+        selectedNode.value = matchedNode
+        loadNodeToForm(matchedNode)
+        syncPageFilesForNode(matchedNode, true)
+        return
+      }
+
+      if (setActivePageContext(preservedActivePageId, true)) {
+        selectedNode.value = null
+        navDirty.value = false
+        linkProbeInfo.value = null
+        return
+      }
+    }
+
     if (treeData.value.length === 0) {
       selectedNode.value = null
       clearFiles()
@@ -955,100 +1051,135 @@ export function useDevState() {
     } catch { /* ignore */ }
   }
 
-  async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }) {
-    const pageId = activePageId.value
-    if (!pageId) {
-      return
-    }
-
-    if (fileLoadState[name] === 'loading') {
-      return
-    }
-
-    if (!options?.forceReload && fileLoadState[name] === 'loaded') {
-      return
-    }
-
-    fileLoadState[name] = 'loading'
-
-    let content = ''
+  async function fetchRemotePageFileContent(pageId: string, name: PageFileName): Promise<string> {
     try {
       const data = await http.get<Record<string, unknown>>(`${getPageApi()}/${encodeURIComponent(pageId)}/${name}`)
-      content = typeof data['content'] === 'string' ? data['content'] : ''
+      return typeof data['content'] === 'string' ? data['content'] : ''
     } catch {
-      content = ''
+      return ''
     }
+  }
 
-    const loadedText = name === 'pagedata.json'
-      ? tryCanonicalizePageDataText(content)
-      : content
+  function normalizePageFileText(name: PageFileName, text: string): string {
+    return name === 'pagedata.json' ? tryCanonicalizePageDataText(text) : text
+  }
 
-    editFiles[name] = loadedText
-    savedFiles[name] = loadedText
-    fileDirty[name] = false
-
-    const comparableText = name === 'pagedata.json'
-      ? tryCanonicalizePageDataText(loadedText)
-      : loadedText
+  function restorePageFileHistoryFromStorage(pageId: string, name: PageFileName, loadedText: string): void {
+    const comparableText = loadedText
     const stored = loadTextHistory(pageId, name)
 
     if (stored.length > 0 && stored[stored.length - 1] === comparableText) {
       fileTextHistory[name] = stored
       fileTextHistoryCursor[name] = stored.length - 1
-    } else {
-      clearTextHistoryStorage(pageId, name)
-      if (comparableText) {
-        fileTextHistory[name] = [comparableText]
-        fileTextHistoryCursor[name] = 0
-        saveTextHistory(pageId, name, [comparableText])
-      } else {
-        fileTextHistory[name] = []
-        fileTextHistoryCursor[name] = -1
-      }
+      return
     }
+
+    clearTextHistoryStorage(pageId, name)
+    if (comparableText) {
+      fileTextHistory[name] = [comparableText]
+      fileTextHistoryCursor[name] = 0
+      saveTextHistory(pageId, name, [comparableText])
+      return
+    }
+
+    fileTextHistory[name] = []
+    fileTextHistoryCursor[name] = -1
+  }
+
+  function applyLoadedPageFileSnapshot(pageId: string, name: PageFileName, loadedText: string): void {
+    savedFiles[name] = loadedText
+    syncFileTextAndBindings(name, loadedText)
+    fileDirty[name] = false
+
+    restorePageFileHistoryFromStorage(pageId, name, loadedText)
 
     fileTextHistoryDraft[name] = null
     fileTextLastSnapshotAt[name] = loadedText ? nowSnapshotTimestamp() : 0
-
-    if (name === 'pagedata.json') {
-      syncPageDataBinding(loadedText)
-      recomputePageDataFileDirty()
-    } else if (name === 'rule.json') {
-      syncRuleBinding(loadedText)
-      fileDirty[name] = loadedText !== savedFiles[name]
-    } else if (name === 'script.js') {
-      syncScriptBinding(loadedText)
-      fileDirty[name] = loadedText !== savedFiles[name]
-    } else {
-      syncStyleBinding(loadedText)
-      fileDirty[name] = loadedText !== savedFiles[name]
-    }
-
     fileLoadState[name] = 'loaded'
   }
 
-  function clearFiles() {
-    activePageId.value = ''
-    for (const name of PAGE_FILE_NAMES) {
-      editFiles[name] = ''
-      savedFiles[name] = ''
-      fileDirty[name] = false
-      fileTextHistory[name] = []
-      fileTextHistoryCursor[name] = -1
-      fileTextHistoryDraft[name] = null
-      fileTextLastSnapshotAt[name] = 0
-      fileLoadState[name] = 'idle'
-      fileReloadToken[name] = 0
+  function areAllActivePageFilesLoaded(): boolean {
+    return PAGE_FILE_NAMES.every((entry) => fileLoadState[entry] === 'loaded')
+  }
 
-      if (name === 'pagedata.json') {
-        clearPageDataBinding()
-      } else if (name === 'rule.json') {
-        clearRuleBinding()
-      } else if (name === 'script.js') {
-        clearScriptBinding()
-      } else {
-        clearStyleBinding()
+  async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }) {
+    const pageId = activePageId.value
+    if (!pageId) {
+      return
+    }
+
+    if (activePageFilesLoadPromise && activePageFilesLoadPageId === pageId) {
+      return activePageFilesLoadPromise
+    }
+
+    if (!options?.forceReload && areAllActivePageFilesLoaded()) {
+      return
+    }
+
+    if (!options?.forceReload && PAGE_FILE_NAMES.some((entry) => fileDirty[entry])) {
+      for (const entry of PAGE_FILE_NAMES) {
+        if (fileDirty[entry] || fileLoadState[entry] === 'loading') {
+          continue
+        }
+        if (fileLoadState[entry] !== 'idle' || savedFiles[entry] || editFiles[entry]) {
+          fileLoadState[entry] = 'loaded'
+        }
       }
+      return
+    }
+
+    const loadEpoch = activePageFilesLoadEpoch
+    activePageFilesLoadPageId = pageId
+
+    for (const entry of PAGE_FILE_NAMES) {
+      if (!options?.forceReload && fileDirty[entry]) {
+        fileLoadState[entry] = 'loaded'
+        continue
+      }
+      fileLoadState[entry] = 'loading'
+    }
+
+    const loadPromise = (async () => {
+      const loadedSnapshots = await Promise.all(
+        PAGE_FILE_NAMES.map(async (entry) => {
+          const remoteContent = await fetchRemotePageFileContent(pageId, entry)
+          return [entry, normalizePageFileText(entry, remoteContent)] as const
+        }),
+      )
+
+      if (activePageFilesLoadEpoch !== loadEpoch || activePageId.value !== pageId) {
+        return
+      }
+
+      for (const [entry, loadedText] of loadedSnapshots) {
+        if (!options?.forceReload && fileDirty[entry]) {
+          fileLoadState[entry] = 'loaded'
+          continue
+        }
+        applyLoadedPageFileSnapshot(pageId, entry, loadedText)
+      }
+    })().finally(() => {
+      if (activePageFilesLoadEpoch === loadEpoch && activePageFilesLoadPageId === pageId) {
+        activePageFilesLoadPromise = null
+        activePageFilesLoadPageId = ''
+      }
+    })
+
+    activePageFilesLoadPromise = loadPromise
+    return loadPromise
+  }
+
+  async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }) {
+    void name
+    await ensureActivePageFilesLoaded(options)
+  }
+
+  function clearFiles() {
+    invalidateActivePageFilesLoad()
+    activePageId.value = ''
+    persistActivePageId('')
+    for (const name of PAGE_FILE_NAMES) {
+      resetPageFileRuntimeState(name)
     }
   }
 
@@ -1083,17 +1214,7 @@ export function useDevState() {
         `${getPageApi()}/${encodeURIComponent(pageId)}/${filename}/__versions/${version}/__restore`,
         {},
       )
-      fileLoadState[filename] = 'idle'
-      fileReloadToken[filename] += 1
-      if (filename === 'pagedata.json') {
-        clearPageDataBinding()
-      } else if (filename === 'rule.json') {
-        clearRuleBinding()
-      } else if (filename === 'script.js') {
-        clearScriptBinding()
-      } else {
-        clearStyleBinding()
-      }
+      markPageFileNeedsReload(filename)
       addStatus(`页面 ${pageId} 已将 ${filename} 版本 v${version} 恢复为当前版`, 'success')
       return true
     } catch (e) {
@@ -1152,28 +1273,41 @@ export function useDevState() {
     }
   }
 
+  function syncFileTextAndBindings(name: PageFileName, text: string): void {
+    editFiles[name] = text
+
+    if (name === 'pagedata.json') {
+      recomputePageDataFileDirty()
+      syncPageDataBinding(text)
+      return
+    }
+
+    fileDirty[name] = text !== savedFiles[name]
+    if (name === 'rule.json') {
+      syncRuleBinding(text)
+      return
+    }
+
+    if (name === 'script.js') {
+      syncScriptBinding(text)
+      return
+    }
+
+    syncStyleBinding(text)
+  }
+
   function updatePageFile(name: PageFileName, value: string) {
     if (name === 'pagedata.json') {
       const canonical = tryCanonicalizePageDataText(value)
-      editFiles[name] = canonical
-      recomputePageDataFileDirty()
+      syncFileTextAndBindings(name, canonical)
       fileLoadState[name] = 'loaded'
-      syncPageDataBinding(canonical)
       fileTextHistoryDraft[name] = null
       commitFileTextHistory(name, canonical)
       return
     }
 
-    editFiles[name] = value
-    fileDirty[name] = value !== savedFiles[name]
+    syncFileTextAndBindings(name, value)
     fileLoadState[name] = 'loaded'
-    if (name === 'rule.json') {
-      syncRuleBinding(value)
-    } else if (name === 'script.js') {
-      syncScriptBinding(value)
-    } else {
-      syncStyleBinding(value)
-    }
     fileTextHistoryDraft[name] = null
     commitFileTextHistory(name, value)
   }
@@ -1277,21 +1411,7 @@ export function useDevState() {
       fileTextHistoryDraft[name] = editFiles[name] ?? ''
     }
 
-    fileTextHistoryCursor[name] = nextIndex
-    editFiles[name] = nextText
-    if (name === 'pagedata.json') {
-      recomputePageDataFileDirty()
-      syncPageDataBinding(nextText)
-    } else {
-      fileDirty[name] = nextText !== savedFiles[name]
-      if (name === 'rule.json') {
-        syncRuleBinding(nextText)
-      } else if (name === 'script.js') {
-        syncScriptBinding(nextText)
-      } else {
-        syncStyleBinding(nextText)
-      }
-    }
+    applyFileHistoryText(name, nextIndex, nextText)
     addStatus(`已撤销 ${name} 本地修改，等待保存`, 'success')
     return true
   }
@@ -1302,20 +1422,7 @@ export function useDevState() {
     if (forwardTarget.kind === 'draft' && fileTextHistoryDraft[name] !== null) {
       const draftText = fileTextHistoryDraft[name]
       fileTextHistoryDraft[name] = null
-      editFiles[name] = draftText
-      if (name === 'pagedata.json') {
-        recomputePageDataFileDirty()
-        syncPageDataBinding(draftText)
-      } else {
-        fileDirty[name] = draftText !== savedFiles[name]
-        if (name === 'rule.json') {
-          syncRuleBinding(draftText)
-        } else if (name === 'script.js') {
-          syncScriptBinding(draftText)
-        } else {
-          syncStyleBinding(draftText)
-        }
-      }
+      syncFileTextAndBindings(name, draftText)
       addStatus(`已重做 ${name} 本地修改，等待保存`, 'success')
       return true
     }
@@ -1325,21 +1432,7 @@ export function useDevState() {
     const nextText = fileTextHistory[name][forwardTarget.index]
     if (nextText === undefined) return false
 
-    fileTextHistoryCursor[name] = forwardTarget.index
-    editFiles[name] = nextText
-    if (name === 'pagedata.json') {
-      recomputePageDataFileDirty()
-      syncPageDataBinding(nextText)
-    } else {
-      fileDirty[name] = nextText !== savedFiles[name]
-      if (name === 'rule.json') {
-        syncRuleBinding(nextText)
-      } else if (name === 'script.js') {
-        syncScriptBinding(nextText)
-      } else {
-        syncStyleBinding(nextText)
-      }
-    }
+    applyFileHistoryText(name, forwardTarget.index, nextText)
     addStatus(`已重做 ${name} 本地修改，等待保存`, 'success')
     return true
   }
@@ -1615,33 +1708,46 @@ export function useDevState() {
     setActivePageContext(pageId, activePageId.value !== pageId)
   }
 
+  function finalizePageFileSaved(name: PageFileName, content: string): void {
+    savedFiles[name] = content
+    fileDirty[name] = false
+  }
+
+  function preparePageFileContentForSave(name: PageFileName, pageId: string): string {
+    let content = editFiles[name] ?? ''
+
+    if (name === 'rule.json') {
+      content = syncLiveRuleToEditFile() ?? content
+    }
+
+    if (name !== 'pagedata.json') {
+      return content
+    }
+
+    if (pageDataDesignerDirty.value) {
+      content = syncLivePageDataToEditFile() ?? content
+    }
+
+    if (!content.trim()) {
+      clearPageDataBinding()
+      return content
+    }
+
+    const canonicalPageData = canonicalizePageDataJson(content)
+    canonicalPageData.tool.dataSet.pageId = pageId
+    applyCanonicalPageData(canonicalPageData)
+    content = canonicalPageData.text
+    editFiles[name] = content
+    return content
+  }
+
   async function savePageFile(name: PageFileName) {
     const pageId = activePageId.value
     if (!pageId) return
 
     fileSaving.value = true
     try {
-      let content = editFiles[name] ?? ''
-
-      if (name === 'rule.json') {
-        content = syncLiveRuleToEditFile() ?? content
-      }
-
-      if (name === 'pagedata.json') {
-        if (pageDataDesignerDirty.value) {
-          content = syncLivePageDataToEditFile() ?? content
-        }
-
-        if (content.trim()) {
-          const canonicalPageData = canonicalizePageDataJson(content)
-          canonicalPageData.tool.dataSet.pageId = pageId
-          applyCanonicalPageData(canonicalPageData)
-          content = canonicalPageData.text
-          editFiles[name] = content
-        } else {
-          clearPageDataBinding()
-        }
-      }
+      const content = preparePageFileContentForSave(name, pageId)
 
       await http.put<Record<string, unknown>>(
         `${getPageApi()}/${encodeURIComponent(pageId)}/${name}`,
@@ -1649,8 +1755,7 @@ export function useDevState() {
         { headers: { 'Content-Type': 'text/plain' } },
       )
 
-      savedFiles[name] = content
-      fileDirty[name] = false
+      finalizePageFileSaved(name, content)
 
       addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
       await loadPages()
@@ -1661,28 +1766,41 @@ export function useDevState() {
     }
   }
 
-  async function saveAll() {
+  async function saveCurrentNavScope(): Promise<void> {
+    if (selectedNode.value) {
+      await saveNodeChanges()
+      return
+    }
+    await saveNavConfig()
+  }
+
+  async function saveAllDirtyPageFiles(): Promise<void> {
+    for (const name of PAGE_FILE_NAMES) {
+      if (fileDirty[name]) {
+        await savePageFile(name)
+      }
+    }
+  }
+
+  async function flushDirtyScopes(): Promise<void> {
     if (navDirty.value) {
-      if (selectedNode.value) {
-        await saveNodeChanges()
-      } else {
-        await saveNavConfig()
-      }
+      await saveCurrentNavScope()
     }
+
     if (hasAnyFileDirty.value) {
-      for (const name of PAGE_FILE_NAMES) {
-        if (fileDirty[name]) {
-          await savePageFile(name)
-        }
-      }
+      await saveAllDirtyPageFiles()
     }
+  }
+
+  async function ensureCurrentNavScopePersistedWhenClean(): Promise<void> {
     if (!navDirty.value && !hasAnyFileDirty.value) {
-      if (selectedNode.value) {
-        await saveNodeChanges()
-      } else {
-        await saveNavConfig()
-      }
+      await saveCurrentNavScope()
     }
+  }
+
+  async function saveAll() {
+    await flushDirtyScopes()
+    await ensureCurrentNavScopePersistedWhenClean()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1697,14 +1815,18 @@ export function useDevState() {
     syncPageFilesForNode(node, true)
   }
 
-  function handlePathChange(val: string) {
-    markNavDirty()
-    const pageId = normalizePageIdFromPath(val)
+  function syncActivePageContextByPath(path: string): void {
+    const pageId = normalizePageIdFromPath(path)
     if (pageId && isConfigNodeKind(editForm.nodeKind)) {
       setActivePageContext(pageId, activePageId.value !== pageId)
-    } else {
-      clearFiles()
+      return
     }
+    clearFiles()
+  }
+
+  function handlePathChange(val: string) {
+    markNavDirty()
+    syncActivePageContextByPath(val)
   }
 
   function handleNodeKindChange(kind: NavNodeKind) {
@@ -1717,12 +1839,7 @@ export function useDevState() {
 
     applyNodeKindPreset(kind)
     markNavDirty()
-    const pageId = normalizePageIdFromPath(editForm.path)
-    if (pageId && isConfigNodeKind(editForm.nodeKind)) {
-      setActivePageContext(pageId, activePageId.value !== pageId)
-    } else {
-      clearFiles()
-    }
+    syncActivePageContextByPath(editForm.path)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1882,7 +1999,11 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   async function initialize() {
-    await Promise.all([loadNavConfig(), loadPages()])
+    const persistedActivePageId = readPersistedActivePageId()
+    await Promise.all([
+      loadNavConfig({ preserveActivePageId: persistedActivePageId }),
+      loadPages(),
+    ])
   }
 
   return {
@@ -1907,7 +2028,6 @@ export function useDevState() {
     fileDirty,
     fileSaving,
     fileLoadState,
-    fileReloadToken,
     pageRuleTree,
     pageRuleDocument,
     pageDataDocument,
@@ -1943,6 +2063,7 @@ export function useDevState() {
     loadNavConfig,
     loadPages,
     loadPageFile,
+    ensureActivePageFilesLoaded,
     clearFiles,
     listRemotePageVersions,
     restoreRemotePageVersion,

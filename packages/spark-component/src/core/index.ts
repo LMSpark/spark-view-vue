@@ -32,6 +32,7 @@ export type {
 
 export type {
   SparkNodeTreeRootParams,
+  SparkNodeTreeFromJsonOptions,
   SparkNodeTreeLookupParams,
   SparkNodeTreeChildrenParams,
   SparkNodeTreeAddParams,
@@ -43,6 +44,9 @@ export type {
   SparkNodeSetPropsResult,
   SparkNodeReplaceResult,
   SparkNodeRemoveResult,
+  SparkNodeFindByTypeParams,
+  SparkNodeFindByTypeMatch,
+  SparkNodeFindByTypeResult,
 } from './spark-node-tree.js'
 
 export { SPARK_REGISTRY_KEY } from '../system/keys.js'

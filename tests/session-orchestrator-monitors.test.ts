@@ -220,6 +220,93 @@ describe('repeat-detection-monitor', () => {
     const ctx = makeCtx()
     expect(monitor.afterStillExecution(ctx)).toEqual([])
   })
+
+  it('injects followUp on period-2 action cycle (A→B repeated 3 times) instead of aborting', () => {
+    const monitor = createRepeatDetectionMonitor({ cycleRepeatThreshold: 3 })
+    const actions = ['sparkNodeTree.listChildren', 'sparkNodeTree.getNode']
+    let lastFollowUp: string[] = []
+
+    // 交替执行 3 个完整周期 = 6 次调用
+    for (let i = 0; i < 6; i++) {
+      const action = actions[i % 2]!
+      // 每次用不同 params，确保同签名检测不会先触发
+      const ctx = makeCtx({
+        currentTurn: makeTurn({ toolBlock: { action, id: `r${i}`, params: { componentId: `node-${i}` } } }),
+        params: { componentId: `node-${i}` },
+        result: okResult(),
+      })
+      lastFollowUp = monitor.afterStillExecution(ctx)
+      const abort = monitor.shouldAbort!(ctx)
+
+      expect(abort.abort).toBe(false)
+      if (i < 5) expect(lastFollowUp).toEqual([])
+    }
+
+    expect(lastFollowUp.length).toBe(1)
+    expect(lastFollowUp[0]).toContain('系统循环修复提醒')
+    expect(lastFollowUp[0]).toContain('不要重复原动作序列')
+  })
+
+  it('does not treat same-action scans as period cycle', () => {
+    const monitor = createRepeatDetectionMonitor({ cycleRepeatThreshold: 3 })
+
+    // 连续 catalog.guide 查询不同 type 是正常目录扫描，不应被周期循环规则误伤。
+    const types = ['r-date', 'r-text', 'r-select', 'r-table', 'r-button', 'r-space']
+    for (let i = 0; i < types.length; i++) {
+      const ctx = makeCtx({
+        currentTurn: makeTurn({
+          toolBlock: { action: 'catalog.guide', id: `g${i}`, params: { type: types[i] } },
+        }),
+        params: { type: types[i] },
+        result: okResult(),
+      })
+      monitor.afterStillExecution(ctx)
+      expect(monitor.shouldAbort!(ctx).abort).toBe(false)
+    }
+  })
+
+  it('does not abort when actions are genuinely different', () => {
+    const monitor = createRepeatDetectionMonitor({ cycleRepeatThreshold: 3 })
+    const actions = [
+      'sparkNodeTree.listChildren',
+      'sparkNodeTree.getNode',
+      'sparkNodeTree.setProps',
+      'sparkNodeTree.addNode',
+      'sparkNodeTree.removeNode',
+      'dataset.export',
+    ]
+
+    for (let i = 0; i < actions.length; i++) {
+      const ctx = makeCtx({
+        currentTurn: makeTurn({ toolBlock: { action: actions[i]!, id: `r${i}`, params: {} } }),
+        result: okResult(),
+      })
+      monitor.afterStillExecution(ctx)
+      expect(monitor.shouldAbort!(ctx).abort).toBe(false)
+    }
+  })
+
+  it('injects followUp on period-3 action cycle instead of aborting', () => {
+    const monitor = createRepeatDetectionMonitor({ maxCyclePeriod: 3, cycleRepeatThreshold: 3 })
+    const actions = ['A', 'B', 'C']
+    let lastFollowUp: string[] = []
+
+    for (let i = 0; i < 9; i++) {
+      const action = actions[i % 3]!
+      const ctx = makeCtx({
+        currentTurn: makeTurn({ toolBlock: { action, id: `r${i}`, params: { v: i } } }),
+        params: { v: i },
+        result: okResult(),
+      })
+      lastFollowUp = monitor.afterStillExecution(ctx)
+      const abort = monitor.shouldAbort!(ctx)
+      expect(abort.abort).toBe(false)
+      if (i < 8) expect(lastFollowUp).toEqual([])
+    }
+
+    expect(lastFollowUp.length).toBe(1)
+    expect(lastFollowUp[0]).toContain('系统循环修复提醒')
+  })
 })
 
 // ═══════════════════════════════════════════════════════════

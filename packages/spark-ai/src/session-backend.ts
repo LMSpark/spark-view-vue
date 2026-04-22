@@ -176,7 +176,6 @@ export class SessionBackendImpl implements SessionBackend {
     for await (const event of events) {
       const eventType = event.event ?? 'message'
       const data = event.data
-      if (!data) continue
 
       if (onSseEvent) {
         onSseEvent({
@@ -185,6 +184,8 @@ export class SessionBackendImpl implements SessionBackend {
           data,
         })
       }
+
+      if (!data && eventType !== 'done') continue
 
       if (eventType === 'result') {
         try {

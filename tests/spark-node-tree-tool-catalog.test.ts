@@ -56,12 +56,20 @@ describe('SparkNodeTree tool catalog', () => {
   })
 
   it('catalog 应包含批量节点动作，且不暴露历史版本动作', () => {
+    expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.getAllData')?.coreMethod).toBe('getAllData')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.addNodes')?.coreMethod).toBe('addNodes')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.setPropsBatch')?.coreMethod).toBe('setPropsBatch')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.replaceNodes')?.coreMethod).toBe('replaceNodes')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.removeNodes')?.coreMethod).toBe('removeNodes')
+    expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.findByType')?.coreMethod).toBe('findByType')
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.undo')).toBeUndefined()
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.redo')).toBeUndefined()
     expect(getSparkNodeTreeToolParameterRow('sparkNodeTree.listVersions')).toBeUndefined()
+  })
+
+  it('findByType 应返回可直接用于 componentId 的真实 id 指引', () => {
+    const row = getSparkNodeTreeToolParameterRow('sparkNodeTree.findByType')
+    const usageRules = row?.usageRules ?? []
+    expect(usageRules.some(rule => rule.includes('真实 componentId'))).toBe(true)
   })
 })

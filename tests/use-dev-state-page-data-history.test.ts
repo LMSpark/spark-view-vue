@@ -100,6 +100,81 @@ describe('useDevState pagedata local history', () => {
     expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(editedPageDataText).text)
   })
 
+  it('does not overwrite dirty pagedata during passive reload attempts', async () => {
+    const remoteInitial = createPageDataText('Remote-Initial', true)
+    const remoteLatest = createPageDataText('Remote-Latest', true)
+    let pagedataFetchCount = 0
+
+    httpGet.mockImplementation(async (url: string) => {
+      if (url.endsWith('/pagedata.json')) {
+        pagedataFetchCount += 1
+        return { content: pagedataFetchCount === 1 ? remoteInitial : remoteLatest }
+      }
+
+      const requestedFile = PAGE_FILE_NAMES.find((fileName) => url.endsWith(`/${fileName}`))
+      if (requestedFile) {
+        return { content: '' }
+      }
+
+      throw new Error(`unexpected GET ${url}`)
+    })
+
+    const state = useDevState()
+    state.selectPage('orders-page')
+    await state.loadPageFile('pagedata.json')
+
+    const localDraft = createPageDataText('Local-Draft', true)
+    state.updatePageFile('pagedata.json', localDraft)
+    expect(state.fileDirty['pagedata.json']).toBe(true)
+
+    // Simulate an external reload hint while local draft is still dirty.
+    state.fileLoadState['pagedata.json'] = 'idle'
+    await state.loadPageFile('pagedata.json')
+
+    expect(pagedataFetchCount).toBe(1)
+    expect(state.editFiles['pagedata.json']).toBe(canonicalizePageDataJson(localDraft).text)
+  })
+
+  it('loads all page files once and reuses them across later file access', async () => {
+    const fetchCountByFile = Object.fromEntries(PAGE_FILE_NAMES.map((name) => [name, 0])) as Record<string, number>
+
+    httpGet.mockImplementation(async (url: string) => {
+      const requestedFile = PAGE_FILE_NAMES.find((fileName) => url.endsWith(`/${fileName}`))
+      if (!requestedFile) {
+        throw new Error(`unexpected GET ${url}`)
+      }
+
+      fetchCountByFile[requestedFile] = (fetchCountByFile[requestedFile] ?? 0) + 1
+
+      if (requestedFile === 'pagedata.json') {
+        return { content: createPageDataText('Shared-Load', true) }
+      }
+
+      if (requestedFile === 'rule.json') {
+        return { content: '[]\n' }
+      }
+
+      return { content: '' }
+    })
+
+    const state = useDevState()
+    state.selectPage('orders-page')
+
+    await state.ensureActivePageFilesLoaded()
+    await state.loadPageFile('pagedata.json')
+    await state.loadPageFile('rule.json')
+
+    expect(fetchCountByFile).toEqual({
+      'rule.json': 1,
+      'pagedata.json': 1,
+      'script.js': 1,
+      'style.css': 1,
+    })
+    expect(state.fileLoadState['rule.json']).toBe('loaded')
+    expect(state.fileLoadState['pagedata.json']).toBe('loaded')
+    expect(state.editFiles['pagedata.json']).toContain('Shared-Load')
+  })
+
   it('keeps the live rule model in sync when undoing local rule history', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'

@@ -52,8 +52,11 @@ export interface SparkNodeTreeToolCapabilityRow {
 }
 
 const NO_PARAMS: Record<string, unknown> = {}
-const COMPONENT_ID_PARAM = 'string — 当前组件子树内的组件 id'
-const PARENT_COMPONENT_ID_PARAM = 'string | null ? — 父组件 id；null/省略表示当前绑定组件实例'
+const COMPONENT_ID_PARAM =
+  'string — 节点的 id 值（来自 listChildren / getNode 返回结果中的顶层 id 字段或 props.id 字段）；' +
+  '绝对禁止使用组件类型名（r-table、r-tabs、r-text、r-select 等）作为 componentId，类型名不是 id'
+const PARENT_COMPONENT_ID_PARAM =
+  'string | null ? — 父节点的 id 值（同 COMPONENT_ID_PARAM 规则）；null/省略表示当前绑定组件实例'
 const INDEX_PARAM = 'number? — 插入位置；省略时追加到末尾'
 const PROPS_PARAM = 'Record<string, unknown> — 要写入的 props 对象'
 const NODES_PARAM = 'SparkNode[] — 按顺序插入的多个节点'
@@ -65,7 +68,10 @@ const NODE_PARAM = {
     type: 'string — 组件类型',
     id: 'string? — 历史兼容字段；推荐放在 props.id',
     props: 'Record<string, unknown> ? — 节点属性（推荐在 props.id 提供稳定节点 id）',
-    children: 'SparkNodeChildren ? — 子节点数组，可混合 SparkNode / string / number',
+    children: {
+      kind: 'array',
+      note: 'SparkNodeChildren ? — 子节点数组，可混合 SparkNode / string / number',
+    },
   },
   note: 'node 必须是完整 SparkNode 对象，不要只传类型名字符串。',
 } as const
@@ -250,6 +256,19 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     failureModes: [],
   }),
   defineDescribeRow({
+    action: 'sparkNodeTree.getAllData',
+    target: 'tree',
+    coreMethod: 'getAllData',
+    description: '获取当前绑定组件实例完整子树的全部数据快照（包含递归 children）。',
+    paramsSchema: NO_PARAMS,
+    resultSchema: {
+      root: 'SparkNode — 当前绑定组件实例完整子树快照（等价 toJSON 返回值）',
+    },
+    example: NO_PARAMS,
+    usageRules: [INSTANCE_RULE, CATALOG_ONLY_RULE],
+    failureModes: [],
+  }),
+  defineDescribeRow({
     action: 'sparkNodeTree.collectDataKeys',
     target: 'tree',
     coreMethod: 'collectDataKeys',
@@ -274,6 +293,48 @@ export const SPARK_NODE_TREE_TOOL_PARAMETER_TABLE = [
     example: NO_PARAMS,
     usageRules: [INSTANCE_RULE, CATALOG_ONLY_RULE],
     failureModes: [],
+  }),
+  defineDescribeRow({
+    action: 'sparkNodeTree.findByType',
+    target: 'tree',
+    coreMethod: 'findByType',
+    description:
+      '按组件类型名递归搜索子树，返回所有匹配节点的真实 id、深度和父节点 id。' +
+      '当知道目标组件的 type（如 r-tabs、r-form）但不知道其节点 id 时，用本动作代替多步 listChildren→getNode，' +
+      '一次拿到可直接用于 setProps / removeNode 的真实 componentId。',
+    paramsSchema: {
+      kind: 'object',
+      required: ['type'],
+      properties: {
+        type: 'string — 组件类型名（如 r-tabs、r-form、r-table），精确匹配',
+      },
+      optional: {
+        startComponentId:
+          'string? — 从哪个节点开始向下搜索（必须是真实节点 id，不能是类型名）；省略时从根节点开始',
+        limit: 'number? — 最多返回多少条匹配，省略时不限制',
+      },
+    },
+    resultSchema: {
+      matches: 'SparkNodeFindByTypeMatch[] — 匹配节点列表，每项包含 id / type / depth / parentId',
+      total: 'number — 实际命中总数（受 limit 截断前）',
+    },
+    example: {
+      type: 'r-tabs',
+    },
+    usageRules: [
+      INSTANCE_RULE,
+      NAMED_PARAM_RULE,
+      CATALOG_ONLY_RULE,
+      '返回的 matches[n].id 即为真实 componentId，可直接传给 getNode / setProps / removeNode；' +
+        '仅当 id 为 undefined 时表示该节点未设置 id，需改用 index 定位。',
+    ],
+    failureModes: [
+      {
+        code: 'START_NOT_FOUND',
+        when: 'startComponentId 未命中现有节点',
+        fix: '先通过 sparkNodeTree.hasNode 确认 startComponentId 存在，或省略 startComponentId 从根节点开始搜索。',
+      },
+    ],
   }),
   defineRequestRow({
     action: 'sparkNodeTree.addNode',

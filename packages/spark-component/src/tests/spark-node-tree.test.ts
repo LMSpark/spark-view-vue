@@ -56,6 +56,131 @@ describe('SparkNodeTree', () => {
     expect(tree.root).toBe(root)
   })
 
+  it('getAllData 应等价于 toJSON（返回当前根引用）', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+    const snapshot = tree.getAllData()
+
+    expect(snapshot).toEqual(tree.toJSON())
+    expect(snapshot).toBe(tree.toJSON())
+  })
+
+  it('fromJson 应在反序列化时补齐缺失组件 id', () => {
+    const tree = SparkNodeTree.fromJson({
+      type: 'page-root',
+      children: [
+        { type: 'r-text' },
+        {
+          type: 'r-table',
+          props: { id: 'table' },
+          children: [{ type: 'el-table-column' }],
+        },
+      ],
+    })
+
+    const root = tree.getAllData()
+    expect(root.id).toBe('page-root__0')
+
+    const firstChild = root.children?.[0]
+    const secondChild = root.children?.[1]
+    expect(typeof firstChild === 'string').toBe(false)
+    expect(typeof secondChild === 'string').toBe(false)
+
+    if (typeof firstChild !== 'string') {
+      expect(firstChild.id).toBe('r-text__0_0')
+      expect(firstChild.props?.id).toBe('r-text__0_0')
+    }
+
+    if (typeof secondChild !== 'string') {
+      expect(secondChild.id).toBe('table')
+      const column = secondChild.children?.[0]
+      if (typeof column !== 'string') {
+        expect(column.id).toBe('el-table-column__0_1_0')
+      }
+    }
+  })
+
+  it('fromJson 补齐 id 时应保留历史字段（如 class）', () => {
+    const tree = SparkNodeTree.fromJson({
+      type: 'page-root',
+      children: [
+        {
+          type: 'div',
+          class: 'dataset-demo',
+          children: [{ type: 'h1', children: ['title'] }],
+        } as unknown as SparkNode,
+      ],
+    })
+
+    const root = tree.getAllData()
+    const firstChild = root.children?.[0]
+    if (typeof firstChild === 'string') throw new Error('unexpected text child')
+
+    expect(firstChild.id).toBe('div__0_0')
+    expect((firstChild as unknown as Record<string, unknown>)['class']).toBe('dataset-demo')
+  })
+
+  it('fromJson 遇到重复组件 id 时应 fail-fast', () => {
+    expect(() => SparkNodeTree.fromJson({
+      type: 'page-root',
+      children: [
+        { type: 'r-text', id: 'dup' },
+        { type: 'r-button', id: 'dup' },
+      ],
+    })).toThrow(/duplicated/i)
+  })
+
+  it('findByType 应能递归查找匹配类型并返回真实 id', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+
+    const result = tree.findByType({ type: 'el-table-column' })
+
+    expect(result.total).toBe(1)
+    expect(result.matches).toHaveLength(1)
+    expect(result.matches[0]).toMatchObject({
+      id: 'name-column',
+      type: 'el-table-column',
+      depth: 2,
+      parentId: 'table',
+    })
+  })
+
+  it('findByType 支持从 startComponentId 限定搜索子树', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+
+    expect(tree.findByType({ type: 'el-table-column', startComponentId: 'table' }).total).toBe(1)
+    expect(tree.findByType({ type: 'el-table-column', startComponentId: 'toolbar' }).total).toBe(0)
+  })
+
+  it('findByType 无匹配时返回空数组且 total 为 0', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+
+    const result = tree.findByType({ type: 'r-tabs' })
+
+    expect(result.total).toBe(0)
+    expect(result.matches).toEqual([])
+  })
+
+  it('findByType 返回的 id 可直接用于 setProps', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+    const [first] = tree.findByType({ type: 'r-table' }).matches
+    expect(first?.id).toBe('table')
+    if (!first?.id) throw new Error('expected table id')
+
+    tree.setProps({ componentId: first.id, props: { stripe: true }, merge: true })
+    expect(tree.getNode({ componentId: 'table' })?.props).toMatchObject({ stripe: true })
+  })
+
+  it('findByType limit 应截断返回列表，但保留 total', () => {
+    const tree = new SparkNodeTree({ root: createSparkNodeTree() })
+    tree.addNode({ parentComponentId: 'toolbar', node: { type: 'r-button', id: 'btn-1' } })
+    tree.addNode({ parentComponentId: 'toolbar', node: { type: 'r-button', id: 'btn-2' } })
+
+    const result = tree.findByType({ type: 'r-button', limit: 1 })
+
+    expect(result.total).toBe(2)
+    expect(result.matches).toHaveLength(1)
+  })
+
   it('addNode 应更新实例内部 root', () => {
     const root = createSparkNodeTree()
     const tree = new SparkNodeTree({ root })

@@ -256,6 +256,14 @@ export const STILLS_EDIT_RUNTIME_PROMPT = `${STILLS_PROTOCOL_BASE}
 
   按目标文件选择动作：
   - 修改 rule.json：使用 sparkNodeTree.*；新增组件前先 queryComponentCatalog('*')，选定 type 后再 queryComponentGuide(type)
+    ⚠ componentId 规则（违反则工具返回 null，造成死循环）：
+      • componentId / parentComponentId 必须是节点的真实 id 值
+        （即 listChildren 返回 SparkNode 中的顶层 id 字段或 props.id 字段）
+      • 绝对禁止将组件类型名（r-table / r-tabs / r-text / r-select / r-date 等）当作 componentId 传入
+      • 若不知道目标节点 id，按优先级选择：
+        ① 优先调用 sparkNodeTree.findByType({ type: 'r-tabs' }) 按类型一步拿到真实 id
+        ② 或调用 sparkNodeTree.listChildren({parentComponentId:null}) 逐层遍历，
+           从每个节点的 id 或 props.id 字段读取真实 id，再调用 getNode / setProps / removeNode
   - 修改 pagedata.json：使用 datasetTool.*；完成数据阶段后执行 dataset.export
   - 修改 script.js：使用 textModel.readScript / textModel.writeScript
   - 修改 style.css：使用 textModel.readStyle / textModel.writeStyle

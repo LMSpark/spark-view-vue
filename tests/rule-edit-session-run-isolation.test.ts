@@ -163,8 +163,8 @@ describe('useRuleEditSession run isolation', () => {
     })
 
     expect(api!.aiBuffer.value).toBe('')
-    expect(api!.log.value[0]?.tag).toBe('LLM 响应')
-    expect(api!.log.value[0]?.text).toBe('fresh-output')
+    expect(api!.log.value.at(-1)?.tag).toBe('LLM 响应')
+    expect(api!.log.value.at(-1)?.text).toBe('fresh-output')
 
     secondRun.resolve({
       turns: [

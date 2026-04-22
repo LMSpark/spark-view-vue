@@ -72,6 +72,57 @@ describe('validateLlmDeserializedParams', () => {
     expect(result.ok).toBe(false)
     expect(formatLlmParamValidationIssues(result.issues)).toContain('$.crudConfig.transformRequest 该字段在 LLM 参数中应省略')
   })
+
+  it('accepts componentId string when description contains Chinese explanation text', () => {
+    const result = validateLlmDeserializedParams(
+      {
+        componentId: 'div__0_0',
+      },
+      {
+        componentId: 'string — 节点 id（来自 listChildren / getNode 返回结果中的 id 字段）',
+      },
+      {
+        requiredKeys: ['componentId'],
+      },
+    )
+
+    expect(result.ok).toBe(true)
+    expect(result.issues).toHaveLength(0)
+  })
+
+  it('accepts replaceNode node.children as array with explicit array schema', () => {
+    const result = validateLlmDeserializedParams(
+      {
+        componentId: 'div__0_0',
+        node: {
+          type: 'div',
+          children: [],
+        },
+      },
+      {
+        componentId: 'string — 节点 id',
+        node: {
+          kind: 'object',
+          required: ['type'],
+          properties: {
+            type: 'string — 组件类型',
+          },
+          optional: {
+            children: {
+              kind: 'array',
+              note: 'SparkNodeChildren',
+            },
+          },
+        },
+      },
+      {
+        requiredKeys: ['componentId', 'node'],
+      },
+    )
+
+    expect(result.ok).toBe(true)
+    expect(result.issues).toHaveLength(0)
+  })
 })
 
 describe('validateDataSetCrudToolStillParams', () => {

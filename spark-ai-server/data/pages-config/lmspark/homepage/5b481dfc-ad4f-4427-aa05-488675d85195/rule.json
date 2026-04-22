@@ -1,289 +1,632 @@
 [
   {
     "type": "div",
+    "id": "main-container",
     "props": {
       "class": "order-management-page",
       "style": {
-        "padding": "20px"
-      }
+        "padding": "24px",
+        "backgroundColor": "#f5f7fa",
+        "minHeight": "100vh"
+      },
+      "id": "main-container"
     },
     "children": [
       {
-        "type": "r-tabs",
+        "type": "div",
+        "id": "page-header",
         "props": {
-          "dataKey": "Orders@rows",
-          "toolbar": [
-            {
-              "type": "RenderToolbar"
-            }
-          ]
+          "class": "page-header",
+          "style": {
+            "marginBottom": "24px"
+          },
+          "id": "page-header"
         },
         "children": [
           {
-            "type": "r-tab-pane",
+            "type": "h1",
             "props": {
-              "label": "订单列表",
-              "name": "orders"
+              "style": {
+                "margin": "0",
+                "color": "#1a1a1a",
+                "fontSize": "28px",
+                "fontWeight": "600"
+              },
+              "id": "page-title"
+            },
+            "children": [
+              "订单管理系统"
+            ],
+            "id": "page-title"
+          },
+          {
+            "type": "p",
+            "props": {
+              "style": {
+                "margin": "8px 0 0 0",
+                "color": "#666",
+                "fontSize": "14px"
+              },
+              "id": "page-subtitle"
+            },
+            "children": [
+              "高效管理您的订单、客户和产品信息"
+            ],
+            "id": "page-subtitle"
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "id": "stats-cards-container",
+        "props": {
+          "class": "stats-cards",
+          "style": {
+            "display": "grid",
+            "gridTemplateColumns": "repeat(auto-fit, minmax(240px, 1fr))",
+            "gap": "16px",
+            "marginBottom": "24px"
+          },
+          "id": "stats-cards-container"
+        },
+        "children": [
+          {
+            "type": "r-card",
+            "id": "total-orders-card",
+            "props": {
+              "header": "总订单数",
+              "shadow": "always",
+              "bodyStyle": {
+                "padding": "20px",
+                "textAlign": "center"
+              },
+              "id": "total-orders-card"
             },
             "children": [
               {
-                "type": "r-table",
+                "type": "div",
                 "props": {
-                  "dataKey": "Orders@rows",
-                  "highlightCurrentRow": true,
-                  "border": true,
-                  "rowActions": [
-                    {
-                      "type": "RenderRowActions"
-                    }
-                  ]
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "gap": "12px"
+                  },
+                  "id": "total-orders-content"
                 },
                 "children": [
                   {
-                    "type": "r-text",
+                    "type": "div",
                     "props": {
-                      "field": "orderNo",
-                      "label": "订单号",
-                      "width": 120
-                    }
-                  },
-                  {
-                    "type": "r-date",
-                    "props": {
-                      "field": "orderDate",
-                      "label": "下单日期",
-                      "width": 120
-                    }
-                  },
-                  {
-                    "type": "r-select",
-                    "props": {
-                      "field": "status",
-                      "label": "状态",
-                      "optionKey": "OrderStatusOptions@rows",
-                      "optionLabelField": "label",
-                      "optionValueField": "value",
-                      "width": 100
-                    }
-                  },
-                  {
-                    "type": "r-number",
-                    "props": {
-                      "field": "totalAmount",
-                      "label": "总金额",
-                      "width": 100
-                    }
-                  },
-                  {
-                    "type": "r-text",
-                    "props": {
-                      "field": "remark",
-                      "label": "备注",
-                      "width": 150
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "r-section",
-                "props": {
-                  "title": "订单明细",
-                  "headerActions": [
-                    {
-                      "type": "RenderDetailActions"
-                    }
-                  ]
-                },
-                "children": [
-                  {
-                    "type": "r-table",
-                    "props": {
-                      "dataKey": "OrderItems@rows",
-                      "border": true
+                      "style": {
+                        "fontSize": "36px",
+                        "fontWeight": "700",
+                        "color": "#1890ff",
+                        "lineHeight": "1"
+                      },
+                      "id": "total-orders-value"
                     },
                     "children": [
-                      {
-                        "type": "r-number",
-                        "props": {
-                          "field": "productId",
-                          "label": "产品ID",
-                          "width": 100
-                        }
+                      "0"
+                    ],
+                    "id": "total-orders-value"
+                  },
+                  {
+                    "type": "div",
+                    "props": {
+                      "style": {
+                        "fontSize": "14px",
+                        "color": "#666"
                       },
-                      {
-                        "type": "r-number",
-                        "props": {
-                          "field": "quantity",
-                          "label": "数量",
-                          "width": 80
-                        }
-                      },
-                      {
-                        "type": "r-number",
-                        "props": {
-                          "field": "unitPrice",
-                          "label": "单价",
-                          "width": 100
-                        }
-                      },
-                      {
-                        "type": "r-number",
-                        "props": {
-                          "field": "subtotal",
-                          "label": "小计",
-                          "width": 100
-                        }
-                      }
-                    ]
+                      "id": "total-orders-label"
+                    },
+                    "children": [
+                      "笔"
+                    ],
+                    "id": "total-orders-label"
                   }
-                ]
+                ],
+                "id": "total-orders-content"
+              },
+              {
+                "type": "div",
+                "props": {
+                  "style": {
+                    "marginTop": "8px",
+                    "fontSize": "12px",
+                    "color": "#999"
+                  },
+                  "id": "total-orders-trend"
+                },
+                "children": [
+                  "今日新增: 0"
+                ],
+                "id": "total-orders-trend"
               }
             ]
           },
           {
-            "type": "r-tab-pane",
+            "type": "r-card",
+            "id": "total-amount-card",
             "props": {
-              "label": "客户管理",
-              "name": "customers"
+              "header": "总金额",
+              "shadow": "always",
+              "bodyStyle": {
+                "padding": "20px",
+                "textAlign": "center"
+              },
+              "id": "total-amount-card"
             },
             "children": [
               {
-                "type": "r-table",
+                "type": "div",
                 "props": {
-                  "dataKey": "Customers@rows",
-                  "highlightCurrentRow": true,
-                  "border": true,
-                  "rowActions": [
-                    {
-                      "type": "RenderCustomerActions"
-                    }
-                  ]
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "gap": "12px"
+                  },
+                  "id": "total-amount-content"
                 },
                 "children": [
                   {
-                    "type": "r-text",
+                    "type": "div",
                     "props": {
-                      "field": "name",
-                      "label": "客户名称",
-                      "width": 120
-                    }
+                      "style": {
+                        "fontSize": "36px",
+                        "fontWeight": "700",
+                        "color": "#52c41a",
+                        "lineHeight": "1"
+                      },
+                      "id": "total-amount-value"
+                    },
+                    "children": [
+                      "¥0"
+                    ],
+                    "id": "total-amount-value"
                   },
                   {
-                    "type": "r-text",
+                    "type": "div",
                     "props": {
-                      "field": "phone",
-                      "label": "联系电话",
-                      "width": 120
-                    }
-                  },
-                  {
-                    "type": "r-text",
-                    "props": {
-                      "field": "address",
-                      "label": "地址",
-                      "width": 144
-                    }
+                      "style": {
+                        "fontSize": "14px",
+                        "color": "#666"
+                      },
+                      "id": "total-amount-label"
+                    },
+                    "children": [
+                      "元"
+                    ],
+                    "id": "total-amount-label"
                   }
-                ]
+                ],
+                "id": "total-amount-content"
               },
               {
-                "type": "r-section",
+                "type": "div",
                 "props": {
-                  "title": "联系人列表",
-                  "headerActions": [
-                    {
-                      "type": "RenderContactActions"
-                    }
-                  ]
+                  "style": {
+                    "marginTop": "8px",
+                    "fontSize": "12px",
+                    "color": "#999"
+                  },
+                  "id": "total-amount-trend"
+                },
+                "children": [
+                  "平均订单: ¥0"
+                ],
+                "id": "total-amount-trend"
+              }
+            ]
+          },
+          {
+            "type": "r-card",
+            "id": "pending-orders-card",
+            "props": {
+              "header": "待处理",
+              "shadow": "always",
+              "bodyStyle": {
+                "padding": "20px",
+                "textAlign": "center"
+              },
+              "id": "pending-orders-card"
+            },
+            "children": [
+              {
+                "type": "div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "gap": "12px"
+                  },
+                  "id": "pending-orders-content"
+                },
+                "children": [
+                  {
+                    "type": "div",
+                    "props": {
+                      "style": {
+                        "fontSize": "36px",
+                        "fontWeight": "700",
+                        "color": "#faad14",
+                        "lineHeight": "1"
+                      },
+                      "id": "pending-orders-value"
+                    },
+                    "children": [
+                      "0"
+                    ],
+                    "id": "pending-orders-value"
+                  },
+                  {
+                    "type": "div",
+                    "props": {
+                      "style": {
+                        "fontSize": "14px",
+                        "color": "#666"
+                      },
+                      "id": "pending-orders-label"
+                    },
+                    "children": [
+                      "笔"
+                    ],
+                    "id": "pending-orders-label"
+                  }
+                ],
+                "id": "pending-orders-content"
+              },
+              {
+                "type": "div",
+                "props": {
+                  "style": {
+                    "marginTop": "8px",
+                    "fontSize": "12px",
+                    "color": "#999"
+                  },
+                  "id": "pending-orders-trend"
+                },
+                "children": [
+                  "待发货: 0"
+                ],
+                "id": "pending-orders-trend"
+              }
+            ]
+          },
+          {
+            "type": "r-card",
+            "id": "customers-card",
+            "props": {
+              "header": "客户数",
+              "shadow": "always",
+              "bodyStyle": {
+                "padding": "20px",
+                "textAlign": "center"
+              },
+              "id": "customers-card"
+            },
+            "children": [
+              {
+                "type": "div",
+                "props": {
+                  "style": {
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "gap": "12px"
+                  },
+                  "id": "customers-content"
+                },
+                "children": [
+                  {
+                    "type": "div",
+                    "props": {
+                      "style": {
+                        "fontSize": "36px",
+                        "fontWeight": "700",
+                        "color": "#722ed1",
+                        "lineHeight": "1"
+                      },
+                      "id": "customers-value"
+                    },
+                    "children": [
+                      "0"
+                    ],
+                    "id": "customers-value"
+                  },
+                  {
+                    "type": "div",
+                    "props": {
+                      "style": {
+                        "fontSize": "14px",
+                        "color": "#666"
+                      },
+                      "id": "customers-label"
+                    },
+                    "children": [
+                      "位"
+                    ],
+                    "id": "customers-label"
+                  }
+                ],
+                "id": "customers-content"
+              },
+              {
+                "type": "div",
+                "props": {
+                  "style": {
+                    "marginTop": "8px",
+                    "fontSize": "12px",
+                    "color": "#999"
+                  },
+                  "id": "customers-trend"
+                },
+                "children": [
+                  "活跃客户: 0"
+                ],
+                "id": "customers-trend"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "id": "tabs-container",
+        "props": {
+          "id": "tabs-container",
+          "style": {
+            "marginTop": "24px"
+          }
+        },
+        "children": [
+          {
+            "type": "r-tabs",
+            "id": "main-tabs",
+            "props": {
+              "id": "main-tabs",
+              "value": "orders"
+            },
+            "children": [
+              {
+                "type": "r-tab-pane",
+                "id": "r-tab-pane__0_0_2_0_0",
+                "props": {
+                  "index": 0,
+                  "name": "orders",
+                  "label": "订单管理",
+                  "title": "订单管理",
+                  "id": "r-tab-pane__0_0_2_0_0"
                 },
                 "children": [
                   {
                     "type": "r-table",
+                    "id": "orders-table",
                     "props": {
-                      "dataKey": "Contacts@rows",
-                      "border": true
+                      "id": "orders-table",
+                      "dataKey": "Orders@rows"
                     },
                     "children": [
                       {
                         "type": "r-text",
                         "props": {
+                          "field": "orderNo",
+                          "label": "订单号",
+                          "width": 120,
+                          "sortable": true,
+                          "id": "orderNo-column"
+                        },
+                        "children": [],
+                        "id": "orderNo-column"
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "orderDate",
+                          "label": "下单日期",
+                          "width": 120,
+                          "sortable": true,
+                          "id": "orderDate-column"
+                        },
+                        "children": [],
+                        "id": "orderDate-column"
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "customerId",
+                          "label": "客户ID",
+                          "width": 100,
+                          "sortable": true,
+                          "id": "customerId-column"
+                        },
+                        "children": [],
+                        "id": "customerId-column"
+                      },
+                      {
+                        "type": "r-select",
+                        "props": {
+                          "field": "status",
+                          "label": "状态",
+                          "width": 100,
+                          "sortable": true,
+                          "optionKey": "OrderStatusOptions@rows",
+                          "optionValueField": "value",
+                          "optionLabelField": "label",
+                          "id": "status-column"
+                        },
+                        "children": [],
+                        "id": "status-column"
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "field": "totalAmount",
+                          "label": "总金额",
+                          "width": 120,
+                          "sortable": true,
+                          "precision": 2,
+                          "id": "totalAmount-column"
+                        },
+                        "children": [],
+                        "id": "totalAmount-column"
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "remark",
+                          "label": "备注",
+                          "width": 150,
+                          "id": "remark-column"
+                        },
+                        "children": [],
+                        "id": "remark-column"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "r-tab-pane",
+                "id": "customers-tab-pane",
+                "props": {
+                  "index": 1,
+                  "name": "customers",
+                  "label": "客户管理",
+                  "title": "客户管理",
+                  "id": "customers-tab-pane"
+                },
+                "children": [
+                  {
+                    "type": "r-table",
+                    "props": {
+                      "id": "customers-table",
+                      "dataKey": "Customers@rows"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "id",
+                          "label": "ID",
+                          "width": 80,
+                          "sortable": true,
+                          "id": "customer-id-column"
+                        },
+                        "children": [],
+                        "id": "customer-id-column"
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
                           "field": "name",
                           "label": "姓名",
-                          "width": 100
-                        }
+                          "width": 120,
+                          "sortable": true,
+                          "id": "customer-name-column"
+                        },
+                        "children": [],
+                        "id": "customer-name-column"
                       },
                       {
                         "type": "r-text",
                         "props": {
                           "field": "phone",
                           "label": "电话",
-                          "width": 120
-                        }
+                          "width": 120,
+                          "sortable": true,
+                          "id": "customer-phone-column"
+                        },
+                        "children": [],
+                        "id": "customer-phone-column"
                       },
                       {
                         "type": "r-text",
                         "props": {
-                          "field": "email",
-                          "label": "邮箱",
-                          "width": 150
-                        }
-                      },
-                      {
-                        "type": "r-text",
-                        "props": {
-                          "field": "company",
-                          "label": "公司",
-                          "width": 120
-                        }
+                          "field": "address",
+                          "label": "地址",
+                          "width": 220,
+                          "id": "customer-address-column"
+                        },
+                        "children": [],
+                        "id": "customer-address-column"
                       }
-                    ]
+                    ],
+                    "id": "customers-table"
                   }
                 ]
-              }
-            ]
-          },
-          {
-            "type": "r-tab-pane",
-            "props": {
-              "label": "产品目录",
-              "name": "products"
-            },
-            "children": [
+              },
               {
-                "type": "r-table",
+                "type": "r-tab-pane",
+                "id": "products-tab-pane",
                 "props": {
-                  "dataKey": "Products@rows",
-                  "border": true,
-                  "rowActions": [
-                    {
-                      "type": "RenderProductActions"
-                    }
-                  ]
+                  "index": 2,
+                  "name": "products",
+                  "label": "产品管理",
+                  "title": "产品管理",
+                  "id": "products-tab-pane"
                 },
                 "children": [
                   {
-                    "type": "r-text",
+                    "type": "r-table",
                     "props": {
-                      "field": "name",
-                      "label": "产品名称",
-                      "width": 150
-                    }
-                  },
-                  {
-                    "type": "r-text",
-                    "props": {
-                      "field": "category",
-                      "label": "分类",
-                      "width": 100
-                    }
-                  },
-                  {
-                    "type": "r-number",
-                    "props": {
-                      "field": "price",
-                      "label": "价格",
-                      "width": 100
-                    }
+                      "id": "products-table",
+                      "dataKey": "Products@rows"
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "id",
+                          "label": "ID",
+                          "width": 80,
+                          "sortable": true,
+                          "id": "product-id-column"
+                        },
+                        "children": [],
+                        "id": "product-id-column"
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "name",
+                          "label": "产品名称",
+                          "width": 160,
+                          "sortable": true,
+                          "id": "product-name-column"
+                        },
+                        "children": [],
+                        "id": "product-name-column"
+                      },
+                      {
+                        "type": "r-text",
+                        "props": {
+                          "field": "category",
+                          "label": "分类",
+                          "width": 140,
+                          "sortable": true,
+                          "id": "product-category-column"
+                        },
+                        "children": [],
+                        "id": "product-category-column"
+                      },
+                      {
+                        "type": "r-number",
+                        "props": {
+                          "field": "price",
+                          "label": "价格",
+                          "width": 120,
+                          "sortable": true,
+                          "precision": 2,
+                          "id": "product-price-column"
+                        },
+                        "children": [],
+                        "id": "product-price-column"
+                      }
+                    ],
+                    "id": "products-table"
                   }
                 ]
               }

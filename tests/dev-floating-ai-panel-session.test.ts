@@ -107,6 +107,7 @@ describe('DevFloatingAiPanel shared session host', () => {
       undoPageEditTransaction: vi.fn(),
       redoPageEditTransaction: vi.fn(),
       getPageEditTransactionCount: vi.fn(() => 0),
+      ensureActivePageFilesLoaded: vi.fn(async () => {}),
       loadPageFile: vi.fn(async () => {}),
     } as unknown as DevState
 

@@ -23,6 +23,20 @@ export interface SparkNodeTreeRootParams {
 }
 
 /**
+ * SparkNodeTree.fromJson 的可选参数。
+ */
+export interface SparkNodeTreeFromJsonOptions {
+  /**
+   * 历史记录最大条目数。省略时沿用默认值。
+   */
+  historyLimit?: number
+  /**
+   * 是否在反序列化时为缺失 id 的节点自动补齐组件 id。默认 true。
+   */
+  fillMissingComponentId?: boolean
+}
+
+/**
  * 需要按 componentId 查找节点时使用的参数。
  */
 export interface SparkNodeTreeLookupParams {
@@ -183,6 +197,54 @@ export interface SparkNodeRemoveNodesResult {
   items: SparkNodeRemoveResult[]
 }
 
+/**
+ * findByType 的查询参数。
+ */
+export interface SparkNodeFindByTypeParams {
+  /**
+   * 要搜索的组件类型名，精确匹配（如 'r-tabs'、'r-form'、'r-table'）。
+   */
+  type: string
+  /**
+   * 可选。从哪个节点开始向下递归搜索。
+   * 省略时从当前绑定根节点开始。
+   * 必须是真实节点 id，不能是类型名。
+   */
+  startComponentId?: string
+  /**
+   * 可选。最多返回多少条匹配结果，默认不限制。
+   */
+  limit?: number
+}
+
+/**
+ * findByType 单条匹配结果。
+ */
+export interface SparkNodeFindByTypeMatch {
+  /** 节点的真实 id（来自顶层 id 字段或 props.id）。节点未设置 id 时为 undefined。 */
+  id: string | undefined
+  /** 组件类型名 */
+  type: string
+  /** 节点在树中的深度（根节点深度为 0） */
+  depth: number
+  /**
+   * 直接父节点的 id。
+   * - 当前节点是被搜索子树的根时为 null
+   * - 父节点未设置 id 时为 undefined
+   */
+  parentId: string | null | undefined
+}
+
+/**
+ * findByType 的返回结果。
+ */
+export interface SparkNodeFindByTypeResult {
+  /** 按深度优先顺序排列的匹配结果数组 */
+  matches: SparkNodeFindByTypeMatch[]
+  /** 实际命中总数（受 limit 截断前） */
+  total: number
+}
+
 // ====================
 // 公共 API（SparkNodeTree FC 本体）
 // ====================
@@ -204,7 +266,7 @@ export interface SparkNodeRemoveNodesResult {
  * 上层的 tool catalog / stills / FC 列表，只是在此基础上做协议投影。
  *
  * 当前公开能力大致可分为四类：
- * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren。
+ * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。
  * 2. 子树统计：countNodes / collectDataKeys / collectHandlerNames。
  * 3. 节点写入：addNode / addNodes / replaceNode / replaceNodes / removeNode / removeNodes。
  * 4. 属性写入：setProps / setPropsBatch。
@@ -219,6 +281,24 @@ export class SparkNodeTree {
   private _root: SparkNode
   private readonly _history: SnapshotHistory<SparkNode>
   private _version = -1
+
+  /**
+   * 从 JSON 输入创建 SparkNodeTree。
+   *
+   * - 支持对象或 JSON 字符串输入
+   * - 默认会在反序列化过程中补齐缺失组件 id
+   */
+  static fromJson(
+    json: SparkNode | Record<string, unknown> | string,
+    options: SparkNodeTreeFromJsonOptions = {},
+  ): SparkNodeTree {
+    const next = normalizeFromJsonOptions(options)
+    const root = normalizeRootFromJsonInput(json, next.fillMissingComponentId)
+    return new SparkNodeTree({
+      root,
+      ...(next.historyLimit !== undefined ? { historyLimit: next.historyLimit } : {}),
+    })
+  }
 
   /**
    * 使用一个当前组件实例节点创建树操作实例。
@@ -254,6 +334,14 @@ export class SparkNodeTree {
    */
   toJSON(): SparkNode {
     return this._root
+  }
+
+  /**
+   * 获取当前绑定子树的完整数据快照。
+   * 语义上等价于 toJSON()。
+   */
+  getAllData(): SparkNode {
+    return this.toJSON()
   }
 
   // ─── Undo / Redo（委托 SnapshotHistory）────────────────────────
@@ -404,6 +492,24 @@ export class SparkNodeTree {
   }
 
   // ─── 写入 API：供 FC 把新 SparkNode 写入树中，或修改既有节点结构 / 属性 ─────────
+
+  /**
+   * 按组件类型名递归搜索子树，返回所有匹配节点的真实 id、深度和父 id。
+   *
+   * 典型用法：当 LLM 知道目标组件类型（如 'r-tabs'）但不知道其节点 id 时，
+   * 调用此方法可一步获取可直接用于 getNode / setProps / removeNode 的真实 id。
+   */
+  findByType(params: SparkNodeFindByTypeParams): SparkNodeFindByTypeResult {
+    const next = normalizeFindByTypeParams(params)
+    const startNode = next.startComponentId !== undefined
+      ? requireLocation(this._root, next.startComponentId).node
+      : this._root
+    const allMatches: SparkNodeFindByTypeMatch[] = []
+    findByTypeRecursive(startNode, next.type, null, 0, allMatches)
+    const total = allMatches.length
+    const matches = next.limit !== undefined ? allMatches.slice(0, next.limit) : allMatches
+    return { matches, total }
+  }
 
   /**
    * 向当前组件实例或指定子组件的 children 中添加一个新节点。
@@ -583,6 +689,26 @@ function normalizeRootParams(
   const next = requireObjectArg(params, `${methodName}.params`)
   return {
     root: requireSparkNode(next.root, `${methodName}.root`),
+  }
+}
+
+/**
+ * 归一化 fromJson 选项。
+ */
+function normalizeFromJsonOptions(
+  options: SparkNodeTreeFromJsonOptions,
+): Required<Pick<SparkNodeTreeFromJsonOptions, 'fillMissingComponentId'>> & Pick<SparkNodeTreeFromJsonOptions, 'historyLimit'> {
+  const next = requireObjectArg(options, 'fromJson.options')
+  if (next.fillMissingComponentId !== undefined && typeof next.fillMissingComponentId !== 'boolean') {
+    throw new Error('fromJson.options.fillMissingComponentId must be a boolean')
+  }
+  if (next.historyLimit !== undefined && (!Number.isInteger(next.historyLimit) || next.historyLimit < 0)) {
+    throw new Error('fromJson.options.historyLimit must be a non-negative integer')
+  }
+
+  return {
+    fillMissingComponentId: next.fillMissingComponentId ?? true,
+    ...(next.historyLimit !== undefined ? { historyLimit: next.historyLimit } : {}),
   }
 }
 
@@ -963,6 +1089,165 @@ function requireLocation(root: SparkNode, nodeId: string): SparkNodeLocation {
 function resolveParentNode(root: SparkNode, parentId: string | null | undefined): SparkNode {
   if (parentId === null || parentId === undefined) return root
   return requireLocation(root, parentId).node
+}
+
+/**
+ * 对 addNode 做一次不可变写入，返回新 root 与动作结果。
+/**
+ * 递归收集类型匹配的所有节点，结果按深度优先顺序追加到 out 数组。
+ */
+function findByTypeRecursive(
+  current: SparkNode,
+  targetType: string,
+  parentId: string | null | undefined,
+  depth: number,
+  out: SparkNodeFindByTypeMatch[],
+): void {
+  if (current.type === targetType) {
+    out.push({
+      id: readNodeId(current),
+      type: current.type,
+      depth,
+      parentId,
+    })
+  }
+
+  if (!Array.isArray(current.children) || current.children.length === 0) return
+
+  const currentId = readNodeId(current)
+  for (const child of current.children) {
+    if (!isSparkNode(child)) continue
+    findByTypeRecursive(child, targetType, currentId, depth + 1, out)
+  }
+}
+
+/**
+ * 归一化 findByType 输入参数。
+ */
+function normalizeFindByTypeParams(params: SparkNodeFindByTypeParams): SparkNodeFindByTypeParams {
+  const next = requireObjectArg(params, 'findByType.params')
+  const type = requireNonEmptyString(
+    typeof next.type === 'string' ? next.type : undefined,
+    'findByType.type',
+  )
+
+  const startComponentId = next.startComponentId === undefined
+    ? undefined
+    : requireNonEmptyString(
+        typeof next.startComponentId === 'string' ? next.startComponentId : undefined,
+        'findByType.startComponentId',
+      )
+
+  if (next.limit !== undefined) {
+    assertNonNegativeInteger(next.limit, 'findByType.limit')
+  }
+
+  return {
+    type,
+    ...(startComponentId !== undefined ? { startComponentId } : {}),
+    ...(next.limit !== undefined ? { limit: next.limit } : {}),
+  }
+}
+
+/**
+ * 归一化 fromJson 输入，并按需补齐缺失组件 id。
+ */
+function normalizeRootFromJsonInput(
+  json: SparkNode | Record<string, unknown> | string,
+  fillMissingComponentId: boolean,
+): SparkNode {
+  const parsed = parseSparkNodeJsonInput(json)
+  const root = requireSparkNode(parsed, 'fromJson.root')
+  return normalizeSparkNodeWithComponentIds(root, fillMissingComponentId)
+}
+
+/**
+ * 解析 SparkNode JSON 输入。
+ */
+function parseSparkNodeJsonInput(json: SparkNode | Record<string, unknown> | string): unknown {
+  if (typeof json !== 'string') return json
+  const trimmed = json.trim()
+  if (trimmed.length === 0) {
+    throw new Error('fromJson.json must not be an empty string')
+  }
+
+  try {
+    return JSON.parse(trimmed) as unknown
+  } catch {
+    throw new Error('fromJson.json must be valid JSON')
+  }
+}
+
+/**
+ * 递归归一化整棵节点树，并按需补齐缺失组件 id。
+ */
+function normalizeSparkNodeWithComponentIds(root: SparkNode, fillMissingComponentId: boolean): SparkNode {
+  const usedIds = new Set<string>()
+  return normalizeSparkNodeWithComponentIdsRecursive(root, fillMissingComponentId, usedIds, [0])
+}
+
+function normalizeSparkNodeWithComponentIdsRecursive(
+  node: SparkNode,
+  fillMissingComponentId: boolean,
+  usedIds: Set<string>,
+  path: number[],
+): SparkNode {
+  const normalized = normalizeSparkNode(node)
+  const source = node as unknown as Record<string, unknown>
+
+  const rawChildren = Array.isArray(source['children'])
+    ? (source['children'] as unknown[])
+    : (Array.isArray(normalized.children) ? normalized.children : [])
+
+  const children = rawChildren.map((child, index) => {
+    if (!isSparkNode(child)) return child
+    return normalizeSparkNodeWithComponentIdsRecursive(child, fillMissingComponentId, usedIds, [...path, index])
+  })
+
+  let componentId = readNodeId(normalized)
+  if (componentId === undefined && fillMissingComponentId) {
+    componentId = generateAutoComponentId(normalized.type, path)
+  }
+
+  if (componentId !== undefined) {
+    if (usedIds.has(componentId)) {
+      throw new Error(`fromJson.componentId duplicated: ${componentId}`)
+    }
+    usedIds.add(componentId)
+  }
+
+  const sourceProps = source['props']
+  const baseProps = sourceProps !== null
+    && sourceProps !== undefined
+    && typeof sourceProps === 'object'
+    && !Array.isArray(sourceProps)
+    ? { ...(sourceProps as Record<string, unknown>) }
+    : (normalized.props !== undefined ? { ...normalized.props } : undefined)
+
+  const nextProps = componentId !== undefined
+    ? { ...(baseProps ?? {}), id: componentId }
+    : baseProps
+
+  const nextNode: Record<string, unknown> = {
+    ...source,
+    type: normalized.type,
+    children,
+  }
+
+  if (componentId !== undefined) {
+    nextNode['id'] = componentId
+  }
+
+  if (nextProps !== undefined) {
+    nextNode['props'] = nextProps
+  }
+
+  return nextNode as unknown as SparkNode
+}
+
+function generateAutoComponentId(type: string, path: number[]): string {
+  const safeType = type.replace(/[^a-zA-Z0-9_-]/g, '-') || 'node'
+  return `${safeType}__${path.join('_')}`
 }
 
 /**

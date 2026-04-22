@@ -11,6 +11,9 @@
         <el-button size="small" @click="switchToPreview" :disabled="!canPreviewCurrentPage">
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
+        <el-button size="small" :type="aiPanelVisible ? 'primary' : ''" @click="aiPanelVisible = !aiPanelVisible">
+          <NavIcon name="ChatRound" :size="14" /> AI 面板
+        </el-button>
         <el-button
           v-if="state.hasAnyDirty.value"
           size="small"
@@ -23,14 +26,14 @@
       </div>
     </div>
 
-    <!-- ═══ 主体两栏布局 ═══ -->
+    <!-- ═══ 主体三栏布局 ═══ -->
     <div class="dev-body" v-loading="state.navLoading.value">
       <!-- 左栏：站点树 -->
       <div class="dev-body__tree">
         <DevSiteTree :state="state" />
       </div>
 
-      <!-- 右栏：工作区 -->
+      <!-- 中栏：工作区 -->
       <div class="dev-body__workspace">
         <el-tabs v-model="workTab" type="border-card" class="workspace-tabs">
           <!-- 🔧 节点属性（选中节点时可用） -->
@@ -85,6 +88,13 @@
         </div>
       </div>
 
+      <!-- 右栏：AI 面板 -->
+      <Transition name="ai-panel-slide">
+        <div v-if="aiPanelVisible" class="dev-body__ai">
+          <DevFloatingAiPanel :state="state" :active-file="currentWorkspaceFile" :inline="true" />
+        </div>
+      </Transition>
+
     </div>
 
     <!-- ═══ 底部状态栏 ═══ -->
@@ -101,9 +111,6 @@
         <span class="status-count"><NavIcon name="Tickets" :size="13" /> {{ state.pageList.value.length }} 页面</span>
       </div>
     </div>
-
-    <DevFloatingAiPanel :state="state" :active-file="currentWorkspaceFile" />
-
 
   </div>
 </template>
@@ -125,6 +132,9 @@ import NavIcon from '@/components/NavIcon.vue'
 
 const { router, tenantPath } = useTenantRouter()
 const state = useDevState()
+
+// AI 面板开关
+const aiPanelVisible = ref(true)
 
 // 工作区 Tab
 const workTab = ref<DevWorkspaceTab>('props')
@@ -248,6 +258,7 @@ onMounted(() => { void state.initialize() })
 
 /* 中栏：工作区 */
 .dev-body__workspace {
+  min-width: 480px;
   flex: 1;
   min-width: 0;
   display: flex;
@@ -306,6 +317,36 @@ onMounted(() => { void state.initialize() })
   color: var(--el-text-color-secondary);
 }
 
+
+/* 右栏：AI 面板 */
+.dev-body__ai {
+  width: 380px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 12px;
+  background: var(--el-bg-color);
+  overflow: hidden;
+}
+
+/* AI 面板滑入动画 */
+.ai-panel-slide-enter-active,
+.ai-panel-slide-leave-active {
+  transition: width 0.22s ease, opacity 0.22s ease;
+  overflow: hidden;
+}
+.ai-panel-slide-enter-from,
+.ai-panel-slide-leave-to {
+  width: 0;
+  opacity: 0;
+}
+.ai-panel-slide-enter-to,
+.ai-panel-slide-leave-from {
+  width: 380px;
+  opacity: 1;
+}
 
 /* ═══ 底部状态栏 ═══ */
 .dev-status-bar {

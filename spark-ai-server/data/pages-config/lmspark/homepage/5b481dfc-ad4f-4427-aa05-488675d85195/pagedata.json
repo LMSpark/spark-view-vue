@@ -40,11 +40,6 @@
           "name": "remark",
           "label": "备注",
           "type": "string"
-        },
-        {
-          "name": "lastModifiedBy",
-          "type": "string",
-          "label": "最后修改人"
         }
       ],
       "views": {
@@ -84,6 +79,17 @@
           ],
           "autoCurrentFirst": true,
           "autoSelectFirst": true
+        },
+        "orderListView": {
+          "tableName": "Orders",
+          "viewId": "orderListView",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "autoLoad": true,
+          "autoRefresh": true
         }
       }
     },
@@ -121,11 +127,6 @@
           "label": "小计",
           "type": "number",
           "computeExpression": "quantity * unitPrice"
-        },
-        {
-          "name": "lastModifiedBy",
-          "type": "string",
-          "label": "最后修改人"
         }
       ],
       "views": {
@@ -199,11 +200,6 @@
           "name": "address",
           "label": "地址",
           "type": "string"
-        },
-        {
-          "name": "lastModifiedBy",
-          "type": "string",
-          "label": "最后修改人"
         }
       ],
       "views": {
@@ -260,11 +256,6 @@
           "name": "price",
           "label": "价格",
           "type": "number"
-        },
-        {
-          "name": "lastModifiedBy",
-          "type": "string",
-          "label": "最后修改人"
         }
       ],
       "views": {
@@ -322,11 +313,6 @@
           "name": "label",
           "label": "标签",
           "type": "string"
-        },
-        {
-          "name": "lastModifiedBy",
-          "type": "string",
-          "label": "最后修改人"
         }
       ],
       "views": {
@@ -413,7 +399,19 @@
           "viewId": "default",
           "page": 1,
           "pageSize": 20,
-          "rows": [],
+          "rows": [
+            {
+              "id": 1,
+              "name": "张三-助理",
+              "phone": "13800138011",
+              "email": "zhangsan_assist@example.com",
+              "company": "张三公司",
+              "position": "助理",
+              "address": "北京市朝阳区",
+              "remark": "主要联系人",
+              "customerId": 1
+            }
+          ],
           "autoCurrentFirst": true,
           "autoSelectFirst": true
         }
@@ -450,31 +448,32 @@
       "autoLoad": true
     }
   ],
+  "pageId": "5b481dfc-ad4f-4427-aa05-488675d85195",
   "layout": {
     "tablePositions": {
       "Orders": {
-        "x": 50,
-        "y": 50
+        "x": 40,
+        "y": 40
       },
       "OrderItems": {
-        "x": 270,
-        "y": 50
+        "x": 360,
+        "y": 40
       },
       "Customers": {
-        "x": 490,
-        "y": 50
+        "x": 680,
+        "y": 40
       },
       "Products": {
-        "x": 50,
-        "y": 250
+        "x": 40,
+        "y": 320
       },
       "OrderStatusOptions": {
-        "x": 270,
-        "y": 250
+        "x": 360,
+        "y": 320
       },
       "Contacts": {
-        "x": 490,
-        "y": 250
+        "x": 680,
+        "y": 320
       }
     }
   }

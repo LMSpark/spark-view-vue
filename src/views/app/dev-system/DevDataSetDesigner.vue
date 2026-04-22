@@ -281,7 +281,6 @@ import { ref, shallowRef, computed, watch, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import NavIcon from '@/components/NavIcon.vue'
 import {
-  buildDataSetMetadataFromDesignerProjection,
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
@@ -351,32 +350,22 @@ const relations = computed<DesignerRelation[]>(() => (
   projectedMetadata.value ? projectDesignerRelations(projectedMetadata.value) : []
 ))
 
-const viewDependencies = computed<NonNullable<IDataSetMetadata['viewDependencies']> | undefined>(() => (
-  projectedMetadata.value?.viewDependencies
-))
-
-function resetHistoryFromDesignerState(): void {
-  const snapshot = buildDataSetMetadataFromDesigner()
-  props.state.replaceLivePageData(snapshot, { preserveHistory: false })
-}
-
-function isDesignerStateInSyncWithHistory(): boolean {
-  const livePageDataTool = props.state.pageDataTool.value
-  if (!livePageDataTool) return false
-  const current = JSON.stringify(buildDataSetMetadataFromDesigner())
-  const historical = JSON.stringify(livePageDataTool.toJson())
-  return current === historical
+/** 将设计器当前 tableUiState 的 x/y 位置直接写入 tool.dataSet.layout，保持位置与模型同步。 */
+function syncLayoutToTool(tool: DataSetCrudTool): void {
+  const positions: Record<string, { x: number; y: number }> = {}
+  for (const [tableName, uiState] of Object.entries(tableUiState.value)) {
+    positions[tableName] = { x: uiState.x, y: uiState.y }
+  }
+  tool.dataSet.layout = { ...(tool.dataSet.layout ?? {}), tablePositions: positions }
 }
 
 function applyMutationWithHistory(
   mutator: (tool: DataSetCrudTool) => void,
   layoutForNewTable?: LayoutForNewTable,
 ): void {
-  if (!props.state.pageDataTool.value || !isDesignerStateInSyncWithHistory()) {
-    resetHistoryFromDesignerState()
-  }
   const tool = props.state.ensureLivePageDataTool()
   if (!tool) return
+  syncLayoutToTool(tool)
   try {
     pendingProjectionLayout.value = layoutForNewTable ?? null
     mutator(tool)
@@ -397,16 +386,18 @@ function undo() {
 function redo() {
   const ok = props.state.redoLivePageData()
   if (!ok) return
+  resetSelectionState()
+}
+
+function resetSelectionState(): void {
   editingRel.value = null
   selectedTableId.value = null
 }
 
 function commitLayoutCheckpoint(): void {
-  if (!props.state.pageDataTool.value || !isDesignerStateInSyncWithHistory()) {
-    resetHistoryFromDesignerState()
-  }
   const tool = props.state.ensureLivePageDataTool()
   if (!tool) return
+  syncLayoutToTool(tool)
   const anchor = tables.value[0]
   if (!anchor) return
   // 通过 no-op 结构提交推进 DataSetCrudTool 历史游标，把当前 UI 布局绑定到同一撤销链。
@@ -551,11 +542,10 @@ function refreshFromLiveData(silent = false): void {
   }
 
   props.state.syncPageDataDocumentFromTool()
-  editingRel.value = null
-  selectedTableId.value = null
+  resetSelectionState()
 }
 
-onMounted(async () => {
+onMounted(() => {
   refreshFromLiveData(true)
   document.addEventListener('keydown', onKeydown)
 })
@@ -619,26 +609,6 @@ function deleteTableWithRelationFallback(
   }
 }
 
-function readCurrentDataSetName(): string {
-  if (props.state.pageDataTool.value) {
-    return props.state.pageDataTool.value.dataSetName
-  }
-
-  if (projectedMetadata.value?.dataSetName) {
-    return projectedMetadata.value.dataSetName
-  }
-  return 'PageDataSet'
-}
-
-function buildDataSetMetadataFromDesigner(): IDataSetMetadata {
-  return buildDataSetMetadataFromDesignerProjection({
-    dataSetName: readCurrentDataSetName(),
-    tables: tables.value,
-    relations: relations.value,
-    ...(viewDependencies.value ? { viewDependencies: viewDependencies.value } : {}),
-  })
-}
-
 function projectDesignerFromMetadata(
   metadata: IDataSetMetadata,
   layoutForNewTable?: LayoutForNewTable,
@@ -683,7 +653,7 @@ async function removeTable(idx: number) {
     deleteTableWithRelationFallback(tool, name, [...relations.value])
   })
   if (selectedTableId.value === tableId) {
-    selectedTableId.value = null
+    resetSelectionState()
   }
 }
 
@@ -865,21 +835,21 @@ async function deleteEditingRelation() {
 }
 
 function toggleSchema(tableId: string) {
-  if (expandedTables.value.has(tableId)) {
-    expandedTables.value.delete(tableId)
-  } else {
-    expandedTables.value.add(tableId)
-  }
-  expandedTables.value = new Set(expandedTables.value)
+  expandedTables.value = toggleSetItem(expandedTables.value, tableId)
 }
 
 function toggleProps(tableId: string) {
-  if (propsExpandedTables.value.has(tableId)) {
-    propsExpandedTables.value.delete(tableId)
+  propsExpandedTables.value = toggleSetItem(propsExpandedTables.value, tableId)
+}
+
+function toggleSetItem(source: Set<string>, item: string): Set<string> {
+  const next = new Set(source)
+  if (next.has(item)) {
+    next.delete(item)
   } else {
-    propsExpandedTables.value.add(tableId)
+    next.add(item)
   }
-  propsExpandedTables.value = new Set(propsExpandedTables.value)
+  return next
 }
 
 async function clearAll() {
@@ -895,7 +865,7 @@ async function clearAll() {
       deleteTableWithRelationFallback(tool, name, [...relations.value])
     }
   })
-  selectedTableId.value = null
+  resetSelectionState()
 }
 
 function autoLayout() {
