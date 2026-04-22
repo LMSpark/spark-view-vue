@@ -73,11 +73,12 @@ export interface JsonSchema {
 }
 
 export interface JsonSchemaProperty {
-  type: string
+  type: string | string[]
   description?: string
   items?: JsonSchemaProperty
   properties?: Record<string, JsonSchemaProperty>
   required?: string[]
+  enum?: Array<string | number | null>
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -181,6 +182,36 @@ function inferPropertySchemaFromUnknown(rawDesc: unknown): { prop: JsonSchemaPro
 
   const kind = rawDesc['kind']
   const note = typeof rawDesc['note'] === 'string' ? rawDesc['note'] : undefined
+
+  if (kind === 'enum') {
+    const rawEnum = Array.isArray(rawDesc['enum']) ? rawDesc['enum'] : []
+    const enumValues = rawEnum.filter(item => typeof item === 'string' || typeof item === 'number')
+    const schemaType = rawDesc['type'] === 'number' ? 'number' : 'string'
+    const nullable = rawDesc['nullable'] === true
+    const optional = rawDesc['optional'] === true
+    const openEnded = rawDesc['openEnded'] === true
+    const descriptionParts = [note]
+
+    if (enumValues.length > 0) {
+      descriptionParts.push(`推荐值: ${enumValues.map(item => JSON.stringify(item)).join(' | ')}`)
+    }
+    if (openEnded) {
+      descriptionParts.push('也允许自定义值')
+    }
+
+    return {
+      prop: {
+        type: nullable ? [schemaType, 'null'] : schemaType,
+        ...(descriptionParts.filter(Boolean).length > 0
+          ? { description: descriptionParts.filter(Boolean).join('；') }
+          : {}),
+        ...(!openEnded && enumValues.length > 0
+          ? { enum: nullable ? [...enumValues, null] : enumValues }
+          : {}),
+      },
+      required: !optional,
+    }
+  }
 
   if (kind === 'array') {
     const itemSchema = inferPropertySchemaFromUnknown(rawDesc['items']).prop

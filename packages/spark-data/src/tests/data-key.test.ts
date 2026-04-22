@@ -181,7 +181,7 @@ describe('DataKey 统一解析器', () => {
 
     it('#scope 空段返回 null', () => {
       expect(parseDataKey('#@Users@rows')).toBeNull()
-      expect(parseDataKey('#DS@@rows')).toBeNull()
+      expect(parseDataKey('#DS@Users@')).toBeNull()
     })
   })
 

@@ -15,7 +15,10 @@
  *   - dataSet / dataSetName 属于运行时上下文；
  *   - toJson 语义与 datasetTool.export 重合，统一折叠到 datasetTool.export。
  */
-
+import {
+  TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
+  TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
+} from '@spark-view/spark-data'
 import { formatLlmParamValidationIssues, validateLlmDeserializedParams } from './llm-params-validator'
 import {
   DATASET_EXPORT_ACTION,
@@ -128,9 +131,37 @@ const COLUMN_NAME_PARAM = 'string — 列名'
 const ROW_ID_PARAM = 'string | number — 主键值'
 const PARENT_TABLE_PARAM = 'string — 父表名'
 const CHILD_TABLE_PARAM = 'string — 子表名'
-const RESOURCE_TYPE_PARAM = 'TableResourceType? — 资源类型'
 const RESOURCE_ID_PARAM = 'string? — 资源 ID'
-const BUSINESS_CATEGORY_PARAM = 'TableBusinessCategory? — 业务分类'
+
+const RESOURCE_TYPE_SCHEMA = {
+  kind: 'enum',
+  type: 'string',
+  enum: TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
+  optional: true,
+  openEnded: true,
+  note: '资源类型推荐值字典；优先使用内置资源类型，也允许业务侧自定义字符串。',
+} as const
+
+const NULLABLE_RESOURCE_TYPE_SCHEMA = {
+  ...RESOURCE_TYPE_SCHEMA,
+  nullable: true,
+  note: '资源类型推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
+} as const
+
+const BUSINESS_CATEGORY_SCHEMA = {
+  kind: 'enum',
+  type: 'string',
+  enum: TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
+  optional: true,
+  openEnded: true,
+  note: '业务分类推荐值字典；优先使用 master / child / reference，也允许业务侧自定义字符串。',
+} as const
+
+const NULLABLE_BUSINESS_CATEGORY_SCHEMA = {
+  ...BUSINESS_CATEGORY_SCHEMA,
+  nullable: true,
+  note: '业务分类推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
+} as const
 
 const DATA_COLUMN_FIELDS_SCHEMA = {
   name: 'string — 列名，必填，表内唯一',
@@ -793,9 +824,9 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
     paramsSchema: {
       tableName: TABLE_NAME_PARAM,
       columns: DATA_COLUMN_ARRAY_SCHEMA,
-      resourceType: RESOURCE_TYPE_PARAM,
+      resourceType: RESOURCE_TYPE_SCHEMA,
       resourceId: RESOURCE_ID_PARAM,
-      businessCategory: BUSINESS_CATEGORY_PARAM,
+      businessCategory: BUSINESS_CATEGORY_SCHEMA,
       api: CRUD_API_SCHEMA,
       crudConfig: CRUD_OPERATION_CONFIG_SCHEMA,
       views: VIEWS_SCHEMA,
@@ -853,9 +884,9 @@ export const DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE = [
         ...CRUD_OPERATION_CONFIG_SCHEMA,
         note: '传 null 表示显式移除已有 crudConfig；传对象表示新的运行配置。',
       },
-      resourceType: 'TableResourceType | null? — null 表示显式清空',
+      resourceType: NULLABLE_RESOURCE_TYPE_SCHEMA,
       resourceId: 'string | null? — null 表示显式清空',
-      businessCategory: 'TableBusinessCategory | null? — null 表示显式清空',
+      businessCategory: NULLABLE_BUSINESS_CATEGORY_SCHEMA,
       defaultRows: ROW_ARRAY_SCHEMA,
     },
     resultSchema: {

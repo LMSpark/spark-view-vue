@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest'
 
 import { DataSetCrudTool } from '../packages/spark-data/src/dataset-crud-tool'
 import {
+  TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
+  TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
+} from '../packages/spark-data/src'
+import {
   DATASET_CRUD_TOOL_STILLS_CAPABILITY_TABLE,
   DATASET_CRUD_TOOL_STILLS_PARAMETER_TABLE,
   getDataSetCrudToolStillCapabilityRow,
@@ -66,5 +70,51 @@ describe('dataset tool protocol contract', () => {
   it('does not expose removed legacy signatures in protocol lookup', () => {
     const legacyDeleteRelation = getDataSetCrudToolStillParameterRow('datasetTool.deleteRelationLegacy')
     expect(legacyDeleteRelation).toBeUndefined()
+  })
+
+  it('exposes recommended enum dictionaries for table semantic metadata fields', () => {
+    const row = getDataSetCrudToolStillParameterRow('datasetTool.updateTable')
+
+    expect(row?.paramsSchema).toMatchObject({
+      resourceType: {
+        kind: 'enum',
+        type: 'string',
+        enum: TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
+        openEnded: true,
+        nullable: true,
+      },
+      businessCategory: {
+        kind: 'enum',
+        type: 'string',
+        enum: TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
+        openEnded: true,
+        nullable: true,
+      },
+    })
+  })
+
+  it('accepts recommended, custom, and nullable semantic metadata values while rejecting wrong types', () => {
+    expect(validateDataSetCrudToolStillParams('datasetTool.updateTable', {
+      tableName: 'Users',
+      resourceType: 'database-view',
+      businessCategory: 'reference',
+    })).toBeNull()
+
+    expect(validateDataSetCrudToolStillParams('datasetTool.updateTable', {
+      tableName: 'Users',
+      resourceType: 'erp-materialized-view',
+      businessCategory: 'lookup',
+    })).toBeNull()
+
+    expect(validateDataSetCrudToolStillParams('datasetTool.updateTable', {
+      tableName: 'Users',
+      resourceType: null,
+      businessCategory: null,
+    })).toBeNull()
+
+    expect(validateDataSetCrudToolStillParams('datasetTool.updateTable', {
+      tableName: 'Users',
+      resourceType: 123,
+    })).toContain('resourceType')
   })
 })

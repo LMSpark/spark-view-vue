@@ -64,6 +64,24 @@ export interface LlmParamArraySchema {
 }
 
 /**
+ * 开放枚举 schema 节点。
+ *
+ * - enum     : 推荐值字典；当 openEnded = false 时同时作为硬校验集合。
+ * - type     : 基础类型，当前常用 string，也可扩展到 number。
+ * - nullable : 是否允许传 null。
+ * - openEnded: 是否允许传入 enum 之外的同类型自定义值。
+ * - note     : 附加说明文本，仅供 LLM 参考，不参与校验逻辑。
+ */
+export interface LlmParamEnumSchema {
+  kind: 'enum'
+  enum: ReadonlyArray<string | number>
+  type?: 'string' | 'number'
+  nullable?: boolean
+  openEnded?: boolean
+  note?: string
+}
+
+/**
  * 单条校验问题。
  *
  * - path   : 出错字段的 JSON 路径；`$` 为根，`.field` / `[index]` 表示层级。
@@ -301,6 +319,11 @@ function isArraySchema(value: unknown): value is LlmParamArraySchema {
   return isPlainRecord(value) && value['kind'] === 'array'
 }
 
+/** 类型守卫：判断值是否为显式开放枚举 schema 节点（kind === 'enum'）。 */
+function isEnumSchema(value: unknown): value is LlmParamEnumSchema {
+  return isPlainRecord(value) && value['kind'] === 'enum' && Array.isArray(value['enum'])
+}
+
 // =========================================================
 // 四、Schema 归一化与问题收集
 // =========================================================
@@ -317,7 +340,7 @@ function isArraySchema(value: unknown): value is LlmParamArraySchema {
  */
 function normalizeSchemaNode(schema: unknown): unknown {
   if (typeof schema === 'string') return schema
-  if (isObjectSchema(schema) || isArraySchema(schema)) return schema
+  if (isObjectSchema(schema) || isArraySchema(schema) || isEnumSchema(schema)) return schema
   if (isPlainRecord(schema)) {
     return {
       kind: 'object',
@@ -479,6 +502,45 @@ function validateLeafSchema(
   }
 }
 
+/**
+ * 校验开放枚举 schema 对应的值。
+ *
+ * - openEnded = true  时：校验基础类型与 null 允许性，但不限制必须命中推荐值字典。
+ * - openEnded = false 时：在基础类型通过后，额外要求值落在 enum 集合内。
+ */
+function validateEnumSchema(
+  value: unknown,
+  schema: LlmParamEnumSchema,
+  path: string,
+  issues: LlmParamValidationIssue[],
+): void {
+  if (value === null) {
+    if (schema.nullable === true) return
+    pushIssue(issues, path, '不能为 null')
+    return
+  }
+
+  const expectedType = schema.type ?? 'string'
+  if (expectedType === 'number') {
+    if (typeof value !== 'number') {
+      pushIssue(issues, path, '应为数字')
+      return
+    }
+  } else if (typeof value !== 'string') {
+    pushIssue(issues, path, '应为字符串')
+    return
+  }
+
+  if (schema.openEnded === true || schema.enum.length === 0) {
+    return
+  }
+
+  if (!schema.enum.includes(value)) {
+    const allowedValues = schema.enum.map(item => JSON.stringify(item)).join(' | ')
+    pushIssue(issues, path, `必须是以下枚举之一: ${allowedValues}`)
+  }
+}
+
 // =========================================================
 // 六、对象/数组节点校验（递归主逻辑）
 // =========================================================
@@ -612,6 +674,11 @@ function validateSchemaNode(
 
   if (typeof normalized === 'string') {
     validateLeafSchema(value, normalized, path, issues)
+    return
+  }
+
+  if (isEnumSchema(normalized)) {
+    validateEnumSchema(value, normalized, path, issues)
     return
   }
 

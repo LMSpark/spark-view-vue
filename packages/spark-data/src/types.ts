@@ -402,13 +402,17 @@ export interface DataColumn {
  *
  * 保留 `(string & {})` 扩展口，允许业务侧继续定义更细的资源类型。
  */
+export const TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES = [
+  'database-table',
+  'database-view',
+  'third-party-api',
+  'static-data',
+  'dictionary',
+  'logical-view',
+] as const
+
 export type TableResourceType =
-  | 'database-table'
-  | 'database-view'
-  | 'third-party-api'
-  | 'static-data'
-  | 'dictionary'
-  | 'logical-view'
+  | (typeof TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES)[number]
   | (string & {})
 
 /**
@@ -422,10 +426,14 @@ export type TableResourceType =
  * - `child`     — 从表 / 明细表
  * - `reference` — 引用表 / 参考表 / 查找表
  */
+export const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES = [
+  'master',
+  'child',
+  'reference',
+] as const
+
 export type TableBusinessCategory =
-  | 'master'
-  | 'child'
-  | 'reference'
+  | (typeof TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES)[number]
   | (string & {})
 
 /**
